@@ -6,7 +6,7 @@
 
 # 開発ワークフロー
 1. **仕様を書く**: `specs/<アプリ名>/<機能名>/` に requirements.md → design.md → tasks.md の順で作成する(各ステップの書き方は @docs/spec-workflow.md)
-2. **TDDで実装する**: `feature/<機能名>` ブランチを切り、🔴Red(失敗するテスト)→🟢Green(最小実装)→🔵Refactorのサイクルを機能ごとに完結させてから次に進む
+2. **TDDで実装する**: `feature/<機能名>` ブランチを切り、🔴Red(失敗するテスト)→🟢Green(最小実装)→🔵Refactorのサイクルを機能ごとに完結させてから次に進む。テストの`describe`/`it`名とコメントの書き方は @docs/test-comment-guideline.md に従う
 3. **PRを出す**: `gh pr checks <PR番号>` でCIが通っていることを確認してから作成し、GitHub UI上でdiffを確認・承認してmainにマージする
 
 # フォルダ構成

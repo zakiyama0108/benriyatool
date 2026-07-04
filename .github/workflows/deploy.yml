@@ -1,3 +1,5 @@
+# mainにマージされた後、本番のCloudflare Workersへ自動デプロイするワークフロー
+# PR段階のlint/testはci.ymlが担当するため、ここではbuildとdeployのみ行う
 name: Deploy to Cloudflare Workers
 
 on:
@@ -13,13 +15,16 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24' # ci.ymlと同じバージョンに揃える
           cache: 'npm'
 
+      # package-lock.jsonの内容通りに依存関係をクリーンインストール(npm installと違い再現性がありCI向き)
       - run: npm ci
 
+      # next.config.ts・tsconfig.json(strict: true)に基づくビルド。ci.ymlで通過済みだがデプロイ用に再実行する。
       - run: npm run build
 
+      # wrangler.tomlの設定(workers_dev: false等)に従い、Cloudflare Workersへ静的配信としてデプロイ
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:

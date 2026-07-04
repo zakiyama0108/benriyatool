@@ -1,6 +1,8 @@
+# PR作成時にlint/test/buildを実行し、CLAUDE.mdの「PRを出す前にCIを確認する」を実効化するワークフロー
 name: CI
 
 on:
+  # mainへのPRが作成・更新された時にのみ実行(mainへのpushはdeploy.ymlが担当)
   pull_request:
     branches:
       - main
@@ -13,13 +15,18 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24' # deploy.ymlと同じバージョンに揃える
           cache: 'npm'
 
+      # package-lock.jsonの内容通りに依存関係をクリーンインストール(npm installと違い再現性がありCI向き)
       - run: npm ci
 
+      # eslint.config.mjsのルール(Next.js推奨ルール+no-console等)を全ファイルに適用
       - run: npm run lint
 
+      # __tests__/配下のテストをvitest.config.mtsの設定で実行
       - run: npm test
 
+      # next.config.ts・tsconfig.json(strict: true)に基づくビルド。型エラーもここで検出される。
+      # ビルドが通ることまで確認し、mainマージ後のデプロイ失敗を未然に防ぐ
       - run: npm run build

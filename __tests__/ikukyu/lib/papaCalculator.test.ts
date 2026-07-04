@@ -11,11 +11,12 @@ import {
 //   総育休180日目      = leaveStartDate + 179日 = '2027-04-29'
 //   総育休181日目      = leaveStartDate + 180日 = '2027-04-30'（50%期間の開始日）
 
+// 仕様: specs/ikukyu/simulator/design.md#給付金計算の概要（出生時育児休業給付金: 出生後8週以内・最大28日、日額×67%）
 // 出生時育休の日額 = floor(min(賃金日額, 16110) × 67/100)
 // bonusAmount     = floor(min(賃金日額, 16110) × 13/100) × 取得日数
 // 賃金日額        = floor(monthlySalary / 30)
-describe('出生時育児休業給付金（産後パパ育休）', () => {
-  it('28日取得: monthlySalary=380000 → 28日分（67% + bonusAmount 13%）が返る', () => {
+describe('【パパ】出生時育児休業給付金（産後パパ育休）の金額計算 - 月給と取得日数から給付額を算出する', () => {
+  it('産後パパ育休を上限の28日間取得した場合、67%の給付金に加えて13%の上乗せ額（bonusAmount）が計算されること', () => {
     // 賃金日額 = floor(380000/30) = 12666円
     // 日額67% = floor(12666 × 67/100) = floor(8486.22) = 8486円
     // 日額13% = floor(12666 × 13/100) = floor(1646.58) = 1646円
@@ -32,7 +33,7 @@ describe('出生時育児休業給付金（産後パパ育休）', () => {
     expect(result.dailyLimitReached).toBe(false)
   })
 
-  it('14日取得: → 14日分の金額が返る', () => {
+  it('産後パパ育休を14日間のみ取得した場合、取得日数分に短縮された給付額が返ること', () => {
     // endDate = dueDate + (14 - 1) = '2026-11-14'
     // amount     = 8486 × 14 = 118,804円
     // bonusAmount = 1646 × 14 = 23,044円
@@ -43,7 +44,7 @@ describe('出生時育児休業給付金（産後パパ育休）', () => {
     expect(result.bonusAmount).toBe(23044)
   })
 
-  it('上限ケース: monthlySalary=1000000 → 賃金日額上限16,110円が適用されること', () => {
+  it('月給が高額（100万円）のとき、賃金日額の上限16,110円が適用されること', () => {
     // 賃金日額 = floor(1000000/30) = 33333円 → 上限16,110円にキャップ
     // 日額67% = floor(16110 × 67/100) = floor(10793.7) = 10793円
     // amount = 10793 × 28 = 302,204円
@@ -53,11 +54,12 @@ describe('出生時育児休業給付金（産後パパ育休）', () => {
   })
 })
 
+// 仕様: specs/ikukyu/papa-birth-date/design.md#calcPapaChildcare67の変更
 // 通常育休67%日額 = floor(min(賃金日額, 16110) × 67/100)
-// 対象期間: leaveStartDate+paternityDays〜総育休180日目（leaveStartDate+179）
-// 総育休180日目を超える場合は leaveStartDate+179 で打ち切る
-describe('育児休業給付金（パパ・前期67%）', () => {
-  it('leaveEndDate="2027-04-29"（総育休180日目）→ 通常育休全期間が67%で返る', () => {
+// 対象期間: 産後パパ育休終了後〜総育休180日目
+// 総育休180日目を超える場合は180日目で打ち切る
+describe('【パパ】育児休業給付金（前期67%）の金額計算 - 産後パパ育休終了後から育休180日目までの給付額を算出する', () => {
+  it('育休終了予定日がちょうど育休180日目のとき、産後パパ育休終了後から180日目までの全期間が67%で計算されること', () => {
     // 通常育休開始: leaveStartDate+28 = '2026-11-29'
     // day180:       leaveStartDate+179 = '2027-04-29'
     // endDate = min(day180, leaveEndDate) = '2027-04-29'
@@ -80,7 +82,7 @@ describe('育児休業給付金（パパ・前期67%）', () => {
     expect(result!.dailyLimitReached).toBe(false)
   })
 
-  it('leaveEndDate="2027-08-31"（総育休180日超）→ 67%は総育休180日目（2027-04-29）で終わる', () => {
+  it('育休終了予定日が180日目を超える場合でも、67%給付は180日目（2027-04-29）で打ち切られること', () => {
     // 67%はleaveStartDate+179=2027-04-29 で打ち切り（翌日から50%）
     // 152日・amount = 8486 × 152 = 1,289,872円
     const result = calcPapaChildcare67({
@@ -94,7 +96,7 @@ describe('育児休業給付金（パパ・前期67%）', () => {
     expect(result!.amount).toBe(1289872)
   })
 
-  it('paternityDays=0（産後パパ育休なし）→ 通常育休がleaveStartDateから始まること', () => {
+  it('産後パパ育休を取得しなかった場合、育休開始日当日から67%給付が始まること', () => {
     // 産後パパ育休0日 → 通常育休はleaveStartDate当日から開始
     // startDate = leaveStartDate + 0 = '2026-11-01'
     // day180 = leaveStartDate + 179 = '2027-04-29'
@@ -110,7 +112,7 @@ describe('育児休業給付金（パパ・前期67%）', () => {
     expect(result!.days).toBe(180)
   })
 
-  it('leaveEndDate が産後パパ育休期間内（paternityDays以内）→ null が返る', () => {
+  it('育休終了予定日が産後パパ育休の期間内で終わる場合、前期67%の給付なし（null）が返ること', () => {
     // leaveEndDate = leaveStartDate+27 で、産後パパ育休期間と同じ
     // 通常育休の startDate = leaveStartDate+28 > leaveEndDate → null
     const result = calcPapaChildcare67({
@@ -123,11 +125,12 @@ describe('育児休業給付金（パパ・前期67%）', () => {
   })
 })
 
+// 仕様: specs/ikukyu/papa-birth-date/design.md#calcPapaChildcare50の変更
 // 通常育休50%日額 = floor(min(賃金日額, 16110) × 50/100)
-// 対象期間: 総育休181日目（leaveStartDate+180）〜 leaveEndDate
+// 対象期間: 総育休181日目〜育休終了予定日
 // 総育休が180日以内の場合は null を返す
-describe('育児休業給付金（パパ・後期50%）', () => {
-  it('leaveEndDate="2027-08-31" → 総育休181日目以降が50%で返る', () => {
+describe('【パパ】育児休業給付金（後期50%）の金額計算 - 育休181日目以降の給付額を算出する', () => {
+  it('育休終了予定日が181日目より後のとき、181日目から育休終了日までの50%給付額が計算されること', () => {
     // 50%開始日 = leaveStartDate+180 = '2027-04-30'
     // 対象日数: '2027-04-30' 〜 '2027-08-31' = 124日
     //   (Apr:1, May:31, Jun:30, Jul:31, Aug:31 = 124日)
@@ -148,7 +151,7 @@ describe('育児休業給付金（パパ・後期50%）', () => {
     expect(result!.amount).toBe(785292)
   })
 
-  it('leaveEndDate="2027-04-29"（総育休180日以内）→ null が返る', () => {
+  it('育休期間が180日以内で後期50%の対象日が存在しない場合、給付なし（null）が返ること', () => {
     // 50%開始日 = leaveStartDate+180 = '2027-04-30' > '2027-04-29' = leaveEndDate
     const result = calcPapaChildcare50({
       monthlySalary: 380000,

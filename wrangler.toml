@@ -1,6 +1,10 @@
+# Cloudflare Workers上のプロジェクト名(ダッシュボード・管理URLで使われる)
 name = "benriyatool"
+# Workersランタイムの挙動を固定する日付。更新しない限り将来の仕様変更の影響を受けない
 compatibility_date = "2025-01-01"
+# workers.devサブドメインでの公開を無効化し、カスタムドメインのみで公開する
 workers_dev = false
 
 [assets]
+# next.config.tsのoutput: "export"で生成される静的ファイルの出力先を配信対象にする
 directory = "./out"

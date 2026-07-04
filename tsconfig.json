@@ -1,27 +1,42 @@
 {
   "compilerOptions": {
+    // コンパイル後のJS構文レベル。async/awaitがネイティブ対応するES2017を指定(Next.js作成時のデフォルト)
     "target": "ES2017",
+    // 型定義に含める標準ライブラリ。ブラウザのDOM API・for-ofで使うイテラブルなDOM API・最新ES機能
     "lib": ["dom", "dom.iterable", "esnext"],
+    // .jsファイルの混在(設定ファイル等)を許可する
     "allowJs": true,
+    // node_modules内の型定義(.d.ts)の型チェックを省略し、ビルドを高速化する
     "skipLibCheck": true,
+    // noImplicitAny等を含む厳格な型チェック一式。CLAUDE.mdの「型定義は必ず行う」を実質的に担保する
     "strict": true,
+    // 型チェックのみ行い、JS出力はNext.js(Turbopack)側に任せる
     "noEmit": true,
+    // CommonJSモジュールをESモジュールと同じ書き方でimportできるようにする(`import React from "react"`等)
     "esModuleInterop": true,
+    // 出力するモジュール形式。Next.jsのバンドラが解釈する最新のESモジュール構文を使う
     "module": "esnext",
     "moduleResolution": "bundler",
+    // JSONファイルを直接importできるようにする
     "resolveJsonModule": true,
+    // 各ファイルを他ファイルの型情報なしで単独変換できる書き方に制限する(Next.jsのSWC/Turbopackがファイル単位でトランスパイルするため必須)
     "isolatedModules": true,
+    // JSXをReact 17+のnew JSX transformでコンパイルする(各ファイルでのReact importが不要になる)
     "jsx": "react-jsx",
+    // 前回の型チェック結果をキャッシュし、以降のチェックを高速化する
     "incremental": true,
+    // Next.js公式のTypeScriptプラグイン(next devでの型エラー表示等を有効化)
     "plugins": [
       {
         "name": "next"
       }
     ],
+    // `@/app/...`のようにルートからの絶対パスでimportできるようにするエイリアス
     "paths": {
       "@/*": ["./*"]
     }
   },
+  // 型チェック・IDE補完の対象に含めるファイル(Next.jsが自動生成する型定義ファイルも含む)
   "include": [
     "next-env.d.ts",
     "**/*.ts",
@@ -30,5 +45,6 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
+  // サードパーティコードは型チェック対象外にする
   "exclude": ["node_modules"]
 }
