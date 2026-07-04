@@ -14,8 +14,9 @@ const result: CalculatorResult = {
   paymentSchedules: [],
 }
 
-describe('ResultSummary', () => {
-  it('合計金額・summaryLabel・内訳バーの凡例ラベルが描画されること', () => {
+// 仕様: specs/ikukyu/simulator/design.md#型定義（主要）（CalculatorResult）、specs/ikukyu/simulator/requirements.md#WHAT（総額・内訳を表示）
+describe('【結果画面】計算結果サマリー表示 - 合計金額と内訳の見出し・凡例を表示する', () => {
+  it('合計金額・見出し（summaryLabel）・内訳バーの凡例ラベルがすべて画面に表示されること', () => {
     render(<ResultSummary result={result} />)
     expect(screen.getByText(/2,000,000/)).toBeDefined()
     expect(screen.getByText('出産手当金 + 育児休業給付金の合計')).toBeDefined()

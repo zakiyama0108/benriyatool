@@ -23,8 +23,9 @@ const schedules: PaymentSchedule[] = [
   },
 ]
 
-describe('PaymentScheduleList', () => {
-  it('振込スケジュール一覧が描画されること', () => {
+// 仕様: specs/ikukyu/simulator/requirements.md#スコープ（各給付金の振込スケジュール（2ヶ月ごと））
+describe('【結果画面】振込スケジュール一覧表示 - 給付金がいつ・いくら振り込まれるかを一覧表示する', () => {
+  it('振込予定月と金額を含む振込スケジュールの一覧が画面に表示されること', () => {
     render(<PaymentScheduleList schedules={schedules} />)
     expect(screen.getByText(/2027年4月中旬ごろ/)).toBeDefined()
     expect(screen.getByText(/2027年6月中旬ごろ/)).toBeDefined()
@@ -32,7 +33,7 @@ describe('PaymentScheduleList', () => {
     expect(screen.getByText(/421,474/)).toBeDefined()
   })
 
-  it('isFinal: true の行に「最終振込」バッジが表示されること', () => {
+  it('最後の振込にあたる行には「最終振込」のバッジが表示されること', () => {
     render(<PaymentScheduleList schedules={schedules} />)
     expect(screen.getByText('最終振込')).toBeDefined()
   })
