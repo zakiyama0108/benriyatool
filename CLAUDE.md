@@ -1,79 +1,30 @@
+# よく使うコマンド
+- 開発サーバー: `npm run dev`
+- テスト: `npm test`(watchは `npm run test:watch`)
+- Lint: `npm run lint`
+- ビルド: `npm run build`
+
 # 開発ワークフロー
-新しい機能を作る時は先に `specs/<アプリ名>/<機能名>/` に以下の順で仕様を作成してからコードを書く。
-
-```
-specs/
-  hub-site/           ← サイト全体に関わる構成（ルーティング・ブランド等）
-  legal/              ← 利用規約・プライバシーポリシー（requirements.md のみで可）
-  ikukyu/             ← アプリ名（URL パスと対応）
-    simulator/        ← 機能名
-      requirements.md
-      design.md
-      tasks.md
-    papa-birth-date/  ← 機能名
-      requirements.md
-      design.md
-      tasks.md
-  kakeibo/            ← 別のアプリ（将来）
-    ...
-```
-
-- サイト全体に関わるもの（ルーティング・共通レイアウト・法的ページ等）は `specs/` 直下に置く
-- アプリ固有の機能は `specs/<アプリ名>/<機能名>/` に置く（アプリ名は URL パスと対応）
-- 機能名はその機能を端的に表す英語のスラッグ（例: `papa-birth-date`, `simulator`）
-- 変更頻度が低く設計が単純なものは `requirements.md` のみでも可
-
-- **Step1 requirements.md（要件定義）**
-  「何を作るか（WHAT）」「なぜ作るか（WHY）」を言語化する。技術的な実装方法（HOW）はここでは書かない。
-- **Step2 design.md（設計）**
-  使用技術・フォルダ構成・DBスキーマ・APIの型定義など「骨組み」だけを定義する。内部のループ処理・条件分岐・具体的なアルゴリズムは書かない（実装はAIに任せる）。
-- **Step3 tasks.md（タスク分解）**
-  設計をもとに実装可能な最小単位に分解する。タスクを細かく分けるほどAIの生成精度が上がりレビューもしやすくなる。
-
-コードは必ずTDDで書く。各機能ごとに以下のサイクルを完結させてから次へ進む。
-1. 🔴 Red：失敗するテストを先に書く
-2. 🟢 Green：テストが通る最小限の実装を書く
-3. 🔵 Refactor：テストを通したままコードを整理する
-
-# 基本ルール
-- 回答やコメントは必ず日本語で行う
-- 関数・型にはその役割と、非自明な計算式・定数の根拠をコメントで書く
-- WHYが明らかな場合（関数名で意図が伝わる等）はコメント不要
-- シンプルで保守しやすいコードを優先する
-- 不要な複雑化はしない
-- 実装は `feature/<機能名>` ブランチで行い、PRを作成してGitHub UI上で差分を確認・承認してからmainにマージする
-- PRを出す前にCI/CDが通っていることを確認する。CI/CDがない場合はVercelのデプロイ成功を `gh pr checks <PR番号>` で確認する。失敗している場合は原因を調査して修正し、再プッシュして再確認してからPRを出す
+1. **仕様を書く**: `specs/<アプリ名>/<機能名>/` に requirements.md → design.md → tasks.md の順で作成する(各ステップの書き方は @docs/spec-workflow.md)
+2. **TDDで実装する**: `feature/<機能名>` ブランチを切り、🔴Red(失敗するテスト)→🟢Green(最小実装)→🔵Refactorのサイクルを機能ごとに完結させてから次に進む
+3. **PRを出す**: `gh pr checks <PR番号>` でCIが通っていることを確認してから作成し、GitHub UI上でdiffを確認・承認してmainにマージする
 
 # フォルダ構成
-
-コードとテストはアプリ単位で階層を分ける。
+`specs/` `app/` `__tests__/` はすべて「アプリ名 → 機能名 or components/lib」という同じ階層規約に従う(アプリ名はURLパスと対応)。
 
 ```
-app/
-  layout.tsx              # サイト共通レイアウト
-  page.tsx                # ハブトップページ
-  components/             # サイト共通コンポーネント（Footer等）
-  <アプリ名>/             # アプリごとのフォルダ（URL パスと対応）
-    layout.tsx            # アプリ専用メタ情報
-    page.tsx              # ページ
-    components/           # アプリ専用UIコンポーネント
-    lib/                  # アプリ専用ロジック・型定義
-  legal/
-    page.tsx
-
-__tests__/
-  <アプリ名>/
-    components/
-    lib/
+specs/<アプリ名>/<機能名>/requirements.md, design.md, tasks.md
+app/<アプリ名>/{components,lib}/
+__tests__/<アプリ名>/{components,lib}/
 ```
 
-- サイト共通のものは `app/components/`（Footer等）
-- アプリ固有のコンポーネント・ロジックは `app/<アプリ名>/components/`・`app/<アプリ名>/lib/` に置く
-- テストも同じ階層に対応させる（`__tests__/<アプリ名>/components/`・`__tests__/<アプリ名>/lib/`）
-- 新しいアプリを追加するときは `app/<アプリ名>/` と `__tests__/<アプリ名>/` を並べるだけでよい
+- サイト全体に関わるもの(ルーティング・共通レイアウト・法的ページ)は `specs/` 直下(hub-site, legal)、`app/` 直下(components, legal)に置く
+- 変更頻度が低く設計が単純な機能は requirements.md のみで可(例: legal)
+- 新しいアプリを追加する時は3つのフォルダを同名で並べて作るだけでよい
 
 # コーディング規約
-- 型定義は必ず行う
-- console.logは残さない
+- 回答・コメントは日本語で書く
+- 関数・型には役割と非自明な計算式・定数の根拠をコメントする。名前で意図が伝わる場合は不要(コードを読むだけでは「なぜその式か」が分からないため)
+- シンプルさを優先し、過剰な抽象化はしない(このアプリは仕様変更が頻繁で、抽象化コストが将来の変更を阻害しやすいため)
 
 @AGENTS.md
