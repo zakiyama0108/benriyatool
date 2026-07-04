@@ -14,7 +14,25 @@
       "Bash(vercel ls *)",
       "Bash(xargs sed -i '' \"s|'../../app/components/|'../../app/ikukyu/components/|g\")",
       "Bash(xargs sed -i '' \"s|'../../app/lib/|'../../app/ikukyu/lib/|g\")",
-      "Bash(xargs sed -i '' \"s|'../../app/ikukyu/|'../../../app/ikukyu/|g\")"
+      "Bash(xargs sed -i '' \"s|'../../app/ikukyu/|'../../../app/ikukyu/|g\")",
+      "Bash(git remote *)",
+      "Bash(git commit *)",
+      "Bash(bw login *)",
+      "Bash(git merge *)",
+      "Bash(git fetch *)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(npx vitest *)",
+      "Bash(gh workflow *)",
+      "Bash(echo \"grep exit: $?\")",
+      "Bash(git mv *)",
+      "Bash(echo \"exit: $?\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(npm ls *)",
+      "Bash(claude --version)",
+      "Bash(strings /opt/homebrew/Caskroom/claude-code/2.1.169/claude 2>/dev/null | grep -i \"jsonc\\\\|JSON5\\\\|stripJsonComments\\\\|parseJsonc\" | head -30)",
+      "Read(//opt/homebrew/Caskroom/claude-code/2.1.169/**)",
+      "Bash(claude --settings /private/tmp/claude-501/-Users-ryosukeyamazaki-repo-ikukyu-calculator/7957c9b1-996f-4b82-9487-9a3aafd2b796/scratchpad/settings-jsonc-test/.claude/settings.json --debug -p 'say hi')"
     ]
   }
 }
