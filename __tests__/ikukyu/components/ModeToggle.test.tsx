@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import ModeToggle from '../../../app/ikukyu/components/ModeToggle'
 
-// 仕様: specs/ikukyu/simulator/requirements.md#WHAT（ママ・パパ両モードに対応）
+// 仕様: specs/ikukyu/simulator/requirements.md#機能要件（ママ・パパ両モードに対応）
 describe('【入力画面】ママ・パパ切り替えタブ - タブをクリックすると計算モードが切り替わる', () => {
   it('パパタブをクリックすると、計算モードがパパに切り替わること', () => {
     const onChange = vi.fn()

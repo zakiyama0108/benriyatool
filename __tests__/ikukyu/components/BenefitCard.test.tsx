@@ -20,7 +20,7 @@ const childcare67WithBonus: BenefitItem = {
   bonusAmount: 38808,
 }
 
-// 仕様: specs/ikukyu/simulator/design.md#型定義（主要）（BenefitItem）
+// 仕様: specs/ikukyu/simulator/requirements.md#機能要件（各給付金の名称・財源・対象期間・給付率・金額を表示）、specs/ikukyu/simulator/requirements.md#エッジケース・例外処理（上限適用・未到達・対象外のラベル表示）
 describe('【結果画面】給付金カード表示 - 1つの給付金について名称・財源・期間・金額・給付率を表示する', () => {
   it('給付金名・財源・対象期間・金額・給付率がすべて画面に表示されること', () => {
     render(<BenefitCard benefit={childcare67} />)

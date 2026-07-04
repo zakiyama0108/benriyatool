@@ -1,76 +1,26 @@
 # 設計: 育休給付金シミュレーター
 
-## 使用技術
+## 処理フロー
 
-| 種別 | 技術 |
-|------|------|
-| フレームワーク | Next.js（App Router） |
-| 言語 | TypeScript |
-| スタイリング | Tailwind CSS |
-| テスト | Vitest |
+### 賃金日額の上限適用を判定する処理
+- 対象: 出産手当金・出生時育児休業給付金・育児休業給付金(前期67%/後期50%)の日額計算
+- 手順:
+  1. 月給から賃金日額を求める
+  2. 賃金日額が給付金ごとの上限額を超えている場合は、上限額を賃金日額として扱い、「上限到達」フラグを立てる
+  3. 超えていない場合は、賃金日額をそのまま使う
+- 関連するビジネスルール: requirements.md#出産手当金、requirements.md#出生時育児休業給付金、requirements.md#育児休業給付金・前期67%、requirements.md#育児休業給付金・後期50%
 
-## フォルダ構成
+### 出生後休業支援給付金の13%上乗せを判定する処理
+- 対象: 育児休業給付金(前期67%)の上乗せ額
+- 手順:
+  1. 育休1日目から28日目までの日数を求める(育休が28日に満たない場合は、実際の育休日数までとする)
+  2. その日数分だけ、賃金日額の13%を上乗せ額として別に計算する
+- 関連するビジネスルール: requirements.md#育児休業給付金・前期67%（出生後休業支援給付金の13%上乗せ）
 
-```
-app/
-  ikukyu/
-    layout.tsx        # /ikukyu 専用メタ情報
-    page.tsx          # 計算機ページ（'use client'）
-  components/
-    ModeToggle.tsx
-    InputForm.tsx
-    ResultSummary.tsx
-    BenefitCard.tsx
-    PaymentSchedule.tsx
-  lib/
-    types.ts          # 型定義
-    calculator.ts     # 給付金計算ロジック
-    dateUtils.ts      # 日付ユーティリティ
-```
-
-## 型定義（主要）
-
-```ts
-type Mode = 'mama' | 'papa'
-
-type CalculatorInput = {
-  mode: Mode
-  monthlySalary: number
-  dueDate: string          // 出産予定日（YYYY-MM-DD）
-  leaveStartDate?: string  // パパのみ: 育休開始日
-  leaveEndDate: string
-}
-
-type BenefitItem = {
-  type: BenefitType
-  officialName: string
-  source: string
-  startDate: string
-  endDate: string
-  days: number
-  rateLabel: string
-  amount: number
-  bonusAmount?: number
-  dailyLimitReached: boolean
-}
-
-type CalculatorResult = {
-  benefits: BenefitItem[]
-  paymentSchedules: PaymentSchedule[]
-}
-```
-
-## 給付金計算の概要
-
-| 給付金 | 対象 | 計算の根拠 |
-|-------|------|-----------|
-| 出産手当金 | ママ | 産前42日〜産後56日、日額×2/3 |
-| 出生時育児休業給付金 | パパ | 出生後8週以内・最大28日、日額×67% |
-| 育休給付金（67%） | 両 | 育休開始〜180日目、日額×67%（+13%上乗せあり） |
-| 育休給付金（50%） | 両 | 181日目以降〜育休終了、日額×50% |
-
-## メタ情報
-
-| ページ | title | description |
-|-------|-------|-------------|
-| `/ikukyu` | 育休給付金シミュレーター \| ikukyu | 産後から育休まで、もらえる給付金が全部わかる無料シミュレーターです。 |
+### 育児休業給付金(後期50%)が発生するかどうかを判定する処理
+- 対象: 育児休業給付金(後期50%)
+- 手順:
+  1. 育休開始日から181日目以降の期間が、育休終了日までに存在するか確認する
+  2. 存在する場合は、その期間について後期50%の給付金を計算する
+  3. 存在しない場合(育休が180日以内で終わる場合)は、後期50%の給付金は発生しないものとする
+- 関連するビジネスルール: requirements.md#育児休業給付金・後期50%

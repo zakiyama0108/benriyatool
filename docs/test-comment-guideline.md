@@ -16,7 +16,7 @@
 `describe`ブロックの直前に1行、対応するspecsの見出しを参照するコメントを入れる。番号は振らず、requirements.md/design.mdの既存の見出しをそのまま参照先にする。
 
 ```ts
-// 仕様: specs/ikukyu/papa-birth-date/design.md#calcPapaChildcareの変更
+// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定
 describe('...', () => {
 ```
 
@@ -30,7 +30,7 @@ describe('出生時育児休業給付金（産後パパ育休）', () => {
 
 After:
 ```ts
-// 仕様: specs/ikukyu/simulator/design.md#出生時育児休業給付金
+// 仕様: specs/ikukyu/simulator/requirements.md#出生時育児休業給付金
 describe('【パパ】出生時育児休業給付金（産後パパ育休）の金額計算 - 月給と取得日数から給付額を算出する', () => {
   it('産後パパ育休を上限の28日間取得した場合、67%の給付金に加えて13%の上乗せ額(bonusAmount)が計算されること', () => {
 ```
