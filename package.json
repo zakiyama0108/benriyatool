@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check:spec-coverage": "node scripts/check-spec-coverage.mjs"
   },
   "dependencies": {
     "next": "16.2.9",
