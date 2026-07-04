@@ -1,6 +1,8 @@
+# PR作成時にlint/test/buildを実行し、CLAUDE.mdの「PRを出す前にCIを確認する」を実効化するワークフロー
 name: CI
 
 on:
+  # mainへのPRが作成・更新された時にのみ実行(mainへのpushはdeploy.ymlが担当)
   pull_request:
     branches:
       - main
@@ -13,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24' # deploy.ymlと同じバージョンに揃える
           cache: 'npm'
 
       - run: npm ci
@@ -22,4 +24,5 @@ jobs:
 
       - run: npm test
 
+      # ビルドが通ることまで確認し、mainマージ後のデプロイ失敗を未然に防ぐ
       - run: npm run build
