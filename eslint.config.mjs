@@ -11,6 +11,13 @@ const eslintConfig = defineConfig([
       "no-console": "warn",
     },
   },
+  {
+    // scripts/配下はCLI実行が前提のNodeスクリプトのため、console出力を許可する
+    files: ["scripts/**/*.mjs"],
+    rules: {
+      "no-console": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

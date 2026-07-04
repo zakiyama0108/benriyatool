@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# spec-coverageチェックの生成レポート(実行するたびに内容が変わるため管理しない)
+/spec-coverage-report.md
