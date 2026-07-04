@@ -20,9 +20,12 @@ jobs:
 
       - run: npm ci
 
+      # eslint.config.mjsのルール(Next.js推奨ルール+no-console等)を全ファイルに適用
       - run: npm run lint
 
+      # __tests__/配下のテストをvitest.config.mtsの設定で実行
       - run: npm test
 
+      # next.config.ts・tsconfig.json(strict: true)に基づくビルド。型エラーもここで検出される。
       # ビルドが通ることまで確認し、mainマージ後のデプロイ失敗を未然に防ぐ
       - run: npm run build
