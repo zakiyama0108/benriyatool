@@ -4,7 +4,9 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
+    // noImplicitAny等を含む厳格な型チェック一式。CLAUDE.mdの「型定義は必ず行う」を実質的に担保する
     "strict": true,
+    // 型チェックのみ行い、JS出力はNext.js(Turbopack)側に任せる
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -18,6 +20,7 @@
         "name": "next"
       }
     ],
+    // `@/app/...`のようにルートからの絶対パスでimportできるようにするエイリアス
     "paths": {
       "@/*": ["./*"]
     }

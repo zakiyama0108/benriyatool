@@ -18,6 +18,7 @@ jobs:
           node-version: '24' # deploy.ymlと同じバージョンに揃える
           cache: 'npm'
 
+      # package-lock.jsonの内容通りに依存関係をクリーンインストール(npm installと違い再現性がありCI向き)
       - run: npm ci
 
       # eslint.config.mjsのルール(Next.js推奨ルール+no-console等)を全ファイルに適用

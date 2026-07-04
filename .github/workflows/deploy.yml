@@ -18,6 +18,7 @@ jobs:
           node-version: '24' # ci.ymlと同じバージョンに揃える
           cache: 'npm'
 
+      # package-lock.jsonの内容通りに依存関係をクリーンインストール(npm installと違い再現性がありCI向き)
       - run: npm ci
 
       # next.config.ts・tsconfig.json(strict: true)に基づくビルド。ci.ymlで通過済みだがデプロイ用に再実行する。
