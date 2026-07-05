@@ -13,12 +13,14 @@
 - 境界値・特殊ケースは、なぜそのケースを検証するのかが伝わるようにする
 
 ## 仕様書との対応
-`describe`ブロックの直前に1行、対応するspecsの見出しを参照するコメントを入れる。番号は振らず、requirements.md/design.mdの既存の見出しをそのまま参照先にする。
+`describe`ブロックの直前に1行、対応するspecsの項目を参照するコメントを入れる。requirements.mdの見出し内で箇条書きに`[n]`が振られている場合は`見出し-n`の形式で、振られていない見出し(概要・スコープ外など)は見出し名だけを参照先にする。1つのテストが複数の箇条書きに対応する場合は`、`区切りでフルパスを繰り返す(`[n]`の付け方は@docs/spec-workflow.md参照)。
 
 ```ts
-// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定
+// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-2
 describe('...', () => {
 ```
+
+見出し名や`[n]`は`npm run check:spec-coverage`で完全一致で照合されるため、requirements.md側の表記と一字一句揃える(表記ゆれがあると❌未対応として検出される)。
 
 ## Before / After
 
@@ -30,7 +32,7 @@ describe('出生時育児休業給付金（産後パパ育休）', () => {
 
 After:
 ```ts
-// 仕様: specs/ikukyu/simulator/requirements.md#出生時育児休業給付金
+// 仕様: specs/ikukyu/simulator/requirements.md#出生時育児休業給付金-2、specs/ikukyu/simulator/requirements.md#出生時育児休業給付金-3
 describe('【パパ】出生時育児休業給付金（産後パパ育休）の金額計算 - 月給と取得日数から給付額を算出する', () => {
   it('産後パパ育休を上限の28日間取得した場合、67%の給付金に加えて13%の上乗せ額(bonusAmount)が計算されること', () => {
 ```

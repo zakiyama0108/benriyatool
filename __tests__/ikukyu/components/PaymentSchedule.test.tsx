@@ -23,7 +23,7 @@ const schedules: PaymentSchedule[] = [
   },
 ]
 
-// 仕様: specs/ikukyu/simulator/requirements.md#依存関係（各給付金の振込スケジュール2ヶ月ごと）
+// 仕様: specs/ikukyu/simulator/requirements.md#依存関係-1
 describe('【結果画面】振込スケジュール一覧表示 - 給付金がいつ・いくら振り込まれるかを一覧表示する', () => {
   it('振込予定月と金額を含む振込スケジュールの一覧が画面に表示されること', () => {
     render(<PaymentScheduleList schedules={schedules} />)

@@ -5,7 +5,7 @@ import {
   calcMamaChildcare50,
 } from '../../../app/ikukyu/lib/calculator'
 
-// 仕様: specs/ikukyu/simulator/requirements.md#出産手当金（産前42日〜産後56日、日額の3分の2）
+// 仕様: specs/ikukyu/simulator/requirements.md#出産手当金-2、specs/ikukyu/simulator/requirements.md#出産手当金-3
 // 出産手当金の日額 = floor(monthlySalary / 30 * 2/3)
 // 上限日額 = 30,887円（標準報酬月額上限 139万円 ÷ 30 × 2/3 の定数）
 describe('【ママ】出産手当金の金額計算 - 月給と出産予定日から産前産後98日分の給付額を算出する', () => {
@@ -36,7 +36,7 @@ describe('【ママ】出産手当金の金額計算 - 月給と出産予定日�
   })
 })
 
-// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・前期67%（育休開始〜180日目）
+// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・前期67%-2、specs/ikukyu/simulator/requirements.md#育児休業給付金・前期67%-3
 // 育休前期67%の日額 = floor(min(賃金日額, 16110) × 67/100)
 // 賃金日額 = floor(monthlySalary / 30)
 // 上限: 賃金日額 16,110円（67%後: 10,793円/日）
@@ -76,7 +76,7 @@ describe('【ママ】育児休業給付金（前期67%）の金額計算 - 育�
   })
 })
 
-// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・前期67%（出生後休業支援給付金の13%上乗せ）
+// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・前期67%-5
 // 出生後休業支援給付金 +13% は育休1〜28日目に加算（bonusAmount として別出し）
 describe('【ママ】出生後休業支援給付金（67%への13%上乗せ）の金額計算 - 育休1〜28日目の上乗せ額を算出する', () => {
   it('育休1〜28日目にあたる産後57〜84日目の期間について、13%の上乗せ額（bonusAmount）が計算されること', () => {
@@ -92,7 +92,7 @@ describe('【ママ】出生後休業支援給付金（67%への13%上乗せ）�
   })
 })
 
-// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%（181日目以降〜育休終了）
+// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%-2、specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%-3
 // 育休後期50%の日額 = floor(賃金日額 × 50/100)
 // 育休181日目〜育休終了日が対象。育休が180日以内なら null を返す
 describe('【ママ】育児休業給付金（後期50%）の金額計算 - 育休181日目以降の給付額を算出する', () => {

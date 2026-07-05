@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { calcSummaryLabel, calcBreakdownBar, calcPaymentSchedules } from '../../../app/ikukyu/lib/calculator'
 import type { BenefitItem } from '../../../app/ikukyu/lib/types'
 
-// 仕様: specs/ikukyu/simulator/requirements.md#機能要件（総額・内訳を表示する）
+// 仕様: specs/ikukyu/simulator/requirements.md#機能要件-3
 describe('【ママ・パパ共通】結果画面の合計金額見出し生成 - モードに応じた見出し文言を出し分ける', () => {
   it('ママモードのとき、「出産手当金 + 育児休業給付金の合計」という見出しになること', () => {
     expect(calcSummaryLabel('mama')).toBe('出産手当金 + 育児休業給付金の合計')
@@ -13,7 +13,7 @@ describe('【ママ・パパ共通】結果画面の合計金額見出し生成 
   })
 })
 
-// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定（内訳バー表示への反映）
+// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-1、specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-4
 // BreakdownBar の期待値:
 //   mama 出産予定日='2026-11-01', 育休終了予定日='2027-10-31':
 //     産休:     getMaternityStartDate('2026-11-01') ~ getPostnatalEndDate('2026-11-01') = 98日
@@ -47,7 +47,7 @@ describe('【ママ・パパ共通】結果画面の内訳バー生成 - 産休�
   })
 })
 
-// 仕様: specs/ikukyu/simulator/requirements.md#依存関係（各給付金の振込スケジュール2ヶ月ごと）
+// 仕様: specs/ikukyu/simulator/requirements.md#依存関係-1
 // PaymentSchedule の期待値:
 //   childcare67: '2026-12-28' ~ '2027-06-25' (180日)
 //   splitIntoTwoMonthBlocks で3ブロックに分割:
