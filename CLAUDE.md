@@ -1,6 +1,6 @@
 # よく使うコマンド
 - 開発サーバー: `npm run dev`
-- テスト: `npm test`(watchは `npm run test:watch`)
+- テスト: `npm test`(watchは `npm run test:watch`、カバレッジ計測は `npm run test:coverage`)
 - Lint: `npm run lint`
 - ビルド: `npm run build`
 

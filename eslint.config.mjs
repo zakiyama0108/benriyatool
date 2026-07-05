@@ -42,6 +42,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // npm run test:coverage の生成物(vitest.config.mtsのcoverage設定参照)
+    "coverage/**",
   ]),
 ]);
 
