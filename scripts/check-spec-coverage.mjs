@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 
-// specs/**/{requirements,design}.md の各仕様項目(見出し・表の1行)に対して、
-// __tests__ 配下の `// 仕様: specs/.../requirements.md#見出し` コメントで
-// 紐づくテスト(describe / it)が存在するかを一覧表示するチェッカー。
-// テストが不要と判断した項目は scripts/spec-coverage-skip.json に追記するとスキップ扱いになる。
+// specs/**/{requirements,design}.md の各仕様項目(見出し、または`- [n] 内容`形式の
+// 箇条書き)に対して、__tests__ 配下の
+// `// 仕様: specs/.../requirements.md#見出し-n` コメントで紐づくテスト(describe / it)が
+// 存在するかを一覧表示するチェッカー。
+// 見出し直下に`- [1] ...`のような番号付き箇条書きがある場合はその箇条書き単位、
+// ない場合(概要・スコープ外など元々テスト対象でない見出し)は見出し単位で項目化する。
+// テストとの対応はテキストの部分一致ではなく完全一致で判定する(表記ゆれによる
+// 誤検知を避けるため、見出し名や箇条書き番号は正確に一致させる必要がある)。
+// テストが不要と判断した項目は scripts/spec-coverage-skip.json に理由付きで追記すると
+// スキップ扱いになる(reasonが空のエントリはエラーにする)。
+// requirements.md・design.mdのどちらも「✅ or ⏭スキップ」で0件にすることを前提にしており、
+// design.mdの処理フローは原則テストから参照しないため(docs/spec-workflow.md参照)、
+// 個別に見出しごとスキップ登録する運用とする。
 // 実行するたびに内容が変わる生成物のため、レポートはgit管理しない(.gitignore参照)。
 // 実行: npm run check:spec-coverage
 
@@ -63,8 +72,15 @@ function collectHeadingBody(lines, startIdx) {
   return bodyLines.join('\n').trim()
 }
 
-// design.md から「## / ### 見出し(概要=見出し文, 詳細=本文)」と
-// 「表の行(概要=1列目, 詳細=残りの列をヘッダー名付きで)」を仕様項目として抽出する
+// 見出し本文から`- [n] 内容`形式の番号付き箇条書きを抽出する
+function extractTaggedBullets(body) {
+  return [...body.matchAll(/^-\s*\[(\d+)\]\s*(.+)$/gm)].map((m) => ({ n: m[1], text: m[2].trim() }))
+}
+
+// requirements.md/design.md から仕様項目を抽出する。
+// 見出し直下に`- [n] 内容`の番号付き箇条書きがあれば箇条書き単位(見出し名+番号)で、
+// なければ見出し単位(概要・スコープ外など元々テスト対象でない見出し)で項目化する。
+// 表の行がある場合は「見出し名+1列目」を項目キーとする(将来の表記の重複を避けるため)。
 function extractSpecItems(mdPath) {
   const lines = fs.readFileSync(mdPath, 'utf8').split('\n')
   const items = []
@@ -76,8 +92,20 @@ function extractSpecItems(mdPath) {
     const headingMatch = line.match(/^(#{2,4})\s+(.+)$/)
     if (headingMatch) {
       currentHeading = headingMatch[2].trim()
-      const detail = collectHeadingBody(lines, i + 1)
-      items.push({ label: currentHeading, normalized: normalize(currentHeading), detail })
+      const body = collectHeadingBody(lines, i + 1)
+      const bullets = extractTaggedBullets(body)
+
+      if (bullets.length > 0) {
+        for (const bullet of bullets) {
+          items.push({
+            label: `${currentHeading} [${bullet.n}]`,
+            normalized: `${normalize(currentHeading)}-${bullet.n}`,
+            detail: bullet.text,
+          })
+        }
+      } else {
+        items.push({ label: currentHeading, normalized: normalize(currentHeading), detail: body })
+      }
       continue
     }
 
@@ -93,13 +121,26 @@ function extractSpecItems(mdPath) {
             .slice(1)
             .map((header, idx) => `${header}: ${cells[idx + 1] ?? ''}`)
             .join(' / ')
-          items.push({ label, normalized: normalize(cell), detail })
+          const normalized = currentHeading ? `${normalize(currentHeading)}-${normalize(cell)}` : normalize(cell)
+          items.push({ label, normalized, detail })
         }
         j++
       }
     }
   }
   return items
+}
+
+// 同一ファイル内で複数の項目が同じキー(normalized)を持つ場合、どちらのテストが
+// どちらの項目に対応するのか機械的に判別できなくなる。見出し名の重複や
+// 番号の振り間違いを早期発見するための検出。
+function findDuplicateNormalizedItems(items) {
+  const byKey = new Map()
+  for (const item of items) {
+    if (!byKey.has(item.normalized)) byKey.set(item.normalized, [])
+    byKey.get(item.normalized).push(item.label)
+  }
+  return [...byKey.entries()].filter(([, labels]) => labels.length > 1)
 }
 
 // テストファイルから「// 仕様: specs/xxx.md#anchor」コメントと、
@@ -157,7 +198,18 @@ function extractSpecRefs(testPath) {
 // 「テスト不要」と判断済みの項目を管理する一覧を読み込む
 function loadSkipList() {
   if (!fs.existsSync(SKIP_LIST_PATH)) return []
-  return JSON.parse(fs.readFileSync(SKIP_LIST_PATH, 'utf8'))
+  const list = JSON.parse(fs.readFileSync(SKIP_LIST_PATH, 'utf8'))
+
+  // reasonが空のスキップは「テストを書かない言い訳」を無条件に許すことになるため、
+  // 理由の記載を必須にする
+  const invalid = list.filter((entry) => !entry.reason || !entry.reason.trim())
+  if (invalid.length > 0) {
+    console.error('spec-coverage-skip.json に reason が空のエントリがあります:')
+    for (const entry of invalid) console.error(`  - ${entry.specFile}: ${entry.item}`)
+    process.exit(1)
+  }
+
+  return list
 }
 
 function findSkipEntry(skipList, relSpecPath, item) {
@@ -175,11 +227,19 @@ function main() {
   const out = []
   const summaryRows = []
   let hasMissing = false
+  let hasDuplicate = false
   const danglingRefs = []
+  const duplicateSections = []
 
   for (const specFile of specFiles) {
     const relSpecPath = path.relative(SPECS_DIR, specFile).replace(/\\/g, '/')
     const items = extractSpecItems(specFile)
+
+    const duplicates = findDuplicateNormalizedItems(items)
+    if (duplicates.length > 0) {
+      hasDuplicate = true
+      duplicateSections.push({ relSpecPath, duplicates })
+    }
 
     const refsForThisFile = []
     for (const ref of allRefs) {
@@ -199,7 +259,7 @@ function main() {
     for (const item of items) {
       const label = toCellText(item.label)
       const detail = toCellText(item.detail) || '(本文なし)'
-      const matched = refsForThisFile.filter((r) => normalize(r.anchor).includes(item.normalized))
+      const matched = refsForThisFile.filter((r) => normalize(r.anchor) === item.normalized)
 
       if (matched.length > 0) {
         okCount++
@@ -229,7 +289,7 @@ function main() {
     out.push(...fileOut)
 
     for (const ref of refsForThisFile) {
-      const anyMatch = items.some((item) => normalize(ref.anchor).includes(item.normalized))
+      const anyMatch = items.some((item) => normalize(ref.anchor) === item.normalized)
       if (!anyMatch) danglingRefs.push({ ...ref, specFile: relSpecPath })
     }
   }
@@ -242,6 +302,18 @@ function main() {
   ]
 
   const sections = [...summary, ...out]
+
+  if (duplicateSections.length > 0) {
+    sections.push('\n## ⚠️ キーが重複している仕様項目\n')
+    sections.push(
+      '同じ見出し名+番号の組み合わせが複数存在すると、どちらのテストがどちらの項目に対応するか機械的に判別できません。見出し名か番号を修正してください。'
+    )
+    for (const { relSpecPath, duplicates } of duplicateSections) {
+      for (const [key, labels] of duplicates) {
+        sections.push(`- specs/${relSpecPath} (key: ${key}): ${labels.join(' / ')}`)
+      }
+    }
+  }
 
   if (danglingRefs.length > 0) {
     sections.push('\n## ⚠️ 見出しに一致しない仕様コメント\n')
@@ -259,7 +331,7 @@ function main() {
   fs.writeFileSync(REPORT_PATH, report, 'utf8')
   console.log(report)
   console.log(`レポートを書き出しました: ${path.relative(ROOT, REPORT_PATH)}`)
-  if (hasMissing) process.exitCode = 1
+  if (hasMissing || hasDuplicate) process.exitCode = 1
 }
 
 main()

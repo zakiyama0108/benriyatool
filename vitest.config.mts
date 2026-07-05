@@ -10,5 +10,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: ['app/**/*.{ts,tsx}'],
+      // page.tsx/layout.tsxはNext.jsのルーティング用ファイルでビルド確認が中心のため、
+      // types.tsは型定義のみで実行コードを持たないため対象外にする
+      exclude: ['app/**/page.tsx', 'app/**/layout.tsx', 'app/**/types.ts'],
+      // 閾値は設定せず可視化のみ(CIを落とさない)。現状の実測値を見てから必要性を判断する
+    },
   },
 })

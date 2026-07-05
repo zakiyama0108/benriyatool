@@ -14,7 +14,7 @@ const result: CalculatorResult = {
   paymentSchedules: [],
 }
 
-// 仕様: specs/ikukyu/simulator/requirements.md#機能要件（総額・内訳を表示）
+// 仕様: specs/ikukyu/simulator/requirements.md#機能要件-3
 describe('【結果画面】計算結果サマリー表示 - 合計金額と内訳の見出し・凡例を表示する', () => {
   it('合計金額・見出し（summaryLabel）・内訳バーの凡例ラベルがすべて画面に表示されること', () => {
     render(<ResultSummary result={result} />)

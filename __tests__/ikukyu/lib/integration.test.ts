@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { calcResult } from '../../../app/ikukyu/lib/calculator'
 
-// 仕様: specs/ikukyu/simulator/requirements.md#出産手当金（賃金日額の上限）、specs/ikukyu/simulator/requirements.md#育児休業給付金・前期67%（賃金日額の上限）、specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%（賃金日額の上限）
+// 仕様: specs/ikukyu/simulator/requirements.md#出産手当金-4、specs/ikukyu/simulator/requirements.md#育児休業給付金・前期67%-4、specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%-4
 // calcResult は入力からすべての給付金をまとめて計算する結果画面の中核処理
 describe('【ママ・パパ共通】結果画面全体の給付金計算 - 月給が高額な場合に各給付金の上限適用が正しく反映されること', () => {
   it('ママモードで月給50万円のとき、出産手当金は上限未達のまま、育休給付金（前期・後期）は上限到達として計算されること', () => {
@@ -35,7 +35,7 @@ describe('【ママ・パパ共通】結果画面全体の給付金計算 - 月�
   })
 })
 
-// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%（181日目以降〜育休終了）
+// 仕様: specs/ikukyu/simulator/requirements.md#エッジケース・例外処理-1、specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%-2
 describe('【ママ・パパ共通】結果画面全体の給付金計算 - 育休期間が短い場合に後期給付金が発生しないこと', () => {
   it('ママモードで育休期間が14日間しかない場合、上乗せ額（bonusAmount）は14日分にとどまり、後期50%の給付金は発生しないこと', () => {
     // leaveStart = 2026-12-28, leaveEnd = 2027-01-10（14日間）
@@ -67,7 +67,7 @@ describe('【ママ・パパ共通】結果画面全体の給付金計算 - 育�
   })
 })
 
-// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%（181日目以降〜育休終了）
+// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%-2
 describe('【パパ】結果画面全体の給付金計算 - 育休期間が180日を超える場合に後期50%給付金が発生すること', () => {
   it('育休終了予定日が総育休181日目以降になる場合、後期50%の給付金が正しい期間で発生すること', () => {
     // leaveStartDate + 180 = '2027-04-30' が childcare50 の開始日
@@ -85,7 +85,7 @@ describe('【パパ】結果画面全体の給付金計算 - 育休期間が180�
   })
 })
 
-// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定（育休開始日が対象期間を過ぎている場合）
+// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-2、specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-3、specs/ikukyu/papa-birth-date/requirements.md#機能要件-2
 describe('【パパ】結果画面全体の給付金計算 - 育休開始日が出生後8週間の対象期間を過ぎている場合の扱いを確認する', () => {
   it('育休開始日が出生後8週間の対象期間を過ぎている場合、産後パパ育休の給付金は発生せず通常育休給付金のみが育休開始日から計算されること', () => {
     // 出産予定日 = '2026-11-01', 育休開始日 = '2027-01-01'（61日後）

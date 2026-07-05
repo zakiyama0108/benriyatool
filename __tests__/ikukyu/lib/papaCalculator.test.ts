@@ -11,7 +11,7 @@ import {
 //   総育休180日目      = leaveStartDate + 179日 = '2027-04-29'
 //   総育休181日目      = leaveStartDate + 180日 = '2027-04-30'（50%期間の開始日）
 
-// 仕様: specs/ikukyu/simulator/requirements.md#出生時育児休業給付金（出生後8週以内・最大28日、賃金日額の67%）
+// 仕様: specs/ikukyu/simulator/requirements.md#出生時育児休業給付金-2、specs/ikukyu/simulator/requirements.md#出生時育児休業給付金-3、specs/ikukyu/simulator/requirements.md#出生時育児休業給付金-4
 // 出生時育休の日額 = floor(min(賃金日額, 16110) × 67/100)
 // bonusAmount     = floor(min(賃金日額, 16110) × 13/100) × 取得日数
 // 賃金日額        = floor(monthlySalary / 30)
@@ -54,7 +54,7 @@ describe('【パパ】出生時育児休業給付金（産後パパ育休）の�
   })
 })
 
-// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定（通常育休前期67%の開始日）
+// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-4
 // 通常育休67%日額 = floor(min(賃金日額, 16110) × 67/100)
 // 対象期間: 産後パパ育休終了後〜総育休180日目
 // 総育休180日目を超える場合は180日目で打ち切る
@@ -125,7 +125,7 @@ describe('【パパ】育児休業給付金（前期67%）の金額計算 - 産�
   })
 })
 
-// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%（181日目以降〜育休終了）
+// 仕様: specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%-2、specs/ikukyu/simulator/requirements.md#育児休業給付金・後期50%-3
 // 通常育休50%日額 = floor(min(賃金日額, 16110) × 50/100)
 // 対象期間: 総育休181日目〜育休終了予定日
 // 総育休が180日以内の場合は null を返す
