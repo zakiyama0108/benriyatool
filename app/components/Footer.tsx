@@ -11,7 +11,7 @@ export default function Footer() {
           プライバシーポリシー
         </Link>
       </div>
-      <p>© 2025 ikukyu</p>
+      <p>© 2026 べんりやつーる</p>
     </footer>
   )
 }

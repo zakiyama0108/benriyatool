@@ -20,13 +20,13 @@ const SITE_URL = "https://benriyatool.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "ikukyu | 育休・出産のお金ツール",
-  description: "育休・出産に関するお金のことをサポートするツールを提供しています。",
+  title: "べんりやつーる | 暮らしのお金・手続きに役立つ無料ツール集",
+  description: "暮らしのお金や手続きに関する無料ツールを提供しています。育休給付金シミュレーターをはじめ、今後も便利なツールを追加していきます。",
   openGraph: {
-    title: "ikukyu | 育休・出産のお金ツール",
-    description: "育休・出産に関するお金のことをサポートするツールを提供しています。",
+    title: "べんりやつーる | 暮らしのお金・手続きに役立つ無料ツール集",
+    description: "暮らしのお金や手続きに関する無料ツールを提供しています。育休給付金シミュレーターをはじめ、今後も便利なツールを追加していきます。",
     url: SITE_URL,
-    siteName: "ikukyu",
+    siteName: "べんりやつーる",
     locale: "ja_JP",
     type: "website",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
