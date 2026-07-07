@@ -3,6 +3,8 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: '利用規約・プライバシーポリシー | 育休給付金シミュレーター',
+  description:
+    '育休給付金シミュレーター（ikukyu）の利用規約、プライバシーポリシー、免責事項をご確認ください。',
 }
 
 export default function LegalPage() {

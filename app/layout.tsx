@@ -16,9 +16,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://benriyatool.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "ikukyu | 育休・出産のお金ツール",
   description: "育休・出産に関するお金のことをサポートするツールを提供しています。",
+  openGraph: {
+    title: "ikukyu | 育休・出産のお金ツール",
+    description: "育休・出産に関するお金のことをサポートするツールを提供しています。",
+    url: SITE_URL,
+    siteName: "ikukyu",
+    locale: "ja_JP",
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
 };
 
 export default function RootLayout({
