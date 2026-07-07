@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'ikukyu | 育休・出産のお金ツール',
-  description: '育休・出産に関するお金のことをサポートするツールを提供しています。',
+  title: 'べんりやつーる | 暮らしのお金・手続きに役立つ無料ツール集',
+  description: '暮らしのお金や手続きに関する無料ツールを提供しています。育休給付金シミュレーターをはじめ、今後も便利なツールを追加していきます。',
 }
 
 export default function HubPage() {
@@ -11,8 +11,8 @@ export default function HubPage() {
     <div className="mx-auto max-w-md px-4 py-12 space-y-10">
       {/* ヘッダー */}
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight">ikukyu</h1>
-        <p className="text-sm text-gray-500">育休・出産のお金をサポートするツール</p>
+        <h1 className="text-4xl font-bold tracking-tight">べんりやつーる</h1>
+        <p className="text-sm text-gray-500">暮らしのお金・手続きに役立つ無料ツール集</p>
       </div>
 
       {/* ツールカード一覧 */}
