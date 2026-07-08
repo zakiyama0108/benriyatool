@@ -5,7 +5,7 @@
 - ビルド: `npm run build`
 
 # 開発ワークフロー
-1. **仕様を書く**: `specs/<アプリ名>/<機能名>/` に requirements.md → design.md → tasks.md の順で作成する(各ステップの書き方は @docs/spec-workflow.md)。requirements.mdの機能要件・ビジネスルール・エッジケースなど、個別にテストを対応させたい箇条書きには見出し内で連番の`[n]`を振る(例: `- [1] 対象: ママのみ`)。**3点セットを作成したら一旦PRを出し、ユーザーの確認・承認を得るまでコード(テストを含む)は書き始めない**。この段階では`npm run check:spec-coverage`が該当項目❌になりCIが失敗するが、仕様レビューが先行するPRとして意図的な状態なのでそのままでよい
+1. **仕様を書く**: `specs/<アプリ名>/<機能名>/` に requirements.md → design.md → tasks.md の順で作成する(各ステップの書き方は @docs/spec-workflow.md)。requirements.mdの機能要件・ビジネスルール・エッジケースなど、個別にテストを対応させたい箇条書きには見出し内で連番の`[n]`を振る(例: `- [1] 対象: ママのみ`)。**3点セットを作成したら一旦PRを出し、ユーザーの確認・承認を得るまでコード(テストを含む)は書き始めない**。この段階ではrequirements.mdに `> ステータス: 仕様確認中(未実装)` を入れ、`check:spec-coverage`のチェック対象から外す(書き方は @docs/spec-workflow.md)
 2. **TDDで実装する**: 仕様の承認を得てから着手する。`feature/<機能名>` ブランチを切り、🔴Red(失敗するテスト)→🟢Green(最小実装)→🔵Refactorのサイクルを機能ごとに完結させてから次に進む。テストの`describe`/`it`名とコメント、仕様コメント(`// 仕様: ...#見出し-n`)の書き方は @docs/test-comment-guideline.md に従う
 3. **PRを出す**: `npm run check:spec-coverage` でrequirements.md/design.mdの各仕様項目にテストが紐づいているかを確認する(CIでも同じチェックが走り、❌が残っていると失敗する)。テストが不要な項目は`scripts/spec-coverage-skip.json`に理由を添えて登録する。`gh pr checks <PR番号>` でCIが通っていることを確認してから作成し、GitHub UI上でdiffを確認・承認してmainにマージする
 

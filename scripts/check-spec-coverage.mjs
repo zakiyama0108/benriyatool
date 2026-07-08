@@ -218,6 +218,19 @@ function findSkipEntry(skipList, relSpecPath, item) {
   )
 }
 
+// requirements.mdの先頭付近に `> ステータス: 仕様確認中` があるフォルダは、
+// 仕様レビュー中でまだ実装に着手していないことを示す。実装(テスト)が存在しない
+// のは正しい状態なので、このフォルダのrequirements.md/design.mdはチェック対象・
+// CI失敗条件のどちらからも除外する(scripts/spec-coverage-skip.jsonの「テスト不要」
+// という恒久的な理由とは性質が違うため、別の仕組みとして扱う)。
+const WIP_MARKER = /^>\s*ステータス:\s*仕様確認中/m
+
+function isWipFeature(specFile) {
+  const reqPath = path.join(path.dirname(specFile), 'requirements.md')
+  if (!fs.existsSync(reqPath)) return false
+  return WIP_MARKER.test(fs.readFileSync(reqPath, 'utf8'))
+}
+
 function main() {
   const specFiles = walk(SPECS_DIR).filter((f) => f.endsWith('requirements.md') || f.endsWith('design.md'))
   const testFiles = walk(TESTS_DIR).filter((f) => /\.test\.(ts|tsx)$/.test(f))
@@ -233,6 +246,14 @@ function main() {
 
   for (const specFile of specFiles) {
     const relSpecPath = path.relative(SPECS_DIR, specFile).replace(/\\/g, '/')
+
+    if (isWipFeature(specFile)) {
+      summaryRows.push(`| specs/${relSpecPath} 🚧仕様確認中 | - | - | - |`)
+      out.push(`\n## specs/${relSpecPath}\n`)
+      out.push('🚧 仕様確認中(未実装)のため、チェック対象から除外しています。実装(テスト)に着手したらrequirements.mdの`> ステータス: 仕様確認中`行を削除してください。')
+      continue
+    }
+
     const items = extractSpecItems(specFile)
 
     const duplicates = findDuplicateNormalizedItems(items)
