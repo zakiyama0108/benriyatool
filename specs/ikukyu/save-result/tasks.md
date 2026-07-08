@@ -7,7 +7,7 @@
 - [ ] Task 1: 保存処理の実装
   - [ ] `app/ikukyu/lib/saveResult.ts` を新規作成
   - [ ] 給付金明細(benefits)の日数を合計し、合計取得日数を算出する関数
-  - [ ] 入力内容・計算結果・合計取得日数を`ikukyu_results`テーブルへ`insert`する関数(`app/lib/supabaseClient.ts`の共通クライアントを使用)
+  - [ ] 入力内容・計算結果の合計額・合計取得日数を`ikukyu_results`テーブルへ`insert`する関数(`app/lib/supabaseClient.ts`の共通クライアントを使用)
   - [ ] 保存に失敗しても例外を外へ投げない(呼び出し元をブロックしない)
 
 - [ ] Task 2: 画面への配線
