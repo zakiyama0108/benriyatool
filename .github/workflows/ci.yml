@@ -35,4 +35,8 @@ jobs:
 
       # next.config.ts・tsconfig.json(strict: true)に基づくビルド。型エラーもここで検出される。
       # ビルドが通ることまで確認し、mainマージ後のデプロイ失敗を未然に防ぐ
+      # NEXT_PUBLIC_*は静的エクスポート時にビルド成果物へ埋め込まれる値のため、ビルドステップでのみ渡す
       - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}

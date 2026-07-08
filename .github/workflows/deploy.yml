@@ -22,7 +22,11 @@ jobs:
       - run: npm ci
 
       # next.config.ts・tsconfig.json(strict: true)に基づくビルド。ci.ymlで通過済みだがデプロイ用に再実行する。
+      # NEXT_PUBLIC_*は静的エクスポート時にビルド成果物へ埋め込まれる値のため、ビルドステップでのみ渡す
       - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       # wrangler.tomlの設定(workers_dev: false等)に従い、Cloudflare Workersへ静的配信としてデプロイ
       - name: Deploy to Cloudflare Workers
