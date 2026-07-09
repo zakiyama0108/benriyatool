@@ -16,6 +16,6 @@
   - [x] 🔴 insertが例外を投げても`saveResult`はエラーを外に投げず正常終了することを確認するテストを書く
   - [x] 🟢 try/catchで保存失敗を握りつぶす実装にする
 
-- [ ] Task 4: 画面への配線
-  - [ ] `app/ikukyu/page.tsx`の`handleSubmit`から、計算結果の表示をブロックしない形で`saveResult`を呼び出す
-  - [ ] page.tsx自体に既存のテストはなく、観測可能なUIの挙動は変わらないため、新規テストは追加しない(Task1〜3で`saveResult`自体はテスト済みのため)
+- [x] Task 4: 画面への配線
+  - [x] `app/ikukyu/page.tsx`の`handleSubmit`から、計算結果の表示をブロックしない形で`saveResult`を呼び出す
+  - [x] page.tsx自体に既存のテストはなく、観測可能なUIの挙動は変わらないため、新規テストは追加しない(Task1〜3で`saveResult`自体はテスト済みのため)
