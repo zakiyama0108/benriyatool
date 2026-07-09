@@ -53,5 +53,6 @@
 
 ## スコープ外
 - ログイン・アカウント管理
-- データ保存
 - 実際の給付金申請手続き
+
+計算結果のDB保存は `specs/ikukyu/save-result/requirements.md` で扱う。
