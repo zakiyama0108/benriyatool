@@ -98,3 +98,12 @@ describe('【共通】計算結果の保存 - 入力内容と計算結果の合�
     })
   })
 })
+
+// 仕様: specs/ikukyu/save-result/requirements.md#エッジケース・例外処理-1
+describe('【共通】保存失敗時の扱い - DBへの保存に失敗しても計算結果表示には影響させない', () => {
+  it('Supabaseへの保存が例外を投げても、saveResultはエラーを外に投げず正常終了すること', async () => {
+    insertMock.mockRejectedValue(new Error('network error'))
+
+    await expect(saveResult(mamaInput, result)).resolves.toBeUndefined()
+  })
+})
