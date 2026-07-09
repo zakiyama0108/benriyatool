@@ -30,49 +30,14 @@
     "reason": "今回のスコープ外(将来フェーズで対応)の宣言であり、実装もテストも存在しないのが正しい状態のため"
   },
   {
-    "specFile": "ikukyu/papa-birth-date/design.md",
-    "item": "処理フロー",
-    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)。対応するビジネスルールはrequirements.md側でテスト済み"
-  },
-  {
-    "specFile": "ikukyu/papa-birth-date/design.md",
-    "item": "産後パパ育休の取得可能日数を決める処理",
-    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#産後パパ育休の取得可能日数の決定-1〜4でテスト済み"
-  },
-  {
-    "specFile": "ikukyu/papa-birth-date/requirements.md",
-    "item": "概要",
-    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
-  },
-  {
-    "specFile": "ikukyu/papa-birth-date/requirements.md",
-    "item": "ユーザーストーリー",
-    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
-  },
-  {
-    "specFile": "ikukyu/papa-birth-date/requirements.md",
-    "item": "ビジネスルール",
-    "reason": "見出し直下の法令根拠の説明文であり、箇条書き項目([1]〜[4])側で個別にテスト済みのため"
-  },
-  {
-    "specFile": "ikukyu/papa-birth-date/requirements.md",
-    "item": "エッジケース・例外処理 [1]",
-    "reason": "ビジネスルール側の同一内容(産後パパ育休の取得可能日数の決定-2)で既にテスト済みのため(同じルールをエッジケースとして重複記載している箇所)"
-  },
-  {
-    "specFile": "ikukyu/papa-birth-date/requirements.md",
-    "item": "エッジケース・例外処理 [2]",
-    "reason": "ビジネスルール側の同一内容(産後パパ育休の取得可能日数の決定-3)で既にテスト済みのため(同じルールをエッジケースとして重複記載している箇所)"
-  },
-  {
-    "specFile": "ikukyu/papa-birth-date/requirements.md",
-    "item": "スコープ外",
-    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
-  },
-  {
     "specFile": "ikukyu/simulator/design.md",
     "item": "処理フロー",
     "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "ikukyu/simulator/design.md",
+    "item": "産後パパ育休の取得可能日数を決める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#産後パパ育休の取得可能日数の決定-1〜4でテスト済み"
   },
   {
     "specFile": "ikukyu/simulator/design.md",

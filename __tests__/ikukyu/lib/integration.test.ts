@@ -85,7 +85,7 @@ describe('【パパ】結果画面全体の給付金計算 - 育休期間が180�
   })
 })
 
-// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-2、specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-3、specs/ikukyu/papa-birth-date/requirements.md#機能要件-2
+// 仕様: specs/ikukyu/simulator/requirements.md#産後パパ育休の取得可能日数の決定-2、specs/ikukyu/simulator/requirements.md#産後パパ育休の取得可能日数の決定-3
 describe('【パパ】結果画面全体の給付金計算 - 育休開始日が出生後8週間の対象期間を過ぎている場合の扱いを確認する', () => {
   it('育休開始日が出生後8週間の対象期間を過ぎている場合、産後パパ育休の給付金は発生せず通常育休給付金のみが育休開始日から計算されること', () => {
     // 出産予定日 = '2026-11-01', 育休開始日 = '2027-01-01'（61日後）

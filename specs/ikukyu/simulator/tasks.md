@@ -13,3 +13,8 @@
 - [x] 6. コンポーネント実装（BenefitCard・PaymentSchedule 等）
 - [x] 7. ページ組み込み（app/ikukyu/page.tsx）
 - [x] 8. 総合確認・バグ修正
+- [x] 9. パパモードへの出産予定日入力追加（産後パパ育休の日数計算の誤りを修正、PR #14）
+  - [x] `CalculatorInput` に `leaveStartDate?: string` を追加
+  - [x] `calcPapaChildcare67`/`calcPapaChildcare50`: dueDate起点からleaveStartDate + paternityDays起点の計算に変更
+  - [x] `InputForm`（パパモード）: 出産予定日 + 育休開始日 + 育休終了予定日の3入力に変更
+  - [x] 新規テスト: 育休開始日が8週間超 → paternityDays=0、育休開始日が8週間内の終盤 → paternityDays<28

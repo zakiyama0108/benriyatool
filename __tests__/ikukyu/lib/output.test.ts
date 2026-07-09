@@ -13,7 +13,7 @@ describe('【ママ・パパ共通】結果画面の合計金額見出し生成 
   })
 })
 
-// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-1、specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-4
+// 仕様: specs/ikukyu/simulator/requirements.md#産後パパ育休の取得可能日数の決定-1、specs/ikukyu/simulator/requirements.md#産後パパ育休の取得可能日数の決定-4
 // BreakdownBar の期待値:
 //   mama 出産予定日='2026-11-01', 育休終了予定日='2027-10-31':
 //     産休:     getMaternityStartDate('2026-11-01') ~ getPostnatalEndDate('2026-11-01') = 98日
