@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { CalculatorInput, CalculatorResult } from './lib/types'
 import { calcResult } from './lib/calculator'
+import { saveResult } from './lib/saveResult'
 import ModeToggle from './components/ModeToggle'
 import InputForm from './components/InputForm'
 import ResultSummary from './components/ResultSummary'
@@ -22,7 +23,10 @@ export default function Page() {
   }
 
   function handleSubmit(input: CalculatorInput) {
-    setResult(calcResult(input))
+    const calculated = calcResult(input)
+    setResult(calculated)
+    // 画面表示をブロックしないよう、保存は結果表示後にバックグラウンドで行う
+    void saveResult(input, calculated)
   }
 
   return (
