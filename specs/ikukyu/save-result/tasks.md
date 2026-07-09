@@ -1,19 +1,21 @@
 # タスク分解: 計算結果の保存
 
-> TDDで進める。各タスクごとに 🔴 Red → 🟢 Green → 🔵 Refactor のサイクルを完結させる。
+> TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 ## ステータス: 未着手(仕様確認待ち)
 
-- [ ] Task 1: 保存処理の実装
-  - [ ] `app/ikukyu/lib/saveResult.ts` を新規作成
-  - [ ] 給付金明細(benefits)の日数を合計し、合計取得日数を算出する関数
-  - [ ] 入力内容・計算結果の合計額・合計取得日数を`ikukyu_results`テーブルへ`insert`する関数(`app/lib/supabaseClient.ts`の共通クライアントを使用)
-  - [ ] 保存に失敗しても例外を外へ投げない(呼び出し元をブロックしない)
+- [ ] Task 1: 合計取得日数の算出(仕様: requirements.md#機能要件-2)
+  - [ ] 🔴 給付金明細(benefits)の日数を合計した値が返ることを確認するテストを書く
+  - [ ] 🟢 `app/ikukyu/lib/saveResult.ts`に算出関数を実装する
 
-- [ ] Task 2: 画面への配線
-  - [ ] `app/ikukyu/page.tsx`の`handleSubmit`から、計算結果の表示処理をブロックしない形で保存処理を呼び出す
+- [ ] Task 2: ikukyu_resultsテーブルへの保存(仕様: requirements.md#機能要件-1)
+  - [ ] 🔴 Supabaseクライアントをモックし、入力内容・合計額・合計取得日数が正しいカラム名でinsertされることを確認するテストを書く(ママ/パパ両モード)
+  - [ ] 🟢 `saveResult`関数を実装し、`app/lib/supabaseClient.ts`の共通クライアントでinsertする
 
-- [ ] Task 3: テスト
-  - [ ] Supabaseクライアントをモックし、`ikukyu_results`テーブルへ正しいカラム名・値でinsertされることを確認するテスト(ママ/パパ両モード)
-  - [ ] 合計取得日数が給付金明細の日数合計と一致することを確認するテスト
-  - [ ] 保存が失敗(例外)しても、呼び出し元にエラーが伝播しないことを確認するテスト
+- [ ] Task 3: 保存失敗時にエラーを伝播させない(仕様: requirements.md#エッジケース・例外処理-1)
+  - [ ] 🔴 insertが例外を投げても`saveResult`はエラーを外に投げず正常終了することを確認するテストを書く
+  - [ ] 🟢 try/catchで保存失敗を握りつぶす実装にする
+
+- [ ] Task 4: 画面への配線
+  - [ ] `app/ikukyu/page.tsx`の`handleSubmit`から、計算結果の表示をブロックしない形で`saveResult`を呼び出す
+  - [ ] page.tsx自体に既存のテストはなく、観測可能なUIの挙動は変わらないため、新規テストは追加しない(Task1〜3で`saveResult`自体はテスト済みのため)
