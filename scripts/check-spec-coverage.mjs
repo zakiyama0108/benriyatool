@@ -231,6 +231,19 @@ function isWipFeature(specFile) {
   return WIP_MARKER.test(fs.readFileSync(reqPath, 'utf8'))
 }
 
+// requirements.md/design.mdの先頭行`# 要件定義: <タイトル>` / `# 設計: <タイトル>`から
+// 短いタイトルを取り出す。レポートの見出みがファイルパスだけだと分かりにくいため併記する
+function extractTitle(specFile) {
+  const firstLine = fs.readFileSync(specFile, 'utf8').split('\n', 1)[0]
+  const match = firstLine.match(/^#\s+(?:要件定義|設計):\s*(.+)$/)
+  return match ? match[1].trim() : null
+}
+
+function specHeading(relSpecPath, specFile) {
+  const title = extractTitle(specFile)
+  return title ? `${title}(specs/${relSpecPath})` : `specs/${relSpecPath}`
+}
+
 function main() {
   const specFiles = walk(SPECS_DIR).filter((f) => f.endsWith('requirements.md') || f.endsWith('design.md'))
   const testFiles = walk(TESTS_DIR).filter((f) => /\.test\.(ts|tsx)$/.test(f))
@@ -248,8 +261,8 @@ function main() {
     const relSpecPath = path.relative(SPECS_DIR, specFile).replace(/\\/g, '/')
 
     if (isWipFeature(specFile)) {
-      summaryRows.push(`| specs/${relSpecPath} 🚧仕様確認中 | - | - | - |`)
-      out.push(`\n## specs/${relSpecPath}\n`)
+      summaryRows.push(`| ${specHeading(relSpecPath, specFile)} 🚧仕様確認中 | - | - | - |`)
+      out.push(`\n## ${specHeading(relSpecPath, specFile)}\n`)
       out.push('🚧 仕様確認中(未実装)のため、チェック対象から除外しています。実装(テスト)に着手したらrequirements.mdの`> ステータス: 仕様確認中`行を削除してください。')
       continue
     }
@@ -270,8 +283,8 @@ function main() {
     }
 
     const fileOut = []
-    fileOut.push('| 仕様概要 | 仕様詳細 | 対応するdescribe | 対応するit | 状態 |')
-    fileOut.push('|---|---|---|---|---|')
+    fileOut.push('| 仕様概要 | 仕様詳細 | 対応するdescribe | 対応するit | 状態 | Skip理由 |')
+    fileOut.push('|---|---|---|---|---|---|')
 
     let okCount = 0
     let ngCount = 0
@@ -288,7 +301,7 @@ function main() {
           const describeCell = toCellText(ref.describeText ?? '(describe不明)')
           const itCell =
             ref.itTexts.length > 0 ? toCellText(ref.itTexts.map((t) => `- ${t}`).join('\n')) : '(itなし)'
-          fileOut.push(`| ${label} | ${detail} | ${describeCell} | ${itCell} | ✅ |`)
+          fileOut.push(`| ${label} | ${detail} | ${describeCell} | ${itCell} | ✅ | |`)
         }
         continue
       }
@@ -296,17 +309,17 @@ function main() {
       const skipEntry = findSkipEntry(skipList, relSpecPath, item)
       if (skipEntry) {
         skipCount++
-        fileOut.push(`| ${label} | ${detail} | (スキップ対象) | (スキップ対象) | ⏭ スキップ: ${toCellText(skipEntry.reason)} |`)
+        fileOut.push(`| ${label} | ${detail} | (スキップ対象) | (スキップ対象) | ⏭ | ${toCellText(skipEntry.reason)} |`)
         continue
       }
 
       hasMissing = true
       ngCount++
-      fileOut.push(`| ${label} | ${detail} | (なし) | (なし) | ❌ 未対応 |`)
+      fileOut.push(`| ${label} | ${detail} | (なし) | (なし) | ❌ 未対応 | |`)
     }
 
-    summaryRows.push(`| specs/${relSpecPath} | ${okCount} | ${ngCount} | ${skipCount} |`)
-    out.push(`\n## specs/${relSpecPath}\n`)
+    summaryRows.push(`| ${specHeading(relSpecPath, specFile)} | ${okCount} | ${ngCount} | ${skipCount} |`)
+    out.push(`\n## ${specHeading(relSpecPath, specFile)}\n`)
     out.push(...fileOut)
 
     for (const ref of refsForThisFile) {
