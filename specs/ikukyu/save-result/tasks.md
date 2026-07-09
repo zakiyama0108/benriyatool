@@ -8,9 +8,9 @@
   - [x] 🔴 給付金明細(benefits)の日数を合計した値が返ることを確認するテストを書く
   - [x] 🟢 `app/ikukyu/lib/saveResult.ts`に算出関数を実装する
 
-- [ ] Task 2: ikukyu_resultsテーブルへの保存(仕様: requirements.md#機能要件-1)
-  - [ ] 🔴 Supabaseクライアントをモックし、入力内容・合計額・合計取得日数が正しいカラム名でinsertされることを確認するテストを書く(ママ/パパ両モード)
-  - [ ] 🟢 `saveResult`関数を実装し、`app/lib/supabaseClient.ts`の共通クライアントでinsertする
+- [x] Task 2: ikukyu_resultsテーブルへの保存(仕様: requirements.md#機能要件-1)
+  - [x] 🔴 Supabaseクライアントをモックし、入力内容・合計額・合計取得日数が正しいカラム名でinsertされることを確認するテストを書く(ママ/パパ両モード)
+  - [x] 🟢 `saveResult`関数を実装し、`app/lib/supabaseClient.ts`の共通クライアントでinsertする
 
 - [ ] Task 3: 保存失敗時にエラーを伝播させない(仕様: requirements.md#エッジケース・例外処理-1)
   - [ ] 🔴 insertが例外を投げても`saveResult`はエラーを外に投げず正常終了することを確認するテストを書く
