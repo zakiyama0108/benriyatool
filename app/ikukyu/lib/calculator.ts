@@ -32,7 +32,7 @@ type PapaLeaveInput = {
 }
 
 // 対象期間の日数を返す（startDate・endDate の両端を含む）
-function countDays(startDate: string, endDate: string): number {
+export function countDays(startDate: string, endDate: string): number {
   const diff = parseDate(endDate).getTime() - parseDate(startDate).getTime()
   return Math.round(diff / (86400 * 1000)) + 1
 }
