@@ -54,7 +54,7 @@ describe('【パパ】出生時育児休業給付金（産後パパ育休）の�
   })
 })
 
-// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-4
+// 仕様: specs/ikukyu/simulator/requirements.md#産後パパ育休の取得可能日数の決定-4
 // 通常育休67%日額 = floor(min(賃金日額, 16110) × 67/100)
 // 対象期間: 産後パパ育休終了後〜総育休180日目
 // 総育休180日目を超える場合は180日目で打ち切る

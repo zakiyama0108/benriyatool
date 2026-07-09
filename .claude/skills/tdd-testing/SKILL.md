@@ -25,7 +25,7 @@ description: TDDでテスト・実装を書くとき、テストのdescribe/it�
 `describe`ブロックの直前に1行、対応するspecsの項目を参照するコメントを入れる。requirements.mdの見出し内で箇条書きに`[n]`が振られている場合は`見出し-n`の形式で、振られていない見出し(概要・スコープ外など)は見出し名だけを参照先にする。1つのテストが複数の箇条書きに対応する場合は`、`区切りでフルパスを繰り返す(`[n]`の付け方は[spec-workflow](../spec-workflow/SKILL.md)参照)。
 
 ```ts
-// 仕様: specs/ikukyu/papa-birth-date/requirements.md#産後パパ育休の取得可能日数の決定-2
+// 仕様: specs/ikukyu/simulator/requirements.md#産後パパ育休の取得可能日数の決定-2
 describe('...', () => {
 ```
 

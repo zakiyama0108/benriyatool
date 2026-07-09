@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import InputForm from '../../../app/ikukyu/components/InputForm'
 
-// 仕様: specs/ikukyu/simulator/requirements.md#機能要件-2、specs/ikukyu/papa-birth-date/requirements.md#機能要件-1
+// 仕様: specs/ikukyu/simulator/requirements.md#機能要件-2
 describe('【入力画面】計算に必要な項目の入力フォーム - 入力内容を送信すると計算処理に渡される', () => {
   it('ママモードで月給・出産予定日・育休終了予定日を入力して送信すると、入力内容がそのまま計算処理に渡されること', () => {
     const onSubmit = vi.fn()
