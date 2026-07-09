@@ -73,6 +73,7 @@ description: 仕様書(requirements.md/design.md/tasks.md)を新規作成・更�
 
 - **Step3 tasks.md(タスク分解)**
   設計をもとに実装可能な最小単位に分解する。対象の関数名・ファイル名などの実装詳細はここに書いてよい。タスクを細かく分けるほどAIの生成精度が上がりレビューもしやすくなる。
+  タスクの並び順・粒度は、各タスクを🔴Red(失敗するテストを書く)→🟢Green(最小実装)→🔵Refactorの順で完結できる単位にする(TDDサイクルの進め方・詳細は[tdd-testing](../tdd-testing/SKILL.md)を参照)。冒頭に`> TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。`という一文を入れる。
 
   - 変更頻度が低く設計が単純な機能は requirements.md のみで可(例: legal)
 
