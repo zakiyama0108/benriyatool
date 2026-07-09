@@ -12,9 +12,9 @@
   - [x] 🔴 Supabaseクライアントをモックし、入力内容・合計額・合計取得日数が正しいカラム名でinsertされることを確認するテストを書く(ママ/パパ両モード)
   - [x] 🟢 `saveResult`関数を実装し、`app/lib/supabaseClient.ts`の共通クライアントでinsertする
 
-- [ ] Task 3: 保存失敗時にエラーを伝播させない(仕様: requirements.md#エッジケース・例外処理-1)
-  - [ ] 🔴 insertが例外を投げても`saveResult`はエラーを外に投げず正常終了することを確認するテストを書く
-  - [ ] 🟢 try/catchで保存失敗を握りつぶす実装にする
+- [x] Task 3: 保存失敗時にエラーを伝播させない(仕様: requirements.md#エッジケース・例外処理-1)
+  - [x] 🔴 insertが例外を投げても`saveResult`はエラーを外に投げず正常終了することを確認するテストを書く
+  - [x] 🟢 try/catchで保存失敗を握りつぶす実装にする
 
 - [ ] Task 4: 画面への配線
   - [ ] `app/ikukyu/page.tsx`の`handleSubmit`から、計算結果の表示をブロックしない形で`saveResult`を呼び出す

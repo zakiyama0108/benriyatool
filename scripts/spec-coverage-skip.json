@@ -163,5 +163,20 @@
     "specFile": "ikukyu/save-result/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "合計取得日数を算出する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#機能要件-2でテスト済み"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "計算結果を保存する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#機能要件-1、エッジケース・例外処理-1でテスト済み"
   }
 ]
