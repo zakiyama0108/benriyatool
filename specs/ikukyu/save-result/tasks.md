@@ -4,9 +4,9 @@
 
 ## ステータス: 未着手(仕様確認待ち)
 
-- [ ] Task 1: 合計取得日数の算出(仕様: requirements.md#機能要件-2)
-  - [ ] 🔴 給付金明細(benefits)の日数を合計した値が返ることを確認するテストを書く
-  - [ ] 🟢 `app/ikukyu/lib/saveResult.ts`に算出関数を実装する
+- [x] Task 1: 合計取得日数の算出(仕様: requirements.md#機能要件-2)
+  - [x] 🔴 給付金明細(benefits)の日数を合計した値が返ることを確認するテストを書く
+  - [x] 🟢 `app/ikukyu/lib/saveResult.ts`に算出関数を実装する
 
 - [ ] Task 2: ikukyu_resultsテーブルへの保存(仕様: requirements.md#機能要件-1)
   - [ ] 🔴 Supabaseクライアントをモックし、入力内容・合計額・合計取得日数が正しいカラム名でinsertされることを確認するテストを書く(ママ/パパ両モード)
