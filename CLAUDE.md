@@ -22,7 +22,7 @@ __tests__/<アプリ名>/{components,lib}/
 - シンプルさを優先し、過剰な抽象化はしない(仕様変更が頻繁なため)
 
 # 開発ワークフロー
-機能開発は以下の順で進める。各ステップの詳細手順は `.claude/skills/` 内の同名Skillを参照し、各ステップの完了時には次のステップを案内する。
+機能開発は以下の順で進める。各ステップの詳細手順は `.claude/skills/` 内の同名Skillを参照し、各ステップの完了時には次のステップを案内する(全Skillのまとめ表・遷移図は [.claude/skills/README.md](.claude/skills/README.md))。
 
 ```
 /consult(任意: 方針の壁打ち)
