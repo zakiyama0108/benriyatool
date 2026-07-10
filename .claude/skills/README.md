@@ -36,11 +36,11 @@
 | [architecture-workflow](architecture-workflow/SKILL.md) | `specs/<アプリ名>/architecture.md`(アプリ全体像)の作成・更新 | /requirement、/design、/spec-audit |
 | [claude-settings](claude-settings/SKILL.md) | `.claude/settings.json`のpermissions.allow変更時のpermissions.md同期 | /implementation-review |
 
-## 遷移図
+## 遷移図1: 新機能開発の流れ
 
 ```mermaid
 flowchart TD
-    consult["/consult<br>方針の壁打ち(任意)"]
+    consult["/consult<br>方針の壁打ち"]
     requirement["/requirement<br>要件定義"]
     design["/design<br>設計・タスク分解"]
     specreview["/spec-review<br>仕様レビュー"]
@@ -49,46 +49,55 @@ flowchart TD
     implreview["/implementation-review<br>コードレビュー"]
     primpl["/pr<br>実装PR"]
     release["/release-check<br>デプロイ・本番確認・ブランチ掃除"]
-    resolve["/resolve<br>指摘修正"]
-    fix["/fix<br>バグ修正・既存改修"]
+    resolve1["/resolve<br>指摘修正"]
+    resolve2["/resolve<br>指摘修正"]
 
-    consult -->|新機能| requirement
-    consult -->|既存修正| fix
-
+    consult -.任意.-> requirement
     requirement --> design
     design --> specreview
-    specreview -->|指摘あり| resolve
-    resolve -->|修正後、指摘元を再レビュー| specreview
+    specreview -->|指摘あり| resolve1
+    resolve1 -->|再レビュー| specreview
     specreview -->|指摘なし| prspec
-    prspec -->|ユーザー承認・マージ| implementation
+    prspec ==>|ユーザーが承認・マージ| implementation
     implementation --> implreview
-    implreview -->|指摘あり| resolve
-    resolve -->|修正後、指摘元を再レビュー| implreview
+    implreview -->|指摘あり| resolve2
+    resolve2 -->|再レビュー| implreview
     implreview -->|指摘なし| primpl
-    primpl -->|ユーザーがマージ| release
-    release -->|本番で問題発見| fix
-
-    fix -->|仕様変更を伴う| prspec
-    fix -->|純粋なバグ・軽微 → TDD修正| implreview
-
-    subgraph periodic["定期作業(開発ループ外)"]
-        law["/law-revision-check<br>法改正確認(毎年7月・4月)"]
-        deps["/dependency-update<br>依存更新(月1)"]
-        data["/data-check<br>保存データ確認(月1)"]
-        audit["/spec-audit<br>仕様棚卸し(四半期)"]
-        retro["/retrospective<br>振り返り・Skill更新(月1〜四半期)"]
-    end
-
-    law -->|改定あり| fix
-    data -->|異常あり| fix
-    audit -->|乖離あり| fix
-    deps -->|更新PR| primpl
-    retro -->|Skill更新PR| primpl
+    primpl ==>|ユーザーがマージ| release
 ```
 
-- 実線の本流: `/requirement → /design → /spec-review → /pr(仕様承認) → /implementation → /implementation-review → /pr(実装) → /release-check`
-- 仕様承認PRがマージされるまでコード(テスト含む)は書かない(仕様承認ゲート)
+- 太線(=)はユーザーの承認・マージ待ち。仕様承認PRがマージされるまでコード(テスト含む)は書かない(仕様承認ゲート)
 - mainへのマージは常にユーザーがGitHub UIで行う
+
+## 遷移図2: バグ修正・既存機能改修の流れ
+
+```mermaid
+flowchart TD
+    consult["/consult<br>方針の壁打ち"]
+    fix["/fix<br>入口確認・3点セットへの影響洗い出し"]
+    branch{"仕様そのものを<br>変える?"}
+    prspec["/pr<br>仕様承認PR"]
+    tdd["TDD修正<br>(/fix Step3: 再現テスト→修正)"]
+    implreview["/implementation-review<br>コードレビュー"]
+    primpl["/pr<br>実装PR"]
+    release["/release-check<br>デプロイ・本番確認・ブランチ掃除"]
+
+    consult -.任意.-> fix
+    fix --> branch
+    branch -->|はい: ビジネスルール変更など| prspec
+    prspec ==>|ユーザーが承認・マージ| tdd
+    branch -->|いいえ: 純粋なバグ・軽微な変更| tdd
+    tdd --> implreview
+    implreview --> primpl
+    primpl ==>|ユーザーがマージ| release
+```
+
+- レビューで指摘が出た場合の `/resolve` ループは遷移図1と同じ(省略)
+- 本番(`/release-check`)で問題を見つけた場合もこの図の `/fix` から入る
+
+## 定期作業の遷移
+
+定期作業は独立して実行し、問題が見つかったときだけ上の2つの流れに合流する(合流先は[まとめ表](#定期作業skill開発ループ外)の「異常時の遷移先」列を参照)。問題がなければユーザーへの報告のみで完了する。
 
 ## この文書の保守
 
