@@ -21,7 +21,7 @@ __tests__/<アプリ名>/{components,lib}/
 - 関数・型には役割と非自明な計算式・定数の根拠をコメントする。名前で意図が伝わる場合は不要
 - シンプルさを優先し、過剰な抽象化はしない(仕様変更が頻繁なため)
 
-# 特定タスクの知識
-仕様作成・TDD実装・Claude Code設定変更などの詳細手順は `.claude/skills/` 内の各Skillを参照する。
+# 開発の進め方
+機能開発・バグ修正・定期作業はすべて `.claude/skills/` 内のSkillの手順に従う(要件定義より前にコードを書かない)。全Skillの一覧・遷移図は [.claude/skills/README.md](.claude/skills/README.md) を参照する。
 
 @AGENTS.md
