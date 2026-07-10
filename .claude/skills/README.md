@@ -36,6 +36,16 @@
 | [architecture-workflow](architecture-workflow/SKILL.md) | `specs/<アプリ名>/architecture.md`(アプリ全体像)の作成・更新 | /requirement、/design、/spec-audit |
 | [claude-settings](claude-settings/SKILL.md) | `.claude/settings.json`のpermissions.allow変更時のpermissions.md同期 | /implementation-review |
 
+### 専任エージェント(`.claude/agents/`)
+
+レビュー系の工程は、メインの会話とは独立したコンテキストで動く専任エージェントに委任する(作成した本人がレビューする偏りを避けるため)。各エージェントは対応するSKILL.mdを読んで手順に従う(チェックリストの単一情報源はSkill側)。
+
+| エージェント | 役割 | 呼び出し元 |
+|---|---|---|
+| [spec-reviewer](../agents/spec-reviewer.md) | 仕様3点セットの独立レビュー | /spec-review |
+| [implementation-reviewer](../agents/implementation-reviewer.md) | 実装差分の独立レビュー | /implementation-review |
+| [spec-pr-reviewer](../agents/spec-pr-reviewer.md) | PR作成前の横断チェック(承認ステータス・spec-coverage・permissions.md同期・CI) | /pr |
+
 ## 遷移図1: 新機能開発の流れ
 
 ```mermaid
@@ -101,4 +111,4 @@ flowchart TD
 
 ## この文書の保守
 
-Skillの追加・削除・遷移の変更をしたら、このREADMEの表と遷移図も同じPRで更新する(/retrospective の確認対象)。
+Skill・エージェント(`.claude/agents/`)の追加・削除・遷移の変更をしたら、このREADMEの表と遷移図も同じPRで更新する(/retrospective の確認対象)。

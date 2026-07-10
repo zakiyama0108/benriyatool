@@ -7,6 +7,7 @@ description: 仕様3点セット(requirements.md/design.md/tasks.md)を承認PR�
 
 # レビューの注意事項
 
+- **レビューはspec-reviewerエージェント(`.claude/agents/spec-reviewer.md`)に委任する。** 依頼文に対象の`specs/<アプリ名>/<機能名>/`を明示する。作成した本人がレビューする偏りを避けるため、メインの会話では行わない
 - **レビュー中は対象を修正しない。** 指摘の報告に徹する(修正は[/resolve](../resolve/SKILL.md)の仕事)
 - **好みの問題は指摘しない。** 指摘には必ずルール上の根拠([/requirement](../requirement/SKILL.md)・[/design](../design/SKILL.md)のテンプレート、CLAUDE.mdの規約、既存specとの整合性など)を添える。根拠を示せない指摘は出さない
 - **良い点も必ず1つ以上挙げる**

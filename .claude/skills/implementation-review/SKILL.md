@@ -7,6 +7,7 @@ description: 実装完了後・PR作成前にコードをレビューすると�
 
 # レビューの注意事項
 
+- **レビューはimplementation-reviewerエージェント(`.claude/agents/implementation-reviewer.md`)に委任する。** 依頼文に対象ブランチと対応するspecフォルダを明示する。実装した本人がレビューする偏りを避けるため、メインの会話では行わない
 - **レビュー中はコードを修正しない。** 指摘の報告に徹する(修正は[/resolve](../resolve/SKILL.md)の仕事)
 - **好みの問題は指摘しない。** 指摘には必ず根拠(承認済み仕様との不一致、CLAUDE.mdの規約、テスト・CIの失敗、[/implementation](../implementation/SKILL.md)の命名ルールなど)を添える。根拠を示せない指摘は出さない
 - **良い点も必ず1つ以上挙げる**
