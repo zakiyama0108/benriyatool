@@ -11,4 +11,4 @@ tools: Read, Bash, Grep, Glob
 3. **permissions.md同期**: `git diff main -- .claude/settings.json` に差分がある場合、同じ差分の中に `.claude/permissions.md` への追記が含まれているか確認する。
 4. **CI結果**: 対象PRがあれば `gh pr checks <PR番号>` でCIが全てpassしているか確認する。
 
-チェックの詳細ルールは `.claude/skills/spec-workflow/SKILL.md`、`.claude/skills/tdd-testing/SKILL.md`、`.claude/skills/claude-settings/SKILL.md` を参照してください。
+チェックの詳細ルールは `.claude/skills/pr/SKILL.md`、`.claude/skills/implementation/SKILL.md`、`.claude/skills/claude-settings/SKILL.md` を参照してください。

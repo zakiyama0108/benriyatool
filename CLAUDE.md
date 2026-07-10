@@ -21,7 +21,17 @@ __tests__/<アプリ名>/{components,lib}/
 - 関数・型には役割と非自明な計算式・定数の根拠をコメントする。名前で意図が伝わる場合は不要
 - シンプルさを優先し、過剰な抽象化はしない(仕様変更が頻繁なため)
 
-# 特定タスクの知識
-仕様作成・TDD実装・Claude Code設定変更などの詳細手順は `.claude/skills/` 内の各Skillを参照する。
+# 開発ワークフロー
+機能開発は以下の順で進める。各ステップの詳細手順は `.claude/skills/` 内の同名Skillを参照し、各ステップの完了時には次のステップを案内する。
+
+```
+/consult(任意: 方針の壁打ち)
+→ /requirement(要件定義) → /design(設計・タスク分解) → /spec-review(仕様レビュー) → /pr(仕様承認PR)
+→ 承認後: /implementation(TDD実装) → /implementation-review(コードレビュー) → /pr(実装PR)
+```
+
+- レビューで指摘が出たら `/resolve`(指摘修正)→ 再レビュー → `/pr` と進む
+- バグ修正・既存機能の小規模改修は `/fix` から入る(承認の要否は/fix内で判断)
+- ワークフローと直交する知識は `architecture-workflow`(アプリ全体像の文書化)、`claude-settings`(許可コマンド追加)を参照する
 
 @AGENTS.md

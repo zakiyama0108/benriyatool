@@ -1,0 +1,21 @@
+---
+name: consult
+description: 実装・仕様作成に入る前に、方針・技術選定・機能の切り方などを壁打ちしたいときに使う。コードやドキュメントは変更せず、論点整理と推奨案の提示に徹する。
+---
+
+> ワークフロー上の位置: **/consult(本Skill・任意)** → [/requirement](../requirement/SKILL.md) または [/fix](../fix/SKILL.md)
+
+# 壁打ちの進め方
+
+- このSkillの間はコード・仕様書・設定ファイルを一切変更しない(読むのは自由)。結論が出て、ユーザーが次のステップへ進むと明言してから着手する
+- 前提を確認する質問から始め、論点を1つずつ潰す。複数の選択肢がある場合はトレードオフと推奨案をセットで示す(選択肢の羅列だけで終えない)
+- 判断材料は推測ではなくリポジトリの実物(`specs/`・`app/`・`docs/adr/`・`specs/<アプリ名>/architecture.md`)を読んで揃える
+
+# 議論の出口
+
+結論が出たら、内容に応じて次のステップを案内する:
+
+- 新しい機能・アプリを作ることになった → [/requirement](../requirement/SKILL.md) へ
+- 既存機能の修正・バグ対応になった → [/fix](../fix/SKILL.md) へ
+- 複数アプリにまたがる技術選定が決まった → `docs/adr/` にADRを残すことを提案する
+- アプリ内の構成方針が決まった → `specs/<アプリ名>/architecture.md` への反映を提案する([architecture-workflow](../architecture-workflow/SKILL.md)参照)
