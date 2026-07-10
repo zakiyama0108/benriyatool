@@ -27,6 +27,7 @@ description: 新しい機能・アプリの要件定義を始めるときに使�
 - 洗い出したストーリーの数だけ`specs/<アプリ名>/<ストーリーを表す機能名>/`を並べて作る(例: 育休給付金シミュレーターなら`maternity-benefit`(出産手当金)、`paternity-leave-benefit`(産後パパ育休)、`childcare-benefit-early`(育休前期67%)、`childcare-benefit-late`(育休後期50%)、`input-form`(入力フォーム)、`payment-schedule`(振込スケジュール)のように分ける)
 - 複数のストーリーの結果を1つの画面にまとめる(合計金額表示・内訳バーなど)統合ロジックが必要な場合は、新たに統合専用specを作らず、その統合先(最終的にユーザーが見るメイン画面)を担当するstory specに書く。他のstory specの機能要件には「この結果は`<まとめ先の機能名>`の画面で使われる」と一言添えて依存関係を明示する
 - アプリ立ち上げ時は`specs/<アプリ名>/architecture.md`も最初から作成する(作成基準・書き方は[architecture-workflow](../architecture-workflow/SKILL.md)を参照)
+- あわせてリポジトリ直下[README.md](../../../README.md)の「アプリ一覧」テーブルに1行追加する(アプリ名・パス・概要・architecture.mdへのリンク)
 - 各specが育ってきて「既存機能の修正・拡張」に該当する変更が発生したら、以降は上記Step0の判断に従う
 
 # 要件ヒアリング
