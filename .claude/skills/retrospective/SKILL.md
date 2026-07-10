@@ -26,6 +26,7 @@ gh pr list --state merged --limit 10 --json number,title,mergedAt,url
 - **使われていないテンプレート・チェック項目**: PR本文がテンプレートと乖離している、チェックリストの特定項目が常に空振りしている
 - **Skill間の案内切れ**: 完了時の次ステップ案内どおりに遷移しているか。案内先が実態と違うなら修正する
 - **CLAUDE.md・[README](../README.md)との整合**: ワークフロー図・まとめ表・遷移図がSkillの現状と一致しているか
+- **Skillの固定コスト**: 全Skillのfrontmatter(name・description)は毎セッション必ずコンテキストに載るため、Skillを増やすほど固定トークン費が増える。descriptionが長文化していないか(発火条件が伝わる1〜2文に収まっているか)、一度も使われていない・役割が重複しているSkillが残っていないかを確認し、不要なら統合・削除する
 
 # Step3 ずれの扱いを決める
 
