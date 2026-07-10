@@ -11,7 +11,7 @@ description: PRを作成するときに使う。仕様承認PR(3点セット)と
 - featureブランチの作成・push・PR作成はユーザーへの確認なしで進めてよい
 - PR作成前にspec-pr-reviewerエージェント(`.claude/agents/spec-pr-reviewer.md`)でチェックし、❌を解消してから作成する
 - 作成後は`gh pr checks <PR番号>`でCIが全てpassすることを確認する
-- ユーザーへの報告にはPR番号だけでなく完全なURLを明記する
+- ユーザーへの報告にはPR番号だけでなく完全なURLを明記する。URLは装飾なしの単独行に置く(`**`や括弧・日本語をURLに連結するとリンク検出が巻き込んで開けなくなる)
 - mainへのマージはユーザーがGitHub UI上でdiffを確認して行う(こちらからマージしない)
 
 # 仕様承認PR(仕様承認ゲート)
