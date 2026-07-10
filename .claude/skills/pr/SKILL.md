@@ -3,7 +3,7 @@ name: pr
 description: PRを作成するときに使う。仕様承認PR(3点セット)と実装PRの2種類のテンプレート、仕様承認ゲートの運用、作成前チェック(spec-pr-reviewer・spec-coverage・CI)を扱う。
 ---
 
-> ワークフロー上の位置: [/spec-review](../spec-review/SKILL.md) → **仕様承認PR** → 承認後 [/implementation](../implementation/SKILL.md) … [/implementation-review](../implementation-review/SKILL.md) → **実装PR** → ユーザーがGitHub UIでマージ
+> ワークフロー上の位置: [/spec-review](../spec-review/SKILL.md) → **仕様承認PR** → 承認後 [/implementation](../implementation/SKILL.md) … [/implementation-review](../implementation-review/SKILL.md) → **実装PR** → ユーザーがGitHub UIでマージ → [/release-check](../release-check/SKILL.md)
 
 # 共通ルール
 
@@ -63,4 +63,4 @@ description: PRを作成するときに使う。仕様承認PR(3点セット)と
 # 完了時の次ステップ案内
 
 - 仕様承認PR → PRのURLを報告し、ユーザーの承認・マージ後に[/implementation](../implementation/SKILL.md)へ進むことを案内する
-- 実装PR → PRのURLを報告し、ユーザーがGitHub UIでdiffを確認してマージすれば機能完了であることを伝える
+- 実装PR → PRのURLを報告し、ユーザーのマージ後に[/release-check](../release-check/SKILL.md)(デプロイ・本番確認・ブランチ掃除)を行うことを案内する

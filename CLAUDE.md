@@ -28,10 +28,20 @@ __tests__/<アプリ名>/{components,lib}/
 /consult(任意: 方針の壁打ち)
 → /requirement(要件定義) → /design(設計・タスク分解) → /spec-review(仕様レビュー) → /pr(仕様承認PR)
 → 承認後: /implementation(TDD実装) → /implementation-review(コードレビュー) → /pr(実装PR)
+→ マージ後: /release-check(デプロイ・本番確認・ブランチ掃除)
 ```
 
 - レビューで指摘が出たら `/resolve`(指摘修正)→ 再レビュー → `/pr` と進む
 - バグ修正・既存機能の小規模改修は `/fix` から入る(承認の要否は/fix内で判断)
 - ワークフローと直交する知識は `architecture-workflow`(アプリ全体像の文書化)、`claude-settings`(許可コマンド追加)を参照する
+
+# 定期作業
+開発ループの外で、以下を定期的に実行する(詳細は同名Skill)。
+
+- `/law-revision-check` — 給付率・上限額など法令由来の前提値の改定確認(毎年7月・4月、制度変更のニュース時)
+- `/dependency-update` — npm依存パッケージの更新(月1回、脆弱性報告時は随時)
+- `/data-check` — Supabase保存データの健全性確認(月1回)
+- `/spec-audit` — 仕様書・skip.json・architecture.mdの棚卸し(四半期に1回)
+- `/retrospective` — ワークフローと実態のずれの振り返り・Skill更新(月1回〜四半期に1回)
 
 @AGENTS.md
