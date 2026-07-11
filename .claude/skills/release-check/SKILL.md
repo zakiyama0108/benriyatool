@@ -45,6 +45,15 @@ git fetch --prune                            # 削除済みリモートブラン
 
 `git branch -d`が「not fully merged」で失敗したら、マージされていないコミットが残っている合図なので削除せずユーザーに確認する(`-D`で強制削除しない)。
 
+並行作業([parallel-work](../parallel-work/SKILL.md))でworktreeを使っていた場合は、ブランチ削除の前にworktree自体を片付ける:
+
+```bash
+git worktree remove ../benriyatool-<機能名>   # マージ済みworktreeの削除
+git worktree list                              # 残っているworktreeの確認
+```
+
+また、他のworktreeで作業が続いている場合は、そちらで`git fetch origin && git rebase origin/main`を実行して今回のマージ内容を取り込むよう案内する。
+
 # 完了時の次ステップ案内
 
 - 問題なし → 機能のリリース完了。次の機能は[/requirement](../requirement/SKILL.md)または[/fix](../fix/SKILL.md)から

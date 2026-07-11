@@ -8,7 +8,7 @@ description: 承認済みの仕様をTDDで実装するときに使う。Red→G
 # 着手前の確認
 
 - 仕様の承認を得てから着手する(3点セットの仕様承認PRがマージ済みであること。承認前はコード・テストを書かない。運用は[/pr](../pr/SKILL.md)の仕様承認ゲートを参照)
-- `feature/<機能名>` ブランチを切る(mainでは作業しない)
+- `feature/<機能名>` ブランチを切る(mainでは作業しない)。別の機能の作業と並行する場合は[parallel-work](../parallel-work/SKILL.md)(worktree)で作業ディレクトリを分ける
 
 # TDDサイクル
 

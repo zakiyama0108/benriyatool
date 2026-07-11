@@ -7,7 +7,7 @@ description: PRを作成するときに使う。仕様承認PR(3点セット)と
 
 # 共通ルール
 
-- 作業は必ず`feature/<機能名>`ブランチで行い、mainに直接pushしない(マージ後の後続作業も同様に新しいブランチを切る)
+- 作業は必ず`feature/<機能名>`ブランチで行い、mainに直接pushしない(マージ後の後続作業も同様に新しいブランチを切る)。複数の機能を並行して進める場合は[parallel-work](../parallel-work/SKILL.md)(worktree)を使い、ブランチの切り替えはしない
 - featureブランチの作成・push・PR作成はユーザーへの確認なしで進めてよい
 - PR作成前にspec-pr-reviewerエージェント(`.claude/agents/spec-pr-reviewer.md`)でチェックし、❌を解消してから作成する
 - 作成後は`gh pr checks <PR番号>`でCIが全てpassすることを確認する
