@@ -33,7 +33,7 @@ description: バグ修正・既存機能の小規模な改修を行うときに�
 
 # Step3 修正(TDD)
 
-`feature/<機能名>`ブランチを切り、まずバグ・問題を再現する失敗テスト(🔴Red)を書いてから修正する(テストの命名・仕様コメントのルールは[/implementation](../implementation/SKILL.md)を参照)。Step2で洗い出した仕様書・テストコメント・`scripts/spec-coverage-skip.json`の追随も同じ変更の中で行う。
+`feature/<機能名>`ブランチを切り、まずバグ・問題を再現する失敗テスト(🔴Red)を書いてから修正する。別の機能開発に割り込む形で修正する場合は、ブランチを切り替えず[parallel-work](../parallel-work/SKILL.md)(worktree)で作業ディレクトリを分ける(テストの命名・仕様コメントのルールは[/implementation](../implementation/SKILL.md)を参照)。Step2で洗い出した仕様書・テストコメント・`scripts/spec-coverage-skip.json`の追随も同じ変更の中で行う。
 
 # 完了時の次ステップ案内
 
