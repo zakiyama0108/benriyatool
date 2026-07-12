@@ -15,18 +15,20 @@ description: Supabaseに保存されたユーザー入力データ(<アプリ名
 
 # Step1 確認用SQLを用意する
 
-対象テーブルは`<アプリ名>_results`(現在は`ikukyu_results`)。specのデータベース設計(`specs/<アプリ名>/*/design.md`)でカラムを確認してからSQLを組む。観点:
+対象テーブルは`<アプリ名>_results`(現在は`ikukyu_results`)。specのデータベース設計(`specs/<アプリ名>/*/design.md`)でカラムを確認してからSQLを組む。集計にはテスト・動作確認データを含めないよう、必ず`is_test = false`で絞る(`docs/adr/0001-user-input-database.md`の共通カラム)。観点:
 
 ```sql
 -- 件数の推移(直近90日・週別): 保存機能が動き続けているか、急増・急減がないか
 select date_trunc('week', created_at) as week, count(*) from ikukyu_results
-where created_at > now() - interval '90 days' group by 1 order by 1;
+where is_test = false and created_at > now() - interval '90 days' group by 1 order by 1;
 
 -- 入力値の分布: 極端な値(バリデーション漏れの疑い)がないか
-select min(monthly_salary), max(monthly_salary), avg(monthly_salary) from ikukyu_results;
+select min(monthly_salary), max(monthly_salary), avg(monthly_salary) from ikukyu_results
+where is_test = false;
 
 -- NULL率: 任意項目が想定どおりの入り方をしているか
-select count(*) as total, count(leave_start_date) as leave_start_filled from ikukyu_results;
+select count(*) as total, count(leave_start_date) as leave_start_filled from ikukyu_results
+where is_test = false;
 ```
 
 (カラム名は実際のテーブル定義に合わせて調整する)
