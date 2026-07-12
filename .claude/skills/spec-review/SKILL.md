@@ -5,6 +5,15 @@ description: 仕様3点セット(requirements.md/design.md/tasks.md)を承認PR�
 
 > ワークフロー上の位置: [/design](../design/SKILL.md) → **/spec-review(本Skill)** → 指摘あり: [/resolve](../resolve/SKILL.md) / 指摘なし: [/pr](../pr/SKILL.md)(仕様承認PR)
 
+# レビューの実施方法
+
+レビューはspec-reviewerエージェント(`.claude/agents/spec-reviewer.md`)を起動して行う。仕様を書いたメインスレッドの文脈から切り離し、新鮮な目でレビューするため(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。
+
+- エージェントには対象の`specs/<アプリ名>/<機能名>/`を伝えて起動する
+- エージェントの報告(フィードバックテンプレート形式)は要約せずそのままユーザーに提示する
+
+以下の注意事項・チェックリスト・テンプレートはエージェントが従う内容。エージェントを使えない状況でメインスレッドが直接レビューする場合も同じ内容に従う。
+
 # レビューの注意事項
 
 - **レビュー中は対象を修正しない。** 指摘の報告に徹する(修正は[/resolve](../resolve/SKILL.md)の仕事)
