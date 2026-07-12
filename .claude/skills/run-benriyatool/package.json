@@ -1,0 +1,9 @@
+{
+  "name": "run-benriyatool-driver",
+  "private": true,
+  "description": "run-benriyatool Skill用のブラウザ操作ドライバ。プロジェクト本体のpackage.jsonを汚さないようここに隔離している",
+  "type": "module",
+  "dependencies": {
+    "playwright-core": "^1.50.0"
+  }
+}

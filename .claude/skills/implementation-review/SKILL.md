@@ -35,6 +35,9 @@ description: 実装完了後・PR作成前にコードをレビューすると�
 - [ ] describe/itが命名ルールに沿っているか、`// 仕様:`コメントの表記が仕様書と完全一致か([/implementation](../implementation/SKILL.md)参照)
 - [ ] 境界値・特殊ケース・エラーケースのテストがあるか
 
+## 実機確認
+- [ ] UI(`app/`配下のページ・コンポーネント)に変更がある場合、[run-benriyatool](../run-benriyatool/SKILL.md)の手順でアプリを起動・操作し、スクリーンショットを実際に見て変更箇所の表示を確認したか(スモーク時は`block supabase`を忘れない)
+
 ## コード品質
 - [ ] CLAUDE.mdの規約に沿っているか(コメントは日本語、関数・型に役割と非自明な計算式・定数の根拠をコメント、過剰な抽象化をしない)
 - [ ] `npm run lint`・`npm run build`が通るか

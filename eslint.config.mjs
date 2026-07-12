@@ -44,6 +44,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // npm run test:coverage の生成物(vitest.config.mtsのcoverage設定参照)
     "coverage/**",
+    // Skill用のエージェントツール(run-benriyatoolのドライバ等)。アプリのコード規約(no-console等)の対象外
+    ".claude/**",
   ]),
 ]);
 
