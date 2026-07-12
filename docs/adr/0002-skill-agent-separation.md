@@ -24,11 +24,11 @@
 | 設計 | design | なし(当面) | 要件定義時の議論の文脈を引き継ぐ方が設計の質が上がる |
 | 仕様レビュー | spec-review | **spec-reviewer** | 新鮮な目+read-onlyで「修正禁止」を強制 |
 | PR作成前チェック | pr | spec-pr-reviewer(既存) | 機械的チェックの自己完結した作業 |
-| TDD実装 | implementation | (第4段階)implementer | 承認済みtasks.mdがあれば自律実行可能だが、仕様との食い違い検出時に中断・報告する設計が必要 |
+| TDD実装 | implementation | **implementer(委譲は任意)** | 通常は対話しながら進められるメインスレッドが直接実装する。並行開発時などは委譲でき、仕様との食い違い検出時は中断して報告する |
 | 実装レビュー | implementation-review | **code-reviewer** | spec-reviewerと同じ。Bashはテスト実行用に許可 |
 | 指摘対応 | resolve | なし | 「同意できない指摘はユーザーに確認」が組み込まれており対話必須。書いた本人の文脈も必要 |
-| リリース確認 | release-check | (第2段階)release-checker | 手順が機械的・自己完結 |
-| 定期作業4種 | 各Skill | (第3段階)個別Agent化 | 独立性が高くメインの文脈を汚さない。特にlaw-revision-check(Web調査が重い)とspec-audit(リポジトリ全読みが重い)の効果が大きい |
+| リリース確認 | release-check | **release-checker** | 手順が機械的・自己完結 |
+| 定期作業4種 | 各Skill | (未導入)個別Agent化 | 独立性が高くメインの文脈を汚さない。特にlaw-revision-check(Web調査が重い)とspec-audit(リポジトリ全読みが重い)の効果が大きい |
 
 ### AgentとSkillの分担(薄いAgentパターン)
 
@@ -53,11 +53,11 @@ flowchart TD
     specreview["仕様レビュー<br>/spec-review ★"]
     resolve1["指摘修正<br>/resolve"]
     prspec["仕様承認PR<br>/pr ★"]
-    implementation["TDD実装<br>/implementation"]
+    implementation["TDD実装<br>/implementation ★"]
     implreview["実装レビュー<br>/implementation-review ★"]
     resolve2["指摘修正<br>/resolve"]
     primpl["実装PR<br>/pr ★"]
-    release["リリース確認<br>/release-check"]
+    release["リリース確認<br>/release-check ★"]
 
     consult -.任意.-> requirement
     requirement --> design
@@ -84,7 +84,7 @@ flowchart TD
     tdd["TDD修正<br>/fix(Step3: 再現テスト→修正)"]
     implreview2["実装レビュー<br>/implementation-review ★"]
     primpl2["実装PR<br>/pr ★"]
-    release2["リリース確認<br>/release-check"]
+    release2["リリース確認<br>/release-check ★"]
 
     consult2 -.任意.-> fix
     fix --> branch
@@ -101,7 +101,7 @@ flowchart TD
 
 #### 図3: SkillからのAgent呼び出し関係
 
-★の付いたSkillが起動するAgentの対応。Agentは別コンテキストで完走し、報告をSkill側(メインスレッド)に返す。点線は導入予定(導入順は次節)。
+★の付いたSkillが起動するAgentの対応。Agentは別コンテキストで完走し、報告をSkill側(メインスレッド)に返す。実線はその工程で常に起動するもの、点線は委譲が任意のもの(通常はメインスレッドが直接作業する)。
 
 ```mermaid
 flowchart LR
@@ -117,30 +117,27 @@ flowchart LR
         specreviewer[["spec-reviewer<br>read-only"]]
         codereviewer[["code-reviewer<br>検証コマンドのみ実行"]]
         specprreviewer[["spec-pr-reviewer<br>PR作成前の横断チェック"]]
-        implementer[["implementer<br>第4段階・導入予定"]]
-        releasechecker[["release-checker<br>第2段階・導入予定"]]
+        implementer[["implementer<br>TDD実装・食い違い時は中断報告"]]
+        releasechecker[["release-checker<br>デプロイ確認・本番チェック・掃除"]]
     end
 
     s_specreview -->|レビューを委譲| specreviewer
     s_implreview -->|レビューを委譲| codereviewer
     s_pr -->|作成前チェックを委譲| specprreviewer
-    s_impl -.導入後は実装作業を委譲.-> implementer
-    s_release -.導入後は確認作業を委譲.-> releasechecker
-
-    style implementer stroke-dasharray: 5 5
-    style releasechecker stroke-dasharray: 5 5
+    s_impl -.並行開発時などに実装を委譲・任意.-> implementer
+    s_release -->|確認作業を委譲| releasechecker
 ```
 
 /consult・/requirement・/design・/resolve・/fixはAgentを呼ばず、メインスレッドが直接担当する(判定理由は上の表を参照)。
 
 ### 導入順
 
-1. **spec-reviewer / code-reviewer**(本ADRと同時に導入。レビューの客観性が構造的に上がる、効果最大)
-2. **release-checker**(機械的で失敗リスクが低い)
-3. **定期作業のAgent化**(law-revision-check → spec-audit → dependency-update / data-check)
-4. **implementer**([parallel-work](../../.claude/skills/parallel-work/SKILL.md)のworktree並行開発とセットで検討)
+1. **spec-reviewer / code-reviewer**(導入済み。レビューの客観性が構造的に上がる、効果最大)
+2. **release-checker**(導入済み。機械的で失敗リスクが低い)
+3. **定期作業のAgent化**(未導入。law-revision-check → spec-audit → dependency-update / data-check の順で検討する)
+4. **implementer**(導入済み。ただし常用ではなく、[parallel-work](../../.claude/skills/parallel-work/SKILL.md)のworktree並行開発時などに実装を委譲する任意の作業者として運用する。通常はメインスレッドが直接実装する)
 
-第2段階以降は、第1段階の運用で問題がないことを確認してから進める。
+残るは第3段階(定期作業)のみ。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
 
 ## 検討した代替案
 

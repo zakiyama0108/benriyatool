@@ -10,6 +10,15 @@ description: 承認済みの仕様をTDDで実装するときに使う。Red→G
 - 仕様の承認を得てから着手する(3点セットの仕様承認PRがマージ済みであること。承認前はコード・テストを書かない。運用は[/pr](../pr/SKILL.md)の仕様承認ゲートを参照)
 - `feature/<機能名>` ブランチを切る(mainでは作業しない)。別の機能の作業と並行する場合は[parallel-work](../parallel-work/SKILL.md)(worktree)で作業ディレクトリを分ける
 
+# 実施方法(メインスレッド or implementerエージェント)
+
+通常はメインスレッドが本Skillの手順で直接実装する(実装中の判断をユーザーと対話しながら進められるため)。次の場合はimplementerエージェント(`.claude/agents/implementer.md`)に実装を委譲できる(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照):
+
+- [parallel-work](../parallel-work/SKILL.md)で複数機能を並行開発していて、一方の実装を任せたいとき
+- tasks.mdが十分に詳細で、対話なしで完走できる見込みが高いとき
+
+委譲する場合は対象specと作業するfeatureブランチ(またはworktree)を伝えて起動する。エージェントは仕様との食い違いに気づくと実装を中断して報告を返すので、ユーザーに確認してから再開する。コミット・PR作成・動作確認の案内はメインスレッドが行う。
+
 # TDDサイクル
 
 🔴Red(失敗するテスト)→🟢Green(最小実装)→🔵Refactorのサイクルを、tasks.mdのタスクごとに完結させてから次に進む。

@@ -5,6 +5,15 @@ description: PRがmainにマージされた後のリリース確認に使う。C
 
 > ワークフロー上の位置: [/pr](../pr/SKILL.md)(実装PRのマージ後・毎回) → **/release-check(本Skill)** → 完了(問題があれば[/fix](../fix/SKILL.md))
 
+# 実施方法
+
+本Skillの手順はrelease-checkerエージェント(`.claude/agents/release-checker.md`)を起動して行う(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。
+
+- エージェントには今回マージされたPR番号・featureブランチ名・変更対象アプリのパス・スモークチェックで確認すべき変更点を伝えて起動する
+- エージェントの報告をそのままユーザーに提示し、問題があれば次のステップ(/fix)を案内する
+
+以下の手順はエージェントが従う内容。エージェントを使えない状況ではメインスレッドが直接実行する。
+
 # Step1 デプロイ完了の確認
 
 mainへのpushで`deploy.yml`(GitHub Actions)がCloudflare Workersへ自動デプロイする。
