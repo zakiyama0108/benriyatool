@@ -39,59 +39,99 @@ Skillの中身をAgentへ移動せず、**AgentはSkillを参照する薄い定�
 
 これによりSkillが単一の情報源のまま保たれ、チェックリスト変更時にAgentとSkillの二重メンテが発生しない。Skill冒頭の「レビューの注意事項」のような人格的な内容のみ、Agent側にも重複して持つことを許容する(数行のため保守コストは無視できる)。
 
-### 開発フロー全体像(Skill×Agent)
+### 開発フローとSkill・Agentの対応
 
-メインスレッドがSkillの手順に沿って工程を進め、Agent化された工程では作業者Agentを起動して報告を受け取る。点線枠のAgentは導入予定(導入順は次節)。
+[.claude/skills/README.md](../../.claude/skills/README.md)の遷移図と同じ分割で示す。各ノードは「工程名+使用Skill」を表し、**★はAgentを起動するSkill**(呼び出し先は図3)。定期作業Skillはこれらのフローとは独立して実行するため省略。
+
+#### 図1: 新機能開発の流れ(工程で使うSkill)
 
 ```mermaid
 flowchart TD
-    subgraph mainthread["メインスレッド(Skill=手順・知識・テンプレート)"]
-        consult["/consult<br>方針の壁打ち"]
-        requirement["/requirement<br>要件定義"]
-        design["/design<br>設計・タスク分解"]
-        specreview["/spec-review<br>仕様レビュー"]
-        resolve1["/resolve<br>指摘修正"]
-        prspec["/pr<br>仕様承認PR"]
-        implementation["/implementation<br>TDD実装"]
-        implreview["/implementation-review<br>実装レビュー"]
-        resolve2["/resolve<br>指摘修正"]
-        primpl["/pr<br>実装PR"]
-        release["/release-check<br>デプロイ・本番確認"]
-    end
-
-    subgraph agents["Agent(作業者・別コンテキストで完走し報告を返す)"]
-        specreviewer[["spec-reviewer<br>read-only"]]
-        codereviewer[["code-reviewer<br>検証コマンドのみ実行"]]
-        specprreviewer[["spec-pr-reviewer<br>PR作成前の横断チェック"]]
-        releasechecker[["release-checker<br>第2段階・導入予定"]]
-        implementer[["implementer<br>第4段階・導入予定"]]
-    end
+    consult["壁打ち(任意)<br>/consult"]
+    requirement["要件定義<br>/requirement"]
+    design["設計・タスク分解<br>/design"]
+    specreview["仕様レビュー<br>/spec-review ★"]
+    resolve1["指摘修正<br>/resolve"]
+    prspec["仕様承認PR<br>/pr ★"]
+    implementation["TDD実装<br>/implementation"]
+    implreview["実装レビュー<br>/implementation-review ★"]
+    resolve2["指摘修正<br>/resolve"]
+    primpl["実装PR<br>/pr ★"]
+    release["リリース確認<br>/release-check"]
 
     consult -.任意.-> requirement
     requirement --> design
     design --> specreview
-    specreview <-.起動/レビュー報告.-> specreviewer
     specreview -->|指摘あり| resolve1
     resolve1 -->|再レビュー| specreview
     specreview -->|指摘なし| prspec
-    prspec <-.起動/チェック結果.-> specprreviewer
     prspec ==>|ユーザーが承認・マージ| implementation
     implementation --> implreview
-    implreview <-.起動/レビュー報告.-> codereviewer
     implreview -->|指摘あり| resolve2
     resolve2 -->|再レビュー| implreview
     implreview -->|指摘なし| primpl
-    primpl <-.起動/チェック結果.-> specprreviewer
     primpl ==>|ユーザーがマージ| release
-    implementation -.導入後は実装作業を委譲.-> implementer
-    release -.導入後は確認作業を委譲.-> releasechecker
-
-    style releasechecker stroke-dasharray: 5 5
-    style implementer stroke-dasharray: 5 5
 ```
 
-- 太線(=)はユーザーの承認・マージ待ち(仕様承認ゲート)。定期作業Skillはこのフローとは独立して実行するため図から省略
-- 壁打ち・要件定義・指摘修正など対話が本体の工程はAgentを持たず、メインスレッドが直接担当する(判定理由は上の表を参照)
+#### 図2: バグ修正・既存機能改修の流れ(工程で使うSkill)
+
+```mermaid
+flowchart TD
+    consult2["壁打ち(任意)<br>/consult"]
+    fix["入口確認・影響洗い出し<br>/fix"]
+    branch{"仕様そのものを<br>変える?"}
+    prspec2["仕様承認PR<br>/pr ★"]
+    tdd["TDD修正<br>/fix(Step3: 再現テスト→修正)"]
+    implreview2["実装レビュー<br>/implementation-review ★"]
+    primpl2["実装PR<br>/pr ★"]
+    release2["リリース確認<br>/release-check"]
+
+    consult2 -.任意.-> fix
+    fix --> branch
+    branch -->|はい: ビジネスルール変更など| prspec2
+    prspec2 ==>|ユーザーが承認・マージ| tdd
+    branch -->|いいえ: 純粋なバグ・軽微な変更| tdd
+    tdd --> implreview2
+    implreview2 --> primpl2
+    primpl2 ==>|ユーザーがマージ| release2
+```
+
+- 太線(=)はユーザーの承認・マージ待ち(仕様承認ゲート)
+- レビューで指摘が出た場合の /resolve ループは図1と同じ(図2では省略)
+
+#### 図3: SkillからのAgent呼び出し関係
+
+★の付いたSkillが起動するAgentの対応。Agentは別コンテキストで完走し、報告をSkill側(メインスレッド)に返す。点線は導入予定(導入順は次節)。
+
+```mermaid
+flowchart LR
+    subgraph skills["Skill(手順・知識・テンプレート)"]
+        s_specreview["/spec-review"]
+        s_implreview["/implementation-review"]
+        s_pr["/pr"]
+        s_impl["/implementation"]
+        s_release["/release-check"]
+    end
+
+    subgraph agents["Agent(作業者)"]
+        specreviewer[["spec-reviewer<br>read-only"]]
+        codereviewer[["code-reviewer<br>検証コマンドのみ実行"]]
+        specprreviewer[["spec-pr-reviewer<br>PR作成前の横断チェック"]]
+        implementer[["implementer<br>第4段階・導入予定"]]
+        releasechecker[["release-checker<br>第2段階・導入予定"]]
+    end
+
+    s_specreview -->|レビューを委譲| specreviewer
+    s_implreview -->|レビューを委譲| codereviewer
+    s_pr -->|作成前チェックを委譲| specprreviewer
+    s_impl -.導入後は実装作業を委譲.-> implementer
+    s_release -.導入後は確認作業を委譲.-> releasechecker
+
+    style implementer stroke-dasharray: 5 5
+    style releasechecker stroke-dasharray: 5 5
+```
+
+/consult・/requirement・/design・/resolve・/fixはAgentを呼ばず、メインスレッドが直接担当する(判定理由は上の表を参照)。
 
 ### 導入順
 
