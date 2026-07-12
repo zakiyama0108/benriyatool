@@ -39,6 +39,60 @@ Skillの中身をAgentへ移動せず、**AgentはSkillを参照する薄い定�
 
 これによりSkillが単一の情報源のまま保たれ、チェックリスト変更時にAgentとSkillの二重メンテが発生しない。Skill冒頭の「レビューの注意事項」のような人格的な内容のみ、Agent側にも重複して持つことを許容する(数行のため保守コストは無視できる)。
 
+### 開発フロー全体像(Skill×Agent)
+
+メインスレッドがSkillの手順に沿って工程を進め、Agent化された工程では作業者Agentを起動して報告を受け取る。点線枠のAgentは導入予定(導入順は次節)。
+
+```mermaid
+flowchart TD
+    subgraph mainthread["メインスレッド(Skill=手順・知識・テンプレート)"]
+        consult["/consult<br>方針の壁打ち"]
+        requirement["/requirement<br>要件定義"]
+        design["/design<br>設計・タスク分解"]
+        specreview["/spec-review<br>仕様レビュー"]
+        resolve1["/resolve<br>指摘修正"]
+        prspec["/pr<br>仕様承認PR"]
+        implementation["/implementation<br>TDD実装"]
+        implreview["/implementation-review<br>実装レビュー"]
+        resolve2["/resolve<br>指摘修正"]
+        primpl["/pr<br>実装PR"]
+        release["/release-check<br>デプロイ・本番確認"]
+    end
+
+    subgraph agents["Agent(作業者・別コンテキストで完走し報告を返す)"]
+        specreviewer[["spec-reviewer<br>read-only"]]
+        codereviewer[["code-reviewer<br>検証コマンドのみ実行"]]
+        specprreviewer[["spec-pr-reviewer<br>PR作成前の横断チェック"]]
+        releasechecker[["release-checker<br>第2段階・導入予定"]]
+        implementer[["implementer<br>第4段階・導入予定"]]
+    end
+
+    consult -.任意.-> requirement
+    requirement --> design
+    design --> specreview
+    specreview <-.起動/レビュー報告.-> specreviewer
+    specreview -->|指摘あり| resolve1
+    resolve1 -->|再レビュー| specreview
+    specreview -->|指摘なし| prspec
+    prspec <-.起動/チェック結果.-> specprreviewer
+    prspec ==>|ユーザーが承認・マージ| implementation
+    implementation --> implreview
+    implreview <-.起動/レビュー報告.-> codereviewer
+    implreview -->|指摘あり| resolve2
+    resolve2 -->|再レビュー| implreview
+    implreview -->|指摘なし| primpl
+    primpl <-.起動/チェック結果.-> specprreviewer
+    primpl ==>|ユーザーがマージ| release
+    implementation -.導入後は実装作業を委譲.-> implementer
+    release -.導入後は確認作業を委譲.-> releasechecker
+
+    style releasechecker stroke-dasharray: 5 5
+    style implementer stroke-dasharray: 5 5
+```
+
+- 太線(=)はユーザーの承認・マージ待ち(仕様承認ゲート)。定期作業Skillはこのフローとは独立して実行するため図から省略
+- 壁打ち・要件定義・指摘修正など対話が本体の工程はAgentを持たず、メインスレッドが直接担当する(判定理由は上の表を参照)
+
 ### 導入順
 
 1. **spec-reviewer / code-reviewer**(本ADRと同時に導入。レビューの客観性が構造的に上がる、効果最大)
