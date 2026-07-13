@@ -14,9 +14,17 @@ export function calcTotalLeaveDays(input: CalculatorInput): number {
   return countDays(startDate, input.leaveEndDate)
 }
 
-// 入力内容と計算結果の合計額・合計取得日数をikukyu_resultsテーブルへ保存する。
+// テスト・動作確認による保存かどうかを判定する。
+// 開発サーバー(npm run dev)で動かしている場合と、URLにtest=1を付けて開いている場合(本番での動作確認用)にtrue
+// (仕様: specs/ikukyu/save-result/requirements.md#テストデータの判定-1〜3)
+export function isTestData(): boolean {
+  if (process.env.NODE_ENV === 'development') return true
+  return new URLSearchParams(window.location.search).get('test') === '1'
+}
+
+// 入力内容と計算結果の合計額・合計取得日数・テストデータ判定をikukyu_resultsテーブルへ保存する。
 // 保存に失敗しても計算結果の表示自体は妨げないよう、エラーは外へ投げずに握りつぶす
-// (仕様: specs/ikukyu/save-result/requirements.md#機能要件-1、エッジケース・例外処理-1)
+// (仕様: specs/ikukyu/save-result/requirements.md#機能要件-1、機能要件-3、エッジケース・例外処理-1)
 export async function saveResult(input: CalculatorInput, result: CalculatorResult): Promise<void> {
   try {
     await supabase.from('ikukyu_results').insert({
@@ -27,6 +35,7 @@ export async function saveResult(input: CalculatorInput, result: CalculatorResul
       leave_end_date: input.leaveEndDate,
       total_amount: result.totalAmount,
       total_leave_days: calcTotalLeaveDays(input),
+      is_test: isTestData(),
     })
   } catch {
     // 保存失敗時もユーザー操作をブロックしない(分析用のベストエフォート処理のため)
