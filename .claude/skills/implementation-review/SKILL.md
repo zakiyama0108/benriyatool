@@ -9,6 +9,11 @@ description: 実装完了後・PR作成前にコードをレビューすると�
 > - 指摘あり → [/resolve](../resolve/SKILL.md) へ: 複雑なリファクタリング・アーキテクチャ変更など設計の再考が必要な場合のみ **Opus** を検討する
 > - 指摘なし → [/pr](../pr/SKILL.md) へ: PR作成は機械的な作業のため **Sonnet** で十分
 
+# 前提条件
+
+- 実装が完了していること(テスト・lint・buildが通り、動作確認済み)。実装がまだなら[/implementation](../implementation/SKILL.md)または[/fix](../fix/SKILL.md)から始める
+- 実装が承認済みの仕様(3点セット)または[/fix](../fix/SKILL.md)の判断(純粋なバグ・軽微な変更)に基づいていること。仕様なしで書かれた新機能のコードはレビューに進まず、[/requirement](../requirement/SKILL.md)で仕様から整える
+
 # レビューの実施方法
 
 レビューはcode-reviewerエージェント(`.claude/agents/code-reviewer.md`)を起動して行う。実装したメインスレッドの文脈から切り離し、新鮮な目でレビューするため(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。
