@@ -5,6 +5,15 @@ description: 実装完了後・PR作成前にコードをレビューすると�
 
 > ワークフロー上の位置: [/implementation](../implementation/SKILL.md) → **/implementation-review(本Skill)** → 指摘あり: [/resolve](../resolve/SKILL.md) / 指摘なし: [/pr](../pr/SKILL.md)(実装PR)
 
+> **次フェーズのモデル:**
+> - 指摘あり → [/resolve](../resolve/SKILL.md) へ: 修正複雑度に基づいて選ぶ
+>   - 複雑なリファクタリング・アーキテクチャ変更・複数ファイルの修正: **Opus** (設計の再考・依存関係の見直しが必要)
+>   - 標準的な修正(ロジック修正・テスト追加): **Sonnet**
+>   - バグ修正・文言修正: **Sonnet**
+> - 指摘なし → [/pr](../pr/SKILL.md) へ: 変更のリスクレベルに基づいて選ぶ
+>   - 高リスク(重要機能・複数ドメインへの影響): **Opus**
+>   - 標準～低リスク: **Sonnet** (機械的なPR作成・CI確認がメイン)
+
 # レビューの実施方法
 
 レビューはcode-reviewerエージェント(`.claude/agents/code-reviewer.md`)を起動して行う。実装したメインスレッドの文脈から切り離し、新鮮な目でレビューするため(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。

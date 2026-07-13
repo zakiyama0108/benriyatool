@@ -5,6 +5,11 @@ description: requirements.md作成後の設計フェーズで、design.md(処理
 
 > ワークフロー上の位置: [/requirement](../requirement/SKILL.md) → **/design(本Skill)** → [/spec-review](../spec-review/SKILL.md)
 
+> **次フェーズのモデル(/spec-review):** design.mdの複雑度に基づいて選ぶ
+> - 複数の処理・複雑な分岐・エッジケースが多い場合: **Opus** (新鮮な目での矛盾検出・処理漏れ・セキュリティリスク見落としの検出が重要)
+> - 標準的な設計(処理3〜5個、分岐は単純): **Sonnet**
+> - シンプルな設計(処理が1〜2個、分岐なし): **Sonnet**
+
 # design.mdの書き方
 
 requirements.mdのビジネスルールを「どんな手順・分岐で処理するか」を日本語の文章(変数名・数式なし)で書く**処理フロー**を中心に、この機能が実際に関わるファイル・DB・画面などを確認用に書き足す。フォルダ構成の一般ルールや、プロジェクト全体の非機能要件・設計方針はCLAUDE.md/requirements.mdの領分のためここには書かない。分岐・複数ステップのロジックが1つもない機能(例: 純粋なルーティング変更)は、design.md自体を作らずrequirements.mdのみで完結してよい。

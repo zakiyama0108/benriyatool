@@ -5,6 +5,14 @@ description: PRを作成するときに使う。仕様承認PR(3点セット)と
 
 > ワークフロー上の位置: [/spec-review](../spec-review/SKILL.md) → **仕様承認PR** → 承認後 [/implementation](../implementation/SKILL.md) … [/implementation-review](../implementation-review/SKILL.md) → **実装PR** → ユーザーがGitHub UIでマージ → [/release-check](../release-check/SKILL.md)
 
+> **次フェーズのモデル:**
+> - 仕様承認PR → [/implementation](../implementation/SKILL.md) へ: specの複雑度に基づいて選ぶ
+>   - 複雑な計算ロジック・複数の状態管理が実装で必要: **Opus** (実装判断の複雑度が高い)
+>   - 標準的な実装: **Sonnet**
+> - 実装PR → [/release-check](../release-check/SKILL.md) へ: 変更のリスクレベルに基づいて選ぶ
+>   - 高リスク(重要機能・複数ドメイン・法令対応): **Opus**
+>   - 標準～低リスク: **Sonnet** (確認作業が機械的がメイン)
+
 # 共通ルール
 
 - 作業は必ず`feature/<機能名>`ブランチで行い、mainに直接pushしない(マージ後の後続作業も同様に新しいブランチを切る)。複数の機能を並行して進める場合は[parallel-work](../parallel-work/SKILL.md)(worktree)を使い、ブランチの切り替えはしない
