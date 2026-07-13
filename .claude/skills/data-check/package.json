@@ -1,0 +1,10 @@
+{
+  "name": "benriyatool-data-check",
+  "private": true,
+  "type": "module",
+  "description": "data-check Skillが使う読み取り専用DBクエリ実行スクリプトの依存(本体のpackage.jsonとは隔離)",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "pg": "^8.13.1"
+  }
+}

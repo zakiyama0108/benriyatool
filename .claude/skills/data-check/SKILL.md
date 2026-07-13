@@ -7,7 +7,10 @@ description: Supabaseに保存されたユーザー入力データ(<アプリ名
 
 # 前提(必ず踏まえる)
 
-`docs/adr/0001-user-input-database.md`のとおり、anonキーは**INSERTのみ許可**でSELECTできない。したがってローカル・CIからデータは読めず、確認は**SupabaseダッシュボードのSQLエディタ(service_role権限)でユーザーが実行する**。このSkillの仕事は、確認用SQLを用意して渡し、貼ってもらった結果を分析すること。SQLに個人を特定する目的の抽出を入れない(集計・匿名の異常検知に限る)。
+`docs/adr/0001-user-input-database.md`のとおり、anonキーは**INSERTのみ許可**でSELECTできない。集計・分析には別経路が要る。SQLに個人を特定する目的の抽出を入れない(集計・匿名の異常検知に限る)のはどちらの経路でも共通のルール。
+
+- **`.env.local`に`SUPABASE_READONLY_DB_URL`が設定されている環境**(`docs/adr/0004-agent-readonly-db-access.md`): エージェントが`.claude/skills/data-check/query.mjs`でSELECT専用ロールを使い直接クエリを実行し、結果を分析する。初回のみ`.claude/skills/data-check/`で`npm install`が必要
+- **未設定の環境**(接続情報を用意していないマシン・別セッション): 従来どおり、確認用SQLを用意してユーザーに渡し、**SupabaseダッシュボードのSQLエディタ(service_role権限)で実行してもらい**、貼ってもらった結果を分析する
 
 # 実行タイミング
 
@@ -32,6 +35,12 @@ where is_test = false;
 ```
 
 (カラム名は実際のテーブル定義に合わせて調整する)
+
+接続情報がある環境では、上記SQLをそのまま実行できる:
+
+```bash
+node .claude/skills/data-check/query.mjs "select is_test, count(*) from ikukyu_results group by is_test order by is_test"
+```
 
 # Step2 結果を分析する
 
