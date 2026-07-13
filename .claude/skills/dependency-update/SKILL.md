@@ -23,6 +23,7 @@ npm audit           # 既知の脆弱性
 - **major**: 1パッケージずつ個別に更新し、リリースノートで破壊的変更を確認してから上げる
 - **Next.js / React**: majorに限らず注意。このリポジトリのNext.jsは学習データと異なる可能性があるため(AGENTS.md参照)、更新したら`node_modules/next/dist/docs/`の関連ガイドを読み直し、非推奨警告に対応する。静的エクスポート(`output: "export"`)とCloudflare Workers配信(wrangler.toml)が前提なので、この構成に影響する変更がないかを最優先で確認する
 - 脆弱性対応は他の更新と混ぜず、単独で先に出してよい
+- Next.jsのメジャー/マイナー更新はE2Eテスト導入の判断タイミングでもある(現状は未導入。判断基準は[docs/adr/0003](../../../docs/adr/0003-e2e-testing-strategy.md)を参照)
 
 # Step3 更新と検証
 
