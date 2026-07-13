@@ -5,6 +5,11 @@ description: 新しい機能・アプリの要件定義を始めるときに使�
 
 > ワークフロー上の位置: [/consult](../consult/SKILL.md)(任意) → **/requirement(本Skill)** → [/design](../design/SKILL.md)
 
+> **次フェーズのモデル(/design):** requirements.mdのビジネスルール複雑度に基づいて選ぶ
+> - 複数の条件・計算ロジック・法令規定が複雑に絡む場合: **Opus** (複数ルール間の関連性・矛盾検出・落ちがある要件の発見が重要)
+> - 標準的な要件(条件は3〜5個程度、計算は単純): **Sonnet**
+> - シンプルな要件(ルーティング変更・文言修正など): **Sonnet**
+
 > 別の機能の作業(承認待ちを含む)が進行中のまま本Skillを始める場合は、先に[parallel-work](../parallel-work/SKILL.md)(worktreeによる並行作業)を確認する。
 
 # Step0 入口の判断: 新規spec作成 vs 既存spec更新

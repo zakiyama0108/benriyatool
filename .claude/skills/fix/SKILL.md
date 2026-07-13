@@ -5,6 +5,10 @@ description: バグ修正・既存機能の小規模な改修を行うときに�
 
 > ワークフロー上の位置: **/fix(本Skill)** → [/implementation-review](../implementation-review/SKILL.md) → [/pr](../pr/SKILL.md)(実装PR)
 
+> **次フェーズのモデル:** 基本は **Sonnet**(トークン消費を抑えるため下流工程は原則Sonnetで運用する)
+> - Step2で仕様変更が必要と判定した場合: 複数のビジネスルール変更・法令改正への適合など影響範囲の特定が重要な場合のみ **Opus** を検討する
+> - 純粋なバグ修正の場合: 複雑なバグ・複数箇所の修正が必要な場合のみ **Opus** を検討する
+
 # Step1 入口の確認
 
 [/requirement](../requirement/SKILL.md)のStep0「新規spec作成 vs 既存spec更新の判断」に照らして、今回の変更が**既存spec更新**に該当することを確認する。「新規specを作るべきサイン」に該当したら、本Skillではなく/requirementのフローへ切り替える。

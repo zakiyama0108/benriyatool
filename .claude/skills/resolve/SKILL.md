@@ -5,6 +5,8 @@ description: /spec-reviewや/implementation-review、またはPR上で受けた�
 
 > ワークフロー上の位置: [/spec-review](../spec-review/SKILL.md) / [/implementation-review](../implementation-review/SKILL.md) → **/resolve(本Skill)** → 指摘元のレビューを再実行 → [/pr](../pr/SKILL.md)
 
+> **次フェーズのモデル(レビュー再実行):** 基本は **Sonnet**。複数の指摘に関連する修正・ビジネスルール全体の見直しなど、根拠の再構築が必要な場合のみ **Opus** を検討する
+
 # 修正の進め方
 
 - 重要度の高い順(🔴→🟡)に1件ずつ対応する。🟢(対応任意)は対応するかどうかを先に宣言してから進める
