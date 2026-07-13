@@ -14,7 +14,8 @@
 **Supabase（PostgreSQL + RLS）を全アプリ共通の1プロジェクトとして採用し、ブラウザから`anon`キーで直接INSERTする。**
 
 - RLS: `anon`ロールは`INSERT`のみ許可し、`SELECT`/`UPDATE`/`DELETE`は許可しない（他人のレコードを閲覧・改ざんできないようにするため）
-- テーブルはアプリごとに`<アプリ名>_results`として作成する。1レコード＝1回の入力＋結果とし、共通カラムとして`id`（uuid）・`created_at`を持つ
+- テーブルはアプリごとに`<アプリ名>_results`として作成する。1レコード＝1回の入力＋結果とし、共通カラムとして`id`（uuid）・`created_at`・`is_test`（boolean not null default false）を持つ
+- `is_test`はテスト・動作確認による保存データの判別フラグ。ローカル開発も本番と同じプロジェクトに書き込むため、開発環境からの保存と、本番URLに`?test=1`を付けた動作確認の保存はtrueにする。集計・分析時は`is_test = true`を除外する（判定ルールの詳細は各アプリのspec、初出は`specs/ikukyu/save-result/requirements.md#テストデータの判定`）
 - ログイン不要なアプリでは、INSERT時に払い出される`id`を使った個別URL（例: `/<アプリ名>/result/[id]`）で結果を見返す。ユーザーを横断する識別子は持たせない
 - ログインが必要なアプリを追加する場合は、Supabase標準の認証機能（Supabase Auth）を使う。`user_id`カラムを`auth.users`に紐付け、RLSで`auth.uid() = user_id`のときだけ本人に`SELECT`/`UPDATE`を許可すればよく、DB/BaaS自体は選び直さずに済む
 - Supabaseクライアントの初期化は`app/lib/supabaseClient.ts`に共通化する。各アプリは`app/<アプリ名>/lib/`にテーブル固有の薄いラッパー関数を置き、そこからこの共通クライアントを呼ぶ
