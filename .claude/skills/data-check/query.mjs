@@ -27,10 +27,7 @@ if (!process.env.SUPABASE_READONLY_DB_URL) {
   process.exit(1)
 }
 
-const client = new pg.Client({
-  connectionString: process.env.SUPABASE_READONLY_DB_URL,
-  ssl: { rejectUnauthorized: false },
-})
+const client = new pg.Client({ connectionString: process.env.SUPABASE_READONLY_DB_URL })
 
 await client.connect()
 try {

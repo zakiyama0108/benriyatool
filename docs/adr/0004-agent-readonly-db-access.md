@@ -14,7 +14,23 @@
 - ロール名: `benriyatool_readonly`。`login`属性のみ持ち、`BYPASSRLS`は付与しない(RLSは有効なまま)
 - 各`<アプリ名>_results`テーブルに、このロール向けの`SELECT`専用RLSポリシーを個別に追加する(`anon`のINSERT専用ポリシーとは別物)。新しいアプリのテーブルを作る際は、このポリシーもテンプレートとして追加する([ADR-0001](0001-user-input-database.md)の「テーブル作成+定型RLSポリシー適用」の一部に組み込む)
 - 接続は[ADR-0003](0003-db-schema-migration-ci.md)のマイグレーションと同じくSession Pooler(IPv4対応・ポート5432)を使う。GitHub Secretsには追加せず、ローカルの`.env.local`にのみ`SUPABASE_READONLY_DB_URL`として置く(CI・本番デプロイでは使わない、エージェントの対話セッション専用)
-- クエリ実行は`.claude/skills/data-check/query.mjs`(`pg`パッケージを使う薄いスクリプト。依存は本体`package.json`から隔離し、[run-benriyatool](../../.claude/skills/run-benriyatool/SKILL.md)と同じパターンに揃える)で行う
+- クエリ実行は`.claude/skills/data-check/query.mjs`(`pg`パッケージを使う薄いスクリプト。依存は本体`package.json`から隔離し、[run-benriyatool](../../.claude/skills/run-benriyatool/SKILL.md)と同じパターンに揃える)で行う。TLS証明書検証はデフォルト(有効)のまま接続でき、無効化する必要はなかった
+- ロール作成・GRANT・RLSポリシー追加のSQLは、[ADR-0003](0003-db-schema-migration-ci.md)の`supabase/migrations/`には含めない。ロール作成にはパスワードが伴い、git管理下のファイルに残せないため、初回のみSupabaseダッシュボードのSQLエディタで手動実行する(下記「作業手順」参照)。この基盤はアプリの実行時スキーマ(INSERT時に使われるカラム等)に影響しない運用ツールであり、ADR-0003が対象とする「アプリの前提となるスキーマ変更」とは性質が異なるため、コード管理・CI自動適用の対象外とする
+
+### 作業手順(初回のみ・手動)
+
+```sql
+-- 1. 読み取り専用ロールを作成(パスワードは強力なものを個別に設定する。このファイルには残さない)
+create role benriyatool_readonly with login password '<強力なパスワード>';
+grant usage on schema public to benriyatool_readonly;
+
+-- 2. ikukyu_resultsへのSELECT専用アクセスを許可(anonのINSERT専用ポリシーとは別物)
+grant select on ikukyu_results to benriyatool_readonly;
+create policy "benriyatool_readonly can select" on ikukyu_results
+  for select to benriyatool_readonly using (true);
+```
+
+接続はSession Pooler([ADR-0003](0003-db-schema-migration-ci.md)と同じ経路)のURIのユーザー名部分を`benriyatool_readonly.<プロジェクトref>`に置き換え、`.env.local`に`SUPABASE_READONLY_DB_URL`として設定する。新しいアプリのテーブルを追加する際は、上記2.と同じ2行をそのテーブルにも追加する。
 - [data-check](../../.claude/skills/data-check/SKILL.md)の運用を更新: 接続情報が設定済みの環境では、エージェントがこのスクリプトで直接クエリを実行し結果を分析する。未設定の環境(接続情報を用意していないマシン・別セッション)では、従来どおりユーザーにSQLを渡して代行実行してもらう
 - 集計にとどまらない個人特定目的のクエリ(特定ユーザーの追跡など)は行わない方針は維持する(data-check SKILL.mdの既存ルール)
 
