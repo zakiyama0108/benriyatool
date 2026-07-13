@@ -1,0 +1,3 @@
+# Supabase CLI用の最小設定。マイグレーション(supabase db push)の実行にのみ使う
+# (背景: docs/adr/0003-db-schema-migration-ci.md。ローカル開発環境のsupabase startは使っていない)
+project_id = "benriyatool"

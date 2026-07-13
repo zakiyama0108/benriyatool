@@ -5,6 +5,8 @@ description: PRがmainにマージされた後のリリース確認に使う。C
 
 > ワークフロー上の位置: [/pr](../pr/SKILL.md)(実装PRのマージ後・毎回) → **/release-check(本Skill)** → 完了(問題があれば[/fix](../fix/SKILL.md))
 
+> **次フェーズのモデル:** 本Skillはデプロイ確認・本番スモークチェックが主であり、エージェント実行時も **Sonnet** で十分。問題発見時は[/fix](../fix/SKILL.md)で改めてモデル選定
+
 # 実施方法
 
 本Skillの手順はrelease-checkerエージェント(`.claude/agents/release-checker.md`)を起動して行う(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。

@@ -5,6 +5,10 @@ description: 実装完了後・PR作成前にコードをレビューすると�
 
 > ワークフロー上の位置: [/implementation](../implementation/SKILL.md) → **/implementation-review(本Skill)** → 指摘あり: [/resolve](../resolve/SKILL.md) / 指摘なし: [/pr](../pr/SKILL.md)(実装PR)
 
+> **次フェーズのモデル:** 基本は **Sonnet**(トークン消費を抑えるため下流工程は原則Sonnetで運用する)
+> - 指摘あり → [/resolve](../resolve/SKILL.md) へ: 複雑なリファクタリング・アーキテクチャ変更など設計の再考が必要な場合のみ **Opus** を検討する
+> - 指摘なし → [/pr](../pr/SKILL.md) へ: PR作成は機械的な作業のため **Sonnet** で十分
+
 # レビューの実施方法
 
 レビューはcode-reviewerエージェント(`.claude/agents/code-reviewer.md`)を起動して行う。実装したメインスレッドの文脈から切り離し、新鮮な目でレビューするため(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。
@@ -34,6 +38,9 @@ description: 実装完了後・PR作成前にコードをレビューすると�
 - [ ] `npm run check:spec-coverage`に❌がないか(テスト不要な項目は`scripts/spec-coverage-skip.json`に理由付きで登録されているか)
 - [ ] describe/itが命名ルールに沿っているか、`// 仕様:`コメントの表記が仕様書と完全一致か([/implementation](../implementation/SKILL.md)参照)
 - [ ] 境界値・特殊ケース・エラーケースのテストがあるか
+
+## 実機確認
+- [ ] UI(`app/`配下のページ・コンポーネント)に変更がある場合、[run-benriyatool](../run-benriyatool/SKILL.md)の手順でアプリを起動・操作し、スクリーンショットを実際に見て変更箇所の表示を確認したか(スモーク時は`block supabase`を忘れない)
 
 ## コード品質
 - [ ] CLAUDE.mdの規約に沿っているか(コメントは日本語、関数・型に役割と非自明な計算式・定数の根拠をコメント、過剰な抽象化をしない)
@@ -67,6 +74,11 @@ feature/<機能名> の変更差分
 | # | 重要度 | 対象 | 指摘内容 | 根拠 |
 |---|---|---|---|---|
 | 1 | 🔴 must | app/ikukyu/lib/xxx.ts:42 | ... | ... |
+
+### 実機確認(UI変更がある場合は必須。ない場合はこの欄ごと省略)
+- 確認したフロー: (例: /ikukyu ママモードで計算実行→結果表示)
+- スクリーンショット: `.claude/skills/run-benriyatool/screenshots/<ファイル名>.png`(ユーザーが開いて見られるようパスを必ず記載)
+- 結果: 表示崩れなし / 問題あり(→指摘事項の#nを参照)
 
 ### 次のステップ
 - 🔴/🟡あり → /resolve で修正し、再レビューを受ける

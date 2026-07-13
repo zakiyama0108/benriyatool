@@ -5,6 +5,8 @@ description: requirements.md作成後の設計フェーズで、design.md(処理
 
 > ワークフロー上の位置: [/requirement](../requirement/SKILL.md) → **/design(本Skill)** → [/spec-review](../spec-review/SKILL.md)
 
+> **次フェーズのモデル(/spec-review):** 基本は **Sonnet**(トークン消費を抑えるため下流工程は原則Sonnetで運用する)。金額計算・法令ルールが複雑に絡み、見落としのコストが大きい設計に限り **Opus** を検討する
+
 # design.mdの書き方
 
 requirements.mdのビジネスルールを「どんな手順・分岐で処理するか」を日本語の文章(変数名・数式なし)で書く**処理フロー**を中心に、この機能が実際に関わるファイル・DB・画面などを確認用に書き足す。フォルダ構成の一般ルールや、プロジェクト全体の非機能要件・設計方針はCLAUDE.md/requirements.mdの領分のためここには書かない。分岐・複数ステップのロジックが1つもない機能(例: 純粋なルーティング変更)は、design.md自体を作らずrequirements.mdのみで完結してよい。

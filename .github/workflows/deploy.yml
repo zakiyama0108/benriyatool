@@ -1,14 +1,36 @@
-# mainにマージされた後、本番のCloudflare Workersへ自動デプロイするワークフロー
-# PR段階のlint/testはci.ymlが担当するため、ここではbuildとdeployのみ行う
+# mainにマージされた後、DBマイグレーション適用 → 本番のCloudflare Workersへ自動デプロイするワークフロー
+# PR段階のlint/testはci.ymlが担当するため、ここではmigrate/build/deployのみ行う
 name: Deploy to Cloudflare Workers
 
 on:
   push:
     branches:
       - main
+  # Secrets設定後の動作確認用(migrate→deployを手動実行できる。デプロイは同じ内容の再配信になるだけで安全)
+  workflow_dispatch:
 
 jobs:
+  # supabase/migrations/ の未適用SQLを本番DBへ適用する(背景: docs/adr/0003-db-schema-migration-ci.md)
+  # 適用済みはDB内の管理テーブルで判定されるため、毎回実行しても二重適用されない(未適用がなければ即終了)
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # SUPABASE_DB_URLはSession PoolerのURI(セッションモード・ポート5432)。
+      # GitHub ActionsランナーはIPv6不可のため、IPv4対応のPooler経由で接続する(直接続はIPv6のみ)
+      - name: Apply migrations
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --include-all
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
   deploy:
+    # 新コードが前提とするスキーマ変更を先に適用してからデプロイする(順序逆転するとINSERT失敗が握りつぶされて気づけない)
+    needs: migrate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
