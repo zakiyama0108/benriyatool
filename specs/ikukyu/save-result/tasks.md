@@ -22,10 +22,10 @@
 
 ## テストフラグ(is_test)の追加
 
-- [ ] Task 5: DBマイグレーション(design.md「データベース設計 > マイグレーション」のSQLをユーザーがSupabase SQLエディタで実行)
-  - [ ] `is_test`カラム追加(boolean not null default false)
-  - [ ] 既存レコードを全件`is_test = true`に更新(仕様: requirements.md#テストデータの判定-4)
-  - [ ] Task 6以降の実装・動作確認より前に実行されていることを確認する
+- [ ] Task 5: DBマイグレーション(design.md「データベース設計 > マイグレーション」のSQL。適用基盤: docs/adr/0003)
+  - [ ] `supabase/migrations/<タイムスタンプ>_add_is_test_to_ikukyu_results.sql`を作成する(`is_test`カラム追加+既存レコード全件true。仕様: requirements.md#テストデータの判定-4)
+  - [ ] マイグレーションファイル単独のPRとしてマージし、deploy.ymlのmigrateジョブが成功したことを確認する
+  - [ ] Task 6以降の実装・動作確認より前に適用が完了していることを確認する
 
 - [ ] Task 6: テストデータ判定関数(仕様: requirements.md#テストデータの判定-1〜3)
   - [ ] 🔴 開発環境ならtrue、URLクエリに`test=1`があればtrue、どちらでもなければfalseになることを確認するテストを書く
