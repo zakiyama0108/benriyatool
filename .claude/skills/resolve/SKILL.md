@@ -7,6 +7,10 @@ description: /spec-reviewや/implementation-review、またはPR上で受けた�
 
 > **次フェーズのモデル(レビュー再実行):** 基本は **Sonnet**。複数の指摘に関連する修正・ビジネスルール全体の見直しなど、根拠の再構築が必要な場合のみ **Opus** を検討する
 
+# 前提条件
+
+- 対応対象のレビュー指摘([/spec-review](../spec-review/SKILL.md)・[/implementation-review](../implementation-review/SKILL.md)・PR上のコメント)があること。指摘を受けていない修正は[/fix](../fix/SKILL.md)(既存機能の改修)から始める
+
 # 修正の進め方
 
 - 重要度の高い順(🔴→🟡)に1件ずつ対応する。🟢(対応任意)は対応するかどうかを先に宣言してから進める

@@ -1,6 +1,14 @@
 # Skill一覧と遷移図
 
-このプロジェクトの開発作業はすべて `.claude/skills/` 配下のSkillとして手順化されている。各Skillは冒頭に「ワークフロー上の位置」を持ち、完了時に次のステップを案内する。
+このプロジェクトの開発作業はすべて `.claude/skills/` 配下のSkillとして手順化されている。各Skillは冒頭に「ワークフロー上の位置」(前工程の成果物が必要なものは「前提条件」も)を持ち、完了時に次のステップを案内する。
+
+## ワークフローへの自動ルーティング
+
+Skillを明示的に選ばない会話も、次の3層で必ずワークフローに合流する(背景・限界は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)の「ワークフローへの自動ルーティングと前提条件ゲート」を参照):
+
+1. **入口**: UserPromptSubmitフック(`../hooks/route-to-workflow.sh`)がすべてのユーザー入力に「開発作業なら該当する工程Skillを起動してから作業する」という指示を注入する(工程の判定はモデルが行う。`/`で始まる明示的なSkill起動には注入しない)
+2. **途中**: 前工程の成果物を必要とする工程Skillは冒頭の「前提条件」で確認し、満たしていなければ上流の工程Skillへ誘導する(例: requirements.mdなしで/designを始めない)
+3. **出口**: 各Skill末尾の「完了時の次ステップ案内」で次の工程へ誘導する
 
 ## まとめ表
 
@@ -37,6 +45,12 @@
 | [claude-settings](claude-settings/SKILL.md) | `.claude/settings.json`のpermissions.allow変更時のpermissions.md同期 | /implementation-review |
 | [parallel-work](parallel-work/SKILL.md) | git worktreeで作業ディレクトリを分けて複数機能を並行開発する手順と注意事項 | /requirement、/fix、/implementation、/pr、/release-check |
 | [run-benriyatool](run-benriyatool/SKILL.md) | devサーバーを起動しheadless Chrome(driver.mjs)で実機操作・スクリーンショット確認する手順 | /implementation-review、「実機で確認して」等の依頼全般 |
+
+### ユーティリティSkill(開発フローから独立)
+
+| Skill | 役割 | 使うタイミング |
+|---|---|---|
+| [session-report](session-report/SKILL.md) | セッションの作業内容を要約したレポートMDをObsidianのClaude-Reportフォルダに保存する | 作業の区切り・「レポートにして」の依頼時 |
 
 ### Agent(作業者)
 
@@ -115,4 +129,4 @@ flowchart TD
 
 ## この文書の保守
 
-Skill・Agentの追加・削除・遷移の変更をしたら、このREADMEの表と遷移図も同じPRで更新する(/retrospective の確認対象)。Agentの追加・変更時は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)の判断基準・導入順との整合も確認する。
+Skill・Agentの追加・削除・遷移の変更をしたら、このREADMEの表と遷移図も同じPRで更新する(/retrospective の確認対象)。ワークフローの入口(/requirement・/fix・/consultの使い分け)が変わったら、ルーティングフック(`../hooks/route-to-workflow.sh`)の指示文も同じPRで更新する。Agentの追加・変更時は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)の判断基準・導入順との整合も確認する。

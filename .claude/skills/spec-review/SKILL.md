@@ -9,6 +9,11 @@ description: 仕様3点セット(requirements.md/design.md/tasks.md)を承認PR�
 > - 指摘あり → [/resolve](../resolve/SKILL.md) へ: 複数ルール間の矛盾・根本的な設計変更など、根拠の再構築が必要な指摘に限り **Opus** を検討する
 > - 指摘なし → [/pr](../pr/SKILL.md) へ: 実装フェーズも **Sonnet** が基本。複雑な計算ロジック・複数の状態管理を伴う実装のみ **Opus** を検討する
 
+# 前提条件
+
+- 対象の`specs/<アプリ名>/<機能名>/requirements.md`が存在すること。なければ[/requirement](../requirement/SKILL.md)から始める
+- design.md/tasks.mdが存在すること(分岐のない単純な機能でrequirements.mdのみと判断した場合を除く。判断基準は[/design](../design/SKILL.md))。未作成なら[/design](../design/SKILL.md)から始める
+
 # レビューの実施方法
 
 レビューはspec-reviewerエージェント(`.claude/agents/spec-reviewer.md`)を起動して行う。仕様を書いたメインスレッドの文脈から切り離し、新鮮な目でレビューするため(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。
