@@ -5,13 +5,9 @@ description: PRを作成するときに使う。仕様承認PR(3点セット)と
 
 > ワークフロー上の位置: [/spec-review](../spec-review/SKILL.md) → **仕様承認PR** → 承認後 [/implementation](../implementation/SKILL.md) … [/implementation-review](../implementation-review/SKILL.md) → **実装PR** → ユーザーがGitHub UIでマージ → [/release-check](../release-check/SKILL.md)
 
-> **次フェーズのモデル:**
-> - 仕様承認PR → [/implementation](../implementation/SKILL.md) へ: specの複雑度に基づいて選ぶ
->   - 複雑な計算ロジック・複数の状態管理が実装で必要: **Opus** (実装判断の複雑度が高い)
->   - 標準的な実装: **Sonnet**
-> - 実装PR → [/release-check](../release-check/SKILL.md) へ: 変更のリスクレベルに基づいて選ぶ
->   - 高リスク(重要機能・複数ドメイン・法令対応): **Opus**
->   - 標準～低リスク: **Sonnet** (確認作業が機械的がメイン)
+> **次フェーズのモデル:** 基本は **Sonnet**(トークン消費を抑えるため下流工程は原則Sonnetで運用する)
+> - 仕様承認PR → [/implementation](../implementation/SKILL.md) へ: 複雑な計算ロジック・複数の状態管理を伴う実装のみ **Opus** を検討する。なお後続の[/implementation-review](../implementation-review/SKILL.md)は安全網として原則Opusを使うため、ここは無理にOpusを選ばなくてよい
+> - 実装PR → [/release-check](../release-check/SKILL.md) へ: 確認作業は機械的なため **Sonnet** で十分
 
 # 共通ルール
 

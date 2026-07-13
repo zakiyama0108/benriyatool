@@ -5,9 +5,7 @@ description: 承認済みの仕様をTDDで実装するときに使う。Red→G
 
 > ワークフロー上の位置: [/pr](../pr/SKILL.md)(仕様承認PRのマージ後) → **/implementation(本Skill)** → [/implementation-review](../implementation-review/SKILL.md)
 
-> **次フェーズのモデル(/implementation-review):** テスト・実装コード複雑度に基づいて選ぶ
-> - 複雑な計算ロジック・複数の状態管理・テストが多い場合: **Opus** (細かいバグ・境界値処理の漏れ・テストの効果測定が重要)
-> - 標準的な実装・軽微な変更: **Sonnet** (基本的なコード品質チェックはSonnetで十分)
+> **次フェーズのモデル(/implementation-review):** 原則 **Opus**(実装者の自己レビューバイアスを排除する最後の砦のため、他の下流工程よりトークンをかける価値がある)。文言修正のみなど明らかに軽微な変更に限り **Sonnet** でよい
 
 # 着手前の確認
 

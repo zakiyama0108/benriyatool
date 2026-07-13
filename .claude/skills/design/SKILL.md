@@ -5,10 +5,7 @@ description: requirements.md作成後の設計フェーズで、design.md(処理
 
 > ワークフロー上の位置: [/requirement](../requirement/SKILL.md) → **/design(本Skill)** → [/spec-review](../spec-review/SKILL.md)
 
-> **次フェーズのモデル(/spec-review):** design.mdの複雑度に基づいて選ぶ
-> - 複数の処理・複雑な分岐・エッジケースが多い場合: **Opus** (新鮮な目での矛盾検出・処理漏れ・セキュリティリスク見落としの検出が重要)
-> - 標準的な設計(処理3〜5個、分岐は単純): **Sonnet**
-> - シンプルな設計(処理が1〜2個、分岐なし): **Sonnet**
+> **次フェーズのモデル(/spec-review):** 基本は **Sonnet**(トークン消費を抑えるため下流工程は原則Sonnetで運用する)。金額計算・法令ルールが複雑に絡み、見落としのコストが大きい設計に限り **Opus** を検討する
 
 # design.mdの書き方
 

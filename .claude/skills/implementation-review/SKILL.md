@@ -5,14 +5,9 @@ description: 実装完了後・PR作成前にコードをレビューすると�
 
 > ワークフロー上の位置: [/implementation](../implementation/SKILL.md) → **/implementation-review(本Skill)** → 指摘あり: [/resolve](../resolve/SKILL.md) / 指摘なし: [/pr](../pr/SKILL.md)(実装PR)
 
-> **次フェーズのモデル:**
-> - 指摘あり → [/resolve](../resolve/SKILL.md) へ: 修正複雑度に基づいて選ぶ
->   - 複雑なリファクタリング・アーキテクチャ変更・複数ファイルの修正: **Opus** (設計の再考・依存関係の見直しが必要)
->   - 標準的な修正(ロジック修正・テスト追加): **Sonnet**
->   - バグ修正・文言修正: **Sonnet**
-> - 指摘なし → [/pr](../pr/SKILL.md) へ: 変更のリスクレベルに基づいて選ぶ
->   - 高リスク(重要機能・複数ドメインへの影響): **Opus**
->   - 標準～低リスク: **Sonnet** (機械的なPR作成・CI確認がメイン)
+> **次フェーズのモデル:** 基本は **Sonnet**(トークン消費を抑えるため下流工程は原則Sonnetで運用する)
+> - 指摘あり → [/resolve](../resolve/SKILL.md) へ: 複雑なリファクタリング・アーキテクチャ変更など設計の再考が必要な場合のみ **Opus** を検討する
+> - 指摘なし → [/pr](../pr/SKILL.md) へ: PR作成は機械的な作業のため **Sonnet** で十分
 
 # レビューの実施方法
 
