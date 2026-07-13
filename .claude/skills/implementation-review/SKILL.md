@@ -5,6 +5,10 @@ description: 実装完了後・PR作成前にコードをレビューすると�
 
 > ワークフロー上の位置: [/implementation](../implementation/SKILL.md) → **/implementation-review(本Skill)** → 指摘あり: [/resolve](../resolve/SKILL.md) / 指摘なし: [/pr](../pr/SKILL.md)(実装PR)
 
+> **次フェーズのモデル:** 基本は **Sonnet**(トークン消費を抑えるため下流工程は原則Sonnetで運用する)
+> - 指摘あり → [/resolve](../resolve/SKILL.md) へ: 複雑なリファクタリング・アーキテクチャ変更など設計の再考が必要な場合のみ **Opus** を検討する
+> - 指摘なし → [/pr](../pr/SKILL.md) へ: PR作成は機械的な作業のため **Sonnet** で十分
+
 # レビューの実施方法
 
 レビューはcode-reviewerエージェント(`.claude/agents/code-reviewer.md`)を起動して行う。実装したメインスレッドの文脈から切り離し、新鮮な目でレビューするため(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。

@@ -5,6 +5,10 @@ description: 仕様3点セット(requirements.md/design.md/tasks.md)を承認PR�
 
 > ワークフロー上の位置: [/design](../design/SKILL.md) → **/spec-review(本Skill)** → 指摘あり: [/resolve](../resolve/SKILL.md) / 指摘なし: [/pr](../pr/SKILL.md)(仕様承認PR)
 
+> **次フェーズのモデル:** 基本は **Sonnet**(トークン消費を抑えるため下流工程は原則Sonnetで運用する)
+> - 指摘あり → [/resolve](../resolve/SKILL.md) へ: 複数ルール間の矛盾・根本的な設計変更など、根拠の再構築が必要な指摘に限り **Opus** を検討する
+> - 指摘なし → [/pr](../pr/SKILL.md) へ: 実装フェーズも **Sonnet** が基本。複雑な計算ロジック・複数の状態管理を伴う実装のみ **Opus** を検討する
+
 # レビューの実施方法
 
 レビューはspec-reviewerエージェント(`.claude/agents/spec-reviewer.md`)を起動して行う。仕様を書いたメインスレッドの文脈から切り離し、新鮮な目でレビューするため(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。
