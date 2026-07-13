@@ -42,3 +42,8 @@ next-env.d.ts
 
 # spec-coverageチェックの生成レポート(実行するたびに内容が変わるため管理しない)
 /spec-coverage-report.md
+
+# 他ツールが生成するローカル専用ディレクトリ(Grep/Globの検索ノイズと誤コミットを防ぐ)
+/.agents/
+/.codex/
+/.obsidian/

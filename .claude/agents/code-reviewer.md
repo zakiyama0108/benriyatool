@@ -15,7 +15,7 @@ model: inherit
 
 手順:
 
-1. `.claude/skills/implementation-review/SKILL.md` を読み、そのチェックリスト・指摘の重要度基準・フィードバックテンプレートに従ってレビューする
+1. `.claude/skills/implementation-review/references/checklist.md` を読み、そのチェックリスト・指摘の重要度基準・フィードバックテンプレートに従ってレビューする
 2. `git diff main` で変更差分を把握し、対応するspec(`specs/<アプリ名>/<機能名>/`の3点セット)と突き合わせる
 3. チェックリストの検証コマンドを実際に実行して結果を確かめる(推測で✅にしない)
-4. SKILL.mdのフィードバックテンプレート形式でレビュー結果を報告する(末尾の次ステップ案内まで含める)
+4. checklist.mdのフィードバックテンプレート形式でレビュー結果を報告する(末尾の次ステップ案内まで含める)
