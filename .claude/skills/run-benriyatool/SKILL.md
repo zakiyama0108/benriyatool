@@ -41,6 +41,7 @@ fill #leaveEndDate 2027-09-30
 click button[type=submit]
 wait-for text=受け取れる給付金の合計
 screenshot ikukyu-result
+eval new Promise(r=>setTimeout(r,3000))
 errors
 quit
 EOF
@@ -86,6 +87,7 @@ npm test
 
 - **「計算する」を押すと本番Supabaseの`ikukyu_results`テーブルに書き込まれる**(`app/ikukyu/lib/saveResult.ts`。devサーバーでも本番と同じ接続先)。ただしdevサーバー(`NODE_ENV=development`)からの保存は`is_test=true`で保存される(仕様: `specs/ikukyu/save-result/requirements.md#テストデータの判定-1`)ため、`/data-check`の集計(`is_test = false`で絞り込み)には混ざらない。以前はここで`block supabase`を実行しリクエスト自体を遮断していたが、is_test導入後は不要になったため外している
 - 他アプリを追加してこのSkillのフローを流用する場合、そのアプリの保存処理がまだ`is_test`を実装していなければ、実データに混ざらないよう`block supabase`を先頭に入れること(コマンドはドライバに残っている)
+- **`saveResult`はfire-and-forgetの非同期処理**で、UIの結果表示(`wait-for text=受け取れる給付金の合計`)はSupabaseへの保存完了を待たずに先に成立する。保存確認まで含めたいスモークフローでは、`click`後すぐに`quit`せず`eval new Promise(r=>setTimeout(r,3000))`のような数秒の待機を挟むこと。待機なしで`quit`すると保存リクエストが完了前に中断され、`errors`は`no errors`と表示されるのに実際はDBに何も保存されていない、ということが起きる(`errors`は「リクエストが拒否されなかったか」しか見ておらず「保存が完了したか」は見ていない)
 - **トップページの見出しは「べんりやつーる」(ひらがな)**。「便利屋」でwait-forするとタイムアウトする
 - **`trailingSlash: true`のため`/ikukyu`は`/ikukyu/`にリダイレクトされる**。navは追従するので問題ないが、URL比較をするときは末尾スラッシュに注意
 - **入力はReact制御コンポーネント**。`eval`でvalue代入してもonChangeが発火しない。必ず`fill`を使う
