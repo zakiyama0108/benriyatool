@@ -30,7 +30,6 @@ for i in {1..60}; do curl -sf http://localhost:3000 >/dev/null && { echo READY; 
 
 ```bash
 node .claude/skills/run-benriyatool/driver.mjs <<'EOF'
-block supabase
 nav http://localhost:3000
 wait-for text=べんりやつーる
 screenshot home
@@ -53,7 +52,7 @@ EOF
 
 | コマンド | 動作 |
 |---|---|
-| `block <文字列>` | URLにその文字列を含むリクエストを遮断。**Supabaseへの書き込みを防ぐため通常は最初に`block supabase`を実行する** |
+| `block <文字列>` | URLにその文字列を含むリクエストを遮断。`is_test`未対応のアプリを操作する場合など、Supabaseへの書き込みを避けたいときに`block supabase`として使う(Gotchas参照) |
 | `nav <URL>` | ページ遷移 |
 | `wait-for <セレクタ>` | 要素の出現を待つ(15秒)。`text=○○`形式も可 |
 | `click <セレクタ>` | クリック |
@@ -85,8 +84,8 @@ npm test
 
 ## Gotchas
 
-- **「計算する」を押すと本番Supabaseの`ikukyu_results`テーブルに書き込まれる**(`app/ikukyu/lib/saveResult.ts`。devサーバーでも本番と同じ接続先)。スモークテストのゴミデータが/data-checkに現れるので、必ず先頭で`block supabase`すること
-- **`block supabase`実行時は`errors`に`[console] Failed to load resource: net::ERR_FAILED`が1件出るのが正常**。遮断の副作用で、saveResultはエラーを握りつぶす設計のためUIには影響しない
+- **「計算する」を押すと本番Supabaseの`ikukyu_results`テーブルに書き込まれる**(`app/ikukyu/lib/saveResult.ts`。devサーバーでも本番と同じ接続先)。ただしdevサーバー(`NODE_ENV=development`)からの保存は`is_test=true`で保存される(仕様: `specs/ikukyu/save-result/requirements.md#テストデータの判定-1`)ため、`/data-check`の集計(`is_test = false`で絞り込み)には混ざらない。以前はここで`block supabase`を実行しリクエスト自体を遮断していたが、is_test導入後は不要になったため外している
+- 他アプリを追加してこのSkillのフローを流用する場合、そのアプリの保存処理がまだ`is_test`を実装していなければ、実データに混ざらないよう`block supabase`を先頭に入れること(コマンドはドライバに残っている)
 - **トップページの見出しは「べんりやつーる」(ひらがな)**。「便利屋」でwait-forするとタイムアウトする
 - **`trailingSlash: true`のため`/ikukyu`は`/ikukyu/`にリダイレクトされる**。navは追従するので問題ないが、URL比較をするときは末尾スラッシュに注意
 - **入力はReact制御コンポーネント**。`eval`でvalue代入してもonChangeが発火しない。必ず`fill`を使う
