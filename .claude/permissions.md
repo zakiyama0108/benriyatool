@@ -8,3 +8,9 @@
 
 ## ルール
 `.claude/settings.json` の `permissions.allow` にコマンドを追加する際は、必ずこのファイルに台帳形式(`| ルール | 説明 |` のテーブル)で1行追記する(同じPR内で行う)。autoモード運用では基本的に追加不要のため、追加するのは「autoモードの判定を待たず常に許可したい頻出コマンド」がある場合のみ。
+
+## hooks
+
+| フック | 説明 |
+| --- | --- |
+| PreToolUse / Bash(git *) → `.claude/hooks/enforce-worktree.sh` | Claudeによる`git checkout`/`git switch`でのブランチ切り替えをブロックし、worktree作成([parallel-work](skills/parallel-work/SKILL.md))へ誘導する。許可されるのは「mainへの切り替え」「mainからの新規ブランチ作成」「`git checkout -- <file>`によるファイル復元」のみ。 |

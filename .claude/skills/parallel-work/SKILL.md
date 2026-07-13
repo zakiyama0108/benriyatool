@@ -9,6 +9,8 @@ description: 2つ以上の機能開発・修正を並行して進めるときに
 
 **1つの作業ディレクトリで`git checkout`によるブランチ切り替えを往復しない。** 2つ以上の機能を並行して進めたくなったら、機能ごとにgit worktreeで作業ディレクトリ自体を分ける。
 
+このルールはhook(`.claude/hooks/enforce-worktree.sh`)で強制されており、Claudeが`git checkout`/`git switch`でブランチを切り替えようとすると自動でブロックされ、worktree作成へ誘導される(mainへの切り替え・mainからの新規ブランチ作成・`git checkout -- <file>`によるファイル復元は許可)。
+
 典型的なきっかけ:
 - 仕様承認PR・実装PRの承認待ちの間に、別の機能の作業を始めたい
 - 機能開発の途中で、緊急のバグ修正([/fix](../fix/SKILL.md))が割り込んだ
