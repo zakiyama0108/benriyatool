@@ -143,5 +143,105 @@
     "specFile": "ikukyu/save-result/design.md",
     "item": "計算結果を保存する処理",
     "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#機能要件-1、エッジケース・例外処理-1でテスト済み"
+  },
+  {
+    "specFile": "ikukyu/save-result/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出し(テストデータの判定)に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/save-result/requirements.md",
+    "item": "テストデータの判定 [4]",
+    "reason": "導入前の既存レコードの一括更新はDBマイグレーション(supabase/migrations/20260713142540)で実施済みの1回きりのデータ移行であり、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "テストデータかどうかを判定する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#テストデータの判定-1〜3でテスト済み"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "エラーハンドリング",
+    "reason": "機能全体のエラー処理方針の記述で、テスト可能な個別の振る舞いはrequirements.md#エッジケース・例外処理-1でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results",
+    "reason": "テーブル定義の参照情報で、カラムへの保存の振る舞いはrequirements.md#機能要件-1、機能要件-3でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > id",
+    "reason": "DB側で自動採番される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > created_at",
+    "reason": "DB側で自動設定される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > mode",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > monthly_salary",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > due_date",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > leave_start_date",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > leave_end_date",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > total_amount",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > total_leave_days",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-2でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ikukyu_results > is_test",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-3、テストデータの判定-1〜3でテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "マイグレーション(テストフラグ導入時に1回だけ適用)",
+    "reason": "DBマイグレーション(supabase/migrations/20260713142540)として実施済みの1回きりのデータ移行手順で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "セキュリティ",
+    "reason": "リスク分析と設計上の歯止めの記述で、テスト可能な個別の振る舞いを持たないため(test=1の判定自体はrequirements.md#テストデータの判定-2でテスト済み)"
+  },
+  {
+    "specFile": "ikukyu/save-result/design.md",
+    "item": "ログ",
+    "reason": "ログを出力しないという方針の記述で、テスト対象の振る舞いを持たないため"
   }
 ]

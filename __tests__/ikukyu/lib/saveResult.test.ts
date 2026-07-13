@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { calcTotalLeaveDays, saveResult } from '../../../app/ikukyu/lib/saveResult'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { calcTotalLeaveDays, isTestData, saveResult } from '../../../app/ikukyu/lib/saveResult'
 import type { CalculatorInput, CalculatorResult } from '../../../app/ikukyu/lib/types'
 
 const { insertMock, fromMock } = vi.hoisted(() => {
@@ -15,6 +15,12 @@ vi.mock('../../../app/lib/supabaseClient', () => ({
 beforeEach(() => {
   insertMock.mockReset().mockResolvedValue({ data: null, error: null })
   fromMock.mockClear()
+})
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+  // テストで付けたURLパラメータを他のテストに持ち越さない
+  window.history.replaceState(null, '', '/ikukyu/')
 })
 
 // 仕様: specs/ikukyu/save-result/requirements.md#機能要件-2
@@ -73,6 +79,7 @@ describe('【共通】計算結果の保存 - 入力内容と計算結果の合�
       leave_end_date: '2027-10-31',
       total_amount: 1234567,
       total_leave_days: 406,
+      is_test: false,
     })
   })
 
@@ -95,6 +102,7 @@ describe('【共通】計算結果の保存 - 入力内容と計算結果の合�
       leave_end_date: '2027-04-29',
       total_amount: 1234567,
       total_leave_days: 180,
+      is_test: false,
     })
   })
 })
@@ -105,5 +113,53 @@ describe('【共通】保存失敗時の扱い - DBへの保存に失敗して�
     insertMock.mockRejectedValue(new Error('network error'))
 
     await expect(saveResult(mamaInput, result)).resolves.toBeUndefined()
+  })
+})
+
+// 仕様: specs/ikukyu/save-result/requirements.md#テストデータの判定-1、specs/ikukyu/save-result/requirements.md#テストデータの判定-2、specs/ikukyu/save-result/requirements.md#テストデータの判定-3
+describe('【共通】テストデータの判定 - 動作確認・テストによる保存かどうかを実行環境とURLから判定する', () => {
+  it('開発サーバー(開発環境)で動かしている場合、テストデータと判定されること', () => {
+    vi.stubEnv('NODE_ENV', 'development')
+
+    expect(isTestData()).toBe(true)
+  })
+
+  it('本番ビルドでも、URLにtest=1パラメータを付けて開いている場合、テストデータと判定されること', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    window.history.replaceState(null, '', '/ikukyu/?test=1')
+
+    expect(isTestData()).toBe(true)
+  })
+
+  it('本番ビルドでURLにパラメータがない場合、テストデータではないと判定されること', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+
+    expect(isTestData()).toBe(false)
+  })
+
+  it('URLのtestパラメータが1以外(test=0など)の場合、テストデータとは判定されないこと', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    window.history.replaceState(null, '', '/ikukyu/?test=0')
+
+    expect(isTestData()).toBe(false)
+  })
+})
+
+// 仕様: specs/ikukyu/save-result/requirements.md#機能要件-3
+describe('【共通】保存レコードへのテストフラグの付与 - テストデータ判定の結果をis_testとして保存する', () => {
+  it('通常のユーザー利用(本番ビルド・URLパラメータなし)では、is_testがfalseで保存されること', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+
+    await saveResult(mamaInput, result)
+
+    expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ is_test: false }))
+  })
+
+  it('開発サーバーからの保存では、is_testがtrueで保存されること', async () => {
+    vi.stubEnv('NODE_ENV', 'development')
+
+    await saveResult(mamaInput, result)
+
+    expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ is_test: true }))
   })
 })
