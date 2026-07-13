@@ -46,6 +46,12 @@ Skillを明示的に選ばない会話も、次の3層で必ずワークフロ�
 | [parallel-work](parallel-work/SKILL.md) | git worktreeで作業ディレクトリを分けて複数機能を並行開発する手順と注意事項 | /requirement、/fix、/implementation、/pr、/release-check |
 | [run-benriyatool](run-benriyatool/SKILL.md) | devサーバーを起動しheadless Chrome(driver.mjs)で実機操作・スクリーンショット確認する手順 | /implementation-review、「実機で確認して」等の依頼全般 |
 
+### ユーティリティSkill(開発フローから独立)
+
+| Skill | 役割 | 使うタイミング |
+|---|---|---|
+| [session-report](session-report/SKILL.md) | セッションの作業内容を要約したレポートMDをObsidianのClaude-Reportフォルダに保存する | 作業の区切り・「レポートにして」の依頼時 |
+
 ### Agent(作業者)
 
 Skill=手順・知識・テンプレート、Agent=別コンテキストで動く作業者、という役割分担。どの工程をAgent化するかの判断基準・今後の導入予定・モデル選定基準は [docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md) を参照。
