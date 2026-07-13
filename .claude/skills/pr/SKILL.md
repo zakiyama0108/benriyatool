@@ -9,6 +9,11 @@ description: PRを作成するときに使う。仕様承認PR(3点セット)と
 > - 仕様承認PR → [/implementation](../implementation/SKILL.md) へ: 複雑な計算ロジック・複数の状態管理を伴う実装のみ **Opus** を検討する。なお後続の[/implementation-review](../implementation-review/SKILL.md)は安全網として原則Opusを使うため、ここは無理にOpusを選ばなくてよい
 > - 実装PR → [/release-check](../release-check/SKILL.md) へ: 確認作業は機械的なため **Sonnet** で十分
 
+# 前提条件
+
+- **仕様承認PR**: [/spec-review](../spec-review/SKILL.md)で指摘なし(🟢のみ)の結果を得ていること。レビュー未実施なら/spec-reviewから始める
+- **実装PR**: [/implementation-review](../implementation-review/SKILL.md)で指摘なし(🟢のみ)の結果を得ていること。レビュー未実施なら/implementation-reviewから始める
+
 # 共通ルール
 
 - 作業は必ず`feature/<機能名>`ブランチで行い、mainに直接pushしない(マージ後の後続作業も同様に新しいブランチを切る)。複数の機能を並行して進める場合は[parallel-work](../parallel-work/SKILL.md)(worktree)を使い、ブランチの切り替えはしない

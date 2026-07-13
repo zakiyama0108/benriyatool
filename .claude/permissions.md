@@ -14,3 +14,4 @@
 | フック | 説明 |
 | --- | --- |
 | PreToolUse / Bash(git *) → `.claude/hooks/enforce-worktree.sh` | Claudeによる`git checkout`/`git switch`でのブランチ切り替えをブロックし、worktree作成([parallel-work](skills/parallel-work/SKILL.md))へ誘導する。許可されるのは「mainへの切り替え」「mainからの新規ブランチ作成」「`git checkout -- <file>`によるファイル復元」のみ。 |
+| UserPromptSubmit → `.claude/hooks/route-to-workflow.sh` | すべてのユーザー入力に「開発作業なら該当する工程Skillを起動してから作業する」というルーティング指示を注入する(`/`で始まる明示的なSkill起動には注入しない)。仕組みの全体像は[skills/README.md](skills/README.md)の「ワークフローへの自動ルーティング」を参照。 |

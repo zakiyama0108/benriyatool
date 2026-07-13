@@ -7,6 +7,10 @@ description: PRがmainにマージされた後のリリース確認に使う。C
 
 > **次フェーズのモデル:** 本Skillはデプロイ確認・本番スモークチェックが主であり、エージェント実行時も **Sonnet** で十分。問題発見時は[/fix](../fix/SKILL.md)で改めてモデル選定
 
+# 前提条件
+
+- 対象の実装PRがmainにマージ済みであること。未マージならマージ待ち([/pr](../pr/SKILL.md))の状態なので本Skillはまだ実行しない
+
 # 実施方法
 
 本Skillの手順はrelease-checkerエージェント(`.claude/agents/release-checker.md`)を起動して行う(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。
