@@ -28,7 +28,7 @@
 | 実装レビュー | implementation-review | **code-reviewer** | spec-reviewerと同じ。Bashはテスト実行用に許可 |
 | 指摘対応 | resolve | なし | 「同意できない指摘はユーザーに確認」が組み込まれており対話必須。書いた本人の文脈も必要 |
 | リリース確認 | release-check | **release-checker** | 手順が機械的・自己完結 |
-| 定期作業4種 | 各Skill | (未導入)個別Agent化 | 独立性が高くメインの文脈を汚さない。特にlaw-revision-check(Web調査が重い)とspec-audit(リポジトリ全読みが重い)の効果が大きい |
+| 定期作業のうち4種(retrospectiveを除く) | 各Skill | (未導入)個別Agent化 | 独立性が高くメインの文脈を汚さない。特にlaw-revision-check(Web調査が重い)とspec-audit(リポジトリ全読みが重い)の効果が大きい。retrospectiveはSkill自体の更新でメインの文脈が要るためAgent化の対象外 |
 
 ### AgentとSkillの分担(薄いAgentパターン)
 
@@ -152,7 +152,7 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 
 1. **spec-reviewer / code-reviewer**(導入済み。レビューの客観性が構造的に上がる、効果最大)
 2. **release-checker**(導入済み。機械的で失敗リスクが低い)
-3. **定期作業のAgent化**(未導入。law-revision-check → spec-audit → dependency-update / data-check の順で検討する)
+3. **定期作業のAgent化**(未導入。定期作業5種のうちretrospectiveを除く4種が対象。law-revision-check → spec-audit → dependency-update / data-check の順で検討する)
 4. **implementer**(導入済み。ただし常用ではなく、[parallel-work](../../.claude/skills/parallel-work/SKILL.md)のworktree並行開発時などに実装を委譲する任意の作業者として運用する。通常はメインスレッドが直接実装する)
 
 残るは第3段階(定期作業)のみ。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。

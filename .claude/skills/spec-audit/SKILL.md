@@ -1,6 +1,7 @@
 ---
 name: spec-audit
 description: 仕様書とその周辺(spec-coverage-skip.json・architecture.md・ステータス行)が実態からずれていないかを棚卸しするときに使う(目安: 四半期に1回)。
+disable-model-invocation: true
 ---
 
 > ワークフロー上の位置: 定期作業(開発ループ外)。ずれが見つかったら [/fix](../fix/SKILL.md) または軽微ならそのまま修正PRへ
