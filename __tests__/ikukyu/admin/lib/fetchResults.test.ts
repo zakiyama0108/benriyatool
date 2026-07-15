@@ -23,12 +23,12 @@ describe('【管理】一覧・集計の絞り込み条件の組み立て - 期�
     expect(params.lte).toBeNull()
   })
 
-  it('期間が指定されたとき、開始日はその日の始まり・終了日はその日の終わりまでを含む条件になること', () => {
+  it('期間が指定されたとき、日本時間の開始日の始まり・終了日の終わりまでを含む条件になること', () => {
     const filter: Filter = { fromDate: '2026-07-01', toDate: '2026-07-31', includeTest: false }
     const params = buildFilterParams(filter)
-    // 終了日は「その日いっぱい」を含めるため、翌日の直前までを対象にする
-    expect(params.gte).toBe('2026-07-01T00:00:00.000Z')
-    expect(params.lte).toBe('2026-07-31T23:59:59.999Z')
+    // 一覧表示がJSTのため、絞り込み境界もJST(+09:00)の一日境界に揃える
+    expect(params.gte).toBe('2026-07-01T00:00:00.000+09:00')
+    expect(params.lte).toBe('2026-07-31T23:59:59.999+09:00')
   })
 })
 
@@ -74,8 +74,8 @@ describe('【管理】保存データの取得 - 絞り込み条件をSupabase�
 
   it('期間が指定されたとき、保存日時の範囲でも絞り込むこと', async () => {
     await fetchResults({ fromDate: '2026-07-01', toDate: '2026-07-31', includeTest: true })
-    expect(builder.gte).toHaveBeenCalledWith('created_at', '2026-07-01T00:00:00.000Z')
-    expect(builder.lte).toHaveBeenCalledWith('created_at', '2026-07-31T23:59:59.999Z')
+    expect(builder.gte).toHaveBeenCalledWith('created_at', '2026-07-01T00:00:00.000+09:00')
+    expect(builder.lte).toHaveBeenCalledWith('created_at', '2026-07-31T23:59:59.999+09:00')
   })
 
   it('取得に失敗した(errorが返る)とき、例外を投げて呼び出し元に伝えること', async () => {

@@ -3,18 +3,19 @@ import type { AdminRecord, Filter } from './types'
 
 // 絞り込み条件から、取得時に使うパラメータを組み立てる。
 // 期間の終了日は「その日いっぱい」を含めたいので、その日の 23:59:59.999 までを対象にする。
-// 日付境界はUTCで扱う（保存日時はtimestamptz。運営者の集計用途では日単位の近似で十分）
+// 日付境界は日本時間(+09:00)で扱う。一覧・推移の表示がJSTのため、絞り込みもJSTの
+// 一日境界に揃えないと、表示上その日でも絞り込みから外れる不一致が境界で生じる
 export type FilterParams = {
   excludeTest: boolean       // is_test=false だけに絞るか
-  gte: string | null         // 保存日時の下限（ISO8601）。未指定はnull
-  lte: string | null         // 保存日時の上限（ISO8601）。未指定はnull
+  gte: string | null         // 保存日時の下限（ISO8601・JST境界）。未指定はnull
+  lte: string | null         // 保存日時の上限（ISO8601・JST境界）。未指定はnull
 }
 
 export function buildFilterParams(filter: Filter): FilterParams {
   return {
     excludeTest: !filter.includeTest,
-    gte: filter.fromDate ? `${filter.fromDate}T00:00:00.000Z` : null,
-    lte: filter.toDate ? `${filter.toDate}T23:59:59.999Z` : null,
+    gte: filter.fromDate ? `${filter.fromDate}T00:00:00.000+09:00` : null,
+    lte: filter.toDate ? `${filter.toDate}T23:59:59.999+09:00` : null,
   }
 }
 
