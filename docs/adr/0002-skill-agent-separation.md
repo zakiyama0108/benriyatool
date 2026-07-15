@@ -4,7 +4,7 @@
 採用
 
 ## コンテキスト
-- 開発ワークフローは工程別のSkill(`.claude/skills/`)として手順化済みだが、Agent(`.claude/agents/`)はspec-pr-reviewer 1本のみで、SkillとAgentの使い分け基準がなかった
+- 開発ワークフローは工程別のSkill(`.claude/skills/`)として手順化済みだが、Agent(`.claude/agents/`)はimpl-pr-reviewer(当時はspec-pr-reviewer)1本のみで、SkillとAgentの使い分け基準がなかった
 - 理想像として「Skill=手順・知識・テンプレート」「Agent=人格・作業者」という役割分担を目指す
 - Claude CodeのAgent(サブエージェント)には次の技術特性があり、これが分割の判断材料になる
   1. **別コンテキストで動く**: 仕様・コードを書いた本人がレビューする「自己レビューバイアス」を排除できる。逆に、それまでの議論の文脈を引き継げない
@@ -23,7 +23,7 @@
 | 要件定義 | requirement | なし | ヒアリングで質問を重ねる必要がある |
 | 設計 | design | なし(当面) | 要件定義時の議論の文脈を引き継ぐ方が設計の質が上がる |
 | 仕様レビュー | spec-review | **spec-reviewer** | 新鮮な目+read-onlyで「修正禁止」を強制 |
-| PR作成前チェック | pr | spec-pr-reviewer(既存) | 機械的チェックの自己完結した作業 |
+| 実装PR作成前チェック | pr | impl-pr-reviewer(既存) | 機械的チェックの自己完結した作業。実装PRの作成前のみ起動する(仕様承認PRではマーカー残り・coverage除外によりチェックが成立しないため) |
 | TDD実装 | implementation | **implementer(委譲は任意)** | 通常は対話しながら進められるメインスレッドが直接実装する。並行開発時などは委譲でき、仕様との食い違い検出時は中断して報告する |
 | 実装レビュー | implementation-review | **code-reviewer** | spec-reviewerと同じ。Bashはテスト実行用に許可 |
 | 指摘対応 | resolve | なし | 「同意できない指摘はユーザーに確認」が組み込まれており対話必須。書いた本人の文脈も必要 |
@@ -32,7 +32,7 @@
 
 ### AgentとSkillの分担(薄いAgentパターン)
 
-Skillの中身をAgentへ移動せず、**AgentはSkillを参照する薄い定義に留める**(spec-pr-reviewerが既に実践している形)。
+Skillの中身をAgentへ移動せず、**AgentはSkillを参照する薄い定義に留める**(impl-pr-reviewerが既に実践している形)。
 
 - **Agent側に持つもの**: 人格(「あなたは〜専任レビュアー」)、行動制約(報告に徹する・修正しない)、tools制限、参照すべきチェックリストのパス
 - **Skill側に残すもの**: ワークフロー遷移の案内とAgentの起動手順(SKILL.md本体)、チェックリスト・重要度基準・フィードバックテンプレート(`references/checklist.md`)
@@ -118,14 +118,14 @@ flowchart LR
     subgraph agents["Agent(作業者)"]
         specreviewer[["spec-reviewer<br>read-only"]]
         codereviewer[["code-reviewer<br>検証コマンドのみ実行"]]
-        specprreviewer[["spec-pr-reviewer<br>PR作成前の横断チェック"]]
+        implprreviewer[["impl-pr-reviewer<br>実装PR作成前の横断チェック"]]
         implementer[["implementer<br>TDD実装・食い違い時は中断報告"]]
         releasechecker[["release-checker<br>デプロイ確認・本番チェック・掃除"]]
     end
 
     s_specreview -->|レビューを委譲| specreviewer
     s_implreview -->|レビューを委譲| codereviewer
-    s_pr -->|作成前チェックを委譲| specprreviewer
+    s_pr -->|実装PR作成前チェックを委譲| implprreviewer
     s_impl -.並行開発時などに実装を委譲・任意.-> implementer
     s_release -->|確認作業を委譲| releasechecker
 ```
@@ -142,7 +142,7 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 | 拘束された作業(仕様・tasks.mdが細かく手順を決めている) | sonnet | 手順は決まっているが、逸脱・食い違いに気づく判断力は要る |
 | 判断が本体(レビューの質がそのAgentの存在理由) | inherit | 品質ゲートを軽量化するとワークフロー全体の品質が下がる |
 
-現在の割り当て: spec-pr-reviewer / release-checker = haiku、implementer = sonnet、spec-reviewer / code-reviewer = inherit。
+現在の割り当て: impl-pr-reviewer / release-checker = haiku、implementer = sonnet、spec-reviewer / code-reviewer = inherit。
 
 - implementerをsonnetにできるのは、下流のcode-reviewer(inherit)が品質ゲートとして受け止める構造があるため。複雑な計算ロジックの実装は委譲せずメインスレッドで直接実装する選択肢も残っている
 - 軽量化したAgentの報告品質が落ちていないかは/retrospectiveで確認し、問題があればこの基準に立ち返って割り当てを見直す
