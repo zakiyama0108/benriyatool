@@ -243,5 +243,170 @@
     "specFile": "ikukyu/save-result/design.md",
     "item": "ログ",
     "reason": "ログを出力しないという方針の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "ログイン状態を判定して画面を出し分ける処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-1でテスト済み(auth/LoginScreen)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "Googleでログインする処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-2でテスト済み(auth)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "閲覧権限を確認する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-3でテスト済み(auth/LoginScreen)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "保存データを絞り込んで取得する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#絞り込み等でテスト済み(fetchResults)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "一覧を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#一覧表示でテスト済み(format/ResultsTable)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "集計を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#集計表示でテスト済み(aggregate/SummaryStats)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "ログアウトする処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-4でテスト済み(auth)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "エラーハンドリング",
+    "reason": "機能全体のエラー処理方針の記述で、個別の振る舞い(取得失敗時に例外を投げる)はfetchResults/authでテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "admin_emails (新規)",
+    "reason": "許可リストテーブルの定義の参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "admin_emails (新規) > email",
+    "reason": "カラム定義の参照情報。RLSによる閲覧制御はDB側の担保でありアプリの単体テスト対象外。初回公開前の実機確認で担保する"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "マイグレーション(実装より先に単独PRで適用)",
+    "reason": "DBマイグレーション(supabase/migrations/20260715202227)として適用済みのスキーマ・ポリシー変更で、アプリコードの振る舞いではないため。RLSの実挙動は初回公開前の実機確認で担保する"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いは各コンポーネントのテストで担保済みのため"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "状態管理",
+    "reason": "画面のローカル状態の持ち方の記述で、初期値(全期間・テスト除外)や絞り込みの反映はfetchResults/FilterBarでテスト済みのため"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "セキュリティ",
+    "reason": "リスク分析と設計上の歯止めの記述。RLSによる閲覧制御はDB側の担保でアプリ単体テスト対象外(初回公開前の実機確認で担保)"
+  },
+  {
+    "specFile": "ikukyu/admin/design.md",
+    "item": "ログ",
+    "reason": "失敗時にコンソール出力する方針の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "アクセス制御・権限 [2]",
+    "reason": "アクセス制御をDB側のRLSで担保する方針の項目で、アプリの単体テスト対象外。初回公開前の実機確認(anonでSELECT不可等)で担保する"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "アクセス制御・権限 [3]",
+    "reason": "管理画面に編集・削除の経路を作らないという不作為の要件で、対応するテスト(存在しないことの検証)を持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "認証手段とパスキー [1]",
+    "reason": "パスキーをGoogleアカウント側で実現しドメインをWebAuthnのRPにしないという方針の決定で、テスト可能な振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "認証手段とパスキー [3]",
+    "reason": "運営者のGoogleアカウント側の運用前提(パスキー登録)で、コードで強制できずアプリのテスト対象外。初回公開前の確認で担保する"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "認証手段とパスキー [4]",
+    "reason": "運営者のGoogleアカウント側の運用前提(2段階認証)で、コードで強制できずアプリのテスト対象外。初回公開前の確認で担保する"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "認証手段とパスキー [5]",
+    "reason": "初回公開前に設定状況を確認するという運用手順で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "表示の初期値・区切り [3]",
+    "reason": "集計対象が絞り込み後のデータと一致することはpage.tsxの統合(fetchResultsの結果をbuildSummaryに渡す)で実現する結合要件で単体テスト対象外。集計関数自体はaggregateでテスト済み"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "非機能要件 [1]",
+    "reason": "PC中心・スマホは破綻しなければよいという表示方針で、自動テストで検証する性質のものではないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "非機能要件 [2]",
+    "reason": "静的エクスポート構成を維持するという構成上の制約で、ビルド(npm run build)で担保するため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "依存関係",
+    "reason": "他spec・ADRへの参照と確認事項の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/admin/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]
