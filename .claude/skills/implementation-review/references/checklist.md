@@ -32,7 +32,6 @@ code-reviewerエージェント(またはエージェントを使えない状況
 - [ ] デバッグコード・不要なファイル・未使用のimportが残っていないか
 
 ## 設定・ドキュメント
-- [ ] `.claude/settings.json`に差分がある場合、`.claude/permissions.md`への追記が同じ差分に含まれているか([claude-settings](../../claude-settings/SKILL.md)参照)
 - [ ] specフォルダの増減・依存関係の変化がある場合、`specs/<アプリ名>/architecture.md`の機能マップが追随しているか
 
 # 指摘の重要度

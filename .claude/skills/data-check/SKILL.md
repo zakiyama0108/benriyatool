@@ -1,6 +1,7 @@
 ---
 name: data-check
 description: Supabaseに保存されたユーザー入力データ(<アプリ名>_resultsテーブル)の健全性を定期確認するときに使う(目安: 月1回)。確認用SQLの用意と結果の分析を扱う。
+disable-model-invocation: true
 ---
 
 > ワークフロー上の位置: 定期作業(開発ループ外)。異常が計算バグ・バリデーション漏れを示唆したら [/fix](../fix/SKILL.md) へ

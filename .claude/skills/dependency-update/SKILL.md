@@ -1,6 +1,7 @@
 ---
 name: dependency-update
 description: npmの依存パッケージを定期更新するときに使う(目安: 月1回)。npm outdated/auditの確認、Next.js更新時の注意、更新PRの出し方を扱う。
+disable-model-invocation: true
 ---
 
 > ワークフロー上の位置: 定期作業(開発ループ外)。更新後は [/pr](../pr/SKILL.md)(実装PR) → [/release-check](../release-check/SKILL.md)
