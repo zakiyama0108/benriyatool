@@ -13,16 +13,20 @@
 
 ## 4. システム構成図
 ```text
-User
+一般ユーザー                          運営者(admin)
+  │                                    │
+  ▼                                    ▼
+Cloudflare Workers (静的配信) ────────┘
   │
   ▼
-Cloudflare Workers (静的配信)
-  │
-  ▼
-Next.js (静的エクスポート, /ikukyu)
+Next.js (静的エクスポート)
+  ├─ /ikukyu       … 給付金の計算・保存
+  └─ /ikukyu/admin … 保存データの閲覧(要ログイン)
   │
   ▼ (ブラウザから直接)
-Supabase (ikukyu_results テーブル, anonキーでINSERTのみ)
+Supabase
+  ├─ ikukyu_results : anonキーでINSERT / 認証済みadminはRLS許可でSELECT
+  └─ Supabase Auth  : /ikukyu/admin のGoogle OIDCログイン
 ```
 
 ## 5. アーキテクチャ概要
@@ -42,6 +46,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信しており、�
 |---|---|---|
 | [simulator](simulator/requirements.md) | 給付金額を計算し画面に表示する | - |
 | [save-result](save-result/requirements.md) | simulatorの入力・計算結果をDBに保存する | simulatorの計算結果を受け取る([simulator/requirements.md#機能要件-2](simulator/requirements.md), [#機能要件-3](simulator/requirements.md)) |
+| [admin](admin/requirements.md) | 保存データを運営者本人だけがログインして一覧・集計で閲覧する管理画面 | save-resultが保存した内容を表示([save-result/requirements.md#機能要件-1](save-result/requirements.md)) |
 
 ## 8. ディレクトリ構成
 CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。
@@ -50,12 +55,14 @@ CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。
 | サービス | 用途 |
 |---|---|
 | Supabase(`ikukyu_results`テーブル) | 計算結果の保存・分析用データの蓄積 |
+| Supabase Auth(Google OIDC) | 管理画面(admin)の運営者ログイン |
 
 ## 10. 関連ADR
 - [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 計算結果保存のDB選定(Supabase採用)
+- [0006-admin-screen-oidc-rls.md](../../docs/adr/0006-admin-screen-oidc-rls.md) — 管理画面(admin)の認証(Google OIDC)とDB読み取り(RLS)方針
 
 ## 11. セキュリティ
-入力される月給・出産予定日などは機微な個人情報になり得るため、URLパラメータに含めずSupabaseへの直接POSTのみで扱う。保存は`anon`キーでのINSERT専用であり、SELECT/UPDATEはできない(詳細は[関連ADR](#10-関連adr))。
+入力される月給・出産予定日などは機微な個人情報になり得るため、URLパラメータに含めずSupabaseへの直接POSTのみで扱う。`anon`キー(一般ユーザー)は`ikukyu_results`へのINSERT専用で、SELECT/UPDATEはできない。閲覧は管理画面(admin)からのみ可能で、Supabase Authでログインした運営者本人だけが、RLSポリシーで許可されて`ikukyu_results`をSELECTできる(認証・RLSの方針は[関連ADR](#10-関連adr)の0006、運営者メールを露出させない設計は[admin/design.md](admin/design.md#セキュリティ))。
 
 ## 12. 技術的制約
 給付率・賃金日額の上限額は施行時点の雇用保険法・健康保険法に基づく(詳細は[simulator/requirements.md](simulator/requirements.md)のビジネスルール)。法改正があった場合、該当specの計算ルール・上限額の見直しが必要。
