@@ -1,6 +1,6 @@
 ---
 name: pr
-description: PRを作成するときに使う。仕様承認PR(3点セット)と実装PRの2種類のテンプレート、仕様承認ゲートの運用、作成前チェック(spec-pr-reviewer・spec-coverage・CI)を扱う。
+description: PRを作成するときに使う。仕様承認PR(3点セット)と実装PRの2種類のテンプレート、仕様承認ゲートの運用、作成前チェック(impl-pr-reviewer・spec-coverage・CI)を扱う。
 ---
 
 > ワークフロー上の位置: [/spec-review](../spec-review/SKILL.md) → **仕様承認PR** → 承認後 [/implementation](../implementation/SKILL.md) … [/implementation-review](../implementation-review/SKILL.md) → **実装PR** → ユーザーがGitHub UIでマージ → [/release-check](../release-check/SKILL.md)
@@ -18,7 +18,6 @@ description: PRを作成するときに使う。仕様承認PR(3点セット)と
 
 - 作業は必ず`feature/<機能名>`ブランチで行い、mainに直接pushしない(マージ後の後続作業も同様に新しいブランチを切る)。複数の機能を並行して進める場合は[parallel-work](../parallel-work/SKILL.md)(worktree)を使い、ブランチの切り替えはしない
 - featureブランチの作成・push・PR作成はユーザーへの確認なしで進めてよい
-- PR作成前にspec-pr-reviewerエージェント(`.claude/agents/spec-pr-reviewer.md`)でチェックし、❌を解消してから作成する
 - 作成後は`gh pr checks <PR番号>`でCIが全てpassすることを確認する
 - ユーザーへの報告にはPR番号だけでなく完全なURLを明記する。URLは装飾なしの単独行に置く(`**`や括弧・日本語をURLに連結するとリンク検出が巻き込んで開けなくなる)
 - mainへのマージはユーザーがGitHub UI上でdiffを確認して行う(こちらからマージしない)
@@ -46,6 +45,8 @@ description: PRを作成するときに使う。仕様承認PR(3点セット)と
 ```
 
 # 実装PR
+
+PR作成前にimpl-pr-reviewerエージェント(`.claude/agents/impl-pr-reviewer.md`)でチェックし、❌を解消してから作成する(承認ステータスマーカーの削除漏れ・spec-coverage・CIの横断チェック)。
 
 `npm run check:spec-coverage`でrequirements.md/design.mdの各仕様項目にテストが紐づいているかを確認する(CIでも同じチェックが走り、❌が残っていると失敗する)。テストが不要な項目は`scripts/spec-coverage-skip.json`に理由を添えて登録する([/implementation](../implementation/SKILL.md)参照)。
 
