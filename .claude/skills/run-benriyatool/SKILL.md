@@ -11,6 +11,7 @@ devサーバーをバックグラウンドで起動し、[driver.mjs](driver.mjs
 
 - macOS + Google Chrome インストール済み(ブラウザのダウンロードは不要。playwright-coreが`channel: 'chrome'`でシステムのChromeを起動する)
 - `.env.local` が存在すること(`NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`。読む必要はない、無いとdevサーバーがエラーになるだけ)
+- devサーバーのログ・PIDを`/tmp`に置くため、`.claude/settings.json`の`permissions.additionalDirectories`に`/tmp`を登録している(リポジトリを汚さないため。この設定を消すとログ・PIDの読み書きで確認を求められる)
 - 初回のみ、ドライバの依存をインストールする:
 
 ```bash

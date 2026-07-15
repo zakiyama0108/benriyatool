@@ -10,6 +10,19 @@ Skillを明示的に選ばない会話も、次の3層で必ずワークフロ�
 2. **途中**: 前工程の成果物を必要とする工程Skillは冒頭の「前提条件」で確認し、満たしていなければ上流の工程Skillへ誘導する(例: requirements.mdなしで/designを始めない)
 3. **出口**: 各Skill末尾の「完了時の次ステップ案内」で次の工程へ誘導する
 
+## 起動者(誰がSkillを起動できるか)
+
+Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill名>/SKILL.md`の1階層のみ。分類用のフォルダを挟むと発見されない)ため、分類は以下の4カテゴリと、frontmatterの起動者フラグで表す。
+
+| カテゴリ | ユーザーが`/xxx`で起動 | Claudeが自律起動 | frontmatter |
+|---|---|---|---|
+| 機能開発フロー(工程Skill) | ○ | ○ | (なし) |
+| 定期作業Skill | ○ | **×** | `disable-model-invocation: true` |
+| 知識Skill | ○ | ○ | (なし) |
+| ユーティリティSkill | ○ | ○ | (なし) |
+
+定期作業だけClaudeの自律起動を切っているのは、**実行タイミングを人が決める作業**であり(月1回・年2回など)、会話の流れでClaudeが勝手に始める理由がないため。このフラグを付けるとdescriptionもコンテキストに載らなくなるので、ユーザーが`/dependency-update`のように明示的に打つ必要がある(ルーティングフックも定期作業を扱わない)。
+
 ## まとめ表
 
 ### 機能開発フロー(工程Skill)
@@ -20,14 +33,14 @@ Skillを明示的に選ばない会話も、次の3層で必ずワークフロ�
 | [requirement](requirement/SKILL.md) | 要件ヒアリング→requirements.md作成。spec分割・新規spec vs 既存spec更新の判断・`[n]`採番 | 新しい機能・アプリの要件定義を始めるとき | /design |
 | [design](design/SKILL.md) | design.md(処理フロー中心)とtasks.md(TDDタスク分解)の作成 | requirements.md作成後 | /spec-review |
 | [spec-review](spec-review/SKILL.md) | 3点セットの一括レビュー(チェックリスト・重要度・テンプレート付き)。実施はspec-reviewerエージェント | 3点セットが揃ったとき | 指摘あり: /resolve / なし: /pr(仕様承認PR) |
-| [pr](pr/SKILL.md) | 仕様承認PR・実装PRの作成。承認ゲートの運用、spec-pr-reviewer・CIの確認 | レビュー通過後 | 仕様承認PR承認後: /implementation / 実装PRマージ後: /release-check |
+| [pr](pr/SKILL.md) | 仕様承認PR・実装PRの作成。承認ゲートの運用、impl-pr-reviewer・CIの確認 | レビュー通過後 | 仕様承認PR承認後: /implementation / 実装PRマージ後: /release-check |
 | [implementation](implementation/SKILL.md) | TDD実装(Red→Green→Refactor)。テスト命名・仕様コメント・spec-coverage対応付け。並行開発時などはimplementerエージェントに委譲可 | 仕様承認PRのマージ後 | /implementation-review |
 | [implementation-review](implementation-review/SKILL.md) | 実装のコードレビュー(仕様整合・テスト・品質のチェックリスト・重要度・テンプレート付き)。実施はcode-reviewerエージェント | 実装・動作確認の完了後 | 指摘あり: /resolve / なし: /pr(実装PR) |
 | [resolve](resolve/SKILL.md) | レビュー指摘の修正。重要度順に対応し、対応結果を報告する | /spec-review・/implementation-review・PR上で指摘を受けたとき | 指摘元のレビューを再実行 → /pr |
 | [fix](fix/SKILL.md) | バグ修正・既存機能の小規模改修の入口。既存spec更新の影響洗い出しと承認要否の判断 | 計算誤り・文言修正・スコープ外項目への対応など | 仕様変更あり: /pr(仕様承認PR) / 純粋なバグ: 修正後 /implementation-review |
 | [release-check](release-check/SKILL.md) | Cloudflare Workersへのデプロイ確認、本番スモークチェック、マージ済みブランチ掃除。実施はrelease-checkerエージェント | 実装PRのマージ後(毎回) | 完了(問題があれば /fix) |
 
-### 定期作業Skill(開発ループ外)
+### 定期作業Skill(開発ループ外・ユーザーが`/xxx`で明示起動)
 
 | Skill | 役割 | 頻度 | 異常時の遷移先 |
 |---|---|---|---|
@@ -42,7 +55,6 @@ Skillを明示的に選ばない会話も、次の3層で必ずワークフロ�
 | Skill | 役割 | 参照元 |
 |---|---|---|
 | [architecture-workflow](architecture-workflow/SKILL.md) | `specs/<アプリ名>/architecture.md`(アプリ全体像)の作成・更新 | /requirement、/design、/spec-audit |
-| [claude-settings](claude-settings/SKILL.md) | `.claude/settings.json`のpermissions.allow変更時のpermissions.md同期 | /implementation-review |
 | [parallel-work](parallel-work/SKILL.md) | git worktreeで作業ディレクトリを分けて複数機能を並行開発する手順と注意事項 | /requirement、/fix、/implementation、/pr、/release-check |
 | [run-benriyatool](run-benriyatool/SKILL.md) | devサーバーを起動しheadless Chrome(driver.mjs)で実機操作・スクリーンショット確認する手順 | /implementation-review、「実機で確認して」等の依頼全般 |
 
@@ -60,7 +72,7 @@ Skill=手順・知識・テンプレート、Agent=別コンテキストで動�
 |---|---|---|---|
 | [spec-reviewer](../agents/spec-reviewer.md) | 仕様3点セットのレビュー。書き込みツールを持たず報告に徹する | /spec-review | inherit(判断が本体) |
 | [code-reviewer](../agents/code-reviewer.md) | 実装コードのレビュー。テスト・lint等は実行するが修正はしない | /implementation-review | inherit(判断が本体) |
-| [spec-pr-reviewer](../agents/spec-pr-reviewer.md) | PR作成前の横断チェック(承認ステータス・spec-coverage・permissions.md同期・CI) | /pr | haiku(機械的チェック) |
+| [impl-pr-reviewer](../agents/impl-pr-reviewer.md) | 実装PR作成前の横断チェック(承認ステータス・spec-coverage・CI) | /pr(実装PRのみ) | haiku(機械的チェック) |
 | [release-checker](../agents/release-checker.md) | デプロイ確認・本番スモークチェック・マージ済みブランチ掃除 | /release-check | haiku(機械的チェック) |
 | [implementer](../agents/implementer.md) | 承認済み仕様のTDD実装。仕様との食い違い時は中断して報告 | /implementation(並行開発時などの委譲は任意) | sonnet(仕様に拘束された作業) |
 

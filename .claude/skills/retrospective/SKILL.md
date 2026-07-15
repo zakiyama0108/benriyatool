@@ -1,6 +1,7 @@
 ---
 name: retrospective
 description: 開発ワークフロー(.claude/skills/のSkill群)が実際の進め方とずれていないかを振り返り、Skill側を更新するときに使う(目安: 月1回〜四半期に1回)。
+disable-model-invocation: true
 ---
 
 > ワークフロー上の位置: 定期作業(開発ループ外)。Skillの更新はfeatureブランチ + [/pr](../pr/SKILL.md)で行う
