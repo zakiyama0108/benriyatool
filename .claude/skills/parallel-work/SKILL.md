@@ -1,6 +1,6 @@
 ---
 name: parallel-work
-description: 2つ以上の機能開発・修正を並行して進めるときに使う。git worktreeで作業ディレクトリを分ける手順、並行してよい作業の条件、worktree運用時の注意事項(node_modules・.env.local・ポート衝突・掃除)を扱う。
+description: 2つ以上の機能開発・修正を並行して進めるとき、またはメインの作業ディレクトリが別作業で埋まっているときに使う。git worktreeで作業ディレクトリを分ける手順、並行してよい作業の条件、着手宣言(早期push)、worktree運用時の注意事項(node_modules・.env.local・ポート衝突・掃除)を扱う。
 ---
 
 > ワークフロー上の位置: 工程Skillから参照される知識Skill。並行作業を始めるとき・終えるときに参照する(単独のワークフロー工程ではない)
@@ -14,6 +14,7 @@ description: 2つ以上の機能開発・修正を並行して進めるときに
 典型的なきっかけ:
 - 仕様承認PR・実装PRの承認待ちの間に、別の機能の作業を始めたい
 - 機能開発の途中で、緊急のバグ修正([/fix](../fix/SKILL.md))が割り込んだ
+- **工程Skillを始めようとしたら、メインの作業ディレクトリが別作業のブランチ上・未コミット変更ありで埋まっていた**(受け身のきっかけ。埋まっている作業には触れず、mainベースのworktreeを作って新しい作業をそちらに隔離してから進める)
 
 1つの機能を最初から最後まで順番に進めるだけなら、worktreeは不要(通常どおりメインの作業ディレクトリでfeatureブランチを切る)。
 
@@ -51,7 +52,11 @@ worktreeごとにClaude Codeのセッション(VSCodeウィンドウ)を1つ開�
 
 各worktree内の進め方は通常と同じ(該当する工程Skillに従う)。
 
-## 4. マージ後に取り込む・掃除する
+## 4. 隔離した作業の確認・レビューはPR経由で行う
+
+worktree内の成果物は、メインの作業ディレクトリを開いている手元のIDEには表示されない(別ディレクトリのため)。隔離した作業の内容確認・レビューは、手元IDEのファイルツリーではなくコミット/PR(GitHubのdiff)経由で行う(経緯: worktreeで進めた仕様書を、ユーザーが手元IDEで見つけられなかったことがある)。
+
+## 5. マージ後に取り込む・掃除する
 
 - 片方のPRがmainにマージされたら、続行中のworktreeでは`git fetch origin && git rebase origin/main`でmainの変更を取り込んでから作業を続ける
 - 作業がすべて終わったworktreeは削除する([/release-check](../release-check/SKILL.md)のStep3に組み込まれている):
@@ -59,6 +64,14 @@ worktreeごとにClaude Codeのセッション(VSCodeウィンドウ)を1つ開�
 ```bash
 git worktree remove ../benriyatool-<機能名>
 ```
+
+# 着手宣言(進行中の作業を他セッションから見えるようにする)
+
+セッション開始時の鮮度警告(`.claude/hooks/check-main-freshness.sh`)と工程Skillの着手前チェックが見えるのは、**リモート(origin)にpushされた状態**だけ。マージ前・push前の作業は他セッションから不可視のため、並行作業が重複しても検知できない(発端: 2026-07-16、worktreeセッションのadmin設計成果に気づかず、別セッションが同じ設計を二重実施した)。
+
+- 工程Skill(/requirement・/design以降)で最初の成果物をコミットしたら、PR作成を待たず早めに `git push -u origin feature/<機能名>` してリモートに載せる
+- これにより他セッションの着手前チェック(`gh pr list`と`git ls-remote --heads origin`)から「進行中の作業」として検知できるようになる
+- 作業を中止したブランチは放置せず削除する(検知ノイズになるため。マージ済みブランチの掃除は[/release-check](../release-check/SKILL.md)が行う)
 
 # 注意事項
 
