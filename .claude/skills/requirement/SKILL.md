@@ -12,7 +12,7 @@ description: 新しい機能・アプリの要件定義を始めるときに使�
 
 > 別の機能の作業(承認待ちを含む)が進行中のまま本Skillを始める場合は、先に[parallel-work](../parallel-work/SKILL.md)(worktreeによる並行作業)を確認する。
 
-> **着手前チェック(重複作業の防止):** `git fetch origin main` でローカルmainの遅れを確認し、遅れていれば先に最新化する。続けて `gh pr list --state all --limit 20 --search "<対象のアプリ名や機能名>"` で同じspec・同じ機能を扱う既存PR(オープン=進行中 / マージ済み=対応済み)がないか確認し、見つかったら作業を始めずユーザーに報告する(この項は requirement/design/fix/implementation の4Skillに同文で記載。変更時は揃って更新する)
+> **着手前チェック(重複作業の防止):** `git fetch origin main` でローカルmainの遅れを確認し、遅れていれば先に最新化する。続けて `gh pr list --state all --limit 20 --search "<対象のアプリ名や機能名>"` と `git ls-remote --heads origin` で、同じspec・同じ機能を扱う既存PR(オープン=進行中 / マージ済み=対応済み)や進行中ブランチ([parallel-work](../parallel-work/SKILL.md)の着手宣言)がないか確認し、見つかったら作業を始めずユーザーに報告する(この項は requirement/design/fix/implementation の4Skillに同文で記載。変更時は揃って更新する)
 
 # Step0 入口の判断: 新規spec作成 vs 既存spec更新
 

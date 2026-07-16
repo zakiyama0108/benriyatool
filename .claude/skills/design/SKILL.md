@@ -9,7 +9,7 @@ description: requirements.md作成後の設計フェーズで、design.md(処理
 
 # 前提条件
 
-- **着手前チェック(重複作業の防止):** `git fetch origin main` でローカルmainの遅れを確認し、遅れていれば先に最新化する。続けて `gh pr list --state all --limit 20 --search "<対象のアプリ名や機能名>"` で同じspec・同じ機能を扱う既存PR(オープン=進行中 / マージ済み=対応済み)がないか確認し、見つかったら作業を始めずユーザーに報告する(この項は requirement/design/fix/implementation の4Skillに同文で記載。変更時は揃って更新する)
+- **着手前チェック(重複作業の防止):** `git fetch origin main` でローカルmainの遅れを確認し、遅れていれば先に最新化する。続けて `gh pr list --state all --limit 20 --search "<対象のアプリ名や機能名>"` と `git ls-remote --heads origin` で、同じspec・同じ機能を扱う既存PR(オープン=進行中 / マージ済み=対応済み)や進行中ブランチ([parallel-work](../parallel-work/SKILL.md)の着手宣言)がないか確認し、見つかったら作業を始めずユーザーに報告する(この項は requirement/design/fix/implementation の4Skillに同文で記載。変更時は揃って更新する)
 - 対象の`specs/<アプリ名>/<機能名>/requirements.md`が存在すること。なければ[/requirement](../requirement/SKILL.md)(要件定義)から始める(要件ヒアリングを飛ばして設計に入らない)。存在する場合も、最新化したmainの内容で確認する(古いローカルコピーの「未実装」ステータスを信じない)
 
 # design.mdの書き方
