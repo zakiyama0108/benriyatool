@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import WebSiteJsonLd from './components/WebSiteJsonLd'
 
 export const metadata: Metadata = {
   title: 'べんりやつーる | 暮らしのお金・手続きに役立つ無料ツール集',
@@ -9,6 +10,9 @@ export const metadata: Metadata = {
 export default function HubPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-12 space-y-10">
+      {/* Google検索のサイト名対応(WebSite構造化データ) */}
+      <WebSiteJsonLd />
+
       {/* ヘッダー */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-bold tracking-tight">べんりやつーる</h1>
