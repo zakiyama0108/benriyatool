@@ -11,11 +11,6 @@
   },
   {
     "specFile": "hub-site/requirements.md",
-    "item": "機能要件",
-    "reason": "静的なルーティング変更のみの仕様のため(requirements.mdのエッジケース・例外処理欄にも明記)。ページ遷移の存在はビルド・手動確認で担保する"
-  },
-  {
-    "specFile": "hub-site/requirements.md",
     "item": "ビジネスルール",
     "reason": "サイト名・リダイレクト方針など運用上の意思決定であり、自動テストで検証する性質のものではないため"
   },

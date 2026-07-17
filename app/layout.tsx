@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Footer from "./components/Footer";
+import { SITE_NAME, SITE_URL } from "./lib/site";
 
 const GA_MEASUREMENT_ID = "G-ZG600FMCS6";
 
@@ -16,8 +17,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://benriyatool.com";
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "べんりやつーる | 暮らしのお金・手続きに役立つ無料ツール集",
@@ -26,7 +25,7 @@ export const metadata: Metadata = {
     title: "べんりやつーる | 暮らしのお金・手続きに役立つ無料ツール集",
     description: "暮らしのお金や手続きに関する無料ツールを提供しています。育休給付金シミュレーターをはじめ、今後も便利なツールを追加していきます。",
     url: SITE_URL,
-    siteName: "べんりやつーる",
+    siteName: SITE_NAME,
     locale: "ja_JP",
     type: "website",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
