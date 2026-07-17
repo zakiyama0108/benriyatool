@@ -47,6 +47,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信しており、�
 | [simulator](simulator/requirements.md) | 給付金額を計算し画面に表示する | - |
 | [save-result](save-result/requirements.md) | simulatorの入力・計算結果をDBに保存する | simulatorの計算結果を受け取る([simulator/requirements.md#機能要件-2](simulator/requirements.md), [#機能要件-3](simulator/requirements.md)) |
 | [admin](admin/requirements.md) | 保存データを運営者本人だけがログインして一覧・集計で閲覧する管理画面 | save-resultが保存した内容を表示([save-result/requirements.md#機能要件-1](save-result/requirements.md)) |
+| [guide](guide/requirements.md) | 計算エンジンの試算値を核にしたSEO向け解説記事(`/ikukyu/guide/*`) | simulatorの計算関数を読み取り専用で利用(給付率・上限額のルールは[simulator/requirements.md](simulator/requirements.md)を正とする) |
 
 ## 8. ディレクトリ構成
 CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。
