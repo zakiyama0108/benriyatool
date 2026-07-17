@@ -31,7 +31,7 @@
   - [x] 🔵 Refactor: サイト名・URLの定数を`app/layout.tsx`のmetadataと重複しないよう整理する
   - [x] requirements.md先頭の「仕様確認中」マーカーを削除し、`npm run check:spec-coverage`で機能要件[1]とテストの対応を確認する(機能要件に`[1]`が付いたことで`scripts/spec-coverage-skip.json`の既存エントリ「機能要件」は未使用になるため、あわせて削除または見直しを行う)
 
-- [ ] Task 6: 動作確認(リリース前後)
+- [x] Task 6: 動作確認(リリース前後)
   - [x] ビルド成功・トップページのHTMLにJSON-LDが出力されることを確認
-  - [ ] schema.orgバリデータ(validator.schema.org)での検証
-  - [ ] リリース後、Google Search Consoleでトップページと`/ikukyu`の再クロールをリクエストする(手動・運営者作業)
+  - [x] schema.orgバリデータ(validator.schema.org)での検証(2026-07-17実施: WebSiteスキーマがエラーなし・警告なしで認識され、name「べんりやつーる」・urlとも意図どおり)
+  - [x] リリース後、Google Search Consoleでトップページと`/ikukyu`の再クロールをリクエストする(手動・運営者作業。2026-07-17リクエスト済み。検索結果のサイト名反映はGoogle側の再クロール後、数日〜数週間かかる場合がある)
