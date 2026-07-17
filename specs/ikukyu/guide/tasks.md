@@ -69,4 +69,4 @@ design.mdのコンポーネント設計の7つ(StatTiles / ArticleTable / Callou
 - 記事間の相互リンク(関連記事)を3記事に設置し、パンくずの「ガイド」を一覧ページへリンク
 - `public/sitemap.xml` に4URL(記事3本+一覧)を追記
 - `npm run lint` / `npm test` / `npm run build`(静的エクスポート)が通ることを確認
-- /run-benriyatool で3記事のスクリーンショットを撮り、モックアップとの見た目の乖離・モバイル表示を確認する
+- /run-benriyatool で3記事+一覧ページのスクリーンショットを撮り、モックアップとの見た目の乖離・モバイル表示を確認する

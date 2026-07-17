@@ -74,7 +74,7 @@ app/ikukyu/guide/hayamihyo/page.tsx         (新規: 記事2)
 app/ikukyu/guide/fufu-ikukyu/page.tsx       (新規: 記事3)
 app/ikukyu/lib/calculator.ts                (既存: 計算関数を読み取り専用で利用。変更しない)
 app/ikukyu/lib/dateUtils.ts                 (既存: 日付計算を読み取り専用で利用。変更しない)
-public/sitemap.xml                          (既存: 3URLを追記)
+public/sitemap.xml                          (既存: 4URL(記事3本+一覧)を追記)
 ```
 
 ## 画面設計
