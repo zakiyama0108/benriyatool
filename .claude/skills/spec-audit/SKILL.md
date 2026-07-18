@@ -1,6 +1,6 @@
 ---
 name: spec-audit
-description: 仕様書とその周辺(spec-coverage-skip.json・architecture.md・ステータス行)が実態からずれていないかを棚卸しするときに使う(目安: 四半期に1回)。
+description: 仕様書とその周辺(spec-coverage-skip.json・architecture.md・ステータス行・設計図。docs/architecture/のインフラ系図を含む)が実態からずれていないかを棚卸しするときに使う(目安: 四半期に1回)。
 disable-model-invocation: true
 ---
 
@@ -25,6 +25,13 @@ disable-model-invocation: true
 - [ ] 機能マップのspec一覧が`specs/<アプリ名>/`配下のフォルダ実態と一致しているか
 - [ ] 依存関係の記述が各specのrequirements.mdの依存関係と矛盾していないか
 - [ ] 採用技術・外部サービスの表が現在の構成(package.json・wrangler.toml・ADR)と合っているか
+- [ ] 図(システム構成図・コンポーネント図・ER図)が実態(実際に使うコンポーネント・外部サービス・テーブル)と一致しているか。ASCIIアートの構成図が残っていればMermaidへの置換候補として報告する
+
+## 図の陳腐化(docs/architecture/ 含む)
+
+- [ ] 各design.mdに埋め込まれたシーケンス図・状態遷移図が、本文(処理フロー・状態管理の文章)・実装とずれていないか(文章が正。図だけが古い状態を放置しない)
+- [ ] `docs/architecture/`のインフラ構成図・デプロイメント図・ネットワーク構成図が現在の構成(wrangler.toml・CI設定・使用中の外部サービス・課金/無料枠の境界)と一致しているか。クラウドサービスを使っているのに図が存在しない場合は作成候補として報告する([architecture-workflow](../architecture-workflow/SKILL.md)の「クラウド・インフラ系の図」参照)
+- [ ] Mermaid→Draw.io昇格の要否を見直す(アイコン・レイアウト・境界の表現に意味が出てきたら昇格。基準は[architecture-workflow](../architecture-workflow/SKILL.md)の「形式の選択」)。昇格済みの場合、`.drawio`正本とREADME掲載用SVG・資料用PNGの出力がずれていないか
 
 ## その他
 - [ ] `[n]`採番に欠番・重複がないか(途中削除で歯抜けになった箇所は詰めずに現状維持でよいが、テストコメントとの対応が生きているか確認する)
