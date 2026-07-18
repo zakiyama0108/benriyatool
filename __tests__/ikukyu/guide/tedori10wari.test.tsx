@@ -59,8 +59,8 @@ describe('記事1の手取り比較の前提明記 - 概算であることと計
 // 仕様: specs/ikukyu/guide/requirements.md#記事ページ共通-4
 describe('記事1のメタデータ - タイトルタグ・meta description・OGPを設定する', () => {
   it('タイトルに「手取り10割」、descriptionに狙うキーワードの説明が含まれ、OGPが設定されていること', () => {
-    expect(String(metadata.title)).toContain('手取り10割')
-    expect(String(metadata.description)).toContain('出生後休業支援給付金')
+    expect(metadata.title as string).toContain('手取り10割')
+    expect(metadata.description as string).toContain('出生後休業支援給付金')
     expect(metadata.openGraph?.url).toBe('/ikukyu/guide/tedori-10wari')
   })
 })

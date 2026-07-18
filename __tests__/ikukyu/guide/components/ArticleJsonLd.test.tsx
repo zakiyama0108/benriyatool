@@ -20,7 +20,7 @@ describe('ガイド記事の構造化データ - Article(とFAQがある場合�
     )
     const scripts = container.querySelectorAll('script[type="application/ld+json"]')
     expect(scripts).toHaveLength(1)
-    const json = JSON.parse(scripts[0].innerHTML)
+    const json = JSON.parse(scripts[0].innerHTML) as { '@type': string; headline: string; url: string; dateModified: string }
     expect(json['@type']).toBe('Article')
     expect(json.headline).toContain('手取り10割')
     expect(json.url).toBe('https://benriyatool.com/ikukyu/guide/tedori-10wari/')
@@ -33,7 +33,7 @@ describe('ガイド記事の構造化データ - Article(とFAQがある場合�
     )
     const scripts = container.querySelectorAll('script[type="application/ld+json"]')
     expect(scripts).toHaveLength(2)
-    const faqJson = JSON.parse(scripts[1].innerHTML)
+    const faqJson = JSON.parse(scripts[1].innerHTML) as { '@type': string; mainEntity: { name: string }[] }
     expect(faqJson['@type']).toBe('FAQPage')
     expect(faqJson.mainEntity[0].name).toContain('14日')
   })
