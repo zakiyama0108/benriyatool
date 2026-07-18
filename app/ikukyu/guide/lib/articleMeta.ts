@@ -8,15 +8,15 @@ export const APPLIED_PERIOD_LABEL = '2025年8月1日〜2026年7月31日'
 export const LAST_UPDATED_LABEL = '2026年7月18日'
 export const LAST_UPDATED_ISO = '2026-07-18'
 
-// 参考資料(一次情報)へのリンク。全記事で共通に使う
+// 参考資料(一次情報)へのリンク。全記事で共通に使う(URLは2026-07-18にWeb上で実在・内容を確認済み)
 export const PRIMARY_SOURCES = [
   {
-    label: '厚生労働省「出生後休業支援給付金の創設(雇用保険制度の改正)」',
-    href: 'https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000158500_00003.html',
+    label: '厚生労働省「育児休業等給付について」',
+    href: 'https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000135090_00001.html',
   },
   {
-    label: 'ハローワークインターネットサービス「育児休業給付について」',
-    href: 'https://www.hellowork.mhlw.go.jp/insurance/insurance_continue.html',
+    label: 'ハローワークインターネットサービス「育児休業等給付」',
+    href: 'https://www.hellowork.mhlw.go.jp/insurance/insurance_childcareleave.html',
   },
 ] as const
 

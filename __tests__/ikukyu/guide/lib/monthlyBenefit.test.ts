@@ -4,7 +4,7 @@ import { calcMonthlyBenefit, findCapSalaryLine, estimateWorkingNetIncome } from 
 // 月額 = 上限適用後の賃金日額 × 給付率(端数切り捨て) × 30日
 // 賃金日額 = floor(月給 / 30)
 
-// 仕様: specs/ikukyu/guide/requirements.md#月額給付額の定義-1、specs/ikukyu/guide/requirements.md#月額給付額の定義-2
+// 仕様: specs/ikukyu/guide/requirements.md#月額給付額の定義-1、specs/ikukyu/guide/requirements.md#月額給付額の定義-2、specs/ikukyu/guide/requirements.md#記事ページ共通-2
 describe('ガイド記事の早見表に載せる月額給付額の算出 - 月給から「最初の180日(67%)」「181日以降(50%)」「上乗せ後(80%)」の月額を導出する', () => {
   it('月給30万円の場合、賃金日額1万円をもとに67%月額20万1000円・50%月額15万円・上乗せ後80%月額24万円が算出されること', () => {
     // 賃金日額 = floor(300000/30) = 10000円

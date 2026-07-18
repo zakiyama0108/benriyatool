@@ -403,5 +403,165 @@
     "specFile": "ikukyu/admin/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "1. 概要",
+    "reason": "機能名・目的・公開順を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "2. ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "3. 機能要件",
+    "reason": "配下の###見出し(記事ページ共通・各記事)の入れ物で、本文を持たないため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "記事ページ共通 [1]",
+    "reason": "静的エクスポートのURLルーティングはビルド成果物(out/配下のHTML生成)で担保し、ビルド確認(npm run build)と実機確認で検証するため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "記事ページ共通 [8]",
+    "reason": "public/sitemap.xmlは手で追記する静的ファイルで、テスト対象のコードが存在しないため(追記内容は実装PRのdiffで確認)"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "記事ページ共通 [9]",
+    "reason": "既存デザインとの調和は見た目の評価であり、実機確認(スクリーンショット)で担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "記事ページ共通 [10]",
+    "reason": "執筆プロセス上のルール(引き写し禁止)であり、自動テストで検証する性質のものではないため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "4. ビジネスルール・制約",
+    "reason": "配下の###見出し(数値の算出元など)の入れ物で、本文を持たないため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "5. UI/UX要件 [1]",
+    "reason": "承認済みデザイン案の採用という決定事項で、見た目は実機確認(スクリーンショット)で担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "5. UI/UX要件 [3]",
+    "reason": "配色方針(ライトのみ)の宣言で、見た目は実機確認で担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "6. スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
+    "item": "7. 依存関係",
+    "reason": "他spec・進行中作業への参照と確認事項の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "月給から月額給付額を求める処理(記事1・2共通)",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応ルールはrequirements.md#月額給付額の定義-1/-2でテスト済み(monthlyBenefit)"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "手取り10割にならない月給ラインを求める処理(記事1)",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応ルールはrequirements.md#記事1の[3]でテスト済み(findCapSalaryLine)"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "就労時の手取りを概算する処理(記事1・3)",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応ルールはrequirements.md#手取り比較の扱い-1/-2でテスト済み(estimateWorkingNetIncome)"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "夫婦の育休パターン別に月次の世帯収入を組み立てる処理(記事3)",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応ルールはrequirements.md#記事3の[1]/[2]・#出生後休業支援給付金の計上条件でテスト済み(householdSimulation)"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "記事ページを組み立てて公開する処理(3記事共通)",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。メタデータ・JSON-LD・CTA・一覧ページはrequirements.md#記事ページ共通の各項でテスト済み"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "エラーハンドリング",
+    "reason": "ビルド時に例外で止める方針の宣言で、具体的なガードはrequirements.md#数値の算出元-3等の異常系テストで担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "ファイル配置の列挙で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "画面設計",
+    "reason": "画面の構成要素の列挙で、表示自体は各ページのコンポーネントテストと実機確認で担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "記事構成(見出しレベル)",
+    "reason": "記事の見出し構成の設計メモで、内容の表示は各記事ページのテストで担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧の入れ物見出しで、本文を持たないため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計 > StatTiles",
+    "reason": "Propsの説明表。表示の検証は各記事ページのテストで担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計 > ArticleTable",
+    "reason": "Propsの説明表。描画はArticleTableのコンポーネントテストで担保済みのため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計 > CalloutCard",
+    "reason": "Propsの説明表。表示の検証は記事1ページのテスト(上限ライン表示)で担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計 > SimulatorCta",
+    "reason": "Propsの説明表。リンクの検証は各記事ページのCTAテストで担保済みのため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計 > FaqSection",
+    "reason": "Propsの説明表。描画はFaqSectionのコンポーネントテストで担保済みのため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計 > SourcesFooter",
+    "reason": "Propsの説明表。描画はSourcesFooterのコンポーネントテストで担保済みのため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計 > ArticleJsonLd",
+    "reason": "Propsの説明表。出力はArticleJsonLdのコンポーネントテストで担保済みのため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "セキュリティ",
+    "reason": "JSON-LDのエスケープはArticleJsonLdのXSSテスト、外部リンクのrel属性はSourcesFooterのテストで担保済みのため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "ログ",
+    "reason": "「実行時ログは出力しない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
   }
 ]
