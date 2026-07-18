@@ -158,7 +158,7 @@ export default function FufuIkukyuPage() {
             theme={THEME}
             columns={[
               { header: 'パターン' },
-              { header: '世帯収入 累計(14か月)', align: 'right' },
+              { header: `世帯収入 累計(${patternA.rows.length}か月)`, align: 'right' },
               { header: 'Aとの差', align: 'right' },
             ]}
             rows={[
