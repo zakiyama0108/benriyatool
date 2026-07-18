@@ -126,9 +126,9 @@ export default function TedoriTenWariPage() {
             theme={THEME}
             columns={[
               { header: '月給(額面)' },
-              { header: '通常の給付(67%)', align: 'right' },
+              { header: '通常(67%)', align: 'right' },
               { header: '上乗せ後(80%)', align: 'right' },
-              { header: '手取り(概算)との差', align: 'right' },
+              { header: '手取りとの差', align: 'right' },
             ]}
             rows={cases.map(({ salary, benefit, diff }) => ({
               cells: [
