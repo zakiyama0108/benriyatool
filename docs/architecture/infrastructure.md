@@ -2,35 +2,62 @@
 
 べんりやつーる(benriyatool.com)が使っている全クラウドサービスと役割・データの流れ・課金/無料枠の境界をまとめたプロジェクト共通ドキュメント。アプリ単位の構成(画面・テーブルの使い方)は各`specs/<アプリ名>/architecture.md`のシステム構成図を参照。
 
+構成は「利用者」「運営者(ブラウザ経由で管理画面を使う人)」「開発者」の3つの視点に分けて描く(1枚に混ぜると経路が読み取りにくいため)。3図の正となる定義はいずれも[wrangler.toml](../../wrangler.toml)・[.github/workflows/](../../.github/workflows/)・[docs/adr/](../adr/)(選定理由)。
+
+## 利用者から見た構成
+
+一般ユーザーがツールを使うときの経路。サーバー処理はなく、計算はブラウザ内で完結する。
+
 ```mermaid
-flowchart TD
-    browser["利用者・運営者のブラウザ"]
+flowchart LR
+    user["利用者のブラウザ"]
+    workers["Cloudflare Workers<br>静的ファイルの配信(benriyatool.com)"]
+    db[("Supabase Postgres<br>計算結果の保存先")]
 
-    subgraph cloudflare["Cloudflare(無料プラン)"]
-        workers["Workers<br>静的ファイルの配信(benriyatool.com)"]
-    end
-
-    subgraph supabase["Supabase(Freeプラン)"]
-        db[("Postgres<br>保存データ+RLSによるアクセス制御")]
-        auth["Auth<br>運営者ログイン(Google OIDC)"]
-    end
-
-    subgraph github["GitHub(パブリックリポジトリ・無料)"]
-        actions["GitHub Actions<br>CI・デプロイ・週次ヘルスチェック"]
-    end
-
-    google["Google(OIDCの認証元)"]
-
-    browser -->|ページ取得| workers
-    browser -->|データの保存・閲覧 - ブラウザから直接| db
-    browser -->|ログイン| auth
-    auth -->|認証を委譲| google
-    actions -->|静的ファイルをデプロイ| workers
-    actions -->|DBマイグレーションを適用| db
-    actions -->|週次ヘルスチェックping| supabase
+    user -->|ページ取得| workers
+    user -->|計算結果を保存 - anonキーでINSERTのみ・閲覧は不可| db
 ```
 
-この図の正となる定義は[wrangler.toml](../../wrangler.toml)・[.github/workflows/](../../.github/workflows/)・[docs/adr/](../adr/)(選定理由)。mainマージから本番反映までの経路の詳細は[デプロイメント図](deployment.md)を参照。
+## 運営者から見た構成
+
+運営者がブラウザで管理画面(`/ikukyu/admin`)を開き、保存データを閲覧するときの経路。
+
+```mermaid
+flowchart LR
+    operator["運営者のブラウザ<br>(/ikukyu/admin)"]
+    workers["Cloudflare Workers<br>管理画面も同じ静的配信"]
+    auth["Supabase Auth"]
+    google["Google<br>(OIDCの認証元)"]
+    db[("Supabase Postgres<br>保存データ")]
+
+    operator -->|管理画面のページ取得| workers
+    operator -->|Googleでログイン| auth
+    auth -->|認証を委譲| google
+    operator -->|保存データの閲覧 - RLSで許可された本人のみSELECT| db
+```
+
+認証・RLSの方針は[ADR-0006](../adr/0006-admin-screen-oidc-rls.md)が正。
+
+## 開発者から見た構成
+
+開発者がコードを変更してから本番・DBに反映されるまでの経路。ブラウザからの利用経路とは独立している。
+
+```mermaid
+flowchart LR
+    dev["開発者"]
+    repo["GitHubリポジトリ"]
+    actions["GitHub Actions"]
+    workers["Cloudflare Workers<br>本番配信"]
+    db[("Supabase Postgres")]
+
+    dev -->|PR作成・mainへマージ| repo
+    repo -->|CI・デプロイのワークフローを実行| actions
+    actions -->|DBマイグレーションを適用| db
+    actions -->|静的ファイルをデプロイ| workers
+    actions -->|週次ヘルスチェックping - 無料枠の一時停止対策| db
+```
+
+mainマージから本番反映までの経路の詳細は[デプロイメント図](deployment.md)が正。
 
 ## 各サービスの役割
 
