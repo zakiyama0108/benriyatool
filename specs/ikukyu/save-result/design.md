@@ -24,6 +24,24 @@
   2. Supabaseの`ikukyu_results`テーブルへの保存を試みる
   3. 保存に失敗した場合は、エラーを画面に伝えず処理を終える(計算結果の表示はそのまま続ける)
 - 関連するビジネスルール: requirements.md#機能要件-1、requirements.md#機能要件-3、requirements.md#エッジケース・例外処理-1
+- シーケンス図(俯瞰用。正は上記の手順の文章):
+
+```mermaid
+sequenceDiagram
+    actor user as 利用者
+    participant screen as シミュレーター画面(ブラウザ)
+    participant db as Supabase(ikukyu_results)
+
+    user ->> screen: 「計算する」ボタンを押す
+    screen ->> screen: 給付金を計算し結果を表示する
+    screen ->> db: 入力内容・計算結果・テストデータ判定を1件保存(INSERT)
+    alt 保存に成功
+        db -->> screen: 保存完了
+    else 保存に失敗(通信エラー・RLS拒否など)
+        db -->> screen: エラー
+        screen ->> screen: エラーは画面に伝えず、計算結果の表示を続ける
+    end
+```
 
 ## エラーハンドリング
 
