@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 # 実行タイミング
 
-- 月1回を目安に実行する
+- 月次分はclaude.aiの定期エージェント(routine)が毎月1日に自動実行する(patch/minorの更新+検証+実装PR作成まで。major・Next.js/React系は報告のみ)。routineの報告でmajor更新や脆弱性対応が必要になった場合に、本Skillを手動セッションで実行する
 - `npm audit`で脆弱性が報告されたとき(随時)
 
 # Step1 現状の確認

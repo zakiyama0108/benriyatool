@@ -65,11 +65,11 @@ flowchart TD
 | Skill | 役割 | 頻度 | 異常時の遷移先 |
 |---|---|---|---|
 | [law-revision-check](law-revision-check/SKILL.md) | 給付率・上限額など法令由来の前提値を公式資料と突き合わせる。実施はlaw-revision-checkerエージェント | 毎年7月・4月+制度変更のニュース時 | /fix(仕様変更フロー) |
-| [dependency-update](dependency-update/SKILL.md) | npm依存パッケージの更新と検証 | 月1回+脆弱性報告時 | /pr(実装PR) |
+| [dependency-update](dependency-update/SKILL.md) | npm依存パッケージの更新と検証 | 毎月1日(routineが自動実行。patch/minorのみ)+脆弱性報告時 | /pr(実装PR) |
 | [data-check](data-check/SKILL.md) | Supabase保存データの健全性確認(SQLを用意しダッシュボードで実行してもらう) | DB機能リリース直後(/release-checkが案内)+月1回 | /fix |
 | [retrospective](retrospective/SKILL.md) | ワークフローと実際の進め方のずれを振り返り、Skill側を更新する | 月1回〜四半期に1回 | /pr(Skill更新PR) |
 
-- law-revision-checkは、ユーザーの明示起動に加えてclaude.aiの定期エージェント(routine)で毎年4/1・7/1の朝に自動実行する(報告のみ・修正はしない。https://claude.ai/code/routines で管理)。スケジュール実行はユーザーが登録した明示起動の一種であり、「Claudeが会話の流れで自律起動しない」原則とは矛盾しない
+- law-revision-check(毎年4/1・7/1の朝、報告のみ)とdependency-update(毎月1日の朝、patch/minor更新+検証+PR作成まで。major・Next.js/React系は報告のみ)は、ユーザーの明示起動に加えてclaude.aiの定期エージェント(routine)で自動実行する(https://claude.ai/code/routines で管理)。スケジュール実行はユーザーが登録した明示起動の一種であり、「Claudeが会話の流れで自律起動しない」原則とは矛盾しない
 
 ### 知識Skill(工程から参照される)
 
