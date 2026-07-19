@@ -28,7 +28,8 @@
 | 実装レビュー | implementation-review | **code-reviewer** | spec-reviewerと同じ。Bashはテスト実行用に許可 |
 | 指摘対応 | resolve | なし | 「同意できない指摘はユーザーに確認」が組み込まれており対話必須。書いた本人の文脈も必要 |
 | リリース確認 | release-check | **release-checker** | 手順が機械的・自己完結 |
-| 定期作業のうち4種(retrospectiveを除く) | 各Skill | (未導入)個別Agent化 | 独立性が高くメインの文脈を汚さない。特にlaw-revision-check(Web調査が重い)とspec-audit(リポジトリ全読みが重い)の効果が大きい。retrospectiveはSkill自体の更新でメインの文脈が要るためAgent化の対象外 |
+| 定期作業のうち4種(retrospectiveを除く) | 各Skill | **law-revision-checker(導入済み)**、残り3種(spec-audit / dependency-update / data-check)は未導入 | 独立性が高くメインの文脈を汚さない。law-revision-check(Web調査が重い)を先行導入し、spec-audit(リポジトリ全読みが重い)以降は順次検討。retrospectiveはSkill自体の更新でメインの文脈が要るためAgent化の対象外 |
+| 実機確認(UI動作確認) | run-benriyatool | **ui-checker** | スクリーンショット画像はメインスレッドのコンテキストを大量に消費するため、画像確認を外に出して結果だけ文章で受け取る。対話しながら操作を試行錯誤する場合はメインスレッドが直接操作する |
 
 ### AgentとSkillの分担(薄いAgentパターン)
 
@@ -113,6 +114,8 @@ flowchart LR
         s_pr["/pr"]
         s_impl["/implementation"]
         s_release["/release-check"]
+        s_lawcheck["/law-revision-check"]
+        s_run["run-benriyatool(知識Skill)"]
     end
 
     subgraph agents["Agent(作業者)"]
@@ -121,6 +124,8 @@ flowchart LR
         implprreviewer[["impl-pr-reviewer<br>実装PR作成前の横断チェック"]]
         implementer[["implementer<br>TDD実装・食い違い時は中断報告"]]
         releasechecker[["release-checker<br>デプロイ確認・本番チェック・掃除"]]
+        lawrevchecker[["law-revision-checker<br>公式資料との突き合わせ・報告のみ"]]
+        uichecker[["ui-checker<br>実機操作・スクショ確認・報告のみ"]]
     end
 
     s_specreview -->|レビューを委譲| specreviewer
@@ -128,6 +133,8 @@ flowchart LR
     s_pr -->|実装PR作成前チェックを委譲| implprreviewer
     s_impl -.並行開発時などに実装を委譲・任意.-> implementer
     s_release -->|確認作業を委譲| releasechecker
+    s_lawcheck -->|確認作業を委譲| lawrevchecker
+    s_run -->|単発の実機確認を委譲| uichecker
 ```
 
 /consult・/requirement・/design・/resolve・/fixはAgentを呼ばず、メインスレッドが直接担当する(判定理由は上の表を参照)。
@@ -142,7 +149,7 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 | 拘束された作業(仕様・tasks.mdが細かく手順を決めている) | sonnet | 手順は決まっているが、逸脱・食い違いに気づく判断力は要る |
 | 判断が本体(レビューの質がそのAgentの存在理由) | inherit | 品質ゲートを軽量化するとワークフロー全体の品質が下がる |
 
-現在の割り当て: impl-pr-reviewer / release-checker = haiku、implementer = sonnet、spec-reviewer / code-reviewer = inherit。
+現在の割り当て: impl-pr-reviewer / release-checker = haiku、implementer / law-revision-checker / ui-checker = sonnet、spec-reviewer / code-reviewer = inherit。
 
 - implementerをsonnetにできるのは、下流のcode-reviewer(inherit)が品質ゲートとして受け止める構造があるため。複雑な計算ロジックの実装は委譲せずメインスレッドで直接実装する選択肢も残っている
 - 軽量化したAgentの報告品質が落ちていないかは/retrospectiveで確認し、問題があればこの基準に立ち返って割り当てを見直す
@@ -152,10 +159,11 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 
 1. **spec-reviewer / code-reviewer**(導入済み。レビューの客観性が構造的に上がる、効果最大)
 2. **release-checker**(導入済み。機械的で失敗リスクが低い)
-3. **定期作業のAgent化**(未導入。定期作業5種のうちretrospectiveを除く4種が対象。law-revision-check → spec-audit → dependency-update / data-check の順で検討する)
+3. **定期作業のAgent化**(一部導入。law-revision-checkerを先行導入済み。残りは spec-audit → dependency-update / data-check の順で検討する)
 4. **implementer**(導入済み。ただし常用ではなく、[parallel-work](../../.claude/skills/parallel-work/SKILL.md)のworktree並行開発時などに実装を委譲する任意の作業者として運用する。通常はメインスレッドが直接実装する)
+5. **ui-checker**(導入済み。当初計画外の追加: run-benriyatoolでの実機確認はスクリーンショット画像がメインスレッドのコンテキストを大量に消費するため、確認観点が決まっている単発の実機確認を委譲する)
 
-残るは第3段階(定期作業)のみ。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
+残るは第3段階の残り(spec-audit / dependency-update / data-check)のみ。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
 
 ### ワークフローへの自動ルーティングと前提条件ゲート(2026-07追記)
 

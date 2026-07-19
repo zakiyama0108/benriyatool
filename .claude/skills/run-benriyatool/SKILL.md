@@ -7,6 +7,13 @@ description: べんりやつーるをローカルで起動し、headless Chrome�
 
 devサーバーをバックグラウンドで起動し、[driver.mjs](driver.mjs)(playwright-core+システムのGoogle Chromeをheadlessで使うREPL)にコマンドをheredocで流し込んで操作する。**パスはすべてリポジトリルート基準**。
 
+## 単発の動作確認はエージェントに委譲する
+
+確認観点が決まっている単発の実機確認(/implementation-reviewのUI確認、「この変更が動くか見て」等)は、ui-checkerエージェント(`.claude/agents/ui-checker.md`)を起動して行う。スクリーンショット画像はメインスレッドのコンテキストを大量に消費するため、画像はエージェントが自分で見て、結果だけを文章で受け取る(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照)。
+
+- エージェントには確認したいページ・操作手順・期待する見え方を伝えて起動し、報告をそのままユーザーに提示する
+- ユーザーと対話しながら操作を試行錯誤する場合や、スクリーンショット自体を見せてほしいと言われた場合は、メインスレッドが直接以下の手順で操作する
+
 ## 前提
 
 - macOS + Google Chrome インストール済み(ブラウザのダウンロードは不要。playwright-coreが`channel: 'chrome'`でシステムのChromeを起動する)
