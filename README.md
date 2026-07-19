@@ -7,6 +7,7 @@
 | アプリ | パス | 概要 | 詳細 |
 |---|---|---|---|
 | 育休給付金シミュレーター | `/ikukyu` | 産休・育休中にもらえる給付金の総額と内訳を事前に試算する | [architecture.md](specs/ikukyu/architecture.md) |
+| 資産推移シミュレーター | `/life-money-sim` | 月々の収支から余剰資金を計算し、将来の資産推移を月単位でシミュレーションする | [architecture.md](specs/life-money-sim/architecture.md) |
 
 アプリごとの詳細(設計方針・システム構成・機能マップ)は各 `specs/<アプリ名>/architecture.md` を参照。新規アプリを追加したらこの表に1行追加する。
 
