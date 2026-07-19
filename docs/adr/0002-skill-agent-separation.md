@@ -29,7 +29,7 @@
 | 指摘対応 | resolve | なし | 「同意できない指摘はユーザーに確認」が組み込まれており対話必須。書いた本人の文脈も必要 |
 | リリース確認 | release-check | **release-checker** | 手順が機械的・自己完結 |
 | 定期作業のうち4種(retrospectiveを除く) | 各Skill | **law-revision-checker(導入済み)**、残り3種(spec-audit / dependency-update / data-check)は未導入 | 独立性が高くメインの文脈を汚さない。law-revision-check(Web調査が重い)を先行導入し、spec-audit(リポジトリ全読みが重い)以降は順次検討。retrospectiveはSkill自体の更新でメインの文脈が要るためAgent化の対象外 |
-| 実機確認(UI動作確認) | run-benriyatool | **ui-checker** | スクリーンショット画像はメインスレッドのコンテキストを大量に消費するため、画像確認を外に出して結果だけ文章で受け取る。対話しながら操作を試行錯誤する場合はメインスレッドが直接操作する |
+| 実機確認(UI動作確認) | run-benriyatool | **ui-checker(メインスレッドが実機確認する場合)** | スクリーンショット画像はメインスレッドのコンテキストを大量に消費するため、画像確認を外に出して結果だけ文章で受け取る。対話しながら操作を試行錯誤する場合はメインスレッドが直接操作する。/implementation-review中の実機確認はcode-reviewerが自分のコンテキストで直接行う(Agentは入れ子で別のAgentを起動できないため委譲不可。画像分離の利点もその中で既に得られている) |
 
 ### AgentとSkillの分担(薄いAgentパターン)
 
