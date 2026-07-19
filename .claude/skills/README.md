@@ -64,19 +64,18 @@ flowchart TD
 
 | Skill | 役割 | 頻度 | 異常時の遷移先 |
 |---|---|---|---|
-| [law-revision-check](law-revision-check/SKILL.md) | 給付率・上限額など法令由来の前提値を公式資料と突き合わせる | 毎年7月・4月+制度変更のニュース時 | /fix(仕様変更フロー) |
+| [law-revision-check](law-revision-check/SKILL.md) | 給付率・上限額など法令由来の前提値を公式資料と突き合わせる。実施はlaw-revision-checkerエージェント | 毎年7月・4月+制度変更のニュース時 | /fix(仕様変更フロー) |
 | [dependency-update](dependency-update/SKILL.md) | npm依存パッケージの更新と検証 | 月1回+脆弱性報告時 | /pr(実装PR) |
 | [data-check](data-check/SKILL.md) | Supabase保存データの健全性確認(SQLを用意しダッシュボードで実行してもらう) | 月1回+DB機能リリース直後 | /fix |
-| [spec-audit](spec-audit/SKILL.md) | 仕様書・skip.json・architecture.md・設計図(docs/architecture/含む)と実態の乖離の棚卸し | 四半期に1回 | /fix または修正PR |
 | [retrospective](retrospective/SKILL.md) | ワークフローと実際の進め方のずれを振り返り、Skill側を更新する | 月1回〜四半期に1回 | /pr(Skill更新PR) |
 
 ### 知識Skill(工程から参照される)
 
 | Skill | 役割 | 参照元 |
 |---|---|---|
-| [architecture-workflow](architecture-workflow/SKILL.md) | `specs/<アプリ名>/architecture.md`(アプリ全体像)の作成・更新。設計図(Mermaid)の種類・作成条件・書き方ルールと、`docs/architecture/`(プロジェクト共通のインフラ系図)の運用もここに集約 | /requirement、/design、/fix、/spec-review、/spec-audit |
+| [architecture-workflow](architecture-workflow/SKILL.md) | `specs/<アプリ名>/architecture.md`(アプリ全体像)の作成・更新。設計図(Mermaid)の種類・作成条件・書き方ルールと、`docs/architecture/`(プロジェクト共通のインフラ系図)の運用もここに集約 | /requirement、/design、/fix、/spec-review、/retrospective |
 | [parallel-work](parallel-work/SKILL.md) | git worktreeで作業ディレクトリを分けて複数機能を並行開発する手順と注意事項 | /requirement、/fix、/implementation、/pr、/release-check |
-| [run-benriyatool](run-benriyatool/SKILL.md) | devサーバーを起動しheadless Chrome(driver.mjs)で実機操作・スクリーンショット確認する手順 | /implementation-review、「実機で確認して」等の依頼全般 |
+| [run-benriyatool](run-benriyatool/SKILL.md) | devサーバーを起動しheadless Chrome(driver.mjs)で実機操作・スクリーンショット確認する手順。単発の動作確認はui-checkerエージェントに委譲する | /implementation-review、「実機で確認して」等の依頼全般 |
 
 ### ユーティリティSkill(開発フローから独立)
 
@@ -95,6 +94,8 @@ Skill=手順・知識・テンプレート、Agent=別コンテキストで動�
 | [impl-pr-reviewer](../agents/impl-pr-reviewer.md) | 実装PR作成前の横断チェック(承認ステータス・spec-coverage・CI) | /pr(実装PRのみ) | haiku(機械的チェック) |
 | [release-checker](../agents/release-checker.md) | デプロイ確認・本番スモークチェック・マージ済みブランチ掃除 | /release-check | haiku(機械的チェック) |
 | [implementer](../agents/implementer.md) | 承認済み仕様のTDD実装。仕様との食い違い時は中断して報告 | /implementation(並行開発時などの委譲は任意) | sonnet(仕様に拘束された作業) |
+| [law-revision-checker](../agents/law-revision-checker.md) | 法令由来の前提値と公式資料の突き合わせ(Web調査)。修正はせず報告に徹する | /law-revision-check | sonnet(法令解釈の判断あり) |
+| [ui-checker](../agents/ui-checker.md) | headless Chromeでの実機操作・スクリーンショット確認。画像は自分で見て、結果だけ文章で報告する | run-benriyatool(メインスレッドが実機確認するとき。/implementation-reviewの実機確認はcode-reviewerが自分で行う) | sonnet(画面の見た目の判断) |
 
 ## 遷移図1: 新機能開発の流れ
 
