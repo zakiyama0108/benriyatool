@@ -4,7 +4,7 @@ description: Supabaseに保存されたユーザー入力データ(<アプリ名
 disable-model-invocation: true
 ---
 
-> ワークフロー上の位置: 定期作業(開発ループ外)。異常が計算バグ・バリデーション漏れを示唆したら [/fix](../fix/SKILL.md) へ
+> ワークフロー上の位置: 定期作業(開発ループ外)。ただしDB保存に関わるリリースでは[/release-check](../release-check/SKILL.md)の完了時案内から実行される。異常が計算バグ・バリデーション漏れを示唆したら [/fix](../fix/SKILL.md) へ
 
 # 前提(必ず踏まえる)
 
@@ -15,7 +15,7 @@ disable-model-invocation: true
 
 # 実行タイミング
 
-月1回を目安。DBを使う機能をリリースした直後(初回データが正しく入っているかの確認)にも実行する。
+DBを使う機能をリリースした直後([/release-check](../release-check/SKILL.md)の完了時案内から。初回データが正しく入っているかの確認)と、月1回を目安とした定期確認。
 
 # Step1 確認用SQLを用意する
 
