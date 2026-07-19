@@ -71,5 +71,6 @@ git worktree list                              # 残っているworktreeの確�
 
 # 完了時の次ステップ案内
 
-- 問題なし → 機能のリリース完了。次の機能は[/requirement](../requirement/SKILL.md)または[/fix](../fix/SKILL.md)から
+- 問題なし+今回のリリースがDB保存に関わる変更(Supabaseへの書き込み処理・テーブル/カラムの追加や変更) → 続けて[/data-check](../data-check/SKILL.md)を実施し、初回データが正しく入っているかを確認する
+- 問題なし(DB保存に関わらない変更) → 機能のリリース完了。次の機能は[/requirement](../requirement/SKILL.md)または[/fix](../fix/SKILL.md)から
 - 本番で問題を発見 → [/fix](../fix/SKILL.md)で修正フローへ(再現テストから始める)
