@@ -28,7 +28,7 @@
 | 実装レビュー | implementation-review | **code-reviewer** | spec-reviewerと同じ。Bashはテスト実行用に許可 |
 | 指摘対応 | resolve | なし | 「同意できない指摘はユーザーに確認」が組み込まれており対話必須。書いた本人の文脈も必要 |
 | リリース確認 | release-check | **release-checker** | 手順が機械的・自己完結 |
-| 定期作業のうち4種(retrospectiveを除く) | 各Skill | **law-revision-checker(導入済み)**、残り3種(spec-audit / dependency-update / data-check)は未導入 | 独立性が高くメインの文脈を汚さない。law-revision-check(Web調査が重い)を先行導入し、spec-audit(リポジトリ全読みが重い)以降は順次検討。retrospectiveはSkill自体の更新でメインの文脈が要るためAgent化の対象外 |
+| 定期作業 | 各Skill | **law-revision-checker(導入済み)**、他はAgent化しない | law-revision-check(Web調査が重い)のみAgent化し、claude.aiの定期エージェント(routine)でも自動実行する。dependency-updateはroutineの月次自動実行で対応、data-checkは/release-checkの完了時案内に統合、spec-auditは廃止(2026-07。spec-coverage CI等の構造的ガードで代替し、skip.json妥当性と図の鮮度の確認はretrospectiveへ移設)。retrospectiveはSkill自体の更新でメインの文脈が要るためAgent化の対象外 |
 | 実機確認(UI動作確認) | run-benriyatool | **ui-checker(メインスレッドが実機確認する場合)** | スクリーンショット画像はメインスレッドのコンテキストを大量に消費するため、画像確認を外に出して結果だけ文章で受け取る。対話しながら操作を試行錯誤する場合はメインスレッドが直接操作する。/implementation-review中の実機確認はcode-reviewerが自分のコンテキストで直接行う(Agentは入れ子で別のAgentを起動できないため委譲不可。画像分離の利点もその中で既に得られている) |
 
 ### AgentとSkillの分担(薄いAgentパターン)
@@ -153,17 +153,17 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 
 - implementerをsonnetにできるのは、下流のcode-reviewer(inherit)が品質ゲートとして受け止める構造があるため。複雑な計算ロジックの実装は委譲せずメインスレッドで直接実装する選択肢も残っている
 - 軽量化したAgentの報告品質が落ちていないかは/retrospectiveで確認し、問題があればこの基準に立ち返って割り当てを見直す
-- 第3段階(定期作業のAgent化)を進める際もこの基準でモデルを選ぶ(目安: dependency-update=haiku〜sonnet、spec-audit=sonnet、law-revision-check=Web調査+法令解釈の判断があるためsonnet以上)
+- 定期作業のAgent化はlaw-revision-checkerで完了(law-revision-check=Web調査+法令解釈の判断があるためsonnet)。今後Agentを追加する場合もこの基準でモデルを選ぶ
 
 ### 導入順
 
 1. **spec-reviewer / code-reviewer**(導入済み。レビューの客観性が構造的に上がる、効果最大)
 2. **release-checker**(導入済み。機械的で失敗リスクが低い)
-3. **定期作業のAgent化**(一部導入。law-revision-checkerを先行導入済み。残りは spec-audit → dependency-update / data-check の順で検討する)
+3. **定期作業のAgent化**(law-revision-checkerの導入で完了。残り3種はAgent化ではなく別の形で解消した — spec-auditは廃止(構造的ガード+retrospectiveへの移設で代替)、dependency-updateはclaude.ai routineの月次自動実行、data-checkは/release-checkの完了時案内への統合)
 4. **implementer**(導入済み。ただし常用ではなく、[parallel-work](../../.claude/skills/parallel-work/SKILL.md)のworktree並行開発時などに実装を委譲する任意の作業者として運用する。通常はメインスレッドが直接実装する)
 5. **ui-checker**(導入済み。当初計画外の追加: run-benriyatoolでの実機確認はスクリーンショット画像がメインスレッドのコンテキストを大量に消費するため、確認観点が決まっている単発の実機確認を委譲する)
 
-残るは第3段階の残り(spec-audit / dependency-update / data-check)のみ。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
+導入予定はすべて完了した。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
 
 ### ワークフローへの自動ルーティングと前提条件ゲート(2026-07追記)
 

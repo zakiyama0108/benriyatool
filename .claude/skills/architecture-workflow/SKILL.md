@@ -101,7 +101,7 @@ architecture.mdは**参照のハブ**であり、他ドキュメントの内容�
   - `docs/architecture/<名前>.drawio` を正本とし、README掲載用SVG・資料用PNGを同名で出力する
   - drawio CLIのセットアップと出力手順をADRとして残す
   - README・architecture.mdにはSVGを掲載する(PNGは資料・プレゼン用)
-- 昇格の要否は[/spec-audit](../spec-audit/SKILL.md)(四半期)で見直す
+- 昇格の要否は[/retrospective](../retrospective/SKILL.md)の図のスポットチェックで見直す
 
 # 更新ルール(図だけが古くなることの禁止)
 
@@ -110,7 +110,7 @@ architecture.mdは**参照のハブ**であり、他ドキュメントの内容�
 - [/design](../design/SKILL.md)「architecture.mdへの反映」: 機能マップに加え、構成図・コンポーネント図・ER図への影響も確認する
 - [/fix](../fix/SKILL.md)「仕様(3点セット)への影響を洗い出す」: 図の同期チェックを含む
 - [/spec-review](../spec-review/SKILL.md)チェックリスト: 図が本文・コードと矛盾していないかを確認する
-- [/spec-audit](../spec-audit/SKILL.md): 図と実態の乖離(`docs/architecture/`含む)を棚卸しする
+- [/retrospective](../retrospective/SKILL.md): 直近のPRで触ったアプリの図と実態の乖離をスポットチェックする(`docs/architecture/`含む)
 - インフラ・デプロイ構成を変えるPR(ホスティング変更・CI変更・外部サービス追加)では、`docs/architecture/`の該当図を同じPRで更新する
 
 ルートREADME.mdのアプリ一覧表(architecture.mdへのリンク)は現行維持し、`docs/architecture/`のインフラ構成図・デプロイメント図へのリンクを追加する。

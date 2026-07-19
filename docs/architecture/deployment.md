@@ -31,4 +31,4 @@ flowchart TD
 
 ## 更新ルール
 
-CIの構成・デプロイ先・ビルド手順を変えるPRでは、この図を同じPRで更新する。図の陳腐化は[/spec-audit](../../.claude/skills/spec-audit/SKILL.md)(四半期)で棚卸しする。
+CIの構成・デプロイ先・ビルド手順を変えるPRでは、この図を同じPRで更新する。図の陳腐化は[/retrospective](../../.claude/skills/retrospective/SKILL.md)のスポットチェックで見直す。
