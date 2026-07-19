@@ -11,7 +11,7 @@
 - 手順:
   1. ログインセッションがない場合は、ログインを促す画面を表示し、データの取得は一切行わない
   2. ログインセッションがある場合は、後述「閲覧権限を確認する処理」に進む
-- 補足: ログインセッションは`ikukyu/admin`と同じSupabase Authのセッションを使う(同一Supabaseプロジェクト・同一運営者アカウントのため、`ikukyu/admin`で一度ログインしていれば`life-money-sim/admin`でも再ログイン不要)【推測】
+- 補足: ログインセッションは`ikukyu/admin`と同じSupabase Authのセッションを使う(同一Supabaseプロジェクト・同一運営者アカウントのため、`ikukyu/admin`で一度ログインしていれば`life-money-sim/admin`でも再ログイン不要)
 - 関連するビジネスルール: requirements.md#ログイン・アクセス制御-1、requirements.md#アクセス制御・権限-1
 
 ### Googleでログインする処理
@@ -74,7 +74,7 @@ app/life-money-sim/admin/components/LoginScreen.tsx (新規: ログイン/権限
 app/life-money-sim/admin/components/FilterBar.tsx (新規: 期間・テストデータ切替の操作)
 app/life-money-sim/admin/components/ResultsTable.tsx (新規: 一覧表)
 app/life-money-sim/admin/components/SummaryStats.tsx (新規: 集計表示)
-app/ikukyu/admin/lib/auth.ts (既存: ログイン開始・ログアウト・セッション取得・閲覧権限の確認。admin_emailsを共用するため、アプリ共通のlibへ切り出して再利用する)【推測: 共通化の要否・切り出し先】
+app/ikukyu/admin/lib/auth.ts (既存: ログイン開始・ログアウト・セッション取得・閲覧権限の確認。admin_emailsを共用するため、アプリ共通のlibへ切り出して再利用する)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 ```
 
