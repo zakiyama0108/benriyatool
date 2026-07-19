@@ -19,10 +19,11 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 |---|---|---|---|
 | 機能開発フロー(工程Skill) | ○ | ○ | (なし) |
 | 定期作業Skill | ○ | **×** | `disable-model-invocation: true` |
+| 自動運転モードSkill(autopilot) | ○ | **×** | `disable-model-invocation: true` |
 | 知識Skill | ○ | ○ | (なし) |
 | ユーティリティSkill | ○ | ○ | (なし) |
 
-定期作業だけClaudeの自律起動を切っているのは、**実行タイミングを人が決める作業**であり(月1回・年2回など)、会話の流れでClaudeが勝手に始める理由がないため。このフラグを付けるとdescriptionもコンテキストに載らなくなるので、ユーザーが`/dependency-update`のように明示的に打つ必要がある(ルーティングフックも定期作業を扱わない)。
+定期作業と自動運転モード(autopilot)はClaudeの自律起動を切っている。定期作業は**実行タイミングを人が決める作業**であり(月1回・年2回など)、autopilotは**確認を省く範囲をユーザーが意図的に選ぶモード**であるため、どちらも会話の流れでClaudeが勝手に始めてはいけない。このフラグを付けるとdescriptionもコンテキストに載らなくなるので、ユーザーが`/dependency-update`や`/autopilot`のように明示的に打つ必要がある(ルーティングフックもこれらを扱わない)。
 
 ## まとめ表
 
@@ -40,6 +41,24 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 | [resolve](resolve/SKILL.md) | レビュー指摘の修正。重要度順に対応し、対応結果を報告する | /spec-review・/implementation-review・PR上で指摘を受けたとき | 指摘元のレビューを再実行 → /pr |
 | [fix](fix/SKILL.md) | バグ修正・既存機能の小規模改修の入口。既存spec更新の影響洗い出しと承認要否の判断 | 計算誤り・文言修正・スコープ外項目への対応など | 仕様変更あり: /pr(仕様承認PR) / 純粋なバグ: 修正後 /implementation-review |
 | [release-check](release-check/SKILL.md) | Cloudflare Workersへのデプロイ確認、本番スモークチェック、マージ済みブランチ掃除。実施はrelease-checkerエージェント | 実装PRのマージ後(毎回) | 完了(問題があれば /fix) |
+
+### 自動運転モードSkill(ユーザーが`/autopilot`で明示起動)
+
+| Skill | 役割 | 使うタイミング | 完了後の遷移先 |
+|---|---|---|---|
+| [autopilot](autopilot/SKILL.md) | 遷移図1を「対話2箇所だけで完走する」走らせ方に切り替えるモード。design以降を自走し(推測箇所は`【推測】`マーカーで明示)、実装PRは条件付きで自動マージ、/release-checkまで実施する | 小規模・低リスクの新機能をお任せで進めたいとき | 完了(問題があれば/fix) |
+
+```mermaid
+flowchart TD
+    hearing["対話①<br>/requirement(要件ヒアリング)"]
+    auto1["自走: /design → /spec-review(→/resolve) → /pr(仕様承認PR)"]
+    prreview["対話②<br>仕様承認PR上で一括レビュー(複数往復可)"]
+    auto2["自走: 推測マーカー除去 → 自動マージ → /implementation(implementer委譲)<br>→ /implementation-review(→/resolve) → /pr(実装PR) → CI後に自動マージ<br>→ /release-check → 完了報告"]
+
+    hearing --> auto1 --> prreview -->|ユーザーOK| auto2
+```
+
+- 使う工程Skill・Agentは遷移図1と同一(手順は各Skillが単一の情報源のまま)。要件・仕様どおりに進められない事態だけは例外停止してユーザーに報告する(条件は[autopilot](autopilot/SKILL.md)参照)
 
 ### 定期作業Skill(開発ループ外・ユーザーが`/xxx`で明示起動)
 
@@ -108,7 +127,7 @@ flowchart TD
 ```
 
 - 太線(=)はユーザーの承認・マージ待ち。仕様承認PRがマージされるまでコード(テスト含む)は書かない(仕様承認ゲート)
-- mainへのマージは常にユーザーがGitHub UIで行う
+- mainへのマージは常にユーザーがGitHub UIで行う(例外: [autopilot](autopilot/SKILL.md)モードでは、同Skillの条件を満たした場合に限り自動マージする)
 
 ## 遷移図2: バグ修正・既存機能改修の流れ
 
