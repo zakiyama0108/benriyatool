@@ -50,7 +50,7 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 
 ```mermaid
 flowchart TD
-    hearing["対話①<br>/requirement(要件ヒアリング)"]
+    hearing["対話①<br>/requirement(要件+設計の分かれ道のヒアリング)"]
     auto1["自走: /design → /spec-review(→/resolve) → /pr(仕様承認PR)"]
     prreview["対話②<br>仕様承認PR上で一括レビュー(複数往復可)"]
     auto2["自走: 推測マーカー除去 → 自動マージ → /implementation(implementer委譲)<br>→ /implementation-review(→/resolve) → /pr(実装PR) → CI後に自動マージ<br>→ /release-check → 完了報告"]
