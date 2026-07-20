@@ -563,5 +563,165 @@
     "specFile": "ikukyu/guide/design.md",
     "item": "ログ",
     "reason": "「実行時ログは出力しない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "個人支出の月合計を計算する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#個人支出-3、requirements.md#ビジネスルール・制約-1でテスト済み(monthlyBalance.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "家計負担を反映した月次余剰資金を計算する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#家計支出-1、requirements.md#余剰資金の計算-1でテスト済み(monthlyBalance.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "年間収支をまとめる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#余剰資金の計算-2でテスト済み(monthlyBalance.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "支出割合を計算する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#余剰資金の計算-4でテスト済み(monthlyBalance.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "エラーハンドリング",
+    "reason": "想定する例外は入力値の不正のみで、その扱いはrequirements.md#ビジネスルール・制約(バリデーション方針)としてmonthlyBalance.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、tasks.md Task7〜10の判断によりExpenseListInput等の純粋な表示・入力コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "ビジュアルトーン",
+    "reason": "配色・形状のトーン(オーシャンミント)の指定で、Tailwindでの実装確認は/runスキルでの目視確認によるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "コンポーネント設計",
+    "reason": "配下の表に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "コンポーネント設計 > ExpenseListInput",
+    "reason": "tasks.md Task7の判断により、名称+金額ペアの追加・削除を行う純粋な表示・入力コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "コンポーネント設計 > HouseholdShareInput",
+    "reason": "tasks.md Task9の判断により、配偶者の有無と家計支出入力をまとめる表示・入力コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "コンポーネント設計 > ExpensePieChart",
+    "reason": "tasks.md Task8の判断により、内訳リストを円グラフで表示する表示専用コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "状態管理",
+    "reason": "page.tsxのローカル状態の持ち方の記述で、tasks.md Task10の判断によりpage.tsx自体はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "セキュリティ",
+    "reason": "通信・保存を行わないためこの処理フロー自体に追加対策は不要という判断の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "ログ",
+    "reason": "「ログ出力は行わない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "収入 [1]",
+    "reason": "tasks.md Task9の判断により、手取り月給の入力(IncomeForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "収入 [2]",
+    "reason": "tasks.md Task9の判断により、手取りボーナスの入力(IncomeForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "個人支出 [1]",
+    "reason": "tasks.md Task7の判断により、年額固定費の追加・削除入力(ExpenseListInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "個人支出 [2]",
+    "reason": "tasks.md Task7の判断により、月額固定費の追加・削除入力(ExpenseListInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "家計支出(配偶者がいる場合) [1]",
+    "reason": "tasks.md Task9の判断により、配偶者の有無トグル(HouseholdShareInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "家計支出(配偶者がいる場合) [2]",
+    "reason": "tasks.md Task9の判断により、家計支出項目の追加・削除入力(HouseholdShareInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "家計支出(配偶者がいる場合) [3]",
+    "reason": "tasks.md Task9の判断により、自分の家計負担額の入力(HouseholdShareInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "余剰資金の計算 [3]",
+    "reason": "値自体の算出はmonthlyBalance.test.tsでテスト済み。画面表示(BalanceSummary)はtasks.md Task10の判断によりユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "内訳の可視化 [1]",
+    "reason": "tasks.md Task8の判断により、円グラフ表示(ExpensePieChart)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "内訳の可視化 [2]",
+    "reason": "tasks.md Task8の判断により、円グラフ表示(ExpensePieChart)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "ビジネスルール・制約 [2]",
+    "reason": "入力金額の単位を万円で統一するという実装方針の宣言で、型定義(types.ts)のコメントで示すのみのため。具体的な計算(月換算等)はビジネスルール[1]としてmonthlyBalance.test.tsでテスト済み"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]
