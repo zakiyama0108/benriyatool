@@ -563,5 +563,640 @@
     "specFile": "ikukyu/guide/design.md",
     "item": "ログ",
     "reason": "「実行時ログは出力しない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "個人支出の月合計を計算する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#個人支出-3、requirements.md#ビジネスルール・制約-1でテスト済み(monthlyBalance.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "家計負担を反映した月次余剰資金を計算する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#家計支出-1、requirements.md#余剰資金の計算-1でテスト済み(monthlyBalance.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "年間収支をまとめる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#余剰資金の計算-2でテスト済み(monthlyBalance.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "支出割合を計算する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#余剰資金の計算-4でテスト済み(monthlyBalance.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "エラーハンドリング",
+    "reason": "想定する例外は入力値の不正のみで、その扱いはrequirements.md#ビジネスルール・制約(バリデーション方針)としてmonthlyBalance.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、tasks.md Task7〜10の判断によりExpenseListInput等の純粋な表示・入力コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "ビジュアルトーン",
+    "reason": "配色・形状のトーン(オーシャンミント)の指定で、Tailwindでの実装確認は/runスキルでの目視確認によるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "コンポーネント設計",
+    "reason": "配下の表に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "コンポーネント設計 > ExpenseListInput",
+    "reason": "tasks.md Task7の判断により、名称+金額ペアの追加・削除を行う純粋な表示・入力コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "コンポーネント設計 > HouseholdShareInput",
+    "reason": "tasks.md Task9の判断により、配偶者の有無と家計支出入力をまとめる表示・入力コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "コンポーネント設計 > ExpensePieChart",
+    "reason": "tasks.md Task8の判断により、内訳リストを円グラフで表示する表示専用コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "状態管理",
+    "reason": "page.tsxのローカル状態の持ち方の記述で、tasks.md Task10の判断によりpage.tsx自体はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "セキュリティ",
+    "reason": "通信・保存を行わないためこの処理フロー自体に追加対策は不要という判断の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/design.md",
+    "item": "ログ",
+    "reason": "「ログ出力は行わない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "収入 [1]",
+    "reason": "tasks.md Task9の判断により、手取り月給の入力(IncomeForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "収入 [2]",
+    "reason": "tasks.md Task9の判断により、手取りボーナスの入力(IncomeForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "個人支出 [1]",
+    "reason": "tasks.md Task7の判断により、年額固定費の追加・削除入力(ExpenseListInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "個人支出 [2]",
+    "reason": "tasks.md Task7の判断により、月額固定費の追加・削除入力(ExpenseListInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "家計支出(配偶者がいる場合) [1]",
+    "reason": "tasks.md Task9の判断により、配偶者の有無トグル(HouseholdShareInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "家計支出(配偶者がいる場合) [2]",
+    "reason": "tasks.md Task9の判断により、家計支出項目の追加・削除入力(HouseholdShareInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "家計支出(配偶者がいる場合) [3]",
+    "reason": "tasks.md Task9の判断により、自分の家計負担額の入力(HouseholdShareInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "余剰資金の計算 [3]",
+    "reason": "値自体の算出はmonthlyBalance.test.tsでテスト済み。画面表示(BalanceSummary)はtasks.md Task10の判断によりユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "内訳の可視化 [1]",
+    "reason": "tasks.md Task8の判断により、円グラフ表示(ExpensePieChart)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "内訳の可視化 [2]",
+    "reason": "tasks.md Task8の判断により、円グラフ表示(ExpensePieChart)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "ビジネスルール・制約 [2]",
+    "reason": "入力金額の単位を万円で統一するという実装方針の宣言で、型定義(types.ts)のコメントで示すのみのため。具体的な計算(月換算等)はビジネスルール[1]としてmonthlyBalance.test.tsでテスト済み"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "対象年月の家族の年齢を求める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#前提入力-3、requirements.md#前提入力-5、requirements.md#月次の資産推移-3でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "当月の差引後余剰を求める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#月次の資産推移-2でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "表示範囲の最終年月を決める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#月次の資産推移-4でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "貯蓄のみモードで月次資産額を積み上げる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#貯蓄/運用シミュレーションの切り替え-1でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "資産運用モードで月次資産額を積み上げる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#複利計算-1、requirements.md#複利計算-2でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "表示モードを切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#貯蓄/運用シミュレーションの切り替え-3でテスト済み(想定利回り0%時の一致はassetProjection.test.ts、切り替え操作自体はModeToggleでtasks.md Task10の判断によりユニットテスト対象外)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "月次データを年次にまとめる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#表示単位の切り替え-2でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "表示単位を切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#表示単位の切り替え-1、requirements.md#表示単位の切り替え-3、requirements.md#資産推移グラフ-2で、tasks.md Task10〜12の判断によりPeriodToggle/AssetProjectionChartはユニットテスト対象外とし/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "エラーハンドリング",
+    "reason": "計算処理自体の失敗は想定しないという記述と、イベント・賞与の合算方針(requirements.md#賞与・イベントの登録-2)の記述で、合算方針はbuildMonthlyProjectionRows(page.tsxからの結合関数)による実装のため単体テスト対象外(design.md#関連するファイル(抜粋))"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、tasks.md Task8〜12の判断によりStartingAssetForm等の純粋な表示・入力コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "ビジュアルトーン",
+    "reason": "monthly-balance/design.md#ビジュアルトーンと同一のトーン(オーシャンミント)の指定で、Tailwindでの実装確認は/runスキルでの目視確認によるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "状態管理",
+    "reason": "page.tsxのローカル状態の持ち方の記述で、tasks.md Task13の判断によりpage.tsx自体はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "セキュリティ",
+    "reason": "通信を行わないためこの処理フロー固有の追加対策は不要という判断の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "ログ",
+    "reason": "「ログ出力は行わない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "前提入力 [1]",
+    "reason": "tasks.md Task8の判断により、開始資産額の入力(StartingAssetForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "前提入力 [2]",
+    "reason": "tasks.md Task8の判断により、開始年月の入力(StartingAssetForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "前提入力 [4]",
+    "reason": "tasks.md Task8の判断により、配偶者の有無・子どもの人数・生年月の入力(FamilyProfileForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "前提入力 [5]",
+    "reason": "生年月未入力時にcalcAgeがundefinedを返すことはassetProjection.test.tsでテスト済み。年齢欄を表示しないUI側の挙動はtasks.md Task11の判断によりAssetProjectionTableのユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "表示単位の切り替え [1]",
+    "reason": "tasks.md Task10の判断により、月次/年次の切り替え操作(PeriodToggle)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "表示単位の切り替え [3]",
+    "reason": "tasks.md Task12の判断により、資産推移グラフ(AssetProjectionChart)の表示単位連動はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "賞与・イベントの登録 [1]",
+    "reason": "tasks.md Task9の判断により、賞与の登録入力(EventListInput)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "賞与・イベントの登録 [2]",
+    "reason": "tasks.md Task9の判断により、イベントの登録入力(EventListInput)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため。同月複数件の合算はbuildMonthlyProjectionRows(page.tsxからの結合関数)による実装のため単体テスト対象外"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "賞与・イベントの登録 [3]",
+    "reason": "tasks.md Task11の判断により、イベント名目の行表示(AssetProjectionTable)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "貯蓄/運用シミュレーションの切り替え [3]",
+    "reason": "tasks.md Task10の判断により、モード切り替え操作(ModeToggle)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "資産推移グラフ [1]",
+    "reason": "tasks.md Task12の判断により、資産推移グラフ(AssetProjectionChart)の描画はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "資産推移グラフ [2]",
+    "reason": "tasks.md Task12の判断により、資産推移グラフ(AssetProjectionChart)の横軸切り替えはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出し(複利計算)に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "テストデータかどうかを判定する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#テストデータの判定-1〜3でテスト済み(saveResult.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "試算結果を保存する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#機能要件-1、requirements.md#機能要件-2、requirements.md#エッジケース・例外処理-1でテスト済み(saveResult.test.ts)。ボタン押下の起点・連打防止はSaveButton.tsxでtasks.md Task6の判断によりユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "エラーハンドリング",
+    "reason": "機能全体のエラー処理方針の記述で、テスト可能な個別の振る舞いはrequirements.md#エッジケース・例外処理-1でテスト済み(saveResult.test.ts)。連打防止はSaveButton.tsxでユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規)",
+    "reason": "テーブル定義の参照情報で、カラムへの保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > id",
+    "reason": "DB側で自動採番される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > created_at",
+    "reason": "DB側で自動設定される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > has_spouse",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > children_count",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > monthly_salary",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > personal_expense_monthly",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > household_expense_total",
+    "reason": "カラム定義の参照情報。配偶者なしでnull化される振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > my_household_share",
+    "reason": "カラム定義の参照情報。配偶者なしでnull化される振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > starting_asset",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > investment_mode",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > expected_annual_rate",
+    "reason": "カラム定義の参照情報。貯蓄のみモードでnull化される振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > event_count",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > final_month_asset",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > monthly_surplus",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > is_test",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-2、requirements.md#テストデータの判定-1〜3でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "マイグレーション(実装より先に単独PRで適用)",
+    "reason": "DBマイグレーション(supabase/migrations/20260720090000_create_life_money_sim_results.sql)として作成済みのスキーマ・ポリシー定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1)"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "セキュリティ",
+    "reason": "リスク分析と設計上の歯止めの記述で、テスト可能な個別の振る舞いを持たないため(保存項目を集計値にとどめる方針はbuildResultRecordの実装・テストで反映済み)"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "ログ",
+    "reason": "「ログ出力は行わない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出し(テストデータの判定)に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "ログイン状態を判定して画面を出し分ける処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-1でテスト済み(LoginScreen.test.tsx)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "Googleでログインする処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-2でテスト済み(app/lib/adminAuth.tsを共用するikukyu/admin/lib/auth.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "閲覧権限を確認する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-3、requirements.md#アクセス制御・権限-1でテスト済み(LoginScreen.test.tsx、app/lib/adminAuth.tsを共用するikukyu/admin/lib/auth.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "保存データを絞り込んで取得する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#絞り込み等でテスト済み(fetchResults.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "一覧を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#一覧表示でテスト済み(format.test.ts/ResultsTable.test.tsx)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "集計を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#集計表示でテスト済み(aggregate.test.ts/SummaryStats.test.tsx)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "ログアウトする処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-4でテスト済み(app/lib/adminAuth.tsを共用するikukyu/admin/lib/auth.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "エラーハンドリング",
+    "reason": "機能全体のエラー処理方針の記述で、個別の振る舞い(取得失敗時に例外を投げる)はfetchResults.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "マイグレーション(実装より先に単独PRで適用)",
+    "reason": "DBマイグレーション(supabase/migrations/20260720091500_add_admin_read_access_to_life_money_sim_results.sql)として作成済みのスキーマ・ポリシー定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md T0)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いは各コンポーネントのテストで担保済みのため"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "状態管理",
+    "reason": "画面のローカル状態の持ち方の記述で、初期値(全期間・テスト除外)や絞り込みの反映はfetchResults/FilterBarでテスト済みのため"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "セキュリティ",
+    "reason": "リスク分析と設計上の歯止めの記述。RLSによる閲覧制御はDB側の担保でアプリ単体テスト対象外(マイグレーション適用後の実機確認で担保)"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "ログ",
+    "reason": "失敗時にコンソール出力する方針の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/design.md",
+    "item": "依存関係",
+    "reason": "他spec・ADRへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "アクセス制御・権限 [2]",
+    "reason": "アクセス制御をDB側のRLSで担保する方針の項目で、アプリの単体テスト対象外。マイグレーション適用後の実機確認(anonでSELECT不可等)で担保する"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "アクセス制御・権限 [3]",
+    "reason": "管理画面に編集・削除の経路を作らないという不作為の要件で、対応するテスト(存在しないことの検証)を持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "認証手段とパスキー [1]",
+    "reason": "既存ikukyu/adminと同一方針とし新たな認証設定は不要という運用前提の記述で、テスト可能な振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "表示の初期値・区切り [4]",
+    "reason": "集計対象が絞り込み後のデータと一致することはpage.tsxの統合(fetchResultsの結果をbuildSummaryに渡す)で実現する結合要件で単体テスト対象外。集計関数自体はaggregate.test.tsでテスト済み"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "非機能要件 [1]",
+    "reason": "PC中心・スマホは破綻しなければよいという表示方針で、自動テストで検証する性質のものではないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "非機能要件 [2]",
+    "reason": "静的エクスポート構成を維持するという構成上の制約で、ビルド(npm run build)で担保するため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照と確認事項の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]

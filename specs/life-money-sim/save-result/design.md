@@ -58,16 +58,16 @@ app/life-money-sim/components/SaveButton.tsx (新規: 「この試算を保存�
 | created_at | timestamptz | 共通カラム。DB側で自動設定 |
 | has_spouse | boolean | 配偶者の有無 |
 | children_count | integer | 子どもの人数(0〜3) |
-| monthly_salary | integer | 手取り月給 |
-| personal_expense_monthly | integer | 個人支出の月合計 |
-| household_expense_total | integer, nullable | 家計支出全体の合計。配偶者なしはNULL |
-| my_household_share | integer, nullable | 自分の家計負担額。配偶者なしはNULL |
-| starting_asset | integer | シミュレーション開始資産額 |
+| monthly_salary | numeric | 手取り月給(単位: 万円。小数を許容するためnumericとする) |
+| personal_expense_monthly | numeric | 個人支出の月合計(万円) |
+| household_expense_total | numeric, nullable | 家計支出全体の合計(万円)。配偶者なしはNULL |
+| my_household_share | numeric, nullable | 自分の家計負担額(万円)。配偶者なしはNULL |
+| starting_asset | numeric | シミュレーション開始資産額(万円) |
 | investment_mode | boolean | 資産運用モードで保存されたかどうか |
 | expected_annual_rate | numeric, nullable | 想定利回り(年率)。貯蓄のみモードの場合はNULL |
 | event_count | integer | 登録されていたイベント件数 |
-| final_month_asset | integer | 表示範囲最終月時点の資産額 |
-| monthly_surplus | integer | 月次余剰資金(賞与抜き) |
+| final_month_asset | numeric | 表示範囲最終月時点の資産額(万円) |
+| monthly_surplus | numeric | 月次余剰資金(賞与抜き、万円) |
 | is_test | boolean, not null, default false | テスト・動作確認データの判別フラグ(`docs/adr/0001`) |
 
 ### マイグレーション(実装より先に単独PRで適用)
@@ -83,16 +83,16 @@ create table life_money_sim_results (
   created_at timestamptz not null default now(),
   has_spouse boolean not null,
   children_count integer not null,
-  monthly_salary integer not null,
-  personal_expense_monthly integer not null,
-  household_expense_total integer,
-  my_household_share integer,
-  starting_asset integer not null,
+  monthly_salary numeric not null,
+  personal_expense_monthly numeric not null,
+  household_expense_total numeric,
+  my_household_share numeric,
+  starting_asset numeric not null,
   investment_mode boolean not null,
   expected_annual_rate numeric,
   event_count integer not null,
-  final_month_asset integer not null,
-  monthly_surplus integer not null,
+  final_month_asset numeric not null,
+  monthly_surplus numeric not null,
   is_test boolean not null default false
 );
 
