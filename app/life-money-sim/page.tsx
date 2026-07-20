@@ -11,6 +11,7 @@ import type {
   EventEntry,
   InvestmentModeInput,
   PeriodUnit,
+  SaveResultInput,
 } from './lib/types'
 import {
   calcPersonalExpenseMonthly,
@@ -32,6 +33,7 @@ import ModeToggle from './components/ModeToggle'
 import PeriodToggle from './components/PeriodToggle'
 import AssetProjectionTable from './components/AssetProjectionTable'
 import AssetProjectionChart from './components/AssetProjectionChart'
+import SaveButton from './components/SaveButton'
 
 type Tab = 'balance' | 'projection'
 
@@ -92,6 +94,22 @@ export default function Page() {
     expectedAnnualRate: investmentModeInput.expectedAnnualRate,
   })
   const yearlyRows = aggregateYearly(monthlyRows)
+  const finalMonthAsset = monthlyRows.length > 0 ? monthlyRows[monthlyRows.length - 1].asset : startingAssetInput.startingAsset
+
+  const saveResultInput: SaveResultInput = {
+    hasSpouse: household.hasSpouse,
+    childrenCount: familyProfile.childrenCount,
+    monthlySalary: income.monthlySalary,
+    personalExpenseMonthly,
+    householdExpenseTotal,
+    myHouseholdShare: household.myShare,
+    startingAsset: startingAssetInput.startingAsset,
+    investmentMode: investmentModeInput.investmentMode,
+    expectedAnnualRate: investmentModeInput.expectedAnnualRate,
+    eventCount: events.length,
+    finalMonthAsset,
+    monthlySurplus,
+  }
 
   return (
     <div className="min-h-screen bg-[#eaf6f6]">
@@ -181,6 +199,8 @@ export default function Page() {
             <AssetProjectionChart periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
 
             <AssetProjectionTable periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
+
+            <SaveButton input={saveResultInput} />
           </div>
         )}
       </div>

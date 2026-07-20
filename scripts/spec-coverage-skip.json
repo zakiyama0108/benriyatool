@@ -898,5 +898,160 @@
     "specFile": "life-money-sim/asset-projection/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "テストデータかどうかを判定する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#テストデータの判定-1〜3でテスト済み(saveResult.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "試算結果を保存する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#機能要件-1、requirements.md#機能要件-2、requirements.md#エッジケース・例外処理-1でテスト済み(saveResult.test.ts)。ボタン押下の起点・連打防止はSaveButton.tsxでtasks.md Task6の判断によりユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "エラーハンドリング",
+    "reason": "機能全体のエラー処理方針の記述で、テスト可能な個別の振る舞いはrequirements.md#エッジケース・例外処理-1でテスト済み(saveResult.test.ts)。連打防止はSaveButton.tsxでユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規)",
+    "reason": "テーブル定義の参照情報で、カラムへの保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > id",
+    "reason": "DB側で自動採番される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > created_at",
+    "reason": "DB側で自動設定される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > has_spouse",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > children_count",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > monthly_salary",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > personal_expense_monthly",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > household_expense_total",
+    "reason": "カラム定義の参照情報。配偶者なしでnull化される振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > my_household_share",
+    "reason": "カラム定義の参照情報。配偶者なしでnull化される振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > starting_asset",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > investment_mode",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > expected_annual_rate",
+    "reason": "カラム定義の参照情報。貯蓄のみモードでnull化される振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > event_count",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > final_month_asset",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > monthly_surplus",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-1でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "life_money_sim_results (新規) > is_test",
+    "reason": "カラム定義の参照情報。保存の振る舞いはrequirements.md#機能要件-2、requirements.md#テストデータの判定-1〜3でテスト済み(saveResult.test.ts)のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "マイグレーション(実装より先に単独PRで適用)",
+    "reason": "DBマイグレーション(supabase/migrations/20260720090000_create_life_money_sim_results.sql)として作成済みのスキーマ・ポリシー定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1)"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "セキュリティ",
+    "reason": "リスク分析と設計上の歯止めの記述で、テスト可能な個別の振る舞いを持たないため(保存項目を集計値にとどめる方針はbuildResultRecordの実装・テストで反映済み)"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "ログ",
+    "reason": "「ログ出力は行わない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/design.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出し(テストデータの判定)に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]

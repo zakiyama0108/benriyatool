@@ -87,3 +87,37 @@ export type YearlyProjectionRow = {
   yearlySurplus: number // 年次余剰資金・万円
   asset: number // 年末(またはその年の最終月)時点の資産額・万円
 }
+
+// 「この試算を保存する」ボタン押下時に集める、保存対象の入力・計算結果
+// (仕様: save-result/requirements.md#機能要件-1)
+export type SaveResultInput = {
+  hasSpouse: boolean
+  childrenCount: number
+  monthlySalary: number
+  personalExpenseMonthly: number
+  householdExpenseTotal: number // 配偶者なしの場合は0(保存時にhasSpouseを見てnull化する)
+  myHouseholdShare: number // 配偶者なしの場合は0(保存時にhasSpouseを見てnull化する)
+  startingAsset: number
+  investmentMode: boolean
+  expectedAnnualRate: number // 貯蓄のみモードの場合は保存時にnull化する
+  eventCount: number
+  finalMonthAsset: number
+  monthlySurplus: number
+}
+
+// life_money_sim_resultsテーブルへ保存するレコード(カラム定義: save-result/design.md#データベース設計)
+export type ResultRecord = {
+  has_spouse: boolean
+  children_count: number
+  monthly_salary: number
+  personal_expense_monthly: number
+  household_expense_total: number | null
+  my_household_share: number | null
+  starting_asset: number
+  investment_mode: boolean
+  expected_annual_rate: number | null
+  event_count: number
+  final_month_asset: number
+  monthly_surplus: number
+  is_test: boolean
+}
