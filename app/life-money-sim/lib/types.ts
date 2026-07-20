@@ -26,3 +26,64 @@ export type HouseholdExpenseInput = {
   items: ExpenseItem[] // 毎月の家計支出項目(配偶者ありの場合のみ入力)
   myShare: number // 家計支出全体に対する自分の毎月の負担額・万円
 }
+
+// 年月は "YYYY-MM" 形式の文字列で統一する(月次資産推移テーブルの各行・生年月・開始年月で共通)
+export type YearMonth = string
+
+// 前提入力(資産推移タブ)。配偶者の有無は収支タブの家計支出セクションと同じ状態を共有する
+export type FamilyProfileInput = {
+  selfBirthMonth: YearMonth | null // 本人の生年月。任意入力(仕様: requirements.md#前提入力-3)
+  spouseBirthMonth: YearMonth | null // 配偶者の生年月。任意入力
+  childrenCount: number // 子どもの人数(0〜3人)
+  childrenBirthMonths: (YearMonth | null)[] // 子どもそれぞれの生年月。childrenCount分の要素を持つ。任意入力
+}
+
+// シミュレーション開始資産額・開始年月の入力
+export type StartingAssetInput = {
+  startingAsset: number // シミュレーション開始資産額・万円
+  startYearMonth: YearMonth
+}
+
+// 特定の月に登録する一時的な追加支出(イベント)
+export type EventEntry = {
+  yearMonth: YearMonth
+  label: string // 名目(自由テキスト)
+  amount: number // 万円
+}
+
+// 特定の月に登録する賞与(通常の年間ボーナスとは別に、または上書きして登録する)
+export type BonusEntry = {
+  yearMonth: YearMonth
+  amount: number // 万円
+}
+
+// 貯蓄のみ/資産運用モードの切り替えと、資産運用モードの想定利回り
+export type InvestmentModeInput = {
+  investmentMode: boolean // true: 資産運用モード, false: 貯蓄のみモード
+  expectedAnnualRate: number // 想定利回り(年率・%)。資産運用モード選択時のみ意味を持つ
+}
+
+// 資産推移テーブル・グラフの表示単位
+export type PeriodUnit = 'month' | 'year'
+
+// 月次資産推移テーブルの1行
+export type MonthlyProjectionRow = {
+  yearMonth: YearMonth
+  selfAge?: number
+  spouseAge?: number
+  childrenAges: (number | undefined)[]
+  eventLabels: string[] // その月に発生したイベントの名目一覧
+  netSurplus: number // 差引後余剰・万円
+  asset: number // その月末時点の資産額・万円
+}
+
+// 資産推移テーブルの年次集計行
+export type YearlyProjectionRow = {
+  year: number
+  selfAge?: number
+  spouseAge?: number
+  childrenAges: (number | undefined)[]
+  eventLabels: string[]
+  yearlySurplus: number // 年次余剰資金・万円
+  asset: number // 年末(またはその年の最終月)時点の資産額・万円
+}

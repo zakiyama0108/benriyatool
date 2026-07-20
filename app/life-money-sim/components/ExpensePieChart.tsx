@@ -29,7 +29,7 @@ export default function ExpensePieChart({ items }: Props) {
               <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => `${value}万円`} />
+          <Tooltip formatter={(value) => `${String(value)}万円`} />
         </PieChart>
       </ResponsiveContainer>
     </div>

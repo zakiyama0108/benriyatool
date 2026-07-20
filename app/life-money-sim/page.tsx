@@ -1,7 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import type { IncomeInput, PersonalExpenseInput, HouseholdExpenseInput } from './lib/types'
+import type {
+  IncomeInput,
+  PersonalExpenseInput,
+  HouseholdExpenseInput,
+  FamilyProfileInput,
+  StartingAssetInput,
+  BonusEntry,
+  EventEntry,
+  InvestmentModeInput,
+  PeriodUnit,
+} from './lib/types'
 import {
   calcPersonalExpenseMonthly,
   calcHouseholdExpenseTotal,
@@ -9,13 +19,28 @@ import {
   calcAnnualSurplus,
   calcExpenseRatio,
 } from './lib/monthlyBalance'
+import { calcFinalYearMonth, buildMonthlyProjectionRows, aggregateYearly } from './lib/assetProjection'
 import IncomeForm from './components/IncomeForm'
 import ExpenseListInput from './components/ExpenseListInput'
 import ExpensePieChart from './components/ExpensePieChart'
 import HouseholdShareInput from './components/HouseholdShareInput'
 import BalanceSummary from './components/BalanceSummary'
+import StartingAssetForm from './components/StartingAssetForm'
+import FamilyProfileForm from './components/FamilyProfileForm'
+import EventListInput from './components/EventListInput'
+import ModeToggle from './components/ModeToggle'
+import PeriodToggle from './components/PeriodToggle'
+import AssetProjectionTable from './components/AssetProjectionTable'
+import AssetProjectionChart from './components/AssetProjectionChart'
 
 type Tab = 'balance' | 'projection'
+
+// 資産推移タブの開始年月の初期値(今月)。ブラウザ表示時点の年月を初期表示として使うのみで、
+// 計算ロジック自体は入力された年月をそのまま使う
+function currentYearMonth(): string {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+}
 
 // 「収支」「資産推移」の2タブを持つ画面本体。入力状態はここで一括保持し、
 // 資産推移タブの計算(asset-projection)へそのまま渡す(仕様: monthly-balance/design.md#状態管理)
@@ -26,6 +51,24 @@ export default function Page() {
   const [personalExpense, setPersonalExpense] = useState<PersonalExpenseInput>({ annualItems: [], monthlyItems: [] })
   const [household, setHousehold] = useState<HouseholdExpenseInput>({ hasSpouse: false, items: [], myShare: 0 })
 
+  const [familyProfile, setFamilyProfile] = useState<FamilyProfileInput>({
+    selfBirthMonth: null,
+    spouseBirthMonth: null,
+    childrenCount: 0,
+    childrenBirthMonths: [],
+  })
+  const [startingAssetInput, setStartingAssetInput] = useState<StartingAssetInput>({
+    startingAsset: 0,
+    startYearMonth: currentYearMonth(),
+  })
+  const [bonuses, setBonuses] = useState<BonusEntry[]>([])
+  const [events, setEvents] = useState<EventEntry[]>([])
+  const [investmentModeInput, setInvestmentModeInput] = useState<InvestmentModeInput>({
+    investmentMode: false,
+    expectedAnnualRate: 0,
+  })
+  const [periodUnit, setPeriodUnit] = useState<PeriodUnit>('month')
+
   const personalExpenseMonthly = calcPersonalExpenseMonthly(personalExpense.annualItems, personalExpense.monthlyItems)
   const householdExpenseTotal = calcHouseholdExpenseTotal(household.hasSpouse, household.items)
   const monthlySurplus = calcMonthlySurplus(income.monthlySalary, personalExpenseMonthly, household.hasSpouse, household.myShare)
@@ -33,6 +76,22 @@ export default function Page() {
   const expenseRatio = calcExpenseRatio(personalExpenseMonthly, household.hasSpouse, household.myShare, income.monthlySalary)
 
   const personalExpenseItems = [...personalExpense.annualItems, ...personalExpense.monthlyItems]
+
+  const finalYearMonth = calcFinalYearMonth(familyProfile.selfBirthMonth, startingAssetInput.startYearMonth)
+  const monthlyRows = buildMonthlyProjectionRows({
+    startYearMonth: startingAssetInput.startYearMonth,
+    finalYearMonth,
+    startingAsset: startingAssetInput.startingAsset,
+    monthlySurplus,
+    selfBirthMonth: familyProfile.selfBirthMonth,
+    spouseBirthMonth: household.hasSpouse ? familyProfile.spouseBirthMonth : null,
+    childrenBirthMonths: familyProfile.childrenBirthMonths,
+    bonuses,
+    events,
+    investmentMode: investmentModeInput.investmentMode,
+    expectedAnnualRate: investmentModeInput.expectedAnnualRate,
+  })
+  const yearlyRows = aggregateYearly(monthlyRows)
 
   return (
     <div className="min-h-screen bg-[#eaf6f6]">
@@ -100,7 +159,29 @@ export default function Page() {
         )}
 
         {tab === 'projection' && (
-          <p className="py-8 text-center text-sm text-teal-700/60">資産推移タブは準備中です</p>
+          <div className="space-y-4">
+            <div className="space-y-3 rounded-[20px] bg-teal-50/70 p-4 shadow-[0_10px_30px_-18px_rgba(15,118,110,0.6)]">
+              <p className="text-sm font-bold text-teal-800">前提入力</p>
+              <StartingAssetForm value={startingAssetInput} onChange={setStartingAssetInput} />
+            </div>
+
+            <FamilyProfileForm
+              profile={familyProfile}
+              onChange={setFamilyProfile}
+              hasSpouse={household.hasSpouse}
+              onHasSpouseChange={(hasSpouse) => setHousehold({ ...household, hasSpouse })}
+            />
+
+            <ModeToggle value={investmentModeInput} onChange={setInvestmentModeInput} />
+
+            <EventListInput bonuses={bonuses} onBonusesChange={setBonuses} events={events} onEventsChange={setEvents} />
+
+            <PeriodToggle value={periodUnit} onChange={setPeriodUnit} />
+
+            <AssetProjectionChart periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
+
+            <AssetProjectionTable periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
+          </div>
         )}
       </div>
     </div>

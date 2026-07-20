@@ -723,5 +723,180 @@
     "specFile": "life-money-sim/monthly-balance/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "対象年月の家族の年齢を求める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#前提入力-3、requirements.md#前提入力-5、requirements.md#月次の資産推移-3でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "当月の差引後余剰を求める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#月次の資産推移-2でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "表示範囲の最終年月を決める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#月次の資産推移-4でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "貯蓄のみモードで月次資産額を積み上げる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#貯蓄/運用シミュレーションの切り替え-1でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "資産運用モードで月次資産額を積み上げる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#複利計算-1、requirements.md#複利計算-2でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "表示モードを切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#貯蓄/運用シミュレーションの切り替え-3でテスト済み(想定利回り0%時の一致はassetProjection.test.ts、切り替え操作自体はModeToggleでtasks.md Task10の判断によりユニットテスト対象外)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "月次データを年次にまとめる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#表示単位の切り替え-2でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "表示単位を切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#表示単位の切り替え-1、requirements.md#表示単位の切り替え-3、requirements.md#資産推移グラフ-2で、tasks.md Task10〜12の判断によりPeriodToggle/AssetProjectionChartはユニットテスト対象外とし/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "エラーハンドリング",
+    "reason": "計算処理自体の失敗は想定しないという記述と、イベント・賞与の合算方針(requirements.md#賞与・イベントの登録-2)の記述で、合算方針はbuildMonthlyProjectionRows(page.tsxからの結合関数)による実装のため単体テスト対象外(design.md#関連するファイル(抜粋))"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、tasks.md Task8〜12の判断によりStartingAssetForm等の純粋な表示・入力コンポーネントはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "ビジュアルトーン",
+    "reason": "monthly-balance/design.md#ビジュアルトーンと同一のトーン(オーシャンミント)の指定で、Tailwindでの実装確認は/runスキルでの目視確認によるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "状態管理",
+    "reason": "page.tsxのローカル状態の持ち方の記述で、tasks.md Task13の判断によりpage.tsx自体はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "セキュリティ",
+    "reason": "通信を行わないためこの処理フロー固有の追加対策は不要という判断の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "ログ",
+    "reason": "「ログ出力は行わない」という方針の宣言で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "前提入力 [1]",
+    "reason": "tasks.md Task8の判断により、開始資産額の入力(StartingAssetForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "前提入力 [2]",
+    "reason": "tasks.md Task8の判断により、開始年月の入力(StartingAssetForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "前提入力 [4]",
+    "reason": "tasks.md Task8の判断により、配偶者の有無・子どもの人数・生年月の入力(FamilyProfileForm)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "前提入力 [5]",
+    "reason": "生年月未入力時にcalcAgeがundefinedを返すことはassetProjection.test.tsでテスト済み。年齢欄を表示しないUI側の挙動はtasks.md Task11の判断によりAssetProjectionTableのユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "表示単位の切り替え [1]",
+    "reason": "tasks.md Task10の判断により、月次/年次の切り替え操作(PeriodToggle)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "表示単位の切り替え [3]",
+    "reason": "tasks.md Task12の判断により、資産推移グラフ(AssetProjectionChart)の表示単位連動はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "賞与・イベントの登録 [1]",
+    "reason": "tasks.md Task9の判断により、賞与の登録入力(EventListInput)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "賞与・イベントの登録 [2]",
+    "reason": "tasks.md Task9の判断により、イベントの登録入力(EventListInput)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため。同月複数件の合算はbuildMonthlyProjectionRows(page.tsxからの結合関数)による実装のため単体テスト対象外"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "賞与・イベントの登録 [3]",
+    "reason": "tasks.md Task11の判断により、イベント名目の行表示(AssetProjectionTable)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "貯蓄/運用シミュレーションの切り替え [3]",
+    "reason": "tasks.md Task10の判断により、モード切り替え操作(ModeToggle)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "資産推移グラフ [1]",
+    "reason": "tasks.md Task12の判断により、資産推移グラフ(AssetProjectionChart)の描画はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "資産推移グラフ [2]",
+    "reason": "tasks.md Task12の判断により、資産推移グラフ(AssetProjectionChart)の横軸切り替えはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出し(複利計算)に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]
