@@ -143,6 +143,12 @@ describe('【管理】最終月時点の資産額の平均と分布', () => {
   it('対象が0件のとき、平均はnull(算出対象なし)になること', () => {
     expect(aggregateAsset([]).average).toBeNull()
   })
+
+  it('資産額がマイナス(異常な資産推移)のレコードも、最小区分(100万円未満)にカウントされること', () => {
+    const records = [rec({ final_month_asset: -50 })]
+    const buckets = aggregateAsset(records).buckets
+    expect(buckets.find((b) => b.label === '100万円未満')?.count).toBe(1)
+  })
 })
 
 // 仕様: specs/life-money-sim/admin/requirements.md#集計表示-3

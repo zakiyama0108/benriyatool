@@ -14,8 +14,9 @@ export default function SaveButton({ input }: Props) {
 
   async function handleClick() {
     setStatus('saving')
-    await saveResult(input)
-    setStatus('saved')
+    const succeeded = await saveResult(input)
+    // 失敗時はエラーを画面に伝えず、何も表示しない状態(idle)に戻す(design.md#試算結果を保存する処理)
+    setStatus(succeeded ? 'saved' : 'idle')
   }
 
   return (

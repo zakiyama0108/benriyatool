@@ -65,9 +65,10 @@ export function aggregateMode(records: AdminRecord[]): ModeBreakdown {
 }
 
 // 最終月時点の資産額の5区分。各区分は「下限以上・上限未満」で、境界値はちょうどのとき上の区分に入る
-// (requirements.md#表示の初期値・区切り-2)
+// (requirements.md#表示の初期値・区切り-2)。最小区分の下限は-Infinityとし、
+// 異常な資産推移(マイナス化。asset-projection/design.md#バリデーション)のレコードも取りこぼさない
 const ASSET_BUCKETS: { label: string; min: number; max: number }[] = [
-  { label: '100万円未満', min: 0, max: 100 },
+  { label: '100万円未満', min: -Infinity, max: 100 },
   { label: '100万円以上500万円未満', min: 100, max: 500 },
   { label: '500万円以上1000万円未満', min: 500, max: 1000 },
   { label: '1000万円以上3000万円未満', min: 1000, max: 3000 },

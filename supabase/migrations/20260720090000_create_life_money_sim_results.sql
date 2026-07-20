@@ -7,16 +7,16 @@ create table life_money_sim_results (
   created_at timestamptz not null default now(),
   has_spouse boolean not null,
   children_count integer not null,
-  monthly_salary integer not null,
-  personal_expense_monthly integer not null,
-  household_expense_total integer,
-  my_household_share integer,
-  starting_asset integer not null,
+  monthly_salary numeric not null,
+  personal_expense_monthly numeric not null,
+  household_expense_total numeric,
+  my_household_share numeric,
+  starting_asset numeric not null,
   investment_mode boolean not null,
   expected_annual_rate numeric,
   event_count integer not null,
-  final_month_asset integer not null,
-  monthly_surplus integer not null,
+  final_month_asset numeric not null,
+  monthly_surplus numeric not null,
   is_test boolean not null default false
 );
 

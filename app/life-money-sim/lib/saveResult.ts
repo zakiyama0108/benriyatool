@@ -31,13 +31,16 @@ export function buildResultRecord(input: SaveResultInput, isTest: boolean): Resu
 }
 
 // 入力内容と計算結果をlife_money_sim_resultsテーブルへ保存する。
-// 保存に失敗しても計算結果の表示自体は妨げないよう、エラーは外へ投げずに握りつぶす
-// (仕様: requirements.md#機能要件-1、requirements.md#エッジケース・例外処理-1)
-export async function saveResult(input: SaveResultInput): Promise<void> {
+// 保存に失敗しても計算結果の表示自体は妨げないよう、エラーは外へ投げずに握りつぶす。
+// 一方で呼び出し元(SaveButton)が成功/失敗に応じて表示を出し分けられるよう、真偽値で結果を返す
+// (仕様: requirements.md#機能要件-1、requirements.md#エッジケース・例外処理-1、design.md#試算結果を保存する処理)
+export async function saveResult(input: SaveResultInput): Promise<boolean> {
   try {
     const record = buildResultRecord(input, isTestData())
-    await supabase.from('life_money_sim_results').insert(record)
+    const { error } = await supabase.from('life_money_sim_results').insert(record)
+    return !error
   } catch {
     // 保存失敗時もユーザー操作をブロックしない(分析用のベストエフォート処理のため)
+    return false
   }
 }

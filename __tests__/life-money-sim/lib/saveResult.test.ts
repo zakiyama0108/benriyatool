@@ -88,8 +88,8 @@ describe('保存用レコードの組み立て - 入力・計算結果からdesi
 
 // 仕様: specs/life-money-sim/save-result/requirements.md#機能要件-1
 describe('life_money_sim_resultsテーブルへの保存 - 組み立てたレコードをSupabaseへinsertする', () => {
-  it('組み立てたレコードが正しいテーブル名・カラム名でinsertされること', async () => {
-    await saveResult(baseInput)
+  it('組み立てたレコードが正しいテーブル名・カラム名でinsertされ、保存成功がtrueで返ること', async () => {
+    await expect(saveResult(baseInput)).resolves.toBe(true)
 
     expect(fromMock).toHaveBeenCalledWith('life_money_sim_results')
     expect(insertMock).toHaveBeenCalledWith(
@@ -103,9 +103,14 @@ describe('life_money_sim_resultsテーブルへの保存 - 組み立てたレコ
 })
 
 // 仕様: specs/life-money-sim/save-result/requirements.md#エッジケース・例外処理-1
-describe('保存失敗時の扱い - DBへの保存に失敗しても計算結果表示には影響させない', () => {
-  it('Supabaseへの保存が例外を投げても、saveResultはエラーを外に投げず正常終了すること', async () => {
+describe('保存失敗時の扱い - DBへの保存に失敗しても計算結果表示には影響させないが、呼び出し元は成功/失敗を判別できる', () => {
+  it('Supabaseへの保存が例外を投げても、saveResultはエラーを外に投げずfalseで正常終了すること', async () => {
     insertMock.mockRejectedValue(new Error('network error'))
-    await expect(saveResult(baseInput)).resolves.toBeUndefined()
+    await expect(saveResult(baseInput)).resolves.toBe(false)
+  })
+
+  it('Supabaseが例外を投げず{error}を返した場合(RLS拒否等)も、saveResultはfalseを返すこと', async () => {
+    insertMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
+    await expect(saveResult(baseInput)).resolves.toBe(false)
   })
 })
