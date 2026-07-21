@@ -19,7 +19,7 @@ function AgePill({ age, isFinal }: { age: number | undefined; isFinal: boolean }
   return (
     <span
       className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-bold ${
-        isFinal ? 'bg-white/15 text-white' : 'bg-[#F2FAF9] text-[#7E9491]'
+        isFinal ? 'bg-white/15 text-white' : 'bg-lms-canvas text-lms-muted'
       }`}
     >
       {formatAge(age)}
@@ -32,9 +32,9 @@ function EventCell({ hasBonus, eventLabels, isFinal }: { hasBonus: boolean; even
   if (!hasBonus && eventLabels.length === 0) return <span>—</span>
   return (
     <span className="flex flex-wrap items-center gap-1">
-      {hasBonus && <span className={`font-bold ${isFinal ? 'text-white' : 'text-[#149E92]'}`}>賞与</span>}
+      {hasBonus && <span className={`font-bold ${isFinal ? 'text-white' : 'text-lms-teal'}`}>賞与</span>}
       {eventLabels.length > 0 && (
-        <span className={`font-bold ${isFinal ? 'text-white' : 'text-[#FF6F59]'}`}>{eventLabels.join('、')}</span>
+        <span className={`font-bold ${isFinal ? 'text-white' : 'text-lms-coral'}`}>{eventLabels.join('、')}</span>
       )}
     </span>
   )
@@ -49,7 +49,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
       <div className="overflow-x-auto rounded-[18px] bg-white p-2 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
         <table className="w-full border-collapse text-xs">
           <thead>
-            <tr className="border-b border-[#C1E1DB] text-left text-[#7E9491]">
+            <tr className="border-b border-lms-line-strong text-left text-lms-muted">
               <th className="whitespace-nowrap px-2 py-1.5 font-semibold">年月</th>
               <th className="whitespace-nowrap px-2 py-1.5 font-semibold">本人</th>
               <th className="whitespace-nowrap px-2 py-1.5 font-semibold">配偶者</th>
@@ -68,10 +68,10 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
                   key={row.yearMonth}
                   className={
                     isFinal
-                      ? 'bg-[#149E92] font-bold text-white'
+                      ? 'bg-lms-teal font-bold text-white'
                       : isMarked
-                        ? 'bg-[#FDECC9] border-b border-[#DCEFEC]'
-                        : 'border-b border-[#DCEFEC]'
+                        ? 'bg-lms-sand-soft border-b border-lms-line'
+                        : 'border-b border-lms-line'
                   }
                 >
                   <td className="whitespace-nowrap px-2 py-1.5">{row.yearMonth}</td>
@@ -100,7 +100,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
     <div className="overflow-x-auto rounded-[18px] bg-white p-2 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
       <table className="w-full border-collapse text-xs">
         <thead>
-          <tr className="border-b border-[#C1E1DB] text-left text-[#7E9491]">
+          <tr className="border-b border-lms-line-strong text-left text-lms-muted">
             <th className="whitespace-nowrap px-2 py-1.5 font-semibold">年</th>
             <th className="whitespace-nowrap px-2 py-1.5 font-semibold">本人</th>
             <th className="whitespace-nowrap px-2 py-1.5 font-semibold">配偶者</th>
@@ -119,10 +119,10 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
                 key={row.year}
                 className={
                   isFinal
-                    ? 'bg-[#149E92] font-bold text-white'
+                    ? 'bg-lms-teal font-bold text-white'
                     : isMarked
-                      ? 'bg-[#FDECC9] border-b border-[#DCEFEC]'
-                      : 'border-b border-[#DCEFEC]'
+                      ? 'bg-lms-sand-soft border-b border-lms-line'
+                      : 'border-b border-lms-line'
                 }
               >
                 <td className="whitespace-nowrap px-2 py-1.5">{row.year}年</td>

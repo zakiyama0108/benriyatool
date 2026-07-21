@@ -110,19 +110,19 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2FAF9]">
+    <div className="min-h-screen bg-lms-canvas">
       <div className="mx-auto max-w-md space-y-6 px-4 py-6 sm:px-8 sm:py-10 lg:max-w-6xl">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1C2A28]">資産推移シミュレーター</h1>
-          <p className="mt-1 text-sm text-[#7E9491]">毎月の収支から、将来の資産推移を見通す</p>
+          <h1 className="text-2xl font-bold tracking-tight text-lms-ink">資産推移シミュレーター</h1>
+          <p className="mt-1 text-sm text-lms-muted">毎月の収支から、将来の資産推移を見通す</p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
           <div className="space-y-4">
             <IncomeForm income={income} onChange={setIncome} />
 
-            <div className="space-y-3 rounded-[18px] bg-[#E1F2EF] p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-              <p className="text-sm font-bold text-[#1C2A28]">個人支出</p>
+            <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+              <p className="text-sm font-bold text-lms-ink">個人支出</p>
               <ExpenseListInput
                 label="年額固定費"
                 items={personalExpense.annualItems}
@@ -149,8 +149,8 @@ export default function Page() {
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-3 rounded-[18px] bg-[#E1F2EF] p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-              <p className="text-sm font-bold text-[#1C2A28]">前提入力</p>
+            <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+              <p className="text-sm font-bold text-lms-ink">前提入力</p>
               <StartingAssetForm value={startingAssetInput} onChange={setStartingAssetInput} />
             </div>
 

@@ -24,7 +24,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-bold text-[#1C2A28]">{label}</p>
+      <p className="text-sm font-bold text-lms-ink">{label}</p>
       <ul className="max-h-64 space-y-2 overflow-y-auto">
         {items.map((item, index) => (
           <li key={index} className="flex items-center gap-2">
@@ -34,7 +34,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
               value={item.name}
               onChange={(e) => updateItem(index, { name: e.target.value })}
               placeholder="名称"
-              className="min-w-0 flex-1 rounded-full border border-[#DCEFEC] bg-white px-4 py-2 text-sm outline-none focus:border-[#149E92]"
+              className="min-w-0 flex-1 rounded-full border border-lms-line bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
             />
             <input
               type="number"
@@ -42,13 +42,13 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
               value={Number.isFinite(item.amount) ? item.amount : ''}
               onChange={(e) => updateItem(index, { amount: e.target.valueAsNumber })}
               placeholder="万円"
-              className="w-24 rounded-full border border-[#DCEFEC] bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-[#149E92]"
+              className="w-24 rounded-full border border-lms-line bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-teal"
             />
             <button
               type="button"
               aria-label={`${label}の項目を削除`}
               onClick={() => removeItem(index)}
-              className="shrink-0 rounded-full px-2 py-1 text-xs text-[#FF6F59] hover:bg-[#FFE4DD]"
+              className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral-soft"
             >
               削除
             </button>
@@ -58,7 +58,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
       <button
         type="button"
         onClick={addItem}
-        className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-[#149E92] hover:bg-[#DAF3EF]"
+        className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-lms-teal hover:bg-lms-teal-soft"
       >
         + 項目を追加
       </button>
