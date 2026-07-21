@@ -1347,7 +1347,7 @@
   {
     "specFile": "life-money-sim/saved-scenario/design.md",
     "item": "エラーハンドリング",
-    "reason": "機能全体のエラー処理方針の記述で、個別の振る舞い(保存・削除失敗時にfalseを返す)はsavedScenario.test.tsでテスト済みのため"
+    "reason": "機能全体のエラー処理方針の記述で、個別の振る舞い(lib層が保存・削除失敗時にfalseを返すこと、UI層が処理中の二重押下防止・失敗表示をすること)はsavedScenario.test.ts/ScenarioPanel.test.tsxでテスト済みのため"
   },
   {
     "specFile": "life-money-sim/saved-scenario/design.md",

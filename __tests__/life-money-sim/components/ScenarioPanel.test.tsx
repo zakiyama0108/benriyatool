@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import ScenarioPanel from '../../../app/life-money-sim/components/ScenarioPanel'
 import type { ScenarioRecord } from '../../../app/life-money-sim/lib/types'
@@ -21,21 +21,49 @@ const scenarios: ScenarioRecord[] = [
 
 // 仕様: specs/life-money-sim/saved-scenario/requirements.md#保存-3、specs/life-money-sim/saved-scenario/requirements.md#保存-4
 describe('マイシナリオの保存操作 - 名前を入力して保存する', () => {
-  it('名前を入力して保存ボタンを押すと、入力した名前でonSaveが呼ばれること', () => {
-    const onSave = vi.fn()
+  it('名前を入力して保存ボタンを押すと、入力した名前でonSaveが呼ばれること', async () => {
+    const onSave = vi.fn().mockResolvedValue(true)
     render(<ScenarioPanel scenarios={[]} onSave={onSave} onLoad={vi.fn()} onDelete={vi.fn()} />)
     fireEvent.change(screen.getByPlaceholderText('シナリオ名'), { target: { value: '子ども2人パターン' } })
     fireEvent.click(screen.getByRole('button', { name: '保存する' }))
     expect(onSave).toHaveBeenCalledWith('子ども2人パターン')
+    await waitFor(() => expect(screen.getByText('保存しました')).toBeTruthy())
   })
 
   it('名前が未入力の場合、保存ボタンが無効化され、押してもonSaveが呼ばれないこと', () => {
     const onSave = vi.fn()
     render(<ScenarioPanel scenarios={[]} onSave={onSave} onLoad={vi.fn()} onDelete={vi.fn()} />)
     const button = screen.getByRole('button', { name: '保存する' })
-    expect(button.disabled).toBe(true)
+    expect(button.hasAttribute('disabled')).toBe(true)
     fireEvent.click(button)
     expect(onSave).not.toHaveBeenCalled()
+  })
+})
+
+// 仕様: specs/life-money-sim/saved-scenario/design.md#エラーハンドリング、specs/life-money-sim/saved-scenario/design.md#名前を付けて保存する処理
+describe('保存中・保存失敗時の表示 - 処理中は再押下できず、失敗が分かる表示をする', () => {
+  it('保存処理が完了するまでボタンが「保存中…」になり、再押下できないこと', async () => {
+    let resolveSave: (ok: boolean) => void = () => {}
+    const onSave = vi.fn(() => new Promise<boolean>((resolve) => { resolveSave = resolve }))
+    render(<ScenarioPanel scenarios={[]} onSave={onSave} onLoad={vi.fn()} onDelete={vi.fn()} />)
+    fireEvent.change(screen.getByPlaceholderText('シナリオ名'), { target: { value: 'テスト' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存する' }))
+
+    const button = screen.getByRole('button', { name: '保存中…' })
+    expect(button.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(button)
+    expect(onSave).toHaveBeenCalledTimes(1)
+
+    resolveSave(true)
+    await waitFor(() => expect(screen.getByText('保存しました')).toBeTruthy())
+  })
+
+  it('保存に失敗した場合、失敗が分かる表示になること', async () => {
+    const onSave = vi.fn().mockResolvedValue(false)
+    render(<ScenarioPanel scenarios={[]} onSave={onSave} onLoad={vi.fn()} onDelete={vi.fn()} />)
+    fireEvent.change(screen.getByPlaceholderText('シナリオ名'), { target: { value: 'テスト' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存する' }))
+    await waitFor(() => expect(screen.getByText(/保存に失敗しました/)).toBeTruthy())
   })
 })
 
@@ -55,7 +83,7 @@ describe('マイシナリオの一覧・読み込み・削除', () => {
   })
 
   it('一覧から「削除する」を押すと、そのシナリオのidでonDeleteが呼ばれること', () => {
-    const onDelete = vi.fn()
+    const onDelete = vi.fn().mockResolvedValue(true)
     render(<ScenarioPanel scenarios={scenarios} onSave={vi.fn()} onLoad={vi.fn()} onDelete={onDelete} />)
     fireEvent.click(screen.getAllByRole('button', { name: '削除する' })[1])
     expect(onDelete).toHaveBeenCalledWith('b')
@@ -64,5 +92,30 @@ describe('マイシナリオの一覧・読み込み・削除', () => {
   it('保存済みシナリオが0件の場合、その旨が分かる表示になること', () => {
     render(<ScenarioPanel scenarios={[]} onSave={vi.fn()} onLoad={vi.fn()} onDelete={vi.fn()} />)
     expect(screen.getByText(/保存されたシナリオはありません/)).toBeTruthy()
+  })
+})
+
+// 仕様: specs/life-money-sim/saved-scenario/design.md#エラーハンドリング、specs/life-money-sim/saved-scenario/design.md#削除する処理
+describe('削除中・削除失敗時の表示 - 処理中の行は再押下できず、失敗が分かる表示をする', () => {
+  it('削除処理が完了するまで、その行のボタンが「削除中…」になり再押下できないこと', async () => {
+    let resolveDelete: (ok: boolean) => void = () => {}
+    const onDelete = vi.fn(() => new Promise<boolean>((resolve) => { resolveDelete = resolve }))
+    render(<ScenarioPanel scenarios={scenarios} onSave={vi.fn()} onLoad={vi.fn()} onDelete={onDelete} />)
+    fireEvent.click(screen.getAllByRole('button', { name: '削除する' })[0])
+
+    const button = screen.getByRole('button', { name: '削除中…' })
+    expect(button.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(button)
+    expect(onDelete).toHaveBeenCalledTimes(1)
+
+    resolveDelete(true)
+    await waitFor(() => expect(screen.queryByRole('button', { name: '削除中…' })).toBeNull())
+  })
+
+  it('削除に失敗した場合、その行に失敗が分かる表示が出ること', async () => {
+    const onDelete = vi.fn().mockResolvedValue(false)
+    render(<ScenarioPanel scenarios={scenarios} onSave={vi.fn()} onLoad={vi.fn()} onDelete={onDelete} />)
+    fireEvent.click(screen.getAllByRole('button', { name: '削除する' })[0])
+    await waitFor(() => expect(screen.getByText(/削除に失敗しました/)).toBeTruthy())
   })
 })

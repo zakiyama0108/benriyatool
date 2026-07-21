@@ -166,6 +166,7 @@ export default function Page() {
         console.error('マイシナリオ: 保存後の一覧再取得に失敗しました', e)
       }
     }
+    return ok
   }
 
   function handleLoadScenario(id: string) {
@@ -183,6 +184,7 @@ export default function Page() {
         console.error('マイシナリオ: 削除後の一覧再取得に失敗しました', e)
       }
     }
+    return ok
   }
 
   const personalExpenseMonthly = calcPersonalExpenseMonthly(personalExpense.annualItems, personalExpense.monthlyItems)
@@ -299,9 +301,9 @@ export default function Page() {
             {session && (
               <ScenarioPanel
                 scenarios={scenarios}
-                onSave={(name) => void handleSaveScenario(name)}
+                onSave={handleSaveScenario}
                 onLoad={handleLoadScenario}
-                onDelete={(id) => void handleDeleteScenario(id)}
+                onDelete={handleDeleteScenario}
               />
             )}
           </div>
