@@ -58,6 +58,21 @@ describe('保存中・保存失敗時の表示 - 処理中は再押下できず�
     await waitFor(() => expect(screen.getByText('保存しました')).toBeTruthy())
   })
 
+  it('保存処理が完了するまで名前欄も無効化され、通信中に名前を書き換えて二重に保存できないこと', async () => {
+    let resolveSave: (ok: boolean) => void = () => {}
+    const onSave = vi.fn(() => new Promise<boolean>((resolve) => { resolveSave = resolve }))
+    render(<ScenarioPanel scenarios={[]} onSave={onSave} onLoad={vi.fn()} onDelete={vi.fn()} />)
+    fireEvent.change(screen.getByPlaceholderText('シナリオ名'), { target: { value: 'テスト' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存する' }))
+
+    const nameInput = screen.getByPlaceholderText('シナリオ名')
+    expect(nameInput.hasAttribute('disabled')).toBe(true)
+    expect(onSave).toHaveBeenCalledTimes(1)
+
+    resolveSave(true)
+    await waitFor(() => expect(screen.getByText('保存しました')).toBeTruthy())
+  })
+
   it('保存に失敗した場合、失敗が分かる表示になること', async () => {
     const onSave = vi.fn().mockResolvedValue(false)
     render(<ScenarioPanel scenarios={[]} onSave={onSave} onLoad={vi.fn()} onDelete={vi.fn()} />)
@@ -107,6 +122,22 @@ describe('削除中・削除失敗時の表示 - 処理中の行は再押下で�
     expect(button.hasAttribute('disabled')).toBe(true)
     fireEvent.click(button)
     expect(onDelete).toHaveBeenCalledTimes(1)
+
+    resolveDelete(true)
+    await waitFor(() => expect(screen.queryByRole('button', { name: '削除中…' })).toBeNull())
+  })
+
+  it('ある行の削除処理中は、他の行の読み込む・削除するボタンも無効化されること', async () => {
+    let resolveDelete: (ok: boolean) => void = () => {}
+    const onDelete = vi.fn(() => new Promise<boolean>((resolve) => { resolveDelete = resolve }))
+    const onLoad = vi.fn()
+    render(<ScenarioPanel scenarios={scenarios} onSave={vi.fn()} onLoad={onLoad} onDelete={onDelete} />)
+    fireEvent.click(screen.getAllByRole('button', { name: '削除する' })[0])
+
+    const otherLoadButton = screen.getAllByRole('button', { name: '読み込む' })[1]
+    expect(otherLoadButton.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(otherLoadButton)
+    expect(onLoad).not.toHaveBeenCalled()
 
     resolveDelete(true)
     await waitFor(() => expect(screen.queryByRole('button', { name: '削除中…' })).toBeNull())

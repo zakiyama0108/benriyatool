@@ -10,7 +10,7 @@ type Props = {
   onDelete: (id: string) => Promise<boolean>
 }
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+type SaveMessage = 'none' | 'saved' | 'error'
 
 // 同日に複数保存した場合でも区別できるよう、時刻(時:分)まで表示する
 function formatSavedAt(createdAt: string): string {
@@ -26,19 +26,24 @@ function formatSavedAt(createdAt: string): string {
 //  design.md#一覧を組み立てる処理、design.md#削除する処理、design.md#エラーハンドリング)
 export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: Props) {
   const [name, setName] = useState('')
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState<SaveMessage>('none')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteFailedId, setDeleteFailedId] = useState<string | null>(null)
 
+  // isSavingを表示用メッセージ(saveMessage)と別状態にする。入力欄も保存中は無効化するため、
+  // 通信中に名前を書き換えて二重INSERTになることはない(design.md#エラーハンドリング)
   async function handleSaveClick() {
-    if (!name.trim() || saveStatus === 'saving') return
-    setSaveStatus('saving')
+    if (!name.trim() || isSaving) return
+    setIsSaving(true)
+    setSaveMessage('none')
     const ok = await onSave(name)
+    setIsSaving(false)
     if (ok) {
       setName('')
-      setSaveStatus('saved')
+      setSaveMessage('saved')
     } else {
-      setSaveStatus('error')
+      setSaveMessage('error')
     }
   }
 
@@ -61,21 +66,22 @@ export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: P
           value={name}
           onChange={(e) => {
             setName(e.target.value)
-            setSaveStatus('idle')
+            setSaveMessage('none')
           }}
+          disabled={isSaving}
           placeholder="シナリオ名"
-          className="flex-1 rounded-full border border-lms-line bg-white px-3 py-1.5 text-sm text-lms-ink"
+          className="flex-1 rounded-full border border-lms-line bg-white px-3 py-1.5 text-sm text-lms-ink disabled:opacity-40"
         />
         <button
           onClick={() => void handleSaveClick()}
-          disabled={!name.trim() || saveStatus === 'saving'}
+          disabled={!name.trim() || isSaving}
           className="rounded-full bg-lms-teal px-4 py-1.5 text-sm font-medium text-white disabled:opacity-40"
         >
-          {saveStatus === 'saving' ? '保存中…' : '保存する'}
+          {isSaving ? '保存中…' : '保存する'}
         </button>
       </div>
-      {saveStatus === 'saved' && <p className="text-xs text-lms-teal">保存しました</p>}
-      {saveStatus === 'error' && <p className="text-xs text-lms-coral">保存に失敗しました</p>}
+      {saveMessage === 'saved' && <p className="text-xs text-lms-teal">保存しました</p>}
+      {saveMessage === 'error' && <p className="text-xs text-lms-coral">保存に失敗しました</p>}
 
       {scenarios.length === 0 ? (
         <p className="text-sm text-lms-muted">保存されたシナリオはありません</p>
@@ -83,6 +89,8 @@ export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: P
         <ul className="space-y-2">
           {scenarios.map((scenario) => {
             const isDeleting = deletingId === scenario.id
+            // 他の行が削除処理中の間も、押しても無視されるだけの状態にせず見た目上も無効化して揃える
+            const isBusy = deletingId !== null
             return (
               <li key={scenario.id} className="rounded-xl bg-white px-3 py-2 text-sm">
                 <div className="flex items-center justify-between gap-2">
@@ -93,14 +101,14 @@ export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: P
                   <div className="flex gap-2">
                     <button
                       onClick={() => onLoad(scenario.id)}
-                      disabled={isDeleting}
+                      disabled={isBusy}
                       className="rounded-full border border-lms-line-strong px-3 py-1 text-xs disabled:opacity-40"
                     >
                       読み込む
                     </button>
                     <button
                       onClick={() => void handleDeleteClick(scenario.id)}
-                      disabled={isDeleting}
+                      disabled={isBusy}
                       className="rounded-full border border-lms-coral px-3 py-1 text-xs text-lms-coral disabled:opacity-40"
                     >
                       {isDeleting ? '削除中…' : '削除する'}
