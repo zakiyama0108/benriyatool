@@ -19,41 +19,41 @@ export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasS
   }
 
   return (
-    <div className="space-y-3 rounded-[20px] bg-teal-50/70 p-4 shadow-[0_10px_30px_-18px_rgba(15,118,110,0.6)]">
-      <p className="text-sm font-bold text-teal-800">家族構成</p>
+    <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+      <p className="text-sm font-bold text-lms-ink">家族構成</p>
 
-      <label className="block text-xs text-teal-700">
+      <label className="block text-xs text-lms-muted">
         本人の生年月(任意)
         <input
           type="month"
           value={profile.selfBirthMonth ?? ''}
           onChange={(e) => onChange({ ...profile, selfBirthMonth: e.target.value || null })}
-          className="mt-1 w-full rounded-full border border-teal-100 bg-white px-4 py-2 text-sm outline-none focus:border-teal-400"
+          className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
         />
       </label>
 
-      <label className="flex items-center gap-2 text-xs text-teal-700">
+      <label className="flex items-center gap-2 text-xs text-lms-muted">
         <input type="checkbox" checked={hasSpouse} onChange={(e) => onHasSpouseChange(e.target.checked)} />
         配偶者あり
       </label>
       {hasSpouse && (
-        <label className="block text-xs text-teal-700">
+        <label className="block text-xs text-lms-muted">
           配偶者の生年月(任意)
           <input
             type="month"
             value={profile.spouseBirthMonth ?? ''}
             onChange={(e) => onChange({ ...profile, spouseBirthMonth: e.target.value || null })}
-            className="mt-1 w-full rounded-full border border-teal-100 bg-white px-4 py-2 text-sm outline-none focus:border-teal-400"
+            className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
           />
         </label>
       )}
 
-      <label className="block text-xs text-teal-700">
+      <label className="block text-xs text-lms-muted">
         子どもの人数
         <select
           value={profile.childrenCount}
           onChange={(e) => setChildrenCount(Number(e.target.value))}
-          className="mt-1 w-full rounded-full border border-teal-100 bg-white px-4 py-2 text-sm outline-none focus:border-teal-400"
+          className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
         >
           {Array.from({ length: MAX_CHILDREN + 1 }, (_, n) => (
             <option key={n} value={n}>
@@ -64,7 +64,7 @@ export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasS
       </label>
 
       {profile.childrenBirthMonths.map((birthMonth, i) => (
-        <label key={i} className="block text-xs text-teal-700">
+        <label key={i} className="block text-xs text-lms-muted">
           {`子ども${i + 1}の生年月(任意)`}
           <input
             type="month"
@@ -75,7 +75,7 @@ export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasS
               )
               onChange({ ...profile, childrenBirthMonths })
             }}
-            className="mt-1 w-full rounded-full border border-teal-100 bg-white px-4 py-2 text-sm outline-none focus:border-teal-400"
+            className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
           />
         </label>
       ))}

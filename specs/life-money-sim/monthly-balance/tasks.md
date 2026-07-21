@@ -38,6 +38,6 @@
 - [ ] Task 9: 収入入力・家計負担入力コンポーネント(仕様: requirements.md#収入、#家計支出、design.md#コンポーネント設計)
   - [ ] `app/life-money-sim/components/IncomeForm.tsx`、`HouseholdShareInput.tsx`を実装する(配偶者なしの場合は家計支出セクションを表示しない)
 
-- [ ] Task 10: 収支タブの画面配線(仕様: design.md#画面設計、#状態管理)
-  - [ ] `app/life-money-sim/page.tsx`に「収支」タブを実装し、Task1〜9の関数・コンポーネントを配線して`BalanceSummary.tsx`に結果(支出割合を含む)・`ExpensePieChart.tsx`を表示する
-  - [ ] 収支タブの入力状態を`asset-projection`タブが参照できる形で親コンポーネントに保持する
+- [ ] Task 10: 収支セクションの画面配線(仕様: design.md#画面設計、#状態管理)
+  - [ ] `app/life-money-sim/page.tsx`の左カラム(PC)/前半セクション(スマホ)に収支セクションを実装し、Task1〜9の関数・コンポーネントを配線して`BalanceSummary.tsx`に結果(支出割合を含む)・`ExpensePieChart.tsx`を表示する
+  - [ ] 収支セクションの入力状態を`asset-projection`セクションが参照できる形で親コンポーネントに保持する

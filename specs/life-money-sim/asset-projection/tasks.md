@@ -50,5 +50,5 @@
 - [ ] Task 12: 資産推移グラフの表示(仕様: requirements.md#資産推移グラフ、design.md#表示単位を切り替える処理)
   - [ ] `app/life-money-sim/components/AssetProjectionChart.tsx`を実装する(選択中の表示単位と同じ粒度のデータ点で折れ線/エリアを描画することを`/run`スキルで実機確認する)
 
-- [ ] Task 13: 資産推移タブの画面配線(仕様: design.md#状態管理、#依存関係)
-  - [ ] `app/life-money-sim/page.tsx`に「資産推移」タブを実装し、Task1〜12を配線する。`monthly-balance`タブの入力状態(月次余剰資金)を参照して計算する
+- [ ] Task 13: 資産推移セクションの画面配線(仕様: design.md#状態管理、#依存関係)
+  - [ ] `app/life-money-sim/page.tsx`の右カラム(PC)/後半セクション(スマホ)に資産推移セクションを実装し、Task1〜12を配線する。`monthly-balance`セクションの入力状態(月次余剰資金)を参照して計算する

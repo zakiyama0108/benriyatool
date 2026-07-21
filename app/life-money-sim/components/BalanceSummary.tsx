@@ -24,34 +24,35 @@ export default function BalanceSummary({
   annualSurplus,
 }: Props) {
   return (
-    <div className="space-y-3 rounded-[20px] bg-white p-4 shadow-[0_10px_30px_-18px_rgba(15,118,110,0.6)]">
-      <p className="text-sm font-bold text-teal-800">収支サマリー</p>
-      <dl className="grid grid-cols-2 gap-3 text-sm">
-        <div>
-          <dt className="text-xs text-gray-500">個人支出の月合計</dt>
-          <dd className="font-bold tabular-nums text-rose-500">{formatManYen(personalExpenseMonthly)}</dd>
-        </div>
+    <div className="space-y-4 rounded-[18px] bg-white p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+      <p className="text-sm font-bold text-lms-ink">収支サマリー</p>
+
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-lms-muted">
+        <span>
+          個人支出の月合計 <b className="tabular-nums text-lms-ink">{formatManYen(personalExpenseMonthly)}</b>
+        </span>
         {hasSpouse && (
-          <div>
-            <dt className="text-xs text-gray-500">家計支出全体の合計</dt>
-            <dd className="font-bold tabular-nums text-rose-500">{formatManYen(householdExpenseTotal)}</dd>
-          </div>
+          <span>
+            家計支出全体の合計 <b className="tabular-nums text-lms-ink">{formatManYen(householdExpenseTotal)}</b>
+          </span>
         )}
-        <div>
-          <dt className="text-xs text-gray-500">支出割合</dt>
-          <dd className="font-bold tabular-nums text-rose-500">
-            {expenseRatio === null ? '算出対象なし' : `${Math.round(expenseRatio * 100)}%`}
-          </dd>
+      </div>
+
+      <div className="inline-flex items-baseline gap-1.5 rounded-full bg-lms-sand-soft px-4 py-2 text-xs font-bold text-lms-sand-ink">
+        <span>収入に対する支出割合</span>
+        <b className="text-base">{expenseRatio === null ? '算出対象なし' : `${Math.round(expenseRatio * 100)}%`}</b>
+      </div>
+
+      <div className="flex gap-3">
+        <div className="flex-1 rounded-[14px] bg-lms-teal-soft px-4 py-3.5">
+          <p className="text-xs font-semibold text-lms-muted">月次余剰資金(賞与抜き)</p>
+          <p className="mt-0.5 text-xl font-extrabold tabular-nums text-lms-teal">{formatManYen(monthlySurplus)}</p>
         </div>
-        <div>
-          <dt className="text-xs text-gray-500">月次余剰資金(賞与抜き)</dt>
-          <dd className="font-bold tabular-nums text-teal-600">{formatManYen(monthlySurplus)}</dd>
+        <div className="flex-1 rounded-[14px] border border-lms-line-strong bg-white px-4 py-3.5">
+          <p className="text-xs font-semibold text-lms-muted">年間余剰資金</p>
+          <p className="mt-0.5 text-xl font-extrabold tabular-nums text-lms-ink">{formatManYen(annualSurplus)}</p>
         </div>
-        <div>
-          <dt className="text-xs text-gray-500">年間余剰資金</dt>
-          <dd className="font-bold tabular-nums text-teal-600">{formatManYen(annualSurplus)}</dd>
-        </div>
-      </dl>
+      </div>
     </div>
   )
 }

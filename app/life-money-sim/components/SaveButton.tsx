@@ -25,11 +25,11 @@ export default function SaveButton({ input }: Props) {
         type="button"
         onClick={() => void handleClick()}
         disabled={status === 'saving'}
-        className="rounded-full bg-teal-600 px-6 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-full bg-lms-teal px-6 py-2.5 text-sm font-medium text-white disabled:opacity-50"
       >
         {status === 'saving' ? '保存中…' : 'この試算を保存する'}
       </button>
-      {status === 'saved' && <span className="text-xs text-teal-700">保存しました</span>}
+      {status === 'saved' && <span className="text-xs text-lms-teal">保存しました</span>}
     </div>
   )
 }

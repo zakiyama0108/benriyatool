@@ -9,14 +9,14 @@ type Props = {
 // 資産推移テーブル・グラフの月次/年次の表示単位切り替え(仕様: requirements.md#表示単位の切り替え-1)
 export default function PeriodToggle({ value, onChange }: Props) {
   return (
-    <div role="tablist" className="flex rounded-full bg-white p-1 shadow-sm">
+    <div role="tablist" className="flex w-fit rounded-full bg-lms-card p-1">
       <button
         type="button"
         role="tab"
         aria-selected={value === 'month'}
         onClick={() => onChange('month')}
-        className={`flex-1 rounded-full py-2 text-xs font-medium transition-colors ${
-          value === 'month' ? 'bg-teal-600 text-white' : 'text-teal-700'
+        className={`rounded-full px-5 py-2 text-xs font-medium transition-colors ${
+          value === 'month' ? 'bg-lms-teal text-white' : 'text-lms-muted'
         }`}
       >
         月次
@@ -26,8 +26,8 @@ export default function PeriodToggle({ value, onChange }: Props) {
         role="tab"
         aria-selected={value === 'year'}
         onClick={() => onChange('year')}
-        className={`flex-1 rounded-full py-2 text-xs font-medium transition-colors ${
-          value === 'year' ? 'bg-teal-600 text-white' : 'text-teal-700'
+        className={`rounded-full px-5 py-2 text-xs font-medium transition-colors ${
+          value === 'year' ? 'bg-lms-teal text-white' : 'text-lms-muted'
         }`}
       >
         年次

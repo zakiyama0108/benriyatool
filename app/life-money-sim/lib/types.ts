@@ -73,6 +73,7 @@ export type MonthlyProjectionRow = {
   spouseAge?: number
   childrenAges: (number | undefined)[]
   eventLabels: string[] // その月に発生したイベントの名目一覧
+  hasBonus: boolean // その月に賞与の登録があるかどうか(テーブルの行ハイライトに使う)
   netSurplus: number // 差引後余剰・万円
   asset: number // その月末時点の資産額・万円
 }
@@ -84,6 +85,7 @@ export type YearlyProjectionRow = {
   spouseAge?: number
   childrenAges: (number | undefined)[]
   eventLabels: string[]
+  hasBonus: boolean // その年のいずれかの月に賞与の登録があるかどうか
   yearlySurplus: number // 年次余剰資金・万円
   asset: number // 年末(またはその年の最終月)時点の資産額・万円
 }

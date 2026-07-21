@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* life-money-sim(資産推移シミュレーター)のビジュアルトーン「オーシャンミント」の配色トークン。
+   複数コンポーネントで使い回すため、一元管理のために@themeで定義する
+   (仕様: specs/life-money-sim/monthly-balance/design.md#ビジュアルトーン) */
+@theme {
+  --color-lms-canvas: #f2faf9;
+  --color-lms-card: #e1f2ef;
+  --color-lms-ink: #1c2a28;
+  --color-lms-muted: #7e9491;
+  --color-lms-line: #dcefec;
+  --color-lms-line-strong: #c1e1db;
+  --color-lms-teal: #149e92;
+  --color-lms-teal-soft: #daf3ef;
+  --color-lms-coral: #ff6f59;
+  --color-lms-coral-soft: #ffe4dd;
+  --color-lms-sand: #f2b84b;
+  --color-lms-sand-soft: #fdecc9;
+  --color-lms-sand-ink: #8a5e0e;
+}
+
 @layer components {
   .section-heading {
     @apply text-base font-bold text-gray-900 mb-2.5 pl-3 border-l-[3px] border-blue-500;

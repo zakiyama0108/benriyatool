@@ -96,6 +96,7 @@ export function aggregateYearly(rows: MonthlyProjectionRow[]): YearlyProjectionR
         spouseAge: last.spouseAge,
         childrenAges: last.childrenAges,
         eventLabels: yearRows.flatMap((r) => r.eventLabels),
+        hasBonus: yearRows.some((r) => r.hasBonus),
         yearlySurplus: yearRows.reduce((sum, r) => sum + r.netSurplus, 0),
         asset: last.asset,
       }
@@ -147,6 +148,7 @@ export function buildMonthlyProjectionRows(params: {
     spouseAge: calcAge(params.spouseBirthMonth, yearMonth),
     childrenAges: params.childrenBirthMonths.map((b) => calcAge(b, yearMonth)),
     eventLabels: params.events.filter((e) => e.yearMonth === yearMonth).map((e) => e.label),
+    hasBonus: params.bonuses.some((b) => b.yearMonth === yearMonth),
     netSurplus: netSurpluses[i],
     asset: assetSeries[i],
   }))
