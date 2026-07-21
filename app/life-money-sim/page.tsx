@@ -113,7 +113,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-[#eaf6f6]">
-      <div className="mx-auto max-w-md space-y-6 px-4 py-6">
+      <div className="mx-auto max-w-md space-y-6 px-4 py-6 sm:max-w-2xl lg:max-w-3xl sm:px-8 sm:py-10">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-teal-900">資産推移シミュレーター</h1>
           <p className="mt-1 text-sm text-teal-700/70">毎月の収支から、将来の資産推移を見通す</p>
