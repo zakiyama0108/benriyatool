@@ -84,6 +84,7 @@ flowchart TD
 | Skill | 役割 | 使うタイミング |
 |---|---|---|
 | [session-report](session-report/SKILL.md) | セッションの作業内容を要約したレポートMDをObsidianのClaude-Reportフォルダに保存する | 作業の区切り・「レポートにして」の依頼時 |
+| [notion-md-sync](notion-md-sync/SKILL.md) | リポジトリ内の全MarkdownファイルをNotionにフォルダ構造ごと同期する(手動実行のみ) | 「MDをNotionに同期して」の依頼時 |
 
 ### Agent(作業者)
 
