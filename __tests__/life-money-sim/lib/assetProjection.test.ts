@@ -90,7 +90,7 @@ describe('開始資産額・想定利回りのバリデーション - 不正な�
 // 仕様: specs/life-money-sim/asset-projection/requirements.md#表示単位の切り替え-2
 describe('月次データを年次にまとめる集計', () => {
   function row(partial: Partial<MonthlyProjectionRow> & { yearMonth: string; netSurplus: number; asset: number }): MonthlyProjectionRow {
-    return { selfAge: undefined, spouseAge: undefined, childrenAges: [], eventLabels: [], ...partial }
+    return { selfAge: undefined, spouseAge: undefined, childrenAges: [], eventLabels: [], hasBonus: false, ...partial }
   }
 
   it('同じ年の12か月分の行が1行にまとまり、年次余剰資金が12か月分の合計になること', () => {
@@ -134,5 +134,23 @@ describe('月次データを年次にまとめる集計', () => {
     ]
     const result = aggregateYearly(rows)
     expect(result[0].eventLabels).toEqual(['結婚', '引っ越し'])
+  })
+
+  it('その年のいずれかの月に賞与が登録されていれば、年の行もhasBonus=trueになること', () => {
+    const rows: MonthlyProjectionRow[] = [
+      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, hasBonus: true }),
+      row({ yearMonth: '2026-09', netSurplus: 10, asset: 120, hasBonus: false }),
+    ]
+    const result = aggregateYearly(rows)
+    expect(result[0].hasBonus).toBe(true)
+  })
+
+  it('その年のどの月にも賞与が登録されていなければ、年の行はhasBonus=falseになること', () => {
+    const rows: MonthlyProjectionRow[] = [
+      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, hasBonus: false }),
+      row({ yearMonth: '2026-09', netSurplus: 10, asset: 120, hasBonus: false }),
+    ]
+    const result = aggregateYearly(rows)
+    expect(result[0].hasBonus).toBe(false)
   })
 })

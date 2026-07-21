@@ -6,8 +6,9 @@ type Props = {
   items: ExpenseItem[]
 }
 
-// オーシャンミントのトーンに合わせたドーナツグラフの配色(ティール系を基調に濃淡で項目を分ける)
-const COLORS = ['#0f766e', '#14b8a6', '#5eead4', '#f9c74f', '#fb7185', '#94a3b8']
+// オーシャンミントのトーンの配色トークン(ティール=資産・黒字、コーラル=支出、サンドイエロー=ハイライト)を
+// 円グラフの項目色としても使い回す
+const COLORS = ['#149E92', '#FF6F59', '#F2B84B', '#C1E1DB']
 
 // 内訳リストの各項目の金額比率をドーナツ型の円グラフで表示する表示専用コンポーネント
 // (仕様: requirements.md#内訳の可視化)
@@ -17,7 +18,7 @@ export default function ExpensePieChart({ items }: Props) {
     .map((item) => ({ name: item.name || '(名称未入力)', value: item.amount }))
 
   if (data.length === 0) {
-    return <p className="py-6 text-center text-xs text-teal-700/60">表示できる内訳がありません</p>
+    return <p className="py-6 text-center text-xs text-[#7E9491]">表示できる内訳がありません</p>
   }
 
   return (

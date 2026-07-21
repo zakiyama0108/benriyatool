@@ -24,7 +24,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-bold text-teal-800">{label}</p>
+      <p className="text-sm font-bold text-[#1C2A28]">{label}</p>
       <ul className="max-h-64 space-y-2 overflow-y-auto">
         {items.map((item, index) => (
           <li key={index} className="flex items-center gap-2">
@@ -34,7 +34,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
               value={item.name}
               onChange={(e) => updateItem(index, { name: e.target.value })}
               placeholder="名称"
-              className="min-w-0 flex-1 rounded-full border border-teal-100 bg-white px-4 py-2 text-sm outline-none focus:border-teal-400"
+              className="min-w-0 flex-1 rounded-full border border-[#DCEFEC] bg-white px-4 py-2 text-sm outline-none focus:border-[#149E92]"
             />
             <input
               type="number"
@@ -42,13 +42,13 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
               value={Number.isFinite(item.amount) ? item.amount : ''}
               onChange={(e) => updateItem(index, { amount: e.target.valueAsNumber })}
               placeholder="万円"
-              className="w-24 rounded-full border border-teal-100 bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-teal-400"
+              className="w-24 rounded-full border border-[#DCEFEC] bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-[#149E92]"
             />
             <button
               type="button"
               aria-label={`${label}の項目を削除`}
               onClick={() => removeItem(index)}
-              className="shrink-0 rounded-full px-2 py-1 text-xs text-rose-400 hover:bg-rose-50"
+              className="shrink-0 rounded-full px-2 py-1 text-xs text-[#FF6F59] hover:bg-[#FFE4DD]"
             >
               削除
             </button>
@@ -58,7 +58,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
       <button
         type="button"
         onClick={addItem}
-        className="rounded-full bg-teal-50 px-4 py-1.5 text-xs font-medium text-teal-700 hover:bg-teal-100"
+        className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-[#149E92] hover:bg-[#DAF3EF]"
       >
         + 項目を追加
       </button>

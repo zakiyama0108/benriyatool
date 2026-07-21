@@ -35,8 +35,6 @@ import AssetProjectionTable from './components/AssetProjectionTable'
 import AssetProjectionChart from './components/AssetProjectionChart'
 import SaveButton from './components/SaveButton'
 
-type Tab = 'balance' | 'projection'
-
 // 資産推移タブの開始年月の初期値(今月)。ブラウザ表示時点の年月を初期表示として使うのみで、
 // 計算ロジック自体は入力された年月をそのまま使う
 function currentYearMonth(): string {
@@ -44,11 +42,11 @@ function currentYearMonth(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 
-// 「収支」「資産推移」の2タブを持つ画面本体。入力状態はここで一括保持し、
-// 資産推移タブの計算(asset-projection)へそのまま渡す(仕様: monthly-balance/design.md#状態管理)
+// 画面本体。PC(lg以上)では左に収支・右に資産推移を並べる2カラム、
+// スマホでは収支→資産推移の順に1カラムで積み上げる(画面イメージのモックアップレビューで
+// 選定した「オーシャンミント」トーン・レイアウト。仕様: monthly-balance/design.md#画面設計、
+// asset-projection/design.md#画面設計)。入力状態はここで一括保持する(仕様: monthly-balance/design.md#状態管理)
 export default function Page() {
-  const [tab, setTab] = useState<Tab>('balance')
-
   const [income, setIncome] = useState<IncomeInput>({ monthlySalary: 0, bonusCount: 0, bonusAmountPerTime: 0 })
   const [personalExpense, setPersonalExpense] = useState<PersonalExpenseInput>({ annualItems: [], monthlyItems: [] })
   const [household, setHousehold] = useState<HouseholdExpenseInput>({ hasSpouse: false, items: [], myShare: 0 })
@@ -112,44 +110,19 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-[#eaf6f6]">
-      <div className="mx-auto max-w-md space-y-6 px-4 py-6 sm:max-w-2xl lg:max-w-3xl sm:px-8 sm:py-10">
+    <div className="min-h-screen bg-[#F2FAF9]">
+      <div className="mx-auto max-w-md space-y-6 px-4 py-6 sm:px-8 sm:py-10 lg:max-w-6xl">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-teal-900">資産推移シミュレーター</h1>
-          <p className="mt-1 text-sm text-teal-700/70">毎月の収支から、将来の資産推移を見通す</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[#1C2A28]">資産推移シミュレーター</h1>
+          <p className="mt-1 text-sm text-[#7E9491]">毎月の収支から、将来の資産推移を見通す</p>
         </div>
 
-        <div role="tablist" className="flex rounded-full bg-white p-1 shadow-sm">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'balance'}
-            onClick={() => setTab('balance')}
-            className={`flex-1 rounded-full py-2.5 text-sm font-medium transition-colors ${
-              tab === 'balance' ? 'bg-teal-600 text-white' : 'text-teal-700'
-            }`}
-          >
-            収支
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'projection'}
-            onClick={() => setTab('projection')}
-            className={`flex-1 rounded-full py-2.5 text-sm font-medium transition-colors ${
-              tab === 'projection' ? 'bg-teal-600 text-white' : 'text-teal-700'
-            }`}
-          >
-            資産推移
-          </button>
-        </div>
-
-        {tab === 'balance' && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
           <div className="space-y-4">
             <IncomeForm income={income} onChange={setIncome} />
 
-            <div className="space-y-3 rounded-[20px] bg-teal-50/70 p-4 shadow-[0_10px_30px_-18px_rgba(15,118,110,0.6)]">
-              <p className="text-sm font-bold text-teal-800">個人支出</p>
+            <div className="space-y-3 rounded-[18px] bg-[#E1F2EF] p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+              <p className="text-sm font-bold text-[#1C2A28]">個人支出</p>
               <ExpenseListInput
                 label="年額固定費"
                 items={personalExpense.annualItems}
@@ -174,12 +147,10 @@ export default function Page() {
               annualSurplus={annualSurplus}
             />
           </div>
-        )}
 
-        {tab === 'projection' && (
           <div className="space-y-4">
-            <div className="space-y-3 rounded-[20px] bg-teal-50/70 p-4 shadow-[0_10px_30px_-18px_rgba(15,118,110,0.6)]">
-              <p className="text-sm font-bold text-teal-800">前提入力</p>
+            <div className="space-y-3 rounded-[18px] bg-[#E1F2EF] p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+              <p className="text-sm font-bold text-[#1C2A28]">前提入力</p>
               <StartingAssetForm value={startingAssetInput} onChange={setStartingAssetInput} />
             </div>
 
@@ -202,7 +173,7 @@ export default function Page() {
 
             <SaveButton input={saveResultInput} />
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
