@@ -123,3 +123,23 @@ export type ResultRecord = {
   monthly_surplus: number
   is_test: boolean
 }
+
+// マイシナリオ(saved-scenario)の保存対象の入力値一式(仕様: saved-scenario/design.md#保存対象の入力値)
+export type ScenarioInputState = {
+  income: IncomeInput
+  personalExpense: PersonalExpenseInput
+  household: HouseholdExpenseInput
+  familyProfile: FamilyProfileInput
+  startingAssetInput: StartingAssetInput
+  bonuses: BonusEntry[]
+  events: EventEntry[]
+  investmentModeInput: InvestmentModeInput
+}
+
+// life_money_sim_saved_scenariosテーブルの1件(カラム定義: saved-scenario/design.md#データベース設計)
+export type ScenarioRecord = {
+  id: string
+  name: string
+  inputState: ScenarioInputState
+  createdAt: string
+}

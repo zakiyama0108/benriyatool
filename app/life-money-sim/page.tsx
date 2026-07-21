@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import type {
   IncomeInput,
   PersonalExpenseInput,
@@ -12,6 +13,8 @@ import type {
   InvestmentModeInput,
   PeriodUnit,
   SaveResultInput,
+  ScenarioInputState,
+  ScenarioRecord,
 } from './lib/types'
 import {
   calcPersonalExpenseMonthly,
@@ -21,6 +24,8 @@ import {
   calcExpenseRatio,
 } from './lib/monthlyBalance'
 import { calcFinalYearMonth, buildMonthlyProjectionRows, aggregateYearly } from './lib/assetProjection'
+import { getSession, onAuthChange, signInWithGoogle, signOut } from '../lib/adminAuth'
+import { fetchScenarios, saveScenario, deleteScenario, fillMissingScenarioFields } from './lib/savedScenario'
 import IncomeForm from './components/IncomeForm'
 import ExpenseListInput from './components/ExpenseListInput'
 import ExpensePieChart from './components/ExpensePieChart'
@@ -34,6 +39,8 @@ import PeriodToggle from './components/PeriodToggle'
 import AssetProjectionTable from './components/AssetProjectionTable'
 import AssetProjectionChart from './components/AssetProjectionChart'
 import SaveButton from './components/SaveButton'
+import LoginStatus from './components/LoginStatus'
+import ScenarioPanel from './components/ScenarioPanel'
 
 // 資産推移タブの開始年月の初期値(今月)。ブラウザ表示時点の年月を初期表示として使うのみで、
 // 計算ロジック自体は入力された年月をそのまま使う
@@ -68,6 +75,115 @@ export default function Page() {
     expectedAnnualRate: 0,
   })
   const [periodUnit, setPeriodUnit] = useState<PeriodUnit>('month')
+  const [session, setSession] = useState<Session | null>(null)
+  const [scenarios, setScenarios] = useState<ScenarioRecord[]>([])
+  const hasAutoLoadedRef = useRef(false)
+
+  // ログインセッションの取得・変化の購読(仕様: user-auth/design.md#ログイン状態を判定して表示を出し分ける処理)
+  useEffect(() => {
+    let active = true
+    void getSession().then((s) => {
+      if (active) setSession(s)
+    })
+    const unsubscribe = onAuthChange(() => {
+      void getSession().then((s) => {
+        if (active) setSession(s)
+      })
+    })
+    return () => {
+      active = false
+      unsubscribe()
+    }
+  }, [])
+
+  // 保存対象の入力値一式を復元する(仕様: saved-scenario/design.md#読み込む処理、design.md#保存対象の入力値)
+  function applyScenario(inputState: ScenarioInputState) {
+    const filled = fillMissingScenarioFields(inputState, {
+      income: { monthlySalary: 0, bonusCount: 0, bonusAmountPerTime: 0 },
+      personalExpense: { annualItems: [], monthlyItems: [] },
+      household: { hasSpouse: false, items: [], myShare: 0 },
+      familyProfile: { selfBirthMonth: null, spouseBirthMonth: null, childrenCount: 0, childrenBirthMonths: [] },
+      startingAssetInput: { startingAsset: 0, startYearMonth: currentYearMonth() },
+      bonuses: [],
+      events: [],
+      investmentModeInput: { investmentMode: false, expectedAnnualRate: 0 },
+    })
+    setIncome(filled.income)
+    setPersonalExpense(filled.personalExpense)
+    setHousehold(filled.household)
+    setFamilyProfile(filled.familyProfile)
+    setStartingAssetInput(filled.startingAssetInput)
+    setBonuses(filled.bonuses)
+    setEvents(filled.events)
+    setInvestmentModeInput(filled.investmentModeInput)
+  }
+
+  // ログイン完了で一覧を取得し、初回のみ最も新しいシナリオを自動反映する
+  // (仕様: saved-scenario/design.md#ログイン直後に保存済み一覧を取得し自動反映する処理)
+  useEffect(() => {
+    if (!session) {
+      // ログアウト時はScenarioPanel自体を表示しないため一覧のリセットは不要(design.md#マイシナリオ操作の表示を出し分ける処理)
+      hasAutoLoadedRef.current = false
+      return
+    }
+    let active = true
+    fetchScenarios()
+      .then((list) => {
+        if (!active) return
+        setScenarios(list)
+        if (!hasAutoLoadedRef.current && list.length > 0) {
+          applyScenario(list[0].inputState)
+        }
+        hasAutoLoadedRef.current = true
+      })
+      .catch((e) => {
+        // 取得失敗はエラー表示せず一覧なし扱いにする(design.md#エラーハンドリング)
+        // eslint-disable-next-line no-console -- 原因究明用。inputStateの中身は出さない
+        console.error('マイシナリオ: 一覧取得に失敗しました', e)
+      })
+    return () => {
+      active = false
+    }
+  }, [session])
+
+  async function handleSaveScenario(name: string) {
+    const currentState: ScenarioInputState = {
+      income,
+      personalExpense,
+      household,
+      familyProfile,
+      startingAssetInput,
+      bonuses,
+      events,
+      investmentModeInput,
+    }
+    const ok = await saveScenario(name, currentState)
+    if (ok) {
+      try {
+        setScenarios(await fetchScenarios())
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('マイシナリオ: 保存後の一覧再取得に失敗しました', e)
+      }
+    }
+  }
+
+  function handleLoadScenario(id: string) {
+    const record = scenarios.find((s) => s.id === id)
+    if (record) applyScenario(record.inputState)
+  }
+
+  async function handleDeleteScenario(id: string) {
+    const ok = await deleteScenario(id)
+    if (ok) {
+      try {
+        setScenarios(await fetchScenarios())
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('マイシナリオ: 削除後の一覧再取得に失敗しました', e)
+      }
+    }
+  }
 
   const personalExpenseMonthly = calcPersonalExpenseMonthly(personalExpense.annualItems, personalExpense.monthlyItems)
   const householdExpenseTotal = calcHouseholdExpenseTotal(household.hasSpouse, household.items)
@@ -112,9 +228,16 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-lms-canvas">
       <div className="mx-auto max-w-md space-y-6 px-4 py-6 sm:px-8 sm:py-10 lg:max-w-6xl">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-lms-ink">資産推移シミュレーター</h1>
-          <p className="mt-1 text-sm text-lms-muted">毎月の収支から、将来の資産推移を見通す</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-lms-ink">資産推移シミュレーター</h1>
+            <p className="mt-1 text-sm text-lms-muted">毎月の収支から、将来の資産推移を見通す</p>
+          </div>
+          <LoginStatus
+            session={session}
+            onLoginClick={() => void signInWithGoogle(window.location.href)}
+            onLogoutClick={() => void signOut()}
+          />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
@@ -172,6 +295,15 @@ export default function Page() {
             <AssetProjectionTable periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
 
             <SaveButton input={saveResultInput} />
+
+            {session && (
+              <ScenarioPanel
+                scenarios={scenarios}
+                onSave={(name) => void handleSaveScenario(name)}
+                onLoad={handleLoadScenario}
+                onDelete={(id) => void handleDeleteScenario(id)}
+              />
+            )}
           </div>
         </div>
       </div>
