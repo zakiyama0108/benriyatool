@@ -43,7 +43,8 @@
 - [3] 管理画面からできるのは読み取りのみとし、データの編集・削除は行わない
 
 ### 認証手段とパスキー
-- [1] 既存`ikukyu/admin/requirements.md#認証手段とパスキー`と同一方針とする。同じ運営者Googleアカウントを使い回すため、新たな認証設定は不要とする
+- [1] 既存`ikukyu/admin/requirements.md#認証手段とパスキー`と同一方針とする。同じ運営者Googleアカウントを使い回すため、Google OIDC自体の設定(パスキー・2段階認証を含む)は新規に不要とする
+- [2] ただし、Supabase AuthのRedirect URLs(URL Configuration)の許可リストには、画面ごとに戻り先URLの登録が必要となる。本番公開前に`https://benriyatool.com/life-money-sim/admin/**`をダッシュボードで追加登録する(根拠: 実際に登録漏れが原因でログイン後にSite URL=localhostへ誤ってリダイレクトされる不具合が発生し、`ikukyu/admin`用のURLとは別に登録が必要と判明したため)
 
 ### テストデータの扱い
 - [1] 初期表示ではテストデータを除外する(根拠: 実利用の把握が主目的であるため)

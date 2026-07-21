@@ -1176,6 +1176,11 @@
   },
   {
     "specFile": "life-money-sim/admin/requirements.md",
+    "item": "認証手段とパスキー [2]",
+    "reason": "Supabaseダッシュボード側のRedirect URLs設定という運用作業の記述で、アプリの単体テスト対象外。本番での実機ログイン確認で担保する"
+  },
+  {
+    "specFile": "life-money-sim/admin/requirements.md",
     "item": "表示の初期値・区切り [4]",
     "reason": "集計対象が絞り込み後のデータと一致することはpage.tsxの統合(fetchResultsの結果をbuildSummaryに渡す)で実現する結合要件で単体テスト対象外。集計関数自体はaggregate.test.tsでテスト済み"
   },

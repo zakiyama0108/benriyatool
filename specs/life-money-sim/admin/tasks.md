@@ -4,9 +4,9 @@
 
 ## 事前作業(実装より先に単独PRで適用)
 
-- [ ] T0. `life_money_sim_results`への管理者閲覧用RLSポリシーのマイグレーションを作成し、単独PRでmainにマージして適用する(design.md#マイグレーション)。`admin_emails`は`ikukyu/admin`で作成済みのものを共用するため、新規のメール登録作業は不要
+- [x] T0. `life_money_sim_results`への管理者閲覧用RLSポリシーのマイグレーションを作成し、単独PRでmainにマージして適用する(design.md#マイグレーション)。`admin_emails`は`ikukyu/admin`で作成済みのものを共用するため、新規のメール登録作業は不要
   - このタスクはスキーマ・ポリシー変更のみで、TDDのテスト対象外(spec-coverage-skip.jsonに登録)
-  - あわせて、requirements.md#認証手段とパスキー-1の前提(新たな認証設定は不要)が実際に成り立つか、Supabase AuthのRedirect URLs設定を確認して検証する(Supabaseのワイルドカード設定次第では画面ごとの追加登録が不要な場合と必要な場合があるため)。追加登録が必要と判明した場合は、Supabaseダッシュボードで`/life-money-sim/admin`の戻り先URLを登録してから公開する
+  - [x] Supabase AuthのRedirect URLsの検証(requirements.md#認証手段とパスキー-2)。本番公開後、実際にログイン後`localhost`へ誤ってリダイレクトされる不具合が発生し、`ikukyu/admin`用のURLとは別に`https://benriyatool.com/life-money-sim/admin/**`の登録が必要と判明。Supabaseダッシュボードで登録し、正常にログインできることを確認済み
 
 ## 認証共通化(既存コードの整理)
 
