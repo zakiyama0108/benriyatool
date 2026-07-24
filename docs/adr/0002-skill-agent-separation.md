@@ -182,9 +182,9 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 3. **定期作業のAgent化**(law-revision-checkerの導入で完了。残り3種はAgent化ではなく別の形で解消した — spec-auditは廃止(構造的ガード+retrospectiveへの移設で代替)、dependency-updateはclaude.ai routineの月次自動実行、data-checkは/release-checkの完了時案内への統合)
 4. **implementer**(導入済み。ただし常用ではなく、[parallel-work](../../.claude/skills/parallel-work/SKILL.md)のworktree並行開発時などに実装を委譲する任意の作業者として運用する。通常はメインスレッドが直接実装する)
 5. **ui-checker**(導入済み。当初計画外の追加: run-benriyatoolでの実機確認はスクリーンショット画像がメインスレッドのコンテキストを大量に消費するため、確認観点が決まっている単発の実機確認を委譲する)
-6. **designer / resolver**(検討中。2026-07、autopilotの長時間無人実行でメインスレッドの文脈が積み上がる問題への対応として追加検討。詳細は[下記](#設計指摘対応の委譲designerresolverエージェント2026-07追記))
+6. **designer / resolver**(導入済み。2026-07、autopilotの長時間無人実行でメインスレッドの文脈が積み上がる問題への対応として追加。詳細は[下記](#設計指摘対応の委譲designerresolverエージェント2026-07追記))
 
-上記1〜5は導入済み、6は検討中(Agent定義・各Skillへの委譲条件追記は別途実施)。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
+上記1〜6は導入済み。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
 
 ### ワークフローへの自動ルーティングと前提条件ゲート(2026-07追記)
 
