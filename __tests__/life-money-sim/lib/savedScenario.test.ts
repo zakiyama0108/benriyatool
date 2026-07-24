@@ -31,7 +31,7 @@ const inputState: ScenarioInputState = {
   personalExpense: { annualItems: [], monthlyItems: [] },
   household: { hasSpouse: false, items: [], myShare: 0 },
   familyProfile: { selfBirthMonth: '1990-04', spouseBirthMonth: null, childrenCount: 0, childrenBirthMonths: [] },
-  startingAssetInput: { startingAsset: 300, startYearMonth: '2026-07' },
+  startingAssetInput: { startingAsset: 300, startYearMonth: '2026-07', displayYears: 30 },
   bonuses: [],
   events: [],
   investmentModeInput: { investmentMode: false, expectedAnnualRate: 0 },
