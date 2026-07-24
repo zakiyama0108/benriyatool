@@ -12,7 +12,7 @@ description: 新しい機能・アプリの要件定義を始めるときに使�
 
 > 別の機能の作業(承認待ちを含む)が進行中のまま本Skillを始める場合は、先に[parallel-work](../parallel-work/SKILL.md)(worktreeによる並行作業)を確認する。
 
-> **着手前チェック(重複作業の防止):** `git fetch origin main` でローカルmainの遅れを確認し、遅れていれば先に最新化する。続けて `gh pr list --state all --limit 20 --search "<対象のアプリ名や機能名>"` と `git ls-remote --heads origin` で、同じspec・同じ機能を扱う既存PR(オープン=進行中 / マージ済み=対応済み)や進行中ブランチ([parallel-work](../parallel-work/SKILL.md)の着手宣言)がないか確認し、見つかったら作業を始めずユーザーに報告する(この項は requirement/design/fix/implementation の4Skillに同文で記載。変更時は揃って更新する)
+> **着手前チェック(重複作業の防止):** `git fetch origin main` でローカルmainの遅れを確認し、遅れていれば先に最新化する。続けて `gh pr list --state all --limit 20 --search "<対象のアプリ名や機能名>"` と `git ls-remote --heads origin` で、同じspec・同じ機能を扱う既存PR・進行中ブランチがないか確認する。該当しそうなブランチ/PRが複数見つかった場合は、PR本文・ブランチ名を`specs/<アプリ名>/<機能名>/`のパスで絞り込む。それでも複数残る、またはどれが自分の続きか判断できない場合は、推測でどれかを選ばず候補一覧をユーザーに提示して確認する。1件に絞れた場合、それが「自分がこれから進める工程の一つ前の工程が作ったもの」(例: /requirementが作った`feature/<機能名>`ブランチに/designで続きを積む場合)であればそれは重複ではないので、そのブランチをcheckoutして続行する。それ以外(既に先の工程まで進んでいる、または別セッション・別人の作業)は作業を始めずユーザーに報告する(この項は requirement/design/fix/implementation の4Skillに同文で記載。変更時は揃って更新する)
 
 # Step0 入口の判断: 新規spec作成 vs 既存spec更新
 
@@ -86,4 +86,6 @@ requirements.mdを書き始める前に、以下の4項目が**すべて**確認
 
 # 完了時の次ステップ案内
 
-requirements.mdをユーザーに提示し、[/design](../design/SKILL.md)(設計・タスク分解)へ進むことを案内する。仕様が承認されるまでコード(テストを含む)は書き始めない。
+requirements.mdが書けたら、3点セットが揃うのを待たずに[/pr](../pr/SKILL.md)の「早期仕様PR」の手順でブランチ作成・push・PR作成まで行う(要件定義の時点からレビューしてもらえるようにするため)。PRのURLを報告し、[/design](../design/SKILL.md)(設計・タスク分解)へ進むことを案内する。仕様が承認されるまでコード(テストを含む)は書き始めない。
+
+この時点の成果物(requirements.md)はコミット・pushして早期仕様PRに乗っているため、ここでcompactや新しいセッションへの切り替えを行っても支障はない。切り替える場合は、次のセッションにそのまま貼り付けられるプロンプトをコードブロックで提示してから終える(例: `/design を実行してください。対象は specs/<アプリ名>/<機能名>/、ブランチ feature/<機能名>(PR #<番号>)です。`)。
