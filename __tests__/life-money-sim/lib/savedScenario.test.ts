@@ -115,4 +115,11 @@ describe('保存済み入力値の欠損フィールド補完 - 将来の型変�
     expect(result.events).toEqual(currentDefault.events)
     expect(result.income).toEqual(inputState.income)
   })
+
+  it('保存済みデータのstartingAssetInputにdisplayYearsだけが無い場合(displayYears追加前の旧データ)、displayYearsのみ現在の初期値で補われ、startingAsset・startYearMonthは保存値のまま復元されること', () => {
+    const legacyStartingAssetInput = { startingAsset: 300, startYearMonth: '2026-07' } as ScenarioInputState['startingAssetInput']
+    const stored: Partial<ScenarioInputState> = { ...inputState, startingAssetInput: legacyStartingAssetInput }
+    const result = fillMissingScenarioFields(stored, inputState)
+    expect(result.startingAssetInput).toEqual({ startingAsset: 300, startYearMonth: '2026-07', displayYears: 30 })
+  })
 })

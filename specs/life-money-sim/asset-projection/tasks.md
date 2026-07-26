@@ -67,11 +67,11 @@
   - [x] `app/life-money-sim/components/StartingAssetForm.tsx`に表示範囲(年数)の入力欄を追加する
   - [x] `app/life-money-sim/page.tsx`: `startingAssetInput`の初期値に`displayYears: 30`を追加し、`calcFinalYearMonth`の呼び出しを`familyProfile.selfBirthMonth`基準から`startingAssetInput.displayYears`基準に変更する
   - [x] `app/life-money-sim/lib/savedScenario.ts`の`fillMissingScenarioFields`が使う既定値(`startingAssetInput`)にも`displayYears: 30`を追加する(過去に保存されたシナリオに`displayYears`が無い場合の欠損補完)
-  - [ ] `/run`(run-benriyatoolスキル)で、入力欄の表示・値変更が資産推移テーブル/グラフの行数に反映されることを実機確認する
+  - [x] `/run`(run-benriyatoolスキル)で、入力欄の表示・値変更が資産推移テーブル/グラフの行数に反映されることを実機確認する
 
 - [x] Task 16: 表示単位の初期値を年次表示に変更(仕様: requirements.md#表示単位の切り替え-4、design.md#表示単位を切り替える処理)
   - [x] `app/life-money-sim/page.tsx`の`periodUnit`初期状態を`'year'`に変更する
-  - [ ] `/run`(run-benriyatoolスキル)で、初回表示が年次表示になっていることを実機確認する
+  - [x] `/run`(run-benriyatoolスキル)で、初回表示が年次表示になっていることを実機確認する
 
 - [x] Task 17: マイシナリオへの反映確認(仕様: saved-scenario/requirements.md#保存-3)
   - [x] `displayYears`は`StartingAssetInput`経由で`ScenarioInputState`に自動的に含まれるため、DBスキーマ変更は不要。既存の保存・読み込みのテスト(savedScenario.test.ts)がそのまま通ることを確認する
