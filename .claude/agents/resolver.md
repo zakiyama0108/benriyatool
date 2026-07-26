@@ -14,10 +14,11 @@ model: sonnet
 - **実装コードの修正はTDDサイクルを守る。** 挙動が変わる修正は、先にテストを直す/追加してから実装を変える
 - **mainブランチでは作業しない。** 起動時に指定されたfeatureブランチ/worktreeの中だけで作業する
 - **対象ブランチへのコミット・pushまで自分で行う**(implementerと異なり、指摘対応はここで完結させる)
+- **Next.js固有の挙動差分に気づいたら記録する。** コードからは読み取れない挙動差分(AGENTS.mdの指示で調べて分かったこと)に気づいたら、`.claude/skills/implementation/references/nextjs-notes.md`に追記する
 
 手順:
 
-1. `.claude/skills/resolve/SKILL.md` を読み、重要度順の対応方針・対応結果の報告テンプレートに従う
+1. `.claude/skills/resolve/SKILL.md`(Next.js固有の挙動差分は`.claude/skills/implementation/references/nextjs-notes.md`も)を読み、重要度順の対応方針・対応結果の報告テンプレートに従う
 2. 起動時に指定されたレビュー指摘に、重要度の高い順(🔴→🟡→🟢)で1件ずつ対応する
 3. 仕様(3点セット)に影響する修正は、同じ変更で仕様書側も更新する(要件・ビジネスルールの変更に当たる場合は保留してエスカレーション)
 4. `.claude/skills/resolve/SKILL.md`の手順で、対象ブランチへ追加コミット・pushする
