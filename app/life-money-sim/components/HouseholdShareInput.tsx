@@ -2,19 +2,33 @@
 import type { HouseholdExpenseInput } from '../lib/types'
 import ExpenseListInput from './ExpenseListInput'
 import ExpensePieChart from './ExpensePieChart'
+import HelpIcon from './HelpIcon'
+import { CONTEXT_HELP_TEXT } from '../lib/usageGuideContent'
 
 type Props = {
   household: HouseholdExpenseInput
   onChange: (household: HouseholdExpenseInput) => void
+  openHelpId: string | null
+  onToggleHelp: (id: string) => void
+  onCloseHelp: () => void
 }
 
 // 配偶者の有無トグルと、配偶者ありの場合のみ表示する家計支出内訳・自分の家計負担額の入力
 // (仕様: requirements.md#家計支出-1、#家計支出-2、#家計支出-3)
-export default function HouseholdShareInput({ household, onChange }: Props) {
+export default function HouseholdShareInput({ household, onChange, openHelpId, onToggleHelp, onCloseHelp }: Props) {
   return (
     <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-bold text-lms-ink">家計支出</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-bold text-lms-ink">家計支出</p>
+          <HelpIcon
+            id="household"
+            text={CONTEXT_HELP_TEXT.household}
+            openId={openHelpId}
+            onToggle={onToggleHelp}
+            onClose={onCloseHelp}
+          />
+        </div>
         <div role="tablist" className="flex rounded-full bg-white p-1 text-xs">
           <button
             type="button"

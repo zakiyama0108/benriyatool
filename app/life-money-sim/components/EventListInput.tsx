@@ -1,16 +1,29 @@
 'use client'
 import type { BonusEntry, EventEntry } from '../lib/types'
+import HelpIcon from './HelpIcon'
+import { CONTEXT_HELP_TEXT } from '../lib/usageGuideContent'
 
 type Props = {
   bonuses: BonusEntry[]
   onBonusesChange: (bonuses: BonusEntry[]) => void
   events: EventEntry[]
   onEventsChange: (events: EventEntry[]) => void
+  openHelpId: string | null
+  onToggleHelp: (id: string) => void
+  onCloseHelp: () => void
 }
 
 // 月ごとの賞与・イベント(名目+金額)の登録リスト。複数登録・同月複数件登録に対応する
 // (仕様: requirements.md#賞与・イベントの登録-1、#賞与・イベントの登録-2)
-export default function EventListInput({ bonuses, onBonusesChange, events, onEventsChange }: Props) {
+export default function EventListInput({
+  bonuses,
+  onBonusesChange,
+  events,
+  onEventsChange,
+  openHelpId,
+  onToggleHelp,
+  onCloseHelp,
+}: Props) {
   function addBonus() {
     onBonusesChange([...bonuses, { yearMonth: '', amount: 0 }])
   }
@@ -20,6 +33,16 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
 
   return (
     <div className="space-y-4 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+      <div className="flex items-center gap-1.5">
+        <p className="text-sm font-bold text-lms-ink">賞与・イベント</p>
+        <HelpIcon
+          id="eventBonus"
+          text={CONTEXT_HELP_TEXT.eventBonus}
+          openId={openHelpId}
+          onToggle={onToggleHelp}
+          onClose={onCloseHelp}
+        />
+      </div>
       <div className="space-y-2">
         <p className="text-sm font-bold text-lms-sand-ink">賞与(通常のボーナスとは別に登録)</p>
         <ul className="space-y-2">

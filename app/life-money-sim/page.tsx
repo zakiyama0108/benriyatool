@@ -26,6 +26,10 @@ import {
 import { calcFinalYearMonth, buildMonthlyProjectionRows, aggregateYearly } from './lib/assetProjection'
 import { getSession, onAuthChange, signInWithGoogle, signOut } from '../lib/adminAuth'
 import { fetchScenarios, saveScenario, deleteScenario, fillMissingScenarioFields } from './lib/savedScenario'
+import { CONTEXT_HELP_TEXT } from './lib/usageGuideContent'
+import HelpIcon from './components/HelpIcon'
+import UsageBanner from './components/UsageBanner'
+import GlossaryButton from './components/GlossaryButton'
 import IncomeForm from './components/IncomeForm'
 import ExpenseListInput from './components/ExpenseListInput'
 import ExpensePieChart from './components/ExpensePieChart'
@@ -79,6 +83,16 @@ export default function Page() {
   const [session, setSession] = useState<Session | null>(null)
   const [scenarios, setScenarios] = useState<ScenarioRecord[]>([])
   const hasAutoLoadedRef = useRef(false)
+
+  // 9枚のカードのうち、どのカードのコンテキストヘルプ(？アイコン)のポップオーバーが
+  // 開いているかを画面全体で1つだけ保持する(仕様: usage-guide/design.md#状態管理)
+  const [openHelpId, setOpenHelpId] = useState<string | null>(null)
+  function toggleHelp(id: string) {
+    setOpenHelpId((current) => (current === id ? null : id))
+  }
+  function closeHelp() {
+    setOpenHelpId(null)
+  }
 
   // ログインセッションの取得・変化の購読(仕様: user-auth/design.md#ログイン状態を判定して表示を出し分ける処理)
   useEffect(() => {
@@ -243,12 +257,23 @@ export default function Page() {
           />
         </div>
 
+        <UsageBanner />
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
           <div className="space-y-4">
-            <IncomeForm income={income} onChange={setIncome} />
+            <IncomeForm income={income} onChange={setIncome} openHelpId={openHelpId} onToggleHelp={toggleHelp} onCloseHelp={closeHelp} />
 
             <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-              <p className="text-sm font-bold text-lms-ink">個人支出</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-bold text-lms-ink">個人支出</p>
+                <HelpIcon
+                  id="personalExpense"
+                  text={CONTEXT_HELP_TEXT.personalExpense}
+                  openId={openHelpId}
+                  onToggle={toggleHelp}
+                  onClose={closeHelp}
+                />
+              </div>
               <ExpenseListInput
                 label="年額固定費"
                 items={personalExpense.annualItems}
@@ -262,7 +287,13 @@ export default function Page() {
               <ExpensePieChart items={personalExpenseItems} />
             </div>
 
-            <HouseholdShareInput household={household} onChange={setHousehold} />
+            <HouseholdShareInput
+              household={household}
+              onChange={setHousehold}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+            />
 
             <BalanceSummary
               personalExpenseMonthly={personalExpenseMonthly}
@@ -271,12 +302,24 @@ export default function Page() {
               expenseRatio={expenseRatio}
               monthlySurplus={monthlySurplus}
               annualSurplus={annualSurplus}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
             />
           </div>
 
           <div className="space-y-4">
             <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-              <p className="text-sm font-bold text-lms-ink">前提入力</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-sm font-bold text-lms-ink">前提入力</p>
+                <HelpIcon
+                  id="startingAsset"
+                  text={CONTEXT_HELP_TEXT.startingAsset}
+                  openId={openHelpId}
+                  onToggle={toggleHelp}
+                  onClose={closeHelp}
+                />
+              </div>
               <StartingAssetForm value={startingAssetInput} onChange={setStartingAssetInput} />
             </div>
 
@@ -285,13 +328,42 @@ export default function Page() {
               onChange={setFamilyProfile}
               hasSpouse={household.hasSpouse}
               onHasSpouseChange={(hasSpouse) => setHousehold({ ...household, hasSpouse })}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
             />
 
-            <ModeToggle value={investmentModeInput} onChange={setInvestmentModeInput} />
+            <ModeToggle
+              value={investmentModeInput}
+              onChange={setInvestmentModeInput}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+            />
 
-            <EventListInput bonuses={bonuses} onBonusesChange={setBonuses} events={events} onEventsChange={setEvents} />
+            <EventListInput
+              bonuses={bonuses}
+              onBonusesChange={setBonuses}
+              events={events}
+              onEventsChange={setEvents}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+            />
 
             <PeriodToggle value={periodUnit} onChange={setPeriodUnit} />
+
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-bold text-lms-ink">資産推移グラフ・テーブル</p>
+              <HelpIcon
+                id="assetProjection"
+                text={CONTEXT_HELP_TEXT.assetProjection}
+                openId={openHelpId}
+                onToggle={toggleHelp}
+                onClose={closeHelp}
+              />
+              <GlossaryButton />
+            </div>
 
             <AssetProjectionChart periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
 

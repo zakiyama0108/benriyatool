@@ -1478,5 +1478,195 @@
     "specFile": "life-money-sim/saved-scenario/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出し(コンテキストヘルプ・使い方バナー・用語集)の入れ物で、本文を持たないため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプ(？アイコン) [1]",
+    "reason": "9枚のカードへのHelpIcon設置(tasks.md T6)は表示位置の確認であり、/runスキルでの実機確認(tasks.md T7)に委ねる。HelpIcon自体の開閉ロジックはHelpIcon.test.tsxで担保。対象9カードのID網羅はusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "使い方バナー [1]",
+    "reason": "画面上部(タイトル直下)への設置位置(tasks.md T6)の確認であり、/runスキルでの実機確認(tasks.md T7)に委ねる。バナー自体の表示・開閉ロジックはUsageBanner.test.tsxで担保"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "用語集 [1]",
+    "reason": "資産推移グラフ・テーブルのカード付近への設置位置(tasks.md T6)の確認であり、/runスキルでの実機確認(tasks.md T7)に委ねる。ボタン・モーダル自体の開閉ロジックはGlossaryButton.test.tsxで担保"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出し(コンテキストヘルプの文言など)の入れ物で、本文を持たないため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 収入",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 個人支出",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 世帯按分",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 収支サマリー",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 前提入力",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 家族構成",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 貯蓄/運用切替",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 賞与・イベント",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "コンテキストヘルプの文言 > 資産推移グラフ・テーブル",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。9件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "使い方バナーの文言 > ① 収支を入力する",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。3件・順序の一致はusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "使い方バナーの文言 > ② 前提条件を設定する",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。3件・順序の一致はusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "使い方バナーの文言 > ③ 資産推移を確認する",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。3件・順序の一致はusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "用語集の文言 > 差引後余剰",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。4件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "用語集の文言 > 貯蓄のみモード",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。4件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "用語集の文言 > 資産運用モード",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。4件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "用語集の文言 > マイシナリオ",
+    "reason": "usageGuideContent.tsに定義した文言をそのまま画面に表示するだけの静的コピーで、要件定義書の表からの単純転記のため文言単位の一致テストは行わない(tasks.md T1の設計判断)。4件の対応漏れがないことはusageGuideContent.test.tsで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "非機能要件・UI/UX要件",
+    "reason": "PC/スマホ幅でのはみ出し有無という見た目のレイアウト検証であり、jsdomでは実レイアウト計算を再現できないため実機確認(tasks.md T7、スマホ幅375px程度での確認)で担保する"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "コンテキストヘルプの開閉を制御する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#コンテキストヘルプ(？アイコン)-2〜4でHelpIcon.test.tsxにより、[3]の「同時に1つまで」の制御はopenHelpIdを共有する呼び出し元を模したテスト用ラッパーでHelpIcon.test.tsxにてテスト済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "使い方バナーの開閉状態を初期化・保存する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#使い方バナー-2〜5、requirements.md#保存できない環境でのフォールバック-1でUsageBanner.test.tsx・usageBannerStorage.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "用語集モーダルを開閉する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#用語集-2〜4でGlossaryButton.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウト・設置位置の記述で、tasks.md T6の判断により実際の設置箇所はユニットテスト対象外とし、/runスキルでの実機確認(tasks.md T7)に委ねるため。ポップオーバー・バナー・モーダル自体の開閉ロジックは各コンポーネントテストで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧の入れ物見出しで、本文を持たないため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "コンポーネント設計 > HelpIcon",
+    "reason": "Propsの説明表。挙動はHelpIcon.test.tsxのコンポーネントテストで担保済みのため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "コンポーネント設計 > UsageBanner",
+    "reason": "Propsの説明表。挙動はUsageBanner.test.tsxのコンポーネントテストで担保済みのため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "コンポーネント設計 > GlossaryButton",
+    "reason": "Propsの説明表。挙動はGlossaryButton.test.tsxのコンポーネントテストで担保済みのため"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "状態管理",
+    "reason": "page.tsxのローカル状態(openHelpId)の持ち方の記述で、tasks.md T6の判断によりpage.tsx自体はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため(同時に1つまでという遷移ルール自体はHelpIcon.test.tsxのテスト用ラッパーで検証済み)。UsageBanner/GlossaryButtonのローカル状態は各コンポーネントテストで担保済み"
+  },
+  {
+    "specFile": "life-money-sim/usage-guide/design.md",
+    "item": "セキュリティ",
+    "reason": "表示文言はすべて静的な日本語文字列で利用者入力を描画しないため外部からの攻撃経路がなく、追加のセキュリティ対策が不要という判断の記述で、テスト対象の振る舞いを持たないため"
   }
 ]
