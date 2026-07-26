@@ -33,12 +33,12 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 |---|---|---|---|
 | [consult](consult/SKILL.md) | 方針の壁打ち。ファイルを変更せず論点整理と推奨案の提示に徹する | 作る前に方針・技術選定・機能の切り方を相談したいとき(任意) | /requirement または /fix |
 | [requirement](requirement/SKILL.md) | 要件ヒアリング→requirements.md作成。spec分割・新規spec vs 既存spec更新の判断・`[n]`採番。完了時に/prの「早期仕様PR」を作成する | 新しい機能・アプリの要件定義を始めるとき | /design |
-| [design](design/SKILL.md) | design.md(処理フロー中心)とtasks.md(TDDタスク分解)の作成。完了時に早期仕様PRへ追加コミットする | requirements.md作成後 | /spec-review |
+| [design](design/SKILL.md) | design.md(処理フロー中心)とtasks.md(TDDタスク分解)の作成。完了時に早期仕様PRへ追加コミットする。並行開発時などはdesignerエージェントに委譲可 | requirements.md作成後 | /spec-review |
 | [spec-review](spec-review/SKILL.md) | 3点セットの一括レビュー(チェックリスト・重要度・テンプレート付き)。実施はspec-reviewerエージェント | 3点セットが揃ったとき | 指摘あり: /resolve / なし: /pr(仕様承認PR) |
 | [pr](pr/SKILL.md) | 早期仕様PR(要件定義完了時に作成)・仕様承認PR・実装PRの作成。承認ゲートの運用、impl-pr-reviewer・CIの確認 | requirements.md完了時(早期仕様PR)・レビュー通過後(仕様承認PR・実装PR) | 仕様承認PR承認後: /implementation / 実装PRマージ後: /release-check |
 | [implementation](implementation/SKILL.md) | TDD実装(Red→Green→Refactor)。テスト命名・仕様コメント・spec-coverage対応付け。並行開発時などはimplementerエージェントに委譲可 | 仕様承認PRのマージ後 | /implementation-review |
 | [implementation-review](implementation-review/SKILL.md) | 実装のコードレビュー(仕様整合・テスト・品質のチェックリスト・重要度・テンプレート付き)。実施はcode-reviewerエージェント | 実装・動作確認の完了後 | 指摘あり: /resolve / なし: /pr(実装PR) |
-| [resolve](resolve/SKILL.md) | レビュー指摘の修正。重要度順に対応し、対応結果を報告する | /spec-review・/implementation-review・PR上で指摘を受けたとき | 指摘元のレビューを再実行 → /pr |
+| [resolve](resolve/SKILL.md) | レビュー指摘の修正。重要度順に対応し、対応結果を報告する。並行開発時などはresolverエージェントに委譲可 | /spec-review・/implementation-review・PR上で指摘を受けたとき | 指摘元のレビューを再実行 → /pr |
 | [fix](fix/SKILL.md) | バグ修正・既存機能の小規模改修の入口。既存spec更新の影響洗い出しと承認要否の判断。仕様変更ありの場合はrequirements.md更新時に/prの「早期仕様PR」を作成する | 計算誤り・文言修正・スコープ外項目への対応など | 仕様変更あり: /pr(仕様承認PR) / 純粋なバグ: 修正後 /implementation-review |
 | [release-check](release-check/SKILL.md) | Cloudflare Workersへのデプロイ確認、本番スモークチェック、マージ済みブランチ掃除。実施はrelease-checkerエージェント | 実装PRのマージ後(毎回) | DB保存に関わるリリース: /data-check / それ以外: 完了(問題があれば /fix) |
 
@@ -98,6 +98,8 @@ Skill=手順・知識・テンプレート、Agent=別コンテキストで動�
 | [impl-pr-reviewer](../agents/impl-pr-reviewer.md) | 実装PR作成前の横断チェック(承認ステータス・spec-coverage・CI) | /pr(実装PRのみ) | haiku(機械的チェック) |
 | [release-checker](../agents/release-checker.md) | デプロイ確認・本番スモークチェック・マージ済みブランチ掃除 | /release-check | haiku(機械的チェック) |
 | [implementer](../agents/implementer.md) | 承認済み仕様のTDD実装。仕様との食い違い時は中断して報告 | /implementation(並行開発時などの委譲は任意) | sonnet(仕様に拘束された作業) |
+| [designer](../agents/designer.md) | requirements.mdからdesign.md/tasks.mdを作成。要件定義に立ち返るべき不明点は中断して報告。対象ブランチへのコミット・pushまで実施 | /design(並行開発時などの委譲は任意。autopilotでは常時委譲) | sonnet(仕様に拘束された作業) |
+| [resolver](../agents/resolver.md) | レビュー指摘の修正。要件・仕様の変更を要する指摘は保留してエスカレーション報告。対象ブランチへのコミット・pushまで実施 | /resolve(並行開発時などの委譲は任意。autopilotでは常時委譲) | sonnet(仕様に拘束された作業) |
 | [law-revision-checker](../agents/law-revision-checker.md) | 法令由来の前提値と公式資料の突き合わせ(Web調査)。修正はせず報告に徹する | /law-revision-check | sonnet(法令解釈の判断あり) |
 | [ui-checker](../agents/ui-checker.md) | headless Chromeでの実機操作・スクリーンショット確認。画像は自分で見て、結果だけ文章で報告する | run-benriyatool(メインスレッドが実機確認するとき。/implementation-reviewの実機確認はcode-reviewerが自分で行う) | sonnet(画面の見た目の判断) |
 

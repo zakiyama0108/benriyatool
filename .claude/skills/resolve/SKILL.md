@@ -11,6 +11,14 @@ description: /spec-reviewや/implementation-review、またはPR上で受けた�
 
 - 対応対象のレビュー指摘([/spec-review](../spec-review/SKILL.md)・[/implementation-review](../implementation-review/SKILL.md)・PR上のコメント)があること。指摘を受けていない修正は[/fix](../fix/SKILL.md)(既存機能の改修)から始める
 
+# 実施方法(メインスレッド or resolverエージェント)
+
+通常はメインスレッドが本Skillの手順で直接対応する(同意できない指摘があった場合にその場でユーザーへ確認できるため)。次の場合はresolverエージェント(`.claude/agents/resolver.md`)に指摘対応を委譲できる(役割分担の背景は[docs/adr/0002](../../../docs/adr/0002-skill-agent-separation.md)を参照):
+
+- [parallel-work](../parallel-work/SKILL.md)で複数機能を並行開発していて、一方の指摘対応を任せたいとき
+
+委譲する場合は対象のレビュー指摘と作業するfeatureブランチ(またはworktree)を伝え、`isolation: "worktree"`で起動する。エージェントは要件・仕様(3点セット)の変更を要する指摘に気づくと対応を保留してエスカレーションとして報告するので、ユーザーに確認してから再開する。エージェントは対象ブランチへのコミット・pushまで完了させるため、メインスレッドは対応結果(報告テンプレート)を受け取るだけでよい。
+
 # 修正の進め方
 
 - 重要度の高い順(🔴→🟡)に1件ずつ対応する。🟢(対応任意)は対応するかどうかを先に宣言してから進める
