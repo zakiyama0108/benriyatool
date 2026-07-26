@@ -7,7 +7,7 @@
 Skillを明示的に選ばない会話も、次の4層で必ずワークフローに合流する(背景・限界は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)の「ワークフローへの自動ルーティングと前提条件ゲート」を参照):
 
 0. **セッション開始**: SessionStartフック(`../hooks/check-main-freshness.sh`)がorigin/mainをfetchし、ローカルmainが遅れていれば警告を注入する(別セッションでマージ済みの作業を、古いローカル状態のまま重複して始めるのを防ぐ)
-1. **入口**: UserPromptSubmitフック(`../hooks/route-to-workflow.sh`)がすべてのユーザー入力に「開発作業なら該当する工程Skillを起動してから作業する」という指示を注入する(工程の判定はモデルが行う。`/`で始まる明示的なSkill起動には注入しない)
+1. **入口**: UserPromptSubmitフック(`../hooks/route-to-workflow.sh`)がユーザー入力に「開発作業なら該当する工程Skillを起動してから作業する」という指示を注入する(どの工程かの判定はモデルが行う。`/`で始まる明示的なSkill起動には注入しない。挨拶・雑談・単純な質問/調査依頼など明らかに非開発な入力は軽量なキーワード足切りで注入対象から外し、判断が曖昧な入力はfail-openで注入する)
 2. **途中**: 前工程の成果物を必要とする工程Skillは冒頭の「前提条件」で確認し、満たしていなければ上流の工程Skillへ誘導する(例: requirements.mdなしで/designを始めない)。工程の起点となる4Skill(requirement/design/fix/implementation)は、あわせて「着手前チェック」(mainの最新化と、同じspecを扱う既存PRの確認)を行う(重複作業の防止。4Skillに同文で記載)
 3. **出口**: 各Skill末尾の「完了時の次ステップ案内」で次の工程へ誘導する
 
