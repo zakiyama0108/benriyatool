@@ -856,6 +856,11 @@
   },
   {
     "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "表示単位の切り替え [4]",
+    "reason": "tasks.md Task16の判断により、表示単位の初期表示(periodUnitの初期値)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
     "item": "賞与・イベントの登録 [1]",
     "reason": "tasks.md Task9の判断により、賞与の登録入力(EventListInput)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
   },

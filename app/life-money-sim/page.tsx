@@ -67,6 +67,7 @@ export default function Page() {
   const [startingAssetInput, setStartingAssetInput] = useState<StartingAssetInput>({
     startingAsset: 0,
     startYearMonth: currentYearMonth(),
+    displayYears: 30,
   })
   const [bonuses, setBonuses] = useState<BonusEntry[]>([])
   const [events, setEvents] = useState<EventEntry[]>([])
@@ -74,7 +75,7 @@ export default function Page() {
     investmentMode: false,
     expectedAnnualRate: 0,
   })
-  const [periodUnit, setPeriodUnit] = useState<PeriodUnit>('month')
+  const [periodUnit, setPeriodUnit] = useState<PeriodUnit>('year')
   const [session, setSession] = useState<Session | null>(null)
   const [scenarios, setScenarios] = useState<ScenarioRecord[]>([])
   const hasAutoLoadedRef = useRef(false)
@@ -103,7 +104,7 @@ export default function Page() {
       personalExpense: { annualItems: [], monthlyItems: [] },
       household: { hasSpouse: false, items: [], myShare: 0 },
       familyProfile: { selfBirthMonth: null, spouseBirthMonth: null, childrenCount: 0, childrenBirthMonths: [] },
-      startingAssetInput: { startingAsset: 0, startYearMonth: currentYearMonth() },
+      startingAssetInput: { startingAsset: 0, startYearMonth: currentYearMonth(), displayYears: 30 },
       bonuses: [],
       events: [],
       investmentModeInput: { investmentMode: false, expectedAnnualRate: 0 },
@@ -195,7 +196,7 @@ export default function Page() {
 
   const personalExpenseItems = [...personalExpense.annualItems, ...personalExpense.monthlyItems]
 
-  const finalYearMonth = calcFinalYearMonth(familyProfile.selfBirthMonth, startingAssetInput.startYearMonth)
+  const finalYearMonth = calcFinalYearMonth(startingAssetInput.startYearMonth, startingAssetInput.displayYears)
   const monthlyRows = buildMonthlyProjectionRows({
     startYearMonth: startingAssetInput.startYearMonth,
     finalYearMonth,

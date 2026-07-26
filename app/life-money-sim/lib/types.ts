@@ -38,10 +38,11 @@ export type FamilyProfileInput = {
   childrenBirthMonths: (YearMonth | null)[] // 子どもそれぞれの生年月。childrenCount分の要素を持つ。任意入力
 }
 
-// シミュレーション開始資産額・開始年月の入力
+// シミュレーション開始資産額・開始年月・表示範囲(年数)の入力
 export type StartingAssetInput = {
   startingAsset: number // シミュレーション開始資産額・万円
   startYearMonth: YearMonth
+  displayYears: number // 表示範囲(年数)。1以上の整数以外は初期値30にフォールバックする(requirements.md#前提入力-7)
 }
 
 // 特定の月に登録する一時的な追加支出(イベント)
