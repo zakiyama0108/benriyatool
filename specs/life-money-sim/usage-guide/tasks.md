@@ -48,7 +48,7 @@
 - 内容:
   - `page.tsx`に`openHelpId: string | null`の状態を追加し、`toggleHelp(id)`/`closeHelp()`を定義する(design.md#状態管理)
   - IncomeForm・HouseholdShareInput・BalanceSummary・FamilyProfileFormは、それぞれ既存タイトル行に`HelpIcon`を追加するpropsを増やす(`openId`/`onToggle`/`onClose`を`page.tsx`から受け取る)
-  - ModeToggle・EventListInputはカード全体を束ねるタイトル行が無いため、他カードと同じ見た目のタイトル(「貯蓄/運用切替」「賞与・イベント」)を新設し、`HelpIcon`を追加する
+  - ModeToggle・EventListInputはカード全体を束ねるタイトル行が無いため、他カードと同じ見た目のタイトル(「貯蓄/運用切替」「賞与・イベント」)を新設し、`HelpIcon`を追加する(ModeToggleは他カードと違いカード自体の背景・角丸・シャドウ(`rounded-[18px] bg-lms-card p-5 shadow-...`)も持たないため、これも他カードに揃えて新設する。EventListInputは既存のカード装飾はそのまま使う)
   - `page.tsx`内の「個人支出」「前提入力」「資産推移グラフ・テーブル」の3ブロックは、既存または新設のタイトル行に直接`HelpIcon`を設置する(「資産推移グラフ・テーブル」はタイトル行自体が無いため新設し、そこに`GlossaryButton`も併設する)
   - `UsageBanner`を画面タイトル(`h1`)の直下に設置する
 - 関連: design.md#コンテキストヘルプの開閉を制御する処理、design.md#画面設計、design.md#関連するファイル(抜粋)
@@ -60,3 +60,7 @@
 - 使い方バナーが初回は開いた状態で表示され、クリックで閉じられること、リロード後も閉じた状態が維持されることを確認する(ブラウザのプライベートウィンドウでも初期状態(開いた状態)で表示されエラーが出ないことを確認する)
 - 「用語集」ボタンでモーダルが開き、4用語が表示されること、閉じるボタン/外側クリックで閉じることを確認する
 - スマホ幅(375px程度)でもポップオーバー・バナー・モーダルが画面からはみ出さないことを確認する
+
+## T8. プライバシーポリシー更新要否の確認
+- `specs/legal/requirements.md`のプライバシーポリシー更新要否を確認する(requirements.md#依存関係)
+- この機能でlocalStorageに保存するのは使い方バナーの開閉状態を表す真偽値1つのみで個人情報を含まないため(design.md#セキュリティ)、更新不要と見込まれるが、その判断結果を記録する
