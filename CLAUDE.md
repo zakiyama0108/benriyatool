@@ -24,4 +24,6 @@ __tests__/<アプリ名>/{components,lib}/
 # 開発の進め方
 機能開発・バグ修正・定期作業はすべて `.claude/skills/` 内のSkillの手順に従う(要件定義より前にコードを書かない)。全Skillの一覧・遷移図は [.claude/skills/README.md](.claude/skills/README.md) を参照する。
 
+mainの作業ディレクトリで編集する場合、他セッションが同時に同じディレクトリを使っている可能性を前提に、編集後は間を置かずコミットする(未コミットのまま複数ファイルを触り続けない)。複数ステップにわたる作業と分かった時点で[parallel-work](.claude/skills/parallel-work/SKILL.md)のworktreeに切り替える。
+
 @AGENTS.md

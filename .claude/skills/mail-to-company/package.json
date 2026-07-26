@@ -1,0 +1,10 @@
+{
+  "name": "benriyatool-mail-to-company",
+  "private": true,
+  "type": "module",
+  "description": "mail-to-company Skillが使うメール送信スクリプトの依存(本体のpackage.jsonとは隔離)",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "nodemailer": "^9.0.3"
+  }
+}
