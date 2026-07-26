@@ -34,18 +34,23 @@ export function calcNetSurplus(monthlySurplus: number, bonusAmount: number, even
   return monthlySurplus + bonusAmount - eventTotal
 }
 
-// 表示範囲の最終年月を決める。本人の生年月が入力されていれば70歳になる年月(生年月の70年後の同月)、
-// 未入力なら開始年月の30年後の同月とする(仕様: requirements.md#月次の資産推移-4、design.md#表示範囲の最終年月を決める処理)
-const DISPLAY_AGE_LIMIT = 70 // 老後まで見通せる年数にしたいという要望のため(requirements.md#月次の資産推移-4)
-const FALLBACK_YEARS = 30 // 本人の生年月が未入力の場合の暫定の表示年数
+// 表示範囲(年数)を1以上の整数に正規化する。小数はまず整数部分に切り捨て、その結果が1未満(0以下)、
+// または未入力・数値でない値の場合は初期値(30)にフォールバックする
+// (仕様: requirements.md#前提入力-7、design.md#表示範囲の最終年月を決める処理)
+const DEFAULT_DISPLAY_YEARS = 30 // 老後までの見通しを想定した目安年数(requirements.md#前提入力-6)
 
-export function calcFinalYearMonth(selfBirthMonth: YearMonth | null, startYearMonth: YearMonth): YearMonth {
-  if (selfBirthMonth) {
-    const birth = parseYearMonth(selfBirthMonth)
-    return formatYearMonth(birth.year + DISPLAY_AGE_LIMIT, birth.month)
-  }
+function normalizeDisplayYears(displayYears: number): number {
+  const floored = Math.floor(displayYears)
+  return Number.isFinite(floored) && floored >= 1 ? floored : DEFAULT_DISPLAY_YEARS
+}
+
+// 表示範囲の最終年月を決める。開始年月に、正規化した表示範囲(年数)を足した同月とする
+// (本人の生年月の有無・値によらない。仕様: requirements.md#前提入力-6、requirements.md#前提入力-7、
+//  requirements.md#月次の資産推移-4、design.md#表示範囲の最終年月を決める処理)
+export function calcFinalYearMonth(startYearMonth: YearMonth, displayYears: number): YearMonth {
+  const years = normalizeDisplayYears(displayYears)
   const start = parseYearMonth(startYearMonth)
-  return formatYearMonth(start.year + FALLBACK_YEARS, start.month)
+  return formatYearMonth(start.year + years, start.month)
 }
 
 // 貯蓄のみモード: 開始資産額に各月の差引後余剰を順に積み上げる

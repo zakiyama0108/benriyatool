@@ -48,115 +48,7 @@ Skillの中身をAgentへ移動せず、**AgentはSkillを参照する薄い定�
 
 ### 開発フローとSkill・Agentの対応
 
-[.claude/skills/README.md](../../.claude/skills/README.md)の遷移図と同じ分割で示す。各ノードは「工程名+使用Skill」を表す。**どのSkillがどのAgentを呼ぶか・常時か任意かは[上記のフェーズ別の判定表](#フェーズ別の判定skillagent委譲の要否)がすべてで、この節の図には重複させない**(図はあくまで工程の順序と、人が止まる箇所を示す俯瞰用)。定期作業Skillはこれらのフローとは独立して実行するため省略。
-
-#### 図1: 新機能開発の流れ(通常フロー・開発者が各工程で確認)
-
-```mermaid
-flowchart TD
-    consult["壁打ち(任意)<br>/consult"]
-    requirement["要件定義<br>/requirement"]
-    design["設計・タスク分解<br>/design"]
-    specreview["仕様レビュー<br>/spec-review → spec-reviewerへ委譲"]
-    resolve1["指摘修正<br>/resolve"]
-    prspec["仕様承認PR<br>/pr"]
-    implementation["TDD実装<br>/implementation"]
-    implreview["実装レビュー<br>/implementation-review → code-reviewerへ委譲"]
-    resolve2["指摘修正<br>/resolve"]
-    primpl["実装PR<br>/pr(作成前にimpl-pr-reviewerへ委譲)"]
-    release["リリース確認<br>/release-check → release-checkerへ委譲"]
-
-    consult -.任意.-> requirement
-    requirement --> design
-    design --> specreview
-    specreview -->|指摘あり| resolve1
-    resolve1 -->|再レビュー| specreview
-    specreview -->|指摘なし| prspec
-    prspec ==>|ユーザーが承認・マージ| implementation
-    implementation --> implreview
-    implreview -->|指摘あり| resolve2
-    resolve2 -->|再レビュー| implreview
-    implreview -->|指摘なし| primpl
-    primpl ==>|ユーザーがマージ| release
-
-    classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
-    classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
-    class consult,requirement,design,resolve1,resolve2,implementation dialogue;
-    class specreview,implreview,primpl,release agent;
-```
-
-- オレンジのノードは開発者がSkillと対話しながら進める工程(質問・確認が発生しうる)。**青いノードは通常フローでも常時Agentへ委譲され、開発者には報告のみが返る工程**(specreview→spec-reviewer、implreview→code-reviewer、release→release-checker。primplは作成前にimpl-pr-reviewerが常時チェックする)。白いノード(prspec)は対話も委譲も伴わない機械的なgit操作。太線(=)矢印はユーザーがGitHub上で承認・マージする待ち
-
-#### 図1a: 新機能開発の流れ(autopilotフロー・対話は2箇所のみ)
-
-同じ工程の並びに対し、autopilotでは対話ポイントを2箇所(対話①・対話②)に絞り、それ以外はAgent委譲と自動マージで無人連結する。委譲先Agentは上記の表と対応する。
-
-```mermaid
-flowchart TD
-    dialog1["対話①<br>/requirement(要件+設計の分かれ道のヒアリング)"]
-    design3["設計・タスク分解<br>/design → designerへ委譲"]
-    specreview3["仕様レビュー<br>/spec-review → spec-reviewerへ委譲"]
-    resolve3["指摘修正<br>/resolve → resolverへ委譲"]
-    prspec3["仕様承認PR<br>/pr(推測マーカー一覧を明記)"]
-    dialog2["対話②<br>仕様承認PRの一括レビュー"]
-    automerge1["推測マーカー除去→自動マージ"]
-    implementation3["TDD実装<br>/implementation → implementerへ常時委譲"]
-    implreview3["実装レビュー<br>/implementation-review → code-reviewerへ委譲"]
-    resolve4["指摘修正<br>/resolve → resolverへ委譲"]
-    primpl3["実装PR<br>/pr"]
-    automerge2["CI成功→自動マージ"]
-    release3["リリース確認<br>/release-check → release-checkerへ委譲"]
-
-    dialog1 --> design3 --> specreview3
-    specreview3 -->|指摘あり| resolve3
-    resolve3 -->|再レビュー| specreview3
-    specreview3 -->|指摘なし| prspec3 --> dialog2
-    dialog2 -->|ユーザーOK| automerge1 --> implementation3
-    implementation3 --> implreview3
-    implreview3 -->|指摘あり| resolve4
-    resolve4 -->|再レビュー| implreview3
-    implreview3 -->|指摘なし| primpl3 --> automerge2 --> release3
-
-    classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
-    classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
-    class dialog1,dialog2 dialogue;
-    class design3,specreview3,resolve3,implementation3,implreview3,resolve4,primpl3,release3 agent;
-```
-
-- オレンジのノード(対話①・対話②)だけが開発者との対話ポイント。それ以外はほぼ全て青(Agentへ委譲)で、白いのは`prspec3`(PR作成という機械的操作)と`automerge1`/`automerge2`(CI待ち・自動マージ)だけ。図1(通常フロー)ではオレンジだった設計・指摘対応・実装が、autopilotではAgent(designer/resolver/implementer)へ常時委譲されて青に変わる、という対比が「対話を2箇所に絞る」ことの視覚的な根拠
-- 例外停止条件(要件・仕様どおりに進められない事態を検知した場合など)を満たすと、この自走ループを離れて人に報告する([autopilot](../../.claude/skills/autopilot/SKILL.md)「例外停止」参照)。正常系のみを図示している
-
-#### 図2: バグ修正・既存機能改修の流れ(通常フロー・開発者が各工程で確認)
-
-```mermaid
-flowchart TD
-    consult2["壁打ち(任意)<br>/consult"]
-    fix["入口確認・影響洗い出し<br>/fix"]
-    branch{"仕様そのものを<br>変える?"}
-    prspec2["仕様承認PR<br>/pr"]
-    tdd["TDD修正<br>/fix(Step3: 再現テスト→修正)"]
-    implreview2["実装レビュー<br>/implementation-review → code-reviewerへ委譲"]
-    primpl2["実装PR<br>/pr(作成前にimpl-pr-reviewerへ委譲)"]
-    release2["リリース確認<br>/release-check → release-checkerへ委譲"]
-
-    consult2 -.任意.-> fix
-    fix --> branch
-    branch -->|はい: ビジネスルール変更など| prspec2
-    prspec2 ==>|ユーザーが承認・マージ| tdd
-    branch -->|いいえ: 純粋なバグ・軽微な変更| tdd
-    tdd --> implreview2
-    implreview2 --> primpl2
-    primpl2 ==>|ユーザーがマージ| release2
-
-    classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
-    classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
-    class consult2,fix,tdd dialogue;
-    class implreview2,primpl2,release2 agent;
-```
-
-- オレンジのノードは開発者がSkillと対話しながら進める工程(質問・確認が発生しうる)。青いノードは常時Agentへ委譲され、開発者には報告のみが返る工程(implreview2→code-reviewer、release2→release-checker。primpl2は作成前にimpl-pr-reviewerが常時チェックする)。白いノード(prspec2)は対話も委譲も伴わない機械的なgit操作。太線(=)はユーザーがGitHub上で承認・マージする待ち(仕様承認ゲート)
-- レビューで指摘が出た場合の /resolve ループは図1と同じ(図2では省略)
-- バグ修正の自動運転(autopilotフロー)は現時点でスコープ外のため、対応する図1a相当は存在しない
+どのSkillがどのAgentを呼ぶか・常時か任意かは[上記のフェーズ別の判定表](#フェーズ別の判定skillagent委譲の要否)がすべてで、この節に表・図は複製しない。工程の順序、開発者が対話する箇所(オレンジ)、Agentへ常時委譲され報告のみが返る箇所(青)、対話も委譲も伴わない機械的操作(白)を俯瞰する図は[.claude/skills/README.md](../../.claude/skills/README.md)の「遷移図1」(通常フロー・新機能開発)・「遷移図1a」(autopilotフロー)・「遷移図2」(通常フロー・バグ修正)を参照する(定期作業Skillはこれらのフローとは独立して実行するため図から省略)。色分けの定義自体もREADME側を唯一の情報源とする。
 
 ### Agentのモデル選定基準
 
@@ -182,15 +74,15 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 3. **定期作業のAgent化**(law-revision-checkerの導入で完了。残り3種はAgent化ではなく別の形で解消した — spec-auditは廃止(構造的ガード+retrospectiveへの移設で代替)、dependency-updateはclaude.ai routineの月次自動実行、data-checkは/release-checkの完了時案内への統合)
 4. **implementer**(導入済み。ただし常用ではなく、[parallel-work](../../.claude/skills/parallel-work/SKILL.md)のworktree並行開発時などに実装を委譲する任意の作業者として運用する。通常はメインスレッドが直接実装する)
 5. **ui-checker**(導入済み。当初計画外の追加: run-benriyatoolでの実機確認はスクリーンショット画像がメインスレッドのコンテキストを大量に消費するため、確認観点が決まっている単発の実機確認を委譲する)
-6. **designer / resolver**(検討中。2026-07、autopilotの長時間無人実行でメインスレッドの文脈が積み上がる問題への対応として追加検討。詳細は[下記](#設計指摘対応の委譲designerresolverエージェント2026-07追記))
+6. **designer / resolver**(導入済み。2026-07、autopilotの長時間無人実行でメインスレッドの文脈が積み上がる問題への対応として追加。詳細は[下記](#設計指摘対応の委譲designerresolverエージェント2026-07追記))
 
-上記1〜5は導入済み、6は検討中(Agent定義・各Skillへの委譲条件追記は別途実施)。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
+上記1〜6は導入済み。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
 
 ### ワークフローへの自動ルーティングと前提条件ゲート(2026-07追記)
 
 Skillを明示的に選ばない会話も必ずワークフローのSkillに乗るように、次の3層で誘導する。
 
-1. **入口(自動ルーティング)**: UserPromptSubmitフック(`.claude/hooks/route-to-workflow.sh`)が、すべてのユーザー入力に「開発作業に該当する依頼は該当する工程Skillを起動してから作業する」という指示をコンテキストとして注入する。どの工程かの判定はスクリプトの語彙マッチではなくメインスレッドのモデルが行う(日本語の自由入力をスクリプトで分類するのは脆く、誤判定時に誤った工程を強制してしまうため)。`/`で始まる明示的なSkill起動には注入しない
+1. **入口(自動ルーティング)**: UserPromptSubmitフック(`.claude/hooks/route-to-workflow.sh`)が、ユーザー入力に「開発作業に該当する依頼は該当する工程Skillを起動してから作業する」という指示をコンテキストとして注入する。どの工程かの判定はスクリプトの語彙マッチではなくメインスレッドのモデルが行う(日本語の自由入力をスクリプトで分類するのは脆く、誤判定時に誤った工程を強制してしまうため)。`/`で始まる明示的なSkill起動には注入しない。一方で「注入するかどうか」自体はコストの安いキーワード足切りで絞る(開発ワードがあれば必ず注入、無く挨拶・雑談・単純な質問/調査依頼などと分かる場合のみ注入を省略、判断が曖昧な場合はfail-openで注入する)。これは同一セッション内で注入文が毎ターン蓄積しコンテキストを圧迫する問題への対処であり、工程そのものの分類をスクリプトに担わせるものではない
 2. **途中(前提条件ゲート)**: 前工程の成果物を必要とする各工程Skill(/design以降)の冒頭に「前提条件」セクションを置き、満たしていない場合は上流の工程Skillへ誘導する。これにより工程の途中から会話が始まっても(例: いきなり「実装して」)、requirements.md・仕様承認などの上流の成果物がなければ必ず上流から進む
 3. **出口(次ステップ案内・既存)**: 各Skill末尾の「完了時の次ステップ案内」で下流の工程へ誘導する(従来どおり)
 

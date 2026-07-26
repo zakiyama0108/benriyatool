@@ -65,7 +65,11 @@ export function fillMissingScenarioFields(
     personalExpense: stored.personalExpense ?? currentDefault.personalExpense,
     household: stored.household ?? currentDefault.household,
     familyProfile: stored.familyProfile ?? currentDefault.familyProfile,
-    startingAssetInput: stored.startingAssetInput ?? currentDefault.startingAssetInput,
+    // startingAssetInputはオブジェクト単位ではなくフィールド単位でマージする
+    // (displayYears追加前に保存された旧データはstartingAssetInput自体は存在するがdisplayYearsだけ欠けているため)
+    startingAssetInput: stored.startingAssetInput
+      ? { ...currentDefault.startingAssetInput, ...stored.startingAssetInput }
+      : currentDefault.startingAssetInput,
     bonuses: stored.bonuses ?? currentDefault.bonuses,
     events: stored.events ?? currentDefault.events,
     investmentModeInput: stored.investmentModeInput ?? currentDefault.investmentModeInput,

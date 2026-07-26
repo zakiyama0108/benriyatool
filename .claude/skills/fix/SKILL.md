@@ -46,10 +46,10 @@ description: バグ修正・既存機能の小規模な改修を行うときに�
 
 # Step3 修正(TDD)
 
-`feature/<機能名>`ブランチを切り、まずバグ・問題を再現する失敗テスト(🔴Red)を書いてから修正する。別の機能開発に割り込む形で修正する場合は、ブランチを切り替えず[parallel-work](../parallel-work/SKILL.md)(worktree)で作業ディレクトリを分ける(テストの命名・仕様コメントのルールは[/implementation](../implementation/SKILL.md)を参照)。Step2で洗い出した仕様書・テストコメント・`scripts/spec-coverage-skip.json`の追随も同じ変更の中で行う。
+`feature/<機能名>`ブランチを切り、まずバグ・問題を再現する失敗テスト(🔴Red)を書いてから修正する。別の機能開発に割り込む形で修正する場合は、ブランチを切り替えず[parallel-work](../parallel-work/SKILL.md)(worktree)で作業ディレクトリを分ける(テストの命名・仕様コメントのルールは[/implementation](../implementation/SKILL.md)を参照)。Step2で洗い出した仕様書・テストコメント・`scripts/spec-coverage-skip.json`の追随も同じ変更の中で行う。Next.js固有の挙動差分にぶつかったら、[/implementation](../implementation/SKILL.md)の[references/nextjs-notes.md](../implementation/references/nextjs-notes.md)を確認・追記する。
 
 # 完了時の次ステップ案内
 
 修正・テスト・動作確認が済んだら、[/implementation-review](../implementation-review/SKILL.md)(コードレビュー)→[/pr](../pr/SKILL.md)(実装PR)へ進むことを案内する。
 
-この時点の成果物(修正・テスト)はコミット済みのため、ここでcompactや新しいセッションへの切り替えを行っても支障はない。切り替える場合は、次のセッションにそのまま貼り付けられるプロンプトをコードブロックで提示してから終える(例: `/implementation-review を実行してください。対象ブランチは feature/<機能名>です。`)。
+この時点の成果物(修正・テスト)はコミット済みのため、ここでcompactや新しいセッションへの切り替えを行っても支障はない。切り替える場合は、新しいセッションの名称(前のセッションと同じ<機能名>に次工程名を()で添えた形。例: `<機能名>(コードレビュー)`)と、次のセッションにそのまま貼り付けられるプロンプトをコードブロックで提示してから終える(例: `/implementation-review を実行してください。対象ブランチは feature/<機能名>です。`)。

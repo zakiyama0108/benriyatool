@@ -8,7 +8,7 @@ const dummyInputState = {
   personalExpense: { annualItems: [], monthlyItems: [] },
   household: { hasSpouse: false, items: [], myShare: 0 },
   familyProfile: { selfBirthMonth: null, spouseBirthMonth: null, childrenCount: 0, childrenBirthMonths: [] },
-  startingAssetInput: { startingAsset: 0, startYearMonth: '2026-07' },
+  startingAssetInput: { startingAsset: 0, startYearMonth: '2026-07', displayYears: 30 },
   bonuses: [],
   events: [],
   investmentModeInput: { investmentMode: false, expectedAnnualRate: 0 },

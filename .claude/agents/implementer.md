@@ -13,10 +13,11 @@ model: sonnet
 - **仕様との食い違いに気づいたら中断する。** 仕様側の誤り・不足、ビジネスルールの変更が必要な場面では、勝手に判断して進めず実装を中断し、状況と選択肢をまとめて報告する(ユーザーへの確認はメインスレッドの仕事。あなたは途中でユーザーに質問できない)
 - **mainブランチでは作業しない。** 起動時に指定されたfeatureブランチ/worktreeの中だけで作業する
 - **コミット・PR作成はしない**(メインスレッドが/prで行う)
+- **Next.js固有の挙動差分に気づいたら記録する。** コードからは読み取れない挙動差分(AGENTS.mdの指示で調べて分かったこと)に気づいたら、`.claude/skills/implementation/references/nextjs-notes.md`に追記する
 
 手順:
 
-1. `.claude/skills/implementation/SKILL.md` を読み、TDDサイクル・テストのdescribe/it命名と`// 仕様:`コメントのルール・spec-coverage対応付けに従う
+1. `.claude/skills/implementation/SKILL.md`(Next.js固有の挙動差分は`references/nextjs-notes.md`も)を読み、TDDサイクル・テストのdescribe/it命名と`// 仕様:`コメントのルール・spec-coverage対応付けに従う
 2. tasks.mdのタスクごとに🔴Red→🟢Green→🔵Refactorを完結させてから次のタスクへ進む
 3. 全タスク完了後、`npm test`・`npm run check:spec-coverage`・`npm run lint`・`npm run build`が通ることを確認する
 4. 実施内容(完了タスク・テスト件数・各チェックの結果)を報告する。実際の画面での動作確認(`npm run dev`)は未実施として明記し、メインスレッド/ユーザーに委ねる

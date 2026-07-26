@@ -39,14 +39,32 @@ describe('当月の差引後余剰の計算 - 月次余剰資金(賞与抜き)�
   })
 })
 
-// 仕様: specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-4
-describe('表示範囲の最終年月の決定 - 本人が70歳になる年月、または生年月未入力時は開始年月の30年後', () => {
-  it('本人の生年月が入力されている場合、本人が70歳になる年月(生年月の70年後の同月)が返ること', () => {
-    expect(calcFinalYearMonth('1990-06', '2026-01')).toBe('2060-06')
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#前提入力-6、specs/life-money-sim/asset-projection/requirements.md#前提入力-7、specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-4
+describe('表示範囲の最終年月の決定 - 開始年月から表示範囲(年数)後の同月とする', () => {
+  it('表示年数が指定されている場合、開始年月に表示年数を足した同月が返ること(本人の生年月の有無によらない)', () => {
+    expect(calcFinalYearMonth('2026-01', 10)).toBe('2036-01')
   })
 
-  it('本人の生年月が未入力の場合、開始年月の30年後の同月が返ること', () => {
-    expect(calcFinalYearMonth(null, '2026-01')).toBe('2056-01')
+  it('表示年数が0以下の場合、初期値30年として計算されること', () => {
+    expect(calcFinalYearMonth('2026-01', 0)).toBe('2056-01')
+    expect(calcFinalYearMonth('2026-01', -5)).toBe('2056-01')
+  })
+
+  it('表示年数が数値でない(NaN)場合、初期値30年として計算されること', () => {
+    expect(calcFinalYearMonth('2026-01', NaN)).toBe('2056-01')
+  })
+
+  it('表示年数に小数が入力された場合、整数部分に切り捨てて計算されること', () => {
+    expect(calcFinalYearMonth('2026-01', 2.9)).toBe('2028-01')
+  })
+
+  it('表示年数が0.5・0.9のような「切り捨てると1未満になる小数」の場合、初期値30年として計算されること', () => {
+    expect(calcFinalYearMonth('2026-01', 0.5)).toBe('2056-01')
+    expect(calcFinalYearMonth('2026-01', 0.9)).toBe('2056-01')
+  })
+
+  it('表示年数がちょうど1(有効な最小値)の場合、フォールバックせずそのまま1年として計算されること', () => {
+    expect(calcFinalYearMonth('2026-01', 1)).toBe('2027-01')
   })
 })
 
