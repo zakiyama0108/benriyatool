@@ -26,6 +26,7 @@ description: /spec-reviewや/implementation-review、またはPR上で受けた�
 - 実装コードの修正はTDDのサイクルを守る。挙動が変わる修正は、先にテストを直す/追加してから実装を変える([/implementation](../implementation/SKILL.md)参照)
 - 仕様(3点セット)に影響する修正は、仕様書側も同じ変更で更新する(確認範囲は[/fix](../fix/SKILL.md)のStep2を参照)
 - 指摘されていない箇所のついで修正はしない(気づいた問題は別の指摘・別のタスクとして報告する)
+- 実装コードの修正でNext.js固有の挙動差分にぶつかったら、[/implementation](../implementation/SKILL.md)の[references/nextjs-notes.md](../implementation/references/nextjs-notes.md)を確認・追記する
 
 # 対応結果の報告テンプレート
 
