@@ -23,12 +23,12 @@ disable-model-invocation: true
 
 1. **要件定義(対話①)**: [/requirement](../requirement/SKILL.md)をそのまま実施する(着手前チェック・ヒアリングも通常どおり)。ヒアリングは要件に閉じず、設計の分かれ道になる事項もここで合わせて確認する(下記「ヒアリングの範囲」)
 2. **自動運転宣言**: ヒアリング完了後、「ここから仕様承認PRの提示まで自走する」と宣言し、以降はユーザー確認なしで進む
-3. **設計**: [/design](../design/SKILL.md)でdesign.md・tasks.mdを作成する。ヒアリングで確認できていない細部は質問せず妥当な推測で補い、推測で決めた箇所には推測マーカーを付ける(下記)
-4. **仕様レビュー**: [/spec-review](../spec-review/SKILL.md)(spec-reviewerエージェント)。🔴/🟡は[/resolve](../resolve/SKILL.md)で自動対応し再レビューする。ただし対応に要件・ビジネスルールの変更が必要な指摘は例外停止(下記)
+3. **設計**: [/design](../design/SKILL.md)を**designerエージェントに常に委譲**してdesign.md・tasks.mdを作成する。ヒアリングで確認できていない細部は質問せず妥当な推測で補い、推測で決めた箇所には推測マーカーを付けるよう起動時に指示する(下記「推測マーカー」)。designerは対象ブランチへのコミット・pushまで完了させるため、メインスレッドは書いたファイル・推測箇所の報告を受け取る
+4. **仕様レビュー**: [/spec-review](../spec-review/SKILL.md)(spec-reviewerエージェント)。🔴/🟡は[/resolve](../resolve/SKILL.md)を**resolverエージェントに常に委譲**して対応し再レビューする。ただし対応に要件・ビジネスルールの変更が必要な指摘は例外停止(下記)
 5. **仕様承認PR(対話②)**: [/pr](../pr/SKILL.md)で仕様承認PRを作成する。PR本文の「判断に迷った点・レビューしてほしい点」に**推測箇所の一覧**を明記し、ユーザーに一括レビューを依頼する。指摘はセッション上・PRコメント(`gh pr view <PR番号> --comments`で取得)のどちらで受けてもよく、[/resolve](../resolve/SKILL.md)で修正して再提示する(何往復してもよい)
 6. **承認処理**: ユーザーの明示的なOKを得たら、残っている推測マーカーを全て削除するコミットをpushし、CI成功を待って自動マージする(下記「自動マージ」)
 7. **実装**: マージ後、新しいfeatureブランチを切り([/pr](../pr/SKILL.md)共通ルール)、[/implementation](../implementation/SKILL.md)を**implementerエージェントに常に委譲**する(メインスレッドは進行管理に徹し、code-reviewerの「別コンテキストの新鮮な目」を効かせる)
-8. **実装レビュー**: [/implementation-review](../implementation-review/SKILL.md)(code-reviewerエージェント)。🔴/🟡は[/resolve](../resolve/SKILL.md)で自動対応し再レビューする。仕様の変更が必要な指摘は例外停止
+8. **実装レビュー**: [/implementation-review](../implementation-review/SKILL.md)(code-reviewerエージェント)。🔴/🟡は[/resolve](../resolve/SKILL.md)を**resolverエージェントに常に委譲**して対応し再レビューする。仕様の変更が必要な指摘は例外停止
 9. **実装PR**: [/pr](../pr/SKILL.md)(impl-pr-reviewerチェック→PR作成)。CI成功を待って自動マージする
 10. **リリース確認**: [/release-check](../release-check/SKILL.md)(release-checkerエージェント)
 11. **完了報告**: 全工程のサマリをまとめて報告する — 作成したspec、PRのURL2件、テスト件数、本番スモークチェック結果、自動対応したレビュー指摘の一覧、例外停止の有無
