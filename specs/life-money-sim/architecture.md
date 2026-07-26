@@ -59,6 +59,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信しており、�
 | [admin](admin/requirements.md) | 保存データを運営者本人だけがログインして一覧・集計で閲覧する管理画面 | save-resultが保存した内容を表示([save-result/requirements.md#機能要件-1](save-result/requirements.md)) |
 | [user-auth](user-auth/requirements.md) | 一般利用者が任意でGoogleアカウントにログインする | - |
 | [saved-scenario](saved-scenario/requirements.md) | ログイン中の利用者が入力値一式に名前を付けて保存・一覧・読み込み・削除する | user-authのログイン状態が前提([user-auth/requirements.md#ログイン・ログアウト](user-auth/requirements.md))。保存対象はmonthly-balance・asset-projectionの入力値([monthly-balance/requirements.md#収入](monthly-balance/requirements.md), [asset-projection/requirements.md#前提入力](asset-projection/requirements.md)) |
+| [usage-guide](usage-guide/requirements.md) | 各カードのコンテキストヘルプ(？アイコン)・使い方バナー・用語集を表示する | monthly-balance・asset-projectionの各カードに「？」アイコンを追加する表示専用機能で、機能呼び出しは発生しない([monthly-balance/requirements.md](monthly-balance/requirements.md), [asset-projection/requirements.md](asset-projection/requirements.md))。用語集の「マイシナリオ」はsaved-scenarioの機能を指す文言参照のみ([saved-scenario/requirements.md](saved-scenario/requirements.md)) |
 
 ## 8. コンポーネント図
 ```mermaid
