@@ -48,17 +48,43 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 |---|---|---|---|
 | [autopilot](autopilot/SKILL.md) | 遷移図1を「対話2箇所だけで完走する」走らせ方に切り替えるモード。design以降を自走し(推測箇所は`【推測】`マーカーで明示)、実装PRは条件付きで自動マージ、/release-checkまで実施する | 小規模・低リスクの新機能をお任せで進めたいとき | 完了(問題があれば/fix) |
 
+#### 遷移図1a: 自動運転モード(autopilot)の流れ
+
 ```mermaid
 flowchart TD
-    hearing["対話①<br>/requirement(要件+設計の分かれ道のヒアリング)"]
-    auto1["自走: /design → /spec-review(→/resolve) → /pr(仕様承認PR)"]
-    prreview["対話②<br>仕様承認PR上で一括レビュー(複数往復可)"]
-    auto2["自走: 推測マーカー除去 → 自動マージ → /implementation(implementer委譲)<br>→ /implementation-review(→/resolve) → /pr(実装PR) → CI後に自動マージ<br>→ /release-check → 完了報告"]
+    dialog1["対話①<br>/requirement(要件+設計の分かれ道のヒアリング)"]
+    design_a["/design<br>→ designerへ常時委譲"]
+    specreview_a["/spec-review<br>→ spec-reviewerへ委譲"]
+    resolve_a1["/resolve<br>→ resolverへ常時委譲"]
+    prspec_a["/pr<br>仕様承認PR(推測マーカー一覧を明記)"]
+    dialog2["対話②<br>仕様承認PR上で一括レビュー(複数往復可)"]
+    automerge1["推測マーカー除去 → 自動マージ"]
+    implementation_a["/implementation<br>→ implementerへ常時委譲"]
+    implreview_a["/implementation-review<br>→ code-reviewerへ委譲"]
+    resolve_a2["/resolve<br>→ resolverへ常時委譲"]
+    primpl_a["/pr<br>実装PR(作成前にimpl-pr-reviewerへ委譲)"]
+    automerge2["CI成功 → 自動マージ"]
+    release_a["/release-check<br>→ release-checkerへ委譲"]
 
-    hearing --> auto1 --> prreview -->|ユーザーOK| auto2
+    dialog1 --> design_a --> specreview_a
+    specreview_a -->|指摘あり| resolve_a1
+    resolve_a1 -->|再レビュー| specreview_a
+    specreview_a -->|指摘なし| prspec_a --> dialog2
+    dialog2 -->|ユーザーOK| automerge1 --> implementation_a
+    implementation_a --> implreview_a
+    implreview_a -->|指摘あり| resolve_a2
+    resolve_a2 -->|再レビュー| implreview_a
+    implreview_a -->|指摘なし| primpl_a --> automerge2 --> release_a
+
+    classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
+    classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
+    class dialog1,dialog2 dialogue;
+    class design_a,specreview_a,resolve_a1,implementation_a,implreview_a,resolve_a2,primpl_a,release_a agent;
 ```
 
-- 使う工程Skill・Agentは遷移図1と同一(手順は各Skillが単一の情報源のまま)。要件・仕様どおりに進められない事態だけは例外停止してユーザーに報告する(条件は[autopilot](autopilot/SKILL.md)参照)
+- オレンジは開発者との対話ポイント(対話①・対話②)。青は常時Agentへ委譲され報告のみが返る工程。白は`prspec_a`(PR作成)と`automerge1`/`automerge2`(CI待ち・自動マージ)のみで、対話も委譲も伴わない機械的操作。遷移図1と比べ、通常は開発者が対話する設計・指摘対応・実装がAgent(designer/resolver/implementer)へ常時委譲されて青に変わる点が、対話を2箇所に絞れる理由
+- 例外停止条件(要件・仕様どおりに進められない事態を検知した場合など)を満たすと自走ループを離れて人に報告する(条件は[autopilot](autopilot/SKILL.md)「例外停止」参照)。正常系のみを図示している
+- 使う工程Skill・Agentは遷移図1と同一(手順は各Skillが単一の情報源のまま)
 
 ### 定期作業Skill(開発ループ外・ユーザーが`/xxx`で明示起動)
 
@@ -110,12 +136,12 @@ flowchart TD
     consult["/consult<br>方針の壁打ち"]
     requirement["/requirement<br>要件定義"]
     design["/design<br>設計・タスク分解"]
-    specreview["/spec-review<br>仕様レビュー"]
+    specreview["/spec-review<br>仕様レビュー → spec-reviewerへ委譲"]
     prspec["/pr<br>仕様承認PR"]
     implementation["/implementation<br>TDD実装"]
-    implreview["/implementation-review<br>コードレビュー"]
-    primpl["/pr<br>実装PR"]
-    release["/release-check<br>デプロイ・本番確認・ブランチ掃除"]
+    implreview["/implementation-review<br>コードレビュー → code-reviewerへ委譲"]
+    primpl["/pr<br>実装PR(作成前にimpl-pr-reviewerへ委譲)"]
+    release["/release-check<br>デプロイ・本番確認・ブランチ掃除 → release-checkerへ委譲"]
     resolve1["/resolve<br>指摘修正"]
     resolve2["/resolve<br>指摘修正"]
 
@@ -131,8 +157,15 @@ flowchart TD
     resolve2 -->|再レビュー| implreview
     implreview -->|指摘なし| primpl
     primpl ==>|ユーザーがマージ| release
+
+    classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
+    classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
+    class consult,requirement,design,resolve1,resolve2,implementation dialogue;
+    class specreview,implreview,primpl,release agent;
 ```
 
+- オレンジのノードは開発者がSkillと対話しながら進める工程(質問・確認が発生しうる)。青いノードは常時Agentへ委譲され、開発者には報告のみが返る工程(specreview→spec-reviewer、implreview→code-reviewer、release→release-checker。primplは作成前にimpl-pr-reviewerが常時チェックする)。白いノード(prspec)は対話も委譲も伴わない機械的なgit操作
+- design・implementationは並行開発時などにdesigner/implementerへ任意委譲できる(委譲した場合そのノードは青相当になる。委譲要否の判断基準は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)「フェーズ別の判定」参照)
 - 太線(=)はユーザーの承認・マージ待ち。仕様承認PRがマージされるまでコード(テスト含む)は書かない(仕様承認ゲート)
 - mainへのマージは常にユーザーがGitHub UIで行う(例外: [autopilot](autopilot/SKILL.md)モードでは、同Skillの条件を満たした場合に限り自動マージする)
 
@@ -140,27 +173,34 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    consult["/consult<br>方針の壁打ち"]
+    consult2["/consult<br>方針の壁打ち"]
     fix["/fix<br>入口確認・3点セットへの影響洗い出し"]
     branch{"仕様そのものを<br>変える?"}
-    prspec["/pr<br>仕様承認PR"]
+    prspec2["/pr<br>仕様承認PR"]
     tdd["TDD修正<br>(/fix Step3: 再現テスト→修正)"]
-    implreview["/implementation-review<br>コードレビュー"]
-    primpl["/pr<br>実装PR"]
-    release["/release-check<br>デプロイ・本番確認・ブランチ掃除"]
+    implreview2["/implementation-review<br>コードレビュー → code-reviewerへ委譲"]
+    primpl2["/pr<br>実装PR(作成前にimpl-pr-reviewerへ委譲)"]
+    release2["/release-check<br>デプロイ・本番確認・ブランチ掃除 → release-checkerへ委譲"]
 
-    consult -.任意.-> fix
+    consult2 -.任意.-> fix
     fix --> branch
-    branch -->|はい: ビジネスルール変更など| prspec
-    prspec ==>|ユーザーが承認・マージ| tdd
+    branch -->|はい: ビジネスルール変更など| prspec2
+    prspec2 ==>|ユーザーが承認・マージ| tdd
     branch -->|いいえ: 純粋なバグ・軽微な変更| tdd
-    tdd --> implreview
-    implreview --> primpl
-    primpl ==>|ユーザーがマージ| release
+    tdd --> implreview2
+    implreview2 --> primpl2
+    primpl2 ==>|ユーザーがマージ| release2
+
+    classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
+    classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
+    class consult2,fix,tdd dialogue;
+    class implreview2,primpl2,release2 agent;
 ```
 
+- オレンジのノードは開発者がSkillと対話しながら進める工程。青いノードは常時Agentへ委譲され、開発者には報告のみが返る工程(implreview2→code-reviewer、release2→release-checker。primpl2は作成前にimpl-pr-reviewerが常時チェックする)。白いノード(prspec2)は対話も委譲も伴わない機械的なgit操作
 - レビューで指摘が出た場合の `/resolve` ループは遷移図1と同じ(省略)
 - 本番(`/release-check`)で問題を見つけた場合もこの図の `/fix` から入る
+- バグ修正の自動運転(autopilotフロー)は現時点でスコープ外のため、遷移図1aに相当するものは存在しない
 
 ## 定期作業の遷移
 
@@ -168,4 +208,4 @@ flowchart TD
 
 ## この文書の保守
 
-Skill・Agentの追加・削除・遷移の変更をしたら、このREADMEの表と遷移図も同じPRで更新する(/retrospective の確認対象)。ワークフローの入口(/requirement・/fix・/consultの使い分け)が変わったら、ルーティングフック(`../hooks/route-to-workflow.sh`)の指示文も同じPRで更新する。Agentの追加・変更時は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)の判断基準・導入順との整合も確認する。
+Skill・Agentの追加・削除・遷移の変更をしたら、このREADMEの表と遷移図も同じPRで更新する(/retrospective の確認対象)。ワークフローの入口(/requirement・/fix・/consultの使い分け)が変わったら、ルーティングフック(`../hooks/route-to-workflow.sh`)の指示文も同じPRで更新する。Agentの追加・変更時は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)の判断基準・導入順との整合も確認する。遷移図の色分け(オレンジ=開発者との対話ポイント、青=Agentへの常時委譲、白=対話も委譲も伴わない機械的操作)はこのREADMEを唯一の情報源とし、ADR 0002には複製しない(ADRは判断理由の文章のみを持ち、図はこのREADMEを参照する)。
