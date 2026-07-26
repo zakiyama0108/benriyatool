@@ -1,18 +1,31 @@
 'use client'
 import type { FamilyProfileInput } from '../lib/types'
+import HelpIcon from './HelpIcon'
+import { CONTEXT_HELP_TEXT } from '../lib/usageGuideContent'
 
 type Props = {
   profile: FamilyProfileInput
   onChange: (profile: FamilyProfileInput) => void
   hasSpouse: boolean
   onHasSpouseChange: (hasSpouse: boolean) => void
+  openHelpId: string | null
+  onToggleHelp: (id: string) => void
+  onCloseHelp: () => void
 }
 
 const MAX_CHILDREN = 3
 
 // 本人・配偶者・子どもの生年月入力。配偶者の有無・子どもの人数もここで設定する
 // (仕様: requirements.md#前提入力-3、#前提入力-4)
-export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasSpouseChange }: Props) {
+export default function FamilyProfileForm({
+  profile,
+  onChange,
+  hasSpouse,
+  onHasSpouseChange,
+  openHelpId,
+  onToggleHelp,
+  onCloseHelp,
+}: Props) {
   function setChildrenCount(count: number) {
     const childrenBirthMonths = Array.from({ length: count }, (_, i) => profile.childrenBirthMonths[i] ?? null)
     onChange({ ...profile, childrenCount: count, childrenBirthMonths })
@@ -20,7 +33,16 @@ export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasS
 
   return (
     <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-      <p className="text-sm font-bold text-lms-ink">家族構成</p>
+      <div className="flex items-center gap-1.5">
+        <p className="text-sm font-bold text-lms-ink">家族構成</p>
+        <HelpIcon
+          id="familyProfile"
+          text={CONTEXT_HELP_TEXT.familyProfile}
+          openId={openHelpId}
+          onToggle={onToggleHelp}
+          onClose={onCloseHelp}
+        />
+      </div>
 
       <label className="block text-xs text-lms-muted">
         本人の生年月(任意)

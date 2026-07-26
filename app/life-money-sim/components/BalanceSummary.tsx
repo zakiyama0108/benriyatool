@@ -1,4 +1,6 @@
 'use client'
+import HelpIcon from './HelpIcon'
+import { CONTEXT_HELP_TEXT } from '../lib/usageGuideContent'
 
 type Props = {
   personalExpenseMonthly: number
@@ -7,6 +9,9 @@ type Props = {
   expenseRatio: number | null
   monthlySurplus: number
   annualSurplus: number
+  openHelpId: string | null
+  onToggleHelp: (id: string) => void
+  onCloseHelp: () => void
 }
 
 function formatManYen(amount: number): string {
@@ -22,10 +27,22 @@ export default function BalanceSummary({
   expenseRatio,
   monthlySurplus,
   annualSurplus,
+  openHelpId,
+  onToggleHelp,
+  onCloseHelp,
 }: Props) {
   return (
     <div className="space-y-4 rounded-[18px] bg-white p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-      <p className="text-sm font-bold text-lms-ink">収支サマリー</p>
+      <div className="flex items-center gap-1.5">
+        <p className="text-sm font-bold text-lms-ink">収支サマリー</p>
+        <HelpIcon
+          id="balanceSummary"
+          text={CONTEXT_HELP_TEXT.balanceSummary}
+          openId={openHelpId}
+          onToggle={onToggleHelp}
+          onClose={onCloseHelp}
+        />
+      </div>
 
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-lms-muted">
         <span>
