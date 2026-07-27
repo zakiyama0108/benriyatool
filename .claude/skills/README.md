@@ -9,7 +9,7 @@ Skillを明示的に選ばない会話も、次の4層で必ずワークフロ�
 0. **セッション開始**: SessionStartフック(`../hooks/check-main-freshness.sh`)がorigin/mainをfetchし、ローカルmainが遅れていれば警告を注入する(別セッションでマージ済みの作業を、古いローカル状態のまま重複して始めるのを防ぐ)
 1. **入口**: UserPromptSubmitフック(`../hooks/route-to-workflow.sh`)がユーザー入力に「開発作業なら該当する工程Skillを起動してから作業する」という指示を注入する(どの工程かの判定はモデルが行う。`/`で始まる明示的なSkill起動には注入しない。挨拶・雑談・単純な質問/調査依頼など明らかに非開発な入力は軽量なキーワード足切りで注入対象から外し、判断が曖昧な入力はfail-openで注入する)
 2. **途中**: 前工程の成果物を必要とする工程Skillは冒頭の「前提条件」で確認し、満たしていなければ上流の工程Skillへ誘導する(例: requirements.mdなしで/designを始めない)。工程の起点となる4Skill(requirement/design/fix/implementation)は、あわせて「着手前チェック」(mainの最新化と、同じspecを扱う既存PRの確認)を行う(重複作業の防止。4Skillに同文で記載)
-3. **出口**: 各Skill末尾の「完了時の次ステップ案内」で次の工程へ誘導する
+3. **出口**: 各Skill末尾の「完了時の次ステップ案内」で次の工程へ誘導する。成果物がコミット・pushされ次の工程に進んでよい地点では、新しいセッションの名称と次セッションにそのまま貼り付けられるプロンプトを**必ず**コードブロックで提示する(「セッションを閉じても大丈夫」で済ませない。design/pr/implementation/requirement/implementation-review/fix/spec-reviewの7Skillに同文で記載。変更時は揃って更新する)
 
 ## 起動者(誰がSkillを起動できるか)
 
@@ -46,9 +46,9 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 
 | Skill | 役割 | 使うタイミング | 完了後の遷移先 |
 |---|---|---|---|
-| [autopilot](autopilot/SKILL.md) | 遷移図1を「対話2箇所だけで完走する」走らせ方に切り替えるモード。design以降を自走し(推測箇所は`【推測】`マーカーで明示)、実装PRは条件付きで自動マージ、/release-checkまで実施する | 小規模・低リスクの新機能をお任せで進めたいとき | 完了(問題があれば/fix) |
+| [autopilot](autopilot/SKILL.md) | 遷移図1・遷移図2を「対話最大2箇所だけで完走する」走らせ方に切り替えるモード。新機能起点はdesign以降、fix起点は仕様変更がなければ全工程を自走し(推測箇所は`【推測】`マーカーまたはPR本文の「判断に迷った点」で明示)、実装PRは条件付きで自動マージ、/release-checkまで実施する | 小規模・低リスクの新機能・バグ修正をお任せで進めたいとき | 完了(問題があれば/fix) |
 
-#### 遷移図1a: 自動運転モード(autopilot)の流れ
+#### 遷移図1a: 自動運転モード(autopilot、新機能起点)の流れ
 
 ```mermaid
 flowchart TD
@@ -85,6 +85,42 @@ flowchart TD
 - オレンジは開発者との対話ポイント(対話①・対話②)。青は常時Agentへ委譲され報告のみが返る工程。白は`prspec_a`(PR作成)と`automerge1`/`automerge2`(CI待ち・自動マージ)のみで、対話も委譲も伴わない機械的操作。遷移図1と比べ、通常は開発者が対話する設計・指摘対応・実装がAgent(designer/resolver/implementer)へ常時委譲されて青に変わる点が、対話を2箇所に絞れる理由
 - 例外停止条件(要件・仕様どおりに進められない事態を検知した場合など)を満たすと自走ループを離れて人に報告する(条件は[autopilot](autopilot/SKILL.md)「例外停止」参照)。正常系のみを図示している
 - 使う工程Skill・Agentは遷移図1と同一(手順は各Skillが単一の情報源のまま)
+
+#### 遷移図2a: 自動運転モード(autopilot、fix起点)の流れ
+
+```mermaid
+flowchart TD
+    dialog1b["対話①(曖昧な点があれば)<br>/fix Step1・Step2(入口確認・影響洗い出し)"]
+    branch_b{"仕様変更<br>あり?"}
+    prspec_b["/pr<br>早期仕様PR(推測マーカー一覧を明記)"]
+    dialog2b["対話②<br>仕様承認PR上で一括レビュー(複数往復可)"]
+    automerge1b["推測マーカー除去 → 自動マージ"]
+    tdd_b["/fix Step3<br>→ implementerへ常時委譲"]
+    implreview_b["/implementation-review<br>→ code-reviewerへ委譲"]
+    resolve_b["/resolve<br>→ resolverへ常時委譲"]
+    primpl_b["/pr<br>実装PR(判断に迷った点を明記、作成前にimpl-pr-reviewerへ委譲)"]
+    automerge2b["CI成功 → 自動マージ"]
+    release_b["/release-check<br>→ release-checkerへ委譲"]
+
+    dialog1b --> branch_b
+    branch_b -->|はい| prspec_b --> dialog2b
+    dialog2b -->|ユーザーOK| automerge1b --> tdd_b
+    branch_b -->|いいえ| tdd_b
+    tdd_b --> implreview_b
+    implreview_b -->|指摘あり| resolve_b
+    resolve_b -->|再レビュー| implreview_b
+    implreview_b -->|指摘なし| primpl_b --> automerge2b --> release_b
+
+    classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
+    classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
+    class dialog1b,dialog2b dialogue;
+    class tdd_b,implreview_b,resolve_b,primpl_b,release_b agent;
+```
+
+- `dialog1b`はオレンジだが、依頼内容だけで判断できれば実際には発生しないことがある(遷移図2の`fix`ノードと違い、質問なしで通過してよい)。`branch_b`が「いいえ」(仕様変更なし)の経路をたどった場合、対話②(`dialog2b`)も発生しないため、**対話ゼロで完走**することがある
+- オレンジは開発者との対話ポイント(発生する場合のみ)。青は常時Agentへ委譲され報告のみが返る工程。白は`prspec_b`(PR作成)と`automerge1b`/`automerge2b`(CI待ち・自動マージ)・`branch_b`(判定)のみで、対話も委譲も伴わない機械的操作
+- 例外停止条件は遷移図1aと同じ枠組みに、fix起点特有の条件(実装判断の自信が持てない場合)が加わる(条件は[autopilot](autopilot/SKILL.md)「例外停止」参照)。正常系のみを図示している
+- 使う工程Skill・Agentは遷移図2と同一(手順は各Skillが単一の情報源のまま)。[/fix](../fix/SKILL.md)のStep1で新規spec相当と判定された場合は遷移図1aに合流する(図には示していない)
 
 ### 定期作業Skill(開発ループ外・ユーザーが`/xxx`で明示起動)
 
@@ -123,7 +159,7 @@ Skill=手順・知識・テンプレート、Agent=別コンテキストで動�
 | [code-reviewer](../agents/code-reviewer.md) | 実装コードのレビュー。テスト・lint等は実行するが修正はしない | /implementation-review | inherit(判断が本体) |
 | [impl-pr-reviewer](../agents/impl-pr-reviewer.md) | 実装PR作成前の横断チェック(承認ステータス・spec-coverage・CI) | /pr(実装PRのみ) | haiku(機械的チェック) |
 | [release-checker](../agents/release-checker.md) | デプロイ確認・本番スモークチェック・マージ済みブランチ掃除 | /release-check | haiku(機械的チェック) |
-| [implementer](../agents/implementer.md) | 承認済み仕様のTDD実装。仕様との食い違い時は中断して報告 | /implementation(並行開発時などの委譲は任意) | sonnet(仕様に拘束された作業) |
+| [implementer](../agents/implementer.md) | 承認済み仕様のTDD実装。仕様との食い違い時は中断して報告 | /implementation(並行開発時などの委譲は任意)。autopilotでは新機能起点・fix起点とも常時委譲(fix起点は/fix Step3を委譲) | sonnet(仕様に拘束された作業) |
 | [designer](../agents/designer.md) | requirements.mdからdesign.md/tasks.mdを作成。要件定義に立ち返るべき不明点は中断して報告。対象ブランチへのコミット・pushまで実施 | /design(並行開発時などの委譲は任意。autopilotでは常時委譲) | sonnet(仕様に拘束された作業) |
 | [resolver](../agents/resolver.md) | レビュー指摘の修正。要件・仕様の変更を要する指摘は保留してエスカレーション報告。対象ブランチへのコミット・pushまで実施 | /resolve(並行開発時などの委譲は任意。autopilotでは常時委譲) | sonnet(仕様に拘束された作業) |
 | [law-revision-checker](../agents/law-revision-checker.md) | 法令由来の前提値と公式資料の突き合わせ(Web調査)。修正はせず報告に徹する | /law-revision-check | sonnet(法令解釈の判断あり) |
@@ -203,7 +239,7 @@ flowchart TD
 - オレンジのノードは開発者がSkillと対話しながら進める工程。青いノードは常時Agentへ委譲され、開発者には報告のみが返る工程(implreview2→code-reviewer、release2→release-checker。primpl2は作成前にimpl-pr-reviewerが常時チェックする)。白いノード(prspec2)は対話も委譲も伴わない機械的なgit操作
 - レビューで指摘が出た場合の `/resolve` ループは遷移図1と同じ(省略)
 - 本番(`/release-check`)で問題を見つけた場合もこの図の `/fix` から入る
-- バグ修正の自動運転(autopilotフロー)は現時点でスコープ外のため、遷移図1aに相当するものは存在しない
+- バグ修正の自動運転(autopilotフロー)は[遷移図2a](#遷移図2a-自動運転モードautopilotfix起点の流れ)を参照
 
 ## 定期作業の遷移
 
