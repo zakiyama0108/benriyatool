@@ -118,3 +118,13 @@ describe('説明文言の表示 - ポップオーバーにはtextプロップの
     expect(screen.getByText('資産推移グラフ・テーブルの説明')).toBeTruthy()
   })
 })
+
+// 仕様: specs/life-money-sim/usage-guide/requirements.md#コンテキストヘルプ(？アイコン)-1
+describe('「？」アイコンの視認性 - マウスが重なっていないノーマル時も円の輪郭が視認できること', () => {
+  it('ノーマル時のボーダー色が薄すぎるlms-lineではなく、視認性の高いlms-mutedであること', () => {
+    render(<HelpIcon id="income" text="収入の説明" openId={null} onToggle={vi.fn()} onClose={vi.fn()} />)
+    const button = screen.getByRole('button', { name: 'ヘルプ' })
+    expect(button.className).toContain('border-lms-muted')
+    expect(button.className).not.toContain('border-lms-line ')
+  })
+})
