@@ -39,7 +39,7 @@
 - [2] ログイン中に「この試算を保存する」(`save-result`)を実行した場合も、匿名分析用保存は従来どおり実行する。マイシナリオの保存とは独立した別の保存処理として扱い、一方の成否がもう一方に影響しない
 
 ## 依存関係
-- 保存対象の入力項目は`monthly-balance/requirements.md#収入`、`monthly-balance/requirements.md#個人支出`、`monthly-balance/requirements.md#家計支出`、`asset-projection/requirements.md#前提入力`、`asset-projection/requirements.md#賞与・イベントの登録`、`asset-projection/requirements.md#貯蓄/運用シミュレーションの切り替え`で定義された入力値を参照する
+- 保存対象の入力項目は`monthly-balance/requirements.md#収入`、`monthly-balance/requirements.md#個人支出`、`monthly-balance/requirements.md#家計支出`、`asset-projection/requirements.md#前提入力`、`asset-projection/requirements.md#賞与・イベントの登録`、`asset-projection/requirements.md#定期的な収入・支出の登録`、`asset-projection/requirements.md#貯蓄/運用シミュレーションの切り替え`で定義された入力値を参照する
 - ログイン状態の判定は`user-auth/requirements.md#ログイン・ログアウト`を前提とする
 - 家族の生年月・支出内訳の名称など機微な内容を新たに保存するため、`specs/legal/requirements.md`のプライバシーポリシーの更新要否を確認する
 
