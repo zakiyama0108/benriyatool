@@ -53,7 +53,7 @@ sequenceDiagram
 
 ### 保存対象の入力値
 以下、`app/life-money-sim/lib/types.ts`の各入力型をまとめて1件のシナリオとする(`page.tsx`が保持する状態と1対1に対応する)。
-- 収入(`IncomeInput`)、個人支出の内訳(`PersonalExpenseInput`)、家計支出の内訳(`HouseholdExpenseInput`)、家族構成(`FamilyProfileInput`)、開始資産額・開始年月・表示範囲(年数)(`StartingAssetInput`)、賞与の登録内容(`BonusEntry[]`)、イベントの登録内容(`EventEntry[]`)、貯蓄のみ/資産運用モードと想定利回り(`InvestmentModeInput`)
+- 収入(`IncomeInput`)、個人支出の内訳(`PersonalExpenseInput`)、家計支出の内訳(`HouseholdExpenseInput`)、家族構成(`FamilyProfileInput`)、開始資産額・開始年月・表示範囲(年数)(`StartingAssetInput`)、賞与の登録内容(`BonusEntry[]`)、イベントの登録内容(`EventEntry[]`)、定期的な収入・支出の登録内容(`RecurringEntry[]`)、貯蓄のみ/資産運用モードと想定利回り(`InvestmentModeInput`)
 - 表示単位の切り替え(月次/年次)は入力値ではなく表示設定のため保存対象に含めない
 - 関連するビジネスルール: requirements.md#保存-3、requirements.md#保存内容の範囲-1
 
@@ -186,4 +186,4 @@ stateDiagram-v2
 
 ## 依存関係
 - ログイン状態の判定は[user-auth/design.md](../user-auth/design.md)に従う
-- 保存対象の入力値の型は`app/life-money-sim/lib/types.ts`の`IncomeInput`・`PersonalExpenseInput`・`HouseholdExpenseInput`・`FamilyProfileInput`・`StartingAssetInput`・`BonusEntry`・`EventEntry`・`InvestmentModeInput`にそのまま従う
+- 保存対象の入力値の型は`app/life-money-sim/lib/types.ts`の`IncomeInput`・`PersonalExpenseInput`・`HouseholdExpenseInput`・`FamilyProfileInput`・`StartingAssetInput`・`BonusEntry`・`EventEntry`・`RecurringEntry`・`InvestmentModeInput`にそのまま従う

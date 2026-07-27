@@ -76,3 +76,40 @@
 - [x] Task 17: マイシナリオへの反映確認(仕様: saved-scenario/requirements.md#保存-3)
   - [x] `displayYears`は`StartingAssetInput`経由で`ScenarioInputState`に自動的に含まれるため、DBスキーマ変更は不要。既存の保存・読み込みのテスト(savedScenario.test.ts)がそのまま通ることを確認する
   - [x] `saved-scenario/requirements.md#保存-3`の保存対象一覧の文言に表示範囲を追記する(3点セット更新の一環)
+
+## 修正: 定期的な収入・支出の登録(2026-07)
+
+- [ ] Task 18: 型定義の追加(仕様: requirements.md#定期的な収入・支出の登録、design.md#関連するファイル(抜粋))
+  - [ ] `app/life-money-sim/lib/types.ts`に`RecurringEntryType`(`'income' | 'expense'`)と`RecurringEntry`(名目・金額・種別・開始月・終了月・頻度)を追加する
+  - [ ] `MonthlyProjectionRow`・`YearlyProjectionRow`に、定期項目の名目一覧を保持する`recurringLabels: string[]`を追加する
+  - [ ] `ScenarioInputState`に`recurringEntries: RecurringEntry[]`を追加する
+
+- [ ] Task 19: 当月に該当する定期収入・支出を求める関数(仕様: requirements.md#定期的な収入・支出の登録-1〜5、requirements.md#定期項目の頻度の正規化-1、design.md#当月に該当する定期収入・支出を求める処理)
+  - [ ] 🔴 頻度が不正な値(0以下・未入力・数値でない・小数)の場合、整数部分への切り捨て後1未満なら初期値1(毎月)として判定されることを確認するテストを書く
+  - [ ] 🔴 開始月自身・頻度の倍数にあたる月・終了月ちょうどの月は該当し、頻度の倍数にあたらない月・終了月より後の月は該当しないことを確認する境界値テストを書く
+  - [ ] 🔴 開始月が終了月より後(逆転した指定)の場合、どの月にも該当しないことを確認するテストを書く
+  - [ ] 🔴 複数の登録が同じ月に該当する場合、種別ごとに金額が合算されることを確認するテストを書く(不正な金額は0として扱う)
+  - [ ] 🟢 `app/life-money-sim/lib/assetProjection.ts`に判定・集計関数を実装する
+
+- [ ] Task 20: 当月の差引後余剰を求める関数の拡張(仕様: requirements.md#月次の資産推移-2、design.md#当月の差引後余剰を求める処理)
+  - [ ] 🔴 `calcNetSurplus`に定期収入合計・定期支出合計を加えた結果が返ることを確認するテストに書き換える(既存の賞与・イベントのテストケースは維持する)
+  - [ ] 🟢 `calcNetSurplus`のシグネチャを拡張し実装し直す
+
+- [ ] Task 21: 月次積み上げ・年次集計への配線(仕様: design.md#月次データを年次にまとめる処理)
+  - [ ] 🔴 `buildMonthlyProjectionRows`に定期項目一覧を渡した場合、該当月の`netSurplus`・`recurringLabels`に反映されることを確認するテストを書く
+  - [ ] 🔴 `aggregateYearly`が各月の`recurringLabels`を年の行にまとめて集約することを確認するテストを書く
+  - [ ] 🟢 `buildMonthlyProjectionRows`・`aggregateYearly`を実装し直す
+
+- [ ] Task 22: 定期的な収入・支出登録コンポーネント(仕様: requirements.md#定期的な収入・支出の登録、design.md#画面設計)
+  - [ ] `app/life-money-sim/components/RecurringEntryListInput.tsx`を実装する(名目・金額・種別・開始月・終了月・頻度を指定して追加・削除)
+
+- [ ] Task 23: 資産推移テーブルの表示更新(仕様: design.md#画面設計、design.md#ビジュアルトーン)
+  - [ ] `app/life-money-sim/components/AssetProjectionTable.tsx`を更新し、`recurringLabels`をイベント名目と合わせて表示する。行のハイライト判定(サンドイエロー地)にも定期項目の有無を含める
+
+- [ ] Task 24: 資産推移セクションの画面配線(仕様: design.md#状態管理)
+  - [ ] `app/life-money-sim/page.tsx`に`recurringEntries`の状態を追加し、`RecurringEntryListInput`・`buildMonthlyProjectionRows`への配線を行う
+  - [ ] `/run`(run-benriyatoolスキル)で、定期収入・支出の登録が該当する月すべての資産推移に反映されることを実機確認する
+
+- [ ] Task 25: マイシナリオへの反映(仕様: saved-scenario/design.md#保存対象の入力値)
+  - [ ] `app/life-money-sim/lib/savedScenario.ts`の`fillMissingScenarioFields`が使う既定値に`recurringEntries: []`を追加する(過去に保存されたシナリオに`recurringEntries`が無い場合の欠損補完。`displayYears`追加時と同じ方針)
+  - [ ] `saved-scenario/design.md`の保存対象の入力値・依存関係の記載を更新する(design.md側は本タスク分解と合わせて更新済みのため、実装との整合確認のみ行う)
