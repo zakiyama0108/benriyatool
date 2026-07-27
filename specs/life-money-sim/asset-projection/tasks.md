@@ -81,7 +81,7 @@
 
 - [x] Task 18: 型定義の追加(仕様: requirements.md#定期的な収入・支出の登録、design.md#関連するファイル(抜粋))
   - [x] `app/life-money-sim/lib/types.ts`に`RecurringEntryType`(`'income' | 'expense'`)と`RecurringEntry`(名目・金額・種別・開始月・終了月・頻度)を追加する
-  - [x] `MonthlyProjectionRow`・`YearlyProjectionRow`に、定期項目の名目一覧を保持する`recurringLabels: string[]`を追加する
+  - [x] `MonthlyProjectionRow`・`YearlyProjectionRow`に、定期項目の名目一覧を保持する`recurringLabels: RecurringLabel[]`(`{label: string; type: RecurringEntryType}`。design.mdのビジュアルトーン要件(定期収入=ティール文字/定期支出=コーラル文字)を満たすため種別を保持する)を追加する
   - [x] `ScenarioInputState`に`recurringEntries: RecurringEntry[]`を追加する
 
 - [x] Task 19: 当月に該当する定期収入・支出を求める関数(仕様: requirements.md#定期的な収入・支出の登録-1〜5、requirements.md#定期項目の頻度の正規化-1、design.md#当月に該当する定期収入・支出を求める処理)
