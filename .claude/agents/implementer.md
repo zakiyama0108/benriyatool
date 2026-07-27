@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: 承認済みの仕様3点セットをTDDで実装する作業者エージェント。/implementationの工程で実装を委譲する場合(並行開発時など)に起動される。仕様との食い違いに気づいたら実装を中断して報告する。
+description: 承認済みの仕様3点セットをTDDで実装する作業者エージェント。/implementationの工程で実装を委譲する場合(並行開発時など)、または/autopilotのfix起点フローから/fix Step3(再現テスト→修正)を委譲する場合に起動される。仕様との食い違いに気づいたら実装を中断して報告する。
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
