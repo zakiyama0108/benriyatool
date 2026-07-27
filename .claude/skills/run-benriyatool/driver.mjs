@@ -11,7 +11,9 @@ const SHOTS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'screenshots')
 mkdirSync(SHOTS_DIR, { recursive: true })
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true })
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
+// deviceScaleFactor: 2 で撮影解像度を上げる(要素単位のクローズアップ撮影で小さいアイコン等が
+// 潰れて見えないのを防ぐため)
+const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 2 })
 
 // console.error / 未捕捉例外を貯めて `errors` コマンドで確認できるようにする
 const errors = []
@@ -61,6 +63,16 @@ async function run(line) {
       console.log(`ok screenshot ${path}`)
       return
     }
+    case 'screenshot-el': {
+      // 第1トークンをセレクタ、残りを名前として扱う。要素単位のクローズアップ撮影
+      // (ビフォーアフター比較などフルページだと差分が見えにくい場合に使う)
+      const sel = rest[0]
+      const name = rest.slice(1).join(' ') || `el-${String(++shotCount).padStart(2, '0')}`
+      const path = join(SHOTS_DIR, `${name}.png`)
+      await loc(sel).screenshot({ path })
+      console.log(`ok screenshot-el ${path}`)
+      return
+    }
     case 'text': {
       // 指定要素のテキストを表示(結果の数値検証に使う)
       console.log(await loc(arg).innerText())
@@ -83,7 +95,7 @@ async function run(line) {
       process.exit(0)
       break
     default:
-      console.log(`unknown command: ${cmd} (nav/wait-for/click/fill/press/screenshot/text/eval/block/errors/quit)`)
+      console.log(`unknown command: ${cmd} (nav/wait-for/click/fill/press/screenshot/screenshot-el/text/eval/block/errors/quit)`)
   }
 }
 
