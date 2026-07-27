@@ -10,6 +10,7 @@ import type {
   StartingAssetInput,
   BonusEntry,
   EventEntry,
+  RecurringEntry,
   InvestmentModeInput,
   PeriodUnit,
   SaveResultInput,
@@ -38,6 +39,7 @@ import BalanceSummary from './components/BalanceSummary'
 import StartingAssetForm from './components/StartingAssetForm'
 import FamilyProfileForm from './components/FamilyProfileForm'
 import EventListInput from './components/EventListInput'
+import RecurringEntryListInput from './components/RecurringEntryListInput'
 import ModeToggle from './components/ModeToggle'
 import PeriodToggle from './components/PeriodToggle'
 import AssetProjectionTable from './components/AssetProjectionTable'
@@ -75,6 +77,7 @@ export default function Page() {
   })
   const [bonuses, setBonuses] = useState<BonusEntry[]>([])
   const [events, setEvents] = useState<EventEntry[]>([])
+  const [recurringEntries, setRecurringEntries] = useState<RecurringEntry[]>([])
   const [investmentModeInput, setInvestmentModeInput] = useState<InvestmentModeInput>({
     investmentMode: false,
     expectedAnnualRate: 0,
@@ -121,6 +124,7 @@ export default function Page() {
       startingAssetInput: { startingAsset: 0, startYearMonth: currentYearMonth(), displayYears: 30 },
       bonuses: [],
       events: [],
+      recurringEntries: [],
       investmentModeInput: { investmentMode: false, expectedAnnualRate: 0 },
     })
     setIncome(filled.income)
@@ -130,6 +134,7 @@ export default function Page() {
     setStartingAssetInput(filled.startingAssetInput)
     setBonuses(filled.bonuses)
     setEvents(filled.events)
+    setRecurringEntries(filled.recurringEntries)
     setInvestmentModeInput(filled.investmentModeInput)
   }
 
@@ -170,6 +175,7 @@ export default function Page() {
       startingAssetInput,
       bonuses,
       events,
+      recurringEntries,
       investmentModeInput,
     }
     const ok = await saveScenario(name, currentState)
@@ -221,6 +227,7 @@ export default function Page() {
     childrenBirthMonths: familyProfile.childrenBirthMonths,
     bonuses,
     events,
+    recurringEntries,
     investmentMode: investmentModeInput.investmentMode,
     expectedAnnualRate: investmentModeInput.expectedAnnualRate,
   })
@@ -350,6 +357,8 @@ export default function Page() {
               onToggleHelp={toggleHelp}
               onCloseHelp={closeHelp}
             />
+
+            <RecurringEntryListInput entries={recurringEntries} onChange={setRecurringEntries} />
 
             <PeriodToggle value={periodUnit} onChange={setPeriodUnit} />
 
