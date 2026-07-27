@@ -6,8 +6,16 @@ import {
   buildSavingsAssetSeries,
   buildInvestmentAssetSeries,
   aggregateYearly,
+  isRecurringEntryApplicable,
+  calcRecurringTotals,
+  buildMonthlyProjectionRows,
 } from '../../../app/life-money-sim/lib/assetProjection'
-import type { MonthlyProjectionRow } from '../../../app/life-money-sim/lib/types'
+import type { MonthlyProjectionRow, RecurringEntry } from '../../../app/life-money-sim/lib/types'
+
+// テスト用の定期項目の登録内容を組み立てるヘルパー(名目・金額・種別・開始月・終了月・頻度)
+function recurringEntry(partial: Partial<RecurringEntry> & { startYearMonth: string; endYearMonth: string }): RecurringEntry {
+  return { label: '定期項目', amount: 10, type: 'income', frequencyMonths: 1, ...partial }
+}
 
 // 仕様: specs/life-money-sim/asset-projection/requirements.md#前提入力-3、specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-3
 describe('対象年月の家族の年齢の計算 - 生年月と対象年月から満年齢を求める', () => {
@@ -27,15 +35,108 @@ describe('対象年月の家族の年齢の計算 - 生年月と対象年月か�
 })
 
 // 仕様: specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-2
-describe('当月の差引後余剰の計算 - 月次余剰資金(賞与抜き)に賞与を足しイベント支出を差し引く', () => {
-  it('賞与の登録がない月は、月次余剰資金にイベント合計を差し引いた値になること', () => {
+describe('当月の差引後余剰の計算 - 月次余剰資金(賞与抜き)に賞与・定期収入を足し、イベント支出・定期支出を差し引く', () => {
+  it('賞与の登録がない月は、月次余剰資金にイベント合計を差し引いた値になること(定期収入・定期支出の該当なし)', () => {
     // 月次余剰資金15万円 - イベント合計(引っ越し10万円+家具5万円=15万円) = 0万円
-    expect(calcNetSurplus(15, 0, 15)).toBe(0)
+    expect(calcNetSurplus(15, 0, 15, 0, 0)).toBe(0)
   })
 
-  it('賞与とイベントが両方ある月は、月次余剰資金に賞与を足しイベント合計を差し引いた値になること', () => {
+  it('賞与とイベントが両方ある月は、月次余剰資金に賞与を足しイベント合計を差し引いた値になること(定期収入・定期支出の該当なし)', () => {
     // 月次余剰資金15万円 + 賞与50万円 - イベント合計20万円 = 45万円
-    expect(calcNetSurplus(15, 50, 20)).toBe(45)
+    expect(calcNetSurplus(15, 50, 20, 0, 0)).toBe(45)
+  })
+
+  it('当月に該当する定期収入の合計があれば、基準値に加えられること', () => {
+    // 月次余剰資金15万円 + 定期収入合計(副業5万円+積立3万円=8万円) = 23万円
+    expect(calcNetSurplus(15, 0, 0, 8, 0)).toBe(23)
+  })
+
+  it('当月に該当する定期支出の合計があれば、基準値から差し引かれること', () => {
+    // 月次余剰資金15万円 - 定期支出合計(家賃8万円) = 7万円
+    expect(calcNetSurplus(15, 0, 0, 0, 8)).toBe(7)
+  })
+
+  it('賞与・イベント・定期収入・定期支出がすべて重なる月は、それぞれを加減した値になること', () => {
+    // 月次余剰資金15万円 + 賞与50万円 + 定期収入8万円 - イベント合計20万円 - 定期支出8万円 = 45万円
+    expect(calcNetSurplus(15, 50, 20, 8, 8)).toBe(45)
+  })
+})
+
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#定期項目の頻度の正規化-1
+describe('定期項目の頻度の正規化 - 不正な頻度は1(毎月)として扱う', () => {
+  it('頻度が0以下・未入力・数値でない・小数の場合、整数部分への切り捨て後1未満なら初期値1(毎月)として該当判定されること', () => {
+    // 頻度0は本来1ヶ月ごとに正規化されるため、開始月の翌月(月数差1)も該当するはず
+    const entryZero = recurringEntry({ startYearMonth: '2026-01', endYearMonth: '2026-12', frequencyMonths: 0 })
+    expect(isRecurringEntryApplicable(entryZero, '2026-02')).toBe(true)
+
+    const entryNaN = recurringEntry({ startYearMonth: '2026-01', endYearMonth: '2026-12', frequencyMonths: NaN })
+    expect(isRecurringEntryApplicable(entryNaN, '2026-02')).toBe(true)
+
+    const entryDecimal = recurringEntry({ startYearMonth: '2026-01', endYearMonth: '2026-12', frequencyMonths: 0.5 })
+    expect(isRecurringEntryApplicable(entryDecimal, '2026-02')).toBe(true)
+  })
+})
+
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#定期的な収入・支出の登録-4
+describe('当月に該当する定期収入・支出の判定 - 開始月から頻度(nヶ月)ごと、終了月以前の月に該当する', () => {
+  it('開始月自身は月数差0のため必ず該当すること', () => {
+    const entry = recurringEntry({ startYearMonth: '2026-04', endYearMonth: '2027-03', frequencyMonths: 3 })
+    expect(isRecurringEntryApplicable(entry, '2026-04')).toBe(true)
+  })
+
+  it('頻度(3ヶ月ごと)の倍数にあたる月は該当すること', () => {
+    const entry = recurringEntry({ startYearMonth: '2026-04', endYearMonth: '2027-03', frequencyMonths: 3 })
+    expect(isRecurringEntryApplicable(entry, '2026-07')).toBe(true)
+  })
+
+  it('頻度(3ヶ月ごと)の倍数にあたらない月は該当しないこと', () => {
+    const entry = recurringEntry({ startYearMonth: '2026-04', endYearMonth: '2027-03', frequencyMonths: 3 })
+    expect(isRecurringEntryApplicable(entry, '2026-05')).toBe(false)
+  })
+
+  it('終了月ちょうどの月(頻度の倍数にも一致)は該当すること', () => {
+    // 2026-04から3ヶ月ごと(月数差9)ちょうどに終了月2027-01を設定
+    const entry = recurringEntry({ startYearMonth: '2026-04', endYearMonth: '2027-01', frequencyMonths: 3 })
+    expect(isRecurringEntryApplicable(entry, '2027-01')).toBe(true)
+  })
+
+  it('終了月より後の月は、頻度の倍数にあたる月でも該当しないこと', () => {
+    // 2027-04は2026-04から頻度3ヶ月の倍数(月数差12)だが、終了月2027-01より後のため該当しない
+    const entry = recurringEntry({ startYearMonth: '2026-04', endYearMonth: '2027-01', frequencyMonths: 3 })
+    expect(isRecurringEntryApplicable(entry, '2027-04')).toBe(false)
+  })
+
+  it('開始月が終了月より後(逆転した指定)の場合、どの月にも該当しないこと', () => {
+    const entry = recurringEntry({ startYearMonth: '2027-01', endYearMonth: '2026-01', frequencyMonths: 1 })
+    expect(isRecurringEntryApplicable(entry, '2026-06')).toBe(false)
+    expect(isRecurringEntryApplicable(entry, '2027-01')).toBe(false)
+  })
+})
+
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#定期的な収入・支出の登録-5、specs/life-money-sim/asset-projection/design.md#バリデーション
+describe('当月に該当する定期収入・支出の合計 - 複数の登録が同じ月に該当する場合、種別ごとに合算する', () => {
+  it('同じ月に該当する収入・支出それぞれの登録が複数あるとき、種別ごとに金額が合算されること', () => {
+    const entries: RecurringEntry[] = [
+      recurringEntry({ label: '副業収入', amount: 5, type: 'income', startYearMonth: '2026-01', endYearMonth: '2026-12' }),
+      recurringEntry({ label: '積立', amount: 3, type: 'income', startYearMonth: '2026-01', endYearMonth: '2026-12' }),
+      recurringEntry({ label: '家賃', amount: 8, type: 'expense', startYearMonth: '2026-01', endYearMonth: '2026-12' }),
+    ]
+    expect(calcRecurringTotals(entries, '2026-06')).toEqual({ incomeTotal: 8, expenseTotal: 8 })
+  })
+
+  it('金額が負数・NaNなど不正な登録は0として合算されること', () => {
+    const entries: RecurringEntry[] = [
+      recurringEntry({ label: '不正な収入', amount: -5, type: 'income', startYearMonth: '2026-01', endYearMonth: '2026-12' }),
+      recurringEntry({ label: '不正な支出', amount: NaN, type: 'expense', startYearMonth: '2026-01', endYearMonth: '2026-12' }),
+    ]
+    expect(calcRecurringTotals(entries, '2026-06')).toEqual({ incomeTotal: 0, expenseTotal: 0 })
+  })
+
+  it('該当する登録が1件もない月は、収入・支出とも0になること', () => {
+    const entries: RecurringEntry[] = [
+      recurringEntry({ startYearMonth: '2026-04', endYearMonth: '2026-06' }),
+    ]
+    expect(calcRecurringTotals(entries, '2026-07')).toEqual({ incomeTotal: 0, expenseTotal: 0 })
   })
 })
 
@@ -108,7 +209,15 @@ describe('開始資産額・想定利回りのバリデーション - 不正な�
 // 仕様: specs/life-money-sim/asset-projection/requirements.md#表示単位の切り替え-2
 describe('月次データを年次にまとめる集計', () => {
   function row(partial: Partial<MonthlyProjectionRow> & { yearMonth: string; netSurplus: number; asset: number }): MonthlyProjectionRow {
-    return { selfAge: undefined, spouseAge: undefined, childrenAges: [], eventLabels: [], hasBonus: false, ...partial }
+    return {
+      selfAge: undefined,
+      spouseAge: undefined,
+      childrenAges: [],
+      eventLabels: [],
+      hasBonus: false,
+      recurringLabels: [],
+      ...partial,
+    }
   }
 
   it('同じ年の12か月分の行が1行にまとまり、年次余剰資金が12か月分の合計になること', () => {
@@ -170,5 +279,66 @@ describe('月次データを年次にまとめる集計', () => {
     ]
     const result = aggregateYearly(rows)
     expect(result[0].hasBonus).toBe(false)
+  })
+
+  it('その年に該当した定期収入・定期支出の名目がすべて集められて年の行にまとめられること', () => {
+    const rows: MonthlyProjectionRow[] = [
+      row({ yearMonth: '2026-04', netSurplus: 10, asset: 110, recurringLabels: [{ label: '家賃', type: 'expense' }] }),
+      row({
+        yearMonth: '2026-07',
+        netSurplus: 10,
+        asset: 120,
+        recurringLabels: [
+          { label: '家賃', type: 'expense' },
+          { label: '副業収入', type: 'income' },
+        ],
+      }),
+    ]
+    const result = aggregateYearly(rows)
+    expect(result[0].recurringLabels).toEqual([
+      { label: '家賃', type: 'expense' },
+      { label: '家賃', type: 'expense' },
+      { label: '副業収入', type: 'income' },
+    ])
+  })
+})
+
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#定期的な収入・支出の登録-6
+describe('月次積み上げへの定期収入・支出の反映 - 該当月の差引後余剰・定期項目名目に反映する', () => {
+  const baseParams = {
+    startYearMonth: '2026-01',
+    finalYearMonth: '2026-03',
+    startingAsset: 0,
+    monthlySurplus: 0,
+    selfBirthMonth: null,
+    spouseBirthMonth: null,
+    childrenBirthMonths: [],
+    bonuses: [],
+    events: [],
+    investmentMode: false,
+    expectedAnnualRate: 0,
+  }
+
+  it('定期項目一覧を渡した場合、該当月のnetSurplusに定期収入・定期支出が反映されること', () => {
+    const rows = buildMonthlyProjectionRows({
+      ...baseParams,
+      recurringEntries: [
+        recurringEntry({ label: '副業収入', amount: 5, type: 'income', startYearMonth: '2026-01', endYearMonth: '2026-12' }),
+        recurringEntry({ label: '家賃', amount: 8, type: 'expense', startYearMonth: '2026-01', endYearMonth: '2026-12' }),
+      ],
+    })
+    // 月次余剰資金0 + 定期収入5 - 定期支出8 = -3
+    expect(rows[0].netSurplus).toBe(-3)
+  })
+
+  it('定期項目一覧を渡した場合、該当月のrecurringLabelsに該当した名目が反映されること', () => {
+    const rows = buildMonthlyProjectionRows({
+      ...baseParams,
+      recurringEntries: [
+        recurringEntry({ label: '副業収入', amount: 5, type: 'income', startYearMonth: '2026-02', endYearMonth: '2026-02' }),
+      ],
+    })
+    expect(rows[0].recurringLabels).toEqual([])
+    expect(rows[1].recurringLabels).toEqual([{ label: '副業収入', type: 'income' }])
   })
 })

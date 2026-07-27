@@ -1,4 +1,4 @@
-import type { MonthlyProjectionRow, YearlyProjectionRow, YearMonth, BonusEntry, EventEntry } from './types'
+import type { MonthlyProjectionRow, YearlyProjectionRow, YearMonth, BonusEntry, EventEntry, RecurringEntry } from './types'
 
 // "YYYY-MM" を年・月の数値に分解する
 function parseYearMonth(yearMonth: YearMonth): { year: number; month: number } {
@@ -8,6 +8,13 @@ function parseYearMonth(yearMonth: YearMonth): { year: number; month: number } {
 
 function formatYearMonth(year: number, month: number): YearMonth {
   return `${year}-${String(month).padStart(2, '0')}`
+}
+
+// fromからtoまでの月数差(to - from)を求める
+function monthsBetween(from: YearMonth, to: YearMonth): number {
+  const f = parseYearMonth(from)
+  const t = parseYearMonth(to)
+  return (t.year - f.year) * 12 + (t.month - f.month)
 }
 
 // 開始資産額・想定利回り・賞与額・イベント金額のバリデーション。0未満・数値でない(NaN等)入力は
@@ -28,10 +35,52 @@ export function calcAge(birthYearMonth: YearMonth | null, targetYearMonth: YearM
   return target.year - birth.year - (hasHadBirthdayThisYear ? 0 : 1)
 }
 
-// 月次余剰資金(賞与抜き)に当月の賞与を加え、当月のイベント合計を差し引いた「当月の差引後余剰」を求める
-// (仕様: requirements.md#月次の資産推移-2、design.md#当月の差引後余剰を求める処理)
-export function calcNetSurplus(monthlySurplus: number, bonusAmount: number, eventTotal: number): number {
-  return monthlySurplus + bonusAmount - eventTotal
+// 月次余剰資金(賞与抜き)に当月の賞与・定期収入を加え、当月のイベント合計・定期支出を差し引いた
+// 「当月の差引後余剰」を求める(仕様: requirements.md#月次の資産推移-2、design.md#当月の差引後余剰を求める処理)
+export function calcNetSurplus(
+  monthlySurplus: number,
+  bonusAmount: number,
+  eventTotal: number,
+  recurringIncomeTotal: number,
+  recurringExpenseTotal: number
+): number {
+  return monthlySurplus + bonusAmount + recurringIncomeTotal - eventTotal - recurringExpenseTotal
+}
+
+// 定期項目の頻度(何ヶ月ごとか)を1以上の整数に正規化する。小数はまず整数部分に切り捨て、その結果が
+// 1未満(0以下)、または未入力・数値でない値の場合は初期値(1・毎月)にフォールバックする
+// (仕様: requirements.md#定期項目の頻度の正規化-1、design.md#当月に該当する定期収入・支出を求める処理)
+const DEFAULT_FREQUENCY_MONTHS = 1 // 毎月
+
+function normalizeFrequencyMonths(frequencyMonths: number): number {
+  const floored = Math.floor(frequencyMonths)
+  return Number.isFinite(floored) && floored >= 1 ? floored : DEFAULT_FREQUENCY_MONTHS
+}
+
+// 対象年月が、定期項目の登録(開始月・終了月・頻度)に該当するかどうかを判定する。
+// 対象年月が開始月以上・終了月以下であり、かつ(対象年月と開始月の月数差)が正規化した頻度で
+// 割り切れる場合に該当する(開始月自身は月数差0のため必ず該当する)。開始月が終了月より後の場合は、
+// 開始月以上・終了月以下を同時に満たす月が存在しないため自然に非該当となる
+// (仕様: requirements.md#定期的な収入・支出の登録-4、design.md#当月に該当する定期収入・支出を求める処理)
+export function isRecurringEntryApplicable(entry: RecurringEntry, targetYearMonth: YearMonth): boolean {
+  const frequency = normalizeFrequencyMonths(entry.frequencyMonths)
+  const diffFromStart = monthsBetween(entry.startYearMonth, targetYearMonth)
+  const diffToEnd = monthsBetween(targetYearMonth, entry.endYearMonth)
+  return diffFromStart >= 0 && diffToEnd >= 0 && diffFromStart % frequency === 0
+}
+
+// 対象年月に該当する定期項目を種別(収入/支出)ごとに合算する。複数件が同じ月に該当する場合は
+// すべて合算し、不正な金額(0未満・NaN等)は0として扱う
+// (仕様: requirements.md#定期的な収入・支出の登録-5、design.md#当月に該当する定期収入・支出を求める処理)
+export function calcRecurringTotals(
+  entries: RecurringEntry[],
+  targetYearMonth: YearMonth
+): { incomeTotal: number; expenseTotal: number } {
+  const matched = entries.filter((entry) => isRecurringEntryApplicable(entry, targetYearMonth))
+  return {
+    incomeTotal: matched.filter((e) => e.type === 'income').reduce((sum, e) => sum + sanitizeAmount(e.amount), 0),
+    expenseTotal: matched.filter((e) => e.type === 'expense').reduce((sum, e) => sum + sanitizeAmount(e.amount), 0),
+  }
 }
 
 // 表示範囲(年数)を1以上の整数に正規化する。小数はまず整数部分に切り捨て、その結果が1未満(0以下)、
@@ -102,6 +151,7 @@ export function aggregateYearly(rows: MonthlyProjectionRow[]): YearlyProjectionR
         childrenAges: last.childrenAges,
         eventLabels: yearRows.flatMap((r) => r.eventLabels),
         hasBonus: yearRows.some((r) => r.hasBonus),
+        recurringLabels: yearRows.flatMap((r) => r.recurringLabels),
         yearlySurplus: yearRows.reduce((sum, r) => sum + r.netSurplus, 0),
         asset: last.asset,
       }
@@ -122,6 +172,7 @@ export function buildMonthlyProjectionRows(params: {
   childrenBirthMonths: (YearMonth | null)[]
   bonuses: BonusEntry[]
   events: EventEntry[]
+  recurringEntries: RecurringEntry[]
   investmentMode: boolean
   expectedAnnualRate: number
 }): MonthlyProjectionRow[] {
@@ -140,7 +191,8 @@ export function buildMonthlyProjectionRows(params: {
     const eventTotal = params.events
       .filter((e) => e.yearMonth === ym)
       .reduce((sum, e) => sum + sanitizeAmount(e.amount), 0)
-    return calcNetSurplus(params.monthlySurplus, bonusTotal, eventTotal)
+    const { incomeTotal, expenseTotal } = calcRecurringTotals(params.recurringEntries, ym)
+    return calcNetSurplus(params.monthlySurplus, bonusTotal, eventTotal, incomeTotal, expenseTotal)
   })
 
   const assetSeries = params.investmentMode
@@ -154,6 +206,9 @@ export function buildMonthlyProjectionRows(params: {
     childrenAges: params.childrenBirthMonths.map((b) => calcAge(b, yearMonth)),
     eventLabels: params.events.filter((e) => e.yearMonth === yearMonth).map((e) => e.label),
     hasBonus: params.bonuses.some((b) => b.yearMonth === yearMonth),
+    recurringLabels: params.recurringEntries
+      .filter((entry) => isRecurringEntryApplicable(entry, yearMonth))
+      .map((entry) => ({ label: entry.label, type: entry.type })),
     netSurplus: netSurpluses[i],
     asset: assetSeries[i],
   }))

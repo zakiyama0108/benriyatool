@@ -64,8 +64,29 @@ export type InvestmentModeInput = {
   expectedAnnualRate: number // 想定利回り(年率・%)。資産運用モード選択時のみ意味を持つ
 }
 
+// 定期的な収入・支出の種別(仕様: requirements.md#定期的な収入・支出の登録-2)
+export type RecurringEntryType = 'income' | 'expense'
+
+// 開始月・終了月・頻度(何ヶ月ごとか)を指定して、一定期間繰り返し発生する収入・支出の登録
+// (仕様: requirements.md#定期的な収入・支出の登録-1、#定期的な収入・支出の登録-2、#定期的な収入・支出の登録-3)
+export type RecurringEntry = {
+  label: string // 名目(自由テキスト)
+  amount: number // 万円
+  type: RecurringEntryType
+  startYearMonth: YearMonth
+  endYearMonth: YearMonth // 終了月は必須入力(requirements.md#定期的な収入・支出の登録-3)
+  frequencyMonths: number // 何ヶ月ごとか。1以上の整数以外は初期値1にフォールバックする(requirements.md#定期項目の頻度の正規化-1)
+}
+
 // 資産推移テーブル・グラフの表示単位
 export type PeriodUnit = 'month' | 'year'
+
+// 該当した定期項目の名目1件。種別を保持するのは、テーブル表示で定期収入(賞与と同じティール文字)/
+// 定期支出(イベントと同じコーラル文字)を色分けするため(仕様: design.md#ビジュアルトーン)
+export type RecurringLabel = {
+  label: string
+  type: RecurringEntryType
+}
 
 // 月次資産推移テーブルの1行
 export type MonthlyProjectionRow = {
@@ -75,6 +96,7 @@ export type MonthlyProjectionRow = {
   childrenAges: (number | undefined)[]
   eventLabels: string[] // その月に発生したイベントの名目一覧
   hasBonus: boolean // その月に賞与の登録があるかどうか(テーブルの行ハイライトに使う)
+  recurringLabels: RecurringLabel[] // その月に該当した定期収入・定期支出の名目一覧(仕様: requirements.md#定期的な収入・支出の登録-6)
   netSurplus: number // 差引後余剰・万円
   asset: number // その月末時点の資産額・万円
 }
@@ -87,6 +109,7 @@ export type YearlyProjectionRow = {
   childrenAges: (number | undefined)[]
   eventLabels: string[]
   hasBonus: boolean // その年のいずれかの月に賞与の登録があるかどうか
+  recurringLabels: RecurringLabel[] // その年に該当した定期収入・定期支出の名目一覧
   yearlySurplus: number // 年次余剰資金・万円
   asset: number // 年末(またはその年の最終月)時点の資産額・万円
 }
@@ -134,6 +157,7 @@ export type ScenarioInputState = {
   startingAssetInput: StartingAssetInput
   bonuses: BonusEntry[]
   events: EventEntry[]
+  recurringEntries: RecurringEntry[]
   investmentModeInput: InvestmentModeInput
 }
 

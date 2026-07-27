@@ -11,6 +11,7 @@ const dummyInputState = {
   startingAssetInput: { startingAsset: 0, startYearMonth: '2026-07', displayYears: 30 },
   bonuses: [],
   events: [],
+  recurringEntries: [],
   investmentModeInput: { investmentMode: false, expectedAnnualRate: 0 },
 }
 

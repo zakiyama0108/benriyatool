@@ -34,6 +34,7 @@ const inputState: ScenarioInputState = {
   startingAssetInput: { startingAsset: 300, startYearMonth: '2026-07', displayYears: 30 },
   bonuses: [],
   events: [],
+  recurringEntries: [],
   investmentModeInput: { investmentMode: false, expectedAnnualRate: 0 },
 }
 
@@ -121,5 +122,18 @@ describe('保存済み入力値の欠損フィールド補完 - 将来の型変�
     const stored: Partial<ScenarioInputState> = { ...inputState, startingAssetInput: legacyStartingAssetInput }
     const result = fillMissingScenarioFields(stored, inputState)
     expect(result.startingAssetInput).toEqual({ startingAsset: 300, startYearMonth: '2026-07', displayYears: 30 })
+  })
+
+  it('保存済みデータにrecurringEntriesが無い場合(定期的な収入・支出の登録追加前の旧データ)、recurringEntriesが現在の初期値([])で補われること', () => {
+    const legacyStored: Partial<ScenarioInputState> = { ...inputState }
+    delete legacyStored.recurringEntries
+    const currentDefault: ScenarioInputState = {
+      ...inputState,
+      recurringEntries: [
+        { label: '家賃', amount: 8, type: 'expense', startYearMonth: '2026-01', endYearMonth: '2026-12', frequencyMonths: 1 },
+      ],
+    }
+    const result = fillMissingScenarioFields(legacyStored, currentDefault)
+    expect(result.recurringEntries).toEqual(currentDefault.recurringEntries)
   })
 })
