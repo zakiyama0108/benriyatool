@@ -35,7 +35,7 @@ export default function HelpIcon({ id, text, openId, onToggle, onClose }: Props)
         type="button"
         aria-label="ヘルプ"
         onClick={() => onToggle(id)}
-        className="flex h-5 w-5 items-center justify-center rounded-full border border-lms-line text-[11px] font-bold text-lms-muted outline-none hover:border-lms-teal hover:text-lms-teal"
+        className="flex h-5 w-5 items-center justify-center rounded-full border border-lms-muted text-[11px] font-bold text-lms-muted outline-none hover:border-lms-teal hover:text-lms-teal"
       >
         ?
       </button>
