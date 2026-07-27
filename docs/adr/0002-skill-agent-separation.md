@@ -24,10 +24,12 @@
 | 壁打ち | consult | メインスレッド | (対象外。autopilotは/requirement起点のみ) | 対話そのものが仕事 |
 | 要件定義 | requirement | メインスレッド | メインスレッド(対話①) | ヒアリングで質問を重ねる必要がある |
 | 設計 | design | メインスレッド(任意で**designer**へ委譲。並行開発時など) | 常時**designer**へ委譲 | 人が対話する価値がある一方、autopilotは設計の分かれ道を対話①で聞き切り、残りは推測マーカーで進める設計のため委譲しても質が落ちない(2026-07判断変更。[下記](#設計指摘対応の委譲designerresolverエージェント2026-07追記)参照) |
+| UIデザイン確定(Step0・画面を伴う機能のみ) | design | メインスレッド(ヒアリング・候補承認)+任意で**ui-designer**へ候補生成(v0プロンプト作成)を委譲 | 対象外(autopilotでは扱わない。画面を伴う機能でUIデザイン確定が必要な場合は通常フローで行う) | ヒアリング・承認判断はユーザーとの対話そのものなのでメインスレッドに残す。候補生成は別コンテキストの新鮮な目で複数案を出す価値があり、書き込みツールを持たせない構造で「実装しない」を強制できる(詳細は[下記](#uiデザインui統合の委譲ui-designerui-integratorエージェント2026-07追記)参照) |
 | 仕様レビュー | spec-review | 常時**spec-reviewer**へ委譲 | 常時**spec-reviewer**へ委譲 | 新鮮な目+read-onlyで「修正禁止」を構造的に強制。通常フローでも客観性を優先し常時委譲 |
 | 指摘対応(仕様レビュー分) | resolve | メインスレッド(任意で**resolver**へ委譲) | 常時**resolver**へ委譲(要件・ビジネスルールの変更を要する指摘は例外停止) | 「同意できない指摘はユーザーに確認」が必要な作業。autopilotの例外停止条件と整合するため委譲できる(2026-07判断変更) |
 | 仕様承認PR作成 | pr | メインスレッド | メインスレッド | ブランチ作成・コミット・push・PR作成という機械的なgit操作で、委譲するほどのコンテキスト量ではない |
 | TDD実装 | implementation | メインスレッド(任意で**implementer**へ委譲。並行開発時・tasks.mdが十分詳細なとき) | 常時**implementer**へ委譲 | 通常は対話しながら進められるメインスレッドが直接実装する。autopilotは対話できないため常時委譲し、仕様との食い違いは中断・報告させる |
+| UI統合(v0生成コードの取り込み) | implementation | メインスレッド(任意で**ui-integrator**へ委譲。並行開発時など) | 対象外(autopilotでは扱わない) | implementerと同じ「拘束された作業」。TDD対象外の構造整形のみを任せ、ロジック配線は後続の通常タスク(implementer/メインスレッド)に残すことで責務を分離する |
 | 実装レビュー | implementation-review | 常時**code-reviewer**へ委譲 | 常時**code-reviewer**へ委譲 | spec-reviewerと同じ。Bashはテスト実行用に許可 |
 | 指摘対応(実装レビュー分) | resolve | メインスレッド(任意で**resolver**へ委譲) | 常時**resolver**へ委譲(仕様変更を要する指摘は例外停止) | 上と同じ |
 | 実装PR作成前チェック | pr | 常時**impl-pr-reviewer**へ委譲(実装PR作成前のみ) | 常時**impl-pr-reviewer**へ委譲(実装PR作成前のみ) | 機械的チェックの自己完結した作業。仕様承認PRではマーカー残り・coverage除外によりチェックが成立しないため実装PRの作成前のみ起動する |
@@ -60,7 +62,7 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 | 拘束された作業(仕様・tasks.mdが細かく手順を決めている) | sonnet | 手順は決まっているが、逸脱・食い違いに気づく判断力は要る |
 | 判断が本体(レビューの質がそのAgentの存在理由) | inherit | 品質ゲートを軽量化するとワークフロー全体の品質が下がる |
 
-現在の割り当て: impl-pr-reviewer / release-checker = haiku、implementer / law-revision-checker / ui-checker / **designer / resolver** = sonnet、spec-reviewer / code-reviewer = inherit。
+現在の割り当て: impl-pr-reviewer / release-checker = haiku、implementer / law-revision-checker / ui-checker / **designer / resolver** / **ui-designer / ui-integrator** = sonnet、spec-reviewer / code-reviewer = inherit。
 
 - implementerをsonnetにできるのは、下流のcode-reviewer(inherit)が品質ゲートとして受け止める構造があるため。複雑な計算ロジックの実装は委譲せずメインスレッドで直接実装する選択肢も残っている
 - designer(design.md/tasks.mdの作成)・resolver(レビュー指摘の修正)も、implementerと同じく「拘束された作業」(design/SKILL.md・レビューAgentの指摘という具体的な手順・対象がある)に当たるためsonnetとした。designerの下流にはspec-reviewer(inherit)、resolverの下流には元のレビューAgent(spec-reviewer/code-reviewer、いずれもinherit)による再レビューが品質ゲートとして控えている
@@ -75,8 +77,9 @@ Agentはfrontmatterの`model:`でメインスレッドと別のモデルを指�
 4. **implementer**(導入済み。ただし常用ではなく、[parallel-work](../../.claude/skills/parallel-work/SKILL.md)のworktree並行開発時などに実装を委譲する任意の作業者として運用する。通常はメインスレッドが直接実装する)
 5. **ui-checker**(導入済み。当初計画外の追加: run-benriyatoolでの実機確認はスクリーンショット画像がメインスレッドのコンテキストを大量に消費するため、確認観点が決まっている単発の実機確認を委譲する)
 6. **designer / resolver**(導入済み。2026-07、autopilotの長時間無人実行でメインスレッドの文脈が積み上がる問題への対応として追加。詳細は[下記](#設計指摘対応の委譲designerresolverエージェント2026-07追記))
+7. **ui-designer / ui-integrator**(導入済み。2026-07、v0を使ったUI開発を取り入れるにあたりUIデザイン設計とコード統合を専門化。詳細は[下記](#uiデザインui統合の委譲ui-designerui-integratorエージェント2026-07追記))
 
-上記1〜6は導入済み。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
+上記1〜7は導入済み。レビュー系Agentの運用で問題が見つかった場合は、このADRの判断基準に立ち返って構成を見直す。
 
 ### ワークフローへの自動ルーティングと前提条件ゲート(2026-07追記)
 
@@ -123,6 +126,23 @@ autopilotは要件定義・実装・各種レビュー・リリース確認を�
 - 通常フロー(人が対話するフロー)にも、implementerと同じ形で**任意委譲**の選択肢を追加する(並行開発時など)。ただし既定はメインスレッドのままで変更しない
 - 委譲時はAgentツールの`isolation: "worktree"`で動かし、対象ブランチへのコミット・pushまでAgent側で完了させる。メインスレッドは「書いたファイル・推測マーカーを付けた箇所」(designer)、「対応した指摘・エスカレーションが必要な指摘」(resolver)という短い報告だけを受け取り、大きな内容(requirements.md全文・design.md全文・指摘対象のコード)を自身のコンテキストに読み込まない
 - モデル割り当て・導入状況は上記「Agentのモデル選定基準」「導入順」を参照
+
+### UIデザイン・UI統合の委譲(ui-designer/ui-integratorエージェント、2026-07追記)
+
+v0(https://v0.app等のAIコード生成ツール)を使ったUI開発を取り入れるにあたり、「UIデザインの設計」と「生成コードの既存プロジェクトへの統合」を2つのAgentに分離した。単一責任の原則(SRP)に基づき、判断の性質が異なる2工程だからである:
+
+- **ui-designer**: 要件・UX・情報設計(IA)・レイアウト・状態・レスポンシブ・アクセシビリティといった「どんな画面にすべきか」の設計判断。実装を行わない構造(書き込みツールなし)にすることで「設計と実装を混ぜない」を強制する
+- **ui-integrator**: v0生成コードのディレクトリ配置・命名・shadcn/ui最適化・Tailwind整理・テーマ対応といった「既存プロジェクトの規約に合わせる」整形作業。ロジック配線・テストは対象外とし、後続の通常タスク(implementer/メインスレッド)に委ねる
+
+**なぜメインスレッドにヒアリング・承認判断を残すか**: 本ADRの技術特性(サブエージェントは途中でユーザーに質問できない)により、「どんな雰囲気が好みか」「候補のうちどれを選ぶか」というユーザーとの往復はメインスレッドの仕事のまま残す。ui-designerは「ヒアリング結果を受けて複数候補(v0プロンプト)を作る」という完結した生成作業だけを担当する。この構造は/design・/resolveで「対話が本体の工程はメインスレッドに残す」としてきた判定基準と同じである
+
+**/requirementの画面ヒアリングとの関係**: [/requirement](../../.claude/skills/requirement/SKILL.md#要件ヒアリング)は新しい画面が判明した時点でラフなワイヤーフレーム(ASCII)を複数案提示し、「画面に何があるか」を確定する。UIデザイン確定(Step0)はその後、/designの冒頭で「実際の見た目」まで踏み込んで決める工程であり、両者は代替ではなく段階(低忠実度→高忠実度)の関係にある
+
+**なぜv0コード統合をimplementerに混ぜないか**: v0生成コードの整形(構造・命名・スタイル)はTDDサイクル(🔴🟢🔵)で検証すべきロジックがなく、implementerの「仕様どおりに実装しRedから始める」という前提と噛み合わない。整形が終わった後の配線(React Hook Form/Zod/Server Actions/API接続)は通常のTDDタスクとしてimplementerが引き続き担当するため、ui-integratorの成果物はimplementerへの入力という位置づけになる
+
+**配置スコープ**: 両Agentともプロジェクトスコープ(`.claude/agents/`)に置く。ui-designerが担う設計知識(UX原則・v0プロンプトの書き方)自体は他プロジェクトでも通用する汎用的なものだが、本ADRの管理体制(全Agentをこのリポジトリでモデル選定・導入順とあわせて一元管理する)と一致させることを優先した。他プロジェクトで使う場合はファイルをコピーする
+
+**モデル**: 両Agentとも「拘束された作業」(要件・既存規約という具体的な入力がある)に当たるためsonnet。ui-designerの下流には(承認判断という形の)メインスレッドの判断が、ui-integratorの下流には通常のimplementation-review(code-reviewer、inherit)が品質ゲートとして控えている
 
 ## 検討した代替案
 
