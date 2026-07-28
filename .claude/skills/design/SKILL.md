@@ -26,8 +26,9 @@ description: requirements.md作成後の設計フェーズで、design.md(処理
 
 1. メインスレッドがユーザーにヒアリングする(どんな雰囲気にしたいか・参考にしたいデザイン・優先したい情報など)。ヒアリング内容と対象requirements.mdを渡し、ui-designerエージェント(`.claude/agents/ui-designer.md`)に複数のデザイン候補(狙い・トレードオフ・v0向けプロンプト)を作成させる
 2. 候補をユーザーに提示し、AskUserQuestionのpreview機能などで選んでもらう。気に入ったものがなければヒアリングに戻り、ui-designerに再度候補を作らせる
-3. 候補が決まったら、実際にv0(https://v0.app等)にそのプロンプトを渡し、生成されたコードをユーザーと一緒に確認する。修正したい点があればヒアリング→再生成を繰り返す
-4. ユーザーの承認が得られたら、採用したデザイン候補の概要とv0生成コードへの参照を後述「design.mdの書き方」の7. 画面設計に反映し、通常のdesign.md/tasks.md作成に進む。tasks.mdの最初のタスクには「v0生成コードの取り込み・整形(ui-integratorへの委譲可)」を追加する(詳細は[/implementation](../implementation/SKILL.md#ui統合タスクv0生成コードの取り込み)参照)
+3. 候補が決まったら、実際にv0(https://v0.app等)にそのプロンプトを渡し、生成されたコードをユーザーと一緒に確認する。修正したい点があればヒアリング→再生成を繰り返す(この往復はv0のWebUI上で行う。エージェント・APIは介在しない)
+4. 承認が得られたら、v0の共有URLを`npx shadcn add <共有URL>`でリポジトリに取り込む(このプロジェクトは既にshadcn/uiを使っているため事前のアカウント連携は不要。共有URLが使えない場合はユーザーがv0のコードをコピペして渡す)
+5. 採用したデザイン候補の概要とv0生成コードへの参照を後述「design.mdの書き方」の7. 画面設計に反映し、通常のdesign.md/tasks.md作成に進む。tasks.mdの最初のタスクには「v0生成コードの取り込み・整形(ui-integratorへの委譲可)」を追加する(詳細は[/implementation](../implementation/SKILL.md#ui統合タスクv0生成コードの取り込み)参照)
 
 # design.mdの書き方
 
