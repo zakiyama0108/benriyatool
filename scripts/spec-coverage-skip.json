@@ -736,6 +736,11 @@
   },
   {
     "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "当月に該当する定期収入・支出を求める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#定期的な収入・支出の登録-4、requirements.md#定期的な収入・支出の登録-5、requirements.md#定期項目の頻度の正規化-1でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
     "item": "当月の差引後余剰を求める処理",
     "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#月次の資産推移-2でテスト済み(assetProjection.test.ts)"
   },
@@ -873,6 +878,21 @@
     "specFile": "life-money-sim/asset-projection/requirements.md",
     "item": "賞与・イベントの登録 [3]",
     "reason": "tasks.md Task11の判断により、イベント名目の行表示(AssetProjectionTable)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "定期的な収入・支出の登録 [1]",
+    "reason": "tasks.md Task22の判断により、定期的な収入・支出の登録入力(RecurringEntryListInput)は純粋な入力コンポーネントとしてユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "定期的な収入・支出の登録 [2]",
+    "reason": "tasks.md Task22の判断により、名目・金額・種別・開始月・終了月・頻度の入力欄(RecurringEntryListInput)はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため。頻度の間隔指定(1なら毎月、2なら隔月等)としての振る舞いはrequirements.md#定期的な収入・支出の登録-4の境界値テストでテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "定期的な収入・支出の登録 [3]",
+    "reason": "終了月を必須入力とする制約はRecurringEntry型(終了月をYearMonth型の必須フィールドとする)で表現しており、TypeScriptの型チェックで担保するため個別のユニットテストは設けない"
   },
   {
     "specFile": "life-money-sim/asset-projection/requirements.md",

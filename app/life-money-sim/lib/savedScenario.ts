@@ -72,6 +72,7 @@ export function fillMissingScenarioFields(
       : currentDefault.startingAssetInput,
     bonuses: stored.bonuses ?? currentDefault.bonuses,
     events: stored.events ?? currentDefault.events,
+    recurringEntries: stored.recurringEntries ?? currentDefault.recurringEntries,
     investmentModeInput: stored.investmentModeInput ?? currentDefault.investmentModeInput,
   }
 }

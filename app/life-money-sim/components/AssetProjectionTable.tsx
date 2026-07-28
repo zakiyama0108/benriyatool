@@ -1,5 +1,5 @@
 'use client'
-import type { MonthlyProjectionRow, YearlyProjectionRow, PeriodUnit } from '../lib/types'
+import type { MonthlyProjectionRow, YearlyProjectionRow, PeriodUnit, RecurringLabel } from '../lib/types'
 
 type Props = {
   periodUnit: PeriodUnit
@@ -27,14 +27,31 @@ function AgePill({ age, isFinal }: { age: number | undefined; isFinal: boolean }
   )
 }
 
-// 賞与(ティール文字)とイベント名目(コーラル文字)を並べて表示する。最終行では読みやすさのため白文字にする
-function EventCell({ hasBonus, eventLabels, isFinal }: { hasBonus: boolean; eventLabels: string[]; isFinal: boolean }) {
-  if (!hasBonus && eventLabels.length === 0) return <span>—</span>
+// 賞与・定期収入の名目(ティール文字)とイベント・定期支出の名目(コーラル文字)を並べて表示する。
+// 最終行では読みやすさのため白文字にする(仕様: design.md#ビジュアルトーン)
+function EventCell({
+  hasBonus,
+  eventLabels,
+  recurringLabels,
+  isFinal,
+}: {
+  hasBonus: boolean
+  eventLabels: string[]
+  recurringLabels: RecurringLabel[]
+  isFinal: boolean
+}) {
+  const incomeLabels = recurringLabels.filter((r) => r.type === 'income').map((r) => r.label)
+  const expenseLabels = recurringLabels.filter((r) => r.type === 'expense').map((r) => r.label)
+  const tealLabels = [...(hasBonus ? ['賞与'] : []), ...incomeLabels]
+  const coralLabels = [...eventLabels, ...expenseLabels]
+  if (tealLabels.length === 0 && coralLabels.length === 0) return <span>—</span>
   return (
     <span className="flex flex-wrap items-center gap-1">
-      {hasBonus && <span className={`font-bold ${isFinal ? 'text-white' : 'text-lms-teal'}`}>賞与</span>}
-      {eventLabels.length > 0 && (
-        <span className={`font-bold ${isFinal ? 'text-white' : 'text-lms-coral'}`}>{eventLabels.join('、')}</span>
+      {tealLabels.length > 0 && (
+        <span className={`font-bold ${isFinal ? 'text-white' : 'text-lms-teal'}`}>{tealLabels.join('、')}</span>
+      )}
+      {coralLabels.length > 0 && (
+        <span className={`font-bold ${isFinal ? 'text-white' : 'text-lms-coral'}`}>{coralLabels.join('、')}</span>
       )}
     </span>
   )
@@ -62,7 +79,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
           <tbody>
             {monthlyRows.map((row, i) => {
               const isFinal = i === monthlyRows.length - 1
-              const isMarked = row.eventLabels.length > 0 || row.hasBonus
+              const isMarked = row.eventLabels.length > 0 || row.hasBonus || row.recurringLabels.length > 0
               return (
                 <tr
                   key={row.yearMonth}
@@ -83,7 +100,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
                   </td>
                   <td className="whitespace-nowrap px-2 py-1.5">{row.childrenAges.map(formatAge).join(' / ') || '—'}</td>
                   <td className="whitespace-nowrap px-2 py-1.5">
-                    <EventCell hasBonus={row.hasBonus} eventLabels={row.eventLabels} isFinal={isFinal} />
+                    <EventCell hasBonus={row.hasBonus} eventLabels={row.eventLabels} recurringLabels={row.recurringLabels} isFinal={isFinal} />
                   </td>
                   <td className="whitespace-nowrap px-2 py-1.5 tabular-nums">{formatManYen(row.netSurplus)}</td>
                   <td className="whitespace-nowrap px-2 py-1.5 font-bold tabular-nums">{formatManYen(row.asset)}</td>
@@ -113,7 +130,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
         <tbody>
           {yearlyRows.map((row, i) => {
             const isFinal = i === yearlyRows.length - 1
-            const isMarked = row.eventLabels.length > 0 || row.hasBonus
+            const isMarked = row.eventLabels.length > 0 || row.hasBonus || row.recurringLabels.length > 0
             return (
               <tr
                 key={row.year}
@@ -134,7 +151,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
                 </td>
                 <td className="whitespace-nowrap px-2 py-1.5">{row.childrenAges.map(formatAge).join(' / ') || '—'}</td>
                 <td className="whitespace-nowrap px-2 py-1.5">
-                  <EventCell hasBonus={row.hasBonus} eventLabels={row.eventLabels} isFinal={isFinal} />
+                  <EventCell hasBonus={row.hasBonus} eventLabels={row.eventLabels} recurringLabels={row.recurringLabels} isFinal={isFinal} />
                 </td>
                 <td className="whitespace-nowrap px-2 py-1.5 tabular-nums">{formatManYen(row.yearlySurplus)}</td>
                 <td className="whitespace-nowrap px-2 py-1.5 font-bold tabular-nums">{formatManYen(row.asset)}</td>
