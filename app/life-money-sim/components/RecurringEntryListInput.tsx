@@ -23,8 +23,7 @@ export default function RecurringEntryListInput({ entries, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-      <p className="text-sm font-bold text-lms-ink">定期的な収入・支出</p>
+    <div className="space-y-3">
       <ul className="space-y-3">
         {entries.map((entry, i) => (
           <li key={i} className="flex flex-wrap items-center gap-2 rounded-[14px] bg-white p-3">

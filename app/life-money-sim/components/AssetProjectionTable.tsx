@@ -15,6 +15,13 @@ function formatAge(age: number | undefined): string {
   return age === undefined ? '—' : `${age}歳`
 }
 
+// 行の背景色。sticky列(先頭列)は横スクロール中も背景が透けないよう、tr側と同じ色をtd側にも明示する
+function rowBgClass(isFinal: boolean, isMarked: boolean): string {
+  if (isFinal) return 'bg-lms-teal'
+  if (isMarked) return 'bg-lms-sand-soft'
+  return 'bg-white'
+}
+
 function AgePill({ age, isFinal }: { age: number | undefined; isFinal: boolean }) {
   return (
     <span
@@ -63,17 +70,17 @@ function EventCell({
 export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRows }: Props) {
   if (periodUnit === 'month') {
     return (
-      <div className="overflow-x-auto rounded-[18px] bg-white p-2 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+      <div className="max-h-[520px] overflow-auto rounded-[18px] bg-white p-2 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
         <table className="w-full border-collapse text-xs">
           <thead>
             <tr className="border-b border-lms-line-strong text-left text-lms-muted">
-              <th className="whitespace-nowrap px-2 py-1.5 font-semibold">年月</th>
-              <th className="whitespace-nowrap px-2 py-1.5 font-semibold">本人</th>
-              <th className="whitespace-nowrap px-2 py-1.5 font-semibold">配偶者</th>
-              <th className="whitespace-nowrap px-2 py-1.5 font-semibold">子ども</th>
-              <th className="whitespace-nowrap px-2 py-1.5 font-semibold">イベント</th>
-              <th className="whitespace-nowrap px-2 py-1.5 font-semibold">差引後余剰</th>
-              <th className="whitespace-nowrap px-2 py-1.5 font-semibold">資産額</th>
+              <th className="sticky top-0 left-0 z-30 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">年月</th>
+              <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">本人</th>
+              <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">配偶者</th>
+              <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">子ども</th>
+              <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">イベント</th>
+              <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">差引後余剰</th>
+              <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">資産額</th>
             </tr>
           </thead>
           <tbody>
@@ -83,15 +90,11 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
               return (
                 <tr
                   key={row.yearMonth}
-                  className={
-                    isFinal
-                      ? 'bg-lms-teal font-bold text-white'
-                      : isMarked
-                        ? 'bg-lms-sand-soft border-b border-lms-line'
-                        : 'border-b border-lms-line'
-                  }
+                  className={`${rowBgClass(isFinal, isMarked)} ${isFinal ? 'font-bold text-white' : 'border-b border-lms-line'}`}
                 >
-                  <td className="whitespace-nowrap px-2 py-1.5">{row.yearMonth}</td>
+                  <td className={`sticky left-0 z-10 whitespace-nowrap px-2 py-1.5 ${rowBgClass(isFinal, isMarked)}`}>
+                    {row.yearMonth}
+                  </td>
                   <td className="whitespace-nowrap px-2 py-1.5">
                     <AgePill age={row.selfAge} isFinal={isFinal} />
                   </td>
@@ -114,17 +117,17 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
   }
 
   return (
-    <div className="overflow-x-auto rounded-[18px] bg-white p-2 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+    <div className="max-h-[520px] overflow-auto rounded-[18px] bg-white p-2 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr className="border-b border-lms-line-strong text-left text-lms-muted">
-            <th className="whitespace-nowrap px-2 py-1.5 font-semibold">年</th>
-            <th className="whitespace-nowrap px-2 py-1.5 font-semibold">本人</th>
-            <th className="whitespace-nowrap px-2 py-1.5 font-semibold">配偶者</th>
-            <th className="whitespace-nowrap px-2 py-1.5 font-semibold">子ども</th>
-            <th className="whitespace-nowrap px-2 py-1.5 font-semibold">イベント</th>
-            <th className="whitespace-nowrap px-2 py-1.5 font-semibold">年次余剰資金</th>
-            <th className="whitespace-nowrap px-2 py-1.5 font-semibold">資産額</th>
+            <th className="sticky top-0 left-0 z-30 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">年</th>
+            <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">本人</th>
+            <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">配偶者</th>
+            <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">子ども</th>
+            <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">イベント</th>
+            <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">年次余剰資金</th>
+            <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">資産額</th>
           </tr>
         </thead>
         <tbody>
@@ -134,15 +137,11 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
             return (
               <tr
                 key={row.year}
-                className={
-                  isFinal
-                    ? 'bg-lms-teal font-bold text-white'
-                    : isMarked
-                      ? 'bg-lms-sand-soft border-b border-lms-line'
-                      : 'border-b border-lms-line'
-                }
+                className={`${rowBgClass(isFinal, isMarked)} ${isFinal ? 'font-bold text-white' : 'border-b border-lms-line'}`}
               >
-                <td className="whitespace-nowrap px-2 py-1.5">{row.year}年</td>
+                <td className={`sticky left-0 z-10 whitespace-nowrap px-2 py-1.5 ${rowBgClass(isFinal, isMarked)}`}>
+                  {row.year}年
+                </td>
                 <td className="whitespace-nowrap px-2 py-1.5">
                   <AgePill age={row.selfAge} isFinal={isFinal} />
                 </td>
