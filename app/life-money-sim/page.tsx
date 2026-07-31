@@ -31,6 +31,9 @@ import { CONTEXT_HELP_TEXT } from './lib/usageGuideContent'
 import HelpIcon from './components/HelpIcon'
 import UsageBanner from './components/UsageBanner'
 import GlossaryButton from './components/GlossaryButton'
+import AccordionSection from './components/AccordionSection'
+import SegmentedControl from './components/SegmentedControl'
+import HeroCard from './components/HeroCard'
 import IncomeForm from './components/IncomeForm'
 import ExpenseListInput from './components/ExpenseListInput'
 import ExpensePieChart from './components/ExpensePieChart'
@@ -55,9 +58,9 @@ function currentYearMonth(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 
-// 画面本体。PC(lg以上)では左に収支・右に資産推移を並べる2カラム、
-// スマホでは収支→資産推移の順に1カラムで積み上げる(画面イメージのモックアップレビューで
-// 選定した「オーシャンミント」トーン・レイアウト。仕様: monthly-balance/design.md#画面設計、
+// 画面本体。PC(lg以上)では左に入力項目のアコーディオン群、右に常時表示のダッシュボード
+// (ヒーローカード・グラフ・テーブル・収支サマリー)を並べる2カラム、スマホでは入力→結果の順に
+// 1カラムで積み上げる(サマリーファースト・常時ダッシュボード型。仕様: monthly-balance/design.md#画面設計、
 // asset-projection/design.md#画面設計)。入力状態はここで一括保持する(仕様: monthly-balance/design.md#状態管理)
 export default function Page() {
   const [income, setIncome] = useState<IncomeInput>({ monthlySalary: 0, bonusCount: 0, bonusAmountPerTime: 0 })
@@ -234,6 +237,14 @@ export default function Page() {
   const yearlyRows = aggregateYearly(monthlyRows)
   const finalMonthAsset = monthlyRows.length > 0 ? monthlyRows[monthlyRows.length - 1].asset : startingAssetInput.startingAsset
 
+  // ヒーローカードのミニグラフは、選択中の表示単位(月次/年次)と同じ粒度のデータ点を使う
+  // (仕様: asset-projection/design.md#表示単位を切り替える処理)
+  const heroRows =
+    periodUnit === 'month'
+      ? monthlyRows.map((r) => ({ label: r.yearMonth, asset: r.asset }))
+      : yearlyRows.map((r) => ({ label: `${r.year}年`, asset: r.asset }))
+  const modeLabel = investmentModeInput.investmentMode ? '資産運用' : '貯蓄のみ'
+
   const saveResultInput: SaveResultInput = {
     hasSpouse: household.hasSpouse,
     childrenCount: familyProfile.childrenCount,
@@ -266,101 +277,138 @@ export default function Page() {
 
         <UsageBanner />
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr] lg:items-start">
-          <div className="space-y-4">
-            <IncomeForm income={income} onChange={setIncome} openHelpId={openHelpId} onToggleHelp={toggleHelp} onCloseHelp={closeHelp} />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr] lg:items-start">
+          {/* 入力項目群(アコーディオン)。開閉状態はセクションごとに独立、「？」ヘルプのみ画面全体で1つに絞る */}
+          <div className="flex flex-col gap-3">
+            <h2 className="px-1 text-sm font-bold text-lms-muted">入力項目</h2>
 
-            <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-bold text-lms-ink">個人支出</p>
-                <HelpIcon
-                  id="personalExpense"
-                  text={CONTEXT_HELP_TEXT.personalExpense}
-                  openId={openHelpId}
-                  onToggle={toggleHelp}
-                  onClose={closeHelp}
+            <AccordionSection
+              title="収入"
+              helpId="income"
+              helpText={CONTEXT_HELP_TEXT.income}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+              summary={`手取り${income.monthlySalary}万円/月・賞与 年${income.bonusCount}回`}
+              defaultOpen
+            >
+              <IncomeForm income={income} onChange={setIncome} />
+            </AccordionSection>
+
+            <AccordionSection
+              title="個人支出"
+              helpId="personalExpense"
+              helpText={CONTEXT_HELP_TEXT.personalExpense}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+              summary={`年額 ${personalExpense.annualItems.length}件・月額 ${personalExpense.monthlyItems.length}件`}
+            >
+              <div className="space-y-4">
+                <ExpenseListInput
+                  label="年額固定費"
+                  items={personalExpense.annualItems}
+                  onChange={(annualItems) => setPersonalExpense({ ...personalExpense, annualItems })}
                 />
+                <ExpenseListInput
+                  label="月額固定費"
+                  items={personalExpense.monthlyItems}
+                  onChange={(monthlyItems) => setPersonalExpense({ ...personalExpense, monthlyItems })}
+                />
+                <ExpensePieChart items={personalExpenseItems} />
               </div>
-              <ExpenseListInput
-                label="年額固定費"
-                items={personalExpense.annualItems}
-                onChange={(annualItems) => setPersonalExpense({ ...personalExpense, annualItems })}
-              />
-              <ExpenseListInput
-                label="月額固定費"
-                items={personalExpense.monthlyItems}
-                onChange={(monthlyItems) => setPersonalExpense({ ...personalExpense, monthlyItems })}
-              />
-              <ExpensePieChart items={personalExpenseItems} />
-            </div>
+            </AccordionSection>
 
-            <HouseholdShareInput
-              household={household}
-              onChange={setHousehold}
+            <AccordionSection
+              title="家計支出"
+              helpId="household"
+              helpText={CONTEXT_HELP_TEXT.household}
               openHelpId={openHelpId}
               onToggleHelp={toggleHelp}
               onCloseHelp={closeHelp}
-            />
+              summary={household.hasSpouse ? `自分負担 ${household.myShare}万円/月` : '配偶者なし'}
+            >
+              <HouseholdShareInput household={household} onChange={setHousehold} />
+            </AccordionSection>
 
-            <BalanceSummary
-              personalExpenseMonthly={personalExpenseMonthly}
-              householdExpenseTotal={householdExpenseTotal}
-              hasSpouse={household.hasSpouse}
-              expenseRatio={expenseRatio}
-              monthlySurplus={monthlySurplus}
-              annualSurplus={annualSurplus}
+            <AccordionSection
+              title="前提入力"
+              helpId="startingAsset"
+              helpText={CONTEXT_HELP_TEXT.startingAsset}
               openHelpId={openHelpId}
               onToggleHelp={toggleHelp}
               onCloseHelp={closeHelp}
-            />
+              summary={`開始 ${startingAssetInput.startingAsset}万円・${startingAssetInput.startYearMonth}から${startingAssetInput.displayYears}年`}
+            >
+              <StartingAssetForm value={startingAssetInput} onChange={setStartingAssetInput} />
+            </AccordionSection>
+
+            <AccordionSection
+              title="家族構成"
+              helpId="familyProfile"
+              helpText={CONTEXT_HELP_TEXT.familyProfile}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+              summary={`本人${familyProfile.selfBirthMonth ?? '未入力'}${household.hasSpouse ? '・配偶者あり' : ''}${
+                familyProfile.childrenCount > 0 ? `・子ども${familyProfile.childrenCount}人` : ''
+              }`}
+            >
+              <FamilyProfileForm
+                profile={familyProfile}
+                onChange={setFamilyProfile}
+                hasSpouse={household.hasSpouse}
+                onHasSpouseChange={(hasSpouse) => setHousehold({ ...household, hasSpouse })}
+              />
+            </AccordionSection>
+
+            <AccordionSection
+              title="貯蓄/運用切替"
+              helpId="investmentMode"
+              helpText={CONTEXT_HELP_TEXT.investmentMode}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+              summary={
+                investmentModeInput.investmentMode ? `資産運用(利回り${investmentModeInput.expectedAnnualRate}%)` : '貯蓄のみ'
+              }
+            >
+              <ModeToggle value={investmentModeInput} onChange={setInvestmentModeInput} />
+            </AccordionSection>
+
+            <AccordionSection
+              title="賞与・イベント"
+              helpId="eventBonus"
+              helpText={CONTEXT_HELP_TEXT.eventBonus}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+              summary={`賞与 ${bonuses.length}件・イベント ${events.length}件`}
+            >
+              <EventListInput bonuses={bonuses} onBonusesChange={setBonuses} events={events} onEventsChange={setEvents} />
+            </AccordionSection>
+
+            <AccordionSection title="定期的な収入・支出" summary={`${recurringEntries.length}件`}>
+              <RecurringEntryListInput entries={recurringEntries} onChange={setRecurringEntries} />
+            </AccordionSection>
           </div>
 
-          <div className="space-y-4">
-            <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-bold text-lms-ink">前提入力</p>
-                <HelpIcon
-                  id="startingAsset"
-                  text={CONTEXT_HELP_TEXT.startingAsset}
-                  openId={openHelpId}
-                  onToggle={toggleHelp}
-                  onClose={closeHelp}
-                />
-              </div>
-              <StartingAssetForm value={startingAssetInput} onChange={setStartingAssetInput} />
+          {/* 常時表示のダッシュボード(ヒーローカード・グラフ・テーブル・収支サマリー) */}
+          <div className="flex flex-col gap-4">
+            <HeroCard rows={heroRows} startAsset={startingAssetInput.startingAsset} modeLabel={modeLabel} />
+
+            <div className="flex flex-wrap items-center gap-3">
+              <SegmentedControl
+                label="貯蓄/運用切替"
+                value={investmentModeInput.investmentMode ? 'invest' : 'saving'}
+                onChange={(next) => setInvestmentModeInput({ ...investmentModeInput, investmentMode: next === 'invest' })}
+                options={[
+                  { value: 'saving', label: '貯蓄のみ' },
+                  { value: 'invest', label: '資産運用' },
+                ]}
+              />
+              <PeriodToggle value={periodUnit} onChange={setPeriodUnit} />
             </div>
-
-            <FamilyProfileForm
-              profile={familyProfile}
-              onChange={setFamilyProfile}
-              hasSpouse={household.hasSpouse}
-              onHasSpouseChange={(hasSpouse) => setHousehold({ ...household, hasSpouse })}
-              openHelpId={openHelpId}
-              onToggleHelp={toggleHelp}
-              onCloseHelp={closeHelp}
-            />
-
-            <ModeToggle
-              value={investmentModeInput}
-              onChange={setInvestmentModeInput}
-              openHelpId={openHelpId}
-              onToggleHelp={toggleHelp}
-              onCloseHelp={closeHelp}
-            />
-
-            <EventListInput
-              bonuses={bonuses}
-              onBonusesChange={setBonuses}
-              events={events}
-              onEventsChange={setEvents}
-              openHelpId={openHelpId}
-              onToggleHelp={toggleHelp}
-              onCloseHelp={closeHelp}
-            />
-
-            <RecurringEntryListInput entries={recurringEntries} onChange={setRecurringEntries} />
-
-            <PeriodToggle value={periodUnit} onChange={setPeriodUnit} />
 
             <div className="flex items-center gap-1.5">
               <p className="text-sm font-bold text-lms-ink">資産推移グラフ・テーブル</p>
@@ -377,6 +425,18 @@ export default function Page() {
             <AssetProjectionChart periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
 
             <AssetProjectionTable periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
+
+            <BalanceSummary
+              personalExpenseMonthly={personalExpenseMonthly}
+              householdExpenseTotal={householdExpenseTotal}
+              hasSpouse={household.hasSpouse}
+              expenseRatio={expenseRatio}
+              monthlySurplus={monthlySurplus}
+              annualSurplus={annualSurplus}
+              openHelpId={openHelpId}
+              onToggleHelp={toggleHelp}
+              onCloseHelp={closeHelp}
+            />
 
             <SaveButton input={saveResultInput} />
 

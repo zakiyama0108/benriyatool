@@ -1,5 +1,6 @@
 'use client'
 import type { PeriodUnit } from '../lib/types'
+import SegmentedControl from './SegmentedControl'
 
 type Props = {
   value: PeriodUnit
@@ -9,29 +10,15 @@ type Props = {
 // 資産推移テーブル・グラフの月次/年次の表示単位切り替え(仕様: requirements.md#表示単位の切り替え-1)
 export default function PeriodToggle({ value, onChange }: Props) {
   return (
-    <div role="tablist" className="flex w-fit rounded-full bg-lms-card p-1">
-      <button
-        type="button"
-        role="tab"
-        aria-selected={value === 'month'}
-        onClick={() => onChange('month')}
-        className={`rounded-full px-5 py-2 text-xs font-medium transition-colors ${
-          value === 'month' ? 'bg-lms-teal text-white' : 'text-lms-muted'
-        }`}
-      >
-        月次
-      </button>
-      <button
-        type="button"
-        role="tab"
-        aria-selected={value === 'year'}
-        onClick={() => onChange('year')}
-        className={`rounded-full px-5 py-2 text-xs font-medium transition-colors ${
-          value === 'year' ? 'bg-lms-teal text-white' : 'text-lms-muted'
-        }`}
-      >
-        年次
-      </button>
-    </div>
+    <SegmentedControl
+      label="表示単位切替"
+      size="sm"
+      value={value}
+      onChange={(next) => onChange(next as PeriodUnit)}
+      options={[
+        { value: 'month', label: '月次' },
+        { value: 'year', label: '年次' },
+      ]}
+    />
   )
 }

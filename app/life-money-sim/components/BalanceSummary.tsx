@@ -18,6 +18,21 @@ function formatManYen(amount: number): string {
   return `${Math.round(amount * 10) / 10}万円`
 }
 
+function Tile({ label, value, tone }: { label: string; value: string; tone: 'muted' | 'mint' | 'plain' }) {
+  const tones = {
+    muted: 'bg-lms-canvas',
+    mint: 'bg-lms-teal-soft',
+    plain: 'border border-lms-line-strong bg-white',
+  }
+  const valueTone = tone === 'mint' ? 'text-lms-teal' : 'text-lms-ink'
+  return (
+    <div className={`flex flex-col gap-1 rounded-[14px] px-4 py-3.5 ${tones[tone]}`}>
+      <dt className="text-xs font-semibold text-lms-muted">{label}</dt>
+      <dd className={`text-xl font-extrabold tabular-nums ${valueTone}`}>{value}</dd>
+    </div>
+  )
+}
+
 // 個人支出月合計・家計支出合計・支出割合・月次/年間余剰資金の計算結果表示
 // (仕様: requirements.md#余剰資金の計算-3、#余剰資金の計算-4)
 export default function BalanceSummary({
@@ -44,32 +59,18 @@ export default function BalanceSummary({
         />
       </div>
 
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-lms-muted">
-        <span>
-          個人支出の月合計 <b className="tabular-nums text-lms-ink">{formatManYen(personalExpenseMonthly)}</b>
-        </span>
-        {hasSpouse && (
-          <span>
-            家計支出全体の合計 <b className="tabular-nums text-lms-ink">{formatManYen(householdExpenseTotal)}</b>
+      <dl className="grid grid-cols-2 gap-3">
+        <Tile label="個人支出の月合計" value={formatManYen(personalExpenseMonthly)} tone="muted" />
+        {hasSpouse && <Tile label="家計支出全体の合計" value={formatManYen(householdExpenseTotal)} tone="muted" />}
+        <div className="col-span-2 flex items-center gap-2 rounded-full bg-lms-sand-soft px-4 py-2 text-xs font-bold text-lms-sand-ink">
+          <span>収入に対する支出割合</span>
+          <span className="rounded-full bg-white px-2.5 py-0.5 text-sm tabular-nums">
+            {expenseRatio === null ? '算出対象なし' : `${Math.round(expenseRatio * 100)}%`}
           </span>
-        )}
-      </div>
-
-      <div className="inline-flex items-baseline gap-1.5 rounded-full bg-lms-sand-soft px-4 py-2 text-xs font-bold text-lms-sand-ink">
-        <span>収入に対する支出割合</span>
-        <b className="text-base">{expenseRatio === null ? '算出対象なし' : `${Math.round(expenseRatio * 100)}%`}</b>
-      </div>
-
-      <div className="flex gap-3">
-        <div className="flex-1 rounded-[14px] bg-lms-teal-soft px-4 py-3.5">
-          <p className="text-xs font-semibold text-lms-muted">月次余剰資金(賞与抜き)</p>
-          <p className="mt-0.5 text-xl font-extrabold tabular-nums text-lms-teal">{formatManYen(monthlySurplus)}</p>
         </div>
-        <div className="flex-1 rounded-[14px] border border-lms-line-strong bg-white px-4 py-3.5">
-          <p className="text-xs font-semibold text-lms-muted">年間余剰資金</p>
-          <p className="mt-0.5 text-xl font-extrabold tabular-nums text-lms-ink">{formatManYen(annualSurplus)}</p>
-        </div>
-      </div>
+        <Tile label="月次余剰資金(賞与抜き)" value={formatManYen(monthlySurplus)} tone="mint" />
+        <Tile label="年間余剰資金" value={formatManYen(annualSurplus)} tone="plain" />
+      </dl>
     </div>
   )
 }

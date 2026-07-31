@@ -24,21 +24,23 @@ export default function UsageBanner() {
   }
 
   return (
-    <div className="rounded-[18px] bg-lms-teal-soft p-4">
+    <div className="rounded-[18px] bg-lms-teal-soft p-4 sm:p-5">
       <button
         type="button"
         onClick={toggle}
-        className="flex w-full items-center justify-between text-left text-sm font-bold text-lms-ink"
+        className="flex w-full items-center justify-between gap-3 text-left text-sm font-bold text-lms-ink"
       >
         <span>使い方: 3ステップで将来の資産を見通せます</span>
-        <span aria-hidden="true">{isOpen ? '▲' : '▼'}</span>
+        <span aria-hidden="true" className={`text-xs transition-transform ${isOpen ? '' : 'rotate-180'}`}>
+          ▲
+        </span>
       </button>
       {isOpen && (
-        <ol className="mt-3 space-y-2">
+        <ol className="mt-3 grid gap-3 sm:grid-cols-3">
           {USAGE_BANNER_STEPS.map((step) => (
             <li key={step.title} className="text-xs text-lms-muted">
               <p className="font-semibold text-lms-ink">{step.title}</p>
-              <p className="mt-0.5">{step.text}</p>
+              <p className="mt-0.5 leading-relaxed">{step.text}</p>
             </li>
           ))}
         </ol>
