@@ -46,7 +46,7 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 
 | Skill | 役割 | 使うタイミング | 完了後の遷移先 |
 |---|---|---|---|
-| [autopilot](autopilot/SKILL.md) | 遷移図1・遷移図2を「対話最大2箇所だけで完走する」走らせ方に切り替えるモード。新機能起点はdesign以降、fix起点は仕様変更がなければ全工程を自走し(推測箇所は`【推測】`マーカーまたはPR本文の「判断に迷った点」で明示)、実装PRは条件付きで自動マージ、/release-checkまで実施する | 小規模・低リスクの新機能・バグ修正をお任せで進めたいとき | 完了(問題があれば/fix) |
+| [autopilot](autopilot/SKILL.md) | 遷移図1・遷移図2を「対話を原則2箇所(UIに変更がある場合は3箇所)だけで完走する」走らせ方に切り替えるモード。新機能起点はdesign以降、fix起点は仕様変更がなければ全工程を自走し(推測箇所は`【推測】`マーカーまたはPR本文の「判断に迷った点」で明示)、UI(画面)に変更がある場合は実装レビュー通過後にlocalhostでの画面レビューが挟まる、実装PRは条件付きで自動マージ、/release-checkまで実施する | 小規模・低リスクの新機能・バグ修正をお任せで進めたいとき | 完了(問題があれば/fix) |
 
 #### 遷移図1a: 自動運転モード(autopilot、新機能起点)の流れ
 
@@ -62,6 +62,9 @@ flowchart TD
     implementation_a["/implementation<br>→ implementerへ常時委譲"]
     implreview_a["/implementation-review<br>→ code-reviewerへ委譲"]
     resolve_a2["/resolve<br>→ resolverへ常時委譲"]
+    ui_branch_a{"UIに変更<br>あり?"}
+    dialog3["対話③<br>画面レビュー(localhost URLで実機確認、複数往復可)"]
+    resolve_a3["/resolve<br>→ resolverへ常時委譲"]
     primpl_a["/pr<br>実装PR(作成前にimpl-pr-reviewerへ委譲)"]
     automerge2["CI成功 → 自動マージ"]
     release_a["/release-check<br>→ release-checkerへ委譲"]
@@ -74,15 +77,21 @@ flowchart TD
     implementation_a --> implreview_a
     implreview_a -->|指摘あり| resolve_a2
     resolve_a2 -->|再レビュー| implreview_a
-    implreview_a -->|指摘なし| primpl_a --> automerge2 --> release_a
+    implreview_a -->|指摘なし| ui_branch_a
+    ui_branch_a -->|いいえ| primpl_a
+    ui_branch_a -->|はい| dialog3
+    dialog3 -->|修正依頼| resolve_a3
+    resolve_a3 -->|再提示| dialog3
+    dialog3 -->|ユーザーOK| primpl_a
+    primpl_a --> automerge2 --> release_a
 
     classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
     classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
-    class dialog1,dialog2 dialogue;
-    class design_a,specreview_a,resolve_a1,implementation_a,implreview_a,resolve_a2,primpl_a,release_a agent;
+    class dialog1,dialog2,dialog3 dialogue;
+    class design_a,specreview_a,resolve_a1,implementation_a,implreview_a,resolve_a2,resolve_a3,primpl_a,release_a agent;
 ```
 
-- オレンジは開発者との対話ポイント(対話①・対話②)。青は常時Agentへ委譲され報告のみが返る工程。白は`prspec_a`(PR作成)と`automerge1`/`automerge2`(CI待ち・自動マージ)のみで、対話も委譲も伴わない機械的操作。遷移図1と比べ、通常は開発者が対話する設計・指摘対応・実装がAgent(designer/resolver/implementer)へ常時委譲されて青に変わる点が、対話を2箇所に絞れる理由
+- オレンジは開発者との対話ポイント(対話①・対話②・UIに変更がある場合は対話③)。青は常時Agentへ委譲され報告のみが返る工程。白は`prspec_a`(PR作成)・`ui_branch_a`(UI変更有無の判定)・`automerge1`/`automerge2`(CI待ち・自動マージ)のみで、対話も委譲も伴わない機械的操作。遷移図1と比べ、通常は開発者が対話する設計・指摘対応・実装がAgent(designer/resolver/implementer)へ常時委譲されて青に変わる点が、対話を原則2箇所に絞れる理由(UIに変更がある場合のみ、実際の見た目は機械レビューだけでは判断できないため対話③が加わる)
 - 例外停止条件(要件・仕様どおりに進められない事態を検知した場合など)を満たすと自走ループを離れて人に報告する(条件は[autopilot](autopilot/SKILL.md)「例外停止」参照)。正常系のみを図示している
 - 使う工程Skill・Agentは遷移図1と同一(手順は各Skillが単一の情報源のまま)
 
@@ -98,6 +107,9 @@ flowchart TD
     tdd_b["/fix Step3<br>→ implementerへ常時委譲"]
     implreview_b["/implementation-review<br>→ code-reviewerへ委譲"]
     resolve_b["/resolve<br>→ resolverへ常時委譲"]
+    ui_branch_b{"UIに変更<br>あり?"}
+    dialog3b["対話③<br>画面レビュー(localhost URLで実機確認、複数往復可)"]
+    resolve_b2["/resolve<br>→ resolverへ常時委譲"]
     primpl_b["/pr<br>実装PR(判断に迷った点を明記、作成前にimpl-pr-reviewerへ委譲)"]
     automerge2b["CI成功 → 自動マージ"]
     release_b["/release-check<br>→ release-checkerへ委譲"]
@@ -109,16 +121,22 @@ flowchart TD
     tdd_b --> implreview_b
     implreview_b -->|指摘あり| resolve_b
     resolve_b -->|再レビュー| implreview_b
-    implreview_b -->|指摘なし| primpl_b --> automerge2b --> release_b
+    implreview_b -->|指摘なし| ui_branch_b
+    ui_branch_b -->|いいえ| primpl_b
+    ui_branch_b -->|はい| dialog3b
+    dialog3b -->|修正依頼| resolve_b2
+    resolve_b2 -->|再提示| dialog3b
+    dialog3b -->|ユーザーOK| primpl_b
+    primpl_b --> automerge2b --> release_b
 
     classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
     classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
-    class dialog1b,dialog2b dialogue;
-    class tdd_b,implreview_b,resolve_b,primpl_b,release_b agent;
+    class dialog1b,dialog2b,dialog3b dialogue;
+    class tdd_b,implreview_b,resolve_b,resolve_b2,primpl_b,release_b agent;
 ```
 
-- `dialog1b`はオレンジだが、依頼内容だけで判断できれば実際には発生しないことがある(遷移図2の`fix`ノードと違い、質問なしで通過してよい)。`branch_b`が「いいえ」(仕様変更なし)の経路をたどった場合、対話②(`dialog2b`)も発生しないため、**対話ゼロで完走**することがある
-- オレンジは開発者との対話ポイント(発生する場合のみ)。青は常時Agentへ委譲され報告のみが返る工程。白は`prspec_b`(PR作成)と`automerge1b`/`automerge2b`(CI待ち・自動マージ)・`branch_b`(判定)のみで、対話も委譲も伴わない機械的操作
+- `dialog1b`はオレンジだが、依頼内容だけで判断できれば実際には発生しないことがある(遷移図2の`fix`ノードと違い、質問なしで通過してよい)。`branch_b`が「いいえ」(仕様変更なし)の経路をたどり、かつUIに変更がなければ`dialog3b`も発生しないため、**対話ゼロで完走**することがある。UIに変更がある場合は、`implreview_b`通過後に仕様変更の有無にかかわらず`dialog3b`(画面レビュー)が発生する
+- オレンジは開発者との対話ポイント(発生する場合のみ)。青は常時Agentへ委譲され報告のみが返る工程。白は`prspec_b`(PR作成)と`automerge1b`/`automerge2b`(CI待ち・自動マージ)・`branch_b`/`ui_branch_b`(判定)のみで、対話も委譲も伴わない機械的操作
 - 例外停止条件は遷移図1aと同じ枠組みに、fix起点特有の条件(実装判断の自信が持てない場合)が加わる(条件は[autopilot](autopilot/SKILL.md)「例外停止」参照)。正常系のみを図示している
 - 使う工程Skill・Agentは遷移図2と同一(手順は各Skillが単一の情報源のまま)。[/fix](../fix/SKILL.md)のStep1で新規spec相当と判定された場合は遷移図1aに合流する(図には示していない)
 
