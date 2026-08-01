@@ -14,7 +14,7 @@
   - 🟢 `app/ai-dev-digest/lib/types.ts`に`SourceType`/`Topic`/`Article`を定義する
 
 - Task 3: 記事データのバリデーション(仕様: design.md「バリデーション」)
-  - 🔴 正常な記事データ(1件のみのケースを含む)が検証を通ること、`topics`が0件/6件で失敗すること、`sourceType`が未定義値で失敗すること、`belowCriteria: true`かつ`belowCriteriaReason`欠落で失敗すること、`date`とファイル名不一致で失敗すること、`sections`が1件(2件未満)またはセクションの`heading`/`teaser`/`detail`が空文字で失敗すること、`teaser`が30〜150字の範囲外で失敗すること、`sections`のdetail合計文字数が800〜1700字の範囲外で失敗することを確認するテストを書く
+  - 🔴 正常な記事データ(1件のみのケースを含む)が検証を通ること、`topics`が0件/6件で失敗すること、`sourceType`が未定義値で失敗すること、`belowCriteria: true`かつ`belowCriteriaReason`欠落で失敗すること、`date`とファイル名不一致で失敗すること、`sections`が1件(2件未満)またはセクションの`heading`/`teaser`/`detail`が空文字で失敗すること、`teaser`が40〜140字の範囲外で失敗すること、`sections`のdetail合計文字数が800〜1700字の範囲外で失敗することを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/articleSchema.ts`に`parseArticle(raw: unknown, filename: string): Article`を実装する(違反時は例外を投げる)
   - 🔵 エラーメッセージに違反内容(どのフィールドか)を含めて分かりやすくする
 

@@ -3,7 +3,7 @@
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 導入文(teaser)の分量検証(仕様: requirements.md#要約-3、design.md「要約の分量を検証する処理」手順2)
-  - 🔴 teaserの文字数が30字未満・150字超で`false`、30〜150字(境界値含む)で`true`になることを確認するテストを書く
+  - 🔴 teaserの文字数が40字未満・140字超で`false`、40〜140字(境界値含む)で`true`になることを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/summaryValidation.ts`に`TEASER_MIN_LENGTH`/`TEASER_MAX_LENGTH`/`isValidTeaserLength`を実装する
 
 - Task 2: 詳細文(detail)合計の分量検証(仕様: requirements.md#要約-4、design.md「要約の分量を検証する処理」手順3)
@@ -19,7 +19,7 @@
   - 🟢 `app/ai-dev-digest/lib/youtubeUrl.ts`に`extractYoutubeVideoId(url: string): string | undefined`を実装する
 
 - Task 5: 記事スキーマへの分量検証の組み込み(仕様: article-detail/design.md「バリデーション」)
-  - 🔴 `parseArticle`が、teaserが30〜150字の範囲外、またはdetail合計が800〜1700字の範囲外のトピックを含む記事データを拒否することを確認するテストを追加する(article-detailのTask 3のテストに追加する形でよい)
+  - 🔴 `parseArticle`が、teaserが40〜140字の範囲外、またはdetail合計が800〜1700字の範囲外のトピックを含む記事データを拒否することを確認するテストを追加する(article-detailのTask 3のテストに追加する形でよい)
   - 🟢 `app/ai-dev-digest/lib/articleSchema.ts`から`isValidTeaserLength`/`isValidDetailLength`を呼び出す
 
 - Task 6: 利用規約への条項追記(仕様: requirements.md#利用規約への反映-7)(TDD対象外。静的な文言追加のみのため)
