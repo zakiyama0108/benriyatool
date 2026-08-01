@@ -3,7 +3,7 @@ type Props = {
 }
 
 // YouTube公式の埋め込みプレーヤーを表示する(仕様: design.md「その日の記事本文を表示する処理」
-// 手順5、content-generation/requirements.md#著作権への配慮(根拠)-5)。
+// 手順5、content-generation/requirements.md#著作権への配慮(根拠)-6)。
 // youtube-nocookie.comドメインを使うことで、YouTube自身が許諾している利用方法の範囲にとどめる
 export default function YoutubeEmbed({ videoId }: Props) {
   return (

@@ -6,7 +6,7 @@ import type { Article, SourceType, SummarySection, Topic } from './types'
 // このコードが担う(要件はid採番方法を定めていないため設計判断。表示順=配列順にそのまま従う)
 export type GeneratedTopicInput = {
   heading: string // エージェントが日本語で書いた見出し(content-generation/design.md参照)
-  sections: SummarySection[] // エージェントが日本語で書いた章立て要約(目安2〜4セクション、本文合計1000〜1500字程度)
+  sections: SummarySection[] // エージェントが日本語で書いた章立て要約(目安2〜4セクション、detail合計1000〜1500字程度)
   sourceType: SourceType
   sourceName: string
   sourceUrl: string

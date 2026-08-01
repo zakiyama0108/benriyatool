@@ -7,8 +7,8 @@ function makeInput(overrides: Partial<GeneratedTopicInput> = {}): GeneratedTopic
   return {
     heading: 'Anthropicが新モデルを発表',
     sections: [
-      { heading: '何が発表されたか', body: 'あ'.repeat(500) },
-      { heading: '開発者への影響', body: 'い'.repeat(500) },
+      { heading: '何が発表されたか', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(500) },
+      { heading: '開発者への影響', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
     ],
     sourceType: 'official',
     sourceName: 'Anthropic',
@@ -27,10 +27,10 @@ describe('記事データの組み立て - 選定結果と生成済みの見出�
     expect(article.topics[0].id).not.toBe(article.topics[1].id)
   })
 
-  it('sections(章立て構成の要約)がそのままArticleのトピックに含まれること', () => {
+  it('sections(章立て構成の要約。導入文teaser+詳細文detail)がそのままArticleのトピックに含まれること', () => {
     const sections = [
-      { heading: '何が発表されたか', body: 'あ'.repeat(500) },
-      { heading: '開発者への影響', body: 'い'.repeat(500) },
+      { heading: '何が発表されたか', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(500) },
+      { heading: '開発者への影響', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
     ]
     const article = assembleArticle('2026-08-01', [makeInput({ sections })])
     expect(article.topics[0].sections).toEqual(sections)

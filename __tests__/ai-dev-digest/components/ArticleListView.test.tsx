@@ -11,8 +11,8 @@ function makeArticle(date: string): Article {
         id: 'topic-1',
         heading: '見出し',
         sections: [
-          { heading: '見出し1', body: 'あ'.repeat(500) },
-          { heading: '見出し2', body: 'い'.repeat(500) },
+          { heading: '見出し1', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(500) },
+          { heading: '見出し2', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
         ],
         sourceType: 'official',
         sourceName: 'Anthropic',

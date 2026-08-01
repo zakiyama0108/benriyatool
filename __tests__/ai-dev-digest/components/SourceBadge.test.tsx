@@ -11,7 +11,7 @@ const LABELS: Record<SourceType, string> = {
   zenn: 'Zenn',
 }
 
-// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-4
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-5
 describe('情報源種別バッジ - 各トピックの発信元の種別(公式組織/個人YouTube/個人ブログ/Qiita/Zenn)を日本語で表示する', () => {
   for (const [sourceType, label] of Object.entries(LABELS) as [SourceType, string][]) {
     it(`sourceTypeが"${sourceType}"のとき、「${label}」というラベルが表示されること`, () => {

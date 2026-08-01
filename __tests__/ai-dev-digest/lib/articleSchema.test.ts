@@ -4,8 +4,8 @@ import { parseArticle } from '../../../app/ai-dev-digest/lib/articleSchema'
 function validSections(overrides: Record<string, unknown>[] = []) {
   if (overrides.length > 0) return overrides
   return [
-    { heading: '何が発表されたか', body: 'あ'.repeat(500) },
-    { heading: '開発者への影響', body: 'い'.repeat(500) },
+    { heading: '何が発表されたか', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(500) },
+    { heading: '開発者への影響', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
   ]
 }
 
@@ -89,10 +89,12 @@ describe('記事データのスキーマ検証 - ビルド時にJSONの構造・
   })
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション、specs/ai-dev-digest/content-generation/requirements.md#要約-3
-describe('記事スキーマへのセクション数検証の組み込み - sectionsが2件未満、またはheading/bodyが空文字のトピックを拒否する', () => {
+// 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション、specs/ai-dev-digest/content-generation/requirements.md#要約-5
+describe('記事スキーマへのセクション数検証の組み込み - sectionsが2件未満、またはheading/teaser/detailが空文字のトピックを拒否する', () => {
   it('sectionsが1件(2件未満)のとき、検証エラーになること', () => {
-    const topics = [validTopic({ sections: [{ heading: '見出し', body: 'あ'.repeat(1000) }] })]
+    const topics = [
+      validTopic({ sections: [{ heading: '見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(1000) }] }),
+    ]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
   })
 
@@ -100,20 +102,32 @@ describe('記事スキーマへのセクション数検証の組み込み - sect
     const topics = [
       validTopic({
         sections: [
-          { heading: '', body: 'あ'.repeat(500) },
-          { heading: '見出し2', body: 'い'.repeat(500) },
+          { heading: '', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(500) },
+          { heading: '見出し2', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
         ],
       }),
     ]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
   })
 
-  it('セクションのbodyが空文字のとき、検証エラーになること', () => {
+  it('セクションのteaserが空文字のとき、検証エラーになること', () => {
     const topics = [
       validTopic({
         sections: [
-          { heading: '見出し1', body: '' },
-          { heading: '見出し2', body: 'い'.repeat(1000) },
+          { heading: '見出し1', teaser: '', detail: 'あ'.repeat(500) },
+          { heading: '見出し2', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
+        ],
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('セクションのdetailが空文字のとき、検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        sections: [
+          { heading: '見出し1', teaser: 'あ'.repeat(60), detail: '' },
+          { heading: '見出し2', teaser: 'い'.repeat(60), detail: 'い'.repeat(1000) },
         ],
       }),
     ]
@@ -121,26 +135,53 @@ describe('記事スキーマへのセクション数検証の組み込み - sect
   })
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション、specs/ai-dev-digest/content-generation/requirements.md#要約-2
-describe('記事スキーマへの要約分量検証の組み込み - isValidSummaryLengthでsections合計800〜1700字の範囲外を拒否する', () => {
-  it('sectionsのbody合計が799字(下限未満)のトピックを含む記事データは検証エラーになること', () => {
+// 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション、specs/ai-dev-digest/content-generation/requirements.md#要約-3
+describe('記事スキーマへの導入文(teaser)分量検証の組み込み - isValidTeaserLengthで40〜140字の範囲外を拒否する', () => {
+  it('teaserが39字(下限未満)のセクションを含む記事データは検証エラーになること', () => {
     const topics = [
       validTopic({
         sections: [
-          { heading: '見出し1', body: 'あ'.repeat(400) },
-          { heading: '見出し2', body: 'い'.repeat(399) },
+          { heading: '見出し1', teaser: 'あ'.repeat(39), detail: 'あ'.repeat(500) },
+          { heading: '見出し2', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
         ],
       }),
     ]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
   })
 
-  it('sectionsのbody合計が1701字(上限超過)のトピックを含む記事データは検証エラーになること', () => {
+  it('teaserが141字(上限超過)のセクションを含む記事データは検証エラーになること', () => {
     const topics = [
       validTopic({
         sections: [
-          { heading: '見出し1', body: 'あ'.repeat(900) },
-          { heading: '見出し2', body: 'い'.repeat(801) },
+          { heading: '見出し1', teaser: 'あ'.repeat(141), detail: 'あ'.repeat(500) },
+          { heading: '見出し2', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
+        ],
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション、specs/ai-dev-digest/content-generation/requirements.md#要約-4
+describe('記事スキーマへの詳細文(detail)合計分量検証の組み込み - isValidDetailLengthでsections合計800〜1700字の範囲外を拒否する', () => {
+  it('sectionsのdetail合計が799字(下限未満)のトピックを含む記事データは検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        sections: [
+          { heading: '見出し1', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(400) },
+          { heading: '見出し2', teaser: 'い'.repeat(60), detail: 'い'.repeat(399) },
+        ],
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('sectionsのdetail合計が1701字(上限超過)のトピックを含む記事データは検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        sections: [
+          { heading: '見出し1', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(900) },
+          { heading: '見出し2', teaser: 'い'.repeat(60), detail: 'い'.repeat(801) },
         ],
       }),
     ]

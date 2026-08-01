@@ -1,5 +1,5 @@
 import type { Article, SourceType, SummarySection, Topic } from './types'
-import { isValidSummaryLength } from './summaryValidation'
+import { isValidTeaserLength, isValidDetailLength } from './summaryValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
 // エージェントが生成する入力の事故を早期に検知するため、ビルド時にここで例外を投げて
@@ -24,8 +24,9 @@ function isHttpUrl(value: unknown): value is string {
 }
 
 // topics[index].sections配列を検証・パースする(仕様: article-detail/design.md「バリデーション」)。
-// 配列長2件以上、各セクションのheading/bodyが空文字でないこと、body合計文字数が
-// SUMMARY_TOTAL_MIN_LENGTH〜SUMMARY_TOTAL_MAX_LENGTHの範囲内であることを確認する
+// 配列長2件以上、各セクションのheading/teaser/detailが空文字でないこと、teaserが
+// TEASER_MIN_LENGTH〜TEASER_MAX_LENGTHの範囲内であること、detail合計文字数が
+// DETAIL_TOTAL_MIN_LENGTH〜DETAIL_TOTAL_MAX_LENGTHの範囲内であることを確認する
 function parseSections(raw: unknown, index: number): SummarySection[] {
   if (!Array.isArray(raw)) {
     throw new Error(`topics[${index}].sectionsが配列ではありません`)
@@ -39,16 +40,24 @@ function parseSections(raw: unknown, index: number): SummarySection[] {
     if (!isNonEmptyString(record.heading)) {
       throw new Error(`topics[${index}].sections[${sectionIndex}].headingが空文字です`)
     }
-    if (!isNonEmptyString(record.body)) {
-      throw new Error(`topics[${index}].sections[${sectionIndex}].bodyが空文字です`)
+    if (!isNonEmptyString(record.teaser)) {
+      throw new Error(`topics[${index}].sections[${sectionIndex}].teaserが空文字です`)
     }
-    return { heading: record.heading, body: record.body }
+    if (!isNonEmptyString(record.detail)) {
+      throw new Error(`topics[${index}].sections[${sectionIndex}].detailが空文字です`)
+    }
+    if (!isValidTeaserLength(record.teaser)) {
+      throw new Error(
+        `topics[${index}].sections[${sectionIndex}].teaserが不正です(40〜140字である必要があります): ${record.teaser.length}字`
+      )
+    }
+    return { heading: record.heading, teaser: record.teaser, detail: record.detail }
   })
 
-  if (!isValidSummaryLength(sections)) {
-    const totalLength = sections.reduce((sum, section) => sum + section.body.length, 0)
+  if (!isValidDetailLength(sections)) {
+    const totalLength = sections.reduce((sum, section) => sum + section.detail.length, 0)
     throw new Error(
-      `topics[${index}].sectionsが不正です(配列長2件以上・body合計800〜1700字である必要があります): 配列長${sections.length}件、body合計${totalLength}字`
+      `topics[${index}].sectionsが不正です(配列長2件以上・detail合計800〜1700字である必要があります): 配列長${sections.length}件、detail合計${totalLength}字`
     )
   }
 
