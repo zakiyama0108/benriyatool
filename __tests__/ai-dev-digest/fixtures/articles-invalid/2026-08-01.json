@@ -1,0 +1,14 @@
+{
+  "date": "2026-08-01",
+  "topics": [
+    {
+      "id": "topic-1",
+      "heading": "不正な記事データ(テスト用)",
+      "summary": "短い",
+      "sourceType": "official",
+      "sourceName": "Anthropic",
+      "sourceUrl": "https://www.anthropic.com/news/example",
+      "belowCriteria": false
+    }
+  ]
+}

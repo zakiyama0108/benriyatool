@@ -1,0 +1,14 @@
+{
+  "date": "2026-07-31",
+  "topics": [
+    {
+      "id": "topic-1",
+      "heading": "OpenAIが新機能を発表",
+      "summary": "OpenAIが開発者向けの新機能を発表した。既存のワークフローに組み込みやすい設計になっており、今後のアップデートで対応範囲が広がる見込みであることが紹介されている。",
+      "sourceType": "official",
+      "sourceName": "OpenAI",
+      "sourceUrl": "https://openai.com/blog/example",
+      "belowCriteria": false
+    }
+  ]
+}

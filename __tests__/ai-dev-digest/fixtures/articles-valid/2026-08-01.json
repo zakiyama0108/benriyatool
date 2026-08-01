@@ -1,0 +1,24 @@
+{
+  "date": "2026-08-01",
+  "topics": [
+    {
+      "id": "topic-1",
+      "heading": "Anthropicが新モデルを発表",
+      "summary": "Anthropicが新しい言語モデルを発表した。従来モデルより長い文脈を扱えるようになっており、開発者向けAPIを通じて順次利用できるようになる予定であることが紹介されている。",
+      "sourceType": "official",
+      "sourceName": "Anthropic",
+      "sourceUrl": "https://www.anthropic.com/news/example",
+      "belowCriteria": false
+    },
+    {
+      "id": "topic-2",
+      "heading": "個人YouTuberの解説動画が話題",
+      "summary": "AI駆動開発の実践的な使い方を紹介する動画が、そのチャンネルの通常の動画より明確に高い再生数を記録し話題になった。実際のコーディング画面を交えながら手順を解説する構成が評価されている。",
+      "sourceType": "individual-youtube",
+      "sourceName": "Cole Medin",
+      "sourceUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "youtubeVideoId": "dQw4w9WgXcQ",
+      "belowCriteria": false
+    }
+  ]
+}
