@@ -26,7 +26,7 @@ export type Topic = {
 
 export type Article = {
   date: string // YYYY-MM-DD。ファイル名と一致
-  topics: Topic[] // 3〜5件
+  topics: Topic[] // 1〜5件(基準を満たす候補が不足する日は1〜2件になりうる。content-selection/requirements.md#1日の掲載件数-9〜10)
 }
 ```
 
@@ -93,7 +93,7 @@ sequenceDiagram
 
 記事データ(JSONファイル)のスキーマ検証:
 - `date`: `YYYY-MM-DD`形式で、ファイル名と一致すること
-- `topics`: 配列長が3〜5件であること(content-selection/requirements.md#1日の掲載件数-9)
+- `topics`: 配列長が1件以上5件以下であること(content-selection/requirements.md#1日の掲載件数-9〜10。基準を満たす候補が不足する日は1〜2件になりうる)
 - 各`topic`: `id`が記事内で重複しないこと、`heading`/`summary`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`sourceType`が定義済み種別のいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須(false時は無くてよい)
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けない(自由記述であるため)
 

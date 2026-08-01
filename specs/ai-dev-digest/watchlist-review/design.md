@@ -4,7 +4,7 @@
 
 [daily-publish/design.md](../daily-publish/design.md)の「実行環境の前提」と同じClaude Routinesを使うが、日次と異なりデータベースの読み取りが必要になるため、追加で以下を前提とする(要件・ADRのいずれも月次Routineでの利用を明記していないため設計判断):
 
-- docs/adr/0004で導入した`benriyatool_readonly`ロールの接続文字列(`SUPABASE_READONLY_DB_URL`)を、月次Routineの実行環境にも(ローカル開発セッションとは別に)保持する。同ADRは「ローカル環境以外の実行環境では接続情報が無く、ユーザー代行フローにフォールバックする」としているが、月1回とはいえ人手を介する運用は自動化の意図に反するため、本specに限り月次Routine専用の接続情報を用意する
+- docs/adr/0004で導入した`benriyatool_readonly`ロールの接続文字列(`SUPABASE_READONLY_DB_URL`)を、月次Routineの実行環境にも(ローカル開発セッションとは別に)保持する。同ADRは2026-08の改定でClaude Routines実行環境も接続情報の保持対象として正式に含めており、本specの月次Routineはその対象範囲に基づいて接続情報を保持する
 - この接続情報はこのリポジトリ・GitHub Actions Secretsには追加しない(daily-publishと同じ方針)
 
 ## 処理フロー

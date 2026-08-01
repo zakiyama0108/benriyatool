@@ -114,25 +114,11 @@ content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-re
 | YouTube公式API・各社公式RSSフィード・各社公式ブログ・Qiita公式API・Zenn公式RSS | 情報源データの取得([content-selection/requirements.md#データ取得方法](content-selection/requirements.md)) |
 | Claude Routines | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))の定期実行基盤 |
 
-このアプリが使うテーブルのER図。他アプリのテーブルとのリレーションは持たない(anonのINSERT専用、docs/adr/0004の`benriyatool_readonly`ロールのSELECT専用。ADR-0006の運営者専用SELECTポリシーは追加しないため`admin_emails`との関係もない)。
-
-```mermaid
-erDiagram
-    ai_dev_digest_feedback {
-        uuid id PK
-        timestamptz created_at
-        boolean is_test
-        date article_date
-        text topic_id
-        text comment
-    }
-```
-
-各カラムの正となる文章は[article-detail/design.md#データベース設計](article-detail/design.md#データベース設計)。
+このアプリが使うテーブルは`ai_dev_digest_feedback`の1つのみで、他アプリのテーブルとのリレーションは持たない(anonのINSERT専用、docs/adr/0004の`benriyatool_readonly`ロールのSELECT専用。ADR-0006の運営者専用SELECTポリシーは追加しないため`admin_emails`との関係もない)。テーブルが1つのみでリレーションもないため、ER図は作成しない([architecture-workflow](../../.claude/skills/architecture-workflow/SKILL.md)の作成条件を満たさない)。各カラムの正となる文章は[article-detail/design.md#データベース設計](article-detail/design.md#データベース設計)。
 
 ## 11. 関連ADR
 - [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 運営者フィードバック保存のDB選定・RLSパターン(anonキーでのINSERT専用)をそのまま踏襲
-- [0004-agent-readonly-db-access.md](../../docs/adr/0004-agent-readonly-db-access.md) — [watchlist-review](watchlist-review/design.md)の月次Claude Routineが`ai_dev_digest_feedback`を読む際、`benriyatool_readonly`ロールのSELECT専用ポリシーをこのテーブルにも追加して利用する
+- [0004-agent-readonly-db-access.md](../../docs/adr/0004-agent-readonly-db-access.md) — [watchlist-review](watchlist-review/design.md)の月次Claude Routineが`ai_dev_digest_feedback`を読む際、`benriyatool_readonly`ロールのSELECT専用ポリシーをこのテーブルにも追加して利用する。同ADRは2026-08の改定でClaude Routines実行環境も接続情報の保持対象として正式に含めており、本specはその対象範囲に基づく
 - [0006-admin-screen-oidc-rls.md](../../docs/adr/0006-admin-screen-oidc-rls.md) — フィードバック入力欄の表示切り替えに使うGoogle OIDCログイン判定の基盤(`app/lib/adminAuth.ts`)を流用。ただし本アプリはDBの読み取り(SELECT)を必要としないため、同ADRが定める「運営者専用SELECTポリシーの追加」は行わない
 
 ## 12. セキュリティ
@@ -145,5 +131,5 @@ erDiagram
 | 用語 | 説明 |
 |---|---|
 | ウォッチリスト | 収集対象として固定的に管理する情報源(公式組織・個人・プラットフォーム)の一覧。[content-selection](content-selection/requirements.md)で定義 |
-| 基準未達掲載 | content-selectionの採用基準を満たす候補が不足する日に、基準未達の候補で3〜5件を埋める措置。[watchlist-review](watchlist-review/requirements.md)で見直しの判断材料になる |
+| 基準未達掲載 | content-selectionの採用基準を満たす候補が3件に満たない日に、実在する候補(基準未達の候補を含む)をその件数のまま掲載する措置。掲載する各トピックには基準未達である旨を示す。[watchlist-review](watchlist-review/requirements.md)で見直しの判断材料になる |
 | Claude Routines | 定期実行のクラウドエージェント。日次の記事生成([daily-publish](daily-publish/requirements.md))、月次の見直し提案([watchlist-review](watchlist-review/requirements.md))の実行主体 |

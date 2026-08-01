@@ -25,7 +25,7 @@
 ## ビジネスルール・制約
 
 ### 掲載件数の保証
-- [1] [content-selection/requirements.md](../content-selection/requirements.md)の基準を満たすトピックが不足していても、その日の記事は必ず3〜5件のトピックを含める(スキップしない)。詳細は同specの該当ルールに従う
+- [1] [content-selection/requirements.md](../content-selection/requirements.md)の基準を満たすトピックが不足していても、実在する候補(基準未達の候補を含む)が1件以上ある限りその件数のまま記事を公開する(スキップしない)。その日に収集した候補が実在するものも含め1件もない場合のみ、その日はスキップする。詳細は同specの該当ルールに従う
 
 ### 自動マージの範囲
 - [2] 完全自動マージの対象はこの日次記事生成PRに限る。ウォッチリストや採用基準そのものの変更([watchlist-review/requirements.md](../watchlist-review/requirements.md))は対象外とし、別途人間の承認を必須とする(根拠: 日次記事1件の影響範囲は小さいが、基準・ウォッチリストの変更は以後の全記事の方向性を左右する重い変更のため)
