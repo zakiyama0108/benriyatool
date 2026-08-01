@@ -82,10 +82,20 @@ export type RecurringEntry = {
 export type PeriodUnit = 'month' | 'year'
 
 // 該当した定期項目の名目1件。種別を保持するのは、テーブル表示で定期収入(賞与と同じティール文字)/
-// 定期支出(イベントと同じコーラル文字)を色分けするため(仕様: design.md#ビジュアルトーン)
+// 定期支出(イベントと同じコーラル文字)を色分けするため(仕様: design.md#ビジュアルトーン)。
+// amountは月次行ではその月の金額、年次行では名目・種別ごとに集約したその年の該当月合計額
+// (仕様: requirements.md#定期的な収入・支出の登録-6、design.md#月次データを年次にまとめる処理)
 export type RecurringLabel = {
   label: string
   type: RecurringEntryType
+  amount: number
+}
+
+// 資産推移テーブルに表示する、名目+金額のイベント1件
+// (仕様: requirements.md#賞与・イベントの登録-3、design.md#資産推移テーブルに金額を表示する処理)
+export type EventItem = {
+  label: string
+  amount: number
 }
 
 // 月次資産推移テーブルの1行
@@ -94,9 +104,9 @@ export type MonthlyProjectionRow = {
   selfAge?: number
   spouseAge?: number
   childrenAges: (number | undefined)[]
-  eventLabels: string[] // その月に発生したイベントの名目一覧
-  hasBonus: boolean // その月に賞与の登録があるかどうか(テーブルの行ハイライトに使う)
-  recurringLabels: RecurringLabel[] // その月に該当した定期収入・定期支出の名目一覧(仕様: requirements.md#定期的な収入・支出の登録-6)
+  eventItems: EventItem[] // その月に発生したイベントの名目・金額一覧
+  bonusAmount: number // その月に登録された賞与の合計額・万円。0は登録なし(仕様: requirements.md#賞与・イベントの登録-4)
+  recurringLabels: RecurringLabel[] // その月に該当した定期収入・定期支出の名目・金額一覧(仕様: requirements.md#定期的な収入・支出の登録-6)
   netSurplus: number // 差引後余剰・万円
   asset: number // その月末時点の資産額・万円
 }
@@ -107,9 +117,9 @@ export type YearlyProjectionRow = {
   selfAge?: number
   spouseAge?: number
   childrenAges: (number | undefined)[]
-  eventLabels: string[]
-  hasBonus: boolean // その年のいずれかの月に賞与の登録があるかどうか
-  recurringLabels: RecurringLabel[] // その年に該当した定期収入・定期支出の名目一覧
+  eventItems: EventItem[] // その年に発生したイベントの名目・金額一覧(同じ名目でも合算せずすべて集める)
+  bonusAmount: number // その年に該当した賞与の合計額・万円
+  recurringLabels: RecurringLabel[] // その年に該当した定期収入・定期支出を名目・種別ごとに合算した一覧
   yearlySurplus: number // 年次余剰資金・万円
   asset: number // 年末(またはその年の最終月)時点の資産額・万円
 }

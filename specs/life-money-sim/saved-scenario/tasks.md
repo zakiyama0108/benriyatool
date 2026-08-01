@@ -51,3 +51,16 @@
 
 ## T6. プライバシーポリシー更新要否の確認
 - `specs/legal/requirements.md`のプライバシーポリシー更新要否を確認する(requirements.md#依存関係)
+
+## 修正: 未ログイン時のログイン誘導案内(2026-08)
+
+## T7. ScenarioLoginPromptコンポーネント(仕様: requirements.md#マイシナリオの表示-2、design.md#マイシナリオ操作の表示を出し分ける処理)
+- 対象ファイル: `app/life-money-sim/components/ScenarioLoginPrompt.tsx`、`__tests__/life-money-sim/components/ScenarioLoginPrompt.test.tsx`
+- 内容:
+  - 🔴 未ログイン時に表示される案内文言とログインボタンが表示され、押すとログイン開始(`onLoginClick`)が呼ばれることを確認するテストを書く
+  - 🟢 コンポーネントを実装する(`LoginStatus.tsx`と同様、`onLoginClick`をpropsで受け取る)
+
+## T8. page.tsxへの配線(仕様: design.md#マイシナリオ操作の表示を出し分ける処理)
+- 対象ファイル: `app/life-money-sim/page.tsx`
+- 内容: 未ログイン時に`ScenarioPanel`の代わりに`ScenarioLoginPrompt`を「この試算を保存する」ボタンの近くに表示する
+- `/run`(run-benriyatoolスキル)で、未ログイン時にログイン誘導案内が表示され、ログイン後はマイシナリオパネルに切り替わることを実機確認する

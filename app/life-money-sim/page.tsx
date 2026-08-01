@@ -50,6 +50,7 @@ import AssetProjectionChart from './components/AssetProjectionChart'
 import SaveButton from './components/SaveButton'
 import LoginStatus from './components/LoginStatus'
 import ScenarioPanel from './components/ScenarioPanel'
+import ScenarioLoginPrompt from './components/ScenarioLoginPrompt'
 
 // 資産推移タブの開始年月の初期値(今月)。ブラウザ表示時点の年月を初期表示として使うのみで、
 // 計算ロジック自体は入力された年月をそのまま使う
@@ -440,13 +441,15 @@ export default function Page() {
 
             <SaveButton input={saveResultInput} />
 
-            {session && (
+            {session ? (
               <ScenarioPanel
                 scenarios={scenarios}
                 onSave={handleSaveScenario}
                 onLoad={handleLoadScenario}
                 onDelete={handleDeleteScenario}
               />
+            ) : (
+              <ScenarioLoginPrompt onLoginClick={() => void signInWithGoogle(window.location.href)} />
             )}
           </div>
         </div>
