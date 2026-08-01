@@ -124,3 +124,18 @@
   - [x] `page.tsx`を、前提入力・家族構成・貯蓄/運用切替・賞与イベント登録・定期収入支出登録の各アコーディオン(左カラム)と、ヒーローカード・表示切り替え(セグメントコントロール)・資産推移グラフ・資産推移テーブル(右カラム)の常時ダッシュボードに配線し直す
   - [x] `ModeToggle.tsx`(左カラムのアコーディオン内トグル)と右カラムのセグメントコントロールが同じ状態を共有することを配線する
   - [x] `/run`(run-benriyatoolスキル)で、PC幅(1280px)・モバイル幅(390px)双方でレイアウト崩れがないこと、アコーディオン⇔セグメントコントロールの状態共有が実際に動作することを実機確認する
+
+## 修正: 資産推移テーブルへの金額表示(2026-08)
+
+- [x] Task 28: 名目一覧の型に金額を追加(仕様: requirements.md#賞与・イベントの登録-3、requirements.md#賞与・イベントの登録-4、requirements.md#定期的な収入・支出の登録-6、design.md#関連するファイル(抜粋))
+  - [x] `app/life-money-sim/lib/types.ts`の`MonthlyProjectionRow`/`YearlyProjectionRow`を変更する: `eventLabels: string[]`→`eventItems: {label: string; amount: number}[]`、`hasBonus: boolean`→`bonusAmount: number`(0は登録なし)、`RecurringLabel`に`amount: number`を追加する
+
+- [x] Task 29: 月次積み上げ・年次集計の金額反映(仕様: requirements.md#賞与・イベントの登録-3、requirements.md#賞与・イベントの登録-4、requirements.md#定期的な収入・支出の登録-6、design.md#資産推移テーブルに金額を表示する処理、design.md#月次データを年次にまとめる処理)
+  - [x] 🔴 `buildMonthlyProjectionRows`が各月の`eventItems`(名目+金額)・`bonusAmount`(賞与合計額)・`recurringLabels`(名目+種別+金額)を返すことを確認するテストに書き換える(既存のeventLabels/hasBonusを検証していたテストを置き換える)
+  - [x] 🔴 `aggregateYearly`が、`eventItems`はその年の発生分をすべてそのまま集める(合算しない)こと、`recurringLabels`は名目・種別ごとにその年の該当月の金額を合計して1件にまとめること、`bonusAmount`はその年の該当月の合計額になることを確認するテストに書き換える
+  - [x] 🟢 `buildMonthlyProjectionRows`・`aggregateYearly`を実装し直す
+
+- [x] Task 30: 資産推移テーブルの金額表示(仕様: design.md#資産推移テーブルに金額を表示する処理)
+  - [x] 🔴 `AssetProjectionTable`のコンポーネントテストを新規に書く(`__tests__/life-money-sim/components/AssetProjectionTable.test.tsx`): 賞与・イベント・定期項目それぞれについて、名目に加えて金額(万円)が表示されることを確認する
+  - [x] 🟢 `AssetProjectionTable.tsx`(`EventCell`)を、名目の直後に金額を表示するよう実装し直す。色分け(賞与・定期収入=ティール文字、イベント・定期支出=コーラル文字)は維持する
+  - [x] `/run`(run-benriyatoolスキル)で、賞与・イベント・定期的な収入支出を追加した直後にテーブルへ名目と金額が表示されることを実機確認する

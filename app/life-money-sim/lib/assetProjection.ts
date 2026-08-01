@@ -1,4 +1,4 @@
-import type { MonthlyProjectionRow, YearlyProjectionRow, YearMonth, BonusEntry, EventEntry, RecurringEntry } from './types'
+import type { MonthlyProjectionRow, YearlyProjectionRow, YearMonth, BonusEntry, EventEntry, RecurringEntry, RecurringLabel } from './types'
 
 // "YYYY-MM" を年・月の数値に分解する
 function parseYearMonth(yearMonth: YearMonth): { year: number; month: number } {
@@ -128,10 +128,31 @@ export function buildInvestmentAssetSeries(startingAsset: number, netSurpluses: 
   return series
 }
 
+// その年に該当した定期項目を名目・種別ごとに1件へまとめ、該当した月の金額を合計する
+// (同じ定期登録が年内に複数月該当するため、月ごとに繰り返し表示せず年間合計にする。
+//  仕様: requirements.md#定期的な収入・支出の登録-6、design.md#月次データを年次にまとめる処理)
+function aggregateRecurringLabelsForYear(yearRows: MonthlyProjectionRow[]): RecurringLabel[] {
+  const byKey = new Map<string, RecurringLabel>()
+  for (const row of yearRows) {
+    for (const label of row.recurringLabels) {
+      const key = `${label.type}:${label.label}`
+      const existing = byKey.get(key)
+      if (existing) {
+        existing.amount += label.amount
+      } else {
+        byKey.set(key, { ...label })
+      }
+    }
+  }
+  return [...byKey.values()]
+}
+
 // 月次で積み上げた資産推移の全行を、同じ年の12か月分ごとに1行へ集計する。
 // 年次余剰資金はその年の差引後余剰の合計、年齢・資産額はその年の最終月(12月、または開始/最終年で
-// 12月がない場合はその年の最終月)の値を代表値として採用する
-// (仕様: requirements.md#表示単位の切り替え-2、design.md#月次データを年次にまとめる処理)
+// 12月がない場合はその年の最終月)の値を代表値として採用する。イベントは発生ごとに別物として
+// 合算せずすべて集め、定期項目は名目・種別ごとに該当月の金額を合計して1件にまとめる
+// (仕様: requirements.md#表示単位の切り替え-2、requirements.md#賞与・イベントの登録-3、
+//  requirements.md#定期的な収入・支出の登録-6、design.md#月次データを年次にまとめる処理)
 export function aggregateYearly(rows: MonthlyProjectionRow[]): YearlyProjectionRow[] {
   const byYear = new Map<number, MonthlyProjectionRow[]>()
   for (const row of rows) {
@@ -149,9 +170,9 @@ export function aggregateYearly(rows: MonthlyProjectionRow[]): YearlyProjectionR
         selfAge: last.selfAge,
         spouseAge: last.spouseAge,
         childrenAges: last.childrenAges,
-        eventLabels: yearRows.flatMap((r) => r.eventLabels),
-        hasBonus: yearRows.some((r) => r.hasBonus),
-        recurringLabels: yearRows.flatMap((r) => r.recurringLabels),
+        eventItems: yearRows.flatMap((r) => r.eventItems),
+        bonusAmount: yearRows.reduce((sum, r) => sum + r.bonusAmount, 0),
+        recurringLabels: aggregateRecurringLabelsForYear(yearRows),
         yearlySurplus: yearRows.reduce((sum, r) => sum + r.netSurplus, 0),
         asset: last.asset,
       }
@@ -184,17 +205,25 @@ export function buildMonthlyProjectionRows(params: {
     cursor = cursor.month === 12 ? { year: cursor.year + 1, month: 1 } : { year: cursor.year, month: cursor.month + 1 }
   }
 
-  const netSurpluses = yearMonths.map((ym) => {
-    const bonusTotal = params.bonuses
+  // 月ごとの賞与・イベント・定期項目の金額を一度だけ求め、差引後余剰の計算とテーブル表示
+  // (eventItems・bonusAmount・recurringLabels)の両方に使い回す
+  const monthlyDetails = yearMonths.map((ym) => {
+    const bonusAmount = params.bonuses
       .filter((b) => b.yearMonth === ym)
       .reduce((sum, b) => sum + sanitizeAmount(b.amount), 0)
-    const eventTotal = params.events
+    const eventItems = params.events
       .filter((e) => e.yearMonth === ym)
-      .reduce((sum, e) => sum + sanitizeAmount(e.amount), 0)
+      .map((e) => ({ label: e.label, amount: sanitizeAmount(e.amount) }))
+    const eventTotal = eventItems.reduce((sum, e) => sum + e.amount, 0)
+    const recurringLabels = params.recurringEntries
+      .filter((entry) => isRecurringEntryApplicable(entry, ym))
+      .map((entry) => ({ label: entry.label, type: entry.type, amount: sanitizeAmount(entry.amount) }))
     const { incomeTotal, expenseTotal } = calcRecurringTotals(params.recurringEntries, ym)
-    return calcNetSurplus(params.monthlySurplus, bonusTotal, eventTotal, incomeTotal, expenseTotal)
+    const netSurplus = calcNetSurplus(params.monthlySurplus, bonusAmount, eventTotal, incomeTotal, expenseTotal)
+    return { bonusAmount, eventItems, recurringLabels, netSurplus }
   })
 
+  const netSurpluses = monthlyDetails.map((d) => d.netSurplus)
   const assetSeries = params.investmentMode
     ? buildInvestmentAssetSeries(params.startingAsset, netSurpluses, params.expectedAnnualRate)
     : buildSavingsAssetSeries(params.startingAsset, netSurpluses)
@@ -204,12 +233,10 @@ export function buildMonthlyProjectionRows(params: {
     selfAge: calcAge(params.selfBirthMonth, yearMonth),
     spouseAge: calcAge(params.spouseBirthMonth, yearMonth),
     childrenAges: params.childrenBirthMonths.map((b) => calcAge(b, yearMonth)),
-    eventLabels: params.events.filter((e) => e.yearMonth === yearMonth).map((e) => e.label),
-    hasBonus: params.bonuses.some((b) => b.yearMonth === yearMonth),
-    recurringLabels: params.recurringEntries
-      .filter((entry) => isRecurringEntryApplicable(entry, yearMonth))
-      .map((entry) => ({ label: entry.label, type: entry.type })),
-    netSurplus: netSurpluses[i],
+    eventItems: monthlyDetails[i].eventItems,
+    bonusAmount: monthlyDetails[i].bonusAmount,
+    recurringLabels: monthlyDetails[i].recurringLabels,
+    netSurplus: monthlyDetails[i].netSurplus,
     asset: assetSeries[i],
   }))
 }
