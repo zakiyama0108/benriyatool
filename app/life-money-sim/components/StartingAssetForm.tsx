@@ -16,7 +16,7 @@ export default function StartingAssetForm({ value, onChange }: Props) {
           type="number"
           value={Number.isFinite(value.startingAsset) ? value.startingAsset : ''}
           onChange={(e) => onChange({ ...value, startingAsset: e.target.valueAsNumber })}
-          className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm tabular-nums font-bold outline-none focus:border-lms-teal"
+          className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm tabular-nums font-bold outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
         />
       </label>
       <label className="block text-xs text-lms-muted">
@@ -25,7 +25,7 @@ export default function StartingAssetForm({ value, onChange }: Props) {
           type="month"
           value={value.startYearMonth}
           onChange={(e) => onChange({ ...value, startYearMonth: e.target.value })}
-          className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
+          className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
         />
       </label>
       <label className="block text-xs text-lms-muted">
@@ -34,7 +34,7 @@ export default function StartingAssetForm({ value, onChange }: Props) {
           type="number"
           value={Number.isFinite(value.displayYears) ? value.displayYears : ''}
           onChange={(e) => onChange({ ...value, displayYears: e.target.valueAsNumber })}
-          className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm tabular-nums font-bold outline-none focus:border-lms-teal"
+          className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm tabular-nums font-bold outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
         />
       </label>
     </div>

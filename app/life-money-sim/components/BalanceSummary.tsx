@@ -22,11 +22,11 @@ function Tile({ label, value, tone }: { label: string; value: string; tone: 'mut
   const tones = {
     muted: 'bg-lms-canvas',
     mint: 'bg-lms-teal-soft',
-    plain: 'border border-lms-line-strong bg-white',
+    plain: 'border border-lms-line-strong bg-lms-card',
   }
   const valueTone = tone === 'mint' ? 'text-lms-teal' : 'text-lms-ink'
   return (
-    <div className={`flex flex-col gap-1 rounded-[14px] px-4 py-3.5 ${tones[tone]}`}>
+    <div className={`flex flex-col gap-1 rounded-[29px] px-4 py-3.5 ${tones[tone]}`}>
       <dt className="text-xs font-semibold text-lms-muted">{label}</dt>
       <dd className={`text-xl font-extrabold tabular-nums ${valueTone}`}>{value}</dd>
     </div>
@@ -47,7 +47,7 @@ export default function BalanceSummary({
   onCloseHelp,
 }: Props) {
   return (
-    <div className="space-y-4 rounded-[18px] bg-white p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+    <div className="space-y-4 rounded-[35px] border border-lms-line-strong bg-lms-card p-5">
       <div className="flex items-center gap-1.5">
         <p className="text-sm font-bold text-lms-ink">収支サマリー</p>
         <HelpIcon

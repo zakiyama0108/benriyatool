@@ -40,7 +40,7 @@ export default function HelpIcon({ id, text, openId, onToggle, onClose }: Props)
         ?
       </button>
       {isOpen && (
-        <div className="absolute left-0 top-full z-10 mt-2 w-64 max-w-[80vw] rounded-xl border border-lms-line bg-white p-3 text-xs leading-relaxed text-lms-ink shadow-lg">
+        <div className="absolute left-0 top-full z-10 mt-2 w-64 max-w-[80vw] rounded-2xl border border-lms-line bg-lms-card p-3 text-xs leading-relaxed text-lms-ink shadow-lg">
           {text}
         </div>
       )}

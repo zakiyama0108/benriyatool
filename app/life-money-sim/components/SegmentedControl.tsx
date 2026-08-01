@@ -9,7 +9,7 @@ type Props = {
   onChange: (value: string) => void
   size?: 'md' | 'sm'
   fullWidth?: boolean
-  // lms-card地の中(アコーディオン内など)で使う場合は'onCard'にして白トラックにする
+  // lms-card(白)の中(アコーディオン内など)で使う場合は'onCard'にして薄いcanvasトラックにする
   variant?: 'surface' | 'onCard'
 }
 
@@ -28,7 +28,7 @@ export default function SegmentedControl({
     <div
       role="radiogroup"
       aria-label={label}
-      className={`inline-flex items-center gap-1 rounded-full p-1 ${variant === 'onCard' ? 'bg-white' : 'bg-lms-card'} ${fullWidth ? 'w-full' : ''}`}
+      className={`inline-flex items-center gap-1 rounded-full p-1 ${variant === 'onCard' ? 'bg-lms-canvas' : 'bg-lms-card'} ${fullWidth ? 'w-full' : ''}`}
     >
       {options.map((option) => {
         const selected = option.value === value
