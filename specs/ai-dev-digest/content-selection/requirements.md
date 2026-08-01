@@ -1,7 +1,5 @@
 # 要件定義: 情報源ウォッチリストと採用基準
 
-> ステータス: 仕様確認中(未実装)
-
 ## 概要
 - 機能名: 情報源ウォッチリストと採用基準
 - 目的: 「相当ランクの高い、信頼できる発信者」の情報だけを扱いつつ、日によって記事内容が空になることのないよう、日次で取り上げるトピックを定量的に選び出す
@@ -17,21 +15,21 @@
 ### 情報源(ウォッチリスト)
 - [1] 対象とする情報源は次の13件に限定する(固定リスト運用とし、記載以外の発信者・組織をエージェントが自律的に追加することはしない)
 
-| 区分 | 名称 | チャンネル |
+| 名称 | 区分 | チャンネル |
 |---|---|---|
-| 公式組織 | Anthropic | 公式ブログ・YouTube |
-| 公式組織 | OpenAI | 公式ブログ・YouTube |
-| 公式組織 | LangChain | 公式ブログ・YouTube |
-| 公式組織 | AWS | AI/ML関連の公式ブログ・YouTube |
-| 公式組織 | DeepLearning.AI | YouTube・The Batchニュースレター |
-| 個人YouTube | Andrej Karpathy | YouTube |
-| 個人YouTube | Fireship | YouTube |
-| 個人YouTube | Cole Medin | YouTube |
-| 個人YouTube | freeCodeCamp | YouTube |
-| 個人YouTube | Dave Ebbelaar | YouTube |
-| 個人ブログ | Simon Willison | 個人ブログ(simonwillison.net) |
-| プラットフォーム | Qiita | プラットフォーム全体(いいね数上位) |
-| プラットフォーム | Zenn | プラットフォーム全体(いいね数上位) |
+| Anthropic | 公式組織 | 公式ブログ・YouTube |
+| OpenAI | 公式組織 | 公式ブログ・YouTube |
+| LangChain | 公式組織 | 公式ブログ・YouTube |
+| AWS | 公式組織 | AI/ML関連の公式ブログ・YouTube |
+| DeepLearning.AI | 公式組織 | YouTube・The Batchニュースレター |
+| Andrej Karpathy | 個人YouTube | YouTube |
+| Fireship | 個人YouTube | YouTube |
+| Cole Medin | 個人YouTube | YouTube |
+| freeCodeCamp | 個人YouTube | YouTube |
+| Dave Ebbelaar | 個人YouTube | YouTube |
+| Simon Willison | 個人ブログ | 個人ブログ(simonwillison.net) |
+| Qiita | プラットフォーム | プラットフォーム全体(いいね数上位) |
+| Zenn | プラットフォーム | プラットフォーム全体(いいね数上位) |
 
 - [2] X(Twitter)は対象に含めない(根拠: 公式APIが有料(Basic tier月額$100〜)で、無料枠では発信者のフォロワー数取得や検索が実質できないため)。X中心の発信者(LangChain CEOのHarrison Chase等)は、LangChain公式の発信でカバーする
 - [3] ポッドキャストは今回のスコープに含めない(根拠: 音声のトランスクリプト取得に実装コストがかかるため。将来検討)

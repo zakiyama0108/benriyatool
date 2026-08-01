@@ -1,0 +1,95 @@
+[
+  {
+    "id": "anthropic",
+    "category": "official",
+    "name": "Anthropic",
+    "channels": [
+      { "type": "youtube", "channelId": "@anthropic-ai" },
+      { "type": "rss", "feedUrl": "https://www.anthropic.com/rss.xml" }
+    ]
+  },
+  {
+    "id": "openai",
+    "category": "official",
+    "name": "OpenAI",
+    "channels": [
+      { "type": "youtube", "channelId": "@OpenAI" },
+      { "type": "rss", "feedUrl": "https://openai.com/news/rss.xml" }
+    ]
+  },
+  {
+    "id": "langchain",
+    "category": "official",
+    "name": "LangChain",
+    "channels": [
+      { "type": "youtube", "channelId": "@LangChain" },
+      { "type": "rss", "feedUrl": "https://blog.langchain.dev/rss/" }
+    ]
+  },
+  {
+    "id": "aws",
+    "category": "official",
+    "name": "AWS",
+    "channels": [
+      { "type": "youtube", "channelId": "@amazonwebservices" },
+      { "type": "rss", "feedUrl": "https://aws.amazon.com/blogs/machine-learning/feed/" }
+    ]
+  },
+  {
+    "id": "deeplearning-ai",
+    "category": "official",
+    "name": "DeepLearning.AI",
+    "channels": [
+      { "type": "youtube", "channelId": "@Deeplearningai" },
+      { "type": "rss", "feedUrl": "https://www.deeplearning.ai/the-batch/feed/" }
+    ]
+  },
+  {
+    "id": "karpathy",
+    "category": "individual-youtube",
+    "name": "Andrej Karpathy",
+    "channels": [{ "type": "youtube", "channelId": "@AndrejKarpathy" }]
+  },
+  {
+    "id": "fireship",
+    "category": "individual-youtube",
+    "name": "Fireship",
+    "channels": [{ "type": "youtube", "channelId": "@Fireship" }]
+  },
+  {
+    "id": "cole-medin",
+    "category": "individual-youtube",
+    "name": "Cole Medin",
+    "channels": [{ "type": "youtube", "channelId": "@ColeMedin" }]
+  },
+  {
+    "id": "freecodecamp",
+    "category": "individual-youtube",
+    "name": "freeCodeCamp",
+    "channels": [{ "type": "youtube", "channelId": "@freecodecamp" }]
+  },
+  {
+    "id": "dave-ebbelaar",
+    "category": "individual-youtube",
+    "name": "Dave Ebbelaar",
+    "channels": [{ "type": "youtube", "channelId": "@daveebbelaar" }]
+  },
+  {
+    "id": "simon-willison",
+    "category": "individual-blog",
+    "name": "Simon Willison",
+    "channels": [{ "type": "rss", "feedUrl": "https://simonwillison.net/atom/everything/" }]
+  },
+  {
+    "id": "qiita",
+    "category": "platform",
+    "name": "Qiita",
+    "channels": [{ "type": "platform-qiita" }]
+  },
+  {
+    "id": "zenn",
+    "category": "platform",
+    "name": "Zenn",
+    "channels": [{ "type": "platform-zenn" }]
+  }
+]

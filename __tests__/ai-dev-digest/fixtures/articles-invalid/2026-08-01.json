@@ -1,0 +1,20 @@
+{
+  "date": "2026-08-01",
+  "topics": [
+    {
+      "id": "topic-1",
+      "heading": "不正な記事データ(テスト用)",
+      "sections": [
+        {
+          "heading": "見出し",
+          "detail": "短い本文",
+          "teaser": "見出しについて、独自の視点で要点を短くまとめた導入文である。テスト用フィクスチャのため内容は実際の記事とは異なる。"
+        }
+      ],
+      "sourceType": "official",
+      "sourceName": "Anthropic",
+      "sourceUrl": "https://www.anthropic.com/news/example",
+      "belowCriteria": false
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "dailyTopicCount": { "min": 3, "max": 5 },
+  "youtubeRecentVideoWindow": 10,
+  "youtubeAboveAverageRatio": 1.2,
+  "qiitaMinLikes": 30,
+  "zennMinLikes": 30
+}
