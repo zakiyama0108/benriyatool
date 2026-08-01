@@ -48,7 +48,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
               type="button"
               aria-label={`${label}の項目を削除`}
               onClick={() => removeItem(index)}
-              className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral-soft"
+              className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral/10"
             >
               削除
             </button>

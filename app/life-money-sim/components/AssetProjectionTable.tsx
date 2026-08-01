@@ -70,7 +70,7 @@ function EventCell({
 export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRows }: Props) {
   if (periodUnit === 'month') {
     return (
-      <div className="max-h-[520px] overflow-auto rounded-[18px] bg-white p-2 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+      <div className="max-h-[520px] overflow-auto rounded-[35px] border border-lms-line-strong bg-lms-card p-2">
         <table className="w-full border-collapse text-xs">
           <thead>
             <tr className="border-b border-lms-line-strong text-left text-lms-muted">
@@ -117,7 +117,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
   }
 
   return (
-    <div className="max-h-[520px] overflow-auto rounded-[18px] bg-white p-2 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+    <div className="max-h-[520px] overflow-auto rounded-[35px] border border-lms-line-strong bg-lms-card p-2">
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr className="border-b border-lms-line-strong text-left text-lms-muted">

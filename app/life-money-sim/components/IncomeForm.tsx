@@ -35,7 +35,7 @@ export default function IncomeForm({ income, onChange }: Props) {
             type="number"
             value={Number.isFinite(income.bonusAmountPerTime) ? income.bonusAmountPerTime : ''}
             onChange={(e) => onChange({ ...income, bonusAmountPerTime: e.target.valueAsNumber })}
-            className="mt-1 w-full rounded-full border border-lms-sand/50 bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-sand"
+            className="mt-1 w-full rounded-full border border-lms-sand-soft bg-lms-sand-soft/40 px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-teal"
           />
         </label>
       </div>

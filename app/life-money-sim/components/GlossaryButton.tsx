@@ -33,7 +33,7 @@ export default function GlossaryButton() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-full px-2 py-1 text-xs text-lms-muted hover:bg-lms-card"
+                className="rounded-full px-2 py-1 text-xs text-lms-muted hover:bg-lms-canvas"
               >
                 閉じる
               </button>

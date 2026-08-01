@@ -1,22 +1,25 @@
 @import "tailwindcss";
 
 /* life-money-sim(資産推移シミュレーター)のビジュアルトーン「オーシャンミント」の配色トークン。
-   複数コンポーネントで使い回すため、一元管理のために@themeで定義する
-   (仕様: specs/life-money-sim/monthly-balance/design.md#ビジュアルトーン) */
+   v0(https://v0.app/ry0108/chat/rYqH39uTW3i)からエクスポートした実コード(app/globals.css内の
+   oklch値)をそのまま移植している。カード背景は白(lms-card)、ボーダーは1段階のみ(lms-line/
+   lms-line-strongは同値)が実際のv0の設計であり、本トークンより前の版は独自に濃くした配色に
+   ズレていた(仕様: specs/life-money-sim/monthly-balance/design.md#ビジュアルトーン) */
 @theme {
-  --color-lms-canvas: #f2faf9;
-  --color-lms-card: #e1f2ef;
-  --color-lms-ink: #1c2a28;
-  --color-lms-muted: #7e9491;
-  --color-lms-line: #dcefec;
-  --color-lms-line-strong: #c1e1db;
-  --color-lms-teal: #149e92;
-  --color-lms-teal-soft: #daf3ef;
-  --color-lms-coral: #ff6f59;
-  --color-lms-coral-soft: #ffe4dd;
-  --color-lms-sand: #f2b84b;
-  --color-lms-sand-soft: #fdecc9;
-  --color-lms-sand-ink: #8a5e0e;
+  --color-lms-canvas: oklch(0.982 0.014 168);
+  --color-lms-card: oklch(1 0 0);
+  --color-lms-ink: oklch(0.28 0.026 200);
+  --color-lms-muted: oklch(0.5 0.024 205);
+  --color-lms-line: oklch(0.918 0.016 180);
+  --color-lms-line-strong: oklch(0.918 0.016 180);
+  --color-lms-teal: oklch(0.575 0.088 172);
+  --color-lms-teal-soft: oklch(0.955 0.03 172);
+  --color-lms-coral: oklch(0.56 0.16 25);
+  --color-lms-sand: oklch(0.5 0.13 62);
+  --color-lms-sand-soft: oklch(0.965 0.055 92);
+  --color-lms-sand-ink: oklch(0.5 0.13 62);
+  --color-lms-bonus: oklch(0.955 0.035 235);
+  --color-lms-bonus-ink: oklch(0.47 0.11 250);
 }
 
 @layer components {

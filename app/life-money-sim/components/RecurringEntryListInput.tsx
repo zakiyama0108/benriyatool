@@ -26,7 +26,7 @@ export default function RecurringEntryListInput({ entries, onChange }: Props) {
     <div className="space-y-3">
       <ul className="space-y-3">
         {entries.map((entry, i) => (
-          <li key={i} className="flex flex-wrap items-center gap-2 rounded-[14px] bg-white p-3">
+          <li key={i} className="flex flex-wrap items-center gap-2">
             <input
               type="text"
               aria-label="定期項目の名目"
@@ -79,7 +79,7 @@ export default function RecurringEntryListInput({ entries, onChange }: Props) {
             <button
               type="button"
               onClick={() => onChange(entries.filter((_, idx) => idx !== i))}
-              className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral-soft"
+              className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral/10"
             >
               削除
             </button>

@@ -21,7 +21,7 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <p className="text-sm font-bold text-lms-sand-ink">賞与(通常のボーナスとは別に登録)</p>
+        <p className="text-sm font-bold text-lms-bonus-ink">賞与(通常のボーナスとは別に登録)</p>
         <ul className="space-y-2">
           {bonuses.map((bonus, i) => (
             <li key={i} className="flex items-center gap-2">
@@ -32,7 +32,7 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
                 onChange={(e) =>
                   onBonusesChange(bonuses.map((b, idx) => (idx === i ? { ...b, yearMonth: e.target.value } : b)))
                 }
-                className="rounded-full border border-lms-sand/50 bg-white px-3 py-1.5 text-xs outline-none"
+                className="rounded-full border border-lms-bonus bg-lms-bonus/40 px-3 py-1.5 text-xs outline-none"
               />
               <input
                 type="number"
@@ -42,12 +42,12 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
                   onBonusesChange(bonuses.map((b, idx) => (idx === i ? { ...b, amount: e.target.valueAsNumber } : b)))
                 }
                 placeholder="万円"
-                className="w-24 rounded-full border border-lms-sand/50 bg-white px-3 py-1.5 text-xs tabular-nums outline-none"
+                className="w-24 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none"
               />
               <button
                 type="button"
                 onClick={() => onBonusesChange(bonuses.filter((_, idx) => idx !== i))}
-                className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral-soft"
+                className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral/10"
               >
                 削除
               </button>
@@ -57,14 +57,14 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
         <button
           type="button"
           onClick={addBonus}
-          className="rounded-full bg-lms-sand-soft px-4 py-1.5 text-xs font-medium text-lms-sand-ink hover:bg-lms-sand/40"
+          className="rounded-full bg-lms-bonus px-4 py-1.5 text-xs font-medium text-lms-bonus-ink hover:brightness-95"
         >
           + 賞与を追加
         </button>
       </div>
 
       <div className="space-y-2">
-        <p className="text-sm font-bold text-lms-coral">イベント(一時的な追加支出)</p>
+        <p className="text-sm font-bold text-lms-sand-ink">イベント(一時的な追加支出)</p>
         <ul className="space-y-2">
           {events.map((event, i) => (
             <li key={i} className="flex flex-wrap items-center gap-2">
@@ -75,7 +75,7 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
                 onChange={(e) =>
                   onEventsChange(events.map((ev, idx) => (idx === i ? { ...ev, yearMonth: e.target.value } : ev)))
                 }
-                className="rounded-full border border-lms-coral/40 bg-white px-3 py-1.5 text-xs outline-none"
+                className="rounded-full border border-lms-sand-soft bg-lms-sand-soft/40 px-3 py-1.5 text-xs outline-none"
               />
               <input
                 type="text"
@@ -85,7 +85,7 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
                   onEventsChange(events.map((ev, idx) => (idx === i ? { ...ev, label: e.target.value } : ev)))
                 }
                 placeholder="名目(例: 結婚)"
-                className="min-w-0 flex-1 rounded-full border border-lms-coral/40 bg-white px-3 py-1.5 text-xs outline-none"
+                className="min-w-0 flex-1 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none"
               />
               <input
                 type="number"
@@ -95,12 +95,12 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
                   onEventsChange(events.map((ev, idx) => (idx === i ? { ...ev, amount: e.target.valueAsNumber } : ev)))
                 }
                 placeholder="万円"
-                className="w-24 rounded-full border border-lms-coral/40 bg-white px-3 py-1.5 text-xs tabular-nums outline-none"
+                className="w-24 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none"
               />
               <button
                 type="button"
                 onClick={() => onEventsChange(events.filter((_, idx) => idx !== i))}
-                className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral-soft"
+                className="shrink-0 rounded-full px-2 py-1 text-xs text-lms-coral hover:bg-lms-coral/10"
               >
                 削除
               </button>
@@ -110,7 +110,7 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
         <button
           type="button"
           onClick={addEvent}
-          className="rounded-full bg-lms-coral-soft px-4 py-1.5 text-xs font-medium text-lms-coral hover:bg-lms-coral/25"
+          className="rounded-full bg-lms-sand-soft px-4 py-1.5 text-xs font-medium text-lms-sand-ink hover:brightness-95"
         >
           + イベントを追加
         </button>
