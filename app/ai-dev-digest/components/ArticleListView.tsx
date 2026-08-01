@@ -14,7 +14,11 @@ const MAX_CARD_HEADINGS = 3
 // 記事が1件もない場合は案内文のみを表示する(requirements.md#一覧表示-3)
 export default function ArticleListView({ articles, currentPage, totalPages }: Props) {
   if (articles.length === 0) {
-    return <p className="text-sm text-gray-500">まだ記事がありません。しばらくお待ちください。</p>
+    return (
+      <p className="rounded-[35px] border border-lms-line-strong bg-lms-card p-6 text-sm text-lms-muted shadow-[0_1px_2px_rgba(16,64,56,0.04)]">
+        まだ記事がありません。しばらくお待ちください。
+      </p>
+    )
   }
 
   return (

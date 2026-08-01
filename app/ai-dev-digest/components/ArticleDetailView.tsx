@@ -41,31 +41,33 @@ export default function ArticleDetailView({ article }: Props) {
   const hasBelowCriteriaTopic = article.topics.some((topic) => topic.belowCriteria)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <header>
-        <h1 className="text-2xl font-bold text-gray-900">{buildArticleTitle(article.date)}</h1>
-        <p className="mt-1 text-sm text-gray-500">{article.date}</p>
-      </header>
+    <div className="min-h-screen bg-lms-canvas">
+      <div className="mx-auto max-w-2xl space-y-6 px-4 py-6 sm:px-8 sm:py-10">
+        <header>
+          <h1 className="text-2xl font-bold tracking-tight text-lms-ink">{buildArticleTitle(article.date)}</h1>
+          <p className="mt-1 text-sm text-lms-muted">{article.date}</p>
+        </header>
 
-      {hasBelowCriteriaTopic && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-          この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます。
-        </p>
-      )}
+        {hasBelowCriteriaTopic && (
+          <p className="rounded-[35px] bg-lms-sand-soft p-4 text-sm text-lms-sand-ink">
+            この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます。
+          </p>
+        )}
 
-      <div className="space-y-4">
-        {article.topics.map((topic) => (
-          <TopicSection key={topic.id} topic={topic} session={session} articleDate={article.date} />
-        ))}
+        <div className="space-y-4">
+          {article.topics.map((topic) => (
+            <TopicSection key={topic.id} topic={topic} session={session} articleDate={article.date} />
+          ))}
+        </div>
+
+        <footer className="pt-4">
+          <LoginStatus
+            session={session}
+            onLoginClick={() => void signInWithGoogle(window.location.href)}
+            onLogoutClick={() => void signOut()}
+          />
+        </footer>
       </div>
-
-      <footer className="pt-4">
-        <LoginStatus
-          session={session}
-          onLoginClick={() => void signInWithGoogle(window.location.href)}
-          onLogoutClick={() => void signOut()}
-        />
-      </footer>
     </div>
   )
 }

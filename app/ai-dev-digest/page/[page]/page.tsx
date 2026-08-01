@@ -24,11 +24,13 @@ export default async function ArticleListPageN({ params }: { params: Promise<{ p
   if (pageNumber > totalPages) notFound()
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <header>
-        <h1 className="text-2xl font-bold text-gray-900">AI駆動開発ダイジェスト</h1>
-      </header>
-      <ArticleListView articles={items} currentPage={pageNumber} totalPages={totalPages} />
+    <div className="min-h-screen bg-lms-canvas">
+      <div className="mx-auto max-w-2xl space-y-6 px-4 py-6 sm:px-8 sm:py-10">
+        <header>
+          <h1 className="text-2xl font-bold tracking-tight text-lms-ink">AI駆動開発ダイジェスト</h1>
+        </header>
+        <ArticleListView articles={items} currentPage={pageNumber} totalPages={totalPages} />
+      </div>
     </div>
   )
 }

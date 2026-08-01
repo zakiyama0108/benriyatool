@@ -15,15 +15,15 @@ export default function Pagination({ currentPage, totalPages }: Props) {
   if (totalPages <= 1) return null
 
   return (
-    <nav className="flex items-center justify-center gap-4 text-sm text-gray-600">
+    <nav className="flex items-center justify-center gap-4 text-sm text-lms-muted">
       {currentPage > 1 && (
-        <Link href={pageHref(currentPage - 1)} className="underline">
+        <Link href={pageHref(currentPage - 1)} className="text-lms-teal underline">
           前へ
         </Link>
       )}
       <span>{`${currentPage} / ${totalPages}`}</span>
       {currentPage < totalPages && (
-        <Link href={pageHref(currentPage + 1)} className="underline">
+        <Link href={pageHref(currentPage + 1)} className="text-lms-teal underline">
           次へ
         </Link>
       )}
