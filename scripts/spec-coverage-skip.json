@@ -767,7 +767,12 @@
   {
     "specFile": "life-money-sim/asset-projection/design.md",
     "item": "月次データを年次にまとめる処理",
-    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#表示単位の切り替え-2でテスト済み(assetProjection.test.ts)"
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#表示単位の切り替え-2、requirements.md#賞与・イベントの登録-3、requirements.md#定期的な収入・支出の登録-6でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "資産推移テーブルに金額を表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#賞与・イベントの登録-3、requirements.md#賞与・イベントの登録-4、requirements.md#定期的な収入・支出の登録-6でテスト済み(AssetProjectionTable.test.tsx)"
   },
   {
     "specFile": "life-money-sim/asset-projection/design.md",
@@ -1463,11 +1468,6 @@
     "specFile": "life-money-sim/saved-scenario/requirements.md",
     "item": "マイシナリオの表示 [1]",
     "reason": "ログイン中のみScenarioPanelを表示するというpage.tsxでのsession有無による出し分けで、本プロジェクトの方針でpage.tsx自体を単体テスト対象外としているため。npm run devでの動作確認で担保する"
-  },
-  {
-    "specFile": "life-money-sim/saved-scenario/requirements.md",
-    "item": "マイシナリオの表示 [2]",
-    "reason": "未ログイン時にScenarioPanel自体を表示しないというpage.tsxでの出し分けで、同上の理由により動作確認で担保する"
   },
   {
     "specFile": "life-money-sim/saved-scenario/requirements.md",

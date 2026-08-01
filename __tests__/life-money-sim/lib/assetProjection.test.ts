@@ -213,8 +213,8 @@ describe('月次データを年次にまとめる集計', () => {
       selfAge: undefined,
       spouseAge: undefined,
       childrenAges: [],
-      eventLabels: [],
-      hasBonus: false,
+      eventItems: [],
+      bonusAmount: 0,
       recurringLabels: [],
       ...partial,
     }
@@ -254,51 +254,65 @@ describe('月次データを年次にまとめる集計', () => {
     expect(result[0].selfAge).toBe(36)
   })
 
-  it('その年に発生したイベントの名目がすべて集められて年の行にまとめられること', () => {
+  // 仕様: specs/life-money-sim/asset-projection/requirements.md#賞与・イベントの登録-3
+  it('その年に発生したイベントの名目・金額がすべて集められて年の行にまとめられること(同じ名目でも合算しない)', () => {
     const rows: MonthlyProjectionRow[] = [
-      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, eventLabels: ['結婚'] }),
-      row({ yearMonth: '2026-09', netSurplus: 10, asset: 120, eventLabels: ['引っ越し'] }),
+      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, eventItems: [{ label: '結婚', amount: 30 }] }),
+      row({
+        yearMonth: '2026-09',
+        netSurplus: 10,
+        asset: 120,
+        eventItems: [
+          { label: '引っ越し', amount: 20 },
+          { label: '引っ越し', amount: 5 }, // 同じ名目で複数回発生しても、発生ごとに別物として合算せず残ること
+        ],
+      }),
     ]
     const result = aggregateYearly(rows)
-    expect(result[0].eventLabels).toEqual(['結婚', '引っ越し'])
+    expect(result[0].eventItems).toEqual([
+      { label: '結婚', amount: 30 },
+      { label: '引っ越し', amount: 20 },
+      { label: '引っ越し', amount: 5 },
+    ])
   })
 
-  it('その年のいずれかの月に賞与が登録されていれば、年の行もhasBonus=trueになること', () => {
+  // 仕様: specs/life-money-sim/asset-projection/requirements.md#賞与・イベントの登録-4
+  it('その年の複数の月に賞与の登録があれば、年の行のbonusAmountは合計額になること', () => {
     const rows: MonthlyProjectionRow[] = [
-      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, hasBonus: true }),
-      row({ yearMonth: '2026-09', netSurplus: 10, asset: 120, hasBonus: false }),
+      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, bonusAmount: 30 }),
+      row({ yearMonth: '2026-09', netSurplus: 10, asset: 120, bonusAmount: 20 }),
     ]
     const result = aggregateYearly(rows)
-    expect(result[0].hasBonus).toBe(true)
+    expect(result[0].bonusAmount).toBe(50)
   })
 
-  it('その年のどの月にも賞与が登録されていなければ、年の行はhasBonus=falseになること', () => {
+  it('その年のどの月にも賞与の登録がなければ、年の行のbonusAmountは0になること', () => {
     const rows: MonthlyProjectionRow[] = [
-      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, hasBonus: false }),
-      row({ yearMonth: '2026-09', netSurplus: 10, asset: 120, hasBonus: false }),
+      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, bonusAmount: 0 }),
+      row({ yearMonth: '2026-09', netSurplus: 10, asset: 120, bonusAmount: 0 }),
     ]
     const result = aggregateYearly(rows)
-    expect(result[0].hasBonus).toBe(false)
+    expect(result[0].bonusAmount).toBe(0)
   })
 
-  it('その年に該当した定期収入・定期支出の名目がすべて集められて年の行にまとめられること', () => {
+  // 仕様: specs/life-money-sim/asset-projection/requirements.md#定期的な収入・支出の登録-6
+  it('その年に該当した定期収入・定期支出は、名目・種別ごとに該当月の金額を合計して1件にまとめられること', () => {
     const rows: MonthlyProjectionRow[] = [
-      row({ yearMonth: '2026-04', netSurplus: 10, asset: 110, recurringLabels: [{ label: '家賃', type: 'expense' }] }),
+      row({ yearMonth: '2026-04', netSurplus: 10, asset: 110, recurringLabels: [{ label: '家賃', type: 'expense', amount: 8 }] }),
       row({
         yearMonth: '2026-07',
         netSurplus: 10,
         asset: 120,
         recurringLabels: [
-          { label: '家賃', type: 'expense' },
-          { label: '副業収入', type: 'income' },
+          { label: '家賃', type: 'expense', amount: 8 },
+          { label: '副業収入', type: 'income', amount: 5 },
         ],
       }),
     ]
     const result = aggregateYearly(rows)
     expect(result[0].recurringLabels).toEqual([
-      { label: '家賃', type: 'expense' },
-      { label: '家賃', type: 'expense' },
-      { label: '副業収入', type: 'income' },
+      { label: '家賃', type: 'expense', amount: 16 },
+      { label: '副業収入', type: 'income', amount: 5 },
     ])
   })
 })
@@ -331,7 +345,7 @@ describe('月次積み上げへの定期収入・支出の反映 - 該当月の�
     expect(rows[0].netSurplus).toBe(-3)
   })
 
-  it('定期項目一覧を渡した場合、該当月のrecurringLabelsに該当した名目が反映されること', () => {
+  it('定期項目一覧を渡した場合、該当月のrecurringLabelsに該当した名目・金額が反映されること', () => {
     const rows = buildMonthlyProjectionRows({
       ...baseParams,
       recurringEntries: [
@@ -339,6 +353,48 @@ describe('月次積み上げへの定期収入・支出の反映 - 該当月の�
       ],
     })
     expect(rows[0].recurringLabels).toEqual([])
-    expect(rows[1].recurringLabels).toEqual([{ label: '副業収入', type: 'income' }])
+    expect(rows[1].recurringLabels).toEqual([{ label: '副業収入', type: 'income', amount: 5 }])
+  })
+})
+
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#賞与・イベントの登録-3、specs/life-money-sim/asset-projection/requirements.md#賞与・イベントの登録-4
+describe('月次積み上げへの賞与・イベントの金額反映 - 該当月のeventItems・bonusAmountに金額を反映する', () => {
+  const baseParams = {
+    startYearMonth: '2026-01',
+    finalYearMonth: '2026-02',
+    startingAsset: 0,
+    monthlySurplus: 0,
+    selfBirthMonth: null,
+    spouseBirthMonth: null,
+    childrenBirthMonths: [],
+    recurringEntries: [],
+    investmentMode: false,
+    expectedAnnualRate: 0,
+  }
+
+  it('イベントの登録があれば、該当月のeventItemsに名目・金額が反映されること(複数件は名目ごとに並ぶ)', () => {
+    const rows = buildMonthlyProjectionRows({
+      ...baseParams,
+      bonuses: [],
+      events: [
+        { yearMonth: '2026-01', label: '結婚', amount: 30 },
+        { yearMonth: '2026-01', label: '結婚指輪', amount: 10 },
+      ],
+    })
+    expect(rows[0].eventItems).toEqual([
+      { label: '結婚', amount: 30 },
+      { label: '結婚指輪', amount: 10 },
+    ])
+    expect(rows[1].eventItems).toEqual([])
+  })
+
+  it('賞与の登録があれば、該当月のbonusAmountに合計額が反映されること(登録がない月は0)', () => {
+    const rows = buildMonthlyProjectionRows({
+      ...baseParams,
+      bonuses: [{ yearMonth: '2026-01', amount: 50 }],
+      events: [],
+    })
+    expect(rows[0].bonusAmount).toBe(50)
+    expect(rows[1].bonusAmount).toBe(0)
   })
 })
