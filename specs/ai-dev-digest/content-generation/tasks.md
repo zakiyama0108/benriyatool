@@ -3,7 +3,7 @@
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 要約(sections合計)の分量検証(仕様: requirements.md#要約-2〜3、design.md「要約の分量を検証する処理」)
-  - 🔴 sectionsのbody合計文字数が800字未満・1700字超で`false`、800〜1700字(境界値含む)で`true`になることを確認するテストを書く。あわせてsections配列が空、または各セクションのheading/bodyが空文字の場合に不正となることを確認するテストを書く
+  - 🔴 sectionsのbody合計文字数が800字未満・1700字超で`false`、800〜1700字(境界値含む)で`true`になることを確認するテストを書く。あわせてsections配列が1件(2件未満)の場合、または各セクションのheading/bodyが空文字の場合に不正となることを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/summaryValidation.ts`に`SUMMARY_TOTAL_MIN_LENGTH`/`SUMMARY_TOTAL_MAX_LENGTH`/`isValidSummaryLength(sections)`を実装する
 
 - Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-6、design.md「記事タイトルを導出する処理」)

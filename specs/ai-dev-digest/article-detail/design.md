@@ -105,7 +105,7 @@ sequenceDiagram
 - `date`: `YYYY-MM-DD`形式で、ファイル名と一致すること
 - `topics`: 配列長が1件以上5件以下であること(content-selection/requirements.md#1日の掲載件数-9〜10。基準を満たす候補が不足する日は1〜2件になりうる)
 - 各`topic`: `id`が記事内で重複しないこと、`heading`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`sourceType`が定義済み種別のいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須(false時は無くてよい)
-- `sections`: 配列長が1件以上であること。各セクションの`heading`/`body`が空文字でないこと。全セクションの`body`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字に対し、既存の要約分量チェック(80〜170字/目安100〜150字)と同じ比率のバッファを取った範囲。content-generation/requirements.md#要約-2)
+- `sections`: 配列長が**2件以上**であること(要件「複数のセクションに分けて構成する」により1件は不正。content-generation/requirements.md#要約-3)。各セクションの`heading`/`body`が空文字でないこと。全セクションの`body`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字に対し、既存の要約分量チェック(80〜170字/目安100〜150字)と同じ比率のバッファを取った範囲。content-generation/requirements.md#要約-2)
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(トリムした結果が空文字になる入力を拒否する)(requirements.md#運営者向けフィードバック-9)
 
 ## エラーハンドリング
