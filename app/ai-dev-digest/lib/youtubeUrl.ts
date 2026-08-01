@@ -1,4 +1,4 @@
-// YouTube動画IDの抽出(仕様: content-generation/requirements.md#著作権への配慮-4、
+// YouTube動画IDの抽出(仕様: content-generation/requirements.md#著作権への配慮-5、
 // design.md「YouTube動画IDを抽出する処理」)。抽出できた場合のみarticle-detail側で
 // youtube-nocookie.comドメインの公式埋め込みプレーヤーを表示する。抽出できない形式は
 // undefinedを返し、通常の出典リンク表示にフォールバックさせる

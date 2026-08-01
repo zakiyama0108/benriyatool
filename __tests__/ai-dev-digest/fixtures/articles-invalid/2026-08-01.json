@@ -4,7 +4,12 @@
     {
       "id": "topic-1",
       "heading": "不正な記事データ(テスト用)",
-      "summary": "短い",
+      "sections": [
+        {
+          "heading": "見出し",
+          "body": "短い本文"
+        }
+      ],
       "sourceType": "official",
       "sourceName": "Anthropic",
       "sourceUrl": "https://www.anthropic.com/news/example",

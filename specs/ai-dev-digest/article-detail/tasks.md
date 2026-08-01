@@ -14,7 +14,7 @@
   - 🟢 `app/ai-dev-digest/lib/types.ts`に`SourceType`/`Topic`/`Article`を定義する
 
 - Task 3: 記事データのバリデーション(仕様: design.md「バリデーション」)
-  - 🔴 正常な記事データ(1件のみのケースを含む)が検証を通ること、`topics`が0件/6件で失敗すること、`sourceType`が未定義値で失敗すること、`belowCriteria: true`かつ`belowCriteriaReason`欠落で失敗すること、`date`とファイル名不一致で失敗することを確認するテストを書く
+  - 🔴 正常な記事データ(1件のみのケースを含む)が検証を通ること、`topics`が0件/6件で失敗すること、`sourceType`が未定義値で失敗すること、`belowCriteria: true`かつ`belowCriteriaReason`欠落で失敗すること、`date`とファイル名不一致で失敗すること、`sections`が1件(2件未満)またはセクションの`heading`/`body`が空文字で失敗すること、`sections`のbody合計文字数が800〜1700字の範囲外で失敗することを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/articleSchema.ts`に`parseArticle(raw: unknown, filename: string): Article`を実装する(違反時は例外を投げる)
   - 🔵 エラーメッセージに違反内容(どのフィールドか)を含めて分かりやすくする
 
@@ -24,29 +24,29 @@
 
 ## 記事表示
 
-- Task 5: 情報源種別バッジ(仕様: requirements.md#記事本文表示-3)
+- Task 5: 情報源種別バッジ(仕様: requirements.md#記事本文表示-4)
   - 🔴 各`SourceType`に対応する日本語ラベルが表示されることを確認するテストを書く
   - 🟢 `app/ai-dev-digest/components/SourceBadge.tsx`を実装する
 
-- Task 6: YouTube埋め込み(仕様: design.md「その日の記事本文を表示する処理」手順4、content-generation/requirements.md#著作権への配慮-4)
+- Task 6: YouTube埋め込み(仕様: design.md「その日の記事本文を表示する処理」手順5、content-generation/requirements.md#著作権への配慮-5)
   - 🔴 `videoId`から`youtube-nocookie.com`ドメインの`<iframe>`が生成されることを確認するテストを書く
   - 🟢 `app/ai-dev-digest/components/YoutubeEmbed.tsx`を実装する
 
-- Task 7: トピック表示(見出し・要約・出典・基準未達バッジ)(仕様: requirements.md#記事本文表示-1〜3)
-  - 🔴 見出し・要約・発信者名・元URLリンクが表示されること、`youtubeVideoId`がある場合のみYoutubeEmbedが描画されること、`belowCriteria: true`の場合のみ「採用基準未達」バッジと理由が表示されることを確認するテストを書く
-  - 🟢 `app/ai-dev-digest/components/TopicSection.tsx`を実装する(SourceBadge/YoutubeEmbedを利用)
+- Task 7: トピック表示(見出し・章立て要約・出典・基準未達バッジ)(仕様: requirements.md#記事本文表示-1〜4)
+  - 🔴 見出し・全セクションの見出しと本文・発信者名・元URLリンクが表示されること、`youtubeVideoId`がある場合のみYoutubeEmbedが描画されること、`belowCriteria: true`の場合のみ「採用基準未達」バッジと理由が表示されることを確認するテストを書く
+  - 🟢 `app/ai-dev-digest/components/TopicSection.tsx`を実装する(SourceBadge/YoutubeEmbedを利用。`sections`配列を順に描画する)
 
 ## フィードバック機能
 
-- Task 8: フィードバック保存処理(仕様: requirements.md#運営者向けフィードバック-6、requirements.md#フィードバックの保存・権限-3)
+- Task 8: フィードバック保存処理(仕様: requirements.md#運営者向けフィードバック-7、requirements.md#フィードバックの保存・権限-3)
   - 🔴 Supabaseクライアントをモックし、`article_date`・`topic_id`・`comment`・`is_test`が正しいカラム名でinsertされることを確認するテストを書く(成功/失敗の両方で戻り値が正しいことも確認)
   - 🟢 `app/ai-dev-digest/lib/saveFeedback.ts`に`saveFeedback`を実装する(`isTestData`判定を含む。ロジックは`life-money-sim/lib/saveResult.ts`のテストデータ判定を踏襲)
 
-- Task 9: フィードバック入力欄(仕様: requirements.md#運営者向けフィードバック-7〜8、design.md「フィードバックを送信する処理」)
+- Task 9: フィードバック入力欄(仕様: requirements.md#運営者向けフィードバック-8〜9、design.md「フィードバックを送信する処理」)
   - 🔴 送信成功時に入力欄が空になり「送信しました」が表示されること、失敗時に入力内容が残り「送信に失敗しました。もう一度お試しください」が表示されること、入力欄が空文字または空白文字のみの場合は送信ボタンが無効化され送信されないことを確認するテストを書く
   - 🟢 `app/ai-dev-digest/components/FeedbackForm.tsx`を実装する
 
-- Task 10: ログイン状態によるフィードバック入力欄の表示切り替え(仕様: requirements.md#運営者向けフィードバック-5)
+- Task 10: ログイン状態によるフィードバック入力欄の表示切り替え(仕様: requirements.md#運営者向けフィードバック-6)
   - 🔴 セッションがある場合のみFeedbackFormが描画されることを確認するテストを書く(`isAuthorizedAdmin`は呼び出されないこともあわせて確認する)
   - 🟢 `TopicSection`に`session`propを渡し、条件付きレンダリングを実装する
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { extractYoutubeVideoId } from '../../../app/ai-dev-digest/lib/youtubeUrl'
 
-// 仕様: specs/ai-dev-digest/content-generation/requirements.md#著作権への配慮(根拠)-4、specs/ai-dev-digest/content-generation/design.md#YouTube動画IDを抽出する処理(決定的なコード)
+// 仕様: specs/ai-dev-digest/content-generation/requirements.md#著作権への配慮(根拠)-5、specs/ai-dev-digest/content-generation/design.md#YouTube動画IDを抽出する処理(決定的なコード)
 describe('YouTube動画IDの抽出 - 出典URLから公式埋め込みプレーヤー表示用の動画IDを取り出す', () => {
   it('youtube.com/watch?v=形式のURLから動画IDを抽出できること', () => {
     expect(extractYoutubeVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ')

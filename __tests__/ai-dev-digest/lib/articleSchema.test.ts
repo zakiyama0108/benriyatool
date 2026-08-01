@@ -1,11 +1,19 @@
 import { describe, it, expect } from 'vitest'
 import { parseArticle } from '../../../app/ai-dev-digest/lib/articleSchema'
 
+function validSections(overrides: Record<string, unknown>[] = []) {
+  if (overrides.length > 0) return overrides
+  return [
+    { heading: '何が発表されたか', body: 'あ'.repeat(500) },
+    { heading: '開発者への影響', body: 'い'.repeat(500) },
+  ]
+}
+
 function validTopic(overrides: Record<string, unknown> = {}) {
   return {
     id: 'topic-1',
     heading: 'Anthropicが新モデルを発表',
-    summary: 'あ'.repeat(120),
+    sections: validSections(),
     sourceType: 'official',
     sourceName: 'Anthropic',
     sourceUrl: 'https://www.anthropic.com/news/example',
@@ -65,7 +73,7 @@ describe('記事データのスキーマ検証 - ビルド時にJSONの構造・
     expect(() => parseArticle(validArticle({ date: '2026-08-02' }), '2026-08-01.json')).toThrow()
   })
 
-  it('id・heading・summary・sourceName・sourceUrlのいずれかが空文字のとき、検証エラーになること', () => {
+  it('id・heading・sourceName・sourceUrlのいずれかが空文字のとき、検証エラーになること', () => {
     const topics = [validTopic({ heading: '' })]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
   })
@@ -81,15 +89,61 @@ describe('記事データのスキーマ検証 - ビルド時にJSONの構造・
   })
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション、specs/ai-dev-digest/content-generation/requirements.md#要約-2
-describe('記事スキーマへの要約文字数検証の組み込み - isValidSummaryLengthで80〜170字の範囲外を拒否する', () => {
-  it('要約が79字(下限未満)のトピックを含む記事データは検証エラーになること', () => {
-    const topics = [validTopic({ summary: 'あ'.repeat(79) })]
+// 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション、specs/ai-dev-digest/content-generation/requirements.md#要約-3
+describe('記事スキーマへのセクション数検証の組み込み - sectionsが2件未満、またはheading/bodyが空文字のトピックを拒否する', () => {
+  it('sectionsが1件(2件未満)のとき、検証エラーになること', () => {
+    const topics = [validTopic({ sections: [{ heading: '見出し', body: 'あ'.repeat(1000) }] })]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
   })
 
-  it('要約が171字(上限超過)のトピックを含む記事データは検証エラーになること', () => {
-    const topics = [validTopic({ summary: 'あ'.repeat(171) })]
+  it('セクションのheadingが空文字のとき、検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        sections: [
+          { heading: '', body: 'あ'.repeat(500) },
+          { heading: '見出し2', body: 'い'.repeat(500) },
+        ],
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('セクションのbodyが空文字のとき、検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        sections: [
+          { heading: '見出し1', body: '' },
+          { heading: '見出し2', body: 'い'.repeat(1000) },
+        ],
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション、specs/ai-dev-digest/content-generation/requirements.md#要約-2
+describe('記事スキーマへの要約分量検証の組み込み - isValidSummaryLengthでsections合計800〜1700字の範囲外を拒否する', () => {
+  it('sectionsのbody合計が799字(下限未満)のトピックを含む記事データは検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        sections: [
+          { heading: '見出し1', body: 'あ'.repeat(400) },
+          { heading: '見出し2', body: 'い'.repeat(399) },
+        ],
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('sectionsのbody合計が1701字(上限超過)のトピックを含む記事データは検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        sections: [
+          { heading: '見出し1', body: 'あ'.repeat(900) },
+          { heading: '見出し2', body: 'い'.repeat(801) },
+        ],
+      }),
+    ]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
   })
 })

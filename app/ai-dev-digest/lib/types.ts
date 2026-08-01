@@ -5,10 +5,16 @@
 
 export type SourceType = 'official' | 'individual-youtube' | 'individual-blog' | 'qiita' | 'zenn'
 
+// 要約の章立て1セクション分(content-generation/requirements.md#要約-3)
+export type SummarySection = {
+  heading: string // セクション見出し
+  body: string // セクション本文
+}
+
 export type Topic = {
   id: string // 記事内で一意。フィードバックの紐付けに使う(例: "topic-1")。表示順=配列順
   heading: string
-  summary: string // 100〜150字程度(content-generation/requirements.md#要約-2に従う)
+  sections: SummarySection[] // 章立て構成の要約。目安2〜4セクション、本文合計1000〜1500字程度(content-generation/requirements.md#要約-2〜3に従う)
   sourceType: SourceType
   sourceName: string // 発信者名(例: "Anthropic"、"Andrej Karpathy")
   sourceUrl: string // 出典の元URL

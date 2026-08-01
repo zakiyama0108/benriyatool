@@ -10,14 +10,14 @@ type Props = {
 
 type Status = 'idle' | 'sending' | 'sent' | 'failed'
 
-// 運営者向けフィードバックの自由記述入力欄(仕様: requirements.md#運営者向けフィードバック-4、
-// requirements.md#運営者向けフィードバック-6〜8、design.md「フィードバックを送信する処理」)。
+// 運営者向けフィードバックの自由記述入力欄(仕様: requirements.md#運営者向けフィードバック-5、
+// requirements.md#運営者向けフィードバック-7〜9、design.md「フィードバックを送信する処理」)。
 // 入力・送信状態はトピックをまたいで共有しない(design.md「状態管理」)
 export default function FeedbackForm({ articleDate, topicId }: Props) {
   const [comment, setComment] = useState('')
   const [status, setStatus] = useState<Status>('idle')
 
-  // 空文字・空白文字のみの入力は送信できない(requirements.md#運営者向けフィードバック-8)
+  // 空文字・空白文字のみの入力は送信できない(requirements.md#運営者向けフィードバック-9)
   const isSendable = comment.trim().length > 0 && status !== 'sending'
 
   async function handleSubmit() {

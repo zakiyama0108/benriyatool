@@ -14,7 +14,10 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
   return {
     id: 'topic-1',
     heading: 'Anthropicが新モデルを発表',
-    summary: 'あ'.repeat(100),
+    sections: [
+      { heading: '何が発表されたか', body: 'あ'.repeat(500) },
+      { heading: '開発者への影響', body: 'い'.repeat(500) },
+    ],
     sourceType: 'official',
     sourceName: 'Anthropic',
     sourceUrl: 'https://www.anthropic.com/news/example',
@@ -27,15 +30,30 @@ function makeSession(email: string): Session {
   return { user: { email } } as Session
 }
 
-// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-1、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-2、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3、specs/ai-dev-digest/article-detail/requirements.md#表示分量・著作権配慮-2、specs/ai-dev-digest/content-generation/requirements.md#記事の構成-4、specs/ai-dev-digest/content-generation/requirements.md#著作権への配慮(根拠)-3
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-1、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-2、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-4、specs/ai-dev-digest/article-detail/requirements.md#表示分量・著作権配慮-2、specs/ai-dev-digest/content-generation/requirements.md#記事の構成-5、specs/ai-dev-digest/content-generation/requirements.md#著作権への配慮(根拠)-4
 describe('トピック表示 - 見出し・要約・出典(発信者名・元URLへのリンク)・情報源種別バッジをセットで表示する', () => {
-  it('見出し・要約・発信者名・出典URLへのリンクが表示されること', () => {
+  it('見出し・発信者名・出典URLへのリンクが表示されること', () => {
     render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" />)
     expect(screen.getByText('Anthropicが新モデルを発表')).toBeTruthy()
-    expect(screen.getByText('あ'.repeat(100))).toBeTruthy()
     const link = screen.getByRole('link', { name: 'Anthropic' })
     expect(link.href).toBe('https://www.anthropic.com/news/example')
     expect(link.target).toBe('_blank')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3、specs/ai-dev-digest/content-generation/requirements.md#要約-3
+describe('トピック表示 - 要約の各セクション(小見出し+本文)を配列順にすべて表示する', () => {
+  it('全セクションの見出しと本文がそれぞれ表示されること', () => {
+    render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" />)
+    expect(screen.getByText('何が発表されたか')).toBeTruthy()
+    expect(screen.getByText('あ'.repeat(500))).toBeTruthy()
+    expect(screen.getByText('開発者への影響')).toBeTruthy()
+    expect(screen.getByText('い'.repeat(500))).toBeTruthy()
+  })
+
+  it('セクション見出しがh3相当の見出しレベルで表示されること', () => {
+    render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" />)
+    expect(screen.getByRole('heading', { level: 3, name: '何が発表されたか' })).toBeTruthy()
   })
 })
 
@@ -74,7 +92,7 @@ describe('トピック表示 - belowCriteriaがtrueの場合のみ「採用基�
   })
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-5、specs/ai-dev-digest/article-detail/requirements.md#フィードバックの保存・権限-4
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-6、specs/ai-dev-digest/article-detail/requirements.md#フィードバックの保存・権限-4
 describe('フィードバック入力欄の表示切り替え - ログイン中(セッションあり)の場合のみ表示する', () => {
   it('セッションがある場合、フィードバック入力欄(テキストエリア)が表示されること', () => {
     render(<TopicSection topic={makeTopic()} session={makeSession('admin@example.com')} articleDate="2026-08-01" />)

@@ -1991,8 +1991,8 @@
   },
   {
     "specFile": "ai-dev-digest/content-generation/requirements.md",
-    "item": "要約 [3]",
-    "reason": "原文の詳細な展開・結論・数値を網羅的に転記しないという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。文字数上限のみコードで強制する)"
+    "item": "要約 [4]",
+    "reason": "原文の詳細な展開・結論・数値を網羅的に転記しないという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。分量の上下限のみコードで強制する)"
   },
   {
     "specFile": "ai-dev-digest/content-generation/requirements.md",
@@ -2001,12 +2001,17 @@
   },
   {
     "specFile": "ai-dev-digest/content-generation/requirements.md",
-    "item": "利用規約への反映 [5]",
+    "item": "著作権への配慮(根拠) [2]",
+    "reason": "要約分量を1000〜1500字程度に拡大する方針変更の経緯・理由を説明する記述で、テスト対象の振る舞いを持たないため(具体的な検証はrequirements.md#要約-2〜4・summaryValidation.test.tsで担保する)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "利用規約への反映 [6]",
     "reason": "TDD対象外の静的な文言追加のみのため(tasks.md Task5)。反映内容はspecs/legal/requirements.md・app/legal/page.tsxへの追記で担保する"
   },
   {
     "specFile": "ai-dev-digest/content-generation/requirements.md",
-    "item": "エージェントの逸脱防止 [6]",
+    "item": "エージェントの逸脱防止 [7]",
     "reason": "エージェントに適用するガードレール文言の記述で、コードとして実装・テストしないため(daily-publishの実行指示に含める運用上の対応)"
   },
   {

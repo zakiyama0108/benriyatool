@@ -40,7 +40,7 @@ describe('テストデータの判定 - 開発環境またはURLのtest=1パラ�
   })
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-6、specs/ai-dev-digest/article-detail/requirements.md#フィードバックの保存・権限-3
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-7、specs/ai-dev-digest/article-detail/requirements.md#フィードバックの保存・権限-3
 describe('フィードバックの保存 - 記事日付・トピックID・入力内容をai_dev_digest_feedbackテーブルへinsertする', () => {
   it('article_date・topic_id・comment・is_testが正しいカラム名でinsertされ、保存成功時にtrueが返ること', async () => {
     vi.stubEnv('NODE_ENV', 'production')

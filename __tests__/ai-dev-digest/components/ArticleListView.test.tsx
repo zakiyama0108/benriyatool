@@ -10,7 +10,10 @@ function makeArticle(date: string): Article {
       {
         id: 'topic-1',
         heading: '見出し',
-        summary: 'あ'.repeat(100),
+        sections: [
+          { heading: '見出し1', body: 'あ'.repeat(500) },
+          { heading: '見出し2', body: 'い'.repeat(500) },
+        ],
         sourceType: 'official',
         sourceName: 'Anthropic',
         sourceUrl: 'https://www.anthropic.com/news/example',

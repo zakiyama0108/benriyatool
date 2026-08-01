@@ -1,4 +1,4 @@
-import type { Article, SourceType, Topic } from './types'
+import type { Article, SourceType, SummarySection, Topic } from './types'
 import { isValidSummaryLength } from './summaryValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
@@ -23,6 +23,38 @@ function isHttpUrl(value: unknown): value is string {
   }
 }
 
+// topics[index].sections配列を検証・パースする(仕様: article-detail/design.md「バリデーション」)。
+// 配列長2件以上、各セクションのheading/bodyが空文字でないこと、body合計文字数が
+// SUMMARY_TOTAL_MIN_LENGTH〜SUMMARY_TOTAL_MAX_LENGTHの範囲内であることを確認する
+function parseSections(raw: unknown, index: number): SummarySection[] {
+  if (!Array.isArray(raw)) {
+    throw new Error(`topics[${index}].sectionsが配列ではありません`)
+  }
+
+  const sections = raw.map((section, sectionIndex): SummarySection => {
+    if (typeof section !== 'object' || section === null) {
+      throw new Error(`topics[${index}].sections[${sectionIndex}]がオブジェクトではありません`)
+    }
+    const record = section as Record<string, unknown>
+    if (!isNonEmptyString(record.heading)) {
+      throw new Error(`topics[${index}].sections[${sectionIndex}].headingが空文字です`)
+    }
+    if (!isNonEmptyString(record.body)) {
+      throw new Error(`topics[${index}].sections[${sectionIndex}].bodyが空文字です`)
+    }
+    return { heading: record.heading, body: record.body }
+  })
+
+  if (!isValidSummaryLength(sections)) {
+    const totalLength = sections.reduce((sum, section) => sum + section.body.length, 0)
+    throw new Error(
+      `topics[${index}].sectionsが不正です(配列長2件以上・body合計800〜1700字である必要があります): 配列長${sections.length}件、body合計${totalLength}字`
+    )
+  }
+
+  return sections
+}
+
 function parseTopic(raw: unknown, index: number): Topic {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error(`topics[${index}]がオブジェクトではありません`)
@@ -31,10 +63,7 @@ function parseTopic(raw: unknown, index: number): Topic {
 
   if (!isNonEmptyString(topic.id)) throw new Error(`topics[${index}].idが空文字です`)
   if (!isNonEmptyString(topic.heading)) throw new Error(`topics[${index}].headingが空文字です`)
-  if (!isNonEmptyString(topic.summary)) throw new Error(`topics[${index}].summaryが空文字です`)
-  if (!isValidSummaryLength(topic.summary)) {
-    throw new Error(`topics[${index}].summaryの文字数が範囲外です(80〜170字である必要があります): ${topic.summary.length}字`)
-  }
+  const sections = parseSections(topic.sections, index)
   if (typeof topic.sourceType !== 'string' || !SOURCE_TYPES.includes(topic.sourceType as SourceType)) {
     throw new Error(`topics[${index}].sourceTypeが未定義の種別です: ${String(topic.sourceType)}`)
   }
@@ -52,7 +81,7 @@ function parseTopic(raw: unknown, index: number): Topic {
   const result: Topic = {
     id: topic.id,
     heading: topic.heading,
-    summary: topic.summary,
+    sections,
     sourceType: topic.sourceType as SourceType,
     sourceName: topic.sourceName,
     sourceUrl: topic.sourceUrl,

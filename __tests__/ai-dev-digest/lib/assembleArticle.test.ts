@@ -6,7 +6,10 @@ import type { GeneratedTopicInput } from '../../../app/ai-dev-digest/lib/assembl
 function makeInput(overrides: Partial<GeneratedTopicInput> = {}): GeneratedTopicInput {
   return {
     heading: 'Anthropicが新モデルを発表',
-    summary: 'あ'.repeat(100),
+    sections: [
+      { heading: '何が発表されたか', body: 'あ'.repeat(500) },
+      { heading: '開発者への影響', body: 'い'.repeat(500) },
+    ],
     sourceType: 'official',
     sourceName: 'Anthropic',
     sourceUrl: 'https://www.anthropic.com/news/example',
@@ -22,6 +25,15 @@ describe('記事データの組み立て - 選定結果と生成済みの見出�
     expect(article.date).toBe('2026-08-01')
     expect(article.topics).toHaveLength(2)
     expect(article.topics[0].id).not.toBe(article.topics[1].id)
+  })
+
+  it('sections(章立て構成の要約)がそのままArticleのトピックに含まれること', () => {
+    const sections = [
+      { heading: '何が発表されたか', body: 'あ'.repeat(500) },
+      { heading: '開発者への影響', body: 'い'.repeat(500) },
+    ]
+    const article = assembleArticle('2026-08-01', [makeInput({ sections })])
+    expect(article.topics[0].sections).toEqual(sections)
   })
 
   it('youtubeVideoIdを持つトピックはそのままArticleに含まれ、持たないトピックには含まれないこと', () => {

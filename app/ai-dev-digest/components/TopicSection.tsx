@@ -10,10 +10,10 @@ type Props = {
   articleDate: string
 }
 
-// 1トピック分の表示(見出し・要約・出典・種別バッジ・YouTube埋め込み・基準未達表示)と、
-// 配下にフィードバック入力欄を条件付きで表示する(仕様: requirements.md#記事本文表示-1〜3、
+// 1トピック分の表示(見出し・章立て要約(sections)・出典・種別バッジ・YouTube埋め込み・
+// 基準未達表示)と、配下にフィードバック入力欄を条件付きで表示する(仕様: requirements.md#記事本文表示-1〜4、
 // design.md「その日の記事本文を表示する処理」「ログイン状態に応じてフィードバック入力欄の
-// 表示を切り替える処理」)。
+// 表示を切り替える処理」)。sectionsは配列順にセクション見出し(h3)+本文で表示する
 // **DBの読み取り(SELECT)は一切行わない**。isAuthorizedAdmin(admin_emailsのSELECT)は呼び出さず、
 // 渡されたセッションの有無だけで表示を切り替える(design.md参照。architecture.md#12-セキュリティ)
 export default function TopicSection({ topic, session, articleDate }: Props) {
@@ -28,8 +28,16 @@ export default function TopicSection({ topic, session, articleDate }: Props) {
         )}
       </div>
 
-      <h3 className="text-lg font-bold text-gray-900">{topic.heading}</h3>
-      <p className="mt-2 text-sm text-gray-700">{topic.summary}</p>
+      <h2 className="text-lg font-bold text-gray-900">{topic.heading}</h2>
+
+      <div className="mt-2 space-y-3">
+        {topic.sections.map((section, index) => (
+          <div key={index}>
+            <h3 className="text-sm font-semibold text-gray-800">{section.heading}</h3>
+            <p className="mt-1 text-sm text-gray-700">{section.body}</p>
+          </div>
+        ))}
+      </div>
 
       {topic.belowCriteria && topic.belowCriteriaReason && (
         <p className="mt-1 text-xs text-amber-700">{topic.belowCriteriaReason}</p>

@@ -9,7 +9,7 @@ beforeEach(() => {
   saveFeedbackMock.mockReset()
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-4、specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-7、specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-8、specs/ai-dev-digest/article-detail/design.md#フィードバックを送信する処理
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-5、specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-8、specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-9、specs/ai-dev-digest/article-detail/design.md#フィードバックを送信する処理
 describe('フィードバック入力欄 - 自由記述のコメントを入力・送信し、結果を画面に表示する', () => {
   it('入力欄が空文字のとき、送信ボタンが無効化されていること', () => {
     render(<FeedbackForm articleDate="2026-08-01" topicId="topic-1" />)
