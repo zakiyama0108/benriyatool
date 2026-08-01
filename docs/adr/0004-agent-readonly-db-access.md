@@ -9,11 +9,11 @@
 - `service_role`キーは全テーブル・全操作(SELECT/INSERT/UPDATE/DELETE)に対する無制限の権限を持つため、これをそのままエージェントに渡すのはADR-0001が意図的に避けてきた「クライアント側に強い権限を持たせない」という設計方針に反する
 
 ## 決定
-**`service_role`キーではなく、SELECTのみに限定した専用のPostgresロールを作成し、そのロールの接続文字列をエージェントのローカル実行環境(`.env.local`、gitignore対象・CIには含めない)にのみ配置する。**
+**`service_role`キーではなく、SELECTのみに限定した専用のPostgresロールを作成し、そのロールの接続文字列をエージェントの実行環境(対話セッションの`.env.local`、gitignore対象。またはClaude Routines実行環境のシークレット管理機能)にのみ配置する。CI・本番デプロイには含めない。**
 
 - ロール名: `benriyatool_readonly`。`login`属性のみ持ち、`BYPASSRLS`は付与しない(RLSは有効なまま)
 - 各`<アプリ名>_results`テーブルに、このロール向けの`SELECT`専用RLSポリシーを個別に追加する(`anon`のINSERT専用ポリシーとは別物)。新しいアプリのテーブルを作る際は、このポリシーもテンプレートとして追加する([ADR-0001](0001-user-input-database.md)の「テーブル作成+定型RLSポリシー適用」の一部に組み込む)
-- 接続は[ADR-0003](0003-db-schema-migration-ci.md)のマイグレーションと同じくSession Pooler(IPv4対応・ポート5432)を使う。GitHub Secretsには追加せず、ローカルの`.env.local`にのみ`SUPABASE_READONLY_DB_URL`として置く(CI・本番デプロイでは使わない、エージェントの対話セッション専用)
+- 接続は[ADR-0003](0003-db-schema-migration-ci.md)のマイグレーションと同じくSession Pooler(IPv4対応・ポート5432)を使う。GitHub Secretsには追加せず、CI・本番デプロイでは使わない。接続情報を保持してよい実行環境は、エージェントの対話セッション(ローカルの`.env.local`に`SUPABASE_READONLY_DB_URL`として保持)と、Claude Routines実行環境(当該実行環境のシークレット管理機能に同名の環境変数として保持)の2つとする(2026-08改定。当初は対話セッション専用だったが、月次実行のClaude Routineでの利用が必要になったため対象を拡大した。詳細は下記「[Claude Routines実行環境への対象拡大](#claude-routines実行環境への対象拡大2026-08改定)」参照)
 - クエリ実行は`.claude/skills/data-check/query.mjs`(`pg`パッケージを使う薄いスクリプト。依存は本体`package.json`から隔離し、[run-benriyatool](../../.claude/skills/run-benriyatool/SKILL.md)と同じパターンに揃える)で行う。TLS証明書検証はデフォルト(有効)のまま接続でき、無効化する必要はなかった
 - ロール作成・GRANT・RLSポリシー追加のSQLは、[ADR-0003](0003-db-schema-migration-ci.md)の`supabase/migrations/`には含めない。ロール作成にはパスワードが伴い、git管理下のファイルに残せないため、初回のみSupabaseダッシュボードのSQLエディタで手動実行する(下記「作業手順」参照)。この基盤はアプリの実行時スキーマ(INSERT時に使われるカラム等)に影響しない運用ツールであり、ADR-0003が対象とする「アプリの前提となるスキーマ変更」とは性質が異なるため、コード管理・CI自動適用の対象外とする
 
@@ -34,6 +34,14 @@ create policy "benriyatool_readonly can select" on ikukyu_results
 - [data-check](../../.claude/skills/data-check/SKILL.md)の運用を更新: 接続情報が設定済みの環境では、エージェントがこのスクリプトで直接クエリを実行し結果を分析する。未設定の環境(接続情報を用意していないマシン・別セッション)では、従来どおりユーザーにSQLを渡して代行実行してもらう
 - 集計にとどまらない個人特定目的のクエリ(特定ユーザーの追跡など)は行わない方針は維持する(data-check SKILL.mdの既存ルール)
 
+### Claude Routines実行環境への対象拡大(2026-08改定)
+
+[ai-dev-digest/watchlist-review](../../specs/ai-dev-digest/watchlist-review/design.md)の月次Claude Routineが、フィードバック・掲載実績の集計のために`ai_dev_digest_feedback`テーブルを`benriyatool_readonly`ロールで読み取る必要が生じた。当初の本ADRは接続情報の保持対象をエージェントの対話セッション(ローカル`.env.local`)専用としており、それ以外の実行環境では接続情報が無い前提だった。月次実行のたびに人手を介するユーザー代行フローにフォールバックする運用は、月1回とはいえ自動化の意図に反するため、対象範囲を見直した。
+
+- **変更**: 接続情報を保持してよい対象に、エージェントの対話セッションに加えてClaude Routines実行環境を正式に含める。Routine実行環境側では、当該実行環境が提供するシークレット管理機能に`SUPABASE_READONLY_DB_URL`として保持し、このリポジトリ・GitHub Actions Secretsには追加しない(対話セッション向けの`.env.local`と同じ「CI・本番デプロイでは使わない」方針は維持する)
+- **変更しない点**: `benriyatool_readonly`ロールの権限(SELECT専用・BYPASSRLSなし)、RLSポリシーの追加手順、`service_role`キーを使わない方針はいずれも変更しない
+- **新たな懸念**: Claude Routines実行環境のシークレット管理方法(接続文字列の登録・ローテーション手順)は本プロジェクトで前例がなく、運用実績による検証が済んでいない(下記「懸念点」に追記)
+
 ## 検討した代替案
 
 | 候補 | 見送り理由 |
@@ -52,4 +60,5 @@ create policy "benriyatool_readonly can select" on ikukyu_results
 **懸念点**
 - `.env.local`に新しい機微情報(DBパスワードを含む接続文字列)が増える。既存の`NEXT_PUBLIC_*`と異なりサーバー専用の秘匿情報であるため、`.gitignore`対象であることを維持し、絶対にコミット・ログ出力しないよう注意する(`query.mjs`は接続文字列自体を出力しない設計にしている)
 - 新しいアプリのテーブルを追加するたびに、`benriyatool_readonly`向けのSELECTポリシー追加を忘れると、そのテーブルだけdata-checkの直接クエリ対象から漏れる(手順に組み込み済みだが、レビューで見落とし得る)
-- ローカル環境(このマシン)以外のセッション・エージェント実行環境では接続情報が無いため、従来どおりユーザー代行のフローにフォールバックする必要がある
+- 接続情報を用意していない環境(未設定のローカルマシン・別セッション)では、従来どおりユーザー代行のフローにフォールバックする必要がある(2026-08改定: Claude Routines実行環境は接続情報を保持できる対象に追加されたため、フォールバックが必要なのはそれ以外の未設定環境に限られる)
+- Claude Routines実行環境のシークレット管理方法は本プロジェクトで前例がなく、運用実績による検証が済んでいない(2026-08追記。設定ミス・漏洩経路の想定が、確立済みの`.env.local`運用ほど固まっていない点に留意し、[watchlist-review](../../specs/ai-dev-digest/watchlist-review/design.md)の運用開始前に設定手順を確認する)
