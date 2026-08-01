@@ -49,6 +49,20 @@ export default function HubPage() {
             </div>
           </div>
         </Link>
+        <Link
+          href="/ai-dev-digest"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">🤖</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">AI駆動開発ダイジェスト</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                AI駆動開発関連の話題を1日1回まとめてお届け
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
     </div>
   )

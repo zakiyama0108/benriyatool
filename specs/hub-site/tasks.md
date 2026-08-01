@@ -38,9 +38,9 @@
 
 ## 掲載漏れの解消・再発防止(2026-08-01)
 
-`/life-money-sim`(資産推移シミュレーター)が本番公開済みにもかかわらず、トップページのツールカード一覧に未掲載だったため対応する(README「アプリ一覧」表には掲載されていたが、ハブページ側の更新が漏れていた)。
+`/life-money-sim`(資産推移シミュレーター)・`/ai-dev-digest`(AI駆動開発ダイジェスト)が本番公開済みにもかかわらず、トップページのツールカード一覧に未掲載だったため対応する(README「アプリ一覧」表には掲載されていたが、ハブページ側の更新が漏れていた)。
 
-- [x] Task 7: 資産推移シミュレーターのカードを追加
-  - [x] 🔴 Red: `__tests__/page.test.tsx`に、育休給付金シミュレーター・資産推移シミュレーターの両方のカードが表示されることを検証するテストを書く(仕様コメント: `specs/hub-site/requirements.md#機能要件-2`)
-  - [x] 🟢 Green: `app/page.tsx`に資産推移シミュレーターのカード(`/life-money-sim`)を追加する
+- [x] Task 7: 資産推移シミュレーター・AI駆動開発ダイジェストのカードを追加
+  - [x] 🔴 Red: `__tests__/page.test.tsx`に、公開済み3アプリ(育休給付金シミュレーター・資産推移シミュレーター・AI駆動開発ダイジェスト)のカードが表示されることを検証するテストを書く(仕様コメント: `specs/hub-site/requirements.md#機能要件-2`)
+  - [x] 🟢 Green: `app/page.tsx`に資産推移シミュレーター(`/life-money-sim`)・AI駆動開発ダイジェスト(`/ai-dev-digest`)のカードを追加する
   - [x] requirements.mdに機能要件[2](掲載漏れ防止のルール)を追加し、[/requirement](../../.claude/skills/requirement/SKILL.md)・[/implementation](../../.claude/skills/implementation/SKILL.md)に新規アプリ初回リリース時のチェック項目を追記する
