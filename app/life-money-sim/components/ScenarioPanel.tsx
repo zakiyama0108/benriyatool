@@ -70,7 +70,7 @@ export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: P
           }}
           disabled={isSaving}
           placeholder="シナリオ名"
-          className="flex-1 rounded-full border border-lms-line bg-white px-3 py-1.5 text-sm text-lms-ink disabled:opacity-40"
+          className="flex-1 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-sm text-lms-ink disabled:opacity-40"
         />
         <button
           onClick={() => void handleSaveClick()}

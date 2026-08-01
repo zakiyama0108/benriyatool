@@ -34,7 +34,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
               value={item.name}
               onChange={(e) => updateItem(index, { name: e.target.value })}
               placeholder="名称"
-              className="min-w-0 flex-1 rounded-full border border-lms-line bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
+              className="min-w-0 flex-1 rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
             />
             <input
               type="number"
@@ -42,7 +42,7 @@ export default function ExpenseListInput({ items, onChange, label }: Props) {
               value={Number.isFinite(item.amount) ? item.amount : ''}
               onChange={(e) => updateItem(index, { amount: e.target.valueAsNumber })}
               placeholder="万円"
-              className="w-24 rounded-full border border-lms-line bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-teal"
+              className="w-24 rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-teal"
             />
             <button
               type="button"

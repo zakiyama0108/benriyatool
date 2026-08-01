@@ -31,7 +31,7 @@ export default function ModeToggle({ value, onChange }: Props) {
             type="number"
             value={Number.isFinite(value.expectedAnnualRate) ? value.expectedAnnualRate : ''}
             onChange={(e) => onChange({ ...value, expectedAnnualRate: e.target.valueAsNumber })}
-            className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-teal"
+            className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-teal"
           />
         </label>
       )}
