@@ -178,3 +178,20 @@ describe('1日分のトピック選定 - 採用基準を満たす候補数に応
     expect(result.status).toBe('skipped')
   })
 })
+
+// 仕様: specs/ai-dev-digest/daily-publish/requirements.md#掲載件数の保証-1
+describe('日次公開における掲載件数の保証 - 基準未達の候補を含めても実在する候補が1件以上あれば記事公開をスキップしない', () => {
+  it('基準を満たす候補が0件でも、実在する基準未達候補が1件あればスキップせずその1件を採用すること', () => {
+    const result = selectDailyTopics([baseCandidate({ sourceId: 'q1', heading: 'q1', sourceType: 'qiita', metricValue: 1 })], criteria)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics).toHaveLength(1)
+      expect(result.topics[0].belowCriteria).toBe(true)
+    }
+  })
+
+  it('実在する候補が1件もないときのみ、その日はスキップすること', () => {
+    const result = selectDailyTopics([], criteria)
+    expect(result.status).toBe('skipped')
+  })
+})
