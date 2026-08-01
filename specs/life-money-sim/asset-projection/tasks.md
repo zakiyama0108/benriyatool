@@ -135,7 +135,7 @@
   - [x] 🔴 `aggregateYearly`が、`eventItems`はその年の発生分をすべてそのまま集める(合算しない)こと、`recurringLabels`は名目・種別ごとにその年の該当月の金額を合計して1件にまとめること、`bonusAmount`はその年の該当月の合計額になることを確認するテストに書き換える
   - [x] 🟢 `buildMonthlyProjectionRows`・`aggregateYearly`を実装し直す
 
-- [ ] Task 30: 資産推移テーブルの金額表示(仕様: design.md#資産推移テーブルに金額を表示する処理)
+- [x] Task 30: 資産推移テーブルの金額表示(仕様: design.md#資産推移テーブルに金額を表示する処理)
   - [x] 🔴 `AssetProjectionTable`のコンポーネントテストを新規に書く(`__tests__/life-money-sim/components/AssetProjectionTable.test.tsx`): 賞与・イベント・定期項目それぞれについて、名目に加えて金額(万円)が表示されることを確認する
   - [x] 🟢 `AssetProjectionTable.tsx`(`EventCell`)を、名目の直後に金額を表示するよう実装し直す。色分け(賞与・定期収入=ティール文字、イベント・定期支出=コーラル文字)は維持する
-  - [ ] `/run`(run-benriyatoolスキル)で、賞与・イベント・定期的な収入支出を追加した直後にテーブルへ名目と金額が表示されることを実機確認する
+  - [x] `/run`(run-benriyatoolスキル)で、賞与・イベント・定期的な収入支出を追加した直後にテーブルへ名目と金額が表示されることを実機確認する
