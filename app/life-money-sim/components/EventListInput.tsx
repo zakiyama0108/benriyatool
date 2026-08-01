@@ -42,7 +42,7 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
                   onBonusesChange(bonuses.map((b, idx) => (idx === i ? { ...b, amount: e.target.valueAsNumber } : b)))
                 }
                 placeholder="万円"
-                className="w-24 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none"
+                className="w-24 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
               />
               <button
                 type="button"
@@ -85,7 +85,7 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
                   onEventsChange(events.map((ev, idx) => (idx === i ? { ...ev, label: e.target.value } : ev)))
                 }
                 placeholder="名目(例: 結婚)"
-                className="min-w-0 flex-1 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none"
+                className="min-w-0 flex-1 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
               />
               <input
                 type="number"
@@ -95,7 +95,7 @@ export default function EventListInput({ bonuses, onBonusesChange, events, onEve
                   onEventsChange(events.map((ev, idx) => (idx === i ? { ...ev, amount: e.target.valueAsNumber } : ev)))
                 }
                 placeholder="万円"
-                className="w-24 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none"
+                className="w-24 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
               />
               <button
                 type="button"

@@ -26,7 +26,7 @@ export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasS
           type="month"
           value={profile.selfBirthMonth ?? ''}
           onChange={(e) => onChange({ ...profile, selfBirthMonth: e.target.value || null })}
-          className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
+          className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
         />
       </label>
 
@@ -46,7 +46,7 @@ export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasS
             type="month"
             value={profile.spouseBirthMonth ?? ''}
             onChange={(e) => onChange({ ...profile, spouseBirthMonth: e.target.value || null })}
-            className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
+            className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
           />
         </label>
       )}
@@ -56,7 +56,7 @@ export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasS
         <select
           value={profile.childrenCount}
           onChange={(e) => setChildrenCount(Number(e.target.value))}
-          className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
+          className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
         >
           {Array.from({ length: MAX_CHILDREN + 1 }, (_, n) => (
             <option key={n} value={n}>
@@ -78,7 +78,7 @@ export default function FamilyProfileForm({ profile, onChange, hasSpouse, onHasS
               )
               onChange({ ...profile, childrenBirthMonths })
             }}
-            className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-teal"
+            className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
           />
         </label>
       ))}

@@ -33,7 +33,7 @@ export default function RecurringEntryListInput({ entries, onChange }: Props) {
               value={entry.label}
               onChange={(e) => updateEntry(i, { label: e.target.value })}
               placeholder="名目(例: 家賃)"
-              className="min-w-0 flex-1 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none"
+              className="min-w-0 flex-1 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
             />
             <input
               type="number"
@@ -41,13 +41,13 @@ export default function RecurringEntryListInput({ entries, onChange }: Props) {
               value={Number.isFinite(entry.amount) ? entry.amount : ''}
               onChange={(e) => updateEntry(i, { amount: e.target.valueAsNumber })}
               placeholder="万円"
-              className="w-24 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none"
+              className="w-24 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
             />
             <select
               aria-label="定期項目の種別"
               value={entry.type}
               onChange={(e) => updateEntry(i, { type: e.target.value as RecurringEntry['type'] })}
-              className="rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none"
+              className="rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
             >
               <option value="income">収入</option>
               <option value="expense">支出</option>
@@ -57,14 +57,14 @@ export default function RecurringEntryListInput({ entries, onChange }: Props) {
               aria-label="定期項目の開始月"
               value={entry.startYearMonth}
               onChange={(e) => updateEntry(i, { startYearMonth: e.target.value })}
-              className="rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none"
+              className="rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
             />
             <input
               type="month"
               aria-label="定期項目の終了月"
               value={entry.endYearMonth}
               onChange={(e) => updateEntry(i, { endYearMonth: e.target.value })}
-              className="rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none"
+              className="rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
             />
             <label className="flex items-center gap-1 text-xs text-lms-muted">
               <input
@@ -72,7 +72,7 @@ export default function RecurringEntryListInput({ entries, onChange }: Props) {
                 aria-label="定期項目の頻度(何ヶ月ごとか)"
                 value={Number.isFinite(entry.frequencyMonths) ? entry.frequencyMonths : ''}
                 onChange={(e) => updateEntry(i, { frequencyMonths: e.target.valueAsNumber })}
-                className="w-16 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none"
+                className="w-16 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-xs tabular-nums outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
               />
               ヶ月ごと
             </label>
