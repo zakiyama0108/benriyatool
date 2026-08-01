@@ -9,7 +9,7 @@ AI駆動開発関連の話題コンテンツ(公式組織のブログ・YouTube�
 - 通常はPRレビューが必須のこのプロジェクトの運用に対し、日次記事の完全自動マージという例外を[daily-publish](daily-publish/requirements.md)に明確に限定し、ウォッチリスト変更等の影響が大きい変更([watchlist-review](watchlist-review/requirements.md))には人間承認を残す
 
 ## 3. 設計方針
-- 記事本文はDBに保存せず、ビルド時に取り込まれる静的コンテンツ(Markdown等)として管理する(ブログ的な運用の方が実態に合うため。DBを介さないことで[ADR-0001](../../docs/adr/0001-user-input-database.md)が前提とする「サーバー機能を持たない」構成を保つ)
+- 記事本文はDBに保存せず、ビルド時に取り込まれる静的コンテンツ(JSON。[article-detail/design.md](article-detail/design.md)で確定)として管理する(ブログ的な運用の方が実態に合うため。DBを介さないことで[ADR-0001](../../docs/adr/0001-user-input-database.md)が前提とする「サーバー機能を持たない」構成を保つ)
 - 運営者フィードバックの保存だけは既存の[ADR-0001](../../docs/adr/0001-user-input-database.md)パターン(anonキーでINSERT専用)をそのまま踏襲し、新しい認証・DB設計を増やさない
 - ウォッチリスト・採用基準の変更([watchlist-review](watchlist-review/requirements.md))は、日次記事公開([daily-publish](daily-publish/requirements.md))と異なる自動マージポリシーを適用し、影響範囲の大きさに応じてPRの扱いを分ける
 
@@ -24,7 +24,7 @@ flowchart TD
     dailyRoutine["Claude Routines(日次)<br>収集・翻訳・要約・記事執筆"]
     monthlyRoutine["Claude Routines(月次)<br>ウォッチリスト・基準の見直し"]
     sources["情報源<br>公式API・公式RSS・公式ブログ・公開ページ"]
-    repo["GitHubリポジトリ<br>(記事Markdown)"]
+    repo["GitHubリポジトリ<br>(記事JSON・ウォッチリスト設定)"]
     dailyPR["日次記事PR<br>(完全自動マージ)"]
     reviewPR["見直し提案PR<br>(人間承認必須)"]
     feedbackDb[("Supabase<br>ai_dev_digest_feedbackテーブル")]
@@ -35,7 +35,7 @@ flowchart TD
     cf --> list
     cf --> detail
     dailyRoutine -->|情報取得| sources
-    dailyRoutine -->|記事Markdownを追加| dailyPR
+    dailyRoutine -->|記事JSONを追加| dailyPR
     dailyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
     detail -->|フィードバックを保存 - anonキーでINSERTのみ| feedbackDb
@@ -49,7 +49,7 @@ flowchart TD
 この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specの設計書。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。
 
 ## 5. アーキテクチャ概要
-Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくMarkdown等のコンテンツファイルとしてリポジトリ内に置き、ビルド時に取り込む。日次のClaude Routineが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を閲覧でき、運営者はGoogle OIDCでログインした状態で記事詳細ページに表示されるフィードバック欄から選定基準への気づきを残せる(既存のanonキーINSERT専用パターンを流用、DB読み取りは発生しない)。月次のClaude Routineがフィードバックと掲載実績を読み、ウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
+Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のClaude Routineが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を閲覧でき、運営者はGoogle OIDCでログインした状態で記事詳細ページに表示されるフィードバック欄から選定基準への気づきを残せる(既存のanonキーINSERT専用パターンを流用、DB読み取りは発生しない)。月次のClaude Routineがフィードバックと掲載実績を読み、ウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -96,7 +96,15 @@ flowchart LR
 この図の正となる文章は「[7. 機能マップ](#7-機能マップ)」の依存列と、各specのrequirements.mdの依存関係。
 
 ## 9. ディレクトリ構成
-CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。ただし記事本文はコード資産(`app/`)ではなくコンテンツデータとして別途管理する(格納場所・形式は設計で確定する)。
+CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。ただし記事本文・ウォッチリスト・採用基準はコード資産(`app/`)ではなくコンテンツデータとして`content/ai-dev-digest/`配下に別途管理する(設計確定: [article-detail/design.md](article-detail/design.md)、[content-selection/design.md](content-selection/design.md))。
+
+```
+content/ai-dev-digest/articles/<date>.json  # 1日1ファイルの記事データ(daily-publishが追加)
+content/ai-dev-digest/watchlist.json        # 情報源ウォッチリスト(watchlist-reviewが変更)
+content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-reviewが変更)
+```
+
+収集・選定・記事組み立てのスクリプトはNext.jsアプリの一部ではないため`scripts/ai-dev-digest/`配下に置く(既存の`scripts/check-spec-coverage.mjs`と同じ置き場所の考え方)。DB読み取りを伴うスクリプト([watchlist-review](watchlist-review/design.md)が使う`collect-review-data`)は、依存関係を本体`package.json`から隔離した独立パッケージにする(`.claude/skills/data-check/`と同じ隔離パターン)。
 
 ## 10. 外部サービス
 | サービス | 用途 |
@@ -106,8 +114,25 @@ CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。ただ�
 | YouTube公式API・各社公式RSSフィード・各社公式ブログ・Qiita公式API・Zenn公式RSS | 情報源データの取得([content-selection/requirements.md#データ取得方法](content-selection/requirements.md)) |
 | Claude Routines | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))の定期実行基盤 |
 
+このアプリが使うテーブルのER図。他アプリのテーブルとのリレーションは持たない(anonのINSERT専用、docs/adr/0004の`benriyatool_readonly`ロールのSELECT専用。ADR-0006の運営者専用SELECTポリシーは追加しないため`admin_emails`との関係もない)。
+
+```mermaid
+erDiagram
+    ai_dev_digest_feedback {
+        uuid id PK
+        timestamptz created_at
+        boolean is_test
+        date article_date
+        text topic_id
+        text comment
+    }
+```
+
+各カラムの正となる文章は[article-detail/design.md#データベース設計](article-detail/design.md#データベース設計)。
+
 ## 11. 関連ADR
 - [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 運営者フィードバック保存のDB選定・RLSパターン(anonキーでのINSERT専用)をそのまま踏襲
+- [0004-agent-readonly-db-access.md](../../docs/adr/0004-agent-readonly-db-access.md) — [watchlist-review](watchlist-review/design.md)の月次Claude Routineが`ai_dev_digest_feedback`を読む際、`benriyatool_readonly`ロールのSELECT専用ポリシーをこのテーブルにも追加して利用する
 - [0006-admin-screen-oidc-rls.md](../../docs/adr/0006-admin-screen-oidc-rls.md) — フィードバック入力欄の表示切り替えに使うGoogle OIDCログイン判定の基盤(`app/lib/adminAuth.ts`)を流用。ただし本アプリはDBの読み取り(SELECT)を必要としないため、同ADRが定める「運営者専用SELECTポリシーの追加」は行わない
 
 ## 12. セキュリティ
