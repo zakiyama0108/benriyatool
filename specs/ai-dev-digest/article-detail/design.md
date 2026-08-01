@@ -12,16 +12,23 @@
 // app/ai-dev-digest/lib/types.ts
 export type SourceType = 'official' | 'individual-youtube' | 'individual-blog' | 'qiita' | 'zenn'
 
+// 要約の章立て1セクション分(content-generation/requirements.md#要約-2〜5)
+export type SummarySection = {
+  heading: string // セクション見出し
+  teaser: string // 常時表示する導入文。60〜120字程度(content-generation/requirements.md#要約-3)
+  detail: string // 「詳細を見る」操作で展開表示する詳細文(content-generation/requirements.md#要約-4)
+}
+
 export type Topic = {
   id: string // 記事内で一意。フィードバックの紐付けに使う(例: "topic-1")。表示順=配列順
   heading: string
-  summary: string // 100〜150字程度(content-generation/requirements.md#要約-2に従う)
+  sections: SummarySection[] // 章立て構成の要約。目安2〜4セクション、detail合計1000〜1500字程度(content-generation/requirements.md#要約-2〜5に従う)
   sourceType: SourceType
   sourceName: string // 発信者名(例: "Anthropic"、"Andrej Karpathy")
   sourceUrl: string // 出典の元URL
   youtubeVideoId?: string // YouTube動画を紹介する場合のみ。公式埋め込みプレーヤー表示に使う
   belowCriteria: boolean // 採用基準未達での掲載(content-selection/requirements.md#1日の掲載件数-10)
-  belowCriteriaReason?: string // belowCriteriaがtrueの場合のみ必須。基準からの乖離内容(例: "いいね数18件(基準30件に11件不足)")
+  belowCriteriaReason?: string // belowCriteriaがtrueの場合のみ必須。基準からの乖離内容(例: "いいね数18件(基準30件に12件不足)")
 }
 
 export type Article = {
@@ -30,7 +37,9 @@ export type Article = {
 }
 ```
 
-記事タイトルはJSONに保存せず、`date`から`buildArticleTitle(date)`(content-generation/design.md参照)で常に導出する。タイトルをエージェントに毎回生成させると表現が揺れたり誇張表現に流れたりするリスクがあるため、日付から一意に決まる決定的な処理にする(content-generation/requirements.md#記事の構成-5、content-generation/requirements.md#エージェントの逸脱防止-6と対になる設計判断)。
+要約を単一の`summary: string`ではなく`sections: SummarySection[]`という構造化フィールドにしたのは、章立て(小見出し+導入文+詳細文)を画面側で機械的に描画するため。改行区切りのMarkdown的な単一文字列だと、見出し・導入文・詳細文の境界をパースする処理が別途必要になり事故が起きやすいため、JSONの構造自体で章立てと二段表示を表現する設計とした(要件に構造の指定はないため設計判断)。
+
+記事タイトルはJSONに保存せず、`date`から`buildArticleTitle(date)`(content-generation/design.md参照)で常に導出する。タイトルをエージェントに毎回生成させると表現が揺れたり誇張表現に流れたりするリスクがあるため、日付から一意に決まる決定的な処理にする(content-generation/requirements.md#記事の構成-8、content-generation/requirements.md#エージェントの逸脱防止-8と対になる設計判断)。
 
 ## 処理フロー
 
@@ -46,11 +55,13 @@ export type Article = {
 - 対象: 読み込んだ記事データ
 - 手順:
   1. `buildArticleTitle(date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
-  2. `topics`配列の順に、各トピックの見出し・要約・出典(発信者名・タイトル代わりの見出しへのリンク・元URL)を表示する
-  3. 各トピックには情報源の種別(公式組織/個人YouTube/個人ブログ/Qiita/Zenn)が分かるバッジを表示する(表示位置・文言は「画面設計」参照)
-  4. `youtubeVideoId`を持つトピックは、要約の下にYouTube公式の埋め込みプレーヤー(`<iframe>`、`youtube-nocookie.com`ドメイン)を表示する(content-generation/requirements.md#著作権への配慮-4)。持たない場合は表示しない
-  5. `belowCriteria`が`true`のトピックには「採用基準未達」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます」という注記を1回だけ表示する(繰り返し表示による煩雑さを避けるため)
-- 関連するビジネスルール: requirements.md#記事本文表示-1〜3、requirements.md#表示分量・著作権配慮-1〜2
+  2. `topics`配列の順に、各トピックの見出し・出典(発信者名・タイトル代わりの見出しへのリンク・元URL)を表示する
+  3. 各トピックの`sections`配列の順に、セクション見出し(`h3`相当)と導入文(`teaser`)を常時表示する(content-generation/requirements.md#要約-3)
+  4. 各セクションの導入文の下に、HTML標準の`<details><summary>詳細を見る</summary>…</details>`要素を配置し、`<summary>`を操作すると詳細文(`detail`)が展開表示されるようにする。ブラウザ標準機能で開閉できるため、開閉状態を保持するJavaScriptの状態管理を自前で持つ必要がない(要件「操作前は導入文のみ、操作後に詳細文」に対応。requirements.md#記事本文表示-4)
+  5. 各トピックには情報源の種別(公式組織/個人YouTube/個人ブログ/Qiita/Zenn)が分かるバッジを表示する(表示位置・文言は「画面設計」参照)
+  6. `youtubeVideoId`を持つトピックは、要約(セクション群)の下にYouTube公式の埋め込みプレーヤー(`<iframe>`、`youtube-nocookie.com`ドメイン)を表示する(content-generation/requirements.md#著作権への配慮-6)。持たない場合は表示しない
+  7. `belowCriteria`が`true`のトピックには「採用基準未達」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます」という注記を1回だけ表示する(繰り返し表示による煩雑さを避けるため)
+- 関連するビジネスルール: requirements.md#記事本文表示-1〜5、requirements.md#表示分量・著作権配慮-1〜2
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
@@ -60,12 +71,12 @@ export type Article = {
   3. ログイン状態の変化(ログイン完了・ログアウト)を購読し(`onAuthChange`)、変化のたびに表示を更新する
   4. 未ログイン状態では、ページ下部に小さくログインボタンを表示する(Googleでのログインを開始する導線。`life-money-sim`の`LoginStatus`と同じ表示パターン)
 - **DBの読み取り(SELECT)は一切行わない**。管理画面(`app/lib/adminAuth.ts`の`isAuthorizedAdmin`、`admin_emails`テーブルのSELECT)は呼び出さず、生のログイン状態(セッションの有無)だけで表示を切り替える。これは「運営者向け」を名乗りつつ実際にはGoogleアカウントでログインした任意の訪問者にも入力欄が表示されることを意味するが、保存されるのは選定基準への自由記述コメントのみで、閲覧・改ざんの実害がないため許容する(architecture.md#12-セキュリティ、指示された設計方針どおり)
-- 関連するビジネスルール: requirements.md#運営者向けフィードバック-5、requirements.md#フィードバックの保存・権限-4
+- 関連するビジネスルール: requirements.md#運営者向けフィードバック-7、requirements.md#フィードバックの保存・権限-4
 
 ### フィードバックを送信する処理
 - 対象: フィードバック入力欄に入力された自由記述コメント
 - 手順:
-  1. 入力内容をトリムした結果が空文字の場合、送信ボタンを無効化する(押下自体をできなくする)(requirements.md#運営者向けフィードバック-8)
+  1. 入力内容をトリムした結果が空文字の場合、送信ボタンを無効化する(押下自体をできなくする)(requirements.md#運営者向けフィードバック-10)
   2. 送信ボタン押下時、対象トピックの記事日付(`date`)とトピック識別子(`topic.id`)、入力内容を1件のレコードとしてまとめる
   3. `ai_dev_digest_feedback`テーブルへの保存を試みる(`anon`キーでのINSERT)
   4. 保存に成功した場合、入力欄を空にし「送信しました」という完了表示を数秒間出す
@@ -88,15 +99,16 @@ sequenceDiagram
         screen ->> screen: 入力内容を残し「送信に失敗しました」を表示
     end
 ```
-- 関連するビジネスルール: requirements.md#運営者向けフィードバック-6〜8、requirements.md#フィードバックの保存・権限-3、requirements.md#フィードバックの保存・権限-5
+- 関連するビジネスルール: requirements.md#運営者向けフィードバック-8〜10、requirements.md#フィードバックの保存・権限-3、requirements.md#フィードバックの保存・権限-5
 
 ## バリデーション
 
 記事データ(JSONファイル)のスキーマ検証:
 - `date`: `YYYY-MM-DD`形式で、ファイル名と一致すること
 - `topics`: 配列長が1件以上5件以下であること(content-selection/requirements.md#1日の掲載件数-9〜10。基準を満たす候補が不足する日は1〜2件になりうる)
-- 各`topic`: `id`が記事内で重複しないこと、`heading`/`summary`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`sourceType`が定義済み種別のいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須(false時は無くてよい)
-- 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(トリムした結果が空文字になる入力を拒否する)(requirements.md#運営者向けフィードバック-8)
+- 各`topic`: `id`が記事内で重複しないこと、`heading`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`sourceType`が定義済み種別のいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須(false時は無くてよい)
+- `sections`: 配列長が**2件以上**であること(要件「複数のセクションに分けて構成する」により1件は不正。content-generation/requirements.md#要約-5)。各セクションの`heading`/`teaser`/`detail`が空文字でないこと。各セクションの`teaser`が40〜140字の範囲であること(目安60〜120字。content-generation/requirements.md#要約-3)。全セクションの`detail`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字に対し、既存の要約分量チェック(80〜170字/目安100〜150字)と同じ比率のバッファを取った範囲。content-generation/requirements.md#要約-4)
+- 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(トリムした結果が空文字になる入力を拒否する)(requirements.md#運営者向けフィードバック-10)
 
 ## エラーハンドリング
 
@@ -167,7 +179,7 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 
 - パンくず(べんりやつーる › AI駆動開発ダイジェスト › 記事タイトル)
 - 記事タイトル・公開日
-- トピックごとのカード: 情報源種別バッジ、見出し、要約(100〜150字)、出典(発信者名・元URLへのリンク、新規タブで開く)、(該当時)YouTube埋め込みプレーヤー、(該当時)「採用基準未達」バッジ+理由の小さな注記
+- トピックごとのカード: 情報源種別バッジ、見出し、要約(章立て。セクション見出し+導入文(60〜120字程度)を2〜4セクション程度で常時表示し、各セクションに「詳細を見る」の開閉操作を配置。展開すると詳細文(全セクション合計1000〜1500字程度)が表示される)、出典(発信者名・元URLへのリンク、新規タブで開く)、(該当時)YouTube埋め込みプレーヤー、(該当時)「採用基準未達」バッジ+理由の小さな注記
 - 基準未達トピックが1件以上ある場合、記事冒頭に注記文を1回表示
 - 各トピックの下: ログイン中のみフィードバック入力欄(テキストエリア+送信ボタン)。送信後は「送信しました」、失敗時は「送信に失敗しました。もう一度お試しください」を表示
 - ページ下部: 未ログイン時は「運営者ログイン」リンク、ログイン中はログイン中メールアドレス+ログアウトボタン(`life-money-sim`の`LoginStatus`と同じ表示)
