@@ -35,6 +35,20 @@ export default function HubPage() {
             </div>
           </div>
         </Link>
+        <Link
+          href="/life-money-sim"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">📈</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">資産推移シミュレーター</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                毎月の収支から、将来の資産推移を見通す
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
     </div>
   )
