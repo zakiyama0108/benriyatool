@@ -2,7 +2,7 @@
 
 ## 設計の前提(エージェントの推論とコードの役割分担)
 
-[daily-publish](../daily-publish/requirements.md)の実行主体はClaude Routines(推論するエージェント)だが、本specが扱う「採用基準を満たすか」の判定は次の理由から**決定的なコード(TypeScriptの純粋関数+スクリプト)として実装し、エージェントの推論には委ねない**【推測】(要件はロジックの実装形態まで指定していないため設計判断。方針は下記の通り):
+[daily-publish](../daily-publish/requirements.md)の実行主体はClaude Routines(推論するエージェント)だが、本specが扱う「採用基準を満たすか」の判定は次の理由から**決定的なコード(TypeScriptの純粋関数+スクリプト)として実装し、エージェントの推論には委ねない**(要件はロジックの実装形態まで指定していないため設計判断。方針は下記の通り):
 
 - 「1日3〜5件」という件数はビジネス上の固定不変条件であり、LLMの推論結果として毎回保証されるとは限らない(数え間違い・思い込みのリスク)。件数を必ず満たすかどうかは算術的に検証可能なため、コードに任せて確実性を上げる
 - いいね数・平均再生回数などの数値比較も同様に、LLMの計算より決定的なコードの方が誤りが少ない
@@ -35,14 +35,14 @@ export type WatchlistEntry = {
 
 export type Criteria = {
   dailyTopicCount: { min: number; max: number } // requirements.md#1日の掲載件数-9
-  youtubeRecentVideoWindow: number // 平均再生回数の算出対象本数【推測】
-  youtubeAboveAverageRatio: number // 平均の何倍を上回れば採用候補にするか【推測】
+  youtubeRecentVideoWindow: number // 平均再生回数の算出対象本数
+  youtubeAboveAverageRatio: number // 平均の何倍を上回れば採用候補にするか
   qiitaMinLikes: number // requirements.md#採用基準-7
   zennMinLikes: number // requirements.md#採用基準-8
 }
 ```
 
-`criteria.json`の初期値【推測】(要件は「明確に上回る」としか定めていないため設計時の暫定値。妥当性は運用実績を見て[watchlist-review](../watchlist-review/requirements.md)で見直す):
+`criteria.json`の初期値(要件は「明確に上回る」としか定めていないため設計時の暫定値。妥当性は運用実績を見て[watchlist-review](../watchlist-review/requirements.md)で見直す):
 ```json
 {
   "dailyTopicCount": { "min": 3, "max": 5 },
@@ -81,7 +81,7 @@ export type Criteria = {
 ### 1日分のトピックを選び出す処理
 - 対象: 判定済みの候補一覧
 - 手順:
-  1. 基準を満たす候補が`dailyTopicCount.max`(5件)を超える場合は、公式組織/個人YouTube/個人ブログ/Qiita/Zennの種別ができるだけ偏らないように分散させながら、公開日時が新しいものから`dailyTopicCount.max`件を選ぶ【推測】(要件は基準超過時の絞り込み方法を定めていないため設計判断)
+  1. 基準を満たす候補が`dailyTopicCount.max`(5件)を超える場合は、公式組織/個人YouTube/個人ブログ/Qiita/Zennの種別ができるだけ偏らないように分散させながら、公開日時が新しいものから`dailyTopicCount.max`件を選ぶ(要件は基準超過時の絞り込み方法を定めていないため設計判断)
   2. 基準を満たす候補が`dailyTopicCount.min`(3件)以上`dailyTopicCount.max`(5件)以下の場合は、それらをそのまま採用する
   3. 基準を満たす候補が`dailyTopicCount.min`(3件)未満の場合、不足分は基準を満たさない候補の中から、基準からの乖離が小さい順に補って`dailyTopicCount.min`件に達するようにする(requirements.md#1日の掲載件数-10)。補った各トピックには基準未達である旨と乖離内容を記録する
   4. 基準を満たす候補・基準を満たさない候補を合わせても`dailyTopicCount.min`件に満たない場合は、件数を無理に満たすために存在しない話題を作らない。実在する候補(基準未達の候補を含む)が1件以上残っていれば、その件数のまま採用する(3件に届かせるための架空の話題は作らない)。採用した候補のうち基準を満たさないものには、手順3と同様に基準未達である旨と乖離内容を記録する。実在する候補が1件もない場合のみ、その日は記事を生成せず「候補不足によりスキップ」として記録する(requirements.md#1日の掲載件数-10)
@@ -116,7 +116,7 @@ scripts/ai-dev-digest/collect-and-select.ts (新規: fetchCandidates+selection�
 
 ## セキュリティ
 
-- YouTube Data APIキーはリポジトリ・GitHub Actions Secretsに含めず、Claude Routinesの実行環境の環境変数(`YOUTUBE_API_KEY`)としてのみ保持する(docs/adr/0004の`benriyatool_readonly`接続情報と同様、実行環境固有のシークレットとして扱う方針を踏襲)【推測】(Claude Routinesのシークレット管理方法自体は本プロジェクト初導入のため、運用開始前に設定を確認する)
+- YouTube Data APIキーはリポジトリ・GitHub Actions Secretsに含めず、Claude Routinesの実行環境の環境変数(`YOUTUBE_API_KEY`)としてのみ保持する(docs/adr/0004の`benriyatool_readonly`接続情報と同様、実行環境固有のシークレットとして扱う方針を踏襲)(Claude Routinesのシークレット管理方法自体は本プロジェクト初導入のため、運用開始前に設定を確認する)
 - Qiita API・各社RSSフィード・Zennの公開ページ閲覧は認証不要の公開エンドポイントのみを使い、非公式APIや利用規約を超えた高頻度アクセスは行わない(requirements.md#データ取得方法-1)。アクセス頻度は1日1回の実行分のみで、スクレイピング的な連続アクセスは発生しない設計とする
 
 ## ログ
