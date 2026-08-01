@@ -17,7 +17,7 @@ export default function AssetProjectionChart({ periodUnit, monthlyRows, yearlyRo
       : yearlyRows.map((r) => ({ label: `${r.year}年`, asset: r.asset }))
 
   return (
-    <div className="h-64 w-full rounded-[18px] bg-white p-4 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+    <div className="h-64 w-full rounded-[35px] border border-lms-line-strong bg-lms-card p-4">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data}>
           <defs>

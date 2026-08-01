@@ -50,7 +50,7 @@ export default function HeroCard({ rows, startAsset, modeLabel }: Props) {
   const positive = diff >= 0
 
   return (
-    <section className="rounded-[18px] bg-white p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)] sm:p-6">
+    <section className="rounded-[35px] border border-lms-line-strong bg-lms-card p-5 shadow-[0_2px_12px_rgba(16,64,56,0.06)] sm:p-6">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2">
           <h2 className="text-xs font-bold text-lms-muted">{`${last.label}時点の資産額(${modeLabel})`}</h2>
@@ -61,7 +61,7 @@ export default function HeroCard({ rows, startAsset, modeLabel }: Props) {
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold tabular-nums ${
-                positive ? 'bg-lms-teal-soft text-lms-teal' : 'bg-lms-coral-soft text-lms-coral'
+                positive ? 'bg-lms-teal-soft text-lms-teal' : 'bg-lms-coral/10 text-lms-coral'
               }`}
             >
               <span aria-hidden="true">{positive ? '↑' : '↓'}</span>

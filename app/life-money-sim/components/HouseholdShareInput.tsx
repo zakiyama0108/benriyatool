@@ -49,7 +49,7 @@ export default function HouseholdShareInput({ household, onChange }: Props) {
               type="number"
               value={Number.isFinite(household.myShare) ? household.myShare : ''}
               onChange={(e) => onChange({ ...household, myShare: e.target.valueAsNumber })}
-              className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-teal"
+              className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
             />
           </label>
           <ExpensePieChart items={household.items} />

@@ -16,7 +16,7 @@ export default function IncomeForm({ income, onChange }: Props) {
           type="number"
           value={Number.isFinite(income.monthlySalary) ? income.monthlySalary : ''}
           onChange={(e) => onChange({ ...income, monthlySalary: e.target.valueAsNumber })}
-          className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm tabular-nums font-bold outline-none focus:border-lms-teal"
+          className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm tabular-nums font-bold outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
         />
       </label>
       <div className="grid grid-cols-2 gap-3">
@@ -26,7 +26,7 @@ export default function IncomeForm({ income, onChange }: Props) {
             type="number"
             value={Number.isFinite(income.bonusCount) ? income.bonusCount : ''}
             onChange={(e) => onChange({ ...income, bonusCount: e.target.valueAsNumber })}
-            className="mt-1 w-full rounded-full border border-lms-line bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-teal"
+            className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
           />
         </label>
         <label className="block text-xs text-lms-muted">
@@ -35,7 +35,7 @@ export default function IncomeForm({ income, onChange }: Props) {
             type="number"
             value={Number.isFinite(income.bonusAmountPerTime) ? income.bonusAmountPerTime : ''}
             onChange={(e) => onChange({ ...income, bonusAmountPerTime: e.target.valueAsNumber })}
-            className="mt-1 w-full rounded-full border border-lms-sand/50 bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-sand"
+            className="mt-1 w-full rounded-full border border-lms-line-strong bg-white px-4 py-2 text-sm tabular-nums outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40"
           />
         </label>
       </div>

@@ -33,7 +33,7 @@ export default function AccordionSection({
   const buttonId = `${panelId}-button`
 
   return (
-    <section className="overflow-hidden rounded-[18px] bg-lms-card shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+    <section className="overflow-hidden rounded-[35px] border border-lms-line-strong bg-lms-card shadow-[0_1px_2px_rgba(16,64,56,0.04)]">
       <div className="flex items-center gap-1.5 pr-4">
         <button
           id={buttonId}

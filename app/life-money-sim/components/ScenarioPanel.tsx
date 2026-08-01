@@ -57,7 +57,7 @@ export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: P
   }
 
   return (
-    <div className="space-y-3 rounded-[18px] bg-lms-card p-5 shadow-[0_10px_24px_-16px_rgba(20,158,146,0.35)]">
+    <div className="space-y-3 rounded-[35px] border border-lms-line-strong bg-lms-card p-5">
       <p className="text-sm font-bold text-lms-ink">マイシナリオ</p>
 
       <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: P
           }}
           disabled={isSaving}
           placeholder="シナリオ名"
-          className="flex-1 rounded-full border border-lms-line bg-white px-3 py-1.5 text-sm text-lms-ink disabled:opacity-40"
+          className="flex-1 rounded-full border border-lms-line-strong bg-white px-3 py-1.5 text-sm text-lms-ink outline-none focus:border-lms-sand-ink focus:bg-lms-sand-soft/40 disabled:opacity-40"
         />
         <button
           onClick={() => void handleSaveClick()}
