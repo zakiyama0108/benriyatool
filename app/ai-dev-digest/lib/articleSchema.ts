@@ -32,8 +32,8 @@ function parseTopic(raw: unknown, index: number): Topic {
   if (!isNonEmptyString(topic.id)) throw new Error(`topics[${index}].idが空文字です`)
   if (!isNonEmptyString(topic.heading)) throw new Error(`topics[${index}].headingが空文字です`)
   if (!isNonEmptyString(topic.summary)) throw new Error(`topics[${index}].summaryが空文字です`)
-  if (!isValidSummaryLength(topic.summary as string)) {
-    throw new Error(`topics[${index}].summaryの文字数が範囲外です(80〜170字である必要があります): ${(topic.summary as string).length}字`)
+  if (!isValidSummaryLength(topic.summary)) {
+    throw new Error(`topics[${index}].summaryの文字数が範囲外です(80〜170字である必要があります): ${topic.summary.length}字`)
   }
   if (typeof topic.sourceType !== 'string' || !SOURCE_TYPES.includes(topic.sourceType as SourceType)) {
     throw new Error(`topics[${index}].sourceTypeが未定義の種別です: ${String(topic.sourceType)}`)
@@ -50,12 +50,12 @@ function parseTopic(raw: unknown, index: number): Topic {
   }
 
   const result: Topic = {
-    id: topic.id as string,
-    heading: topic.heading as string,
-    summary: topic.summary as string,
+    id: topic.id,
+    heading: topic.heading,
+    summary: topic.summary,
     sourceType: topic.sourceType as SourceType,
-    sourceName: topic.sourceName as string,
-    sourceUrl: topic.sourceUrl as string,
+    sourceName: topic.sourceName,
+    sourceUrl: topic.sourceUrl,
     belowCriteria: topic.belowCriteria,
   }
   if (isNonEmptyString(topic.youtubeVideoId)) result.youtubeVideoId = topic.youtubeVideoId

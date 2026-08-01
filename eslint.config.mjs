@@ -30,7 +30,9 @@ const eslintConfig = defineConfig([
   },
   {
     // scripts/配下はCLI実行が前提のNodeスクリプトのため、console出力を許可する
-    files: ["scripts/**/*.mjs"],
+    // (ai-dev-digestの収集・公開スクリプトはClaude Routinesの実行ログとして
+    // console出力を使う設計のため、.tsも対象に含める。design.md「ログ」参照)
+    files: ["scripts/**/*.mjs", "scripts/ai-dev-digest/**/*.ts"],
     rules: {
       "no-console": "off",
     },
@@ -46,6 +48,9 @@ const eslintConfig = defineConfig([
     "coverage/**",
     // Skill用のエージェントツール(run-benriyatoolのドライバ等)。アプリのコード規約(no-console等)の対象外
     ".claude/**",
+    // 独立した依存関係(pg/dotenv)を持つ隔離パッケージのため、本体のtsconfigプロジェクトに含めない
+    // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」)
+    "scripts/ai-dev-digest/collect-review-data/**",
   ]),
 ]);
 

@@ -1,0 +1,180 @@
+import { describe, it, expect } from 'vitest'
+import { meetsCriteria, describeShortfall, selectDailyTopics } from '../../../app/ai-dev-digest/lib/selection'
+import type { Candidate } from '../../../app/ai-dev-digest/lib/candidateTypes'
+import type { Criteria } from '../../../app/ai-dev-digest/lib/watchlistTypes'
+
+const criteria: Criteria = {
+  dailyTopicCount: { min: 3, max: 5 },
+  youtubeRecentVideoWindow: 10,
+  youtubeAboveAverageRatio: 1.2,
+  qiitaMinLikes: 30,
+  zennMinLikes: 30,
+}
+
+function baseCandidate(overrides: Partial<Candidate>): Candidate {
+  return {
+    sourceId: 'anthropic',
+    sourceName: 'Anthropic',
+    sourceType: 'official',
+    heading: 'テストタイトル',
+    url: 'https://example.com/a',
+    publishedAt: '2026-08-01T00:00:00Z',
+    metricValue: 0,
+    ...overrides,
+  }
+}
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-4
+describe('採用基準の判定 - 公式組織の新着投稿は原則すべて採用候補にする', () => {
+  it('公式組織(official)の候補は、数値に関わらず常に基準を満たすこと', () => {
+    const candidate = baseCandidate({ sourceType: 'official', metricValue: 0 })
+    expect(meetsCriteria(candidate, criteria)).toBe(true)
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-6
+describe('採用基準の判定 - Simon Willisonの個人ブログの新着は原則採用候補にする', () => {
+  it('個人ブログ(individual-blog)の候補は、数値に関わらず常に基準を満たすこと', () => {
+    const candidate = baseCandidate({ sourceType: 'individual-blog', sourceName: 'Simon Willison', metricValue: 0 })
+    expect(meetsCriteria(candidate, criteria)).toBe(true)
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-5
+describe('採用基準の判定 - 個人YouTubeはそのチャンネルの直近平均再生回数を明確に上回る場合のみ採用候補にする', () => {
+  it('直近平均×倍率(1.2倍)をちょうど上回る再生回数のとき、基準を満たすこと', () => {
+    const candidate = baseCandidate({ sourceType: 'individual-youtube', metricValue: 1201, recentAverageViews: 1000 })
+    expect(meetsCriteria(candidate, criteria)).toBe(true)
+  })
+
+  it('直近平均×倍率(1.2倍)ちょうどのとき(上回っていない)、基準を満たさないこと', () => {
+    const candidate = baseCandidate({ sourceType: 'individual-youtube', metricValue: 1200, recentAverageViews: 1000 })
+    expect(meetsCriteria(candidate, criteria)).toBe(false)
+  })
+
+  it('直近平均を下回る再生回数のとき、基準を満たさないこと', () => {
+    const candidate = baseCandidate({ sourceType: 'individual-youtube', metricValue: 500, recentAverageViews: 1000 })
+    expect(meetsCriteria(candidate, criteria)).toBe(false)
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-7
+describe('採用基準の判定 - Qiitaの新着記事はいいね数30以上を採用候補にする', () => {
+  it('いいね数がちょうど30件のとき、基準を満たすこと', () => {
+    const candidate = baseCandidate({ sourceType: 'qiita', metricValue: 30 })
+    expect(meetsCriteria(candidate, criteria)).toBe(true)
+  })
+
+  it('いいね数が29件(閾値未満)のとき、基準を満たさないこと', () => {
+    const candidate = baseCandidate({ sourceType: 'qiita', metricValue: 29 })
+    expect(meetsCriteria(candidate, criteria)).toBe(false)
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-8
+describe('採用基準の判定 - Zennの新着記事は公開ページのいいね数30以上を採用候補にする', () => {
+  it('いいね数がちょうど30件のとき、基準を満たすこと', () => {
+    const candidate = baseCandidate({ sourceType: 'zenn', metricValue: 30 })
+    expect(meetsCriteria(candidate, criteria)).toBe(true)
+  })
+
+  it('いいね数が29件(閾値未満)のとき、基準を満たさないこと', () => {
+    const candidate = baseCandidate({ sourceType: 'zenn', metricValue: 29 })
+    expect(meetsCriteria(candidate, criteria)).toBe(false)
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/design.md「採用基準を判定する処理」
+describe('基準からの乖離内容の文言生成 - 基準を満たさない候補について、どれだけ届いていないかを説明文にする', () => {
+  it('Qiitaでいいね数18件・基準30件のとき、「いいね数18件(基準30件に12件不足)」のような乖離内容になること(article-detail/design.mdの例文自体は算術上の誤記のため、正しい差分値で検証する)', () => {
+    const candidate = baseCandidate({ sourceType: 'qiita', metricValue: 18 })
+    expect(describeShortfall(candidate, criteria)).toBe('いいね数18件(基準30件に12件不足)')
+  })
+
+  it('Zennでいいね数10件・基準30件のとき、「いいね数10件(基準30件に20件不足)」のような乖離内容になること', () => {
+    const candidate = baseCandidate({ sourceType: 'zenn', metricValue: 10 })
+    expect(describeShortfall(candidate, criteria)).toBe('いいね数10件(基準30件に20件不足)')
+  })
+
+  it('個人YouTubeで再生回数500回・基準(直近平均1000×1.2倍=1200回)のとき、乖離内容に再生回数と基準値が含まれること', () => {
+    const candidate = baseCandidate({ sourceType: 'individual-youtube', metricValue: 500, recentAverageViews: 1000 })
+    expect(describeShortfall(candidate, criteria)).toBe('再生回数500回(基準1200回に700回不足)')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#1日の掲載件数-9、specs/ai-dev-digest/content-selection/requirements.md#1日の掲載件数-10
+describe('1日分のトピック選定 - 採用基準を満たす候補数に応じて3〜5件を選び出し、不足時は基準未達候補で補う', () => {
+  it('基準を満たす候補が3〜5件(ここでは4件)のとき、そのまま全件採用されること', () => {
+    const candidates: Candidate[] = ['a', 'b', 'c', 'd'].map((label) =>
+      baseCandidate({ sourceId: label, heading: `見出し${label}`, sourceType: 'official' })
+    )
+    const result = selectDailyTopics(candidates, criteria)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics).toHaveLength(4)
+      expect(result.topics.every((t) => !t.belowCriteria)).toBe(true)
+    }
+  })
+
+  it('基準を満たす候補が6件(上限超過)のとき、種別ができるだけ偏らないように分散させながら新しい順で5件に絞られること', () => {
+    const official = [
+      baseCandidate({ sourceId: 'o1', heading: 'o1', sourceType: 'official', publishedAt: '2026-08-06T03:00:00Z' }),
+      baseCandidate({ sourceId: 'o2', heading: 'o2', sourceType: 'official', publishedAt: '2026-08-05T00:00:00Z' }),
+      baseCandidate({ sourceId: 'o3', heading: 'o3', sourceType: 'official', publishedAt: '2026-08-04T00:00:00Z' }),
+    ]
+    const qiita = [
+      baseCandidate({ sourceId: 'q1', heading: 'q1', sourceType: 'qiita', metricValue: 40, publishedAt: '2026-08-06T01:00:00Z' }),
+      baseCandidate({ sourceId: 'q2', heading: 'q2', sourceType: 'qiita', metricValue: 40, publishedAt: '2026-08-03T00:00:00Z' }),
+      baseCandidate({ sourceId: 'q3', heading: 'q3', sourceType: 'qiita', metricValue: 40, publishedAt: '2026-08-02T00:00:00Z' }),
+    ]
+    const result = selectDailyTopics([...official, ...qiita], criteria)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics).toHaveLength(5)
+      const ids = result.topics.map((t) => t.sourceId)
+      // 直近で最も古いqiita候補(q3)は選ばれず、他5件(両種別を含む)が選ばれること
+      expect(ids).not.toContain('q3')
+      expect(ids).toEqual(expect.arrayContaining(['o1', 'o2', 'o3', 'q1', 'q2']))
+      const sourceTypesUsed = new Set(result.topics.map((t) => t.sourceType))
+      expect(sourceTypesUsed.size).toBeGreaterThan(1)
+    }
+  })
+
+  it('基準を満たす候補が2件(3件未満)のとき、基準未達候補のうち乖離が小さいものから補い3件になること(補った分はbelowCriteriaがtrueになる)', () => {
+    const meeting = [
+      baseCandidate({ sourceId: 'o1', heading: 'o1', sourceType: 'official' }),
+      baseCandidate({ sourceId: 'o2', heading: 'o2', sourceType: 'official' }),
+    ]
+    const notMeeting = [
+      baseCandidate({ sourceId: 'q-near', heading: 'q-near', sourceType: 'qiita', metricValue: 25 }), // 基準30に5件不足
+      baseCandidate({ sourceId: 'q-far', heading: 'q-far', sourceType: 'qiita', metricValue: 5 }), // 基準30に25件不足
+    ]
+    const result = selectDailyTopics([...meeting, ...notMeeting], criteria)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics).toHaveLength(3)
+      const supplemented = result.topics.find((t) => t.sourceId === 'q-near')
+      expect(supplemented?.belowCriteria).toBe(true)
+      expect(supplemented?.shortfallReason).toBe('いいね数25件(基準30件に5件不足)')
+      expect(result.topics.some((t) => t.sourceId === 'q-far')).toBe(false)
+    }
+  })
+
+  it('基準を満たす候補・満たさない候補を合わせても3件未満(ここでは2件)だが1件以上あるとき、その件数のまま採用されbelowCriteriaがtrueになること', () => {
+    const candidates = [
+      baseCandidate({ sourceId: 'q1', heading: 'q1', sourceType: 'qiita', metricValue: 10 }),
+      baseCandidate({ sourceId: 'q2', heading: 'q2', sourceType: 'qiita', metricValue: 5 }),
+    ]
+    const result = selectDailyTopics(candidates, criteria)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics).toHaveLength(2)
+      expect(result.topics.every((t) => t.belowCriteria)).toBe(true)
+    }
+  })
+
+  it('収集した候補が実在するものも含め1件もないとき、候補不足によるスキップ結果になること', () => {
+    const result = selectDailyTopics([], criteria)
+    expect(result.status).toBe('skipped')
+  })
+})
