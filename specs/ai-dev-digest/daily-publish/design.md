@@ -15,7 +15,7 @@ Claude Routinesの具体的な起動設定・認証情報の管理方法は、�
 - 対象: 実行日(JST)
 - 手順:
   1. 作業用ブランチ`ai-dev-digest/articles/<date>`を作成する(`<date>`は実行日のYYYY-MM-DD)
-  2. [content-selection](../content-selection/design.md)の`scripts/ai-dev-digest/collect-and-select.ts`を実行し、その日の候補収集・採用基準判定・1日分のトピック選定(3〜5件を目安に、候補不足の日は実在する候補の件数)を行う
+  2. [content-selection](../content-selection/design.md)の`scripts/ai-dev-digest/collect-and-select.ts`を実行し、その日の候補収集・採用基準判定・1日分のトピック選定(3〜5件を目安に、基準未達掲載の日は実在する候補の件数)を行う
   3. 選定結果が「候補不足によりスキップ」だった場合は、記事を作成せず後述「記事生成をスキップする処理」に進む
   4. 選定された各候補について、[content-generation](../content-generation/design.md)のルールに従って見出し・要約(日本語)を作成し、`extractYoutubeVideoId`でYouTube動画IDを抽出する
   5. `assembleArticle(date, topics)`で記事データ(`date`・`topics`。article-detail/design.mdのスキーマに従う)を組み立て、`writeArticleFile`で`content/ai-dev-digest/articles/<date>.json`として書き出す
