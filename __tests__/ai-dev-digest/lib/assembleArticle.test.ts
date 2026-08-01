@@ -15,7 +15,7 @@ function makeInput(overrides: Partial<GeneratedTopicInput> = {}): GeneratedTopic
   }
 }
 
-// 仕様: specs/ai-dev-digest/daily-publish/design.md「1日分の記事を生成する処理」
+// 仕様: specs/ai-dev-digest/daily-publish/design.md#1日分の記事を生成する処理
 describe('記事データの組み立て - 選定結果と生成済みの見出し・要約からarticle-detailのスキーマを満たすArticleを組み立てる', () => {
   it('複数トピックからArticleが組み立てられ、idが記事内で一意に採番されること', () => {
     const article = assembleArticle('2026-08-01', [makeInput(), makeInput({ heading: '別のトピック' })])

@@ -84,7 +84,7 @@ describe('採用基準の判定 - Zennの新着記事は公開ページのいい
   })
 })
 
-// 仕様: specs/ai-dev-digest/content-selection/design.md「採用基準を判定する処理」
+// 仕様: specs/ai-dev-digest/content-selection/design.md#採用基準を判定する処理
 describe('基準からの乖離内容の文言生成 - 基準を満たさない候補について、どれだけ届いていないかを説明文にする', () => {
   it('Qiitaでいいね数18件・基準30件のとき、「いいね数18件(基準30件に12件不足)」のような乖離内容になること(article-detail/design.mdの例文自体は算術上の誤記のため、正しい差分値で検証する)', () => {
     const candidate = baseCandidate({ sourceType: 'qiita', metricValue: 18 })
@@ -102,7 +102,7 @@ describe('基準からの乖離内容の文言生成 - 基準を満たさない�
   })
 })
 
-// 仕様: specs/ai-dev-digest/content-selection/requirements.md#1日の掲載件数-9、specs/ai-dev-digest/content-selection/requirements.md#1日の掲載件数-10
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#1日の掲載件数-9、specs/ai-dev-digest/content-selection/requirements.md#1日の掲載件数-10、specs/ai-dev-digest/content-selection/design.md#1日分のトピックを選び出す処理
 describe('1日分のトピック選定 - 採用基準を満たす候補数に応じて3〜5件を選び出し、不足時は基準未達候補で補う', () => {
   it('基準を満たす候補が3〜5件(ここでは4件)のとき、そのまま全件採用されること', () => {
     const candidates: Candidate[] = ['a', 'b', 'c', 'd'].map((label) =>

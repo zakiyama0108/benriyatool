@@ -1688,5 +1688,585 @@
     "specFile": "life-money-sim/usage-guide/design.md",
     "item": "セキュリティ",
     "reason": "表示文言はすべて静的な日本語文字列で利用者入力を描画しないため外部からの攻撃経路がなく、追加のセキュリティ対策が不要という判断の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "前提: 記事データの形式(この機能が定義する共有スキーマ)",
+    "reason": "記事データ(Article/Topic)の型定義を導入する見出しで、対応する検証の振る舞いはarticleSchema.test.ts・articles.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "記事データを読み込む処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事本文表示-1〜2でテスト済みのため(tasks.md Task4)"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ログイン状態に応じてフィードバック入力欄の表示を切り替える処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#運営者向けフィードバック-5でテスト済みのため(tasks.md Task10)"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "エラーハンドリング",
+    "reason": "記事データのビルド時バリデーション失敗・フィードバック送信失敗時の方針をまとめた見出しで、個別の振る舞いはarticleSchema.test.ts・FeedbackForm.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ai_dev_digest_feedback(新規テーブル)",
+    "reason": "テーブル定義の参照情報で、保存の振る舞いはsaveFeedback.test.ts(requirements.md#運営者向けフィードバック-6等)でテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ai_dev_digest_feedback(新規テーブル) > id",
+    "reason": "DB側で自動採番される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ai_dev_digest_feedback(新規テーブル) > created_at",
+    "reason": "DB側で自動設定される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ai_dev_digest_feedback(新規テーブル) > is_test",
+    "reason": "カラム定義の参照情報。保存の振る舞いはsaveFeedback.test.ts(requirements.md#フィードバックの保存・権限-3)でテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ai_dev_digest_feedback(新規テーブル) > article_date",
+    "reason": "カラム定義の参照情報。保存の振る舞いはsaveFeedback.test.ts(requirements.md#運営者向けフィードバック-6)でテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ai_dev_digest_feedback(新規テーブル) > topic_id",
+    "reason": "カラム定義の参照情報。保存の振る舞いはsaveFeedback.test.ts(requirements.md#運営者向けフィードバック-6)でテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ai_dev_digest_feedback(新規テーブル) > comment",
+    "reason": "カラム定義の参照情報。保存の振る舞いはsaveFeedback.test.ts(requirements.md#運営者向けフィードバック-6)でテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "画面設計",
+    "reason": "UIレイアウトの説明見出しで、個別の表示要件はrequirements.md#記事本文表示-1〜3等の各テストで担保済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > TopicSection",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはTopicSection.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > SourceBadge",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはSourceBadge.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > YoutubeEmbed",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはYoutubeEmbed.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > FeedbackForm",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはFeedbackForm.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "状態管理",
+    "reason": "ページの状態設計(useStateの持ち方)の説明で、tasks.md Task11の判断によりpage.tsx/ArticleDetailView.tsx自体はユニットテスト対象外とし、配下のTopicSection/FeedbackFormの各テストで担保するため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "セキュリティ",
+    "reason": "フィードバック保存・記事データ表示のセキュリティ方針をまとめた見出しで、個別の振る舞いはarticleSchema.test.ts・saveFeedback.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/design.md",
+    "item": "ログ",
+    "reason": "フィードバックの保存成功・失敗はログ出力を行わないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-detail/requirements.md",
+    "item": "フィードバックの保存・権限 [5]",
+    "reason": "保存したフィードバックを一切表示・一覧化しないという不作為の要件で、対応するテスト(存在しないことの検証)を持たない。公開画面のコンポーネント(ArticleCard/TopicSection等)がフィードバック一覧表示を実装していないことはコードレビューで担保する"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "記事一覧をページ分割する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#ビジネスルール・制約-2でテスト済みのため(tasks.md Task1)"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "カードに表示するトピック見出しを選ぶ処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#一覧表示-2、requirements.md#ビジネスルール・制約-1でテスト済みのため(tasks.md Task2)"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "エラーハンドリング",
+    "reason": "存在しないページ番号・記事データのスキーマ違反時の扱いの記述で、静的エクスポートのビルド挙動・article-detail側のバリデーションに委ねる方針のため、本specの新規テスト対象を持たない"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "コンポーネント設計 > ArticleCard",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはArticleCard.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "コンポーネント設計 > Pagination",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはPagination.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "セキュリティ",
+    "reason": "article-detail/design.mdと同じ前提(記事データは訪問者入力ではない)に基づき追加リスクはないという記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/design.md",
+    "item": "ログ",
+    "reason": "静的生成された結果を返すだけで実行時に出力すべきログはないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/design.md",
+    "item": "設計の前提(エージェントの推論とコードの役割分担)",
+    "reason": "エージェントとコードの役割分担の方針説明で、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/design.md",
+    "item": "要約を書く処理(エージェントの推論)",
+    "reason": "エージェント(Claude Routines)の推論に委ねる執筆手順の説明で、コードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/design.md",
+    "item": "エラーハンドリング",
+    "reason": "要約文字数超過の検知(ビルド時バリデーション)はarticleSchema.test.tsでテスト済みで、翻訳・要約の質はコードで保証できない限界の明記であり対応するテストを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/design.md",
+    "item": "セキュリティ",
+    "reason": "要約・見出しの表示はReactの標準エスケープに委ね、著作権リスク対応(文字数上限・出典明記・利用規約)は個別にテスト済みのため、この見出し自体は追加のテスト対象を持たない"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/design.md",
+    "item": "ログ",
+    "reason": "翻訳・要約の生成過程はアプリのログ設計対象外という方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/design.md",
+    "item": "利用規約への反映",
+    "reason": "requirements.mdの条項文言をそのまま転記した見出しで、実際の反映はapp/legal/page.tsx・specs/legal/requirements.mdへの追記(TDD対象外、tasks.md Task5)で担保するため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "翻訳 [1]",
+    "reason": "情報源が英語の場合に日本語で要約を書くというエージェントの執筆行為そのものの要件で、コードとして実装・テストしないため(content-generation/design.mdが「エージェントの推論に委ねる」と明記)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "要約 [3]",
+    "reason": "原文の詳細な展開・結論・数値を網羅的に転記しないという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。文字数上限のみコードで強制する)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [1]",
+    "reason": "著作権法上のリスクの法的根拠を説明する記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "利用規約への反映 [5]",
+    "reason": "TDD対象外の静的な文言追加のみのため(tasks.md Task5)。反映内容はspecs/legal/requirements.md・app/legal/page.tsxへの追記で担保する"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "エージェントの逸脱防止 [6]",
+    "reason": "エージェントに適用するガードレール文言の記述で、コードとして実装・テストしないため(daily-publishの実行指示に含める運用上の対応)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/design.md",
+    "item": "設計の前提(エージェントの推論とコードの役割分担)",
+    "reason": "エージェントとコードの役割分担の方針説明で、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/design.md",
+    "item": "基準未達掲載を記録する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#1日の掲載件数-11でテスト済みのため(reviewRecords.test.ts)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/design.md",
+    "item": "エラーハンドリング",
+    "reason": "情報源取得失敗時の継続方針・候補0件時のスキップ方針・ZennのHTML構造変化時の除外方針の記述で、個別の振る舞いはfetchCandidates.test.ts・selection.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/design.md",
+    "item": "セキュリティ",
+    "reason": "YouTube Data APIキーの管理方法・公開エンドポイントのみを使う方針の記述で、Claude Routines実行環境の設定に関する運用上の対応でありこのリポジトリのコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/design.md",
+    "item": "ログ",
+    "reason": "収集・選定結果を標準出力に記録するCLI(scripts/ai-dev-digest/collect-and-select.ts)の説明で、TDD対象外の薄いラッパー(tasks.md Task6)のため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "実行環境の前提(初導入のため明記する設計判断)",
+    "reason": "Claude Routinesの認証情報・実行権限の管理方針の記述で、このリポジトリのコードとして実装しない運用上の前提のため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "PRを作成しCIの結果を待つ処理",
+    "reason": "GitHub上のPR作成・auto-merge設定に関する運用手順の記述で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "PRを自動マージする処理(完全自動マージの例外運用)",
+    "reason": "GitHubのブランチ保護(Rulesets)設定に関する運用手順の記述で、このリポジトリのコードとして実装しないため(tasks.md Task3)"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "CI失敗時に記録する処理",
+    "reason": "PRへのコメント自動追記等の運用手順の記述で、Claude Routines側の振る舞いでありこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "記事生成をスキップする処理",
+    "reason": "候補不足時にブランチ・PRを作成しないというRoutineの実行判断の記述で、判定ロジック自体はcontent-selection/selection.test.tsでテスト済みのため(daily-publish側はオーケストレーションのみを担当)"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "エラーハンドリング",
+    "reason": "CI失敗時の扱い・記事生成処理自体の中断時の扱いの記述で、Routineの実行制御に関する運用上の対応でありこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "セキュリティ",
+    "reason": "Routineが保持するGitHub書き込み権限・APIキーの管理方針、ブランチ保護の例外設定範囲の記述で、運用設定に関する事項でありこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/design.md",
+    "item": "ログ",
+    "reason": "Routineの実行ログに記録する項目の記述で、Claude Routines側の運用上の記録でありこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "実行 [1]",
+    "reason": "収集・翻訳・要約・記事執筆のバッチを1日1回実行するという運用スケジュールの要件で、Claude Routinesの起動設定に関する事項でありこのリポジトリのコードとして実装しないため(tasks.md Task4)"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "実行 [2]",
+    "reason": "実行主体がClaude Routinesであり、Web検索・翻訳・要約・記事執筆をエージェントの推論で行うという役割分担の要件で、コードとして実装しないため(daily-publish/design.mdの「実行環境の前提」参照)"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "公開フロー [4]",
+    "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、このリポジトリのコードとして実装しないため(tasks.md Task3〜4のリポジトリ設定・実行基盤の運用対応に該当)"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "公開フロー [5]",
+    "reason": "CI失敗時にマージせず原因を記録するという運用フローの要件で、GitHub標準の仕組み(PRコメント)に委ねるためこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "自動マージの範囲 [2]",
+    "reason": "完全自動マージの対象をai-dev-digest/articles/**ブランチに限定するというブランチ保護(Rulesets)設定の要件で、GitHubリポジトリ設定でありこのリポジトリのコードとして実装しないため(tasks.md Task3)"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "実行環境の前提",
+    "reason": "月次Routine実行環境へのSUPABASE_READONLY_DB_URL設定方針の記述で、運用上の前提でありこのリポジトリのコードとして実装しないため(docs/adr/0004参照)"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "見直し案を作成する処理(エージェントの推論)",
+    "reason": "エージェント(Claude Routines)の推論に委ねる見直し案の検討手順の説明で、コードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "見直し案をPRとして提案する処理",
+    "reason": "ブランチ作成・PR作成・自動マージしない方針というGitHub運用フローの記述で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "エラーハンドリング",
+    "reason": "フィードバックDB接続失敗時のフォールバック・requirements.mdとJSONデータの両方が揃うまでコミットしない方針の記述で、Routineの実行制御に関する運用上の対応でありこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "データベース設計",
+    "reason": "新規テーブルはなく既存のbenriyatool_readonly向けSELECTポリシーを利用するという参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "セキュリティ",
+    "reason": "SUPABASE_READONLY_DB_URLの管理方針・フィードバックSELECTの利用目的限定という運用上の方針の記述で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/design.md",
+    "item": "ログ",
+    "reason": "月次実行ごとの集計結果をRoutineの実行ログに記録するという記述で、Claude Routines側の運用上の記録でありこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "見直しの実行 [2]",
+    "reason": "見直し案をcontent-selection/requirements.mdへの変更提案としてブランチ・PRの形で作成するという運用フローの要件で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "承認フロー [3]",
+    "reason": "見直し案のPRを自動マージせず運営者が確認してマージするというGitHubブランチ保護の要件で、このリポジトリのコードとして実装しないため(tasks.md Task5のブランチ保護確認作業に該当)"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "ビジネスルール・制約 [1]",
+    "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、Claude Routinesの起動設定に関する事項でありこのリポジトリのコードとして実装しないため(tasks.md Task4)"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "ビジネスルール・制約 [2]",
+    "reason": "見直し案にPR本文として変更理由を明記するという、エージェントが作成するPR本文の記述内容に関する要件で、コードとして実装・テストしないため"
   }
 ]

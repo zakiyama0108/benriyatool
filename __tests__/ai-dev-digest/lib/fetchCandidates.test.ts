@@ -196,7 +196,7 @@ describe('Zennからの候補収集 - RSSで新着を検知し公開ページの
   })
 })
 
-// 仕様: specs/ai-dev-digest/content-selection/design.md「情報源から候補を収集する処理」
+// 仕様: specs/ai-dev-digest/content-selection/design.md#情報源から候補を収集する処理
 describe('ウォッチリスト全体からの候補収集 - 1つの情報源が取得に失敗しても他の情報源の結果は返す', () => {
   it('Qiitaの取得が失敗しても、他の情報源(RSS)の候補は正常に返ること', async () => {
     const watchlist: WatchlistEntry[] = [

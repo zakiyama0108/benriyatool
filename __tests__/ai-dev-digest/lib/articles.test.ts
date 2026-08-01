@@ -6,7 +6,7 @@ const VALID_DIR = path.join(__dirname, '../fixtures/articles-valid')
 const INVALID_DIR = path.join(__dirname, '../fixtures/articles-invalid')
 const MISSING_DIR = path.join(__dirname, '../fixtures/articles-does-not-exist')
 
-// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-1、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-2
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-1、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-2、specs/ai-dev-digest/article-list/requirements.md#一覧表示-1
 describe('記事データの読み込み - content/ai-dev-digest/articles/配下のJSONファイルを取得する', () => {
   it('getAllArticlesが全記事を日付の新しい順に返すこと', () => {
     const articles = getAllArticles(VALID_DIR)

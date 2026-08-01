@@ -4,7 +4,7 @@ import { collectBelowCriteriaRecords, collectFeedback } from '../../../app/ai-de
 
 const REVIEW_FIXTURES_DIR = path.join(__dirname, '../fixtures/articles-review')
 
-// 仕様: specs/ai-dev-digest/watchlist-review/requirements.md#見直しの実行-1
+// 仕様: specs/ai-dev-digest/watchlist-review/requirements.md#見直しの実行-1、specs/ai-dev-digest/content-selection/requirements.md#1日の掲載件数-11
 describe('基準未達記録の集計 - 直近1ヶ月分の記事データからbelowCriteria:trueのトピックのみを抽出する', () => {
   it('集計期間内(sinceDate以降)の基準未達トピックのみが抽出されること(期間外のファイルは除外される)', () => {
     const records = collectBelowCriteriaRecords(REVIEW_FIXTURES_DIR, '2026-07-01')
@@ -34,7 +34,7 @@ describe('基準未達記録の集計 - 直近1ヶ月分の記事データから
   })
 })
 
-// 仕様: specs/ai-dev-digest/watchlist-review/design.md「見直しの材料を集める処理」
+// 仕様: specs/ai-dev-digest/watchlist-review/design.md#見直しの材料を集める処理
 describe('フィードバックの取得 - 集計期間・is_test=falseの条件でai_dev_digest_feedbackをSELECTする', () => {
   it('sinceDate以降・is_test=falseの条件でクエリが実行され、結果がFeedbackRecordに変換されること', async () => {
     const executeQuery = vi.fn().mockResolvedValue([

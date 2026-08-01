@@ -27,19 +27,19 @@ function makeSession(email: string): Session {
   return { user: { email } } as Session
 }
 
-// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-1、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-2、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3、specs/ai-dev-digest/content-generation/requirements.md#記事の構成-4、specs/ai-dev-digest/content-generation/requirements.md#著作権への配慮(根拠)-3
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-1、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-2、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3、specs/ai-dev-digest/article-detail/requirements.md#表示分量・著作権配慮-2、specs/ai-dev-digest/content-generation/requirements.md#記事の構成-4、specs/ai-dev-digest/content-generation/requirements.md#著作権への配慮(根拠)-3
 describe('トピック表示 - 見出し・要約・出典(発信者名・元URLへのリンク)・情報源種別バッジをセットで表示する', () => {
   it('見出し・要約・発信者名・出典URLへのリンクが表示されること', () => {
     render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" />)
     expect(screen.getByText('Anthropicが新モデルを発表')).toBeTruthy()
     expect(screen.getByText('あ'.repeat(100))).toBeTruthy()
-    const link = screen.getByRole('link', { name: 'Anthropic' }) as HTMLAnchorElement
+    const link = screen.getByRole('link', { name: 'Anthropic' })
     expect(link.href).toBe('https://www.anthropic.com/news/example')
     expect(link.target).toBe('_blank')
   })
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/design.md「その日の記事本文を表示する処理」
+// 仕様: specs/ai-dev-digest/article-detail/design.md#その日の記事本文を表示する処理
 describe('トピック表示 - youtubeVideoIdを持つ場合のみYouTube埋め込みプレーヤーを表示する', () => {
   it('youtubeVideoIdがある場合、YouTube埋め込みプレーヤー(iframe)が描画されること', () => {
     const { container } = render(
@@ -54,7 +54,7 @@ describe('トピック表示 - youtubeVideoIdを持つ場合のみYouTube埋め�
   })
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/design.md「その日の記事本文を表示する処理」
+// 仕様: specs/ai-dev-digest/article-detail/design.md#その日の記事本文を表示する処理
 describe('トピック表示 - belowCriteriaがtrueの場合のみ「採用基準未達」バッジと理由を表示する', () => {
   it('belowCriteriaがtrueのとき、「採用基準未達」バッジとbelowCriteriaReasonの内容が表示されること', () => {
     render(
@@ -74,7 +74,7 @@ describe('トピック表示 - belowCriteriaがtrueの場合のみ「採用基�
   })
 })
 
-// 仕様: specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-5
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#運営者向けフィードバック-5、specs/ai-dev-digest/article-detail/requirements.md#フィードバックの保存・権限-4
 describe('フィードバック入力欄の表示切り替え - ログイン中(セッションあり)の場合のみ表示する', () => {
   it('セッションがある場合、フィードバック入力欄(テキストエリア)が表示されること', () => {
     render(<TopicSection topic={makeTopic()} session={makeSession('admin@example.com')} articleDate="2026-08-01" />)

@@ -27,7 +27,7 @@ describe('カードに表示するトピック見出しの選択 - 詳細ペー�
 
   it('詳細ページへのリンクが表示されること', () => {
     render(<ArticleCard date="2026-08-01" topicHeadings={['見出しA']} totalTopicCount={1} />)
-    const link = screen.getByRole('link') as HTMLAnchorElement
+    const link = screen.getByRole('link')
     expect(link.getAttribute('href')).toBe('/ai-dev-digest/2026-08-01')
   })
 })

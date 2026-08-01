@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { SUMMARY_MIN_LENGTH, SUMMARY_MAX_LENGTH, isValidSummaryLength } from '../../../app/ai-dev-digest/lib/summaryValidation'
 
-// 仕様: specs/ai-dev-digest/content-generation/requirements.md#要約-2
+// 仕様: specs/ai-dev-digest/content-generation/requirements.md#要約-2、specs/ai-dev-digest/content-generation/requirements.md#著作権への配慮(根拠)-2、specs/ai-dev-digest/article-detail/requirements.md#表示分量・著作権配慮-1、specs/ai-dev-digest/content-generation/design.md#要約の文字数を検証する処理(決定的なコード)
 describe('要約の文字数検証 - 100〜150字程度の「程度」を±20字の許容幅として機械的に判定する', () => {
   it('下限の80字ちょうどのとき、有効と判定されること', () => {
     expect(isValidSummaryLength('あ'.repeat(SUMMARY_MIN_LENGTH))).toBe(true)
