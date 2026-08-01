@@ -5,7 +5,7 @@
 ## コード側の実装
 
 - Task 1: 記事データの組み立て(仕様: design.md「1日分の記事を生成する処理」手順5)
-  - 🔴 選定結果(見出し・要約・出典・basedCriteria等が揃ったトピック配列)から、article-detailのスキーマを満たす`Article`が組み立てられることを確認するテストを書く
+  - 🔴 選定結果(見出し・要約・出典・belowCriteria等が揃ったトピック配列)から、article-detailのスキーマを満たす`Article`が組み立てられることを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/assembleArticle.ts`に`assembleArticle(date, topics): Article`を実装する
 
 - Task 2: 記事ファイルの書き出し(仕様: design.md「1日分の記事を生成する処理」手順5)

@@ -42,8 +42,8 @@
   - 🔴 Supabaseクライアントをモックし、`article_date`・`topic_id`・`comment`・`is_test`が正しいカラム名でinsertされることを確認するテストを書く(成功/失敗の両方で戻り値が正しいことも確認)
   - 🟢 `app/ai-dev-digest/lib/saveFeedback.ts`に`saveFeedback`を実装する(`isTestData`判定を含む。ロジックは`life-money-sim/lib/saveResult.ts`のテストデータ判定を踏襲)
 
-- Task 9: フィードバック入力欄(仕様: requirements.md#運営者向けフィードバック-7、design.md「フィードバックを送信する処理」)
-  - 🔴 送信成功時に入力欄が空になり「送信しました」が表示されること、失敗時に入力内容が残り「送信に失敗しました。もう一度お試しください」が表示されることを確認するテストを書く
+- Task 9: フィードバック入力欄(仕様: requirements.md#運営者向けフィードバック-7〜8、design.md「フィードバックを送信する処理」)
+  - 🔴 送信成功時に入力欄が空になり「送信しました」が表示されること、失敗時に入力内容が残り「送信に失敗しました。もう一度お試しください」が表示されること、入力欄が空文字または空白文字のみの場合は送信ボタンが無効化され送信されないことを確認するテストを書く
   - 🟢 `app/ai-dev-digest/components/FeedbackForm.tsx`を実装する
 
 - Task 10: ログイン状態によるフィードバック入力欄の表示切り替え(仕様: requirements.md#運営者向けフィードバック-5)
