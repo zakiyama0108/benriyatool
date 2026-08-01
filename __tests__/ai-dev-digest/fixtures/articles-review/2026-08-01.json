@@ -1,0 +1,24 @@
+{
+  "date": "2026-08-01",
+  "topics": [
+    {
+      "id": "topic-1",
+      "heading": "基準未達の記事(期間内)",
+      "summary": "この記事はテスト用フィクスチャであり、collectBelowCriteriaRecordsが基準未達の記事(期間内)を集計対象として正しく含めることを検証するためだけに用意した本文です。実際の記事本文ではありません。",
+      "sourceType": "qiita",
+      "sourceName": "example-user",
+      "sourceUrl": "https://qiita.com/example/items/abc123",
+      "belowCriteria": true,
+      "belowCriteriaReason": "いいね数18件(基準30件に12件不足)"
+    },
+    {
+      "id": "topic-2",
+      "heading": "基準を満たした記事(期間内)",
+      "summary": "この記事はテスト用フィクスチャであり、collectBelowCriteriaRecordsが基準を満たした記事(期間内)を集計対象から除外することを検証するためだけに用意した本文です。実際の記事本文ではありません。",
+      "sourceType": "official",
+      "sourceName": "Anthropic",
+      "sourceUrl": "https://www.anthropic.com/news/example",
+      "belowCriteria": false
+    }
+  ]
+}

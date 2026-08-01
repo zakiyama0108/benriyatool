@@ -1,0 +1,14 @@
+{
+  "name": "ai-dev-digest-collect-review-data",
+  "private": true,
+  "type": "module",
+  "description": "watchlist-reviewの月次見直しが使う、基準未達記録・フィードバック集計スクリプトの依存(本体のpackage.jsonとは隔離。docs/adr/0004参照)",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "@types/pg": "^8.11.10"
+  }
+}

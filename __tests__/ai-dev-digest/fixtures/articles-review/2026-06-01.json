@@ -1,0 +1,15 @@
+{
+  "date": "2026-06-01",
+  "topics": [
+    {
+      "id": "topic-1",
+      "heading": "基準未達の記事(期間外)",
+      "summary": "この記事はテスト用フィクスチャであり、collectBelowCriteriaRecordsが集計期間より前の日付を対象から除外することを検証するためだけに用意した本文です。実際の記事本文ではありません。",
+      "sourceType": "zenn",
+      "sourceName": "Zenn",
+      "sourceUrl": "https://zenn.dev/example/articles/old-article",
+      "belowCriteria": true,
+      "belowCriteriaReason": "いいね数5件(基準30件に25件不足)"
+    }
+  ]
+}
