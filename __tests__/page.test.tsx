@@ -17,3 +17,13 @@ describe('【トップページ】ツールカード一覧 - 本番公開済み�
     expect(aiDevDigestLink.getAttribute('href')).toBe('/ai-dev-digest')
   })
 })
+
+// 仕様: specs/hub-site/requirements.md#機能要件-3
+describe('【トップページ】ガイド記事一覧への導線 - ツールカードとは区別して表示する', () => {
+  it('育休給付金ガイド記事一覧(/ikukyu/guide)へのリンクが表示されること', () => {
+    render(<HubPage />)
+
+    const guideLink = screen.getByRole('link', { name: /育休給付金ガイド記事/ })
+    expect(guideLink.getAttribute('href')).toBe('/ikukyu/guide')
+  })
+})

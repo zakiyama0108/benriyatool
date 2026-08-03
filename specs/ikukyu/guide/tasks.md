@@ -70,3 +70,12 @@ design.mdのコンポーネント設計の7つ(StatTiles / ArticleTable / Callou
 - `public/sitemap.xml` に4URL(記事3本+一覧)を追記
 - `npm run lint` / `npm test` / `npm run build`(静的エクスポート)が通ることを確認
 - /run-benriyatool で3記事+一覧ページのスクリーンショットを撮り、モックアップとの見た目の乖離・モバイル表示を確認する
+
+## Task 10: トップページ・シミュレーター画面への導線追加(2026-08-03)
+
+サイトマップには登録済みだが、トップページ・シミュレーター画面のどちらからもリンクされておらず、検索流入以外で発見できなかったため追加する。
+
+- [x] 🔴 Red: `__tests__/page.test.tsx`にトップページから`/ikukyu/guide`へのリンクが存在することを検証するテストを書く(仕様コメント: `specs/hub-site/requirements.md#機能要件-3`)
+- [x] 🟢 Green: `app/page.tsx`のツールカード一覧の下にテキストリンクを追加する
+- [x] `app/ikukyu/page.tsx`のヘッダー直下にも同様のテキストリンクを追加する(この画面は`saveResult.ts`経由で`app/lib/supabaseClient.ts`を読み込むため、vitest実行時に環境変数エラーで直接レンダリングするユニットテストが書けない。`vitest.config.mts`が`page.tsx`をカバレッジ対象外としている既存方針に合わせ、`npm run build`と実機確認(/run-benriyatool)でリンクの表示・遷移を確認する)
+- [x] `specs/hub-site/requirements.md`にもトップページ側の導線をビジネスルールとして追記する

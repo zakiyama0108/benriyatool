@@ -64,6 +64,13 @@ export default function HubPage() {
           </div>
         </Link>
       </div>
+
+      {/* 関連記事(ツールではないためカードとは表示を区別する) */}
+      <div className="text-center">
+        <Link href="/ikukyu/guide" className="text-sm font-bold text-gray-500 hover:text-orange-500 hover:underline">
+          育休給付金ガイド記事を読む →
+        </Link>
+      </div>
     </div>
   )
 }

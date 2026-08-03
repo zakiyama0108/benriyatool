@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import type { CalculatorInput, CalculatorResult } from './lib/types'
 import { calcResult } from './lib/calculator'
 import { saveResult } from './lib/saveResult'
@@ -35,6 +36,9 @@ export default function Page() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">出産・育休 給付金シミュレーター</h1>
         <p className="mt-1 text-sm text-gray-500">産後から育休まで、もらえるお金が全部わかる</p>
+        <Link href="/ikukyu/guide" className="mt-2 inline-block text-sm font-bold text-teal-600 hover:underline">
+          育休給付金ガイド記事を読む →
+        </Link>
       </div>
 
       {/* モード切替 */}
