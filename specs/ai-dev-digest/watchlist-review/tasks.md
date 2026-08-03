@@ -15,16 +15,16 @@
 - Task 3: 独立した依存関係の用意(仕様: design.md「関連するファイル」)(TDD対象外。パッケージ定義のみのため)
   - `scripts/ai-dev-digest/collect-review-data/package.json`を作成する(`.claude/skills/data-check/package.json`と同様に`pg`/`dotenv`を依存として持つ。本体`package.json`には追加しない)
 
+- Task 4: ワークフロー本体の実装(仕様: design.md「実行環境の前提」「見直し案を作成する処理」「見直し案をPRとして提案する処理」)(TDD対象外。GitHub Actionsのワークフロー定義ファイルであり、内部で呼ぶcollectReviewData.tsはTask1・2でテスト済み、Claude Code呼び出し自体はエージェントの推論のためユニットテスト対象を持たない)
+  - `.github/workflows/ai-dev-digest-monthly.yml`を実装する。月1回のcronトリガーで、`collectReviewData.ts`の実行→収集データ・関連specを渡してClaude Code CLIをヘッドレスモードで起動(見直し案の検討・ファイル編集)→変更があればブランチ作成・コミット・push・`gh pr create`までを行う(`gh pr merge --auto`は呼ばない)
+  - GitHub書き込みには[daily-publish](../daily-publish/design.md)と同じ`secrets.AI_DEV_DIGEST_GH_PAT`を使う
+
 ## 運用設定(コード外)
 
-- Task 4: 月次Routineの実行設定(仕様: design.md「実行環境の前提」)
-  - **着手前提**: `SUPABASE_READONLY_DB_URL`をRoutine専用の実行環境に設定する具体的な手段を先に確認する(design.md「実行環境の前提」に記載の未解決事項。daily-publishの検証時点ではRoutineへの独自シークレット追加手段が見当たらなかった。手段が見つからない場合は本specの実行主体の再検討が必要)
-  - 月1回の起動スケジュールを設定する
-  - `SUPABASE_READONLY_DB_URL`をRoutine専用の実行環境に設定する(本体リポジトリ・GitHub Actions Secretsには追加しない)
-  - Routineの実行指示に、本specとcontent-selectionのrequirements.md・design.mdを読む手順、および「変更なしならPRを作らない」判断基準を含める
-
-- Task 5: 自動マージ対象外であることの確認(仕様: design.md「見直し案をPRとして提案する処理」手順3)
-  - 本specのRoutineが作成するPR(`ai-dev-digest/watchlist-review/**`)は、daily-publishのワークフロー([daily-publish/design.md](../daily-publish/design.md)「PRを自動マージする処理」)とは別のPATを使い、`gh pr merge --auto`のようなauto-merge操作を一切行わないことをRoutineの実行指示・実装内容で確認する(2026-08改定: GitHub Rulesetsによるブランチパターン単位の技術的な例外設定は行わない前提のため、ここでの区別は運用規律によるものであり、GitHub側の設定確認ではない)
+- Task 5: GitHub Actions Secretsの設定(仕様: design.md「実行環境の前提」)
+  - `SUPABASE_READONLY_DB_URL`をこのリポジトリのActions Secretsに保存する(2026-08第2次改定でdocs/adr/0004が許容した例外。設定前にADRの改定内容を確認する)
+  - `ANTHROPIC_API_KEY`が未設定であれば同様に保存する(daily-publishで設定済みなら流用する)
+  - 初回実行前に、上記のSecretsが実際に設定されていることを確認する(テスト実行1回分をレビューする)
 
 ## 動作確認
 

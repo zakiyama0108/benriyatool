@@ -2197,7 +2197,7 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "実行環境の前提",
-    "reason": "月次Routine実行環境へのSUPABASE_READONLY_DB_URL設定方針の記述で、運用上の前提でありこのリポジトリのコードとして実装しないため(docs/adr/0004参照)"
+    "reason": "月次GitHub Actionsワークフローへの認証情報(PAT・APIキー・SUPABASE_READONLY_DB_URL)設定方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため(docs/adr/0004参照)"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
@@ -2207,7 +2207,7 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "見直し案を作成する処理(エージェントの推論)",
-    "reason": "エージェント(Claude Routines)の推論に委ねる見直し案の検討手順の説明で、コードとして実装しないため"
+    "reason": "エージェント(GitHub Actionsから起動するヘッドレスClaude Code)の推論に委ねる見直し案の検討手順の説明で、コードとして実装しないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
@@ -2217,7 +2217,7 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "エラーハンドリング",
-    "reason": "フィードバックDB接続失敗時のフォールバック・requirements.mdとJSONデータの両方が揃うまでコミットしない方針の記述で、Routineの実行制御に関する運用上の対応でありこのリポジトリのコードとして実装しないため"
+    "reason": "フィードバックDB接続失敗時のフォールバック・requirements.mdとJSONデータの両方が揃うまでコミットしない方針の記述で、ワークフロー・エージェントの実行制御に関する運用上の対応でありユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
@@ -2237,7 +2237,7 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "ログ",
-    "reason": "月次実行ごとの集計結果をRoutineの実行ログに記録するという記述で、Claude Routines側の運用上の記録でありこのリポジトリのコードとして実装しないため"
+    "reason": "月次実行ごとの集計結果をGitHub Actionsのワークフロー実行ログに記録するという記述で、運用上の記録でありユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
@@ -2272,12 +2272,12 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "承認フロー [3]",
-    "reason": "見直し案のPRを自動マージせず運営者が確認してマージするというGitHubブランチ保護の要件で、このリポジトリのコードとして実装しないため(tasks.md Task5のブランチ保護確認作業に該当)"
+    "reason": "見直し案のPRを自動マージせず運営者が確認してマージするという要件で、ワークフロー実装(tasks.md Task4)が`gh pr merge --auto`を一切呼ばないという不作為によって担保され、対応するテスト(存在しないことの検証)を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "ビジネスルール・制約 [1]",
-    "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、Claude Routinesの起動設定に関する事項でありこのリポジトリのコードとして実装しないため(tasks.md Task4)"
+    "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、.github/workflows/ai-dev-digest-monthly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task4)"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
