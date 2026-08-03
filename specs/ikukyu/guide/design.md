@@ -83,6 +83,8 @@ app/ikukyu/guide/fufu-ikukyu/page.tsx       (新規: 記事3)
 app/ikukyu/lib/calculator.ts                (既存: 計算関数を読み取り専用で利用。変更しない)
 app/ikukyu/lib/dateUtils.ts                 (既存: 日付計算を読み取り専用で利用。変更しない)
 public/sitemap.xml                          (既存: 4URL(記事3本+一覧)を追記)
+app/ikukyu/guide/components/ArticleSidebar.tsx (新規: PC版2カラムレイアウトの右サイドバー。下記「PC版レイアウト」参照)
+package.json                                (新規依存: lucide-react。サイドバー・目次のアイコン表示に使う)
 ```
 
 ## 画面設計
@@ -98,6 +100,20 @@ public/sitemap.xml                          (既存: 4URL(記事3本+一覧)を�
 7. FAQカード(FAQPage構造化データの元データ)
 8. 参考資料(厚労省・ハローワークへのリンク)+最終更新日+免責注記
 9. 関連記事リンク(他2記事への内部リンク)
+
+### PC版レイアウト(768px以上・requirements.md#UI/UX要件-4)
+
+767px以下は上記の縦1カラム構成を変更しない。768px以上(Tailwindの`md:`)でのみ、CSS Gridで「本文カラム(可変幅)+サイドバー(固定288px)」の2カラムに切り替える。実装方針は2026-08-03にv0(https://v0.app)で作成し承認したモックアップに準拠する(取り込み元コードはユーザーのローカルZIP。取り込みはtasks.mdの最初のタスクで行う)。
+
+- グリッド: `grid-cols-1 md:grid-cols-[minmax(0,1fr)_288px] md:gap-8`。本文側は`md:max-w-[720px]`で読みやすい行長に収める
+- サイドバーは`md:sticky md:top-20`で本文スクロールに追従する
+- サイドバーの中身(上から順、記事本文ページ):
+  1. 目次(本文中の見出しへのアンカーリンク。早見表なら月給帯、記事1なら各セクション)
+  2. シミュレーターへのCTA(既存の`SimulatorCta`をそのまま使う)
+  3. 関連記事(他2記事へのリンク)
+  4. 参考資料(既存の`SourcesFooter`の内容をサイドバー用に再配置。出典リンク+最終更新日)
+- 記事一覧ページのサイドバーは目次を持たず、「このガイドについて」の説明カード+シミュレーターCTAのみ。本文側の記事カードはPC幅で2列グリッド(`md:grid-cols-2`)にする
+- 目次・外部リンクのアイコン表示に`lucide-react`を新規に使う(既存実装は絵文字・アイコンなしのテキストベースだが、サイドバーは複数カードが並ぶため視覚的な区別にアイコンを使う判断とした)
 
 ### 記事構成(見出しレベル)
 
@@ -120,6 +136,7 @@ public/sitemap.xml                          (既存: 4URL(記事3本+一覧)を�
 | FaqSection | Q&A配列 | FAQ表示とFAQPage構造化データの両方に同じデータを使う |
 | SourcesFooter | 参考リンク配列・最終更新日・制度定数の適用期間表記 | 一次資料リンク+免責+最終更新日+適用期間の明記 |
 | ArticleJsonLd | 記事メタ情報・FAQ配列(任意) | Article/FAQPage JSON-LDのscriptタグ出力 |
+| ArticleSidebar | 目次項目(任意)・関連記事・参考資料・テーマ色 | PC版(768px以上)の右サイドバー。目次なし(記事一覧ページ)にも対応 |
 
 ## セキュリティ
 
