@@ -5,7 +5,7 @@
 記事本文はDBではなく、ビルド時に取り込む静的コンテンツファイルとして管理する(`architecture.md#3-設計方針`)。この記事データの型・置き場所は本specで定義し、[article-list](../article-list/requirements.md)・[content-selection](../content-selection/requirements.md)・[content-generation](../content-generation/requirements.md)・[daily-publish](../daily-publish/requirements.md)・[watchlist-review](../watchlist-review/requirements.md)は共通してこの形式に従う。
 
 - 格納場所: `content/ai-dev-digest/articles/<date>.json`(`<date>`は`YYYY-MM-DD`。URLの`[date]`と一致させる)
-- 1ファイル=1日分の記事。日次のClaude Routine([daily-publish](../daily-publish/requirements.md))がこのファイルを新規追加する
+- 1ファイル=1日分の記事。日次のGitHub Actionsワークフロー([daily-publish](../daily-publish/requirements.md))がこのファイルを新規追加する
 - なぜMarkdownでなくJSONか: トピックごとの見出し・要約・出典・情報源種別・基準未達フラグを構造化フィールドとして持つ必要があり、本文全体が地の文であるMarkdownより、フィールド単位で機械検証(バリデーション)しやすいJSONの方が、エージェントが生成する入力形式として事故が少ないと判断した(要件に形式指定はないため設計判断)
 
 ```ts

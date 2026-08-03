@@ -12,18 +12,16 @@
   - TDD対象外(fsへの書き込みのみの薄いラッパーのため。組み立てロジック自体はTask 1でテスト済み)
   - `scripts/ai-dev-digest/write-article.ts`を実装する。`assembleArticle`の結果を`content/ai-dev-digest/articles/<date>.json`へ書き出すCLIにする
 
+- Task 3: ワークフロー本体の実装(仕様: design.md「実行環境の前提」「1日分の記事を生成する処理」「PRを作成しCIの結果を待つ処理」)(TDD対象外。GitHub Actionsのワークフロー定義ファイルであり、内部で呼ぶ各スクリプトはそれぞれのspecでテスト済みのため)
+  - `.github/workflows/ai-dev-digest-daily.yml`を実装する。1日1回のcronトリガーで、ブランチ作成→`collect-and-select.ts`→(スキップ判定)→`generate-content.ts`→`assembleArticle`/`write-article.ts`→コミット・push→`gh pr create`→`gh pr merge --auto --squash`までを行う
+  - GitHub書き込みには`secrets.AI_DEV_DIGEST_GH_PAT`を使う(既定の`GITHUB_TOKEN`は使わない。design.md「実行環境の前提」参照)
+
 ## 運用設定(コード外)
 
-- Task 3: ブランチ保護の例外設定(仕様: design.md「PRを自動マージする処理」手順3)
-  - リポジトリのRulesetsに、`ai-dev-digest/articles/**`パターンのブランチのみ必須レビューを免除する例外を追加する
-  - `ai-dev-digest/watchlist-review/**`パターン(または他の通常ブランチ)がこの例外の対象に含まれていないことを確認する
-  - GitHubの設定作業のため、このリポジトリへのコード変更は発生しない(design.mdへの前提記載のみ)
-
-- Task 4: Claude Routineの実行設定(仕様: design.md「実行環境の前提」)
-  - 1日1回の起動スケジュールを設定する
-  - GitHub書き込み権限・YouTube Data APIキー等をRoutine側の実行環境にのみ設定する(このリポジトリ・GitHub Actions Secretsには追加しない)
-  - Routineの実行指示に、本specとcontent-selection/content-generation/article-detailのrequirements.md・design.mdを読む手順を含める
-  - 初回実行前に、上記の設定が実際に機能することを確認する(テスト実行1回分をレビューする)
+- Task 4: GitHub Actions Secretsの設定(仕様: design.md「実行環境の前提」)
+  - このリポジトリのみに範囲を限定したfine-grained PATを発行し、`AI_DEV_DIGEST_GH_PAT`としてリポジトリのActions Secretsに保存する
+  - `YOUTUBE_API_KEY`・`ANTHROPIC_API_KEY`を同様にActions Secretsに保存する
+  - 初回実行前に、上記のSecretsが実際に設定されていること、`AI_DEV_DIGEST_GH_PAT`で作成したPRに対し既存の`ci.yml`が正しく起動すること(既定の`GITHUB_TOKEN`使用時に起きる無限ループ防止による起動抑制が発生しないこと)を確認する(テスト実行1回分をレビューする)
 
 ## 動作確認
 

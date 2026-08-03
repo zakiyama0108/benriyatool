@@ -1937,7 +1937,7 @@
   {
     "specFile": "ai-dev-digest/content-generation/design.md",
     "item": "要約を書く処理(エージェントの推論)",
-    "reason": "エージェント(Claude Routines)の推論に委ねる執筆手順の説明で、コードとして実装しないため"
+    "reason": "エージェント(GitHub Actionsから呼び出すAnthropic Messages API)の推論に委ねる執筆手順の説明で、生成結果の分量検証以外はコードとして実装・テストしないため"
   },
   {
     "specFile": "ai-dev-digest/content-generation/design.md",
@@ -2052,7 +2052,7 @@
   {
     "specFile": "ai-dev-digest/content-selection/design.md",
     "item": "セキュリティ",
-    "reason": "YouTube Data APIキーの管理方法・公開エンドポイントのみを使う方針の記述で、Claude Routines実行環境の設定に関する運用上の対応でありこのリポジトリのコードとして実装・テストしないため"
+    "reason": "YouTube Data APIキーの管理方法・公開エンドポイントのみを使う方針の記述で、GitHub Actions Secretsの設定に関する運用上の対応でありこのリポジトリのコードとして実装・テストしないため"
   },
   {
     "specFile": "ai-dev-digest/content-selection/design.md",
@@ -2092,7 +2092,7 @@
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "実行環境の前提(初導入のため明記する設計判断)",
-    "reason": "Claude Routinesの認証情報・実行権限の管理方針の記述で、このリポジトリのコードとして実装しない運用上の前提のため"
+    "reason": "GitHub Actionsの認証情報(PAT・APIキー)の管理方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
@@ -2107,22 +2107,22 @@
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "PRを自動マージする処理(完全自動マージの例外運用)",
-    "reason": "GitHubのブランチ保護(Rulesets)設定に関する運用手順の記述で、このリポジトリのコードとして実装しないため(tasks.md Task3)"
+    "reason": "自動マージ範囲の限定はGitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる旨の設計判断の記述で、コードとしてのテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "CI失敗時に記録する処理",
-    "reason": "PRへのコメント自動追記等の運用手順の記述で、Claude Routines側の振る舞いでありこのリポジトリのコードとして実装しないため"
+    "reason": "PRへのコメント自動追記等の運用手順の記述で、GitHub Actionsのワークフロー側の振る舞いでありユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "記事生成をスキップする処理",
-    "reason": "候補不足時にブランチ・PRを作成しないというRoutineの実行判断の記述で、判定ロジック自体はcontent-selection/selection.test.tsでテスト済みのため(daily-publish側はオーケストレーションのみを担当)"
+    "reason": "候補不足時にブランチ・PRを作成しないというワークフローの実行判断の記述で、判定ロジック自体はcontent-selection/selection.test.tsでテスト済みのため(daily-publish側はオーケストレーションのみを担当)"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "エラーハンドリング",
-    "reason": "CI失敗時の扱い・記事生成処理自体の中断時の扱いの記述で、Routineの実行制御に関する運用上の対応でありこのリポジトリのコードとして実装しないため"
+    "reason": "CI失敗時の扱い・記事生成処理自体の中断時の扱いの記述で、ワークフローの実行制御に関する運用上の対応でありユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
@@ -2132,12 +2132,12 @@
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "セキュリティ",
-    "reason": "Routineが保持するGitHub書き込み権限・APIキーの管理方針、ブランチ保護の例外設定範囲の記述で、運用設定に関する事項でありこのリポジトリのコードとして実装しないため"
+    "reason": "GitHub Actions Secretsで保持するPAT・APIキーの管理方針、自動マージ範囲の限定方針の記述で、運用設定に関する事項でありユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "ログ",
-    "reason": "Routineの実行ログに記録する項目の記述で、Claude Routines側の運用上の記録でありこのリポジトリのコードとして実装しないため"
+    "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/requirements.md",
@@ -2172,17 +2172,17 @@
   {
     "specFile": "ai-dev-digest/daily-publish/requirements.md",
     "item": "実行 [1]",
-    "reason": "収集・翻訳・要約・記事執筆のバッチを1日1回実行するという運用スケジュールの要件で、Claude Routinesの起動設定に関する事項でありこのリポジトリのコードとして実装しないため(tasks.md Task4)"
+    "reason": "収集・翻訳・要約・記事執筆のバッチを1日1回実行するという運用スケジュールの要件で、.github/workflows/ai-dev-digest-daily.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task3)"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/requirements.md",
     "item": "実行 [2]",
-    "reason": "実行主体がClaude Routinesであり、Web検索・翻訳・要約・記事執筆をエージェントの推論で行うという役割分担の要件で、コードとして実装しないため(daily-publish/design.mdの「実行環境の前提」参照)"
+    "reason": "実行主体がGitHub Actionsであり、翻訳・要約はAnthropic API呼び出し(エージェントの推論)に委ねるという役割分担の要件で、収集・判定・組み立てロジック自体は各specのテストで担保しつつAPI呼び出し自体はユニットテスト対象を持たないため(daily-publish/design.mdの「実行環境の前提」参照)"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/requirements.md",
     "item": "公開フロー [4]",
-    "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、このリポジトリのコードとして実装しないため(tasks.md Task3〜4のリポジトリ設定・実行基盤の運用対応に該当)"
+    "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、`gh pr create`/`gh pr merge --auto`の呼び出し自体はユニットテスト対象を持たないため(tasks.md Task3のワークフロー本体に該当。実際の疎通確認はTask4のSecrets設定後の初回実行で行う)"
   },
   {
     "specFile": "ai-dev-digest/daily-publish/requirements.md",
@@ -2192,12 +2192,12 @@
   {
     "specFile": "ai-dev-digest/daily-publish/requirements.md",
     "item": "自動マージの範囲 [2]",
-    "reason": "完全自動マージの対象をai-dev-digest/articles/**ブランチに限定するというブランチ保護(Rulesets)設定の要件で、GitHubリポジトリ設定でありこのリポジトリのコードとして実装しないため(tasks.md Task3)"
+    "reason": "完全自動マージの対象をai-dev-digest/articles/**ブランチに限定するという要件で、GitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる設計(daily-publish/design.md「PRを自動マージする処理」参照)であり、ユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "実行環境の前提",
-    "reason": "月次Routine実行環境へのSUPABASE_READONLY_DB_URL設定方針の記述で、運用上の前提でありこのリポジトリのコードとして実装しないため(docs/adr/0004参照)"
+    "reason": "月次GitHub Actionsワークフローへの認証情報(PAT・APIキー・SUPABASE_READONLY_DB_URL)設定方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため(docs/adr/0004参照)"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
@@ -2207,7 +2207,7 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "見直し案を作成する処理(エージェントの推論)",
-    "reason": "エージェント(Claude Routines)の推論に委ねる見直し案の検討手順の説明で、コードとして実装しないため"
+    "reason": "エージェント(GitHub Actionsから起動するヘッドレスClaude Code)の推論に委ねる見直し案の検討手順の説明で、コードとして実装しないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
@@ -2217,7 +2217,7 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "エラーハンドリング",
-    "reason": "フィードバックDB接続失敗時のフォールバック・requirements.mdとJSONデータの両方が揃うまでコミットしない方針の記述で、Routineの実行制御に関する運用上の対応でありこのリポジトリのコードとして実装しないため"
+    "reason": "フィードバックDB接続失敗時のフォールバック・requirements.mdとJSONデータの両方が揃うまでコミットしない方針の記述で、ワークフロー・エージェントの実行制御に関する運用上の対応でありユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
@@ -2237,7 +2237,7 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "ログ",
-    "reason": "月次実行ごとの集計結果をRoutineの実行ログに記録するという記述で、Claude Routines側の運用上の記録でありこのリポジトリのコードとして実装しないため"
+    "reason": "月次実行ごとの集計結果をGitHub Actionsのワークフロー実行ログに記録するという記述で、運用上の記録でありユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
@@ -2272,12 +2272,12 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "承認フロー [3]",
-    "reason": "見直し案のPRを自動マージせず運営者が確認してマージするというGitHubブランチ保護の要件で、このリポジトリのコードとして実装しないため(tasks.md Task5のブランチ保護確認作業に該当)"
+    "reason": "見直し案のPRを自動マージせず運営者が確認してマージするという要件で、ワークフロー実装(tasks.md Task4)が`gh pr merge --auto`を一切呼ばないという不作為によって担保され、対応するテスト(存在しないことの検証)を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "ビジネスルール・制約 [1]",
-    "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、Claude Routinesの起動設定に関する事項でありこのリポジトリのコードとして実装しないため(tasks.md Task4)"
+    "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、.github/workflows/ai-dev-digest-monthly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task4)"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
