@@ -1,0 +1,108 @@
+# AI駆動開発ダイジェストのウォッチリスト・採用基準 月次見直しワークフロー
+# (仕様: specs/ai-dev-digest/watchlist-review/design.md「実行環境の前提」「見直しの材料を集める処理」
+# 「見直し案を作成する処理」「見直し案をPRとして提案する処理」)
+#
+# collectReviewData.tsで直近1ヶ月の基準未達記録・フィードバックを集計し、Claude Code CLIを
+# ヘッドレス起動して見直し案の検討・ファイル編集を行わせる。変更があればブランチ作成・コミット・
+# push・PR作成まで行うが、daily-publishと異なり自動マージはしない(通常のレビュー必須フローのまま。
+# requirements.md#承認フロー-3参照)
+name: AI駆動開発ダイジェスト 月次ウォッチリスト見直し
+
+on:
+  schedule:
+    - cron: '0 22 1 * *' # 毎月1日22:00 UTC = 2日07:00 JST
+  workflow_dispatch: # Secrets設定後の動作確認用に手動実行できるようにする
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      # GitHub書き込みはdaily-publishと同じ専用PATを使う(design.md「実行環境の前提」参照)
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.AI_DEV_DIGEST_GH_PAT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # ci.yml・deploy.ymlと同じバージョンに揃える
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: 集計対象期間(直近1ヶ月)の開始日を算出
+        id: since
+        run: echo "date=$(date -u -d '-1 month' +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      # 依存関係(pg/dotenv)を本体package.jsonから隔離した独立パッケージのため、専用にnpm installする
+      # (design.md「関連するファイル」、.claude/skills/data-check/と同じ隔離パターン)
+      - name: 基準未達記録・フィードバックを収集
+        working-directory: scripts/ai-dev-digest/collect-review-data
+        run: |
+          npm install
+          npx tsx collectReviewData.ts "${{ steps.since.outputs.date }}" > /tmp/review-data.json
+        env:
+          SUPABASE_READONLY_DB_URL: ${{ secrets.SUPABASE_READONLY_DB_URL }}
+
+      - name: Claude Code CLIをインストール
+        run: npm install -g @anthropic-ai/claude-code
+
+      # 見直し案の検討はエージェントの推論に委ねる(design.md「見直し案を作成する処理」)。
+      # プロンプトはrequirements.md/design.mdをそのまま参照させる指示のみとし、内容を複製しない
+      - name: 見直し案を検討・ファイルへ反映(変更なしならファイルは変わらない)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p "$(cat <<'PROMPT'
+          あなたはこのリポジトリのai-dev-digestアプリの月次見直し担当です。
+          specs/ai-dev-digest/watchlist-review/requirements.md と design.md を読み、
+          「見直し案を作成する処理」の手順に従ってウォッチリスト・採用基準の見直し案を検討してください。
+
+          見直し対象の仕様は specs/ai-dev-digest/content-selection/requirements.md と design.md、
+          機械可読データは content/ai-dev-digest/watchlist.json と content/ai-dev-digest/criteria.json です。
+
+          見直しの材料(直近1ヶ月の基準未達記録・運営者フィードバック)は /tmp/review-data.json に
+          JSON形式で保存されています。読み込んで判断材料にしてください。
+
+          見直す点が見当たらない場合は、design.mdの記載どおり一切のファイルを変更せず終了してください。
+          変更する場合は、specs/ai-dev-digest/content-selection/requirements.md と
+          content/ai-dev-digest/watchlist.json・content/ai-dev-digest/criteria.json を
+          必ずすべて更新してください(一部だけの更新はしないでください)。
+
+          ブランチ作成・コミット・PR作成は行わず、対象ファイルの編集だけを行ってください
+          (それらは後続のステップが行います)。
+          PROMPT
+          )" --dangerously-skip-permissions
+
+      - name: 変更の有無を確認
+        id: diff
+        run: |
+          if git diff --quiet -- \
+            specs/ai-dev-digest/content-selection/requirements.md \
+            content/ai-dev-digest/watchlist.json \
+            content/ai-dev-digest/criteria.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # このPRは自動マージしない(design.md「見直し案をPRとして提案する処理」手順3。
+      # ai-dev-digest/watchlist-review/**ブランチはdaily-publishの自動マージ対象外)
+      - name: ブランチ作成・コミット・PR作成
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.AI_DEV_DIGEST_GH_PAT }}
+        run: |
+          YEAR_MONTH=$(date -u +%Y-%m)
+          BRANCH="ai-dev-digest/watchlist-review/${YEAR_MONTH}"
+          git config user.name "ai-dev-digest-bot"
+          git config user.email "ai-dev-digest-bot@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add \
+            specs/ai-dev-digest/content-selection/requirements.md \
+            content/ai-dev-digest/watchlist.json \
+            content/ai-dev-digest/criteria.json
+          git commit -m "spec(ai-dev-digest): ${YEAR_MONTH}のウォッチリスト・採用基準見直し"
+          git push origin "$BRANCH"
+          gh pr create --base main \
+            --title "[ai-dev-digest] ${YEAR_MONTH}のウォッチリスト・採用基準見直し" \
+            --body "月次見直しワークフローが生成した提案です。変更理由はコミット・差分を参照してください。このPRは自動マージされません。運営者が内容を確認のうえマージしてください。"
