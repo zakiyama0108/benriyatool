@@ -95,6 +95,10 @@ jobs:
   record-ci-failure:
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && startsWith(github.event.workflow_run.head_branch, 'ai-dev-digest/articles/')
     runs-on: ubuntu-latest
+    # リポジトリ既定のworkflow permissions(現状read)が将来変わっても、失敗ジョブ・ステップ特定
+    # (gh run view --json jobs)に必要な読み取り権限を確実に持てるよう明示する
+    permissions:
+      actions: read
     steps:
       # どのチェックが失敗したかを特定する(design.md「CI失敗時に記録する処理」手順2)。
       # actions:readで足りる読み取り専用の問い合わせのため、書き込み専用のAI_DEV_DIGEST_GH_PATではなく

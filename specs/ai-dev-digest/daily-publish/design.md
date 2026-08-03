@@ -77,6 +77,7 @@ content/ai-dev-digest/articles/<date>.json (新規: 生成される記事デー�
 ## セキュリティ
 
 - GitHub書き込み用PAT(`AI_DEV_DIGEST_GH_PAT`)・外部APIキー(`YOUTUBE_API_KEY`・`ANTHROPIC_API_KEY`)は、このリポジトリのActions Secretsとして保存する(暗号化され、ワークフロー実行時以外は値を参照できないGitHubの標準機能)。PATはこのリポジトリのみに範囲を限定したfine-grained PATとし、他リポジトリへの影響が及ばないようにする
+- 「CI失敗時に記録する処理」で失敗ジョブ・ステップを特定する処理(`gh run view --json jobs`)は同一リポジトリのActions実行結果を読むだけの読み取り専用の問い合わせのため、書き込み用PAT(`AI_DEV_DIGEST_GH_PAT`)ではなくワークフロー既定の`GITHUB_TOKEN`を使う(PRコメント投稿など書き込みが必要な処理のみ引き続き`AI_DEV_DIGEST_GH_PAT`を使う)
 - 自動マージの範囲を`ai-dev-digest/articles/**`のみに限定する仕組みは、GitHub側のACLではなくワークフロー自身の運用規律であるため(上記「PRを自動マージする処理」参照)、このワークフロー(`.github/workflows/ai-dev-digest-daily.yml`)以外が誤って同じPATで他ブランチを自動マージしないよう、PATの用途をこのワークフロー専用に限定する(他のワークフロー・スクリプトで同じSecretを流用しない)
 - 記事データの内容自体の安全性(著作権配慮・要約分量)はcontent-generation/article-detailのビルド時バリデーションで担保する(本specはオーケストレーションのみを担当し、内容検証のロジックは持たない)
 
