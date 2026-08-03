@@ -23,6 +23,10 @@ function isHttpUrl(value: unknown): value is string {
   }
 }
 
+function isIsoDateTime(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0 && !Number.isNaN(Date.parse(value))
+}
+
 // topics[index].sections配列を検証・パースする(仕様: article-detail/design.md「バリデーション」)。
 // 配列長2件以上、各セクションのheading/teaser/detailが空文字でないこと、teaserが
 // TEASER_MIN_LENGTH〜TEASER_MAX_LENGTHの範囲内であること、detail合計文字数が
@@ -80,6 +84,9 @@ function parseTopic(raw: unknown, index: number): Topic {
   if (!isHttpUrl(topic.sourceUrl)) {
     throw new Error(`topics[${index}].sourceUrlがhttp/https形式の絶対URLではありません: ${String(topic.sourceUrl)}`)
   }
+  if (!isIsoDateTime(topic.sourcePublishedAt)) {
+    throw new Error(`topics[${index}].sourcePublishedAtがISO 8601形式の日時ではありません: ${String(topic.sourcePublishedAt)}`)
+  }
   if (typeof topic.belowCriteria !== 'boolean') {
     throw new Error(`topics[${index}].belowCriteriaがboolean型ではありません`)
   }
@@ -94,6 +101,7 @@ function parseTopic(raw: unknown, index: number): Topic {
     sourceType: topic.sourceType as SourceType,
     sourceName: topic.sourceName,
     sourceUrl: topic.sourceUrl,
+    sourcePublishedAt: topic.sourcePublishedAt,
     belowCriteria: topic.belowCriteria,
   }
   if (isNonEmptyString(topic.youtubeVideoId)) result.youtubeVideoId = topic.youtubeVideoId

@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js'
 import type { Topic } from '../lib/types'
+import { formatSourcePublishedAt } from '../lib/formatSourcePublishedAt'
 import SourceBadge from './SourceBadge'
 import YoutubeEmbed from './YoutubeEmbed'
 import FeedbackForm from './FeedbackForm'
@@ -59,6 +60,7 @@ export default function TopicSection({ topic, session, articleDate }: Props) {
         <a href={topic.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
           {topic.sourceName}
         </a>
+        {`(${formatSourcePublishedAt(topic.sourcePublishedAt)}投稿)`}
       </p>
 
       {session && <FeedbackForm articleDate={articleDate} topicId={topic.id} />}

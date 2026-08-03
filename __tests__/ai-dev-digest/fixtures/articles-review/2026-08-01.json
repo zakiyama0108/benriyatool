@@ -20,7 +20,8 @@
       "sourceName": "example-user",
       "sourceUrl": "https://qiita.com/example/items/abc123",
       "belowCriteria": true,
-      "belowCriteriaReason": "いいね数18件(基準30件に12件不足)"
+      "belowCriteriaReason": "いいね数18件(基準30件に12件不足)",
+      "sourcePublishedAt": "2026-08-01T00:00:00Z"
     },
     {
       "id": "topic-2",
@@ -40,7 +41,8 @@
       "sourceType": "official",
       "sourceName": "Anthropic",
       "sourceUrl": "https://www.anthropic.com/news/example",
-      "belowCriteria": false
+      "belowCriteria": false,
+      "sourcePublishedAt": "2026-08-01T01:00:00Z"
     }
   ]
 }

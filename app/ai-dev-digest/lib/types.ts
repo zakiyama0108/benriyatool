@@ -19,6 +19,7 @@ export type Topic = {
   sourceType: SourceType
   sourceName: string // 発信者名(例: "Anthropic"、"Andrej Karpathy")
   sourceUrl: string // 出典の元URL
+  sourcePublishedAt: string // 元記事・動画のISO 8601形式の公開日時。content-selectionが収集したCandidate.publishedAtをそのまま引き継ぐ(エージェントが新たに調べ直す値ではない。requirements.md#記事本文表示-11)
   youtubeVideoId?: string // YouTube動画を紹介する場合のみ。公式埋め込みプレーヤー表示に使う
   belowCriteria: boolean // 採用基準未達での掲載(content-selection/requirements.md#1日の掲載件数-10)
   belowCriteriaReason?: string // belowCriteriaがtrueの場合のみ必須。基準からの乖離内容

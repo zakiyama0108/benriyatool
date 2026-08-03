@@ -21,6 +21,7 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
     sourceType: 'official',
     sourceName: 'Anthropic',
     sourceUrl: 'https://www.anthropic.com/news/example',
+    sourcePublishedAt: '2026-07-31T10:00:00Z',
     belowCriteria: false,
     ...overrides,
   }
@@ -38,6 +39,14 @@ describe('トピック表示 - 見出し・要約・出典(発信者名・元URL
     const link = screen.getByRole('link', { name: 'Anthropic' })
     expect(link.href).toBe('https://www.anthropic.com/news/example')
     expect(link.target).toBe('_blank')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-11、specs/ai-dev-digest/article-detail/design.md「その日の記事本文を表示する処理」
+describe('トピック表示 - 出典元(元記事・元動画)の投稿日時をJSTの日付表示で表示する', () => {
+  it('sourcePublishedAt(UTC)がJSTの「YYYY年M月D日」形式に変換されて表示されること', () => {
+    render(<TopicSection topic={makeTopic({ sourcePublishedAt: '2026-07-30T20:30:00Z' })} session={null} articleDate="2026-08-01" />)
+    expect(screen.getByText(/2026年7月31日投稿/)).toBeTruthy()
   })
 })
 

@@ -20,7 +20,8 @@
       "sourceName": "Zenn",
       "sourceUrl": "https://zenn.dev/example/articles/old-article",
       "belowCriteria": true,
-      "belowCriteriaReason": "いいね数5件(基準30件に25件不足)"
+      "belowCriteriaReason": "いいね数5件(基準30件に25件不足)",
+      "sourcePublishedAt": "2026-06-01T00:00:00Z"
     }
   ]
 }

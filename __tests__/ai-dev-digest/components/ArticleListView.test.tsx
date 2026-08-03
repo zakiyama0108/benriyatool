@@ -17,6 +17,7 @@ function makeArticle(date: string): Article {
         sourceType: 'official',
         sourceName: 'Anthropic',
         sourceUrl: 'https://www.anthropic.com/news/example',
+        sourcePublishedAt: '2026-07-31T10:00:00Z',
         belowCriteria: false,
       },
     ],
