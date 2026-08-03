@@ -7,7 +7,7 @@
 - **エージェントの推論に委ねる**: 選定された候補(content-selectionの出力)から、日本語の紹介文としての翻訳・要約を書く行為そのもの。意味理解・言い換えが本質的にLLMの得意領域であり、コード化になじまない
 - **決定的なコードに任せる**: 要約の文字数チェック、記事タイトルの生成、YouTube動画IDの抽出、著作権配慮のガードレール文言の提示。これらは「揺れてはいけない/機械的に導出できる」性質のため、エージェントの推論結果ではなく固定のコード・固定文言にする
 
-エージェント(GitHub Actionsのワークフローから`scripts/ai-dev-digest/generate-content.ts`経由で呼び出すAnthropic Messages API。2026-08改定: 当初はClaude Routinesの自律的な推論を想定していたが、[daily-publish/design.md](../daily-publish/design.md)「実行環境の前提」の改定によりGitHub Actions+API呼び出しに変更)が翻訳・要約を書く際に従うべきルールは、[requirements.md](requirements.md)と本design.mdそのものを直接参照させる(別ファイルにプロンプト文を複製しない。日次実行の運用手順は[daily-publish/design.md](../daily-publish/design.md)で「このrequirements.md/design.mdの内容をプロンプトに含めて実行する」という指示として組み込む)。元記事・元動画の内容把握には、Anthropic APIが提供するweb fetchツールを使い、スクリプト側では原文を事前取得しない(要約生成の呼び出し1回の中でAPI自身が対象URLを参照する)。
+エージェント(GitHub Actionsのワークフローから`scripts/ai-dev-digest/generate-content.ts`経由でヘッドレス起動するClaude Code CLI。2026-08改定: 当初はClaude Routinesの自律的な推論を想定していたが、[daily-publish/design.md](../daily-publish/design.md)「実行環境の前提」の改定によりGitHub Actions+API呼び出しに変更。2026-08第2次改定: Anthropic Messages APIの従量課金呼び出しから、運営者個人のClaude Code Pro/Maxサブスクリプション認証によるClaude Code CLIヘッドレス実行に変更した。理由は運用コスト(APIの従量課金)を避け、既契約のサブスクリプション利用枠内で完結させるため。トレードオフとして、この利用枠(5時間ごと・週次の上限)は運営者本人のClaude Code対話利用と共有される。生成に失敗した場合の扱いはdaily-publish/design.md「エラーハンドリング」参照)が翻訳・要約を書く際に従うべきルールは、[requirements.md](requirements.md)と本design.mdそのものを直接参照させる(別ファイルにプロンプト文を複製しない。日次実行の運用手順は[daily-publish/design.md](../daily-publish/design.md)で「このrequirements.md/design.mdの内容をプロンプトに含めて実行する」という指示として組み込む)。元記事・元動画の内容把握には、Claude Code CLIに標準搭載されたWebFetch/WebSearchツールを使い、スクリプト側では原文を事前取得しない(別途ツール定義を宣言する必要はない)。
 
 ## 処理フロー
 
@@ -57,7 +57,7 @@
 ## 関連するファイル(抜粋)
 
 ```
-scripts/ai-dev-digest/generate-content.ts (新規: daily-publish/design.mdで新規とするCLI本体。1候補ずつAnthropic Messages APIを呼び出し、見出し・sections配列を生成する)
+scripts/ai-dev-digest/generate-content.ts (新規: daily-publish/design.mdで新規とするCLI本体。1候補ずつClaude Code CLIをヘッドレス起動し、見出し・sections配列を生成する)
 app/ai-dev-digest/lib/summaryValidation.ts (新規: TEASER_MIN_LENGTH/TEASER_MAX_LENGTH・DETAIL_TOTAL_MIN_LENGTH/DETAIL_TOTAL_MAX_LENGTH定数とisValidTeaserLength/isValidDetailLength。sections配列のteaser・detailを検証する)
 app/ai-dev-digest/lib/articleTitle.ts (新規: buildArticleTitle(date))
 app/ai-dev-digest/lib/youtubeUrl.ts (新規: extractYoutubeVideoId(url))

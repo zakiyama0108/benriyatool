@@ -2,12 +2,12 @@
 
 ## 実行環境の前提
 
-実行主体はGitHub Actionsとする。**2026-08改定(第2版)の経緯**: 当初はClaude Routines(定期実行のクラウドエージェント)を実行主体とする想定だったが、[daily-publish/design.md](../daily-publish/design.md)の検証と同じ理由(Routine実行環境に独自のシークレットを追加する手段が確認できなかったこと)により、本specもGitHub Actionsに変更した。当初はDB接続情報(`SUPABASE_READONLY_DB_URL`)をGitHub Actions Secretsに置かないというdocs/adr/0004の既定方針を優先し、本specだけはClaude Routinesのまま据え置く判断をしていたが、その後の方針転換によりGitHub Actionsへ統一することとした。これに伴い、docs/adr/0004を改定し、`benriyatool_readonly`ロール(SELECT専用・BYPASSRLSなし・RLSスコープ限定という低い権限のロール)に限りGitHub Actions Secretsへの保持を許容する例外を追加した(改定内容は[0004-agent-readonly-db-access.md](../../../docs/adr/0004-agent-readonly-db-access.md)の「GitHub Actions実行環境への対象拡大(2026-08第2次改定)」参照)。
+実行主体はGitHub Actionsとする。**2026-08改定(第2版)の経緯**: 当初はClaude Routines(定期実行のクラウドエージェント)を実行主体とする想定だったが、[daily-publish/design.md](../daily-publish/design.md)の検証と同じ理由(Routine実行環境に独自のシークレットを追加する手段が確認できなかったこと)により、本specもGitHub Actionsに変更した。当初はDB接続情報(`SUPABASE_READONLY_DB_URL`)をGitHub Actions Secretsに置かないというdocs/adr/0004の既定方針を優先し、本specだけはClaude Routinesのまま据え置く判断をしていたが、その後の方針転換によりGitHub Actionsへ統一することとした。これに伴い、docs/adr/0004を改定し、`benriyatool_readonly`ロール(SELECT専用・BYPASSRLSなし・RLSスコープ限定という低い権限のロール)に限りGitHub Actions Secretsへの保持を許容する例外を追加した(改定内容は[0004-agent-readonly-db-access.md](../../../docs/adr/0004-agent-readonly-db-access.md)の「GitHub Actions実行環境への対象拡大(2026-08第2次改定)」参照)。**2026-08第3次改定**: Claude Code CLIの認証をAnthropic API(`ANTHROPIC_API_KEY`、従量課金)から運営者個人のClaude Code Pro/Maxサブスクリプション認証(`CLAUDE_CODE_OAUTH_TOKEN`)に変更した(理由は[daily-publish/design.md](../daily-publish/design.md)「実行環境の前提」・[content-generation/design.md](../content-generation/design.md)「設計の前提」参照。認証情報は両specで共用する)。
 
 - ワークフロー本体は`.github/workflows/ai-dev-digest-monthly.yml`として月1回起動する
 - 「見直し案を作成する処理」(下記)はエージェントの推論を要するため、GitHub Actionsのワークフロー内でClaude Code CLIをヘッドレス(非対話)モードで起動し(`claude -p "<プロンプト>"`相当。[daily-publish](../daily-publish/design.md)のcontent-generationのような単発のAPI呼び出しでは、複数ファイル(requirements.md・watchlist.json・criteria.json)を横断して整合の取れた編集を行うタスクに対応できないため、ファイル読み書きツールを持つエージェントセッションとして実行する)、リポジトリのチェックアウト・ファイル編集・コミットまでを行わせる
 - GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、[daily-publish](../daily-publish/design.md)と同じfine-grained PAT(`AI_DEV_DIGEST_GH_PAT`)を再利用する(本specは自動マージしないため、daily-publishで懸念した「同一PATによる自動マージ範囲の混同」は生じない)
-- Claude Code CLIの実行には`ANTHROPIC_API_KEY`を、DB読み取りには`SUPABASE_READONLY_DB_URL`を、それぞれこのリポジトリのActions Secretsとして保存する
+- Claude Code CLIの実行には`CLAUDE_CODE_OAUTH_TOKEN`(`claude setup-token`で発行する長期(1年)OAuthトークン。daily-publishと共用)を、DB読み取りには`SUPABASE_READONLY_DB_URL`を、それぞれこのリポジトリのActions Secretsとして保存する
 - ワークフローへの実行指示は、この`watchlist-review`のrequirements.md/design.mdと、参照先の`content-selection`のrequirements.md/design.mdをそのまま参照する形にする(専用のプロンプトファイルを別途複製しない)
 - 運用開始前に、上記のPAT・APIキー・DB接続情報が実際にリポジトリのActions Secretsに設定されていることを確認する
 
@@ -83,6 +83,7 @@ content/ai-dev-digest/watchlist.json・criteria.json (既存: 見直し案の変
 ## セキュリティ
 
 - `SUPABASE_READONLY_DB_URL`は、このリポジトリのActions Secretsとして暗号化保存する(2026-08第2次改定でdocs/adr/0004が`benriyatool_readonly`ロールに限り許容した例外。`service_role`キー等の強い権限は引き続きこのリポジトリ・CI Secretsに含めない)
+- `CLAUDE_CODE_OAUTH_TOKEN`は運営者個人のClaude Code Pro/Maxサブスクリプションに紐づく認証情報である点はdaily-publish/design.md「セキュリティ」と同様(2026-08第3次改定)
 - フィードバックのSELECTは集計・見直し検討の目的に限定し、特定の投稿者を特定・追跡する用途には使わない(docs/adr/0004の既存方針を踏襲。なお本アプリのフィードバックには投稿者を特定する情報自体が含まれない)
 - 見直し案のPRは通常のレビュー必須フローに乗るため、内容の妥当性は運営者のレビューで最終確認される(自動マージしないこと自体が主要な安全策。本specのワークフローは`gh pr merge --auto`のようなauto-merge操作を一切行わない)
 
