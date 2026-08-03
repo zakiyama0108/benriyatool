@@ -1,0 +1,105 @@
+# AI駆動開発ダイジェストの日次記事生成・公開ワークフロー
+# (仕様: specs/ai-dev-digest/daily-publish/design.md「実行環境の前提」「1日分の記事を生成する処理」
+# 「PRを作成しCIの結果を待つ処理」「PRを自動マージする処理」「CI失敗時に記録する処理」)
+#
+# publishジョブ: 1日1回、候補収集→翻訳・要約生成→記事データ組み立て→PR作成→auto-merge有効化までを行う。
+# ai-dev-digest/articles/**ブランチからのPRに限り、CIが成功すると人間の承認なしに自動マージされる
+# (通常のfeatureブランチのレビュー必須運用の例外。根拠はrequirements.md#公開フロー-4参照)
+#
+# record-ci-failureジョブ: 上記PRのCI(ci.yml)が失敗した場合、マージせず原因をPRコメントに記録する
+name: AI駆動開発ダイジェスト 日次記事公開
+
+on:
+  schedule:
+    - cron: '0 22 * * *' # 毎日22:00 UTC = 07:00 JST(実行日はJSTの日付を使う)
+  workflow_dispatch: # Secrets設定後の動作確認用に手動実行できるようにする
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+
+jobs:
+  publish:
+    if: github.event_name != 'workflow_run'
+    runs-on: ubuntu-latest
+    steps:
+      # GitHub書き込みは既定のGITHUB_TOKENではなく専用PATを使う(既定トークンで作成したPR・pushは
+      # 無限ループ防止のGitHub側の仕様により後続ワークフロー(ci.yml)が自動起動されないため)
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.AI_DEV_DIGEST_GH_PAT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # ci.yml・deploy.ymlと同じバージョンに揃える
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: 実行日(JST)を算出
+        id: date
+        run: echo "value=$(TZ='Asia/Tokyo' date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      - name: 作業用ブランチを作成
+        run: git checkout -b "ai-dev-digest/articles/${{ steps.date.outputs.value }}"
+
+      - name: 候補収集・採用基準判定(content-selection)
+        run: npx tsx scripts/ai-dev-digest/collect-and-select.ts "${{ steps.date.outputs.value }}" > /tmp/selection.json
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+
+      # 候補不足時はブランチ・PRを作成せずスキップする(requirements.md#掲載件数の保証-1、
+      # content-selection/requirements.md#1日の掲載件数-10参照)
+      - name: 候補不足によるスキップ判定
+        id: selection
+        run: |
+          status=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).status)")
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" = "skipped" ]; then
+            reason=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).reason)")
+            echo "候補不足によりスキップします: $reason"
+          fi
+
+      - name: 翻訳・要約の生成(content-generation)
+        if: steps.selection.outputs.status == 'ok'
+        run: npx tsx scripts/ai-dev-digest/generate-content.ts /tmp/selection.json > /tmp/topics.json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: 記事データの組み立て・書き出し
+        if: steps.selection.outputs.status == 'ok'
+        run: npx tsx scripts/ai-dev-digest/write-article.ts "${{ steps.date.outputs.value }}" /tmp/topics.json
+
+      - name: コミット・push・PR作成・自動マージ有効化
+        if: steps.selection.outputs.status == 'ok'
+        env:
+          GH_TOKEN: ${{ secrets.AI_DEV_DIGEST_GH_PAT }}
+        run: |
+          git config user.name "ai-dev-digest-bot"
+          git config user.email "ai-dev-digest-bot@users.noreply.github.com"
+          git add "content/ai-dev-digest/articles/${{ steps.date.outputs.value }}.json"
+          git commit -m "content(ai-dev-digest): ${{ steps.date.outputs.value }}のダイジェストを公開"
+          git push origin "ai-dev-digest/articles/${{ steps.date.outputs.value }}"
+          gh pr create --base main \
+            --title "[ai-dev-digest] ${{ steps.date.outputs.value }}のダイジェストを公開" \
+            --body "日次自動生成PRです。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/ai-dev-digest/daily-publish/design.md参照)。"
+          gh pr merge --auto --squash "ai-dev-digest/articles/${{ steps.date.outputs.value }}"
+
+  # daily-publishが作成したPRのCI(ci.yml)が失敗した場合、マージせず原因をPRコメントに記録する
+  # (design.md「CI失敗時に記録する処理」)。ai-dev-digest/articles/**ブランチ由来のPR以外は対象外
+  record-ci-failure:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && startsWith(github.event.workflow_run.head_branch, 'ai-dev-digest/articles/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: 失敗したPRにコメントを追記
+        env:
+          GH_TOKEN: ${{ secrets.AI_DEV_DIGEST_GH_PAT }}
+        run: |
+          PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" \
+            --head "${{ github.event.workflow_run.head_branch }}" \
+            --state open --json number --jq '.[0].number')
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" \
+              --body "CI(${{ github.event.workflow_run.name }})が失敗しました。マージは行われません。詳細: ${{ github.event.workflow_run.html_url }}"
+          else
+            echo "対象のPRが見つかりませんでした(既にクローズ済みの可能性があります): ${{ github.event.workflow_run.head_branch }}"
+          fi

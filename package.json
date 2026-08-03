@@ -13,6 +13,7 @@
     "check:spec-coverage": "node scripts/check-spec-coverage.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "@supabase/supabase-js": "^2.110.1",
     "next": "16.2.9",
     "react": "19.2.4",
