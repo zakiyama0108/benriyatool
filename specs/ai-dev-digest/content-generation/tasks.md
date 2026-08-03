@@ -26,5 +26,5 @@
   - `specs/legal/requirements.md`の知的財産の項目に、design.md「利用規約への反映」の条項を追記する(既存の条項があれば新しい文言に置き換える)
   - `app/legal/page.tsx`の「4. 知的財産」セクションに同じ条項本文を追記する(既存の条項があれば新しい文言に置き換える)
 
-- Task 7: 要約生成CLIの実装(仕様: design.md「要約を書く処理」)(TDD対象外。Anthropic APIへのHTTP呼び出しを伴い、プロンプトの組み立て自体に検証可能な決定的ロジックがないため。生成結果の分量検証はTask 1・2で担保する)
-  - `scripts/ai-dev-digest/generate-content.ts`を実装する。1候補(発信者名・見出し・元URL・種別)ごとにdesign.md「要約を書く処理」のルール・ガードレール文言をプロンプトに含めてAnthropic Messages APIを呼び出し、見出し・sections配列を生成するCLIにする(web fetchツールを使い、元記事・元動画の内容はAPI呼び出し内で参照させる。APIキーは環境変数`ANTHROPIC_API_KEY`から読む)
+- Task 7: 要約生成CLIの実装(仕様: design.md「要約を書く処理」)(TDD対象外。Claude Code CLIのヘッドレス起動を伴い、プロンプトの組み立て自体に検証可能な決定的ロジックがないため。生成結果の分量検証はTask 1・2で担保する)
+  - `scripts/ai-dev-digest/generate-content.ts`を実装する。1候補(発信者名・見出し・元URL・種別)ごとにdesign.md「要約を書く処理」のルール・ガードレール文言をプロンプトに含めてClaude Code CLI(`claude -p ... --output-format json`)をヘッドレス起動し、見出し・sections配列を生成するCLIにする(Claude Code CLI標準搭載のWebFetch/WebSearchツールで元記事・元動画の内容を参照させる。認証は環境変数`CLAUDE_CODE_OAUTH_TOKEN`から読む。2026-08第2次改定でAnthropic Messages API直接呼び出しから変更)
