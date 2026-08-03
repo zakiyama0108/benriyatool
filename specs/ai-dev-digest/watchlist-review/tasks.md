@@ -23,7 +23,7 @@
 
 - Task 5: GitHub Actions Secretsの設定(仕様: design.md「実行環境の前提」)
   - `SUPABASE_READONLY_DB_URL`をこのリポジトリのActions Secretsに保存する(2026-08第2次改定でdocs/adr/0004が許容した例外。設定前にADRの改定内容を確認する)
-  - `ANTHROPIC_API_KEY`が未設定であれば同様に保存する(daily-publishで設定済みなら流用する)
+  - `CLAUDE_CODE_OAUTH_TOKEN`が未設定であれば同様に保存する(daily-publishで設定済みなら流用する。2026-08第3次改定でANTHROPIC_API_KEYから変更)
   - 初回実行前に、上記のSecretsが実際に設定されていることを確認する(テスト実行1回分をレビューする)
 
 ## 動作確認

@@ -35,6 +35,10 @@ jobs:
 
       - run: npm ci
 
+      # 翻訳・要約生成(下記)がヘッドレス起動するために必要(design.md「実行環境の前提」)
+      - name: Claude Code CLIをインストール
+        run: npm install -g @anthropic-ai/claude-code
+
       - name: 実行日(JST)を算出
         id: date
         run: echo "value=$(TZ='Asia/Tokyo' date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
@@ -65,11 +69,13 @@ jobs:
             echo "belowCriteriaCount=$belowCriteriaCount" >> "$GITHUB_OUTPUT"
           fi
 
+      # Anthropic APIの従量課金ではなく、運営者個人のClaude Code Pro/Maxサブスクリプション認証
+      # (CLAUDE_CODE_OAUTH_TOKEN)でヘッドレス実行する(2026-08第2次改定。design.md「実行環境の前提」参照)
       - name: 翻訳・要約の生成(content-generation)
         if: steps.selection.outputs.status == 'ok'
         run: npx tsx scripts/ai-dev-digest/generate-content.ts /tmp/selection.json > /tmp/topics.json
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
       - name: 記事データの組み立て・書き出し
         if: steps.selection.outputs.status == 'ok'

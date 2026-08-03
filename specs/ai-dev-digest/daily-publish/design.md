@@ -7,9 +7,10 @@
 - **2026-08改定の経緯**: 当初はClaude Routines(定期実行のクラウドエージェント)を実行主体とする設計だったが、実際にテスト用Routineを作成・実行して検証した結果、Routine実行環境に独自の環境変数・シークレット(`YOUTUBE_API_KEY`等)を追加するUI・APIが確認できなかった(GitHub書き込み用の`GITHUB_TOKEN`等プラットフォームが自動で用意する変数は存在するが、ユーザー独自のシークレットを追加する手段が見当たらなかった。/consultでの検証記録)。この制約が解消される見込みが立たなかったため、実行主体をGitHub Actionsに変更した
 - ワークフロー本体は`.github/workflows/ai-dev-digest-daily.yml`として1日1回(JST想定時刻をUTCのcronに変換して)起動する
 - GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を発行し、`AI_DEV_DIGEST_GH_PAT`としてリポジトリのActions Secretsに保存する。ワークフロー既定の`GITHUB_TOKEN`は使わない(既定の`GITHUB_TOKEN`で作成したPR・pushでは、無限ループ防止のGitHub側の仕様により既存の`ci.yml`を含む後続ワークフローが自動起動されず、CIが走らないまま自動マージ判定に進めなくなるため)
-- [content-selection/design.md](../content-selection/design.md)が必要とするYouTube Data APIキーは`YOUTUBE_API_KEY`、[content-generation](../content-generation/design.md)の翻訳・要約生成に使うAnthropic APIキーは`ANTHROPIC_API_KEY`として、同様にこのリポジトリのActions Secretsに保存する(docs/adr/0004が対象とする`SUPABASE_READONLY_DB_URL`(DB読み取り権限)とは性質が異なる。本specはDBに接続しないため同ADRの対象外)
+- [content-selection/design.md](../content-selection/design.md)が必要とするYouTube Data APIキーは`YOUTUBE_API_KEY`として、このリポジトリのActions Secretsに保存する(docs/adr/0004が対象とする`SUPABASE_READONLY_DB_URL`(DB読み取り権限)とは性質が異なる。本specはDBに接続しないため同ADRの対象外)
+- [content-generation](../content-generation/design.md)の翻訳・要約生成は、Anthropic APIの従量課金呼び出しではなくClaude Code CLIのヘッドレス実行(運営者個人のClaude Code Pro/Maxサブスクリプション認証)で行う(2026-08第2次改定。経緯・理由はcontent-generation/design.md「設計の前提」参照)。GitHub Actionsランナーには`npm install -g @anthropic-ai/claude-code`でClaude Code CLIをインストールし、`claude setup-token`で発行した長期(1年)OAuthトークンを`CLAUDE_CODE_OAUTH_TOKEN`としてこのリポジトリのActions Secretsに保存する(watchlist-reviewの月次ワークフローと同じ認証情報を共用する)
 - ワークフローへの実行指示は、この`daily-publish`のrequirements.md/design.mdと、参照先の`content-selection`/`content-generation`/`article-detail`のrequirements.md/design.mdをスクリプト・プロンプトの根拠としてそのまま参照する形にする(専用のプロンプトファイルを別途複製しない。DRYに保つ)
-- 運用開始前に、上記のPAT・APIキーが実際にリポジトリのActions Secretsに設定されていることを確認する(docs/adr/0006の「管理画面公開前の設定確認」と同様、コードで強制できない前提条件のため運用手順として確認する)
+- 運用開始前に、上記のPAT・APIキー・OAuthトークンが実際にリポジトリのActions Secretsに設定されていることを確認する(docs/adr/0006の「管理画面公開前の設定確認」と同様、コードで強制できない前提条件のため運用手順として確認する)
 
 ## 処理フロー
 
@@ -19,7 +20,7 @@
   1. 作業用ブランチ`ai-dev-digest/articles/<date>`を作成する(`<date>`は実行日のYYYY-MM-DD)
   2. [content-selection](../content-selection/design.md)の`scripts/ai-dev-digest/collect-and-select.ts`を実行し、その日の候補収集・採用基準判定・1日分のトピック選定(3〜5件を目安に、基準未達掲載の日は実在する候補の件数)を行う
   3. 選定結果が「候補不足によりスキップ」だった場合は、記事を作成せず後述「記事生成をスキップする処理」に進む
-  4. 選定された各候補について、`scripts/ai-dev-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでAnthropic Messages APIを1件ずつ呼び出し、見出し・要約(日本語)を生成する。`extractYoutubeVideoId`でYouTube動画IDを抽出する
+  4. 選定された各候補について、`scripts/ai-dev-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでClaude Code CLI(`claude -p`)を1件ずつヘッドレス起動し、見出し・要約(日本語)を生成する(2026-08第2次改定。従来はAnthropic Messages APIを直接呼び出していた)。`extractYoutubeVideoId`でYouTube動画IDを抽出する
   5. `assembleArticle(date, topics)`で記事データ(`date`・`topics`。article-detail/design.mdのスキーマに従う)を組み立て、`writeArticleFile`で`content/ai-dev-digest/articles/<date>.json`として書き出す
   6. 変更をコミットし、ブランチをリモートにpushする
 - 関連するビジネスルール: requirements.md#実行-1〜3、requirements.md#掲載件数の保証-1
@@ -59,14 +60,14 @@
 ## エラーハンドリング
 
 - CIの失敗(lint/test/check:spec-coverage/buildのいずれか)は上記「CI失敗時に記録する処理」に従い、マージせずPRを残す
-- 記事生成処理自体が例外で中断した場合(外部APIの全面障害等)、ブランチ・PRは作成しない、または作成済みでコミット前に失敗した場合は何もリモートに残さない(中途半端な状態のPRを作らない)
+- 記事生成処理自体が例外で中断した場合(外部サービスの全面障害・Claude Code CLIのサブスクリプション利用上限到達等)、ブランチ・PRは作成しない、または作成済みでコミット前に失敗した場合は何もリモートに残さない(中途半端な状態のPRを作らない)。利用上限到達時のリトライ等の特別扱いは行わず、翌日分の実行として独立して再試行する(「CI失敗時に記録する処理」と異なりPR自体が作られないため、失敗自体はGitHub Actionsの実行結果(失敗)で運営者が把握する)
 - 1日の実行が失敗・スキップしても、他の日([article-list](../article-list/requirements.md)・[article-detail](../article-detail/requirements.md))の表示には影響しない(該当日のファイルが存在しないだけで、一覧・詳細ページは正常に動作する)
 
 ## 関連するファイル(抜粋)
 
 ```
 .github/workflows/ai-dev-digest-daily.yml (新規: 1日1回起動するワークフロー本体。ブランチ作成・collect-and-select.ts/generate-content.tsの実行・コミット・push・PR作成・auto-merge有効化までを行う)
-scripts/ai-dev-digest/generate-content.ts (content-generationで新規: content-generationのルールに基づくプロンプトでAnthropic Messages APIを1トピックずつ呼び出し、見出し・要約を生成するCLI)
+scripts/ai-dev-digest/generate-content.ts (content-generationで新規: content-generationのルールに基づくプロンプトでClaude Code CLIを1トピックずつヘッドレス起動し、見出し・要約を生成するCLI。2026-08第2次改定でAnthropic Messages API直接呼び出しから変更)
 app/ai-dev-digest/lib/assembleArticle.ts (新規: 選定結果+生成済み見出し・要約からArticleを組み立てる純粋関数)
 scripts/ai-dev-digest/write-article.ts (新規: assembleArticleの結果をcontent/ai-dev-digest/articles/<date>.jsonへ書き出すCLI)
 scripts/ai-dev-digest/collect-and-select.ts (content-selectionで新規: 候補収集・選定のCLI)
@@ -76,7 +77,8 @@ content/ai-dev-digest/articles/<date>.json (新規: 生成される記事デー�
 
 ## セキュリティ
 
-- GitHub書き込み用PAT(`AI_DEV_DIGEST_GH_PAT`)・外部APIキー(`YOUTUBE_API_KEY`・`ANTHROPIC_API_KEY`)は、このリポジトリのActions Secretsとして保存する(暗号化され、ワークフロー実行時以外は値を参照できないGitHubの標準機能)。PATはこのリポジトリのみに範囲を限定したfine-grained PATとし、他リポジトリへの影響が及ばないようにする
+- GitHub書き込み用PAT(`AI_DEV_DIGEST_GH_PAT`)・YouTube Data APIキー(`YOUTUBE_API_KEY`)は、このリポジトリのActions Secretsとして保存する(暗号化され、ワークフロー実行時以外は値を参照できないGitHubの標準機能)。PATはこのリポジトリのみに範囲を限定したfine-grained PATとし、他リポジトリへの影響が及ばないようにする
+- `CLAUDE_CODE_OAUTH_TOKEN`は運営者個人のClaude Code Pro/Maxサブスクリプションに紐づく認証情報であり、`claude setup-token`で発行した長期(1年)トークンを同様にActions Secretsへ保存する(2026-08第2次改定)。有効期限切れ時は再発行してSecretsを更新する運用とする。この認証情報の利用枠(5時間ごと・週次の上限)は運営者本人のClaude Code対話利用と共有される点に留意する(自動実行が失敗した場合の扱いは上記「エラーハンドリング」参照)
 - 「CI失敗時に記録する処理」で失敗ジョブ・ステップを特定する処理(`gh run view --json jobs`)は同一リポジトリのActions実行結果を読むだけの読み取り専用の問い合わせのため、書き込み用PAT(`AI_DEV_DIGEST_GH_PAT`)ではなくワークフロー既定の`GITHUB_TOKEN`を使う(PRコメント投稿など書き込みが必要な処理のみ引き続き`AI_DEV_DIGEST_GH_PAT`を使う)
 - 自動マージの範囲を`ai-dev-digest/articles/**`のみに限定する仕組みは、GitHub側のACLではなくワークフロー自身の運用規律であるため(上記「PRを自動マージする処理」参照)、このワークフロー(`.github/workflows/ai-dev-digest-daily.yml`)以外が誤って同じPATで他ブランチを自動マージしないよう、PATの用途をこのワークフロー専用に限定する(他のワークフロー・スクリプトで同じSecretを流用しない)
 - 記事データの内容自体の安全性(著作権配慮・要約分量)はcontent-generation/article-detailのビルド時バリデーションで担保する(本specはオーケストレーションのみを担当し、内容検証のロジックは持たない)
