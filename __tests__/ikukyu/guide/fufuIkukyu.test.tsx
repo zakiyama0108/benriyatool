@@ -53,3 +53,22 @@ describe('記事3のシミュレーター導線 - 「自分の世帯で試す」
     expect(metadata.title as string).toContain('夫婦')
   })
 })
+
+// 仕様: specs/ikukyu/guide/requirements.md#5. UI/UX要件-4
+describe('記事3のPC版サイドバー - 目次の各リンクが本文中の対応セクションのidと一致する', () => {
+  it('目次のリンクが「世帯モデルと前提」「月次推移」「差額まとめ」「よくある質問」の各セクションidと一致すること', () => {
+    const { container } = render(<Page />)
+    for (const anchor of ['model', 'monthly', 'summary', 'faq']) {
+      const tocLink = container.querySelector(`aside nav[aria-label="目次"] a[href="#${anchor}"]`)
+      const section = container.querySelector(`[id="${anchor}"]`)
+      expect(tocLink, `目次リンク #${anchor} がない`).toBeTruthy()
+      expect(section, `セクション id=${anchor} がない`).toBeTruthy()
+    }
+  })
+
+  it('サイドバーに関連記事・参考資料が表示されること', () => {
+    render(<Page />)
+    expect(screen.getAllByText('関連記事').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('参考資料')).toBeTruthy()
+  })
+})
