@@ -57,6 +57,12 @@ jobs:
           if [ "$status" = "skipped" ]; then
             reason=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).reason)")
             echo "候補不足によりスキップします: $reason"
+          else
+            # PR本文に載せる選定件数・基準未達件数(design.md「PRを作成しCIの結果を待つ処理」手順1)
+            topicsCount=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).topics.length)")
+            belowCriteriaCount=$(node -e "const r=JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8'));console.log(r.topics.filter((t) => t.belowCriteria).length)")
+            echo "topicsCount=$topicsCount" >> "$GITHUB_OUTPUT"
+            echo "belowCriteriaCount=$belowCriteriaCount" >> "$GITHUB_OUTPUT"
           fi
 
       - name: 翻訳・要約の生成(content-generation)
@@ -81,7 +87,7 @@ jobs:
           git push origin "ai-dev-digest/articles/${{ steps.date.outputs.value }}"
           gh pr create --base main \
             --title "[ai-dev-digest] ${{ steps.date.outputs.value }}のダイジェストを公開" \
-            --body "日次自動生成PRです。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/ai-dev-digest/daily-publish/design.md参照)。"
+            --body "日次自動生成PRです。選定件数: ${{ steps.selection.outputs.topicsCount }}件(うち基準未達: ${{ steps.selection.outputs.belowCriteriaCount }}件)。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/ai-dev-digest/daily-publish/design.md参照)。"
           gh pr merge --auto --squash "ai-dev-digest/articles/${{ steps.date.outputs.value }}"
 
   # daily-publishが作成したPRのCI(ci.yml)が失敗した場合、マージせず原因をPRコメントに記録する
@@ -90,6 +96,21 @@ jobs:
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && startsWith(github.event.workflow_run.head_branch, 'ai-dev-digest/articles/')
     runs-on: ubuntu-latest
     steps:
+      # どのチェックが失敗したかを特定する(design.md「CI失敗時に記録する処理」手順2)。
+      # actions:readで足りる読み取り専用の問い合わせのため、書き込み専用のAI_DEV_DIGEST_GH_PATではなく
+      # 既定のGITHUB_TOKEN(同一リポジトリのActions実行結果を読む既定権限を持つ)を使う
+      - name: 失敗したジョブ・ステップを特定
+        id: failure-detail
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          detail=$(gh run view "${{ github.event.workflow_run.id }}" --repo "${{ github.repository }}" --json jobs \
+            --jq '[.jobs[] | select(.conclusion=="failure") as $job | $job.steps[] | select(.conclusion=="failure") | "\($job.name) > \(.name)"] | join(", ")')
+          if [ -z "$detail" ]; then
+            detail="(失敗ステップの詳細は取得できませんでした)"
+          fi
+          echo "detail=$detail" >> "$GITHUB_OUTPUT"
+
       - name: 失敗したPRにコメントを追記
         env:
           GH_TOKEN: ${{ secrets.AI_DEV_DIGEST_GH_PAT }}
@@ -99,7 +120,7 @@ jobs:
             --state open --json number --jq '.[0].number')
           if [ -n "$PR_NUMBER" ]; then
             gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" \
-              --body "CI(${{ github.event.workflow_run.name }})が失敗しました。マージは行われません。詳細: ${{ github.event.workflow_run.html_url }}"
+              --body "CI(${{ github.event.workflow_run.name }})が失敗しました。失敗したチェック: ${{ steps.failure-detail.outputs.detail }}。マージは行われません。詳細: ${{ github.event.workflow_run.html_url }}"
           else
             echo "対象のPRが見つかりませんでした(既にクローズ済みの可能性があります): ${{ github.event.workflow_run.head_branch }}"
           fi

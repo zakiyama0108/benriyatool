@@ -121,5 +121,6 @@ scripts/ai-dev-digest/collect-and-select.ts (新規: fetchCandidates+selection�
 
 ## ログ
 
-- 収集・選定の実行結果として、情報源ごとの取得件数・基準を満たした件数・基準未達で補った件数・スキップした情報源(取得失敗)を標準出力に記録する(GitHub Actionsのワークフロー実行ログとして残る)
-- 候補不足によるスキップが発生した場合はその旨を明確に標準出力へ記録し、[daily-publish](../daily-publish/design.md)側がこれを検知してPRを作成しない判断に使う
+- 標準出力(stdout)は[daily-publish](../daily-publish/design.md)がそのままパースする選定結果JSON専用とし、ログ用途には使わない
+- 収集・選定の実行結果として、情報源ごとの取得件数・基準を満たした件数・基準未達で補った件数・スキップした情報源(取得失敗)を標準エラー出力(stderr)に記録する(GitHub Actionsのワークフロー実行ログとして残る)
+- 候補不足によるスキップが発生した場合はその旨を明確に標準エラー出力(stderr)へ記録する。daily-publish側は標準出力のJSONの`status`フィールドを見てPRを作成しない判断に使う

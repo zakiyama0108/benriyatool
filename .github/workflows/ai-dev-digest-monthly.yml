@@ -57,7 +57,7 @@ jobs:
           specs/ai-dev-digest/watchlist-review/requirements.md と design.md を読み、
           「見直し案を作成する処理」の手順に従ってウォッチリスト・採用基準の見直し案を検討してください。
 
-          見直し対象の仕様は specs/ai-dev-digest/content-selection/requirements.md、
+          見直し対象の仕様は specs/ai-dev-digest/content-selection/requirements.md と design.md、
           機械可読データは content/ai-dev-digest/watchlist.json と content/ai-dev-digest/criteria.json です。
 
           見直しの材料(直近1ヶ月の基準未達記録・運営者フィードバック)は /tmp/review-data.json に
