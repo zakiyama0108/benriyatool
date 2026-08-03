@@ -60,3 +60,22 @@ describe('記事2のシミュレーター導線 - 冒頭と末尾の2か所にCT
     expect(metadata.title as string).toContain('早見表')
   })
 })
+
+// 仕様: specs/ikukyu/guide/requirements.md#5. UI/UX要件-4
+describe('記事2のPC版サイドバー - 目次は既存の月給帯ジャンプと同じアンカーを再利用する', () => {
+  it('サイドバーの目次リンクが、月給帯セクションのアンカー(salary-XX)と同数・同じhrefで存在すること', () => {
+    const { container } = render(<Page />)
+    const asideTocLinks = container.querySelectorAll('aside nav[aria-label="目次"] a')
+    expect(asideTocLinks.length).toBe(SALARY_BANDS.length)
+    for (const salary of SALARY_BANDS) {
+      const href = `#salary-${salary / 10000}`
+      expect(container.querySelector(`aside nav[aria-label="目次"] a[href="${href}"]`)).toBeTruthy()
+    }
+  })
+
+  it('サイドバーに関連記事・参考資料が表示されること', () => {
+    render(<Page />)
+    expect(screen.getAllByText('関連記事').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('参考資料')).toBeTruthy()
+  })
+})
