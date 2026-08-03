@@ -15,7 +15,7 @@ const LABELS: Record<SourceType, string> = {
 
 export default function SourceBadge({ sourceType }: Props) {
   return (
-    <span className="inline-block rounded-full bg-lms-teal-soft px-3 py-1 text-xs font-bold text-lms-teal">
+    <span className="inline-block rounded-full bg-teal-50 px-2 py-0.5 text-xs font-extrabold text-teal-600">
       {LABELS[sourceType]}
     </span>
   )

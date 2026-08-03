@@ -15,15 +15,15 @@ const MAX_CARD_HEADINGS = 3
 export default function ArticleListView({ articles, currentPage, totalPages }: Props) {
   if (articles.length === 0) {
     return (
-      <p className="rounded-[35px] border border-lms-line-strong bg-lms-card p-6 text-sm text-lms-muted shadow-[0_1px_2px_rgba(16,64,56,0.04)]">
+      <p className="rounded-2xl bg-white p-4 text-sm leading-relaxed text-gray-500 shadow-sm">
         まだ記事がありません。しばらくお待ちください。
       </p>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
+    <div className="space-y-5">
+      <div className="space-y-3">
         {articles.map((article) => (
           <ArticleCard
             key={article.date}

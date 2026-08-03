@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import Link from 'next/link'
 import type { Article } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
 import { getSession, onAuthChange, signInWithGoogle, signOut } from '../../lib/adminAuth'
@@ -40,16 +41,30 @@ export default function ArticleDetailView({ article }: Props) {
 
   const hasBelowCriteriaTopic = article.topics.some((topic) => topic.belowCriteria)
 
+  const title = buildArticleTitle(article.date)
+
   return (
-    <div className="min-h-screen bg-lms-canvas">
-      <div className="mx-auto max-w-2xl space-y-6 px-4 py-6 sm:px-8 sm:py-10">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white">
+      <article className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8 sm:py-10">
+        <nav className="text-[11px] text-gray-400">
+          <Link href="/" className="hover:underline">
+            べんりやつーる
+          </Link>
+          <span className="mx-1">›</span>
+          <Link href="/ai-dev-digest" className="hover:underline">
+            AI駆動開発ダイジェスト
+          </Link>
+          <span className="mx-1">›</span>
+          <span>{title}</span>
+        </nav>
+
         <header>
-          <h1 className="text-2xl font-bold tracking-tight text-lms-ink">{buildArticleTitle(article.date)}</h1>
-          <p className="mt-1 text-sm text-lms-muted">{article.date}</p>
+          <h1 className="text-xl font-bold leading-relaxed tracking-tight sm:text-2xl">{title}</h1>
+          <p className="mt-1 text-xs text-gray-500">{article.date}</p>
         </header>
 
         {hasBelowCriteriaTopic && (
-          <p className="rounded-[35px] bg-lms-sand-soft p-4 text-sm text-lms-sand-ink">
+          <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-relaxed text-amber-800">
             この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます。
           </p>
         )}
@@ -60,14 +75,14 @@ export default function ArticleDetailView({ article }: Props) {
           ))}
         </div>
 
-        <footer className="pt-4">
+        <footer className="border-t border-gray-100 pt-4">
           <LoginStatus
             session={session}
             onLoginClick={() => void signInWithGoogle(window.location.href)}
             onLogoutClick={() => void signOut()}
           />
         </footer>
-      </div>
+      </article>
     </div>
   )
 }

@@ -15,16 +15,16 @@ type Props = {
 export default function LoginStatus({ session, onLoginClick, onLogoutClick }: Props) {
   if (!session) {
     return (
-      <button onClick={onLoginClick} className="text-xs text-lms-muted underline hover:text-lms-teal">
+      <button onClick={onLoginClick} className="text-xs text-gray-400 underline hover:text-teal-600">
         運営者ログイン
       </button>
     )
   }
 
   return (
-    <div className="flex items-center gap-3 text-xs text-lms-muted">
+    <div className="flex items-center gap-3 text-xs text-gray-400">
       <span>{session.user.email}</span>
-      <button onClick={onLogoutClick} className="rounded-full border border-lms-line-strong px-3 py-1">
+      <button onClick={onLogoutClick} className="rounded-full border border-gray-200 px-3 py-1">
         ログアウト
       </button>
     </div>

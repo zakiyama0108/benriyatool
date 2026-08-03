@@ -19,33 +19,33 @@ type Props = {
 // 渡されたセッションの有無だけで表示を切り替える(design.md参照。architecture.md#12-セキュリティ)
 export default function TopicSection({ topic, session, articleDate }: Props) {
   return (
-    <section className="rounded-[35px] border border-lms-line-strong bg-lms-card p-6 shadow-[0_1px_2px_rgba(16,64,56,0.04)]">
+    <section className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
       <div className="mb-2 flex items-center gap-2">
         <SourceBadge sourceType={topic.sourceType} />
         {topic.belowCriteria && (
-          <span className="inline-block rounded-full bg-lms-sand-soft px-3 py-1 text-xs font-bold text-lms-sand-ink">
+          <span className="inline-block rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-600">
             採用基準未達
           </span>
         )}
       </div>
 
-      <h2 className="text-lg font-bold text-lms-ink">{topic.heading}</h2>
+      <h2 className="text-base font-bold leading-relaxed">{topic.heading}</h2>
 
       <div className="mt-2 space-y-3">
         {topic.sections.map((section, index) => (
           <div key={index}>
-            <h3 className="text-sm font-semibold text-lms-ink">{section.heading}</h3>
-            <p className="mt-1 text-sm text-lms-ink">{section.teaser}</p>
+            <h3 className="text-sm font-semibold text-gray-800">{section.heading}</h3>
+            <p className="mt-1 text-sm leading-relaxed text-gray-700">{section.teaser}</p>
             <details className="mt-1">
-              <summary className="cursor-pointer text-xs text-lms-teal">詳細を見る</summary>
-              <p className="mt-1 text-sm text-lms-ink">{section.detail}</p>
+              <summary className="cursor-pointer text-xs font-semibold text-teal-600">詳細を見る</summary>
+              <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{section.detail}</p>
             </details>
           </div>
         ))}
       </div>
 
       {topic.belowCriteria && topic.belowCriteriaReason && (
-        <p className="mt-1 text-xs text-lms-sand-ink">{topic.belowCriteriaReason}</p>
+        <p className="mt-1 text-xs text-orange-600">{topic.belowCriteriaReason}</p>
       )}
 
       {topic.youtubeVideoId && (
@@ -54,9 +54,9 @@ export default function TopicSection({ topic, session, articleDate }: Props) {
         </div>
       )}
 
-      <p className="mt-3 text-xs text-lms-muted">
+      <p className="mt-3 text-xs leading-relaxed text-gray-400">
         出典:{' '}
-        <a href={topic.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-lms-teal underline">
+        <a href={topic.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
           {topic.sourceName}
         </a>
       </p>

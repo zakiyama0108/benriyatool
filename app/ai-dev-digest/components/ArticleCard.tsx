@@ -19,16 +19,16 @@ export default function ArticleCard({ date, topicHeadings, totalTopicCount }: Pr
   return (
     <Link
       href={`/ai-dev-digest/${date}`}
-      className="block rounded-[35px] border border-lms-line-strong bg-lms-card p-6 shadow-[0_1px_2px_rgba(16,64,56,0.04)] transition-colors hover:border-lms-teal/40"
+      className="block rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5"
     >
-      <p className="text-xs text-lms-muted">{date}</p>
-      <h2 className="mt-1 text-lg font-bold text-lms-ink">{buildArticleTitle(date)}</h2>
-      <ul className="mt-3 space-y-1 text-sm text-lms-ink">
+      <p className="text-xs text-gray-400">{date}</p>
+      <h2 className="mt-1 text-base font-bold leading-relaxed text-teal-600">{`${buildArticleTitle(date)} →`}</h2>
+      <ul className="mt-2 space-y-1 text-sm leading-relaxed text-gray-700">
         {shownHeadings.map((heading) => (
           <li key={heading}>{`・${heading}`}</li>
         ))}
       </ul>
-      {remainingCount > 0 && <p className="mt-2 text-xs text-lms-muted">{`他${remainingCount}件`}</p>}
+      {remainingCount > 0 && <p className="mt-2 text-xs text-gray-400">{`他${remainingCount}件`}</p>}
     </Link>
   )
 }
