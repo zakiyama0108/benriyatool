@@ -27,3 +27,17 @@ describe('ガイド記事一覧ページ - 3記事へのカードリンクを置
     expect(metadata.title as string).toContain('ガイド')
   })
 })
+
+// 仕様: specs/ikukyu/guide/requirements.md#5. UI/UX要件-4
+describe('記事一覧ページのPC版サイドバー - 目次を持たず「このガイドについて」の説明+CTAのみを表示する', () => {
+  it('サイドバーに「このガイドについて」の説明が表示され、目次の見出しは表示されないこと', () => {
+    render(<Page />)
+    expect(screen.getByText('このガイドについて')).toBeTruthy()
+    expect(screen.queryByText('目次')).toBeNull()
+  })
+
+  it('記事カードの一覧がPC幅で2列グリッドになるクラス(md:grid-cols-2)を持つこと', () => {
+    const { container } = render(<Page />)
+    expect(container.querySelector('.md\\:grid-cols-2')).toBeTruthy()
+  })
+})
