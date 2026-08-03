@@ -26,6 +26,7 @@ export type Topic = {
   sourceType: SourceType
   sourceName: string // 発信者名(例: "Anthropic"、"Andrej Karpathy")
   sourceUrl: string // 出典の元URL
+  sourcePublishedAt?: string // 元記事・動画のISO 8601形式の公開日時。content-selectionが収集したCandidate.publishedAtをそのまま引き継ぐ(エージェントが新たに調べ直す値ではない)。任意項目: 本フィールド導入前に生成された既存記事データには存在しないため、無い場合は投稿日時を表示しない(requirements.md#記事本文表示-11)
   youtubeVideoId?: string // YouTube動画を紹介する場合のみ。公式埋め込みプレーヤー表示に使う
   belowCriteria: boolean // 採用基準未達での掲載(content-selection/requirements.md#1日の掲載件数-10)
   belowCriteriaReason?: string // belowCriteriaがtrueの場合のみ必須。基準からの乖離内容(例: "いいね数18件(基準30件に12件不足)")
@@ -55,13 +56,13 @@ export type Article = {
 - 対象: 読み込んだ記事データ
 - 手順:
   1. `buildArticleTitle(date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
-  2. `topics`配列の順に、各トピックの見出し・出典(発信者名・タイトル代わりの見出しへのリンク・元URL)を表示する
+  2. `topics`配列の順に、各トピックの見出し・出典(発信者名・タイトル代わりの見出しへのリンク・元URL)を表示する。`sourcePublishedAt`が存在する場合のみ、`YYYY年M月D日`形式(時刻は表示しない。ダイジェスト自体が日次更新のため、出典の時刻まで表示する必要性が薄く、`buildArticleTitle`の日付粒度と合わせた)に整形して併記する。存在しない場合(本フィールド導入前に生成された既存記事データ)は投稿日時の表示を省略する(requirements.md#記事本文表示-11)
   3. 各トピックの`sections`配列の順に、セクション見出し(`h3`相当)と導入文(`teaser`)を常時表示する(content-generation/requirements.md#要約-3)
   4. 各セクションの導入文の下に、HTML標準の`<details><summary>詳細を見る</summary>…</details>`要素を配置し、`<summary>`を操作すると詳細文(`detail`)が展開表示されるようにする。ブラウザ標準機能で開閉できるため、開閉状態を保持するJavaScriptの状態管理を自前で持つ必要がない(要件「操作前は導入文のみ、操作後に詳細文」に対応。requirements.md#記事本文表示-4)
   5. 各トピックには情報源の種別(公式組織/個人YouTube/個人ブログ/Qiita/Zenn)が分かるバッジを表示する(表示位置・文言は「画面設計」参照)
   6. `youtubeVideoId`を持つトピックは、要約(セクション群)の下にYouTube公式の埋め込みプレーヤー(`<iframe>`、`youtube-nocookie.com`ドメイン)を表示する(content-generation/requirements.md#著作権への配慮-6)。持たない場合は表示しない
   7. `belowCriteria`が`true`のトピックには「採用基準未達」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます」という注記を1回だけ表示する(繰り返し表示による煩雑さを避けるため)
-- 関連するビジネスルール: requirements.md#記事本文表示-1〜5、requirements.md#表示分量・著作権配慮-1〜2
+- 関連するビジネスルール: requirements.md#記事本文表示-1〜5、requirements.md#記事本文表示-11、requirements.md#表示分量・著作権配慮-1〜2
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
@@ -106,7 +107,7 @@ sequenceDiagram
 記事データ(JSONファイル)のスキーマ検証:
 - `date`: `YYYY-MM-DD`形式で、ファイル名と一致すること
 - `topics`: 配列長が1件以上5件以下であること(content-selection/requirements.md#1日の掲載件数-9〜10。基準を満たす候補が不足する日は1〜2件になりうる)
-- 各`topic`: `id`が記事内で重複しないこと、`heading`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`sourceType`が定義済み種別のいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須(false時は無くてよい)
+- 各`topic`: `id`が記事内で重複しないこと、`heading`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`sourcePublishedAt`は任意項目だが指定する場合はISO 8601形式としてパース可能な日時文字列であること、`sourceType`が定義済み種別のいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須(false時は無くてよい)
 - `sections`: 配列長が**2件以上**であること(要件「複数のセクションに分けて構成する」により1件は不正。content-generation/requirements.md#要約-5)。各セクションの`heading`/`teaser`/`detail`が空文字でないこと。各セクションの`teaser`が40〜140字の範囲であること(目安60〜120字。content-generation/requirements.md#要約-3)。全セクションの`detail`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字に対し、既存の要約分量チェック(80〜170字/目安100〜150字)と同じ比率のバッファを取った範囲。content-generation/requirements.md#要約-4)
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(トリムした結果が空文字になる入力を拒否する)(requirements.md#運営者向けフィードバック-10)
 
@@ -178,8 +179,9 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 ## 画面設計
 
 - パンくず(べんりやつーる › AI駆動開発ダイジェスト › 記事タイトル)
+- デスクトップ幅(md以上、768px)では本文の右側に目次(各トピック見出しへのアンカーリンク)を表示する。モバイル幅では本文がそのまま縦に並ぶため目次は表示しない(`ikukyu/guide`の`ArticleSidebar`(`specs/ikukyu/guide/design.md#PC版レイアウト`)と同じ構造・ブレークポイント・スタイルを踏襲する)
 - 記事タイトル・公開日
-- トピックごとのカード: 情報源種別バッジ、見出し、要約(章立て。セクション見出し+導入文(60〜120字程度)を2〜4セクション程度で常時表示し、各セクションに「詳細を見る」の開閉操作を配置。展開すると詳細文(全セクション合計1000〜1500字程度)が表示される)、出典(発信者名・元URLへのリンク、新規タブで開く)、(該当時)YouTube埋め込みプレーヤー、(該当時)「採用基準未達」バッジ+理由の小さな注記
+- トピックごとのカード: 情報源種別バッジ、見出し、要約(章立て。セクション見出し+導入文(60〜120字程度)を2〜4セクション程度で常時表示し、各セクションに「詳細を見る」の開閉操作を配置。展開すると詳細文(全セクション合計1000〜1500字程度)が表示される)、出典(発信者名・元URLへのリンク、新規タブで開く。(該当時)投稿日時を併記)、(該当時)YouTube埋め込みプレーヤー、(該当時)「採用基準未達」バッジ+理由の小さな注記
 - 基準未達トピックが1件以上ある場合、記事冒頭に注記文を1回表示
 - 各トピックの下: ログイン中のみフィードバック入力欄(テキストエリア+送信ボタン)。送信後は「送信しました」、失敗時は「送信に失敗しました。もう一度お試しください」を表示
 - ページ下部: 未ログイン時は「運営者ログイン」リンク、ログイン中はログイン中メールアドレス+ログアウトボタン(`life-money-sim`の`LoginStatus`と同じ表示)

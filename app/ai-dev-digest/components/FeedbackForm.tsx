@@ -38,7 +38,7 @@ export default function FeedbackForm({ articleDate, topicId }: Props) {
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         placeholder="選定基準へのフィードバックを入力"
-        className="w-full rounded-lg border border-gray-300 p-2 text-sm"
+        className="w-full rounded-xl border border-gray-200 p-2.5 text-sm outline-none focus:border-teal-400"
         rows={2}
       />
       <div className="flex items-center gap-3">
@@ -46,12 +46,12 @@ export default function FeedbackForm({ articleDate, topicId }: Props) {
           type="button"
           onClick={() => void handleSubmit()}
           disabled={!isSendable}
-          className="rounded-full bg-gray-800 px-4 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+          className="rounded-full bg-teal-500 px-4 py-1.5 text-xs font-bold text-white shadow-sm disabled:opacity-50"
         >
           送信
         </button>
-        {status === 'sent' && <span className="text-xs text-green-700">送信しました</span>}
-        {status === 'failed' && <span className="text-xs text-red-700">送信に失敗しました。もう一度お試しください</span>}
+        {status === 'sent' && <span className="text-xs text-teal-600">送信しました</span>}
+        {status === 'failed' && <span className="text-xs text-red-600">送信に失敗しました。もう一度お試しください</span>}
       </div>
     </div>
   )

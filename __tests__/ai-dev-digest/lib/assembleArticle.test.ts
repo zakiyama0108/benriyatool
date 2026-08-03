@@ -13,6 +13,7 @@ function makeInput(overrides: Partial<GeneratedTopicInput> = {}): GeneratedTopic
     sourceType: 'official',
     sourceName: 'Anthropic',
     sourceUrl: 'https://www.anthropic.com/news/example',
+    sourcePublishedAt: '2026-07-31T10:00:00Z',
     belowCriteria: false,
     ...overrides,
   }
@@ -51,6 +52,16 @@ describe('記事データの組み立て - 選定結果と生成済みの見出�
     ])
     expect(article.topics[0].belowCriteria).toBe(true)
     expect(article.topics[0].belowCriteriaReason).toBe('いいね数18件(基準30件に12件不足)')
+  })
+
+  it('sourcePublishedAt(選定結果由来の投稿日時)がそのままArticleのトピックに含まれること', () => {
+    const article = assembleArticle('2026-08-01', [makeInput({ sourcePublishedAt: '2026-07-29T03:00:00Z' })])
+    expect(article.topics[0].sourcePublishedAt).toBe('2026-07-29T03:00:00Z')
+  })
+
+  it('sourcePublishedAtを持たないトピック(本フィールド導入前の既存データ相当)には含まれないこと', () => {
+    const article = assembleArticle('2026-08-01', [makeInput({ sourcePublishedAt: undefined })])
+    expect(article.topics[0].sourcePublishedAt).toBeUndefined()
   })
 
 })

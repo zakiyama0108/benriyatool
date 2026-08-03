@@ -24,7 +24,8 @@
       "sourceType": "official",
       "sourceName": "OpenAI",
       "sourceUrl": "https://openai.com/blog/example",
-      "belowCriteria": false
+      "belowCriteria": false,
+      "sourcePublishedAt": "2026-07-31T00:00:00Z"
     }
   ]
 }

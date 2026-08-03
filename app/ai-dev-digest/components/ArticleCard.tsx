@@ -17,10 +17,13 @@ export default function ArticleCard({ date, topicHeadings, totalTopicCount }: Pr
   const remainingCount = totalTopicCount - shownHeadings.length
 
   return (
-    <Link href={`/ai-dev-digest/${date}`} className="block rounded-2xl border border-gray-200 p-6 hover:bg-gray-50">
-      <p className="text-sm text-gray-500">{date}</p>
-      <h2 className="mt-1 text-lg font-bold text-gray-900">{buildArticleTitle(date)}</h2>
-      <ul className="mt-3 space-y-1 text-sm text-gray-700">
+    <Link
+      href={`/ai-dev-digest/${date}`}
+      className="block rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5"
+    >
+      <p className="text-xs text-gray-400">{date}</p>
+      <h2 className="mt-1 text-base font-bold leading-relaxed text-teal-600">{`${buildArticleTitle(date)} →`}</h2>
+      <ul className="mt-2 space-y-1 text-sm leading-relaxed text-gray-700">
         {shownHeadings.map((heading) => (
           <li key={heading}>{`・${heading}`}</li>
         ))}

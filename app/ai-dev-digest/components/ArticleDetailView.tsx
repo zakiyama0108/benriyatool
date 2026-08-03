@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import Link from 'next/link'
+import { List } from 'lucide-react'
 import type { Article } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
 import { getSession, onAuthChange, signInWithGoogle, signOut } from '../../lib/adminAuth'
@@ -40,32 +42,71 @@ export default function ArticleDetailView({ article }: Props) {
 
   const hasBelowCriteriaTopic = article.topics.some((topic) => topic.belowCriteria)
 
+  const title = buildArticleTitle(article.date)
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <header>
-        <h1 className="text-2xl font-bold text-gray-900">{buildArticleTitle(article.date)}</h1>
-        <p className="mt-1 text-sm text-gray-500">{article.date}</p>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white">
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10 md:grid md:grid-cols-[1fr_220px] md:items-start md:gap-8">
+        <article className="mx-auto max-w-2xl space-y-5 md:mx-0">
+          <nav className="text-[11px] text-gray-400">
+            <Link href="/" className="hover:underline">
+              べんりやつーる
+            </Link>
+            <span className="mx-1">›</span>
+            <Link href="/ai-dev-digest" className="hover:underline">
+              AI駆動開発ダイジェスト
+            </Link>
+            <span className="mx-1">›</span>
+            <span>{title}</span>
+          </nav>
 
-      {hasBelowCriteriaTopic && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-          この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます。
-        </p>
-      )}
+          <header>
+            <h1 className="text-xl font-bold leading-relaxed tracking-tight sm:text-2xl">{title}</h1>
+            <p className="mt-1 text-xs text-gray-500">{article.date}</p>
+          </header>
 
-      <div className="space-y-4">
-        {article.topics.map((topic) => (
-          <TopicSection key={topic.id} topic={topic} session={session} articleDate={article.date} />
-        ))}
+          {hasBelowCriteriaTopic && (
+            <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-relaxed text-amber-800">
+              この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます。
+            </p>
+          )}
+
+          <div className="space-y-4">
+            {article.topics.map((topic) => (
+              <TopicSection key={topic.id} topic={topic} session={session} articleDate={article.date} />
+            ))}
+          </div>
+
+          <footer className="border-t border-gray-100 pt-4">
+            <LoginStatus
+              session={session}
+              onLoginClick={() => void signInWithGoogle(window.location.href)}
+              onLogoutClick={() => void signOut()}
+            />
+          </footer>
+        </article>
+
+        {/* デスクトップ幅(md以上)のみ表示する目次。各トピック見出しへのアンカーリンク
+            (design.md「画面設計」)。モバイルでは本文がそのまま縦に並ぶため省略する。
+            ikukyu/guideのArticleSidebar(design.md#PC版レイアウト)と同じ構造・スタイルを踏襲する */}
+        <aside className="hidden md:sticky md:top-20 md:block">
+          <nav aria-label="目次" className="rounded-2xl bg-white p-4 shadow-sm">
+            <h2 className="mb-2 flex items-center gap-2 text-sm font-bold">
+              <List className="h-4 w-4 text-teal-600" aria-hidden="true" />
+              目次
+            </h2>
+            <ol className="space-y-2 text-[13px]">
+              {article.topics.map((topic) => (
+                <li key={topic.id}>
+                  <a href={`#${topic.id}`} className="text-gray-600 hover:underline">
+                    {topic.heading}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </aside>
       </div>
-
-      <footer className="pt-4">
-        <LoginStatus
-          session={session}
-          onLoginClick={() => void signInWithGoogle(window.location.href)}
-          onLogoutClick={() => void signOut()}
-        />
-      </footer>
     </div>
   )
 }

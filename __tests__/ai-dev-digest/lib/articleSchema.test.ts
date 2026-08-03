@@ -17,6 +17,7 @@ function validTopic(overrides: Record<string, unknown> = {}) {
     sourceType: 'official',
     sourceName: 'Anthropic',
     sourceUrl: 'https://www.anthropic.com/news/example',
+    sourcePublishedAt: '2026-07-31T10:00:00Z',
     belowCriteria: false,
     ...overrides,
   }
@@ -81,6 +82,28 @@ describe('記事データのスキーマ検証 - ビルド時にJSONの構造・
   it('sourceUrlがhttp/https以外のスキーム(javascript:等)のとき、検証エラーになること', () => {
     const topics = [validTopic({ sourceUrl: 'javascript:alert(1)' })]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('sourcePublishedAtが空文字のとき、検証エラーになること', () => {
+    const topics = [validTopic({ sourcePublishedAt: '' })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('sourcePublishedAtがISO 8601形式としてパースできない文字列のとき、検証エラーになること', () => {
+    const topics = [validTopic({ sourcePublishedAt: '2026年7月31日' })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('sourcePublishedAtが正常なISO 8601形式のとき、検証を通ること', () => {
+    const topics = [validTopic({ sourcePublishedAt: '2026-07-31T10:00:00Z' })]
+    const article = parseArticle(validArticle({ topics }), '2026-08-01.json')
+    expect(article.topics[0].sourcePublishedAt).toBe('2026-07-31T10:00:00Z')
+  })
+
+  it('sourcePublishedAtが無い(本フィールド導入前の既存記事データ)場合でも、検証を通ること', () => {
+    const topics = [validTopic({ sourcePublishedAt: undefined })]
+    const article = parseArticle(validArticle({ topics }), '2026-08-01.json')
+    expect(article.topics[0].sourcePublishedAt).toBeUndefined()
   })
 
   it('記事内でid(topic識別子)が重複しているとき、検証エラーになること', () => {
