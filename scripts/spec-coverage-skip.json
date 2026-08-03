@@ -526,6 +526,11 @@
   },
   {
     "specFile": "ikukyu/guide/design.md",
+    "item": "PC版レイアウト(768px以上・requirements.md#UI/UX要件-4)",
+    "reason": "PC版レイアウトの実装方針(グリッド比率・サイドバー構成)の設計メモで、内容の表示はArticleSidebarのコンポーネントテストと各記事ページのテスト(目次アンカーの対応)、見た目のCSS差分は実機確認(tasks.md Task11)で担保するため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
     "item": "コンポーネント設計",
     "reason": "コンポーネント一覧の入れ物見出しで、本文を持たないため"
   },
@@ -558,6 +563,11 @@
     "specFile": "ikukyu/guide/design.md",
     "item": "コンポーネント設計 > SourcesFooter",
     "reason": "Propsの説明表。描画はSourcesFooterのコンポーネントテストで担保済みのため"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "コンポーネント設計 > ArticleSidebar",
+    "reason": "Propsの説明表。描画はArticleSidebarのコンポーネントテストで担保済みのため"
   },
   {
     "specFile": "ikukyu/guide/design.md",
