@@ -18,13 +18,13 @@
 ## 運用設定(コード外)
 
 - Task 4: 月次Routineの実行設定(仕様: design.md「実行環境の前提」)
+  - **着手前提**: `SUPABASE_READONLY_DB_URL`をRoutine専用の実行環境に設定する具体的な手段を先に確認する(design.md「実行環境の前提」に記載の未解決事項。daily-publishの検証時点ではRoutineへの独自シークレット追加手段が見当たらなかった。手段が見つからない場合は本specの実行主体の再検討が必要)
   - 月1回の起動スケジュールを設定する
   - `SUPABASE_READONLY_DB_URL`をRoutine専用の実行環境に設定する(本体リポジトリ・GitHub Actions Secretsには追加しない)
   - Routineの実行指示に、本specとcontent-selectionのrequirements.md・design.mdを読む手順、および「変更なしならPRを作らない」判断基準を含める
 
-- Task 5: ブランチ保護の確認(仕様: design.md「見直し案をPRとして提案する処理」手順3)
-  - `ai-dev-digest/watchlist-review/**`ブランチが、daily-publishで設定した自動マージ例外(`ai-dev-digest/articles/**`)の対象に含まれていないことを確認する
-  - GitHubの設定確認作業のため、このリポジトリへのコード変更は発生しない
+- Task 5: 自動マージ対象外であることの確認(仕様: design.md「見直し案をPRとして提案する処理」手順3)
+  - 本specのRoutineが作成するPR(`ai-dev-digest/watchlist-review/**`)は、daily-publishのワークフロー([daily-publish/design.md](../daily-publish/design.md)「PRを自動マージする処理」)とは別のPATを使い、`gh pr merge --auto`のようなauto-merge操作を一切行わないことをRoutineの実行指示・実装内容で確認する(2026-08改定: GitHub Rulesetsによるブランチパターン単位の技術的な例外設定は行わない前提のため、ここでの区別は運用規律によるものであり、GitHub側の設定確認ではない)
 
 ## 動作確認
 

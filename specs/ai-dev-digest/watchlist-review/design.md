@@ -2,10 +2,10 @@
 
 ## 実行環境の前提
 
-[daily-publish/design.md](../daily-publish/design.md)の「実行環境の前提」と同じClaude Routinesを使うが、日次と異なりデータベースの読み取りが必要になるため、追加で以下を前提とする(要件・ADRのいずれも月次Routineでの利用を明記していないため設計判断):
+実行主体はClaude Routines(定期実行のクラウドエージェント)とする。**2026-08改定の経緯**: [daily-publish/design.md](../daily-publish/design.md)は当初本specと同じくClaude Routinesを使う想定だったが、実際にテスト用Routineを作成・検証した結果、Routine実行環境に独自の環境変数・シークレットを追加する手段が確認できず、GitHub Actionsに変更した。本specは日次と異なりデータベースの読み取り(`SUPABASE_READONLY_DB_URL`)のみを必要とし、docs/adr/0004がこの接続情報をこのリポジトリ・GitHub Actions Secretsには含めない方針を明示的に定めているため(GitHub Actionsに移すと同ADRの方針を覆すことになる)、本specはClaude Routinesを実行主体のまま据え置く判断とした。ただし、daily-publishの検証で判明した「Routine実行環境への独自シークレット追加手段が見当たらない」という制約は本specの`SUPABASE_READONLY_DB_URL`にもそのまま当てはまり、**本spec運用開始前に解決すべき未解決事項として残る**(解決手段が見つからない場合、本specもGitHub Actionsへの変更を含めて再検討する)。日次と異なりデータベースの読み取りが必要になるため、追加で以下を前提とする(要件・ADRのいずれも月次Routineでの利用を明記していないため設計判断):
 
 - docs/adr/0004で導入した`benriyatool_readonly`ロールの接続文字列(`SUPABASE_READONLY_DB_URL`)を、月次Routineの実行環境にも(ローカル開発セッションとは別に)保持する。同ADRは2026-08の改定でClaude Routines実行環境も接続情報の保持対象として正式に含めており、本specの月次Routineはその対象範囲に基づいて接続情報を保持する
-- この接続情報はこのリポジトリ・GitHub Actions Secretsには追加しない(daily-publishと同じ方針)
+- この接続情報はこのリポジトリ・GitHub Actions Secretsには追加しない(docs/adr/0004の既定方針)
 
 ## 処理フロー
 

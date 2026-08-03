@@ -5,7 +5,7 @@ AI駆動開発関連の話題コンテンツ(公式組織のブログ・YouTube�
 
 ## 2. アーキテクチャの目的
 - コンテンツの収集・選定([content-selection](content-selection/requirements.md))と翻訳・要約([content-generation](content-generation/requirements.md))を分離し、それぞれの基準を独立して見直せるようにする
-- サーバーを持たない静的サイトの構成を維持したまま、Claude Routines(定期実行のクラウドエージェント)による記事生成・PR作成という新しい運用パターンを導入する
+- サーバーを持たない静的サイトの構成を維持したまま、GitHub Actions(日次の記事生成・PR作成)とClaude Routines(月次の見直し提案・PR作成)による定期実行という新しい運用パターンを導入する(2026-08改定: 当初は日次・月次ともClaude Routinesを想定していたが、Routine実行環境に外部APIキー等を渡す手段が確認できず、日次はGitHub Actionsに変更した。詳細は[daily-publish/design.md](daily-publish/design.md)「実行環境の前提」参照)
 - 通常はPRレビューが必須のこのプロジェクトの運用に対し、日次記事の完全自動マージという例外を[daily-publish](daily-publish/requirements.md)に明確に限定し、ウォッチリスト変更等の影響が大きい変更([watchlist-review](watchlist-review/requirements.md))には人間承認を残す
 
 ## 3. 設計方針
@@ -21,7 +21,7 @@ flowchart TD
     cf["Cloudflare Workers(静的配信)"]
     list["/ai-dev-digest<br>記事一覧"]
     detail["/ai-dev-digest/[date]<br>記事詳細・フィードバック入力"]
-    dailyRoutine["Claude Routines(日次)<br>収集・翻訳・要約・記事執筆"]
+    dailyRoutine["GitHub Actions(日次)<br>収集・翻訳・要約・記事執筆"]
     monthlyRoutine["Claude Routines(月次)<br>ウォッチリスト・基準の見直し"]
     sources["情報源<br>公式API・公式RSS・公式ブログ・公開ページ"]
     repo["GitHubリポジトリ<br>(記事JSON・ウォッチリスト設定)"]
@@ -49,7 +49,7 @@ flowchart TD
 この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specの設計書。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。
 
 ## 5. アーキテクチャ概要
-Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のClaude Routineが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を閲覧でき、運営者はGoogle OIDCでログインした状態で記事詳細ページに表示されるフィードバック欄から選定基準への気づきを残せる(既存のanonキーINSERT専用パターンを流用、DB読み取りは発生しない)。月次のClaude Routineがフィードバックと掲載実績を読み、ウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
+Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Anthropic API呼び出しによる翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を閲覧でき、運営者はGoogle OIDCでログインした状態で記事詳細ページに表示されるフィードバック欄から選定基準への気づきを残せる(既存のanonキーINSERT専用パターンを流用、DB読み取りは発生しない)。月次のClaude Routineがフィードバックと掲載実績を読み、ウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -57,7 +57,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | Next.js(静的エクスポート) | 記事一覧・詳細ページの描画 |
 | Supabase | 運営者フィードバックの保存(`ai_dev_digest_feedback`テーブル) |
 | Supabase Auth(Google OIDC) | フィードバック入力欄の表示切り替え(運営者判定) |
-| Claude Routines | 日次の記事生成、月次のウォッチリスト・基準見直しの実行基盤 |
+| GitHub Actions | 日次の記事生成の実行基盤(スケジュール実行のワークフロー) |
+| Claude Routines | 月次のウォッチリスト・基準見直しの実行基盤(定期実行のクラウドエージェント) |
 | Tailwind CSS | スタイリング |
 
 選定理由はプロジェクト横断のため[関連ADR](#11-関連adr)を参照。
@@ -112,7 +113,8 @@ content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-re
 | Supabase(`ai_dev_digest_feedback`テーブル) | 運営者フィードバックの保存 |
 | Supabase Auth(Google OIDC) | フィードバック入力欄の表示切り替え(既存admin authと同じ仕組みを流用、SELECT権限は追加しない) |
 | YouTube公式API・各社公式RSSフィード・各社公式ブログ・Qiita公式API・Zenn公式RSS | 情報源データの取得([content-selection/requirements.md#データ取得方法](content-selection/requirements.md)) |
-| Claude Routines | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))の定期実行基盤 |
+| GitHub Actions | 記事生成([daily-publish](daily-publish/requirements.md))の定期実行基盤 |
+| Claude Routines | 見直し提案([watchlist-review](watchlist-review/requirements.md))の定期実行基盤 |
 
 このアプリが使うテーブルは`ai_dev_digest_feedback`の1つのみで、他アプリのテーブルとのリレーションは持たない(anonのINSERT専用、docs/adr/0004の`benriyatool_readonly`ロールのSELECT専用。ADR-0006の運営者専用SELECTポリシーは追加しないため`admin_emails`との関係もない)。テーブルが1つのみでリレーションもないため、ER図は作成しない([architecture-workflow](../../.claude/skills/architecture-workflow/SKILL.md)の作成条件を満たさない)。各カラムの正となる文章は[article-detail/design.md#データベース設計](article-detail/design.md#データベース設計)。
 
@@ -132,4 +134,5 @@ content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-re
 |---|---|
 | ウォッチリスト | 収集対象として固定的に管理する情報源(公式組織・個人・プラットフォーム)の一覧。[content-selection](content-selection/requirements.md)で定義 |
 | 基準未達掲載 | content-selectionの採用基準を満たす候補が3件に満たない日に、実在する候補(基準未達の候補を含む)をその件数のまま掲載する措置。掲載する各トピックには基準未達である旨を示す。[watchlist-review](watchlist-review/requirements.md)で見直しの判断材料になる |
-| Claude Routines | 定期実行のクラウドエージェント。日次の記事生成([daily-publish](daily-publish/requirements.md))、月次の見直し提案([watchlist-review](watchlist-review/requirements.md))の実行主体 |
+| GitHub Actions | スケジュール実行のワークフロー基盤。日次の記事生成([daily-publish](daily-publish/requirements.md))の実行主体 |
+| Claude Routines | 定期実行のクラウドエージェント。月次の見直し提案([watchlist-review](watchlist-review/requirements.md))の実行主体 |

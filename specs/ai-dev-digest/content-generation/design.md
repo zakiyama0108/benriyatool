@@ -7,7 +7,7 @@
 - **エージェントの推論に委ねる**: 選定された候補(content-selectionの出力)から、日本語の紹介文としての翻訳・要約を書く行為そのもの。意味理解・言い換えが本質的にLLMの得意領域であり、コード化になじまない
 - **決定的なコードに任せる**: 要約の文字数チェック、記事タイトルの生成、YouTube動画IDの抽出、著作権配慮のガードレール文言の提示。これらは「揺れてはいけない/機械的に導出できる」性質のため、エージェントの推論結果ではなく固定のコード・固定文言にする
 
-エージェント(Claude Routines)が翻訳・要約を書く際に従うべきルールは、[requirements.md](requirements.md)と本design.mdそのものを直接参照させる(別ファイルにプロンプト文を複製しない。日次実行の運用手順は[daily-publish/design.md](../daily-publish/design.md)で「このrequirements.md/design.mdを読んで執筆する」という指示として組み込む)。
+エージェント(GitHub Actionsのワークフローから`scripts/ai-dev-digest/generate-content.ts`経由で呼び出すAnthropic Messages API。2026-08改定: 当初はClaude Routinesの自律的な推論を想定していたが、[daily-publish/design.md](../daily-publish/design.md)「実行環境の前提」の改定によりGitHub Actions+API呼び出しに変更)が翻訳・要約を書く際に従うべきルールは、[requirements.md](requirements.md)と本design.mdそのものを直接参照させる(別ファイルにプロンプト文を複製しない。日次実行の運用手順は[daily-publish/design.md](../daily-publish/design.md)で「このrequirements.md/design.mdの内容をプロンプトに含めて実行する」という指示として組み込む)。元記事・元動画の内容把握には、Anthropic APIが提供するweb fetchツールを使い、スクリプト側では原文を事前取得しない(要約生成の呼び出し1回の中でAPI自身が対象URLを参照する)。
 
 ## 処理フロー
 
@@ -57,6 +57,7 @@
 ## 関連するファイル(抜粋)
 
 ```
+scripts/ai-dev-digest/generate-content.ts (新規: daily-publish/design.mdで新規とするCLI本体。1候補ずつAnthropic Messages APIを呼び出し、見出し・sections配列を生成する)
 app/ai-dev-digest/lib/summaryValidation.ts (新規: TEASER_MIN_LENGTH/TEASER_MAX_LENGTH・DETAIL_TOTAL_MIN_LENGTH/DETAIL_TOTAL_MAX_LENGTH定数とisValidTeaserLength/isValidDetailLength。sections配列のteaser・detailを検証する)
 app/ai-dev-digest/lib/articleTitle.ts (新規: buildArticleTitle(date))
 app/ai-dev-digest/lib/youtubeUrl.ts (新規: extractYoutubeVideoId(url))
@@ -73,7 +74,7 @@ app/legal/page.tsx (既存: 「4. 知的財産」セクションに条項本文�
 ## ログ
 
 - 導入文・詳細文の分量検証結果(合否・実際の文字数)は、article-detailのビルド時バリデーションのエラーメッセージとしてCIログに出力される(article-detail/design.md#ログ)
-- 翻訳・要約の生成過程自体(エージェントの推論内容)は本アプリのログ設計の対象外とする(Claude Routinesの実行ログとして別途残る運用上の記録であり、アプリコードが管理する対象ではないため)
+- 翻訳・要約の生成過程自体(エージェントの推論内容)は本アプリのログ設計の対象外とする(GitHub Actionsのワークフロー実行ログとして別途残る運用上の記録であり、アプリコードが管理する対象ではないため)
 
 ## 利用規約への反映
 

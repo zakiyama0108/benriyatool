@@ -2,7 +2,7 @@
 
 ## 設計の前提(エージェントの推論とコードの役割分担)
 
-[daily-publish](../daily-publish/requirements.md)の実行主体はClaude Routines(推論するエージェント)だが、本specが扱う「採用基準を満たすか」の判定は次の理由から**決定的なコード(TypeScriptの純粋関数+スクリプト)として実装し、エージェントの推論には委ねない**(要件はロジックの実装形態まで指定していないため設計判断。方針は下記の通り):
+[daily-publish](../daily-publish/requirements.md)の実行主体はGitHub Actions(ワークフローからAnthropic APIを呼び出す構成。2026-08改定前はClaude Routinesを想定していた)だが、本specが扱う「採用基準を満たすか」の判定は次の理由から**決定的なコード(TypeScriptの純粋関数+スクリプト)として実装し、エージェントの推論には委ねない**(要件はロジックの実装形態まで指定していないため設計判断。方針は下記の通り):
 
 - 「1日3〜5件」という件数はビジネス上の固定不変条件であり、LLMの推論結果として毎回保証されるとは限らない(数え間違い・思い込みのリスク)。件数を必ず満たすかどうかは算術的に検証可能なため、コードに任せて確実性を上げる
 - いいね数・平均再生回数などの数値比較も同様に、LLMの計算より決定的なコードの方が誤りが少ない
@@ -109,17 +109,17 @@ app/ai-dev-digest/lib/watchlistTypes.ts (新規: 型定義)
 app/ai-dev-digest/lib/candidateTypes.ts (新規: Candidate/SelectionResultの型定義)
 app/ai-dev-digest/lib/selection.ts (新規: 採用基準判定・1日分の選定ロジック。純粋関数でテスト可能)
 app/ai-dev-digest/lib/fetchCandidates.ts (新規: 各情報源への問い合わせ処理。YouTube Data API/RSS/Qiita API呼び出し)
-scripts/ai-dev-digest/collect-and-select.ts (新規: fetchCandidates+selectionを実行しJSONを標準出力するCLI。Claude Routinesから呼び出される)
+scripts/ai-dev-digest/collect-and-select.ts (新規: fetchCandidates+selectionを実行しJSONを標準出力するCLI。GitHub Actionsのワークフローから呼び出される)
 ```
 
-`selection.ts`は入出力が純粋なデータ(候補配列→選定結果)のみで、Supabaseやファイル入出力を持たないため、通常のvitestで完全にテストできる。`fetchCandidates.ts`は外部APIへのHTTP呼び出しを伴うため、レスポンス形状のパース・エラー処理のみをモックしたテストの対象とし、実際の外部通信を伴う疎通確認はエージェントの日次実行結果(daily-publish)で代替する。
+`selection.ts`は入出力が純粋なデータ(候補配列→選定結果)のみで、Supabaseやファイル入出力を持たないため、通常のvitestで完全にテストできる。`fetchCandidates.ts`は外部APIへのHTTP呼び出しを伴うため、レスポンス形状のパース・エラー処理のみをモックしたテストの対象とし、実際の外部通信を伴う疎通確認は日次実行結果(daily-publish)で代替する。
 
 ## セキュリティ
 
-- YouTube Data APIキーはリポジトリ・GitHub Actions Secretsに含めず、Claude Routinesの実行環境の環境変数(`YOUTUBE_API_KEY`)としてのみ保持する(docs/adr/0004の`benriyatool_readonly`接続情報と同様、実行環境固有のシークレットとして扱う方針を踏襲)(Claude Routinesのシークレット管理方法自体は本プロジェクト初導入のため、運用開始前に設定を確認する)
+- YouTube Data APIキーは、このリポジトリのGitHub Actions Secrets(`YOUTUBE_API_KEY`)として保存する(2026-08改定。当初はClaude Routines実行環境の環境変数として保持する想定だったが、[daily-publish/design.md](../daily-publish/design.md)「実行環境の前提」の改定によりGitHub Actionsに変更した)
 - Qiita API・各社RSSフィード・Zennの公開ページ閲覧は認証不要の公開エンドポイントのみを使い、非公式APIや利用規約を超えた高頻度アクセスは行わない(requirements.md#データ取得方法-1)。アクセス頻度は1日1回の実行分のみで、スクレイピング的な連続アクセスは発生しない設計とする
 
 ## ログ
 
-- 収集・選定の実行結果として、情報源ごとの取得件数・基準を満たした件数・基準未達で補った件数・スキップした情報源(取得失敗)を標準出力に記録する(Claude Routinesの実行ログとして残る)
+- 収集・選定の実行結果として、情報源ごとの取得件数・基準を満たした件数・基準未達で補った件数・スキップした情報源(取得失敗)を標準出力に記録する(GitHub Actionsのワークフロー実行ログとして残る)
 - 候補不足によるスキップが発生した場合はその旨を明確に標準出力へ記録し、[daily-publish](../daily-publish/design.md)側がこれを検知してPRを作成しない判断に使う
