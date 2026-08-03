@@ -39,6 +39,7 @@ description: 新しい機能・アプリの要件定義を始めるときに使�
 - 複数のストーリーの結果を1つの画面にまとめる(合計金額表示・内訳バーなど)統合ロジックが必要な場合は、新たに統合専用specを作らず、その統合先(最終的にユーザーが見るメイン画面)を担当するstory specに書く。他のstory specの機能要件には「この結果は`<まとめ先の機能名>`の画面で使われる」と一言添えて依存関係を明示する
 - アプリ立ち上げ時は`specs/<アプリ名>/architecture.md`も最初から作成する(作成基準・書き方は[architecture-workflow](../architecture-workflow/SKILL.md)を参照)
 - あわせてリポジトリ直下[README.md](../../../README.md)の「アプリ一覧」テーブルに1行追加する(アプリ名・パス・概要・architecture.mdへのリンク)
+- このアプリを初めて本番公開する実装PR([/implementation](../implementation/SKILL.md))では、[specs/hub-site/requirements.md](../../../specs/hub-site/requirements.md)に従いトップページ(`app/page.tsx`)にもツールカードを追加する(README一覧は公開前でも載るが、ハブページは公開中のツールのみを載せるため別途更新が必要。2026-08時点で`/life-money-sim`がこの掲載漏れを起こした教訓)
 - 各specが育ってきて「既存機能の修正・拡張」に該当する変更が発生したら、以降は上記Step0の判断に従う
 
 # 要件ヒアリング

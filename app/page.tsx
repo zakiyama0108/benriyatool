@@ -35,6 +35,41 @@ export default function HubPage() {
             </div>
           </div>
         </Link>
+        <Link
+          href="/life-money-sim"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">📈</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">資産推移シミュレーター</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                毎月の収支から、将来の資産推移を見通す
+              </p>
+            </div>
+          </div>
+        </Link>
+        <Link
+          href="/ai-dev-digest"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">🤖</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">AI駆動開発ダイジェスト</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                AI駆動開発関連の話題を1日1回まとめてお届け
+              </p>
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* 関連記事(ツールではないためカードとは表示を区別する) */}
+      <div className="text-center">
+        <Link href="/ikukyu/guide" className="text-sm font-bold text-gray-500 hover:text-orange-500 hover:underline">
+          育休給付金ガイド記事を読む →
+        </Link>
       </div>
     </div>
   )

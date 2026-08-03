@@ -441,6 +441,11 @@
   },
   {
     "specFile": "ikukyu/guide/requirements.md",
+    "item": "記事ページ共通 [12]",
+    "reason": "トップページ側の導線はhub-site/requirements.md#機能要件-3としてテスト済み(__tests__/page.test.tsx)。シミュレーター画面(/ikukyu)側はpage.tsxがsaveResult.ts経由でapp/lib/supabaseClient.tsを読み込み、vitest実行時に環境変数エラーで直接レンダリングできないため、npm run buildと実機確認(/run-benriyatool)で担保する"
+  },
+  {
+    "specFile": "ikukyu/guide/requirements.md",
     "item": "4. ビジネスルール・制約",
     "reason": "配下の###見出し(数値の算出元など)の入れ物で、本文を持たないため"
   },
@@ -493,6 +498,11 @@
     "specFile": "ikukyu/guide/design.md",
     "item": "記事ページを組み立てて公開する処理(3記事共通)",
     "reason": "design.mdの処理フローはテストから参照しない設計方針のため。メタデータ・JSON-LD・CTA・一覧ページはrequirements.md#記事ページ共通の各項でテスト済み"
+  },
+  {
+    "specFile": "ikukyu/guide/design.md",
+    "item": "トップページ・シミュレーター画面からガイド記事一覧への導線を設置する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応ルールはrequirements.md#記事ページ共通-12(トップページ側はhub-site/requirements.md#機能要件-3としてテスト済み、シミュレーター画面側はbuild+実機確認で担保)"
   },
   {
     "specFile": "ikukyu/guide/design.md",
