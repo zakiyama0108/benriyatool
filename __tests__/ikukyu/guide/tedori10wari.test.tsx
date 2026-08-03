@@ -64,3 +64,22 @@ describe('記事1のメタデータ - タイトルタグ・meta description・OG
     expect(metadata.openGraph?.url).toBe('/ikukyu/guide/tedori-10wari')
   })
 })
+
+// 仕様: specs/ikukyu/guide/requirements.md#5. UI/UX要件-4
+describe('記事1のPC版サイドバー - 目次の各リンクが本文中の対応セクションのidと一致する', () => {
+  it('目次のリンクが「実額検証」「手取り10割にならない月給ライン」「よくある質問」の各セクションidと一致すること', () => {
+    const { container } = render(<Page />)
+    for (const anchor of ['jissangaku', 'cap-line', 'faq']) {
+      const tocLink = container.querySelector(`aside nav[aria-label="目次"] a[href="#${anchor}"]`)
+      const section = container.querySelector(`[id="${anchor}"]`)
+      expect(tocLink, `目次リンク #${anchor} がない`).toBeTruthy()
+      expect(section, `セクション id=${anchor} がない`).toBeTruthy()
+    }
+  })
+
+  it('サイドバーに関連記事・参考資料が表示されること', () => {
+    render(<Page />)
+    expect(screen.getAllByText('関連記事').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getByText('参考資料')).toBeTruthy()
+  })
+})

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { calcMonthlyBenefit, estimateWorkingNetIncome, findCapSalaryLine } from '../lib/monthlyBenefit'
 import { APPLIED_PERIOD_LABEL, GUIDE_ARTICLES, LAST_UPDATED_ISO, LAST_UPDATED_LABEL, PRIMARY_SOURCES } from '../lib/articleMeta'
 import ArticleJsonLd from '../components/ArticleJsonLd'
+import ArticleSidebar from '../components/ArticleSidebar'
 import ArticleTable from '../components/ArticleTable'
 import CalloutCard from '../components/CalloutCard'
 import FaqSection, { type FaqItem } from '../components/FaqSection'
@@ -77,116 +78,132 @@ export default function TedoriTenWariPage() {
   return (
     <div className={`min-h-screen ${t.pageBg}`}>
       <ArticleJsonLd title={TITLE} description={DESCRIPTION} path="/ikukyu/guide/tedori-10wari/" dateModified={LAST_UPDATED_ISO} faqs={FAQS} />
-      <article className="mx-auto max-w-md space-y-5 px-4 py-6">
-        <GuideBreadcrumb />
+      {/* md以上: 左=本文(md:max-w-[720px]) / 右=サイドバー。767px以下は既存の縦1カラムのまま */}
+      <div className="mx-auto max-w-md px-4 py-6 md:max-w-6xl md:grid md:grid-cols-[minmax(0,1fr)_288px] md:items-start md:gap-8 md:px-6">
+        <article className="space-y-5 md:max-w-[720px]">
+          <GuideBreadcrumb />
 
-        {/* タイトル+更新日 */}
-        <header>
-          <h1 className="text-xl font-bold leading-relaxed tracking-tight">{TITLE}</h1>
-          <p className="mt-1 text-xs text-gray-500">最終更新: {LAST_UPDATED_LABEL}</p>
-        </header>
+          {/* タイトル+更新日 */}
+          <header>
+            <h1 className="text-xl font-bold leading-relaxed tracking-tight">{TITLE}</h1>
+            <p className="mt-1 text-xs text-gray-500">最終更新: {LAST_UPDATED_LABEL}</p>
+          </header>
 
-        {/* 要点スタットタイル */}
-        <StatTiles
-          theme={THEME}
-          tiles={[
-            { value: '80%', label: '上乗せ後の給付率' },
-            { value: '28日', label: '上乗せの最大日数' },
-            { value: '14日+', label: '夫婦それぞれの取得条件' },
-          ]}
-        />
-
-        {/* リード: 制度の要点(3〜4段落のみ) */}
-        <div className="rounded-2xl bg-white p-4 text-sm leading-relaxed shadow-sm space-y-3">
-          <p>
-            2025年4月に始まった<strong>「出生後休業支援給付金」</strong>は、育休中の給付を大きく引き上げる制度です。
-            「育休中も手取り10割」という言葉を目にして、本当なのか気になっている方も多いのではないでしょうか。
-          </p>
-          <p>
-            仕組みはシンプルで、<strong>夫婦それぞれが14日以上</strong>の育休を取得すると、通常67%の育休給付に
-            <strong>13%が上乗せされて80%</strong>になります。上乗せの対象は育休の最初の<strong>最大28日間</strong>です。
-          </p>
-          <p>
-            給付金は非課税で、育休中は社会保険料も原則免除されます。働いているときの手取りが
-            <strong>額面の約8割</strong>であることを踏まえると、「給付80% ≒ ふだんの手取り」となり、これが「手取り10割」と言われる根拠です。
-          </p>
-          <p>
-            ただし、給付のもとになる賃金日額には上限があるため、<strong>すべての月給で10割になるわけではありません</strong>。
-            この記事では、当サイトの育休シミュレーターと同じ計算エンジンで、月給別の実額を検証します。
-          </p>
-        </div>
-
-        {/* 実額検証テーブル */}
-        <section className="rounded-2xl bg-white p-4 shadow-sm">
-          <h2 className="mb-3 flex items-center gap-2 text-base font-bold">
-            <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-extrabold ${t.accentSoftBg}`}>80%</span>
-            月給別・実額検証(1か月あたり)
-          </h2>
-          <ArticleTable
+          {/* 要点スタットタイル */}
+          <StatTiles
             theme={THEME}
-            columns={[
-              { header: '月給(額面)' },
-              { header: '通常(67%)', align: 'right' },
-              { header: '上乗せ後(80%)', align: 'right' },
-              { header: '手取りとの差', align: 'right' },
+            tiles={[
+              { value: '80%', label: '上乗せ後の給付率' },
+              { value: '28日', label: '上乗せの最大日数' },
+              { value: '14日+', label: '夫婦それぞれの取得条件' },
             ]}
-            rows={cases.map(({ salary, benefit, diff }) => ({
-              cells: [
-                `${salary / 10000}万円`,
-                yen(benefit.month67),
-                <strong key="m80" className={t.accentText}>{yen(benefit.month80)}</strong>,
-                diffLabel(diff),
-              ],
-              capped: benefit.capped,
-            }))}
           />
-          <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
-            ※ 月額は「賃金日額(月給÷30、上限適用後)×給付率×30日」で算出。「手取り(概算)」は社会保険料+税の控除を約2割とみなした額面の8割の概算です。
-          </p>
-          <div className="mt-3">
-            <SimulatorCta label="あなたの条件で正確に計算する →" theme={THEME} />
+
+          {/* リード: 制度の要点(3〜4段落のみ) */}
+          <div className="rounded-2xl bg-white p-4 text-sm leading-relaxed shadow-sm space-y-3">
+            <p>
+              2025年4月に始まった<strong>「出生後休業支援給付金」</strong>は、育休中の給付を大きく引き上げる制度です。
+              「育休中も手取り10割」という言葉を目にして、本当なのか気になっている方も多いのではないでしょうか。
+            </p>
+            <p>
+              仕組みはシンプルで、<strong>夫婦それぞれが14日以上</strong>の育休を取得すると、通常67%の育休給付に
+              <strong>13%が上乗せされて80%</strong>になります。上乗せの対象は育休の最初の<strong>最大28日間</strong>です。
+            </p>
+            <p>
+              給付金は非課税で、育休中は社会保険料も原則免除されます。働いているときの手取りが
+              <strong>額面の約8割</strong>であることを踏まえると、「給付80% ≒ ふだんの手取り」となり、これが「手取り10割」と言われる根拠です。
+            </p>
+            <p>
+              ただし、給付のもとになる賃金日額には上限があるため、<strong>すべての月給で10割になるわけではありません</strong>。
+              この記事では、当サイトの育休シミュレーターと同じ計算エンジンで、月給別の実額を検証します。
+            </p>
           </div>
-        </section>
 
-        {/* 上限ライン(この記事の独自価値) */}
-        <section className="rounded-2xl bg-white p-4 shadow-sm space-y-3">
-          <h2 className="text-base font-bold">手取り10割にならない月給ライン</h2>
-          <p className="text-sm leading-relaxed">
-            上の表のとおり、月給40万円までは「上乗せ後の給付」と「ふだんの手取り(概算)」の差はごくわずかで、
-            手取り10割はほぼ実現します。一方で月給50万円では差が開きます。
-          </p>
-          <CalloutCard title="ここがポイント">
-            境目は<strong>月給{capSalary.toLocaleString()}円</strong>。これ以上の月給では賃金日額の上限
-            ({cappedDailyWage.toLocaleString()}円)が適用されて給付額が頭打ちになり、月給が上がるほど
-            「手取り10割」から遠ざかります。
-          </CalloutCard>
-          <p className="text-sm leading-relaxed">
-            自分の月給が上限にかかるかどうかは、シミュレーターに月給を入れるだけで確認できます(上限適用時は画面に表示されます)。
-          </p>
-          <SimulatorCta label="あなたの条件で正確に計算する →" theme={THEME} />
-        </section>
+          {/* 実額検証テーブル */}
+          <section id="jissangaku" className="scroll-mt-4 rounded-2xl bg-white p-4 shadow-sm">
+            <h2 className="mb-3 flex items-center gap-2 text-base font-bold">
+              <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-extrabold ${t.accentSoftBg}`}>80%</span>
+              月給別・実額検証(1か月あたり)
+            </h2>
+            <ArticleTable
+              theme={THEME}
+              columns={[
+                { header: '月給(額面)' },
+                { header: '通常(67%)', align: 'right' },
+                { header: '上乗せ後(80%)', align: 'right' },
+                { header: '手取りとの差', align: 'right' },
+              ]}
+              rows={cases.map(({ salary, benefit, diff }) => ({
+                cells: [
+                  `${salary / 10000}万円`,
+                  yen(benefit.month67),
+                  <strong key="m80" className={t.accentText}>{yen(benefit.month80)}</strong>,
+                  diffLabel(diff),
+                ],
+                capped: benefit.capped,
+              }))}
+            />
+            <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
+              ※ 月額は「賃金日額(月給÷30、上限適用後)×給付率×30日」で算出。「手取り(概算)」は社会保険料+税の控除を約2割とみなした額面の8割の概算です。
+            </p>
+            <div className="mt-3">
+              <SimulatorCta label="あなたの条件で正確に計算する →" theme={THEME} />
+            </div>
+          </section>
 
-        {/* FAQ */}
-        <section className="rounded-2xl bg-white p-4 shadow-sm">
-          <FaqSection faqs={FAQS} theme={THEME} />
-        </section>
+          {/* 上限ライン(この記事の独自価値) */}
+          <section id="cap-line" className="scroll-mt-4 rounded-2xl bg-white p-4 shadow-sm space-y-3">
+            <h2 className="text-base font-bold">手取り10割にならない月給ライン</h2>
+            <p className="text-sm leading-relaxed">
+              上の表のとおり、月給40万円までは「上乗せ後の給付」と「ふだんの手取り(概算)」の差はごくわずかで、
+              手取り10割はほぼ実現します。一方で月給50万円では差が開きます。
+            </p>
+            <CalloutCard title="ここがポイント">
+              境目は<strong>月給{capSalary.toLocaleString()}円</strong>。これ以上の月給では賃金日額の上限
+              ({cappedDailyWage.toLocaleString()}円)が適用されて給付額が頭打ちになり、月給が上がるほど
+              「手取り10割」から遠ざかります。
+            </CalloutCard>
+            <p className="text-sm leading-relaxed">
+              自分の月給が上限にかかるかどうかは、シミュレーターに月給を入れるだけで確認できます(上限適用時は画面に表示されます)。
+            </p>
+            <SimulatorCta label="あなたの条件で正確に計算する →" theme={THEME} />
+          </section>
 
-        {/* 関連記事 */}
-        <section className="rounded-2xl bg-white p-4 shadow-sm">
-          <h2 className="mb-2 text-base font-bold">関連記事</h2>
-          <ul className="space-y-2 text-sm">
-            {relatedArticles.map((article) => (
-              <li key={article.slug}>
-                <Link href={`/ikukyu/guide/${article.slug}`} className={`font-semibold ${GUIDE_THEMES[article.theme].accentText} hover:underline`}>
-                  {article.title} →
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+          {/* FAQ */}
+          <section id="faq" className="scroll-mt-4 rounded-2xl bg-white p-4 shadow-sm">
+            <FaqSection faqs={FAQS} theme={THEME} />
+          </section>
 
-        <SourcesFooter sources={[...PRIMARY_SOURCES]} lastUpdated={LAST_UPDATED_LABEL} appliedPeriod={APPLIED_PERIOD_LABEL} />
-      </article>
+          {/* 関連記事 */}
+          <section className="rounded-2xl bg-white p-4 shadow-sm">
+            <h2 className="mb-2 text-base font-bold">関連記事</h2>
+            <ul className="space-y-2 text-sm">
+              {relatedArticles.map((article) => (
+                <li key={article.slug}>
+                  <Link href={`/ikukyu/guide/${article.slug}`} className={`font-semibold ${GUIDE_THEMES[article.theme].accentText} hover:underline`}>
+                    {article.title} →
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <SourcesFooter sources={[...PRIMARY_SOURCES]} lastUpdated={LAST_UPDATED_LABEL} appliedPeriod={APPLIED_PERIOD_LABEL} />
+        </article>
+
+        <ArticleSidebar
+          theme={THEME}
+          ctaLabel="あなたの条件で正確に計算する →"
+          tocItems={[
+            { href: '#jissangaku', label: '月給別・実額検証' },
+            { href: '#cap-line', label: '手取り10割にならない月給ライン' },
+            { href: '#faq', label: 'よくある質問' },
+          ]}
+          relatedArticles={relatedArticles.map((article) => ({ slug: article.slug, title: article.title }))}
+          sources={[...PRIMARY_SOURCES]}
+          lastUpdated={LAST_UPDATED_LABEL}
+        />
+      </div>
     </div>
   )
 }
