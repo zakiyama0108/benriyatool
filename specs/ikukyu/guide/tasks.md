@@ -79,3 +79,17 @@ design.mdのコンポーネント設計の7つ(StatTiles / ArticleTable / Callou
 - [x] 🟢 Green: `app/page.tsx`のツールカード一覧の下にテキストリンクを追加する
 - [x] `app/ikukyu/page.tsx`のヘッダー直下にも同様のテキストリンクを追加する(この画面は`saveResult.ts`経由で`app/lib/supabaseClient.ts`を読み込むため、vitest実行時に環境変数エラーで直接レンダリングするユニットテストが書けない。`vitest.config.mts`が`page.tsx`をカバレッジ対象外としている既存方針に合わせ、`npm run build`と実機確認(/run-benriyatool)でリンクの表示・遷移を確認する)
 - [x] `specs/hub-site/requirements.md`にもトップページ側の導線をビジネスルールとして追記する
+
+## Task 11: PC版レイアウト(本文+サイドバー、768px以上)(2026-08-03)
+
+requirements.md#UI/UX要件-4・design.md#PC版レイアウトに基づき、記事一覧ページ・記事3本にPC版の2カラムレイアウトを追加する。
+
+- [ ] (TDD対象外) v0生成コードの取り込み・整形: ユーザーのローカルZIP(v0で作成・承認済みのモックアップ)から、グリッド構成・サイドバー構造・Tailwindクラスを参照し、`app/ikukyu/guide/components/ArticleSidebar.tsx`の雛形とページ側のgridクラスを整える。v0側の`lib/guide-data.ts`(ダミー数値)・v0独自の`Breadcrumbs`/`SimulatorCta`/`SiteHeader`はそのまま使わず、既存の`GuideBreadcrumb`/`SimulatorCta`/`StatTiles`/`ArticleTable`/`FaqSection`/`SourcesFooter`と`app/ikukyu/lib/calculator.ts`経由の実数値に置き換える(ui-integratorへの委譲可)
+- [ ] `package.json`に`lucide-react`を追加する
+- [ ] 🔴 Red → 🟢 Green → 🔵 Refactor: `ArticleSidebar`コンポーネント(`__tests__/ikukyu/guide/components/ArticleSidebar.test.tsx`)。目次項目配列を渡した場合/渡さない場合(記事一覧ページ用)で表示が切り替わること、CTA・関連記事・参考資料が表示されることをテストする
+- [ ] 🔴 Red → 🟢 Green → 🔵 Refactor: 記事一覧ページ(`app/ikukyu/guide/page.tsx`)にPC版2カラム(記事カード2列グリッド+`ArticleSidebar`)を追加。`ArticleSidebar`にテスト済みのため、ページ側は`ArticleSidebar`が正しいpropsで呼ばれることを確認する
+- [ ] 🔴 Red → 🟢 Green → 🔵 Refactor: 記事2(早見表)ページに目次付きサイドバーを追加(月給帯アンカーは既存の目次ジャンプと同じidを再利用する)
+- [ ] 🔴 Red → 🟢 Green → 🔵 Refactor: 記事1・記事3ページに目次付きサイドバーを追加
+- [ ] `npm run lint` / `npm test` / `npm run build`が通ることを確認する
+- [ ] /run-benriyatool でウィンドウ幅767px以下(サイドバーが出ないこと)と768px以上(2カラム・サイドバーがstickyで追従すること)の両方を実機確認する
+- [ ] requirements.md冒頭の`> ステータス: 仕様確認中(未実装)`行を削除し、`npm run check:spec-coverage`で新規見出しとテストの対応を確認する
