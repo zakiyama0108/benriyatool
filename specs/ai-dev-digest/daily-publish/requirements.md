@@ -13,7 +13,7 @@
 
 ### 実行
 - [1] 収集・翻訳・要約・記事執筆のバッチを1日1回実行する
-- [2] 実行主体はClaude Routines(定期実行のクラウドエージェント)とする。Web検索・ページ閲覧により[content-selection/requirements.md](../content-selection/requirements.md)のウォッチリストから候補を発見し、数値確認・翻訳・要約・記事執筆までを1回の実行で行う
+- [2] 実行主体はGitHub Actions(スケジュール実行のワークフロー)とする。[content-selection/requirements.md](../content-selection/requirements.md)のスクリプトでウォッチリストから候補を収集・数値判定し、Anthropic API呼び出しにより翻訳・要約・記事執筆までを1回の実行で行う(2026-08改定。当初はClaude Routinesを実行主体とする想定だったが、Routine実行環境に独自の環境変数・シークレット(YouTube Data APIキー等)を追加する手段が確認できず、GitHub Actionsに変更した。詳細はdesign.md「実行環境の前提」参照)
 - [3] 生成した記事はMarkdown等のコンテンツファイルとしてリポジトリに追加し、ビルド時に取り込まれる形で配信する(サーバーを持たない静的サイトの構成を維持するため)
 
 ### 公開フロー
