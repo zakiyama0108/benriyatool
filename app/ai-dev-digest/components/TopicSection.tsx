@@ -19,7 +19,7 @@ type Props = {
 // 渡されたセッションの有無だけで表示を切り替える(design.md参照。architecture.md#12-セキュリティ)
 export default function TopicSection({ topic, session, articleDate }: Props) {
   return (
-    <section className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
+    <section id={topic.id} className="scroll-mt-6 rounded-2xl bg-white p-4 shadow-sm sm:p-5">
       <div className="mb-2 flex items-center gap-2">
         <SourceBadge sourceType={topic.sourceType} />
         {topic.belowCriteria && (

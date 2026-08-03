@@ -45,44 +45,63 @@ export default function ArticleDetailView({ article }: Props) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white">
-      <article className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8 sm:py-10">
-        <nav className="text-[11px] text-gray-400">
-          <Link href="/" className="hover:underline">
-            べんりやつーる
-          </Link>
-          <span className="mx-1">›</span>
-          <Link href="/ai-dev-digest" className="hover:underline">
-            AI駆動開発ダイジェスト
-          </Link>
-          <span className="mx-1">›</span>
-          <span>{title}</span>
-        </nav>
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10 lg:grid lg:grid-cols-[1fr_220px] lg:items-start lg:gap-8">
+        <article className="mx-auto max-w-2xl space-y-5 lg:mx-0">
+          <nav className="text-[11px] text-gray-400">
+            <Link href="/" className="hover:underline">
+              べんりやつーる
+            </Link>
+            <span className="mx-1">›</span>
+            <Link href="/ai-dev-digest" className="hover:underline">
+              AI駆動開発ダイジェスト
+            </Link>
+            <span className="mx-1">›</span>
+            <span>{title}</span>
+          </nav>
 
-        <header>
-          <h1 className="text-xl font-bold leading-relaxed tracking-tight sm:text-2xl">{title}</h1>
-          <p className="mt-1 text-xs text-gray-500">{article.date}</p>
-        </header>
+          <header>
+            <h1 className="text-xl font-bold leading-relaxed tracking-tight sm:text-2xl">{title}</h1>
+            <p className="mt-1 text-xs text-gray-500">{article.date}</p>
+          </header>
 
-        {hasBelowCriteriaTopic && (
-          <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-relaxed text-amber-800">
-            この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます。
-          </p>
-        )}
+          {hasBelowCriteriaTopic && (
+            <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-relaxed text-amber-800">
+              この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます。
+            </p>
+          )}
 
-        <div className="space-y-4">
-          {article.topics.map((topic) => (
-            <TopicSection key={topic.id} topic={topic} session={session} articleDate={article.date} />
-          ))}
-        </div>
+          <div className="space-y-4">
+            {article.topics.map((topic) => (
+              <TopicSection key={topic.id} topic={topic} session={session} articleDate={article.date} />
+            ))}
+          </div>
 
-        <footer className="border-t border-gray-100 pt-4">
-          <LoginStatus
-            session={session}
-            onLoginClick={() => void signInWithGoogle(window.location.href)}
-            onLogoutClick={() => void signOut()}
-          />
-        </footer>
-      </article>
+          <footer className="border-t border-gray-100 pt-4">
+            <LoginStatus
+              session={session}
+              onLoginClick={() => void signInWithGoogle(window.location.href)}
+              onLogoutClick={() => void signOut()}
+            />
+          </footer>
+        </article>
+
+        {/* デスクトップ幅(lg以上)のみ表示する目次。各トピック見出しへのアンカーリンク
+            (design.md「画面設計」)。モバイルでは本文がそのまま縦に並ぶため省略する */}
+        <aside className="hidden lg:sticky lg:top-10 lg:block">
+          <nav className="rounded-2xl bg-white p-4 shadow-sm">
+            <p className="text-xs font-bold text-gray-500">目次</p>
+            <ul className="mt-2 space-y-2 text-sm leading-snug">
+              {article.topics.map((topic) => (
+                <li key={topic.id}>
+                  <a href={`#${topic.id}`} className="text-teal-600 hover:underline">
+                    {topic.heading}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </aside>
+      </div>
     </div>
   )
 }
