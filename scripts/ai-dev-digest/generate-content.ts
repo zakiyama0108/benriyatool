@@ -113,6 +113,7 @@ async function main() {
       sourceType: candidate.sourceType,
       sourceName: candidate.sourceName,
       sourceUrl: candidate.url,
+      sourcePublishedAt: candidate.publishedAt,
       belowCriteria: candidate.belowCriteria,
       ...(extractYoutubeVideoId(candidate.url) ? { youtubeVideoId: extractYoutubeVideoId(candidate.url) } : {}),
       ...(candidate.shortfallReason ? { belowCriteriaReason: candidate.shortfallReason } : {}),

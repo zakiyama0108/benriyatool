@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { List } from 'lucide-react'
 import type { Article } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
 import { getSession, onAuthChange, signInWithGoogle, signOut } from '../../lib/adminAuth'
@@ -45,8 +46,8 @@ export default function ArticleDetailView({ article }: Props) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white">
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10 lg:grid lg:grid-cols-[1fr_220px] lg:items-start lg:gap-8">
-        <article className="mx-auto max-w-2xl space-y-5 lg:mx-0">
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10 md:grid md:grid-cols-[1fr_220px] md:items-start md:gap-8">
+        <article className="mx-auto max-w-2xl space-y-5 md:mx-0">
           <nav className="text-[11px] text-gray-400">
             <Link href="/" className="hover:underline">
               べんりやつーる
@@ -85,20 +86,24 @@ export default function ArticleDetailView({ article }: Props) {
           </footer>
         </article>
 
-        {/* デスクトップ幅(lg以上)のみ表示する目次。各トピック見出しへのアンカーリンク
-            (design.md「画面設計」)。モバイルでは本文がそのまま縦に並ぶため省略する */}
-        <aside className="hidden lg:sticky lg:top-10 lg:block">
-          <nav className="rounded-2xl bg-white p-4 shadow-sm">
-            <p className="text-xs font-bold text-gray-500">目次</p>
-            <ul className="mt-2 space-y-2 text-sm leading-snug">
+        {/* デスクトップ幅(md以上)のみ表示する目次。各トピック見出しへのアンカーリンク
+            (design.md「画面設計」)。モバイルでは本文がそのまま縦に並ぶため省略する。
+            ikukyu/guideのArticleSidebar(design.md#PC版レイアウト)と同じ構造・スタイルを踏襲する */}
+        <aside className="hidden md:sticky md:top-20 md:block">
+          <nav aria-label="目次" className="rounded-2xl bg-white p-4 shadow-sm">
+            <h2 className="mb-2 flex items-center gap-2 text-sm font-bold">
+              <List className="h-4 w-4 text-teal-600" aria-hidden="true" />
+              目次
+            </h2>
+            <ol className="space-y-2 text-[13px]">
               {article.topics.map((topic) => (
                 <li key={topic.id}>
-                  <a href={`#${topic.id}`} className="text-teal-600 hover:underline">
+                  <a href={`#${topic.id}`} className="text-gray-600 hover:underline">
                     {topic.heading}
                   </a>
                 </li>
               ))}
-            </ul>
+            </ol>
           </nav>
         </aside>
       </div>
