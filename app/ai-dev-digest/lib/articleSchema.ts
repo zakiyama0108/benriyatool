@@ -84,8 +84,8 @@ function parseTopic(raw: unknown, index: number): Topic {
   if (!isHttpUrl(topic.sourceUrl)) {
     throw new Error(`topics[${index}].sourceUrlがhttp/https形式の絶対URLではありません: ${String(topic.sourceUrl)}`)
   }
-  if (!isIsoDateTime(topic.sourcePublishedAt)) {
-    throw new Error(`topics[${index}].sourcePublishedAtがISO 8601形式の日時ではありません: ${String(topic.sourcePublishedAt)}`)
+  if (topic.sourcePublishedAt !== undefined && !isIsoDateTime(topic.sourcePublishedAt)) {
+    throw new Error(`topics[${index}].sourcePublishedAtがISO 8601形式の日時ではありません: ${JSON.stringify(topic.sourcePublishedAt)}`)
   }
   if (typeof topic.belowCriteria !== 'boolean') {
     throw new Error(`topics[${index}].belowCriteriaがboolean型ではありません`)
@@ -101,9 +101,9 @@ function parseTopic(raw: unknown, index: number): Topic {
     sourceType: topic.sourceType as SourceType,
     sourceName: topic.sourceName,
     sourceUrl: topic.sourceUrl,
-    sourcePublishedAt: topic.sourcePublishedAt,
     belowCriteria: topic.belowCriteria,
   }
+  if (isNonEmptyString(topic.sourcePublishedAt)) result.sourcePublishedAt = topic.sourcePublishedAt
   if (isNonEmptyString(topic.youtubeVideoId)) result.youtubeVideoId = topic.youtubeVideoId
   if (isNonEmptyString(topic.belowCriteriaReason)) result.belowCriteriaReason = topic.belowCriteriaReason
 

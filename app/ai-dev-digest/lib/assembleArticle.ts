@@ -10,7 +10,7 @@ export type GeneratedTopicInput = {
   sourceType: SourceType
   sourceName: string
   sourceUrl: string
-  sourcePublishedAt: string // 選定結果(SelectedTopic.publishedAt)をそのまま引き継ぐ。エージェントが新たに調べ直す値ではない
+  sourcePublishedAt?: string // 選定結果(SelectedTopic.publishedAt)をそのまま引き継ぐ。エージェントが新たに調べ直す値ではない(任意項目。types.ts参照)
   youtubeVideoId?: string // extractYoutubeVideoIdの結果(抽出できた場合のみ)
   belowCriteria: boolean
   belowCriteriaReason?: string
@@ -26,8 +26,8 @@ export function assembleArticle(date: string, topics: GeneratedTopicInput[]): Ar
       sourceType: topic.sourceType,
       sourceName: topic.sourceName,
       sourceUrl: topic.sourceUrl,
-      sourcePublishedAt: topic.sourcePublishedAt,
       belowCriteria: topic.belowCriteria,
+      ...(topic.sourcePublishedAt ? { sourcePublishedAt: topic.sourcePublishedAt } : {}),
       ...(topic.youtubeVideoId ? { youtubeVideoId: topic.youtubeVideoId } : {}),
       ...(topic.belowCriteriaReason ? { belowCriteriaReason: topic.belowCriteriaReason } : {}),
     })),

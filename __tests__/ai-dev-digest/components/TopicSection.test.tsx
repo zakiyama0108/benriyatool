@@ -48,6 +48,11 @@ describe('トピック表示 - 出典元(元記事・元動画)の投稿日時�
     render(<TopicSection topic={makeTopic({ sourcePublishedAt: '2026-07-30T20:30:00Z' })} session={null} articleDate="2026-08-01" />)
     expect(screen.getByText(/2026年7月31日投稿/)).toBeTruthy()
   })
+
+  it('sourcePublishedAtが無い(本フィールド導入前の既存記事データ)場合、投稿日時の表示を省略すること', () => {
+    render(<TopicSection topic={makeTopic({ sourcePublishedAt: undefined })} session={null} articleDate="2026-08-01" />)
+    expect(screen.queryByText(/投稿/)).toBeNull()
+  })
 })
 
 // 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3、specs/ai-dev-digest/content-generation/requirements.md#要約-3

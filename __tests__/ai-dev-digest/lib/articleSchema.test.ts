@@ -100,6 +100,12 @@ describe('記事データのスキーマ検証 - ビルド時にJSONの構造・
     expect(article.topics[0].sourcePublishedAt).toBe('2026-07-31T10:00:00Z')
   })
 
+  it('sourcePublishedAtが無い(本フィールド導入前の既存記事データ)場合でも、検証を通ること', () => {
+    const topics = [validTopic({ sourcePublishedAt: undefined })]
+    const article = parseArticle(validArticle({ topics }), '2026-08-01.json')
+    expect(article.topics[0].sourcePublishedAt).toBeUndefined()
+  })
+
   it('記事内でid(topic識別子)が重複しているとき、検証エラーになること', () => {
     const topics = [validTopic({ id: 'topic-1' }), validTopic({ id: 'topic-1' })]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()

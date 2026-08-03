@@ -60,7 +60,7 @@ export default function TopicSection({ topic, session, articleDate }: Props) {
         <a href={topic.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
           {topic.sourceName}
         </a>
-        {`(${formatSourcePublishedAt(topic.sourcePublishedAt)}投稿)`}
+        {topic.sourcePublishedAt && `(${formatSourcePublishedAt(topic.sourcePublishedAt)}投稿)`}
       </p>
 
       {session && <FeedbackForm articleDate={articleDate} topicId={topic.id} />}
