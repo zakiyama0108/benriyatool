@@ -22,6 +22,7 @@
   - このリポジトリのみに範囲を限定したfine-grained PATを発行し、`AI_DEV_DIGEST_GH_PAT`としてリポジトリのActions Secretsに保存する
   - `YOUTUBE_API_KEY`・`ANTHROPIC_API_KEY`を同様にActions Secretsに保存する
   - 初回実行前に、上記のSecretsが実際に設定されていること、`AI_DEV_DIGEST_GH_PAT`で作成したPRに対し既存の`ci.yml`が正しく起動すること(既定の`GITHUB_TOKEN`使用時に起きる無限ループ防止による起動抑制が発生しないこと)を確認する(テスト実行1回分をレビューする)
+  - 初回実行前に、このリポジトリのAllow auto-merge設定が有効になっていること(Settings > General > Pull Requestsで確認、または`gh api repos/<owner>/<repo> --jq .allow_auto_merge`)を確認する(`gh pr merge --auto --squash`の前提条件のため)
 
 ## 動作確認
 
