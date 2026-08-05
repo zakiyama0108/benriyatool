@@ -56,3 +56,10 @@
   - `app/ai-dev-digest/[date]/page.tsx`を実装する。`generateStaticParams`で`getAllArticles()`の全日付を列挙し、`getArticleByDate`で本文を取得して`TopicSection`を並べる
   - ページ下部にログイン状態表示(`life-money-sim`の`LoginStatus`と同様の表示)を配置し、`getSession`/`onAuthChange`/`signInWithGoogle`/`signOut`を配線する
   - page.tsx自体はNext.jsのルーティング用ファイルのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定に従う)。新規テストは追加せず、Task 4〜10のユニットテストで担保する
+
+## バグ修正
+
+- Task 12(2026-08-05): フィードバック送信が本番で常に失敗するバグの修正(仕様: requirements.md#フィードバックの保存・権限-3、design.md「データベース設計」)
+  - Task 1のマイグレーションが`ai_dev_digest_feedback`のINSERT権限を`anon`ロールへ付与していたが、この入力欄はログイン中のみ表示されるため、実際のリクエストは常に`authenticated`ロールで行われる。ロールの不一致によりRLSがINSERTを拒否し、フィードバック送信が本番で常に失敗していた
+  - `supabase/migrations/20260805135824_fix_ai_dev_digest_feedback_insert_role.sql`で、`anon`のINSERT権限・ポリシーを削除し`authenticated`へ付け替える
+  - アプリコード(`saveFeedback.ts`/`FeedbackForm.tsx`)はSupabaseクライアントが現在のセッションに応じたロールを自動的に使うため変更不要。RLS/GRANTはVitestではモックされ検証できないため、本番適用後の実機確認で担保する

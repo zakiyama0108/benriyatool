@@ -79,7 +79,7 @@ export type Article = {
 - 手順:
   1. 入力内容をトリムした結果が空文字の場合、送信ボタンを無効化する(押下自体をできなくする)(requirements.md#運営者向けフィードバック-10)
   2. 送信ボタン押下時、対象トピックの記事日付(`date`)とトピック識別子(`topic.id`)、入力内容を1件のレコードとしてまとめる
-  3. `ai_dev_digest_feedback`テーブルへの保存を試みる(`anon`キーでのINSERT)
+  3. `ai_dev_digest_feedback`テーブルへの保存を試みる(ログイン中のセッションによる`authenticated`ロールでのINSERT)
   4. 保存に成功した場合、入力欄を空にし「送信しました」という完了表示を数秒間出す
   5. 保存に失敗した場合、入力内容は消さずに残し、「送信に失敗しました。もう一度お試しください」と表示する(既存の`saveResult`系は分析用ベストエフォートのため失敗を握りつぶすが、本機能は運営者が能動的に書いた自由記述であり、消えたことに気づけない方が不親切なため、この機能に限り失敗を可視化する設計とする)
 - シーケンス図(俯瞰用。正は上記の手順の文章):
@@ -146,8 +146,8 @@ content/ai-dev-digest/articles/*.json (新規: 記事本文データ。コード
 | topic_id | text, not null | 対象トピックの`Topic.id` |
 | comment | text, not null | 自由記述のフィードバック内容 |
 
-RLSは既存パターンをそのまま踏襲する(新規性なし、architecture.md#11-関連adr):
-- `anon`: INSERTのみ許可(docs/adr/0001)
+RLSはINSERT専用の最小権限パターン(docs/adr/0001)を踏襲するが、この入力欄はログイン中のみ表示されるため対象ロールは`anon`ではなく`authenticated`にする(2026-08-05修正: ログイン中のブラウザはSupabaseへ`authenticated`としてリクエストするため、`anon`へのGRANTでは常にINSERTが失敗していた):
+- `authenticated`: INSERTのみ許可(docs/adr/0001のINSERT専用パターンを、ログイン中アプリ向けに`authenticated`ロールへ適用)
 - `benriyatool_readonly`: SELECTのみ許可(docs/adr/0004)。[watchlist-review](../watchlist-review/requirements.md)の月次見直しがこのロールでフィードバックを読む
 - 運営者専用SELECTポリシー(docs/adr/0006のテンプレート)は**追加しない**。フィードバック入力欄の表示切り替えは画面側のログイン状態判定のみで行い、DBの読み取り権限を必要としないため(architecture.md#12-セキュリティ)
 
@@ -163,10 +163,10 @@ create table ai_dev_digest_feedback (
 
 alter table ai_dev_digest_feedback enable row level security;
 
--- anonはINSERTのみ許可(docs/adr/0001の共通方針)
-grant insert on ai_dev_digest_feedback to anon;
-create policy "anon can insert" on ai_dev_digest_feedback
-  for insert to anon with check (true);
+-- authenticatedはINSERTのみ許可(この入力欄はログイン中のみ表示されるため。2026-08-05修正)
+grant insert on ai_dev_digest_feedback to authenticated;
+create policy "authenticated can insert" on ai_dev_digest_feedback
+  for insert to authenticated with check (true);
 
 -- benriyatool_readonlyはSELECTのみ許可(docs/adr/0004。watchlist-reviewの月次見直しが読む)
 grant select on ai_dev_digest_feedback to benriyatool_readonly;
@@ -203,7 +203,7 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 ## セキュリティ
 
 - フィードバックの`comment`はエスケープせずそのままDBに保存する(表示・一覧化を一切行わないため、XSS等の表示起因のリスクは発生しない。requirements.md#スコープ外を参照)
-- `article_date`・`topic_id`はブラウザから送信される値をそのまま信頼する。存在しない日付・トピックIDが送られても、フィードバックとして意味を持たないだけで実害はない(anonはINSERTのみで他データへの影響がないため、厳密なサーバー側検証は行わない)
+- `article_date`・`topic_id`はブラウザから送信される値をそのまま信頼する。存在しない日付・トピックIDが送られても、フィードバックとして意味を持たないだけで実害はない(authenticatedロールでもINSERTのみで他データへの影響がないため、厳密なサーバー側検証は行わない)
 - 記事データ(JSONファイル)は開発者・エージェントが作成しリポジトリにコミットされるコンテンツであり、訪問者からの入力ではないため、XSS対策としてのサニタイズは不要(通常のReactレンダリングでエスケープされる)。ただし`sourceUrl`は`http`/`https`のみを許可し(バリデーション参照)、`javascript:`等のスキームを含むリンクが生成されないようにする
 
 ## ログ
