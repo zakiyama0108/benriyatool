@@ -2205,6 +2205,126 @@
     "reason": "完全自動マージの対象をai-dev-digest/articles/**ブランチに限定するという要件で、GitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる設計(daily-publish/design.md「PRを自動マージする処理」参照)であり、ユニットテスト対象を持たないため"
   },
   {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "実行環境の前提(初導入のため明記する設計判断)",
+    "reason": "ワークフローファイルを分割する設計判断・チャネルアクセストークンのActions Secrets管理方針の記述で、コードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "配信タイミングをトリガーする処理",
+    "reason": "GitHub Actionsのpushトリガー・パスフィルタ・git diffによる新規追加ファイル判定というワークフロー自身の実行制御の記述で、コードとして実装しないため(tasks.md Task3のTDD対象外宣言に基づく。対応するビジネスルールはrequirements.md#配信タイミング・方式-5〜6)"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "配信メッセージ本文を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#配信内容-1〜4でテスト済み(__tests__/ai-dev-digest/lib/buildBroadcastMessage.test.ts)"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "LINEブロードキャストメッセージを送信する処理",
+    "reason": "LINE Messaging APIへのHTTPリクエストを行うだけの薄いラッパー(scripts/ai-dev-digest/broadcast-line.ts)の記述で、tasks.md Task2のTDD対象外宣言に基づきユニットテスト対象を持たないため(メッセージ組み立てロジック自体はbuildBroadcastMessage.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "エラーハンドリング",
+    "reason": "LINE配信APIエラー時・記事データパース失敗時にリトライせずワークフローを失敗させるという運用上の対応の記述で、broadcast-line.ts(TDD対象外)側の振る舞いでありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "セキュリティ",
+    "reason": "GitHub Actions Secretsで保持するチャネルアクセストークンの管理方針の記述で、運用設定に関する事項でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "ログ",
+    "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "配信タイミング・方式 [5]",
+    "reason": "daily-publishの日次記事PRがmainへ自動マージされた直後にワークフローを起動するというGitHub Actionsのpushトリガー設定の要件で、宣言的なワークフロー定義でありユニットテスト対象を持たないため(tasks.md Task3。実際の疎通確認はTask5で行う)"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "配信タイミング・方式 [6]",
+    "reason": "過去記事の再配信・複数回配信を行わないという要件で、ワークフロー内のgit diffによる新規追加ファイル判定(tasks.md Task3、TDD対象外)で実現するためユニットテスト対象を持たないため(実際の疎通確認はTask5で行う)"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "配信タイミング・方式 [7]",
+    "reason": "LINE Messaging APIのブロードキャストエンドポイントへのHTTPリクエストという要件で、scripts/ai-dev-digest/broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いでありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "アカウント・配信主体 [1]",
+    "reason": "運営者がLINE Developersコンソールで屋号名義の一般アカウントを開設するという運用上の意思決定で、tasks.md Task4の運用設定(コード外)であり実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "アカウント・配信主体 [2]",
+    "reason": "チャネルアクセストークンの発行・Secrets登録という運用上の手動作業で、tasks.md Task4の運用設定(コード外)であり実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [3]",
+    "reason": "LINE公式アカウントの無料プラン(月200通)を前提とし超過分の従量課金を行わないという運用上の前提で、tasks.md Task4で確認する運用事項でありコードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [4]",
+    "reason": "配信APIエラー時にリトライせず記事公開自体には影響させないという要件で、broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いおよびワークフローファイルが分離されている設計自体(design.md「実行環境の前提」)で実現するためユニットテスト対象を持たないため(実際の疎通確認はTask5で行う)"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [5]",
+    "reason": "一時的なAPIエラーについてもリトライせず失敗として記録するにとどめるという要件で、broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いでありユニットテスト対象を持たないため(実際の疎通確認はTask5で行う)"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [6]",
+    "reason": "配信失敗時に原因を記録し運営者が把握できるようにするという要件で、broadcast-line.tsの標準エラー出力によるログ記録(tasks.md Task2、TDD対象外)で実現するためユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
     "specFile": "ai-dev-digest/watchlist-review/design.md",
     "item": "実行環境の前提",
     "reason": "月次GitHub Actionsワークフローへの認証情報(PAT・APIキー・SUPABASE_READONLY_DB_URL)設定方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため(docs/adr/0004参照)"
