@@ -56,12 +56,25 @@ jobs:
           fi
           echo "dates=$dates" >> "$GITHUB_OUTPUT"
 
+      # design.md「配信タイミングをトリガーする処理」手順4は「複数件見つかった場合も同様に
+      # それぞれの日付に対して以降の処理を順に行う」と定めており、1件の失敗が他の日付の処理を
+      # 止めてはならない。`run:`はデフォルトで`bash -eo pipefail`実行のため、`if !`で
+      # 各コマンドの終了コードを個別に受け止めて-eによる即終了を避け、ループ完了後にまとめて
+      # ステップを失敗させる(エラーハンドリング「LINE配信APIがエラーを返した場合…ステップを
+      # 失敗として終了する」は満たしつつ、他の日付への配信は継続する)
       - name: LINEへ配信
         if: steps.target.outputs.dates != ''
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
         run: |
+          failed=0
           for date in ${{ steps.target.outputs.dates }}; do
             echo "配信します: $date"
-            npx tsx scripts/ai-dev-digest/broadcast-line.ts "content/ai-dev-digest/articles/${date}.json"
+            if ! npx tsx scripts/ai-dev-digest/broadcast-line.ts "content/ai-dev-digest/articles/${date}.json"; then
+              echo "::error::${date}の配信に失敗しました"
+              failed=1
+            fi
           done
+          if [ "$failed" -eq 1 ]; then
+            exit 1
+          fi
