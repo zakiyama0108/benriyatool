@@ -25,7 +25,7 @@
 - 対象: 新規追加された記事データ(`content/ai-dev-digest/articles/<date>.json`)
 - 手順:
   1. 記事データを読み込み、[article-detail/design.md](../article-detail/design.md)が定めるスキーマ(`parseArticle`)でパースする(不正なデータの場合は後述エラーハンドリングに従う)
-  2. `buildArticleTitle(date)`([article-detail/design.md](../article-detail/design.md)が定める処理と同じ関数をそのまま利用。requirements.md#配信内容-2)で記事タイトルを導出する
+  2. `buildArticleTitle(date)`([content-generation/design.md](../content-generation/design.md)が定める処理と同じ関数をそのまま利用。requirements.md#配信内容-2)で記事タイトルを導出する
   3. `topics`配列の順に、各トピックの`heading`を全件、箇条書き形式で並べる(requirements.md#配信内容-3)
   4. 記事詳細ページのURL(`https://benriyatool.com/ai-dev-digest/<date>`)を1本だけ末尾に付与する。トピックごとの出典URL(`sourceUrl`)は含めない(requirements.md#配信内容-4)
   5. 上記(タイトル・トピック見出し一覧・リンク)を改行区切りの1本のテキストメッセージとして組み立てる。具体的な書式は以下とする【推測】:
@@ -39,6 +39,7 @@
      記事を読む
      https://benriyatool.com/ai-dev-digest/<date>
      ```
+  6. LINE Messaging APIのテキストメッセージには文字数上限(公式ドキュメント上5000文字)があるが、トピック件数は最大5件・各見出しも短文であるため、通常の記事データでこの上限を超過する可能性は低いと見込まれる【推測】。本specでは上限超過への特別な切り詰め処理は設けず、万一超過した場合は後述のエラーハンドリング(LINE配信APIがエラーを返した場合の扱い)に従う
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
 ### LINEブロードキャストメッセージを送信する処理
@@ -79,3 +80,4 @@ content/ai-dev-digest/articles/<date>.json (既存: 配信内容の元データ)
 
 - ワークフロー実行ごとに、対象日付・配信対象トピック数・LINE APIへのリクエスト結果(成功/失敗)をGitHub Actionsのワークフロー実行ログに記録する(標準出力への記録で足り、追加のログ基盤は持たない。daily-publishと同じ方針)
 - 配信に失敗した場合は、HTTPステータス・エラーレスポンス概要も合わせて記録する(上記エラーハンドリング「配信失敗時の記録方法」参照)
+- リクエストヘッダー(`Authorization: Bearer <チャネルアクセストークン>`)はいかなる場合もログに出力しない(将来の実装変更でトークンが誤ってログに残ることを防ぐための明記)

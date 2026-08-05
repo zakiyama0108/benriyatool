@@ -15,8 +15,8 @@
 
 ### 配信内容
 - [1] 配信メッセージは、記事タイトル・その日に掲載された全トピックの見出し一覧・記事詳細ページへのリンクの3要素で構成する
-- [2] 記事タイトルは[article-detail/design.md](../article-detail/design.md)が定める`buildArticleTitle(date)`と同じ導出結果を使う(表現の揺れを避けるため、配信用に独自のタイトル文言を新たに生成しない)
-- [3] トピック見出し一覧は、その日の記事に掲載された順(記事データの`topics`配列順)で全件表示する(1〜5件。[content-selection/requirements.md#1日の掲載件数](../content-selection/requirements.md))
+- [2] 記事タイトルは[content-generation/design.md](../content-generation/design.md)が定める`buildArticleTitle(date)`と同じ導出結果を使う(表現の揺れを避けるため、配信用に独自のタイトル文言を新たに生成しない)
+- [3] トピック見出し一覧は、その日の記事に掲載された順(記事データの`topics`配列順)で全件表示する(1〜5件。件数の根拠は[content-selection/requirements.md#1日の掲載件数](../content-selection/requirements.md)(3〜5件、基準未達時は1件以上)と、それを踏まえた記事データのスキーマ定義[article-detail/design.md](../article-detail/design.md)(`topics: Topic[] // 1〜5件`))
 - [4] リンクは記事詳細ページ(`https://benriyatool.com/ai-dev-digest/<date>`)への1本のみとし、トピックごとの出典URLは含めない
 
 ### 配信タイミング・方式
@@ -38,7 +38,7 @@
 
 ## 依存関係
 - 配信タイミングは[daily-publish/requirements.md](../daily-publish/requirements.md)の日次実行・自動マージフローに従う
-- 配信内容(タイトル・トピック見出し)は[article-detail/design.md](../article-detail/design.md)が定める記事データ構造(`content/ai-dev-digest/articles/<date>.json`)・タイトル導出処理(`buildArticleTitle`)をそのまま利用する
+- 配信内容(タイトル・トピック見出し)は[article-detail/design.md](../article-detail/design.md)が定める記事データ構造(`content/ai-dev-digest/articles/<date>.json`)、および[content-generation/design.md](../content-generation/design.md)が定めるタイトル導出処理(`buildArticleTitle`)をそのまま利用する
 - リンク先は[article-detail/requirements.md](../article-detail/requirements.md)が定める記事詳細ページ
 
 ## スコープ外
