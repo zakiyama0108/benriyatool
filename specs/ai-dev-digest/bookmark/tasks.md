@@ -5,9 +5,9 @@
 ## データ基盤
 
 - Task 1: `ai_dev_digest_bookmarks`テーブルのマイグレーション(design.md「データベース設計」のSQL、適用基盤: docs/adr/0003)
-  - `supabase/migrations/<timestamp>_create_ai_dev_digest_bookmarks.sql`を作成する(テーブル作成+一意制約+authenticatedのSELECT/INSERT/UPDATE/DELETE専用ポリシー)
+  - `supabase/migrations/<timestamp>_create_ai_dev_digest_bookmarks.sql`を作成する(テーブル作成+一意制約+`memo`のCHECK制約(200文字以内)+authenticatedのSELECT/INSERT/UPDATE/DELETE専用ポリシー)
   - マイグレーションファイル単独のPRとしてマージし、`deploy.yml`のmigrateジョブが成功したことを確認する
-  - 適用後、design.md「データベース設計」のT0確認事項(本人の行のみ操作可能・他人の行が見えない・未ログインで操作不可・一意制約が効く)を実機で確認する
+  - 適用後、design.md「データベース設計」のT0確認事項(本人の行のみ操作可能・他人の行が見えない・未ログインで操作不可・一意制約が効く・CHECK制約が効く)を実機で確認する
   - 以降のタスク(付箋の保存・動作確認)より前に適用が完了していることを確認する
 
 - Task 2: 付箋データの取得・保存・更新・削除処理(仕様: design.md「データベース設計」「新規に付箋を貼る処理」「付箋を編集する処理」「付箋を削除する処理」)

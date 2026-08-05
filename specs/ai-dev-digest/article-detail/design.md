@@ -191,7 +191,7 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 
 | コンポーネント | Props | 役割 |
 |---|---|---|
-| TopicSection | `topic: Topic`, `session: Session \| null`, `isAdmin: boolean`, `articleDate: string` | 1トピック分の表示+配下にFeedbackFormを`isAdmin`で条件付き表示(2026-08修正)。bookmark仕様のBookmarkPanelも`session`で条件付き表示される |
+| TopicSection | `topic: Topic`, `session: Session \| null`, `isAdmin: boolean`, `articleDate: string`, `bookmark: { id: string; memo: string } \| null` | 1トピック分の表示+配下にFeedbackFormを`isAdmin`で条件付き表示(2026-08修正)。bookmark仕様のBookmarkPanelを`session`で条件付き表示し、`bookmark`をその`initialBookmark`propへそのまま渡す([bookmark/design.md](../bookmark/design.md)「コンポーネント設計」参照) |
 | SourceBadge | `sourceType: SourceType` | 情報源種別を日本語ラベルのバッジで表示 |
 | YoutubeEmbed | `videoId: string` | YouTube公式埋め込みプレーヤー(`youtube-nocookie.com`)を表示 |
 | FeedbackForm | `articleDate: string`, `topicId: string` | 自由記述の入力欄・送信・送信結果表示 |

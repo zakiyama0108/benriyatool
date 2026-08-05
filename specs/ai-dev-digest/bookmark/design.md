@@ -38,8 +38,9 @@ sequenceDiagram
 - 対象: 記事詳細ページを開いた時点、およびログイン状態が変化した時点
 - 手順:
   1. ログインセッションがない場合は何も取得しない(未ログイン訪問者には付箋の操作自体を表示しない。requirements.md#トピックへの付箋-5)
-  2. ログインセッションがある場合、その記事の日付に対する自分の付箋を1回のまとめ取得で取得し、トピックIDごとに引き当てられる状態にする(トピックの数だけ個別に取得しない)
-  3. 取得に失敗した場合は、すべてのトピックを「未付箋」として扱う(失敗を画面に伝えない。理由は後述エラーハンドリング)
+  2. ログインセッションがある場合、その記事の日付に対する自分の付箋を1回のまとめ取得で取得する(トピックの数だけ個別に取得しない)。セッションが確立してから取得が完了するまでの間は、そのトピックが実際には付箋済みであっても一律「未付箋」として扱う(BookmarkPanelは「付箋を貼る」操作の表示のまま。article-detail/design.md「ログイン状態に応じてフィードバック入力欄の表示を切り替える処理」手順3で確認中を「未許可」として扱うのと同じ考え方)
+  3. 取得が完了したら、トピックIDごとに引き当てられる状態にする
+  4. 取得に失敗した場合は、すべてのトピックを「未付箋」として扱う(失敗を画面に伝えない。理由は後述エラーハンドリング)
 - 関連するビジネスルール: requirements.md#トピックへの付箋-1、requirements.md#表示範囲・権限-1
 
 ### 新規に付箋を貼る処理
@@ -87,7 +88,7 @@ sequenceDiagram
 
 ## バリデーション
 - メモは、トリムした文字列が空文字の場合は保存できない(requirements.md#トピックへの付箋-2)
-- メモは200文字までとする。入力欄自体に200文字の上限を設け、それ以上入力できないようにする(requirements.md#文字数・件数の制約-3)
+- メモは200文字までとする。入力欄自体に200文字の上限を設け、それ以上入力できないようにする(requirements.md#文字数・件数の制約-3)。加えて、後述のデータベース設計でもCHECK制約として担保する(画面側の入力制限だけに頼らない。理由は後述セキュリティ)
 - 1トピックにつき1読者1件の制約は、アプリ側で「既存の付箋があれば編集として扱う」ことに加え、後述のデータベース設計でも一意制約として担保する(requirements.md#文字数・件数の制約-4。画面の表示出し分けだけに頼らない)
 
 ## エラーハンドリング
@@ -123,7 +124,7 @@ app/legal/page.tsx (既存: プライバシーポリシーに付箋メモの保�
 | user_id | uuid, not null, references auth.users(id) | 付箋を貼った本人 |
 | article_date | date, not null | 対象記事の日付([article-detail](../article-detail/design.md)の`Article.date`と一致) |
 | topic_id | text, not null | 対象トピックの`Topic.id`(記事内で一意。記事日付との組で全体の対象を一意に特定する) |
-| memo | text, not null | 自由記述のメモ(200文字まで。上限はアプリ側で検証し、DB側にCHECK制約は設けない。理由は後述セキュリティ) |
+| memo | text, not null, check (char_length(memo) <= 200) | 自由記述のメモ(200文字まで。アプリ側の入力検証に加え、DB側にもCHECK制約を設ける。理由は後述セキュリティ) |
 | created_at | timestamptz, not null, default now() | 付箋を貼った日時 |
 | updated_at | timestamptz, not null, default now() | 最後に編集した日時。一覧の並び順に使う(アプリ側がUPDATE時に明示的に現在時刻をセットする。DBトリガーは用いない。既存パターンに合わせシンプルに保つ) |
 
@@ -135,7 +136,7 @@ create table ai_dev_digest_bookmarks (
   user_id uuid not null references auth.users(id),
   article_date date not null,
   topic_id text not null,
-  memo text not null,
+  memo text not null check (char_length(memo) <= 200),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, article_date, topic_id)
@@ -165,6 +166,7 @@ T0(マイグレーション適用)の実機確認として、次を必ず確か�
 - 別アカウントでログインした場合、他人の付箋が一切見えない・編集・削除できないこと
 - 未ログイン(anon)ではSELECT/INSERT/UPDATE/DELETEのいずれもできないこと
 - 同じトピックへ2件目を保存しようとすると一意制約により拒否されること
+- `memo`が200文字を超える行を保存しようとするとCHECK制約により拒否されること
 
 ## 画面設計
 
@@ -178,6 +180,7 @@ T0(マイグレーション適用)の実機確認として、次を必ず確か�
 ### 付箋一覧ページ(新規: `/ai-dev-digest/bookmarks`)
 - パンくず(べんりやつーる › AI駆動開発ダイジェスト › 付箋一覧)
 - 見出し「付箋一覧」
+- セッション確認中・取得中(下記「状態管理」のstateDiagram参照)の場合: 一覧・ログイン導線のどちらも表示せず、読み込み中であることが分かる表示(ローディング表示)のみを行う(要件に文言の指定はないため設計判断。確認・取得が終わるまでは「未ログイン」「0件」いずれとも決まっていないため、どちらか一方の表示に暫定的に倒さない)
 - 未ログインの場合: 一覧は表示せず、ログインを促す表示とログイン操作のみを表示する
 - ログイン中、付箋が0件の場合: 「まだ付箋がありません」の案内を表示する(要件に文言の指定はないため設計判断)
 - ログイン中、1件以上の場合: 保存/編集日時の新しい順のカード一覧。各カードに記事タイトル(対象トピックへのリンク)・トピック見出し・付箋メモの内容・「編集」「削除」操作を表示する(requirements.md#付箋した記事一覧-11〜13)
@@ -186,6 +189,7 @@ T0(マイグレーション適用)の実機確認として、次を必ず確か�
 
 | コンポーネント | Props | 役割 |
 |---|---|---|
+| TopicSection | (既存コンポーネント。本specで追加する分のみ記載)`bookmark: { id: string; memo: string } \| null` | 既存propsは[article-detail/design.md](../article-detail/design.md)「コンポーネント設計」参照。`session`がある場合のみBookmarkPanelを表示し、`bookmark`をその`initialBookmark`propへそのまま渡す |
 | BookmarkPanel | `articleDate: string`, `topicId: string`, `initialBookmark: { id: string; memo: string } \| null`, `onChange?: (bookmark: { id: string; memo: string } \| null) => void` | 1トピック分の付箋の表示・新規作成・編集・削除(記事詳細ページ・付箋一覧ページ共通) |
 | BookmarkListItem | `articleTitle: string`, `articleDate: string`, `topicHeading: string`, `bookmark: { id: string; topicId: string; memo: string }` | 付箋一覧の1項目。記事タイトル・トピック見出し・対象トピックへのリンクを表示し、配下にBookmarkPanelを表示する |
 | BookmarkListView | `topicIndex: Record<string, { articleTitle: string; topicHeading: string }>` | 付箋一覧ページの本体。セッション確認・自分の付箋取得・BookmarkListItemの一覧表示を行う |
@@ -226,7 +230,7 @@ stateDiagram-v2
 - 実際のアクセス制御はDB側のRLS(`auth.uid() = user_id`)で担保する。画面側の表示出し分けは案内のためのもので、突破されても他人の行は返らない(requirements.md#表示範囲・権限-1、方針は[docs/adr/0001](../../../docs/adr/0001-user-input-database.md))
 - メモ内容は本人しかSELECTできない行にのみ保存され、他の読者・運営者(自作画面経由)から参照できない(requirements.md#自分が貼った付箋メモは他の読者から見られたくない)。Supabaseダッシュボード(`service_role`)からの閲覧は運営者の一般的な留保事項であり、他のログイン系テーブルと同様に扱う
 - メモ(自由テキスト)は、画面表示時にHTMLとして解釈されない形で描画する(Reactの標準的な文字列描画に任せ、`dangerouslySetInnerHTML`は使わない。[saved-scenario/design.md#セキュリティ](../../life-money-sim/saved-scenario/design.md)と同じ方針)
-- 200文字の上限はクライアント側(入力欄の`maxLength`+トリム検証)のみで行い、DB側にCHECK制約は設けない。本人が開発者ツール等で上限を超えて自分の行に保存しても、閲覧できるのは本人のみで実害がないため(既存の`ai_dev_digest_feedback.comment`も同様に長さ制約を持たない)
+- 200文字の上限はクライアント側(入力欄の`maxLength`+トリム検証)に加え、DB側にも`check (char_length(memo) <= 200)`のCHECK制約を設ける。既存の`ai_dev_digest_feedback.comment`は長さ制約を持たないが、その入力欄(`FeedbackForm`)は運営者本人と判定されたセッションでのみ画面に表示され、実質的な利用者が運営者本人に限られる想定の機能であるのに対し、本機能はGoogleアカウントを持つ読者全員に付箋の操作(付箋を貼る画面)を意図的に開放する設計であり(requirements.md#画面共通のログイン導線-16)、想定される利用者の範囲が大きく異なる。悪意ある、または不注意な読者が開発者ツール等で直接大量件数・巨大な文字列をINSERTすると、全アプリ共通の無料枠Supabaseプロジェクトのリソースを消費するリスクがあるため、1件あたりの上限はDB側でも防御的に担保する
 - `article_date`・`topic_id`はブラウザから送信される値をそのまま信頼する(存在しない値が送られても本人の行が増えるだけで実害はない)。ただし付箋一覧の表示時、対象トピックが記事データから見つからない場合はその項目を一覧から除外する(存在しないリンク先を作らないため。上記「処理フロー」参照)
 
 ## ログ
