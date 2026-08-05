@@ -5,7 +5,7 @@
 ## データ基盤
 
 - Task 1: `ai_dev_digest_feedback`テーブルのマイグレーション(design.md「データベース設計」のSQL、適用基盤: docs/adr/0003)
-  - `supabase/migrations/<timestamp>_create_ai_dev_digest_feedback.sql`を作成する(テーブル作成+anon INSERT専用ポリシー+benriyatool_readonly SELECT専用ポリシー)
+  - `supabase/migrations/<timestamp>_create_ai_dev_digest_feedback.sql`を作成する(テーブル作成+anon INSERT専用ポリシー+benriyatool_readonly SELECT専用ポリシー。※このINSERT対象ロールは誤りだったため2026-08-05にTask 12でauthenticatedへ修正済み。現在のDB状態の正はTask 12・design.md「データベース設計」を参照)
   - マイグレーションファイル単独のPRとしてマージし、`deploy.yml`のmigrateジョブが成功したことを確認する
   - 以降のタスク(フィードバック保存の実装・動作確認)より前に適用が完了していることを確認する
 
@@ -56,3 +56,10 @@
   - `app/ai-dev-digest/[date]/page.tsx`を実装する。`generateStaticParams`で`getAllArticles()`の全日付を列挙し、`getArticleByDate`で本文を取得して`TopicSection`を並べる
   - ページ下部にログイン状態表示(`life-money-sim`の`LoginStatus`と同様の表示)を配置し、`getSession`/`onAuthChange`/`signInWithGoogle`/`signOut`を配線する
   - page.tsx自体はNext.jsのルーティング用ファイルのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定に従う)。新規テストは追加せず、Task 4〜10のユニットテストで担保する
+
+## バグ修正
+
+- Task 12(2026-08-05): フィードバック送信が本番で常に失敗するバグの修正(仕様: requirements.md#フィードバックの保存・権限-3、design.md「データベース設計」)
+  - Task 1のマイグレーションが`ai_dev_digest_feedback`のINSERT権限を`anon`ロールへ付与していたが、この入力欄はログイン中のみ表示されるため、実際のリクエストは常に`authenticated`ロールで行われる。ロールの不一致によりRLSがINSERTを拒否し、フィードバック送信が本番で常に失敗していた
+  - `supabase/migrations/20260805135824_fix_ai_dev_digest_feedback_insert_role.sql`で、`anon`のINSERT権限・ポリシーを削除し`authenticated`へ付け替える
+  - アプリコード(`saveFeedback.ts`/`FeedbackForm.tsx`)はSupabaseクライアントが現在のセッションに応じたロールを自動的に使うため変更不要。RLS/GRANTはVitestではモックされ検証できないため、本番適用後の実機確認で担保する

@@ -10,7 +10,7 @@ AI駆動開発関連の話題コンテンツ(公式組織のブログ・YouTube�
 
 ## 3. 設計方針
 - 記事本文はDBに保存せず、ビルド時に取り込まれる静的コンテンツ(JSON。[article-detail/design.md](article-detail/design.md)で確定)として管理する(ブログ的な運用の方が実態に合うため。DBを介さないことで[ADR-0001](../../docs/adr/0001-user-input-database.md)が前提とする「サーバー機能を持たない」構成を保つ)
-- 運営者フィードバックの保存だけは既存の[ADR-0001](../../docs/adr/0001-user-input-database.md)パターン(anonキーでINSERT専用)をそのまま踏襲し、新しい認証・DB設計を増やさない
+- 運営者フィードバックの保存だけは既存の[ADR-0001](../../docs/adr/0001-user-input-database.md)パターン(INSERT専用)を踏襲し、新しい認証・DB設計を増やさない。ただしログイン中のみ表示する入力欄のため、INSERT許可先は`anon`ではなく`authenticated`ロール(2026-08-05修正、詳細はarchitecture.md#12-セキュリティ)
 - ウォッチリスト・採用基準の変更([watchlist-review](watchlist-review/requirements.md))は、日次記事公開([daily-publish](daily-publish/requirements.md))と異なる自動マージポリシーを適用し、影響範囲の大きさに応じてPRの扱いを分ける
 
 ## 4. システム構成図
@@ -38,7 +38,7 @@ flowchart TD
     dailyRoutine -->|記事JSONを追加| dailyPR
     dailyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
-    detail -->|フィードバックを保存 - anonキーでINSERTのみ| feedbackDb
+    detail -->|フィードバックを保存 - authenticatedロールでINSERTのみ| feedbackDb
     adminVisitor -->|Googleでログイン(運営者)| auth
     detail -->|ログイン状態を判定 - 表示切替のみ| auth
     monthlyRoutine -->|フィードバック・掲載実績を参照| feedbackDb
@@ -49,7 +49,7 @@ flowchart TD
 この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specの設計書。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。
 
 ## 5. アーキテクチャ概要
-Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を閲覧でき、運営者はGoogle OIDCでログインした状態で記事詳細ページに表示されるフィードバック欄から選定基準への気づきを残せる(既存のanonキーINSERT専用パターンを流用、DB読み取りは発生しない)。月次のGitHub Actionsワークフローがフィードバックと掲載実績を読み、ヘッドレス起動したClaude Code経由でウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
+Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を閲覧でき、運営者はGoogle OIDCでログインした状態で記事詳細ページに表示されるフィードバック欄から選定基準への気づきを残せる(既存のINSERT専用パターンを`authenticated`ロール向けに流用、DB読み取りは発生しない)。月次のGitHub Actionsワークフローがフィードバックと掲載実績を読み、ヘッドレス起動したClaude Code経由でウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -116,15 +116,15 @@ content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-re
 | GitHub Actions | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))の定期実行基盤 |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | daily-publishの翻訳・要約生成、watchlist-reviewの見直し案検討に、いずれもヘッドレス起動で使用(2026-08第2次改定。当初はAnthropic APIの従量課金呼び出しだったが、サブスクリプション利用枠内で完結させるため変更) |
 
-このアプリが使うテーブルは`ai_dev_digest_feedback`の1つのみで、他アプリのテーブルとのリレーションは持たない(anonのINSERT専用、docs/adr/0004の`benriyatool_readonly`ロールのSELECT専用。ADR-0006の運営者専用SELECTポリシーは追加しないため`admin_emails`との関係もない)。テーブルが1つのみでリレーションもないため、ER図は作成しない([architecture-workflow](../../.claude/skills/architecture-workflow/SKILL.md)の作成条件を満たさない)。各カラムの正となる文章は[article-detail/design.md#データベース設計](article-detail/design.md#データベース設計)。
+このアプリが使うテーブルは`ai_dev_digest_feedback`の1つのみで、他アプリのテーブルとのリレーションは持たない(authenticatedロールのINSERT専用、docs/adr/0004の`benriyatool_readonly`ロールのSELECT専用。ADR-0006の運営者専用SELECTポリシーは追加しないため`admin_emails`との関係もない)。テーブルが1つのみでリレーションもないため、ER図は作成しない([architecture-workflow](../../.claude/skills/architecture-workflow/SKILL.md)の作成条件を満たさない)。各カラムの正となる文章は[article-detail/design.md#データベース設計](article-detail/design.md#データベース設計)。
 
 ## 11. 関連ADR
-- [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 運営者フィードバック保存のDB選定・RLSパターン(anonキーでのINSERT専用)をそのまま踏襲
+- [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 運営者フィードバック保存のDB選定・RLSパターン(INSERT専用)を踏襲。ログイン中のみ表示する入力欄のため対象ロールは`authenticated`(2026-08-05修正)
 - [0004-agent-readonly-db-access.md](../../docs/adr/0004-agent-readonly-db-access.md) — [watchlist-review](watchlist-review/design.md)の月次GitHub Actionsワークフローが`ai_dev_digest_feedback`を読む際、`benriyatool_readonly`ロールのSELECT専用ポリシーをこのテーブルにも追加して利用する。同ADRは2026-08の第2次改定で`benriyatool_readonly`ロールに限りGitHub Actions Secretsへの接続情報保持を正式に許容しており、本specはその対象範囲に基づく
 - [0006-admin-screen-oidc-rls.md](../../docs/adr/0006-admin-screen-oidc-rls.md) — フィードバック入力欄の表示切り替えに使うGoogle OIDCログイン判定の基盤(`app/lib/adminAuth.ts`)を流用。ただし本アプリはDBの読み取り(SELECT)を必要としないため、同ADRが定める「運営者専用SELECTポリシーの追加」は行わない
 
 ## 12. セキュリティ
-運営者フィードバックの保存は`anon`キーによるINSERT専用とし、SELECT/UPDATE/DELETEは許可しない(他人の投稿内容を読む・改ざんする経路を作らない)。保存される内容は選定基準への自由記述コメントのみで、氏名・連絡先等の個人情報は扱わない。フィードバック入力欄の表示・非表示はログイン状態による画面側の出し分けであり、DB側のアクセス制御ではない点に注意する(ADR-0006本来の「読み取り専用管理画面」の権限モデルとは異なる用途のため、同ADRのRLSテンプレートは適用しない)。
+運営者フィードバックの保存は`authenticated`ロールによるINSERT専用とし、SELECT/UPDATE/DELETEは許可しない(他人の投稿内容を読む・改ざんする経路を作らない)。この入力欄はログイン中のみ画面に表示されるため、実際のリクエストは常に`authenticated`ロールで行われる(`anon`は初期実装での誤りで、2026-08-05に修正した。ログイン不要なアプリのINSERT専用パターン(`anon`)とは区別すること)。保存される内容は選定基準への自由記述コメントのみで、氏名・連絡先等の個人情報は扱わない。フィードバック入力欄の表示・非表示はログイン状態による画面側の出し分けであり、DB側のアクセス制御ではない点に注意する(ADR-0006本来の「読み取り専用管理画面」の権限モデルとは異なる用途のため、同ADRのRLSテンプレートは適用しない)。
 
 ## 13. 技術的制約
 他者の著作物を要約・翻訳して掲載するため、著作権法上のリスク(翻訳権・翻案権侵害の可能性)を伴う。要約分量の制限・出典明記・利用規約への条項追記([content-generation/requirements.md#利用規約への反映](content-generation/requirements.md))によってリスクを低減する運用とする。各情報源の取得は公式API・公式RSSフィード・公開ページの閲覧の範囲にとどめ、非公式APIや利用規約を超えたアクセスは行わない([content-selection/requirements.md#データ取得方法](content-selection/requirements.md))。
