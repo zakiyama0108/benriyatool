@@ -64,14 +64,15 @@ export type Article = {
   7. `belowCriteria`が`true`のトピックには「採用基準未達」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます」という注記を1回だけ表示する(繰り返し表示による煩雑さを避けるため)
 - 関連するビジネスルール: requirements.md#記事本文表示-1〜5、requirements.md#記事本文表示-11、requirements.md#表示分量・著作権配慮-1〜2
 
-### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
+### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理(2026-08修正)
 - 対象: Supabase Authのログインセッション
 - 手順:
   1. ページ表示時に現在のログインセッションを取得する(`app/lib/adminAuth.ts`の`getSession`)
-  2. セッションが存在する(ログイン中)場合のみ、各トピックの下にフィードバック入力欄を表示する。存在しない場合は何も表示しない
-  3. ログイン状態の変化(ログイン完了・ログアウト)を購読し(`onAuthChange`)、変化のたびに表示を更新する
-  4. 未ログイン状態では、ページ下部に小さくログインボタンを表示する(Googleでのログインを開始する導線。`life-money-sim`の`LoginStatus`と同じ表示パターン)
-- **DBの読み取り(SELECT)は一切行わない**。管理画面(`app/lib/adminAuth.ts`の`isAuthorizedAdmin`、`admin_emails`テーブルのSELECT)は呼び出さず、生のログイン状態(セッションの有無)だけで表示を切り替える。これは「運営者向け」を名乗りつつ実際にはGoogleアカウントでログインした任意の訪問者にも入力欄が表示されることを意味するが、保存されるのは選定基準への自由記述コメントのみで、閲覧・改ざんの実害がないため許容する(architecture.md#12-セキュリティ、指示された設計方針どおり)
+  2. セッションが存在する(ログイン中)場合、運営者本人かどうかを`isAuthorizedAdmin()`(`admin_emails`テーブルのSELECT。RLSにより自分の行のみ返る)で確認する。許可対象と判定された場合のみ、各トピックの下にフィードバック入力欄を表示する。セッションが存在しない場合、または許可対象でない場合は何も表示しない
+  3. 確認中は入力欄を表示しない(確認が終わるまで「未許可」として扱う)。確認自体が失敗した場合も、画面にエラーを出さず「未許可」として扱う(フィードバック欄は運営者向けの副次的な機能であり、失敗によって主機能である記事の閲覧を妨げたくないため。失敗はコンソールにのみ出力する。後述ログ参照)
+  4. ログイン状態の変化(ログイン完了・ログアウト)を購読し(`onAuthChange`)、変化のたびに1〜3を再実行する
+  5. 未ログイン状態では、ページ下部に小さくログインボタンを表示する(Googleでのログインを開始する導線。文言は運営者限定を示す表現を使わない。requirements.md#画面共通のログイン導線-16は[bookmark/requirements.md](../bookmark/requirements.md)参照)
+- **DBの読み取り(SELECT)は`admin_emails`に対してのみ行う**。`ai_dev_digest_feedback`自体へのSELECTポリシーは追加しない(従来どおり)。2026-08修正: [bookmark](../bookmark/requirements.md)機能により記事詳細ページへのログインが読者全員に開放されたため、当初の「セッションの有無だけで表示を切り替える」設計では、運営者向けの気づきメモという目的に対して入力欄の表示対象が広すぎる状態になっていた。`isAuthorizedAdmin()`は元々管理画面向けに用意された関数だが、`admin_emails`テーブルのRLSは「自分のメール行だけ見える」設計(ADR-0006)のため、読者全員から呼び出されても他人のメール一覧が漏れることはない
 - 関連するビジネスルール: requirements.md#運営者向けフィードバック-7、requirements.md#フィードバックの保存・権限-4
 
 ### フィードバックを送信する処理
@@ -125,11 +126,11 @@ app/ai-dev-digest/lib/articleSchema.ts (新規: JSONのバリデーション・�
 app/ai-dev-digest/lib/articles.ts (新規: content/ai-dev-digest/articles/ を読み込むgetAllArticles/getArticleByDate。article-listと共有)
 app/ai-dev-digest/lib/saveFeedback.ts (新規: フィードバック保存処理)
 app/ai-dev-digest/[date]/page.tsx (新規: 記事詳細ページ、generateStaticParamsで全日付を列挙)
-app/ai-dev-digest/components/TopicSection.tsx (新規)
+app/ai-dev-digest/components/TopicSection.tsx (新規。2026-08修正: isAdmin propを追加。bookmark仕様のBookmarkPanel表示も同ファイルに追加される)
 app/ai-dev-digest/components/SourceBadge.tsx (新規)
 app/ai-dev-digest/components/YoutubeEmbed.tsx (新規)
 app/ai-dev-digest/components/FeedbackForm.tsx (新規)
-app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOutを利用。isAuthorizedAdminは使わない)
+app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用。2026-08修正: isAuthorizedAdminはフィードバック欄の表示切り替えに利用する)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/ai-dev-digest/articles/*.json (新規: 記事本文データ。コード資産ではないためapp/配下に置かない)
 ```
@@ -183,14 +184,14 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 - 記事タイトル・公開日
 - トピックごとのカード: 情報源種別バッジ、見出し、要約(章立て。セクション見出し+導入文(60〜120字程度)を2〜4セクション程度で常時表示し、各セクションに「詳細を見る」の開閉操作を配置。展開すると詳細文(全セクション合計1000〜1500字程度)が表示される)、出典(発信者名・元URLへのリンク、新規タブで開く。(該当時)投稿日時を併記)、(該当時)YouTube埋め込みプレーヤー、(該当時)「採用基準未達」バッジ+理由の小さな注記
 - 基準未達トピックが1件以上ある場合、記事冒頭に注記文を1回表示
-- 各トピックの下: ログイン中のみフィードバック入力欄(テキストエリア+送信ボタン)。送信後は「送信しました」、失敗時は「送信に失敗しました。もう一度お試しください」を表示
-- ページ下部: 未ログイン時は「運営者ログイン」リンク、ログイン中はログイン中メールアドレス+ログアウトボタン(`life-money-sim`の`LoginStatus`と同じ表示)
+- 各トピックの下: 運営者本人がログイン中の場合のみフィードバック入力欄(テキストエリア+送信ボタン)を表示する(2026-08修正: 従来はログイン中の読者全員に表示していたが、[bookmark](../bookmark/requirements.md)によりログインが読者全員に開放されたため運営者本人限定に変更)。送信後は「送信しました」、失敗時は「送信に失敗しました。もう一度お試しください」を表示
+- ページ下部: ログイン状態表示(2026-08修正: 未ログイン時のボタン文言は「ログイン」。運営者限定を示す表現は使わない。詳細は[bookmark/design.md](../bookmark/design.md)「画面設計」)。ログイン中はログイン中メールアドレス+ログアウトボタン(`life-money-sim`の`LoginStatus`と同じ表示)
 
 ## コンポーネント設計
 
 | コンポーネント | Props | 役割 |
 |---|---|---|
-| TopicSection | `topic: Topic`, `session: Session \| null`, `articleDate: string` | 1トピック分の表示+配下にFeedbackFormを条件付きで表示 |
+| TopicSection | `topic: Topic`, `session: Session \| null`, `isAdmin: boolean`, `articleDate: string`, `bookmark: { id: string; memo: string } \| null` | 1トピック分の表示+配下にFeedbackFormを`isAdmin`で条件付き表示(2026-08修正)。bookmark仕様のBookmarkPanelを`session`で条件付き表示し、`bookmark`をその`initialBookmark`propへそのまま渡す([bookmark/design.md](../bookmark/design.md)「コンポーネント設計」参照) |
 | SourceBadge | `sourceType: SourceType` | 情報源種別を日本語ラベルのバッジで表示 |
 | YoutubeEmbed | `videoId: string` | YouTube公式埋め込みプレーヤー(`youtube-nocookie.com`)を表示 |
 | FeedbackForm | `articleDate: string`, `topicId: string` | 自由記述の入力欄・送信・送信結果表示 |
@@ -205,8 +206,10 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 - フィードバックの`comment`はエスケープせずそのままDBに保存する(表示・一覧化を一切行わないため、XSS等の表示起因のリスクは発生しない。requirements.md#スコープ外を参照)
 - `article_date`・`topic_id`はブラウザから送信される値をそのまま信頼する。存在しない日付・トピックIDが送られても、フィードバックとして意味を持たないだけで実害はない(authenticatedロールでもINSERTのみで他データへの影響がないため、厳密なサーバー側検証は行わない)
 - 記事データ(JSONファイル)は開発者・エージェントが作成しリポジトリにコミットされるコンテンツであり、訪問者からの入力ではないため、XSS対策としてのサニタイズは不要(通常のReactレンダリングでエスケープされる)。ただし`sourceUrl`は`http`/`https`のみを許可し(バリデーション参照)、`javascript:`等のスキームを含むリンクが生成されないようにする
+- 2026-08修正: フィードバック入力欄の表示切り替えに`isAuthorizedAdmin()`(`admin_emails`のSELECT)を使うようになったが、同テーブルのRLSは「自分のメール行だけ見える」設計(ADR-0006)のため、読者全員が呼び出せるようになっても他人のメールアドレス一覧が漏れることはない。運営者の許可リスト自体を変更するものではない
 
 ## ログ
 
 - フィードバックの保存成功・失敗はコンソール等へのログ出力を行わない(既存の`saveResult`系と同じ方針。静的配信でサーバーを持たずコンソールログを運営者が収集できないため)
+- 2026-08修正: `isAuthorizedAdmin()`の確認自体が失敗した場合は、ブラウザのコンソールにエラー内容を出す(画面には伝えず「未許可」として扱う。原因究明用)
 - 記事データのスキーマ違反はビルド時に例外としてCIのログに出力される(`next build`の標準エラー出力。エラーハンドリング参照)

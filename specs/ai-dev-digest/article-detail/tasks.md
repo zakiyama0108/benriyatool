@@ -63,3 +63,8 @@
   - Task 1のマイグレーションが`ai_dev_digest_feedback`のINSERT権限を`anon`ロールへ付与していたが、この入力欄はログイン中のみ表示されるため、実際のリクエストは常に`authenticated`ロールで行われる。ロールの不一致によりRLSがINSERTを拒否し、フィードバック送信が本番で常に失敗していた
   - `supabase/migrations/20260805135824_fix_ai_dev_digest_feedback_insert_role.sql`で、`anon`のINSERT権限・ポリシーを削除し`authenticated`へ付け替える
   - アプリコード(`saveFeedback.ts`/`FeedbackForm.tsx`)はSupabaseクライアントが現在のセッションに応じたロールを自動的に使うため変更不要。RLS/GRANTはVitestではモックされ検証できないため、本番適用後の実機確認で担保する
+
+- Task 13(2026-08): フィードバック入力欄の表示条件を運営者本人限定に変更(仕様: requirements.md#運営者向けフィードバック-7、design.md「ログイン状態に応じてフィードバック入力欄の表示を切り替える処理」)
+  - 🔴 セッションがあっても`isAuthorizedAdmin()`が`false`を返す場合はFeedbackFormが描画されないこと、`true`を返す場合のみ描画されること、セッションがない場合は`isAuthorizedAdmin()`自体が呼び出されないこと、`isAuthorizedAdmin()`が例外を投げた場合はFeedbackFormを描画せずコンソールにエラーを出力することを確認するテストを書く(Task 10の既存テスト「`isAuthorizedAdmin`は呼び出されないこと」はセッションなしのケースのみ有効、セッションありのケースを追加する形で更新する)
+  - 🟢 `TopicSection`に`isAdmin: boolean`propを追加し、`{isAdmin && <FeedbackForm .../>}`に変更する(`session`propはbookmark仕様のBookmarkPanel表示にそのまま使う)。`ArticleDetailView`にセッション確立後`isAuthorizedAdmin()`を呼び出す処理を追加し、結果を`isAdmin`としてTopicSectionへ渡す(失敗時は`false`のまま維持しコンソールにエラー出力)
+  - 実装順序の注意: [bookmark/tasks.md](../bookmark/tasks.md)のTask 5(BookmarkPanelの表示配線)と同じ`TopicSection.tsx`/`ArticleDetailView.tsx`を変更する。どちらを先に実装してもよいが、両方完了するまでは中間状態(bookmarkのみ・isAdminのみ)になる
