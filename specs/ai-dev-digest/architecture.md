@@ -23,12 +23,15 @@ flowchart TD
     detail["/ai-dev-digest/[date]<br>記事詳細・フィードバック入力"]
     dailyRoutine["GitHub Actions(日次)<br>収集・翻訳・要約・記事執筆"]
     monthlyRoutine["GitHub Actions(月次)<br>ウォッチリスト・基準の見直し"]
+    broadcastRoutine["GitHub Actions(pushトリガー)<br>LINE新着記事配信"]
     sources["情報源<br>公式API・公式RSS・公式ブログ・公開ページ"]
     repo["GitHubリポジトリ<br>(記事JSON・ウォッチリスト設定)"]
     dailyPR["日次記事PR<br>(完全自動マージ)"]
     reviewPR["見直し提案PR<br>(人間承認必須)"]
     feedbackDb[("Supabase<br>ai_dev_digest_feedbackテーブル")]
     auth["Supabase Auth<br>(Google OIDC)"]
+    lineApi["LINE Messaging API<br>(ブロードキャスト配信)"]
+    lineFriends["LINE公式アカウントの<br>友だち"]
 
     visitor -->|ページ取得| cf
     adminVisitor -->|ページ取得| cf
@@ -38,6 +41,9 @@ flowchart TD
     dailyRoutine -->|記事JSONを追加| dailyPR
     dailyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
+    repo -->|記事JSON新規追加のpushをトリガーに起動| broadcastRoutine
+    broadcastRoutine -->|タイトル・トピック見出し・リンクを一斉配信| lineApi
+    lineApi -->|メッセージ配信| lineFriends
     detail -->|フィードバックを保存 - authenticatedロールでINSERTのみ| feedbackDb
     adminVisitor -->|Googleでログイン(運営者)| auth
     detail -->|ログイン状態を判定 - 表示切替のみ| auth
@@ -49,7 +55,7 @@ flowchart TD
 この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specの設計書。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。
 
 ## 5. アーキテクチャ概要
-Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を閲覧でき、運営者はGoogle OIDCでログインした状態で記事詳細ページに表示されるフィードバック欄から選定基準への気づきを残せる(既存のINSERT専用パターンを`authenticated`ロール向けに流用、DB読み取りは発生しない)。月次のGitHub Actionsワークフローがフィードバックと掲載実績を読み、ヘッドレス起動したClaude Code経由でウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
+Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。このマージ(記事JSONの新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクをLINE Messaging APIのブロードキャスト機能で友だち全員へ配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を閲覧でき、運営者はGoogle OIDCでログインした状態で記事詳細ページに表示されるフィードバック欄から選定基準への気づきを残せる(既存のINSERT専用パターンを`authenticated`ロール向けに流用、DB読み取りは発生しない)。月次のGitHub Actionsワークフローがフィードバックと掲載実績を読み、ヘッドレス起動したClaude Code経由でウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -57,8 +63,9 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | Next.js(静的エクスポート) | 記事一覧・詳細ページの描画 |
 | Supabase | 運営者フィードバックの保存(`ai_dev_digest_feedback`テーブル) |
 | Supabase Auth(Google OIDC) | フィードバック入力欄の表示切り替え(運営者判定) |
-| GitHub Actions | 日次の記事生成・月次のウォッチリスト・基準見直しの実行基盤(スケジュール実行のワークフロー) |
+| GitHub Actions | 日次の記事生成・月次のウォッチリスト・基準見直し(スケジュール実行)・LINE新着記事配信(pushトリガー)の実行基盤 |
 | Claude Code(ヘッドレス実行) | 月次見直し案の検討・複数ファイルの編集(watchlist-review内でGitHub Actionsから起動) |
+| LINE Messaging API | 新着記事のLINE公式アカウントからの一斉配信(line-broadcast内でGitHub Actionsから呼び出し) |
 | Tailwind CSS | スタイリング |
 
 選定理由はプロジェクト横断のため[関連ADR](#11-関連adr)を参照。
@@ -71,6 +78,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [content-selection](content-selection/requirements.md) | 情報源ウォッチリストと採用基準を定義し、日次のトピックを選び出す | daily-publishの実行タイミングに従う([daily-publish/requirements.md#機能要件](daily-publish/requirements.md)) |
 | [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルールを定める | content-selectionの選定結果を受け取る([content-selection/requirements.md#機能要件](content-selection/requirements.md)) |
 | [daily-publish](daily-publish/requirements.md) | 収集・翻訳・要約・記事公開を1日1回自動実行し、完全自動マージする | content-selection・content-generationの結果を公開する |
+| [line-broadcast](line-broadcast/requirements.md) | daily-publishの日次記事PRがmainへ自動マージされた直後に、新着記事をLINE公式アカウントの友だち全員へ自動配信する | daily-publishのマージタイミング([daily-publish/requirements.md#実行](daily-publish/requirements.md))、article-detailの記事データ構造・タイトル導出処理([article-detail/design.md](article-detail/design.md))に従う |
 | [watchlist-review](watchlist-review/requirements.md) | 月次でウォッチリスト・採用基準の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック([article-detail/requirements.md#運営者向けフィードバック](article-detail/requirements.md))、content-selectionの掲載実績([content-selection/requirements.md#1日の掲載件数](content-selection/requirements.md))を参照 |
 
 ## 8. コンポーネント図
@@ -81,6 +89,7 @@ flowchart LR
     selection["選定ロジック<br>(content-selection)"]
     generation["翻訳・要約<br>(content-generation)"]
     publish["日次実行・公開<br>(daily-publish)"]
+    broadcast["LINE新着記事配信<br>(line-broadcast)"]
     review["月次見直し<br>(watchlist-review)"]
     client["共通のSupabase接続<br>(app/lib)"]
 
@@ -88,6 +97,8 @@ flowchart LR
     publish -->|翻訳・要約を実行| generation
     publish -->|記事を生成しmainへ反映| listScreen
     publish -->|記事を生成しmainへ反映| detailScreen
+    publish -->|記事JSON新規追加のpushをトリガーに起動| broadcast
+    broadcast -->|タイトル導出・記事データ構造を参照| detailScreen
     detailScreen -->|フィードバック保存に利用| client
     detailScreen -->|ログイン状態判定に利用| client
     review -->|フィードバック・実績を参照| detailScreen
@@ -105,7 +116,7 @@ content/ai-dev-digest/watchlist.json        # 情報源ウォッチリスト(wat
 content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-reviewが変更)
 ```
 
-収集・選定・記事組み立てのスクリプトはNext.jsアプリの一部ではないため`scripts/ai-dev-digest/`配下に置く(既存の`scripts/check-spec-coverage.mjs`と同じ置き場所の考え方)。DB読み取りを伴うスクリプト([watchlist-review](watchlist-review/design.md)が使う`collect-review-data`)は、依存関係を本体`package.json`から隔離した独立パッケージにする(`.claude/skills/data-check/`と同じ隔離パターン)。
+収集・選定・記事組み立てのスクリプトはNext.jsアプリの一部ではないため`scripts/ai-dev-digest/`配下に置く(既存の`scripts/check-spec-coverage.mjs`と同じ置き場所の考え方)。DB読み取りを伴うスクリプト([watchlist-review](watchlist-review/design.md)が使う`collect-review-data`)は、依存関係を本体`package.json`から隔離した独立パッケージにする(`.claude/skills/data-check/`と同じ隔離パターン)。LINE配信のスクリプト([line-broadcast](line-broadcast/design.md)の`broadcast-line.ts`)も同様に`scripts/ai-dev-digest/`配下に置く。
 
 ## 10. 外部サービス
 | サービス | 用途 |
@@ -113,8 +124,9 @@ content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-re
 | Supabase(`ai_dev_digest_feedback`テーブル) | 運営者フィードバックの保存 |
 | Supabase Auth(Google OIDC) | フィードバック入力欄の表示切り替え(既存admin authと同じ仕組みを流用、SELECT権限は追加しない) |
 | YouTube公式API・各社公式RSSフィード・各社公式ブログ・Qiita公式API・Zenn公式RSS | 情報源データの取得([content-selection/requirements.md#データ取得方法](content-selection/requirements.md)) |
-| GitHub Actions | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))の定期実行基盤 |
+| GitHub Actions | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む) |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | daily-publishの翻訳・要約生成、watchlist-reviewの見直し案検討に、いずれもヘッドレス起動で使用(2026-08第2次改定。当初はAnthropic APIの従量課金呼び出しだったが、サブスクリプション利用枠内で完結させるため変更) |
+| LINE Messaging API | 新着記事のLINE公式アカウントからの一斉配信([line-broadcast](line-broadcast/requirements.md)) |
 
 このアプリが使うテーブルは`ai_dev_digest_feedback`の1つのみで、他アプリのテーブルとのリレーションは持たない(authenticatedロールのINSERT専用、docs/adr/0004の`benriyatool_readonly`ロールのSELECT専用。ADR-0006の運営者専用SELECTポリシーは追加しないため`admin_emails`との関係もない)。テーブルが1つのみでリレーションもないため、ER図は作成しない([architecture-workflow](../../.claude/skills/architecture-workflow/SKILL.md)の作成条件を満たさない)。各カラムの正となる文章は[article-detail/design.md#データベース設計](article-detail/design.md#データベース設計)。
 
@@ -134,4 +146,4 @@ content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-re
 |---|---|
 | ウォッチリスト | 収集対象として固定的に管理する情報源(公式組織・個人・プラットフォーム)の一覧。[content-selection](content-selection/requirements.md)で定義 |
 | 基準未達掲載 | content-selectionの採用基準を満たす候補が3件に満たない日に、実在する候補(基準未達の候補を含む)をその件数のまま掲載する措置。掲載する各トピックには基準未達である旨を示す。[watchlist-review](watchlist-review/requirements.md)で見直しの判断材料になる |
-| GitHub Actions | スケジュール実行のワークフロー基盤。日次の記事生成([daily-publish](daily-publish/requirements.md))・月次の見直し提案([watchlist-review](watchlist-review/requirements.md))の実行主体 |
+| GitHub Actions | スケジュール実行・pushトリガー実行のワークフロー基盤。日次の記事生成([daily-publish](daily-publish/requirements.md))・月次の見直し提案([watchlist-review](watchlist-review/requirements.md))・LINE新着記事配信([line-broadcast](line-broadcast/requirements.md))の実行主体 |
