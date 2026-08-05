@@ -1,0 +1,67 @@
+# AI駆動開発ダイジェストのLINE公式アカウント新着記事自動配信ワークフロー
+# (仕様: specs/ai-dev-digest/line-broadcast/design.md「実行環境の前提」「配信タイミングを
+# トリガーする処理」「LINEブロードキャストメッセージを送信する処理」)
+#
+# daily-publish(ai-dev-digest-daily.yml)のPRがmainへ自動マージされた結果として発生する
+# pushをそのまま起動条件にする(auto-mergeのタイミングはpublishジョブの実行中には確定しない
+# ため、publishジョブの内部からは待ち受けられない。design.md「実行環境の前提」参照)。
+# 新規追加(Added)された記事ファイルのみを配信対象とし、既存記事の内容変更では配信しない
+# (過去記事の再配信防止。requirements.md#配信タイミング・方式-6)
+name: AI駆動開発ダイジェスト LINE配信
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/ai-dev-digest/articles/*.json'
+  workflow_dispatch: # Secrets設定後・トラブル時の動作確認用に手動実行できるようにする
+    inputs:
+      date:
+        description: '配信対象の記事日付(YYYY-MM-DD)'
+        required: true
+
+jobs:
+  broadcast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # push直前のコミット(github.event.before)との差分を取るため、履歴全体を取得する
+          # (浅いcloneだとevent.beforeのコミットがローカルに存在せずdiffが失敗するため)
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # 他ワークフローと同じバージョンに揃える
+          cache: 'npm'
+
+      - run: npm ci
+
+      # 配信対象日付を判定する(design.md「配信タイミングをトリガーする処理」手順2〜4)。
+      # workflow_dispatchは入力された日付をそのまま使い、pushイベントはgit diffで新規追加
+      # (Added)された記事ファイルのみを対象にする(既存ファイルの変更(Modified)は対象外)
+      - name: 配信対象日付を判定
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            dates="${{ inputs.date }}"
+          else
+            added=$(git diff --name-status "${{ github.event.before }}" "${{ github.sha }}" -- 'content/ai-dev-digest/articles/*.json' | awk '$1 == "A" {print $2}')
+            if [ -z "$added" ]; then
+              echo "新規追加された記事ファイルがないため、配信をスキップします"
+              dates=""
+            else
+              dates=$(echo "$added" | xargs -n1 basename | sed 's/\.json$//' | tr '\n' ' ')
+            fi
+          fi
+          echo "dates=$dates" >> "$GITHUB_OUTPUT"
+
+      - name: LINEへ配信
+        if: steps.target.outputs.dates != ''
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+        run: |
+          for date in ${{ steps.target.outputs.dates }}; do
+            echo "配信します: $date"
+            npx tsx scripts/ai-dev-digest/broadcast-line.ts "content/ai-dev-digest/articles/${date}.json"
+          done
