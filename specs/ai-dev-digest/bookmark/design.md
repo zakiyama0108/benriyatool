@@ -76,8 +76,8 @@ sequenceDiagram
 - 手順:
   1. ログインセッションがない場合、一覧は取得・表示せず、ログインを促す表示のみを行う(requirements.md#付箋した記事一覧-10、requirements.md#表示範囲・権限-1)
   2. ログインセッションがある場合、自分の付箋を、保存日時または最後に編集した日時の新しい順にすべて取得する(requirements.md#付箋した記事一覧-14)
-  3. 各付箋の対象記事日付・トピックIDから、記事タイトル([article-detail](../article-detail/design.md)の`buildArticleTitle`)とトピック見出しを引き当てる。引き当てられない場合(記事データの構成が将来変わり対応するトピックが見つからない場合)は、その項目を一覧から除外する(存在しないリンク先を作らないため。通常の運用では発生しない。後述セキュリティ参照)
-  4. 各項目に、記事タイトル・トピック見出し・付箋メモの内容と、編集・削除の操作、対象トピックへのリンクを表示する(requirements.md#付箋した記事一覧-11〜13)
+  3. 各付箋の対象記事日付・トピックIDから、トピック見出しを引き当てる。引き当てられない場合(記事データの構成が将来変わり対応するトピックが見つからない場合)は、その項目を一覧から除外する(存在しないリンク先を作らないため。通常の運用では発生しない。後述セキュリティ参照)
+  4. 各項目に、トピック見出し・付箋メモの内容と、編集・削除の操作、対象トピックへのリンクを表示する(記事タイトルは表示しない。requirements.md#付箋した記事一覧-11〜13)
   5. 取得に失敗した場合は、0件として扱う(失敗を画面に伝えない。理由は後述エラーハンドリング)
 - 関連するビジネスルール: requirements.md#付箋した記事一覧-10〜15
 
@@ -100,16 +100,15 @@ sequenceDiagram
 ## 関連するファイル(抜粋)
 ```
 app/ai-dev-digest/lib/bookmarks.ts (新規: fetchBookmarksByArticleDate/fetchAllBookmarks/createBookmark/updateBookmark/deleteBookmark)
-app/ai-dev-digest/lib/topicIndex.ts (新規: 全記事から「記事日付:トピックID」→記事タイトル・トピック見出しの索引を作るbuildTopicIndex)
+app/ai-dev-digest/lib/topicIndex.ts (新規: 全記事から「記事日付:トピックID」→トピック見出しの索引を作るbuildTopicIndex)
 app/ai-dev-digest/components/BookmarkPanel.tsx (新規: 1トピック分の付箋の表示・新規作成・編集・削除。記事詳細ページ・付箋一覧ページの両方から使う)
-app/ai-dev-digest/components/BookmarkListItem.tsx (新規: 付箋一覧の1項目。記事タイトル・トピック見出し・対象トピックへのリンク+BookmarkPanel)
+app/ai-dev-digest/components/BookmarkListItem.tsx (新規: 付箋一覧の1項目。トピック見出し(対象トピックへのリンク)+BookmarkPanel)
 app/ai-dev-digest/components/BookmarkListView.tsx (新規: 付箋一覧ページの本体。セッション確認・一覧取得・表示切り替え)
 app/ai-dev-digest/components/TopicSection.tsx (既存: BookmarkPanelを条件付きで表示する配線を追加。article-detail仕様のisAdmin対応と合わせて改修)
 app/ai-dev-digest/components/ArticleDetailView.tsx (既存: 記事内の自分の付箋一覧取得を追加し、TopicSectionへpropsで渡す)
 app/ai-dev-digest/components/LoginStatus.tsx (既存: ログインボタンの文言を「ログイン」に変更し、ログイン中は付箋一覧ページへのリンクを追加。requirements.md#画面共通のログイン導線-16)
 app/ai-dev-digest/bookmarks/page.tsx (新規: 付箋一覧ページ。getAllArticles()からトピック索引を組み立て、BookmarkListViewへpropsで渡す)
 app/ai-dev-digest/lib/articles.ts (既存: article-detailのgetAllArticlesを利用)
-app/ai-dev-digest/lib/articleTitle.ts (既存: buildArticleTitleを利用)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOutを利用。isAuthorizedAdminは使わない)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 app/legal/page.tsx (既存: プライバシーポリシーに付箋メモの保存について追記)
@@ -183,7 +182,7 @@ T0(マイグレーション適用)の実機確認として、次を必ず確か�
 - セッション確認中・取得中(下記「状態管理」のstateDiagram参照)の場合: 一覧・ログイン導線のどちらも表示せず、読み込み中であることが分かる表示(ローディング表示)のみを行う(要件に文言の指定はないため設計判断。確認・取得が終わるまでは「未ログイン」「0件」いずれとも決まっていないため、どちらか一方の表示に暫定的に倒さない)
 - 未ログインの場合: 一覧は表示せず、ログインを促す表示とログイン操作のみを表示する
 - ログイン中、付箋が0件の場合: 「まだ付箋がありません」の案内を表示する(要件に文言の指定はないため設計判断)
-- ログイン中、1件以上の場合: 保存/編集日時の新しい順のカード一覧。各カードに記事タイトル(対象トピックへのリンク)・トピック見出し・付箋メモの内容・「編集」「削除」操作を表示する(requirements.md#付箋した記事一覧-11〜13)
+- ログイン中、1件以上の場合: 保存/編集日時の新しい順のカード一覧。各カードにトピック見出し(対象トピックへのリンク)・付箋メモの内容・「編集」「削除」操作を表示する(記事タイトルは表示しない。requirements.md#付箋した記事一覧-11〜13)
 
 ## コンポーネント設計
 
@@ -191,8 +190,8 @@ T0(マイグレーション適用)の実機確認として、次を必ず確か�
 |---|---|---|
 | TopicSection | (既存コンポーネント。本specで追加する分のみ記載)`bookmark: { id: string; memo: string } \| null` | 既存propsは[article-detail/design.md](../article-detail/design.md)「コンポーネント設計」参照。`session`がある場合のみBookmarkPanelを表示し、`bookmark`をその`initialBookmark`propへそのまま渡す |
 | BookmarkPanel | `articleDate: string`, `topicId: string`, `initialBookmark: { id: string; memo: string } \| null`, `onChange?: (bookmark: { id: string; memo: string } \| null) => void` | 1トピック分の付箋の表示・新規作成・編集・削除(記事詳細ページ・付箋一覧ページ共通) |
-| BookmarkListItem | `articleTitle: string`, `articleDate: string`, `topicHeading: string`, `bookmark: { id: string; topicId: string; memo: string }` | 付箋一覧の1項目。記事タイトル・トピック見出し・対象トピックへのリンクを表示し、配下にBookmarkPanelを表示する |
-| BookmarkListView | `topicIndex: Record<string, { articleTitle: string; topicHeading: string }>` | 付箋一覧ページの本体。セッション確認・自分の付箋取得・BookmarkListItemの一覧表示を行う |
+| BookmarkListItem | `articleDate: string`, `topicHeading: string`, `bookmark: { id: string; topicId: string; memo: string }` | 付箋一覧の1項目。トピック見出し(対象トピックへのリンク)を表示し、配下にBookmarkPanelを表示する |
+| BookmarkListView | `topicIndex: Record<string, string>`(「記事日付:トピックID」→トピック見出し) | 付箋一覧ページの本体。セッション確認・自分の付箋取得・BookmarkListItemの一覧表示を行う |
 
 ## 状態管理
 
@@ -240,7 +239,7 @@ stateDiagram-v2
 - 保存・削除の成功時はログを出力しない(通常操作のため)
 
 ## 依存関係
-- 付箋対象となるトピックの識別子(`Topic.id`)・記事日付・記事タイトルの導出(`buildArticleTitle`)は[article-detail/design.md](../article-detail/design.md)にそのまま従う
+- 付箋対象となるトピックの識別子(`Topic.id`)・記事日付は[article-detail/design.md](../article-detail/design.md)にそのまま従う
 - ログイン基盤(`app/lib/adminAuth.ts`)は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)を踏襲するが、許可リストによる権限確認(`isAuthorizedAdmin`)は利用しない
 - RLSパターンは[life-money-sim/saved-scenario/design.md](../../life-money-sim/saved-scenario/design.md)を踏襲する
 - 記事詳細ページのフィードバック入力欄の表示条件変更([article-detail/design.md](../article-detail/design.md)の該当箇所)は、本specの追加によりログインが読者全員に開放されることに伴う対応であり、本specと同じPRで行う

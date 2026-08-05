@@ -14,8 +14,8 @@
   - 🔴 Supabaseクライアントをモックし、`fetchBookmarksByArticleDate`が指定した記事日付の自分の付箋をトピックIDをキーにしたMapで返すこと、`fetchAllBookmarks`が`updated_at`の新しい順で全件返すこと、`createBookmark`/`updateBookmark`/`deleteBookmark`が正しいカラム名で呼び出され成功/失敗を判別できる戻り値を返すことを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/bookmarks.ts`に`fetchBookmarksByArticleDate`/`fetchAllBookmarks`/`createBookmark`/`updateBookmark`/`deleteBookmark`を実装する(`updateBookmark`は`updated_at`に現在時刻を明示的にセットする)
 
-- Task 3: 記事タイトル・トピック見出しの索引(仕様: design.md「付箋一覧を取得して表示する処理」手順3)
-  - 🔴 複数記事・複数トピックのフィクスチャに対し、`buildTopicIndex`が「記事日付:トピックID」をキーに記事タイトル(`buildArticleTitle`)とトピック見出しを引き当てられること、存在しないキーで検索した場合は`undefined`を返すことを確認するテストを書く
+- Task 3: トピック見出しの索引(仕様: design.md「付箋一覧を取得して表示する処理」手順3)
+  - 🔴 複数記事・複数トピックのフィクスチャに対し、`buildTopicIndex`が「記事日付:トピックID」をキーにトピック見出しを引き当てられること、存在しないキーで検索した場合は`undefined`を返すことを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/topicIndex.ts`に`buildTopicIndex(articles: Article[])`を実装する
 
 ## 記事詳細ページでの付箋操作
@@ -32,12 +32,12 @@
 - Task 6: 記事詳細ページでの自分の付箋一覧取得(仕様: design.md「記事内の自分の付箋の有無をまとめて取得する処理」)
   - `ArticleDetailView`に、セッション確立後`fetchBookmarksByArticleDate(article.date)`を呼び出し、結果のMapを各`TopicSection`へトピックIDで引き当てて渡す配線を追加する
   - 取得失敗時は空のMap(すべて未付箋)として扱う
-  - ページ組み立てのみのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定、article-detail/tasks.mdのTask 11と同じ考え方)。新規テストは追加せず、Task 2・Task 4〜5のユニットテストで担保する
+  - ページ組み立てのみのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定、article-detail/tasks.mdのTask 11と同じ考え方)。基本的な値の受け渡しはTask 2・Task 4〜5のユニットテストで担保するが、`fetchBookmarksByArticleDate()`が例外を投げた場合に空のMap(すべて未付箋)へフォールバックする配線自体は`ArticleDetailView.test.tsx`に専用のテストを1件追加して確認する(article-detail/tasks.mdのTask 13にある`isAuthorizedAdmin()`失敗時のフォールバックテストと同じ考え方)
 
 ## 付箋一覧ページ
 
 - Task 7: 付箋一覧の1項目(仕様: requirements.md#付箋した記事一覧-11〜13、design.md「付箋一覧からの編集・削除」)
-  - 🔴 記事タイトル・トピック見出し・対象トピックへのリンク(`/ai-dev-digest/<date>#<topicId>`)が表示されること、配下のBookmarkPanelに`initialBookmark`が渡り、そこからの編集・削除操作がそのまま機能することを確認するテストを書く
+  - 🔴 トピック見出し(対象トピックへのリンク、`/ai-dev-digest/<date>#<topicId>`)が表示されること、配下のBookmarkPanelに`initialBookmark`が渡り、そこからの編集・削除操作がそのまま機能することを確認するテストを書く
   - 🟢 `app/ai-dev-digest/components/BookmarkListItem.tsx`を実装する(BookmarkPanelを利用)
 
 - Task 8: 付箋一覧ページ本体(仕様: requirements.md#付箋した記事一覧-10・14〜15、design.md「付箋一覧を取得して表示する処理」「状態管理」)
