@@ -5,7 +5,7 @@
 ## データ基盤
 
 - Task 1: `ai_dev_digest_feedback`テーブルのマイグレーション(design.md「データベース設計」のSQL、適用基盤: docs/adr/0003)
-  - `supabase/migrations/<timestamp>_create_ai_dev_digest_feedback.sql`を作成する(テーブル作成+anon INSERT専用ポリシー+benriyatool_readonly SELECT専用ポリシー)
+  - `supabase/migrations/<timestamp>_create_ai_dev_digest_feedback.sql`を作成する(テーブル作成+anon INSERT専用ポリシー+benriyatool_readonly SELECT専用ポリシー。※このINSERT対象ロールは誤りだったため2026-08-05にTask 12でauthenticatedへ修正済み。現在のDB状態の正はTask 12・design.md「データベース設計」を参照)
   - マイグレーションファイル単独のPRとしてマージし、`deploy.yml`のmigrateジョブが成功したことを確認する
   - 以降のタスク(フィードバック保存の実装・動作確認)より前に適用が完了していることを確認する
 
