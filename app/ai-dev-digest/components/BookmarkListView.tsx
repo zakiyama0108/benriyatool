@@ -5,10 +5,10 @@ import { getSession, onAuthChange, signInWithGoogle } from '../../lib/adminAuth'
 import { fetchAllBookmarks, type BookmarkRecord } from '../lib/bookmarks'
 import BookmarkListItem from './BookmarkListItem'
 
-type TopicIndexEntry = { articleTitle: string; topicHeading: string }
-
 type Props = {
-  topicIndex: Record<string, TopicIndexEntry>
+  // 「記事日付:トピックID」→トピック見出しの索引(app/ai-dev-digest/lib/topicIndex.ts)。
+  // 記事タイトルは一覧に表示しないため索引には含まない
+  topicIndex: Record<string, string>
 }
 
 // 画面の状態。セッション確認中/未ログイン/付箋取得中/表示中の4状態(design.md「状態管理」)。
@@ -80,10 +80,10 @@ export default function BookmarkListView({ topicIndex }: Props) {
   // (存在しないリンク先を作らないため。design.md「付箋一覧を取得して表示する処理」手順3)
   const items = bookmarks
     .map((bookmark) => {
-      const entry = topicIndex[`${bookmark.articleDate}:${bookmark.topicId}`]
-      return entry ? { bookmark, entry } : null
+      const topicHeading = topicIndex[`${bookmark.articleDate}:${bookmark.topicId}`]
+      return topicHeading !== undefined ? { bookmark, topicHeading } : null
     })
-    .filter((item): item is { bookmark: BookmarkRecord; entry: TopicIndexEntry } => item !== null)
+    .filter((item): item is { bookmark: BookmarkRecord; topicHeading: string } => item !== null)
 
   if (items.length === 0) {
     return <p className="rounded-2xl bg-white p-6 text-center text-sm text-gray-500 shadow-sm">まだ付箋がありません。</p>
@@ -91,12 +91,11 @@ export default function BookmarkListView({ topicIndex }: Props) {
 
   return (
     <ul className="space-y-3">
-      {items.map(({ bookmark, entry }) => (
+      {items.map(({ bookmark, topicHeading }) => (
         <BookmarkListItem
           key={bookmark.id}
-          articleTitle={entry.articleTitle}
           articleDate={bookmark.articleDate}
-          topicHeading={entry.topicHeading}
+          topicHeading={topicHeading}
           bookmark={{ id: bookmark.id, topicId: bookmark.topicId, memo: bookmark.memo }}
         />
       ))}

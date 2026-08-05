@@ -26,8 +26,8 @@ function makeSession(email: string): Session {
 }
 
 const topicIndex = {
-  '2026-08-01:topic-1': { articleTitle: '2026年8月1日のAIニュース', topicHeading: 'Anthropicが新モデルを発表' },
-  '2026-07-31:topic-2': { articleTitle: '2026年7月31日のAIニュース', topicHeading: 'Geminiのアップデート' },
+  '2026-08-01:topic-1': 'Anthropicが新モデルを発表',
+  '2026-07-31:topic-2': 'Geminiのアップデート',
 }
 
 beforeEach(() => {

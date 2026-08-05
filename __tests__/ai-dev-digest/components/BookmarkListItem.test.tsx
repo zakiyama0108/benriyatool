@@ -18,31 +18,28 @@ beforeEach(() => {
 })
 
 // 仕様: specs/ai-dev-digest/bookmark/requirements.md#付箋した記事一覧-11、specs/ai-dev-digest/bookmark/requirements.md#付箋した記事一覧-12
-describe('付箋一覧の1項目 - 記事タイトル・トピック見出し・付箋メモを表示し、対象トピックへ遷移できる', () => {
-  it('記事タイトル・トピック見出し・付箋メモの内容が表示されること', () => {
+describe('付箋一覧の1項目 - トピック見出し・付箋メモを表示し、対象トピックへ遷移できる', () => {
+  it('トピック見出し・付箋メモの内容が表示されること', () => {
     render(
       <BookmarkListItem
-        articleTitle="2026年8月1日のAIニュース"
         articleDate="2026-08-01"
         topicHeading="Anthropicが新モデルを発表"
         bookmark={{ id: 'bookmark-1', topicId: 'topic-1', memo: 'あとで詳しく読む' }}
       />
     )
-    expect(screen.getByText('2026年8月1日のAIニュース')).toBeTruthy()
     expect(screen.getByText('Anthropicが新モデルを発表')).toBeTruthy()
     expect(screen.getByText('あとで詳しく読む')).toBeTruthy()
   })
 
-  it('記事タイトルのリンクが、対象記事の該当トピックへのアンカー(/ai-dev-digest/<date>#<topicId>)であること', () => {
+  it('トピック見出しのリンクが、対象記事の該当トピックへのアンカー(/ai-dev-digest/<date>#<topicId>)であること', () => {
     render(
       <BookmarkListItem
-        articleTitle="2026年8月1日のAIニュース"
         articleDate="2026-08-01"
         topicHeading="Anthropicが新モデルを発表"
         bookmark={{ id: 'bookmark-1', topicId: 'topic-1', memo: 'あとで詳しく読む' }}
       />
     )
-    const link = screen.getByRole('link', { name: '2026年8月1日のAIニュース' })
+    const link = screen.getByRole('link', { name: 'Anthropicが新モデルを発表' })
     expect(link.getAttribute('href')).toBe('/ai-dev-digest/2026-08-01#topic-1')
   })
 })
@@ -53,7 +50,6 @@ describe('付箋一覧の各項目からの編集・削除 - 一覧画面だけ�
     updateBookmarkMock.mockResolvedValue(true)
     render(
       <BookmarkListItem
-        articleTitle="2026年8月1日のAIニュース"
         articleDate="2026-08-01"
         topicHeading="Anthropicが新モデルを発表"
         bookmark={{ id: 'bookmark-1', topicId: 'topic-1', memo: 'あとで詳しく読む' }}
@@ -71,7 +67,6 @@ describe('付箋一覧の各項目からの編集・削除 - 一覧画面だけ�
     deleteBookmarkMock.mockResolvedValue(true)
     render(
       <BookmarkListItem
-        articleTitle="2026年8月1日のAIニュース"
         articleDate="2026-08-01"
         topicHeading="Anthropicが新モデルを発表"
         bookmark={{ id: 'bookmark-1', topicId: 'topic-1', memo: 'あとで詳しく読む' }}
