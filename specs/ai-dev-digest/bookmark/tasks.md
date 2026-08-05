@@ -32,7 +32,7 @@
 - Task 6: 記事詳細ページでの自分の付箋一覧取得(仕様: design.md「記事内の自分の付箋の有無をまとめて取得する処理」)
   - `ArticleDetailView`に、セッション確立後`fetchBookmarksByArticleDate(article.date)`を呼び出し、結果のMapを各`TopicSection`へトピックIDで引き当てて渡す配線を追加する
   - 取得失敗時は空のMap(すべて未付箋)として扱う
-  - ページ組み立てのみのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定、article-detail/tasks.mdのTask 11と同じ考え方)。新規テストは追加せず、Task 2・Task 4〜5のユニットテストで担保する
+  - ページ組み立てのみのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定、article-detail/tasks.mdのTask 11と同じ考え方)。基本的な値の受け渡しはTask 2・Task 4〜5のユニットテストで担保するが、`fetchBookmarksByArticleDate()`が例外を投げた場合に空のMap(すべて未付箋)へフォールバックする配線自体は`ArticleDetailView.test.tsx`に専用のテストを1件追加して確認する(article-detail/tasks.mdのTask 13にある`isAuthorizedAdmin()`失敗時のフォールバックテストと同じ考え方)
 
 ## 付箋一覧ページ
 

@@ -90,3 +90,17 @@ describe('記事詳細ページでの運営者判定 - セッション確立後�
     expect(screen.queryByRole('textbox')).toBeNull()
   })
 })
+
+// 仕様: specs/ai-dev-digest/bookmark/requirements.md#トピックへの付箋-5、
+// specs/ai-dev-digest/bookmark/design.md「記事内の自分の付箋の有無をまとめて取得する処理」
+describe('記事詳細ページでの付箋取得 - セッション確立後にfetchBookmarksByArticleDate()を呼び出し、結果をbookmarkとしてTopicSectionへ渡す', () => {
+  it('fetchBookmarksByArticleDate()が例外を投げた場合、コンソールにエラーを出力し、全トピックが未付箋(空のMap)のまま扱われること', async () => {
+    getSessionMock.mockResolvedValue(makeSession('reader@example.com'))
+    isAuthorizedAdminMock.mockResolvedValue(false)
+    fetchBookmarksByArticleDateMock.mockRejectedValue(new Error('network error'))
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled())
+    // 未付箋のトピックはBookmarkPanelが「付箋を貼る」ボタンを表示する(取得失敗時のフォールバック確認)
+    expect(screen.getByRole('button', { name: '付箋を貼る' })).toBeTruthy()
+  })
+})
