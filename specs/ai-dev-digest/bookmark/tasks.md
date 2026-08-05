@@ -41,7 +41,7 @@
   - 🟢 `app/ai-dev-digest/components/BookmarkListItem.tsx`を実装する(BookmarkPanelを利用)
 
 - Task 8: 付箋一覧ページ本体(仕様: requirements.md#付箋した記事一覧-10・14〜15、design.md「付箋一覧を取得して表示する処理」「状態管理」)
-  - 🔴 未ログイン時はログインを促す表示のみで一覧を取得しないこと、ログイン中で0件の場合は「まだ付箋がありません」の案内が表示されること、1件以上の場合は`updated_at`の新しい順でBookmarkListItemが並ぶこと、`topicIndex`に対応するキーが無い付箋は一覧から除外されることを確認するテストを書く
+  - 🔴 未ログイン時はログインを促す表示のみで一覧を取得しないこと、ログイン中で0件の場合は「まだ付箋がありません」の案内が表示されること、1件以上の場合は`updated_at`の新しい順でBookmarkListItemが並ぶこと、`topicIndex`に対応するキーが無い付箋は一覧から除外されること、セッション確認中・取得中はローディング表示のみで未ログイン導線・0件表示のどちらも出さないことを確認するテストを書く
   - 🟢 `app/ai-dev-digest/components/BookmarkListView.tsx`を実装する(`fetchAllBookmarks`を利用)
 
 - Task 9: 付箋一覧ページのルーティング(仕様: design.md「関連するファイル」)
