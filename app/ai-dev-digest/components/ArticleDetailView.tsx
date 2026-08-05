@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { List } from 'lucide-react'
 import type { Article } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
-import { getSession, onAuthChange, signInWithGoogle, signOut } from '../../lib/adminAuth'
+import { getSession, onAuthChange, signInWithGoogle, signOut, isAuthorizedAdmin } from '../../lib/adminAuth'
+import { fetchBookmarksByArticleDate, type BookmarkSummary } from '../lib/bookmarks'
 import TopicSection from './TopicSection'
 import LoginStatus from './LoginStatus'
 
@@ -19,10 +20,13 @@ type Props = {
 // app/ai-dev-digest/[date]/page.tsxで行い、ここではpropsで受け取った記事データを表示するのみ。
 // ログインセッションの取得・購読はクライアント側でのみ可能なため、このコンポーネントは
 // 'use client'にする(life-money-sim/page.tsxと同じ方式。design.md「状態管理」)。
-// TDD対象外(ページ組み立てのみで、個々の表示ロジックはTopicSection等のテストで担保済み。
-// tasks.md Task11参照)
+// 記事の組み立て自体はTDD対象外(個々の表示ロジックはTopicSection等のテストで担保済み。
+// tasks.md Task11参照)だが、isAdmin判定・付箋取得の条件分岐はArticleDetailView.test.tsxで検証する
+// (article-detail/tasks.md Task13、bookmark/tasks.md Task6)
 export default function ArticleDetailView({ article }: Props) {
   const [session, setSession] = useState<Session | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [bookmarks, setBookmarks] = useState<Map<string, BookmarkSummary>>(new Map())
 
   useEffect(() => {
     let active = true
@@ -39,6 +43,56 @@ export default function ArticleDetailView({ article }: Props) {
       unsubscribe()
     }
   }, [])
+
+  // ログイン状態に応じてフィードバック入力欄の表示を切り替える処理(2026-08修正。
+  // design.md「ログイン状態に応じてフィードバック入力欄の表示を切り替える処理」)。
+  // 確認中・セッションなし・確認失敗はいずれも「未許可」として扱う(失敗時は画面にエラーを
+  // 出さずコンソールにのみ出力する。requirements.md#運営者向けフィードバック-7)
+  useEffect(() => {
+    if (!session) {
+      // ログアウト時に運営者表示を即座に引っ込める(session変化に同期する意図的なリセット)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsAdmin(false)
+      return
+    }
+    let active = true
+    isAuthorizedAdmin()
+      .then((ok) => {
+        if (active) setIsAdmin(ok)
+      })
+      .catch((e) => {
+        if (active) setIsAdmin(false)
+        // eslint-disable-next-line no-console -- 原因究明用。画面にはエラーを出さず「未許可」として扱う
+        console.error('記事詳細: 運営者判定に失敗しました', e)
+      })
+    return () => {
+      active = false
+    }
+  }, [session])
+
+  // 記事内の自分の付箋の有無をまとめて取得する処理(仕様: bookmark/design.md「記事内の自分の
+  // 付箋の有無をまとめて取得する処理」)。未ログイン、または取得失敗時はすべて「未付箋」として扱う
+  useEffect(() => {
+    if (!session) {
+      // ログアウト時に付箋表示を即座に引っ込める(session変化に同期する意図的なリセット)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setBookmarks(new Map())
+      return
+    }
+    let active = true
+    fetchBookmarksByArticleDate(article.date)
+      .then((map) => {
+        if (active) setBookmarks(map)
+      })
+      .catch((e) => {
+        if (active) setBookmarks(new Map())
+        // eslint-disable-next-line no-console -- 原因究明用。画面にはエラーを出さず「未付箋」として扱う
+        console.error('記事詳細: 付箋の取得に失敗しました', e)
+      })
+    return () => {
+      active = false
+    }
+  }, [session, article.date])
 
   const hasBelowCriteriaTopic = article.topics.some((topic) => topic.belowCriteria)
 
@@ -73,7 +127,14 @@ export default function ArticleDetailView({ article }: Props) {
 
           <div className="space-y-4">
             {article.topics.map((topic) => (
-              <TopicSection key={topic.id} topic={topic} session={session} articleDate={article.date} />
+              <TopicSection
+                key={topic.id}
+                topic={topic}
+                session={session}
+                isAdmin={isAdmin}
+                articleDate={article.date}
+                bookmark={bookmarks.get(topic.id) ?? null}
+              />
             ))}
           </div>
 

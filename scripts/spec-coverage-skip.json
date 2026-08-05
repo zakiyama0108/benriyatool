@@ -1726,8 +1726,8 @@
   },
   {
     "specFile": "ai-dev-digest/article-detail/design.md",
-    "item": "ログイン状態に応じてフィードバック入力欄の表示を切り替える処理",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#運営者向けフィードバック-5でテスト済みのため(tasks.md Task10)"
+    "item": "ログイン状態に応じてフィードバック入力欄の表示を切り替える処理(2026-08修正)",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#運営者向けフィードバック-7でTopicSection.test.tsx/ArticleDetailView.test.tsxによりテスト済み(2026-08修正: isAdmin propによる表示切り替えに変更)"
   },
   {
     "specFile": "ai-dev-digest/article-detail/design.md",
@@ -2413,5 +2413,195 @@
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "ビジネスルール・制約 [2]",
     "reason": "見直し案にPR本文として変更理由を明記するという、エージェントが作成するPR本文の記述内容に関する要件で、コードとして実装・テストしないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/requirements.md",
+    "item": "付箋した記事一覧 [15]",
+    "reason": "自分の付箋のみが返ることはDB側のRLS(auth.uid() = user_id)で担保する仕様であり、アプリ単体テストでは検証できないため。実機確認はマイグレーション適用後のT0確認事項(design.md「データベース設計」)で担保する"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/requirements.md",
+    "item": "画面共通のログイン導線 [16]",
+    "reason": "LoginStatus.tsxの表示文言変更のみで、ロジックを持たないコンポーネントの既存踏襲のため新規テストを追加しない方針(LoginStatus.tsxのコメント、article-detail/tasks.md Task11と同じ考え方)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "記事内の自分の付箋の有無をまとめて取得する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#トピックへの付箋-1、requirements.md#表示範囲・権限-1でテスト済み(bookmarks.test.ts)。確認中を「未付箋」として扱う手順はArticleDetailView側の配線でテスト対象外(tasks.md Task6)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "新規に付箋を貼る処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#トピックへの付箋-1〜4、requirements.md#文字数・件数の制約-3〜4でBookmarkPanel.test.tsx/bookmarks.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "付箋を編集する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#付箋の編集・削除-7でBookmarkPanel.test.tsx/bookmarks.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "付箋を削除する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#付箋の編集・削除-8〜9でBookmarkPanel.test.tsx/bookmarks.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "付箋一覧を取得して表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#付箋した記事一覧-10・14でBookmarkListView.test.tsx/bookmarks.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "付箋一覧からの編集・削除",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#付箋した記事一覧-13でBookmarkListItem.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "バリデーション",
+    "reason": "design.mdのバリデーション方針のまとめ記述で、個別の振る舞いはrequirements.md#トピックへの付箋-2〜3経由のBookmarkPanel.test.tsxでテスト済み。200文字超のDB側CHECK制約・1トピック1件の一意制約はマイグレーション適用後の実機確認(T0)で担保する"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ai_dev_digest_bookmarks(新規)",
+    "reason": "テーブル定義のメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ai_dev_digest_bookmarks(新規) > id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1のT0確認事項)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ai_dev_digest_bookmarks(新規) > user_id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1のT0確認事項)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ai_dev_digest_bookmarks(新規) > article_date",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1のT0確認事項)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ai_dev_digest_bookmarks(新規) > topic_id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1のT0確認事項)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ai_dev_digest_bookmarks(新規) > memo",
+    "reason": "DBカラム定義(200文字までのCHECK制約)で、アプリコードの振る舞いではないため。画面側の入力制限はrequirements.md#文字数・件数の制約-3でテスト済み。CHECK制約自体はマイグレーション適用後の実機確認で担保する(tasks.md Task1のT0確認事項)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ai_dev_digest_bookmarks(新規) > created_at",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1のT0確認事項)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ai_dev_digest_bookmarks(新規) > updated_at",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。アプリ側が明示的に現在時刻をセットする挙動はbookmarks.test.tsのupdateBookmarkテストで担保済み"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはBookmarkPanel.test.tsx/BookmarkListView.test.tsx/BookmarkListItem.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "記事詳細ページへの追加(既存画面)",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはTopicSection.test.tsx/BookmarkPanel.test.tsxでテスト済みのため。ログイン導線へのリンク追加はLoginStatus.tsxの既存踏襲(新規テスト対象外)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "付箋一覧ページ(新規: `/ai-dev-digest/bookmarks`)",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはBookmarkListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "コンポーネント設計",
+    "reason": "配下の表の行に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "コンポーネント設計 > TopicSection",
+    "reason": "Props定義の表セルで、実際の振る舞いはTopicSection.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "コンポーネント設計 > BookmarkPanel",
+    "reason": "Props定義の表セルで、実際の振る舞いはBookmarkPanel.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "コンポーネント設計 > BookmarkListItem",
+    "reason": "Props定義の表セルで、実際の振る舞いはBookmarkListItem.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "コンポーネント設計 > BookmarkListView",
+    "reason": "Props定義の表セルで、実際の振る舞いはBookmarkListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "状態管理",
+    "reason": "画面のローカル状態の持ち方・状態遷移図の記述で、個別の振る舞いはBookmarkPanel.test.tsx/BookmarkListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "セキュリティ",
+    "reason": "RLSによる本人限定アクセスの記述。DB側の担保でアプリ単体テスト対象外(マイグレーション適用後の実機確認で担保。tasks.md Task1のT0確認事項)"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "ログ",
+    "reason": "失敗時にコンソール出力する方針の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/bookmark/design.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
   }
 ]
