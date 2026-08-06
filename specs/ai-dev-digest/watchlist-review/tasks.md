@@ -40,3 +40,9 @@
 
 - Task 8: 通しの動作確認(仕様: requirements.md#見直し案の粒度・提示方法-4〜5)
   - 実際にフィードバックが1件だけ存在する状態で月次実行を行い、「1件では見送り」とならず具体的な変更案+判断材料の表を含むPRが作成されることを確認する
+
+## 新規採用基準提案時のCI対応(2026-08第5次改定)
+
+- Task 9: 見直し案が追加する新規requirements.md項目のspec-coverage対応(仕様: design.md「見直し案を作成する処理」手順6)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整のため)
+  - `.github/workflows/ai-dev-digest-monthly.yml`のプロンプトに、新しい採用基準・フィルター観点を追加した場合は対応する実装・テストがまだ存在しないため`scripts/spec-coverage-skip.json`に理由付きで登録すること、コミット前に`npm run check:spec-coverage`を実行して❌が残っていないことを確認することを追記する
+  - 実際にTask8の動作確認で作成されたPR(#164)のCIが`npm run check:spec-coverage`の❌で失敗していたことを踏まえた改定(既存の実装済み項目に対する変更のみの月はこの対応は不要)
