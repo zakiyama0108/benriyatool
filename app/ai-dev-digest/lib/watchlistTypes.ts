@@ -23,4 +23,8 @@ export type Criteria = {
   youtubeAboveAverageRatio: number // 平均の何倍を上回れば採用候補にするか
   qiitaMinLikes: number // requirements.md#採用基準-7
   zennMinLikes: number // requirements.md#採用基準-8
+  // 原文タイトル(大文字小文字を区別しない)にこの配列のいずれかが含まれる候補を、他の基準を
+  // 満たしていても採用候補から除外する。原文タイトルは情報源により日英いずれもありうるため
+  // 日英両方のキーワードを登録する運用とする(requirements.md#話題の関連性-12)
+  topicExcludeKeywords: string[]
 }

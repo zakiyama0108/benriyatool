@@ -2110,11 +2110,6 @@
     "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },
   {
-    "specFile": "ai-dev-digest/content-selection/requirements.md",
-    "item": "話題の関連性(種別を問わない横断フィルター) [12]",
-    "reason": "watchlist-reviewの月次見直し(2026-08運営者フィードバックに基づく提案)が追加した見直し案で、判定方法(キーワード判定かエージェント推論か)が未確定のため実装・テストがまだ存在しない。運営者がこのPRをレビューし、採用する場合は判定方法を設計してから実装・テストを追加し、このスキップ登録を削除する"
-  },
-  {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "実行環境の前提(初導入のため明記する設計判断)",
     "reason": "GitHub Actionsの認証情報(PAT・APIキー)の管理方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため"

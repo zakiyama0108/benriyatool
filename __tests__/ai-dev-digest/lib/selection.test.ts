@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { meetsCriteria, describeShortfall, selectDailyTopics } from '../../../app/ai-dev-digest/lib/selection'
+import { meetsCriteria, describeShortfall, selectDailyTopics, isTopicExcluded } from '../../../app/ai-dev-digest/lib/selection'
 import type { Candidate } from '../../../app/ai-dev-digest/lib/candidateTypes'
 import type { Criteria } from '../../../app/ai-dev-digest/lib/watchlistTypes'
 
@@ -9,6 +9,7 @@ const criteria: Criteria = {
   youtubeAboveAverageRatio: 1.2,
   qiitaMinLikes: 30,
   zennMinLikes: 30,
+  topicExcludeKeywords: [],
 }
 
 function baseCandidate(overrides: Partial<Candidate>): Candidate {
@@ -175,6 +176,65 @@ describe('1日分のトピック選定 - 採用基準を満たす候補数に応
 
   it('収集した候補が実在するものも含め1件もないとき、候補不足によるスキップ結果になること', () => {
     const result = selectDailyTopics([], criteria)
+    expect(result.status).toBe('skipped')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#話題の関連性(種別を問わない横断フィルター)-12、specs/ai-dev-digest/content-selection/design.md#話題の関連性フィルタを適用する処理(決定的なコード。2026-08第2次改定)
+describe('話題の関連性フィルタ - 他の採用基準を満たしていても、原文タイトルが除外キーワードに該当する候補は候補から除外する', () => {
+  const criteriaWithExcludeKeywords: Criteria = {
+    ...criteria,
+    topicExcludeKeywords: ['医療', 'ヘルスケア', 'healthcare', 'medical'],
+  }
+
+  it('原文タイトルに除外キーワード(日本語)を含む候補は除外されること', () => {
+    const candidate = baseCandidate({ heading: 'AIによる医療診断支援の最新動向', sourceType: 'official' })
+    expect(isTopicExcluded(candidate, criteriaWithExcludeKeywords)).toBe(true)
+  })
+
+  it('原文タイトルに除外キーワード(英語、大文字小文字混在)を含む候補は除外されること', () => {
+    const candidate = baseCandidate({ heading: 'How AI Transforms Healthcare Diagnostics', sourceType: 'official' })
+    expect(isTopicExcluded(candidate, criteriaWithExcludeKeywords)).toBe(true)
+  })
+
+  it('原文タイトルが除外キーワードを含まない候補は除外されないこと', () => {
+    const candidate = baseCandidate({ heading: '新しいコーディングエージェントの使い方', sourceType: 'official' })
+    expect(isTopicExcluded(candidate, criteriaWithExcludeKeywords)).toBe(false)
+  })
+
+  it('topicExcludeKeywordsが空配列のとき、どの候補も除外されないこと', () => {
+    const candidate = baseCandidate({ heading: 'AIによる医療診断支援の最新動向', sourceType: 'official' })
+    expect(isTopicExcluded(candidate, criteria)).toBe(false)
+  })
+
+  it('話題除外に該当する候補は、他の採用基準(公式組織は無条件採用)を満たしていても選定結果から除外されること', () => {
+    const excluded = baseCandidate({ sourceId: 'medical', heading: 'AIによる医療診断支援の最新動向', sourceType: 'official' })
+    const others = ['a', 'b', 'c'].map((label) =>
+      baseCandidate({ sourceId: label, heading: `見出し${label}`, sourceType: 'official' })
+    )
+    const result = selectDailyTopics([excluded, ...others], criteriaWithExcludeKeywords)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics.some((t) => t.sourceId === 'medical')).toBe(false)
+      expect(result.topics).toHaveLength(3)
+    }
+  })
+
+  it('話題除外により残る候補が基準未達のみになっても、その候補で補われbelowCriteriaがtrueになること(除外候補は補充対象にもならない)', () => {
+    const excluded = baseCandidate({ sourceId: 'medical', heading: 'AIによる医療診断支援の最新動向', sourceType: 'qiita', metricValue: 100 })
+    const notMeeting = baseCandidate({ sourceId: 'q-near', heading: 'q-near', sourceType: 'qiita', metricValue: 25 })
+    const result = selectDailyTopics([excluded, notMeeting], criteriaWithExcludeKeywords)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics).toHaveLength(1)
+      expect(result.topics[0].sourceId).toBe('q-near')
+      expect(result.topics[0].belowCriteria).toBe(true)
+    }
+  })
+
+  it('収集した候補すべてが話題除外に該当し、実在する候補が残らないとき、候補不足によるスキップ結果になること', () => {
+    const excluded = baseCandidate({ sourceId: 'medical', heading: 'AIによる医療診断支援の最新動向', sourceType: 'official' })
+    const result = selectDailyTopics([excluded], criteriaWithExcludeKeywords)
     expect(result.status).toBe('skipped')
   })
 })

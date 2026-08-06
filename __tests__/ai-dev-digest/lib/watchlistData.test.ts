@@ -53,4 +53,12 @@ describe('採用基準データの構造 - watchlist-reviewによる更新後も
     expect(criteria.qiitaMinLikes).toBeGreaterThanOrEqual(0)
     expect(criteria.zennMinLikes).toBeGreaterThanOrEqual(0)
   })
+
+  it('topicExcludeKeywordsが配列で、各要素が空文字でない文字列であること', () => {
+    expect(Array.isArray(criteria.topicExcludeKeywords)).toBe(true)
+    for (const keyword of criteria.topicExcludeKeywords) {
+      expect(typeof keyword).toBe('string')
+      expect(keyword.length).toBeGreaterThan(0)
+    }
+  })
 })
