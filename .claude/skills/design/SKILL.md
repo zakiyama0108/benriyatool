@@ -53,7 +53,7 @@ requirements.mdのビジネスルールを「どんな手順・分岐で処理�
    app/lib/supabaseClient.ts (既存の共通クライアントを利用)
    ```
 
-5. **データベース設計**(Supabaseのテーブルに保存・参照する場合のみ) — テーブル名と、この機能で追加・使用するカラムのみを書く。RLSやテーブル運用方針などアプリ横断の決定は`docs/adr/`を参照し重複させない。
+5. **データベース設計**(Supabaseのテーブルに保存・参照する場合のみ) — テーブル名と、この機能で追加・使用するカラムのみを書く。RLSやテーブル運用方針などアプリ横断の決定は`docs/adr/`を参照し重複させない。新規テーブルを作る場合は、個人データを含むテーブルであっても[ADR-0004](../../../docs/adr/0004-agent-readonly-db-access.md)の`benriyatool_readonly`向けSELECT権限(GRANT・RLSポリシー2行)をマイグレーションに含める(過去に`ai_dev_digest_bookmarks`で漏れ、data-check実行時まで気づけなかった)。
    ```
    ### ikukyu_results
    | カラム | 型 | 補足 |
