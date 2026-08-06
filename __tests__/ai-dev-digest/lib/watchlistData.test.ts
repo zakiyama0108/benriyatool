@@ -36,14 +36,21 @@ describe('情報源ウォッチリストのデータ - requirements.mdの表と�
 })
 
 // 仕様: specs/ai-dev-digest/content-selection/design.md#データ設計(ウォッチリスト・採用基準)
-describe('採用基準の初期値データ - design.mdが定める初期値どおりに設定されていること', () => {
-  it('criteria.jsonがdesign.mdの初期値(1日3〜5件、直近10本、1.2倍、Qiita/Zennともにいいね30)と一致すること', () => {
-    expect(criteria).toEqual({
-      dailyTopicCount: { min: 3, max: 5 },
-      youtubeRecentVideoWindow: 10,
-      youtubeAboveAverageRatio: 1.2,
-      qiitaMinLikes: 30,
-      zennMinLikes: 30,
-    })
+// criteria.jsonの値はwatchlist-reviewの月次見直しで運用実績を見て更新されることが前提のデータ
+// (design.md「criteria.jsonの初期値」参照)のため、特定時点の値をtoEqualで固定せず、
+// 常に成り立つべき構造上の妥当性(範囲・符号)のみを検証する
+describe('採用基準データの構造 - watchlist-reviewによる更新後も常に成り立つべき妥当性', () => {
+  it('dailyTopicCountがmin以上maxで、両方とも正の整数であること', () => {
+    expect(Number.isInteger(criteria.dailyTopicCount.min)).toBe(true)
+    expect(Number.isInteger(criteria.dailyTopicCount.max)).toBe(true)
+    expect(criteria.dailyTopicCount.min).toBeGreaterThan(0)
+    expect(criteria.dailyTopicCount.max).toBeGreaterThanOrEqual(criteria.dailyTopicCount.min)
+  })
+
+  it('YouTube・Qiita・Zennの各種閾値が妥当な範囲(正の数、平均超過倍率は1倍超)であること', () => {
+    expect(criteria.youtubeRecentVideoWindow).toBeGreaterThan(0)
+    expect(criteria.youtubeAboveAverageRatio).toBeGreaterThan(1)
+    expect(criteria.qiitaMinLikes).toBeGreaterThanOrEqual(0)
+    expect(criteria.zennMinLikes).toBeGreaterThanOrEqual(0)
   })
 })
