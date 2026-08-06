@@ -3,5 +3,6 @@
   "youtubeRecentVideoWindow": 10,
   "youtubeAboveAverageRatio": 1.2,
   "qiitaMinLikes": 30,
-  "zennMinLikes": 30
+  "zennMinLikes": 30,
+  "topicRelevanceGuideline": "医療・ヘルスケアなど、AI技術の応用事例ではあるが開発エンジニア向けの実務性に乏しい分野の話題は採用候補から除外する(requirements.md#話題の関連性-12。2026-08運営者フィードバックに基づき追加)"
 }
