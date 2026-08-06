@@ -76,6 +76,17 @@ jobs:
           content/ai-dev-digest/watchlist.json・content/ai-dev-digest/criteria.json を
           必ずすべて更新してください(一部だけの更新はしないでください)。
 
+          content-selection/requirements.mdに新しい採用基準・フィルター観点の項目を追加した場合、
+          その項目にはまだ対応する実装・テストが存在しません。そのままだとこのリポジトリのCI
+          (npm run check:spec-coverage)が失敗するため、scripts/spec-coverage-skip.jsonの配列に
+          以下の形式でエントリを追加してください(既存の実装済み項目に対する変更(閾値の調整・
+          情報源の除外等)のみの場合はこの対応は不要です):
+          {"specFile": "ai-dev-digest/content-selection/requirements.md", "item": "<追加した見出し名> [<番号>]", "reason": "見直し案として提案中で判定方法の設計・実装が未確定のため"}
+          itemの値は、追加した見出し(### で始まる行)のテキストと箇条書きの番号を「見出し名 [番号]」の
+          形式でそのまま使ってください(例: 見出しが「### 話題の関連性」で `- [12] ...` なら
+          「話題の関連性 [12]」)。ファイルを変更した場合は、コミット前に必ず
+          npm run check:spec-coverage を実行し、❌が残っていないことを確認してください。
+
           変更した場合は、判断材料の表(「対象フィードバック・実績」「提案内容」「適用した場合の懸念」の
           3列。1行が1つの見直し観点に対応し、複数の観点を検討した場合は複数行にする)をMarkdown形式で
           /tmp/watchlist-review-pr-body.md に書き出してください。
@@ -91,7 +102,8 @@ jobs:
           if git diff --quiet -- \
             specs/ai-dev-digest/content-selection/requirements.md \
             content/ai-dev-digest/watchlist.json \
-            content/ai-dev-digest/criteria.json; then
+            content/ai-dev-digest/criteria.json \
+            scripts/spec-coverage-skip.json; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -112,7 +124,8 @@ jobs:
           git add \
             specs/ai-dev-digest/content-selection/requirements.md \
             content/ai-dev-digest/watchlist.json \
-            content/ai-dev-digest/criteria.json
+            content/ai-dev-digest/criteria.json \
+            scripts/spec-coverage-skip.json
           git commit -m "spec(ai-dev-digest): ${YEAR_MONTH}のウォッチリスト・採用基準見直し"
           git push origin "$BRANCH"
 
