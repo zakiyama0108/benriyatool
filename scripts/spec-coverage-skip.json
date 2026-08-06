@@ -2426,6 +2426,11 @@
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "見直し案の粒度・提示方法 [6]",
+    "reason": "新しい判定ロジックの実装(テスト含む)を同じPRに含めるというヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論・実装作業に委ねる部分でありこのリポジトリのユニットテスト対象を持たないため。実際に生成されたPRの実装コードは、そのPR自体のCI(ci.yml)とレビューで確認される"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "ビジネスルール・制約 [1]",
     "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、.github/workflows/ai-dev-digest-monthly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task4)"
   },
