@@ -50,7 +50,7 @@ jobs:
       # プロンプトはrequirements.md/design.mdをそのまま参照させる指示のみとし、内容を複製しない。
       # 認証はdaily-publishと共用のClaude Code Pro/Maxサブスクリプション認証を使う
       # (2026-08第3次改定。design.md「実行環境の前提」参照)
-      - name: 見直し案を検討・ファイルへ反映(変更なしならファイルは変わらない)
+      - name: 見直し案を検討・ファイルへ反映(材料が両方0件ならファイルは変わらない)
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
@@ -61,14 +61,24 @@ jobs:
 
           見直し対象の仕様は specs/ai-dev-digest/content-selection/requirements.md と design.md、
           機械可読データは content/ai-dev-digest/watchlist.json と content/ai-dev-digest/criteria.json です。
+          見直し案は、既存の情報源の除外・既存の数値基準(閾値)の調整だけでなく、新しい採用基準・
+          フィルター観点の追加提案も対象に含みます(requirements.md#見直し案の粒度・提示方法-4)。
 
           見直しの材料(直近1ヶ月の基準未達記録・運営者フィードバック)は /tmp/review-data.json に
           JSON形式で保存されています。読み込んで判断材料にしてください。
 
-          見直す点が見当たらない場合は、design.mdの記載どおり一切のファイルを変更せず終了してください。
+          基準未達記録・フィードバックのいずれか1件でも材料がある場合は、必ず具体的な変更案
+          (実際のファイル差分)を作成してください。「1件では根拠が薄い」「単発のため見送り」といった
+          理由で提案自体を見送り、無言で終了することは禁止します(requirements.md#見直し案の粒度・
+          提示方法-5)。基準未達記録・フィードバックの両方が0件の場合のみ、一切のファイルを変更せず
+          終了してください。
           変更する場合は、specs/ai-dev-digest/content-selection/requirements.md と
           content/ai-dev-digest/watchlist.json・content/ai-dev-digest/criteria.json を
           必ずすべて更新してください(一部だけの更新はしないでください)。
+
+          変更した場合は、判断材料の表(「対象フィードバック・実績」「提案内容」「適用した場合の懸念」の
+          3列。1行が1つの見直し観点に対応し、複数の観点を検討した場合は複数行にする)をMarkdown形式で
+          /tmp/watchlist-review-pr-body.md に書き出してください。
 
           ブランチ作成・コミット・PR作成は行わず、対象ファイルの編集だけを行ってください
           (それらは後続のステップが行います)。
@@ -105,6 +115,18 @@ jobs:
             content/ai-dev-digest/criteria.json
           git commit -m "spec(ai-dev-digest): ${YEAR_MONTH}のウォッチリスト・採用基準見直し"
           git push origin "$BRANCH"
+
+          # 判断材料の表(design.md「見直し案をPRとして提案する処理」手順2)。Claude Codeが
+          # 書き出さなかった場合のフォールバックとして、最低限の案内文を用意する
+          BODY_FILE=/tmp/watchlist-review-pr-body.md
+          if [ ! -s "$BODY_FILE" ]; then
+            echo "月次見直しワークフローが生成した提案です(判断材料の表の書き出しに失敗したため詳細はコミット・差分を参照してください)。このPRは自動マージされません。運営者が内容を確認のうえマージしてください。" > "$BODY_FILE"
+          else
+            echo "" >> "$BODY_FILE"
+            echo "---" >> "$BODY_FILE"
+            echo "このPRは自動マージされません。運営者が内容を確認のうえマージしてください。" >> "$BODY_FILE"
+          fi
+
           gh pr create --base main \
             --title "[ai-dev-digest] ${YEAR_MONTH}のウォッチリスト・採用基準見直し" \
-            --body "月次見直しワークフローが生成した提案です。変更理由はコミット・差分を参照してください。このPRは自動マージされません。運営者が内容を確認のうえマージしてください。"
+            --body-file "$BODY_FILE"

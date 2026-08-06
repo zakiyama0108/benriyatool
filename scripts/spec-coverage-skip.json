@@ -2406,13 +2406,23 @@
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "見直し案の粒度・提示方法 [4]",
+    "reason": "見直し案の対象範囲(新しい採用基準・フィルター観点の追加提案も含む)というヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "見直し案の粒度・提示方法 [5]",
+    "reason": "材料が1件でもあれば提案を見送らないというヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため(材料が両方0件の場合のPRスキップ判定自体はgit diff --quietの結果で機械的に決まるが、その分岐に至る「1件でもあれば提案する」という判断はエージェント側の責務)"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "ビジネスルール・制約 [1]",
     "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、.github/workflows/ai-dev-digest-monthly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task4)"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "ビジネスルール・制約 [2]",
-    "reason": "見直し案にPR本文として変更理由を明記するという、エージェントが作成するPR本文の記述内容に関する要件で、コードとして実装・テストしないため"
+    "reason": "見直し案にPR本文として変更理由(判断材料の表を含む)を明記するという、エージェントが作成するPR本文の記述内容に関する要件で、コードとして実装・テストしないため"
   },
   {
     "specFile": "ai-dev-digest/bookmark/requirements.md",
