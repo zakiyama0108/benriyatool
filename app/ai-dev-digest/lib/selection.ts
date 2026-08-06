@@ -5,6 +5,15 @@ import type { Criteria } from './watchlistTypes'
 // requirements.md#1日の掲載件数、design.md「採用基準を判定する処理」「1日分のトピックを
 // 選び出す処理」)。入出力が純粋なデータのみのため通常のvitestで完全にテストできる
 
+// 話題の関連性フィルタ(決定的なコード。design.md「話題の関連性フィルタを適用する処理」)。
+// 原文タイトルにcriteria.topicExcludeKeywordsのいずれかが含まれる場合、大文字小文字を
+// 区別せず除外する。他の採用基準(meetsCriteria)を満たしていても対象になる
+// (requirements.md#話題の関連性-12)
+export function isTopicExcluded(candidate: Candidate, criteria: Criteria): boolean {
+  const heading = candidate.heading.toLowerCase()
+  return criteria.topicExcludeKeywords.some((keyword) => heading.includes(keyword.toLowerCase()))
+}
+
 // 種別ごとの採用基準を満たすかを判定する。
 // - official/individual-blog: 発信量が少なく信頼性が高いため無条件で採用候補にする(requirements.md#採用基準-4、#採用基準-6)
 // - individual-youtube: チャンネルごとの規模差を吸収するため、直近平均再生回数の
@@ -114,7 +123,14 @@ export function selectDailyTopics(candidates: Candidate[], criteria: Criteria): 
     return { status: 'skipped', reason: '収集した候補が1件もありませんでした' }
   }
 
-  const judged = candidates.map((candidate) => judgeCandidate(candidate, criteria))
+  // 話題の関連性フィルタは採用基準の判定より前に適用する(除外された候補は、他の基準を
+  // 満たしていても採用候補にも基準未達候補にもならない。requirements.md#話題の関連性-12)
+  const eligible = candidates.filter((candidate) => !isTopicExcluded(candidate, criteria))
+  if (eligible.length === 0) {
+    return { status: 'skipped', reason: '収集した候補はすべて話題の関連性フィルタにより除外されました' }
+  }
+
+  const judged = eligible.map((candidate) => judgeCandidate(candidate, criteria))
   const meeting = judged.filter((c) => c.meetsCriteria)
   const notMeeting = judged.filter((c) => !c.meetsCriteria)
   const { min, max } = criteria.dailyTopicCount

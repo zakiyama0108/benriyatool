@@ -15,6 +15,7 @@ const criteria: Criteria = {
   youtubeAboveAverageRatio: 1.2,
   qiitaMinLikes: 30,
   zennMinLikes: 30,
+  topicExcludeKeywords: [],
 }
 
 function makeHttp(overrides: Partial<HttpClient> = {}): HttpClient {
