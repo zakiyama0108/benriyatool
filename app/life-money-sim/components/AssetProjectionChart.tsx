@@ -35,7 +35,8 @@ export default function AssetProjectionChart({ periodUnit, monthlyRows, yearlyRo
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-lms-line)" />
           <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
           <YAxis tick={{ fontSize: 10 }} />
-          <Tooltip formatter={(value) => `${String(value)}万円`} />
+          {/* ツールチップはホバー時に一瞬確認する用途のため整数丸めで表示する(小数第1位まで残すAssetProjectionTable.tsx/HeroCard.tsxのformatManYenとは意図的に精度を変えている) */}
+          <Tooltip formatter={(value) => [`${Math.round(Number(value))}万円`, '資産額']} />
           <Area type="monotone" dataKey="asset" stroke="var(--color-lms-teal)" fill="url(#assetGradient)" strokeWidth={2} />
         </AreaChart>
       </ResponsiveContainer>
