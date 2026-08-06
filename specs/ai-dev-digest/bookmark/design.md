@@ -156,6 +156,12 @@ create policy "user can update own bookmarks" on ai_dev_digest_bookmarks
 
 create policy "user can delete own bookmarks" on ai_dev_digest_bookmarks
   for delete to authenticated using (auth.uid() = user_id);
+
+-- benriyatool_readonlyはSELECTのみ許可(docs/adr/0004。data-checkでの集計に使う)
+grant select on ai_dev_digest_bookmarks to benriyatool_readonly;
+
+create policy "benriyatool_readonly can select" on ai_dev_digest_bookmarks
+  for select to benriyatool_readonly using (true);
 ```
 
 実際のマイグレーションファイル作成・適用はtasks.mdで行う([article-detail/design.md](../article-detail/design.md)と同じく、DB操作の実装より前に適用を完了させる)。
