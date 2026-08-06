@@ -87,6 +87,14 @@
   3. 資産推移グラフも、テーブルと同じ表示単位のデータ点を使って再描画する
 - 関連するビジネスルール: requirements.md#表示単位の切り替え-1、requirements.md#表示単位の切り替え-3、requirements.md#表示単位の切り替え-4、requirements.md#資産推移グラフ-2
 
+### グラフの横軸ラベルに本人年齢を添える処理
+- 対象: 資産推移グラフのX軸に表示するラベル文字列(月次表示: `年-月`、年次表示: `年`の各データ点)
+- 手順:
+  1. 各データ点(月次表示の各月の行、年次表示の各年の行)が持つ`selfAge`(本人の満年齢。「対象年月の家族の年齢を求める処理」で算出済み)を参照する
+  2. `selfAge`が求まる場合、既存のラベル文字列の末尾に`(nn歳)`を括弧書きで追加する
+  3. `selfAge`が`undefined`(本人の生年月が未入力)の場合、年齢は追加せず既存のラベル文字列のまま表示する
+- 関連するビジネスルール: requirements.md#資産推移グラフ-3
+
 ## バリデーション
 - 開始資産額・想定利回り・賞与額・イベント金額・定期項目の金額は0以上の数値のみを計算対象とする(不正値は0として扱い、計算をブロックしない。`monthly-balance`と同じ方針)
 - 想定利回りは0〜100%の範囲外の値が入力された場合、実装上は入力を妨げないが、明らかな入力ミスとして異常な資産推移(発散・マイナス化)が起こりうることを許容する
@@ -109,7 +117,7 @@ app/life-money-sim/components/RecurringEntryListInput.tsx (新規: 名目・金�
 app/life-money-sim/components/ModeToggle.tsx (新規: 貯蓄のみ/資産運用の切り替えと想定利回り入力)
 app/life-money-sim/components/PeriodToggle.tsx (新規: 月次/年次の表示単位切り替え)
 app/life-money-sim/components/AssetProjectionTable.tsx (既存: 月次/年次の年齢・差引後余剰(または年次余剰資金)・資産推移を表形式で表示。イベント名目の列に定期項目の名目も合わせて表示するよう変更。ヘッダー行・1列目のsticky化を追加。名目に加えて金額を表示するよう変更)
-app/life-money-sim/components/AssetProjectionChart.tsx (新規: 資産推移を折れ線/エリアグラフで表示。チャートライブラリは`monthly-balance/design.md#関連するファイル(抜粋)`で導入するものと共通利用)
+app/life-money-sim/components/AssetProjectionChart.tsx (新規: 資産推移を折れ線/エリアグラフで表示。チャートライブラリは`monthly-balance/design.md#関連するファイル(抜粋)`で導入するものと共通利用。既存: X軸ラベルに本人の満年齢を括弧書きで追加)
 app/life-money-sim/components/HeroCard.tsx (新規: v0生成コードを取り込み。表示範囲の最終年月時点の資産額・開始資産額との差分・ミニ推移グラフを表示する表示専用コンポーネント)
 app/life-money-sim/components/AccordionSection.tsx (新規: v0生成コードを取り込み。入力項目群を折りたたみ表示する共通コンポーネント。`monthly-balance/design.md#関連するファイル(抜粋)`の各入力フォームと共通利用)
 app/life-money-sim/components/SegmentedControl.tsx (新規: v0生成コードを取り込み。2〜3択のトグル切り替え共通コンポーネント。ModeToggle.tsx・PeriodToggle.tsx・結果ダッシュボードの表示切り替えで共通利用)

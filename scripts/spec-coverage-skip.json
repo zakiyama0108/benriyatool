@@ -801,6 +801,11 @@
   },
   {
     "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "グラフの横軸ラベルに本人年齢を添える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#資産推移グラフ-3で、tasks.md Task31の判断によりAssetProjectionChartはユニットテスト対象外とし/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
     "item": "エラーハンドリング",
     "reason": "計算処理自体の失敗は想定しないという記述と、イベント・賞与の合算方針(requirements.md#賞与・イベントの登録-2)の記述で、合算方針はbuildMonthlyProjectionRows(page.tsxからの結合関数)による実装のため単体テスト対象外(design.md#関連するファイル(抜粋))"
   },
@@ -933,6 +938,11 @@
     "specFile": "life-money-sim/asset-projection/requirements.md",
     "item": "資産推移グラフ [2]",
     "reason": "tasks.md Task12の判断により、資産推移グラフ(AssetProjectionChart)の横軸切り替えはユニットテスト対象外とし、/runスキルでの実機確認に委ねるため"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/requirements.md",
+    "item": "資産推移グラフ [3]",
+    "reason": "tasks.md Task31の判断により、資産推移グラフ(AssetProjectionChart)の横軸ラベルへの年齢追加はユニットテスト対象外とし、/runスキルでの実機確認に委ねるため(Task12以来の既存方針を踏襲)"
   },
   {
     "specFile": "life-money-sim/asset-projection/requirements.md",
