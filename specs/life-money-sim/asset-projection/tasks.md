@@ -139,3 +139,9 @@
   - [x] 🔴 `AssetProjectionTable`のコンポーネントテストを新規に書く(`__tests__/life-money-sim/components/AssetProjectionTable.test.tsx`): 賞与・イベント・定期項目それぞれについて、名目に加えて金額(万円)が表示されることを確認する
   - [x] 🟢 `AssetProjectionTable.tsx`(`EventCell`)を、名目の直後に金額を表示するよう実装し直す。色分け(賞与・定期収入=ティール文字、イベント・定期支出=コーラル文字)は維持する
   - [x] `/run`(run-benriyatoolスキル)で、賞与・イベント・定期的な収入支出を追加した直後にテーブルへ名目と金額が表示されることを実機確認する
+
+## 修正: 資産推移グラフの横軸に本人年齢を表示(2026-08)
+
+- [ ] Task 31: グラフの横軸ラベルへの年齢追加(仕様: requirements.md#資産推移グラフ-3、design.md#グラフの横軸ラベルに本人年齢を添える処理)
+  - [ ] `AssetProjectionChart.tsx`のラベル生成を、`selfAge`が求まる場合は既存ラベルの末尾に`(nn歳)`を追加し、`undefined`の場合は既存ラベルのまま表示するよう変更する(AssetProjectionChartはtasks.md Task12の判断によりユニットテスト対象外のため🔴/🟢は設けない)
+  - [ ] `/run`(run-benriyatoolスキル)で、月次表示・年次表示それぞれの横軸ラベルに本人年齢が表示されること、本人の生年月が未入力の場合は年齢が表示されないことを実機確認する
