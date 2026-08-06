@@ -31,3 +31,12 @@
 - Task 6: 通しの動作確認(仕様: requirements.md#見直しの実行-1〜2、requirements.md#承認フロー-3)
   - Task 1〜5が揃った状態で月次実行を行い、`specs/ai-dev-digest/content-selection/requirements.md`と`content/ai-dev-digest/watchlist.json`/`criteria.json`の両方を変更するPRが作成されることを確認する
   - 作成されたPRが自動マージされず、通常のレビュー必須フローのままであることを確認する
+
+## 見直し案の粒度・提示方法の改善(2026-08改定)
+
+- Task 7: 見直し案のPR本文への判断材料表の反映(仕様: requirements.md#見直し案の粒度・提示方法-4〜5、design.md「見直し案を作成する処理」「見直し案をPRとして提案する処理」)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整とワークフロー定義ファイルの変更のため)
+  - `.github/workflows/ai-dev-digest-monthly.yml`のプロンプトに、新しい採用基準・フィルター観点の追加提案も対象であること、材料が1件でもあれば具体的な変更案を必ず作成すること、判断材料の表を`/tmp/watchlist-review-pr-body.md`にMarkdown形式で書き出すことを追記する
+  - PR作成ステップを`gh pr create --body-file /tmp/watchlist-review-pr-body.md`に変更する(ファイルが存在しない、または空の場合のフォールバック本文も用意する)
+
+- Task 8: 通しの動作確認(仕様: requirements.md#見直し案の粒度・提示方法-4〜5)
+  - 実際にフィードバックが1件だけ存在する状態で月次実行を行い、「1件では見送り」とならず具体的な変更案+判断材料の表を含むPRが作成されることを確認する
