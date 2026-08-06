@@ -62,5 +62,48 @@
 
 ## T8. page.tsxへの配線(仕様: design.md#マイシナリオ操作の表示を出し分ける処理)
 - 対象ファイル: `app/life-money-sim/page.tsx`
-- 内容: 未ログイン時に`ScenarioPanel`の代わりに`ScenarioLoginPrompt`を「この試算を保存する」ボタンの近くに表示する
+- 内容: 未ログイン時に`ScenarioPanel`の代わりに`ScenarioLoginPrompt`を「この試算を実行する」ボタンの近くに表示する
 - `/run`(run-benriyatoolスキル)で、未ログイン時にログイン誘導案内が表示され、ログイン後はマイシナリオパネルに切り替わることを実機確認する
+
+## 修正: 上書き保存・ボタン文言の変更(2026-08)
+
+## T9. マイグレーション追加分の適用(実装より先に単独PRで適用)
+- 対象ファイル: `supabase/migrations/<タイムスタンプ>_add_update_policy_to_life_money_sim_saved_scenarios.sql`
+- 内容: design.md#マイグレーション追加分-上書き保存のためのUPDATE権限のSQLをそのまま適用する(既存のテーブル作成マイグレーションは変更しない)
+- 実機確認: design.md#マイグレーション追加分のT0追加分確認事項3点(本人のみUPDATE可、他人の行は不可、未ログインは不可)を確かめる
+
+## T10. savedScenario.tsにupdateScenarioを追加(仕様: design.md#名前を付けて保存する処理)
+- 対象ファイル: `app/life-money-sim/lib/savedScenario.ts`、`__tests__/life-money-sim/lib/savedScenario.test.ts`
+- 内容:
+  - 🔴 `updateScenario(id: string, inputState: ScenarioInputState): Promise<boolean>` — 対象IDの行を現在の入力値一式でUPDATEする。成功/失敗を戻り値で表す(`saveScenario`と同じ方針)ことを確認するテストを書く
+  - 🟢 実装する
+
+## T11. ScenarioPanelにアクティブなシナリオ対応の表示・確認ダイアログを追加(仕様: requirements.md#上書き保存-11〜13、design.md#名前を付けて保存する処理、design.md#画面設計)
+- 対象ファイル: `app/life-money-sim/components/ScenarioPanel.tsx`、`__tests__/life-money-sim/components/ScenarioPanel.test.tsx`
+- 内容:
+  - props: `activeScenario: ScenarioRecord | null`を追加し、`onSave`は「上書き更新」「新規保存」を呼び出し元(page.tsx)で判定できるよう、実行種別を渡せる形にする(`onSave: (name: string) => Promise<boolean>`はそのままとし、上書き/新規の判定自体はpage.tsx側の状態(アクティブなシナリオID)を見て行う。呼び出し元の責務分担は実装時の判断に委ねる)
+  - 🔴 アクティブなシナリオがある場合、名前欄の初期値がそのシナリオの名前になり、ボタン文言が「更新する」になることを確認するテストを書く
+  - 🔴 「更新する」を押すと確認ダイアログ(`window.confirm`)が呼ばれ、確認した場合のみ更新処理が実行される、キャンセルした場合は何も実行されないことを確認するテストを書く
+  - 🔴 アクティブなシナリオがある状態で名前欄を別の名前に変更すると、ボタン文言が「保存する」に戻り、確認ダイアログを出さずに新規保存されることを確認するテストを書く
+  - 🟢 実装する
+
+## T12. page.tsxへのアクティブなシナリオID配線(仕様: design.md#アクティブなシナリオを管理する処理)
+- 対象ファイル: `app/life-money-sim/page.tsx`
+- 内容:
+  - アクティブなシナリオID(`string | null`)の状態を追加する
+  - 自動読み込み・一覧からの読み込みで、読み込んだシナリオのIDをアクティブなシナリオIDに設定する
+  - 保存操作時、アクティブなシナリオIDがあり対象の名前が一致する場合は`updateScenario`を、それ以外は従来どおり`saveScenario`を呼ぶ。新規保存が成功したら、作成したシナリオのIDをアクティブなシナリオIDに設定する
+  - 削除操作で、削除した行がアクティブなシナリオIDと一致する場合はアクティブなシナリオIDを`null`に戻す
+  - ログアウト時にアクティブなシナリオIDを`null`に戻す
+- 関連: design.md#アクティブなシナリオを管理する処理、design.md#名前を付けて保存する処理、design.md#削除する処理
+
+## T13. SaveButton・ScenarioLoginPromptの文言変更
+- 対象ファイル: `app/life-money-sim/components/ScenarioLoginPrompt.tsx`、`__tests__/life-money-sim/components/ScenarioLoginPrompt.test.tsx`
+- 内容: 案内文言中の「この試算を保存する」を「この試算を実行する」に更新する(`save-result/tasks.md`のTask 7と同一PRで行う)
+
+## T14. 動作確認
+- `npm run dev`でログインし、保存済みシナリオがある状態(自動読み込み後)で入力値を編集し、名前欄をそのままにして保存すると「更新する」ボタンになっており、押すと確認ダイアログが出て、確認後にそのシナリオが上書きされることを確認する(一覧の件数が増えないこと・リロード後も編集後の値が保持されることを確認する)
+- 同じ状態から名前欄を新しい名前に変更して保存すると、確認ダイアログなしで新規シナリオが追加されることを確認する
+- 一覧から別のシナリオを読み込むと、そのシナリオがアクティブになり、以後の保存がそのシナリオを上書き対象にすることを確認する
+- アクティブなシナリオを削除すると、以後の保存が新規保存に戻ることを確認する
+- 「この試算を実行する」ボタン・未ログイン時の案内文言が、新しい文言に変わっていることを確認する
