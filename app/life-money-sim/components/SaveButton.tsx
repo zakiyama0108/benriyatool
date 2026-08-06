@@ -7,8 +7,9 @@ type Props = {
   input: SaveResultInput
 }
 
-// 「この試算を保存する」ボタン。送信中は再押下できないようにし、保存完了を軽く伝える
-// (仕様: design.md#試算結果を保存する処理、design.md#エラーハンドリング)
+// 「この試算を実行する」ボタン。送信中は再押下できないようにし、送信完了を軽く伝える。
+// 文言は「保存」を含めず、マイシナリオ(本人専用保存)との誤解を避ける
+// (仕様: requirements.md#機能要件-3、design.md#試算結果を保存する処理、design.md#エラーハンドリング)
 export default function SaveButton({ input }: Props) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
 
@@ -27,9 +28,9 @@ export default function SaveButton({ input }: Props) {
         disabled={status === 'saving'}
         className="rounded-full bg-lms-teal px-6 py-2.5 text-sm font-medium text-white disabled:opacity-50"
       >
-        {status === 'saving' ? '保存中…' : 'この試算を保存する'}
+        {status === 'saving' ? '実行中…' : 'この試算を実行する'}
       </button>
-      {status === 'saved' && <span className="text-xs text-lms-teal">保存しました</span>}
+      {status === 'saved' && <span className="text-xs text-lms-teal">送信しました</span>}
     </div>
   )
 }

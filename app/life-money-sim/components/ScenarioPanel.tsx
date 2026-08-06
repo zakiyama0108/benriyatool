@@ -5,6 +5,9 @@ import type { ScenarioRecord } from '../lib/types'
 
 type Props = {
   scenarios: ScenarioRecord[]
+  // 自動読み込み・一覧からの読み込みで画面へ反映された、上書き更新の対象となるシナリオ
+  // (仕様: requirements.md#上書き保存-10。呼び出し元(page.tsx)がIDを管理し、該当レコードを渡す)
+  activeScenario: ScenarioRecord | null
   onSave: (name: string) => Promise<boolean>
   onLoad: (id: string) => void
   onDelete: (id: string) => Promise<boolean>
@@ -24,23 +27,42 @@ function formatSavedAt(createdAt: string): string {
 // 保存・削除は処理中に再押下できないようにし、失敗時は失敗が分かる表示にする
 // (仕様: design.md#マイシナリオ操作の表示を出し分ける処理、design.md#名前を付けて保存する処理、
 //  design.md#一覧を組み立てる処理、design.md#削除する処理、design.md#エラーハンドリング)
-export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: Props) {
-  const [name, setName] = useState('')
+export default function ScenarioPanel({ scenarios, activeScenario, onSave, onLoad, onDelete }: Props) {
+  const [name, setName] = useState(activeScenario?.name ?? '')
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<SaveMessage>('none')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteFailedId, setDeleteFailedId] = useState<string | null>(null)
 
+  // アクティブなシナリオが切り替わった(読み込み直後・保存直後に別IDになった)タイミングでのみ、
+  // 名前欄をそのシナリオの名前に合わせる。編集中に他の理由で再描画されても上書きしない
+  // (仕様: requirements.md#上書き保存-11。エフェクトではなくレンダー中の同期にすることで、
+  //  余計な再レンダーを避ける公式パターンに従う: https://react.dev/learn/you-might-not-need-an-effect)
+  const [syncedScenarioId, setSyncedScenarioId] = useState(activeScenario?.id ?? null)
+  if ((activeScenario?.id ?? null) !== syncedScenarioId) {
+    setSyncedScenarioId(activeScenario?.id ?? null)
+    setName(activeScenario?.name ?? '')
+  }
+
+  // 名前欄がアクティブなシナリオの名前のままなら上書き更新、それ以外(未変更の対象がない・名前を変更した)は
+  // 新規保存として扱う(仕様: requirements.md#上書き保存-12〜14)
+  const isUpdateMode = activeScenario !== null && name === activeScenario.name
+
   // isSavingを表示用メッセージ(saveMessage)と別状態にする。入力欄も保存中は無効化するため、
-  // 通信中に名前を書き換えて二重INSERTになることはない(design.md#エラーハンドリング)
+  // 通信中に名前を書き換えて二重INSERT/UPDATEになることはない(design.md#エラーハンドリング)
   async function handleSaveClick() {
     if (!name.trim() || isSaving) return
+    if (isUpdateMode) {
+      // 上書き更新の前に対象シナリオ名を含む確認ダイアログを表示し、キャンセル時は何も送信しない
+      // (仕様: requirements.md#上書き保存-12)
+      const confirmed = window.confirm(`「${activeScenario.name}」を更新します。よろしいですか?`)
+      if (!confirmed) return
+    }
     setIsSaving(true)
     setSaveMessage('none')
     const ok = await onSave(name)
     setIsSaving(false)
     if (ok) {
-      setName('')
       setSaveMessage('saved')
     } else {
       setSaveMessage('error')
@@ -77,7 +99,9 @@ export default function ScenarioPanel({ scenarios, onSave, onLoad, onDelete }: P
           disabled={!name.trim() || isSaving}
           className="rounded-full bg-lms-teal px-4 py-1.5 text-sm font-medium text-white disabled:opacity-40"
         >
-          {isSaving ? '保存中…' : '保存する'}
+          {/* アクティブなシナリオがあり名前欄がそのシナリオの名前のままなら「更新する」と表示する
+              (仕様: requirements.md#上書き保存-11、design.md#画面設計) */}
+          {isSaving ? (isUpdateMode ? '更新中…' : '保存中…') : isUpdateMode ? '更新する' : '保存する'}
         </button>
       </div>
       {saveMessage === 'saved' && <p className="text-xs text-lms-teal">保存しました</p>}

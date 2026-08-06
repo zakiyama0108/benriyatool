@@ -1,16 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { fetchScenarios, saveScenario, deleteScenario, fillMissingScenarioFields } from '../../../app/life-money-sim/lib/savedScenario'
+import { fetchScenarios, saveScenario, deleteScenario, updateScenario, fillMissingScenarioFields } from '../../../app/life-money-sim/lib/savedScenario'
 import type { ScenarioInputState } from '../../../app/life-money-sim/lib/types'
 
-const { selectMock, orderMock, insertMock, eqMock, fromMock, getUserMock } = vi.hoisted(() => {
+const { selectMock, orderMock, insertMock, eqMock, updateEqMock, updateMock, fromMock, getUserMock } = vi.hoisted(() => {
   const orderMock = vi.fn()
   const selectMock = vi.fn(() => ({ order: orderMock }))
   const insertMock = vi.fn()
   const eqMock = vi.fn()
   const deleteMock = vi.fn(() => ({ eq: eqMock }))
-  const fromMock = vi.fn(() => ({ select: selectMock, insert: insertMock, delete: deleteMock }))
+  const updateEqMock = vi.fn()
+  const updateMock = vi.fn(() => ({ eq: updateEqMock }))
+  const fromMock = vi.fn(() => ({ select: selectMock, insert: insertMock, delete: deleteMock, update: updateMock }))
   const getUserMock = vi.fn()
-  return { selectMock, orderMock, insertMock, deleteMock, eqMock, fromMock, getUserMock }
+  return { selectMock, orderMock, insertMock, deleteMock, eqMock, updateEqMock, updateMock, fromMock, getUserMock }
 })
 
 vi.mock('../../../app/lib/supabaseClient', () => ({
@@ -23,6 +25,8 @@ beforeEach(() => {
   orderMock.mockReset().mockResolvedValue({ data: [], error: null })
   insertMock.mockReset().mockResolvedValue({ data: null, error: null })
   eqMock.mockReset().mockResolvedValue({ data: null, error: null })
+  updateMock.mockClear()
+  updateEqMock.mockReset().mockResolvedValue({ data: null, error: null })
   getUserMock.mockReset().mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null })
 })
 
@@ -90,6 +94,27 @@ describe('削除する - 指定したシナリオを削除する', () => {
   it('Supabaseが{error}を返した場合、falseが返ること', async () => {
     eqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
     await expect(deleteScenario('a')).resolves.toBe(false)
+  })
+})
+
+// 仕様: specs/life-money-sim/saved-scenario/design.md#名前を付けて保存する処理
+describe('上書き更新する - 対象シナリオを現在の入力値一式でUPDATEする', () => {
+  it('更新に成功した場合、trueが返り、対象idの行がinput_stateでUPDATEされること(名前は変更しない)', async () => {
+    await expect(updateScenario('a', inputState)).resolves.toBe(true)
+    expect(updateMock).toHaveBeenCalledWith({ input_state: inputState })
+    expect(updateEqMock).toHaveBeenCalledWith('id', 'a')
+  })
+
+  it('Supabaseが{error}を返した場合、falseが返ること', async () => {
+    updateEqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
+    await expect(updateScenario('a', inputState)).resolves.toBe(false)
+  })
+
+  it('更新処理が例外を投げた場合も、falseで正常終了すること', async () => {
+    updateMock.mockImplementation(() => {
+      throw new Error('network error')
+    })
+    await expect(updateScenario('a', inputState)).resolves.toBe(false)
   })
 })
 
