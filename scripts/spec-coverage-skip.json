@@ -2628,5 +2628,50 @@
     "specFile": "ai-dev-digest/bookmark/design.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/save-result/requirements.md",
+    "item": "機能要件 [3]",
+    "reason": "仕様承認PR段階のため未実装。承認後の実装PRでSaveButtonの文言変更として対応し、このエントリは削除する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/requirements.md",
+    "item": "上書き保存 [10]",
+    "reason": "仕様承認PR段階のため未実装。承認後の実装PRでpage.tsxのアクティブなシナリオID管理として対応し、このエントリは削除する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/requirements.md",
+    "item": "上書き保存 [11]",
+    "reason": "仕様承認PR段階のため未実装。承認後の実装PRでScenarioPanelの名前欄初期値として対応し、このエントリは削除する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/requirements.md",
+    "item": "上書き保存 [12]",
+    "reason": "仕様承認PR段階のため未実装。承認後の実装PRで上書き更新・確認ダイアログとして対応し、このエントリは削除する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/requirements.md",
+    "item": "上書き保存 [13]",
+    "reason": "仕様承認PR段階のため未実装。承認後の実装PRで新規保存の判定ロジックとして対応し、このエントリは削除する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/requirements.md",
+    "item": "上書き保存 [14]",
+    "reason": "仕様承認PR段階のため未実装。承認後の実装PRで新規保存の判定ロジックとして対応し、このエントリは削除する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/requirements.md",
+    "item": "上書き保存 [15]",
+    "reason": "仕様承認PR段階のため未実装。承認後の実装PRで削除時のアクティブなシナリオ解除として対応し、このエントリは削除する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/design.md",
+    "item": "アクティブなシナリオを管理する処理",
+    "reason": "仕様承認PR段階のため未実装。承認後の実装PRでpage.tsxのアクティブなシナリオID管理として対応し、このエントリは削除する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/design.md",
+    "item": "マイグレーション追加分: 上書き保存のためのUPDATE権限(実装より先に単独PRで適用)",
+    "reason": "仕様承認PR段階のため未実装。承認後にマイグレーションPRを単独で適用し、実機確認で担保する(このエントリは削除する)"
   }
 ]

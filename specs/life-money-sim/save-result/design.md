@@ -12,12 +12,13 @@
 
 ### 試算結果を保存する処理
 - 対象: 「資産推移」タブの入力内容と計算結果
+- ボタンの文言は「この試算を送信する」とする(「保存」を含めず、マイシナリオとの誤解を避ける。requirements.md#機能要件-3)【推測: 文言の具体的な表現】
 - 手順:
-  1. 利用者が「この試算を保存する」ボタンを押したタイミングで保存を実行する(常時自動保存はせず、明示的な操作のみを保存の起点とする)
+  1. 利用者がボタンを押したタイミングで保存を実行する(常時自動保存はせず、明示的な操作のみを保存の起点とする)。画面上のグラフ・テーブルは元々入力値の変更にあわせて常時再計算・表示されており(`asset-projection/design.md#画面設計`)、このボタンを押すこと自体はグラフ・テーブルの表示内容を変えない。ボタンの役割は運営者向けの匿名記録のみ【推測: 「押したらグラフや表に反映される」という要望は、既存の常時反映される計算結果を指すものと解釈し、新たな反映処理は設けない】
   2. 入力内容(収入・個人支出/家計支出の内訳合計、配偶者の有無、子どもの人数、開始資産額、運用モードと(資産運用モードの場合の)想定利回りの値、登録されているイベント件数)と、計算結果のうち最終月時点の資産額・月次余剰資金(賞与抜き)・テストデータ判定の結果(`is_test`)を1件のレコードとしてまとめる
   3. Supabaseの`life_money_sim_results`テーブルへの保存を試みる
   4. 保存に失敗した場合は、エラーを画面に伝えず処理を終える(計算結果の表示はそのまま続ける)
-- 関連するビジネスルール: requirements.md#機能要件-1、requirements.md#機能要件-2、requirements.md#エッジケース・例外処理-1
+- 関連するビジネスルール: requirements.md#機能要件-1、requirements.md#機能要件-2、requirements.md#機能要件-3、requirements.md#エッジケース・例外処理-1
 
 ```mermaid
 sequenceDiagram
@@ -25,12 +26,12 @@ sequenceDiagram
     participant screen as 資産推移タブ(ブラウザ)
     participant db as Supabase(life_money_sim_results)
 
-    user ->> screen: 「この試算を保存する」ボタンを押す
+    user ->> screen: 「この試算を送信する」ボタンを押す
     screen ->> screen: 保存用のレコード(入力内容・計算結果・テストデータ判定)を組み立てる
     screen ->> db: 1件保存(INSERT)
     alt 保存に成功
         db -->> screen: 保存完了
-        screen ->> screen: 保存完了を軽く伝える(トースト等)
+        screen ->> screen: 送信完了を軽く伝える(トースト等)
     else 保存に失敗(通信エラー・RLS拒否など)
         db -->> screen: エラー
         screen ->> screen: エラーは画面に伝えず、計算結果の表示を続ける
@@ -46,7 +47,7 @@ sequenceDiagram
 app/life-money-sim/lib/saveResult.ts (新規: 保存用レコードの組み立て・テストデータ判定・保存処理)
 app/life-money-sim/lib/types.ts (既存: 保存対象の型を追加)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
-app/life-money-sim/components/SaveButton.tsx (新規: 「この試算を保存する」ボタンと保存完了/送信中の表示)
+app/life-money-sim/components/SaveButton.tsx (既存: 「この試算を送信する」ボタンと送信完了/送信中の表示。文言を「保存」から変更)
 ```
 
 ## データベース設計

@@ -26,3 +26,9 @@
 - [ ] Task 6: 保存ボタンの画面配線(仕様: design.md#試算結果を保存する処理、#エラーハンドリング)
   - [ ] `app/life-money-sim/components/SaveButton.tsx`を実装し、押下時に`saveResult`を呼び出す。送信中は再押下できないようにする
   - [ ] `page.tsx`に配線する(観測可能なUIの挙動としては保存完了表示のみのため、page.tsx自体の新規テストは追加しない)
+
+## 修正: ボタン文言を「保存」から「送信」に変更(2026-08)
+
+- [ ] Task 7: SaveButtonの文言変更(仕様: requirements.md#機能要件-3、design.md#試算結果を保存する処理)
+  - [ ] `app/life-money-sim/components/SaveButton.tsx`のボタン文言を「この試算を保存する」から「この試算を送信する」に変更する(送信中表示・完了表示の文言もあわせて見直す)
+  - [ ] `app/life-money-sim/components/ScenarioLoginPrompt.tsx`内の案内文言が参照しているボタン名を変更後の文言に合わせて更新する(`saved-scenario/tasks.md`の対応タスクと同一PRで行う)
