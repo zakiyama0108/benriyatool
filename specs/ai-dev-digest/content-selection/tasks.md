@@ -28,3 +28,11 @@
 - Task 6: 収集+選定のCLI化(仕様: design.md「関連するファイル」)
   - TDD対象外(fetchCandidates/selectDailyTopicsの薄い呼び出しのみのため。ロジック自体はTask 3〜5でテスト済み)
   - `scripts/ai-dev-digest/collect-and-select.ts`を実装する。実行日を引数に取り、選定結果(基準未達理由・スキップ判定を含む)をJSONとして標準出力する
+
+## 話題の関連性フィルタの実装(2026-08第2次改定)
+
+- Task 7: 話題の関連性フィルタ(仕様: requirements.md#話題の関連性-12、design.md「話題の関連性フィルタを適用する処理」)
+  - 🔴 原文タイトルに`topicExcludeKeywords`のいずれかを(大文字小文字を区別せず、日英とも)含む候補が除外されること、含まない候補は通常どおり採用基準判定に進むこと、`topicExcludeKeywords`が空配列のときは何も除外されないことを確認するテストを書く。あわせて、除外候補が他の採用基準を満たしていても選定結果に含まれないこと、除外により残る候補が基準未達のみでもその候補で補われること、すべて除外され実在候補が残らない場合はスキップ結果になることを`selectDailyTopics`のテストとして追加する
+  - 🟢 `app/ai-dev-digest/lib/selection.ts`に`isTopicExcluded(candidate, criteria)`を実装し、`selectDailyTopics`の先頭(採用基準判定より前)でこのフィルタを適用する
+  - `app/ai-dev-digest/lib/watchlistTypes.ts`の`Criteria`型に`topicExcludeKeywords: string[]`を追加する(TDD対象外。型定義のみのため)
+  - `content/ai-dev-digest/criteria.json`の`topicRelevanceGuideline`(未使用の自由記述フィールド)を、実際にフィルタで使う`topicExcludeKeywords`配列に置き換える(TDD対象外。データ変更のみのため)

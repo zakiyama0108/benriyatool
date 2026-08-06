@@ -16,7 +16,7 @@
       { "type": "youtube", "channelId": "@OpenAI" },
       { "type": "rss", "feedUrl": "https://openai.com/news/rss.xml" }
     ],
-    "topicScopeNote": "医療分野向けAI活用など、AI駆動開発から離れた話題を投稿することがある(2026-08運営者フィードバックの契機。criteria.jsonのtopicRelevanceGuidelineで横断的に除外判定する)"
+    "topicScopeNote": "医療分野向けAI活用など、AI駆動開発から離れた話題を投稿することがある(2026-08運営者フィードバックの契機。criteria.jsonのtopicExcludeKeywordsで横断的に除外判定する)"
   },
   {
     "id": "langchain",
