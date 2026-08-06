@@ -62,7 +62,7 @@
 
 ## T8. page.tsxへの配線(仕様: design.md#マイシナリオ操作の表示を出し分ける処理)
 - 対象ファイル: `app/life-money-sim/page.tsx`
-- 内容: 未ログイン時に`ScenarioPanel`の代わりに`ScenarioLoginPrompt`を「この試算を送信する」ボタンの近くに表示する
+- 内容: 未ログイン時に`ScenarioPanel`の代わりに`ScenarioLoginPrompt`を「この試算を実行する」ボタンの近くに表示する
 - `/run`(run-benriyatoolスキル)で、未ログイン時にログイン誘導案内が表示され、ログイン後はマイシナリオパネルに切り替わることを実機確認する
 
 ## 修正: 上書き保存・ボタン文言の変更(2026-08)
@@ -81,7 +81,7 @@
 ## T11. ScenarioPanelにアクティブなシナリオ対応の表示・確認ダイアログを追加(仕様: requirements.md#上書き保存-11〜13、design.md#名前を付けて保存する処理、design.md#画面設計)
 - 対象ファイル: `app/life-money-sim/components/ScenarioPanel.tsx`、`__tests__/life-money-sim/components/ScenarioPanel.test.tsx`
 - 内容:
-  - props: `activeScenario: ScenarioRecord | null`を追加し、`onSave`は「上書き更新」「新規保存」を呼び出し元(page.tsx)で判定できるよう、実行種別を渡せる形にする(`onSave: (name: string) => Promise<boolean>`はそのままとし、上書き/新規の判定自体はpage.tsx側の状態(アクティブなシナリオID)を見て行う。呼び出し元の責務分担は実装時の判断に委ねる)【推測: props設計の詳細】
+  - props: `activeScenario: ScenarioRecord | null`を追加し、`onSave`は「上書き更新」「新規保存」を呼び出し元(page.tsx)で判定できるよう、実行種別を渡せる形にする(`onSave: (name: string) => Promise<boolean>`はそのままとし、上書き/新規の判定自体はpage.tsx側の状態(アクティブなシナリオID)を見て行う。呼び出し元の責務分担は実装時の判断に委ねる)
   - 🔴 アクティブなシナリオがある場合、名前欄の初期値がそのシナリオの名前になり、ボタン文言が「更新する」になることを確認するテストを書く
   - 🔴 「更新する」を押すと確認ダイアログ(`window.confirm`)が呼ばれ、確認した場合のみ更新処理が実行される、キャンセルした場合は何も実行されないことを確認するテストを書く
   - 🔴 アクティブなシナリオがある状態で名前欄を別の名前に変更すると、ボタン文言が「保存する」に戻り、確認ダイアログを出さずに新規保存されることを確認するテストを書く
@@ -99,11 +99,11 @@
 
 ## T13. SaveButton・ScenarioLoginPromptの文言変更
 - 対象ファイル: `app/life-money-sim/components/ScenarioLoginPrompt.tsx`、`__tests__/life-money-sim/components/ScenarioLoginPrompt.test.tsx`
-- 内容: 案内文言中の「この試算を保存する」を「この試算を送信する」に更新する(`save-result/tasks.md`のTask 7と同一PRで行う)
+- 内容: 案内文言中の「この試算を保存する」を「この試算を実行する」に更新する(`save-result/tasks.md`のTask 7と同一PRで行う)
 
 ## T14. 動作確認
 - `npm run dev`でログインし、保存済みシナリオがある状態(自動読み込み後)で入力値を編集し、名前欄をそのままにして保存すると「更新する」ボタンになっており、押すと確認ダイアログが出て、確認後にそのシナリオが上書きされることを確認する(一覧の件数が増えないこと・リロード後も編集後の値が保持されることを確認する)
 - 同じ状態から名前欄を新しい名前に変更して保存すると、確認ダイアログなしで新規シナリオが追加されることを確認する
 - 一覧から別のシナリオを読み込むと、そのシナリオがアクティブになり、以後の保存がそのシナリオを上書き対象にすることを確認する
 - アクティブなシナリオを削除すると、以後の保存が新規保存に戻ることを確認する
-- 「この試算を送信する」ボタン・未ログイン時の案内文言が、新しい文言に変わっていることを確認する
+- 「この試算を実行する」ボタン・未ログイン時の案内文言が、新しい文言に変わっていることを確認する
