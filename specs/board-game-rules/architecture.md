@@ -22,7 +22,7 @@ flowchart TD
     userVisitor["利用者のブラウザ(ログイン済み)"]
     cf["Cloudflare Workers(静的配信)"]
     list["/board-game-rules<br>一覧・絞り込み"]
-    detail["/board-game-rules/[id]<br>詳細・ルール・コメント・通報"]
+    detail["/board-game-rules/detail?id=…<br>詳細・ルール・コメント・通報"]
     register["/board-game-rules/register<br>写真投稿・プレビュー・確定"]
     favList["/board-game-rules/favorites<br>お気に入り一覧"]
     admin["/board-game-rules/admin<br>モデレーション"]
@@ -62,7 +62,7 @@ flowchart TD
     admin -->|コメントの削除(運営者のみ、RLS)| commentDb
 ```
 
-この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specのrequirements.md/design.md。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。画面URL・テーブル名・Storageの利用有無は設計([/design](../../.claude/skills/design/SKILL.md))で確定する暫定値を含む。
+この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specのrequirements.md/design.md。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。画面URL・テーブル名・Storageは設計([/design](../../.claude/skills/design/SKILL.md))で確定済み(詳細画面は静的エクスポート制約によりクエリ方式 `/board-game-rules/detail?id=…`。テーブルは `board_game_rules_games`/`_favorites`/`_comments`/`_reports`、元写真は非公開Storageバケット)。
 
 ## 5. アーキテクチャ概要
 Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。ただし本アプリは、投稿された写真をLLMで解析しルール(簡単版・詳しい版)と分類情報を生成する処理のため、サイトで初めてランタイムのサーバー関数(Cloudflare Workers関数)を持つ([game-registration](game-registration/requirements.md)、[ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md))。投稿者は`/board-game-rules/register`で写真をアップロードし(Cloudflare Turnstileでボット判定)、サーバー関数がAnthropic APIによる画像解析と不明項目のWeb検索補完を行い、結果を未保存のままプレビューに返す。投稿者が内容を確認・修正して確定すると、ゲーム情報がDBに、元写真は非公開ストレージに保存され、即座に一覧・検索の対象になる。
@@ -122,7 +122,7 @@ flowchart LR
 この図の正となる文章は「[7. 機能マップ](#7-機能マップ)」の依存列と、各specのrequirements.mdの依存関係。
 
 ## 9. ディレクトリ構成
-CLAUDE.mdの一般規約(`components/`,`lib/`)に従う。ただし写真解析用のサーバー関数はNext.jsの静的アプリの一部ではないため、`app/board-game-rules/`配下ではなくCloudflare Workers関数の配置規約に従って別途置く(具体的な配置は[game-registration/design.md](game-registration/design.md)で確定する)。
+CLAUDE.mdの一般規約(`components/`,`lib/`)に従う。ただし写真解析用のサーバー関数はNext.jsの静的アプリの一部ではないため、`app/board-game-rules/`配下ではなく`worker/`配下に置く([game-registration/design.md](game-registration/design.md)で確定)。`wrangler.toml`に`main`(Workerエントリ)と`[assets]`の`binding`を追加し、静的配信を維持したままWorkers関数を同居させる(Workerは`/board-game-rules`の解析APIパスのみ処理し、他はすべて静的アセットへフォールバック)。
 
 ## 10. 外部サービス
 | サービス | 用途 |
@@ -137,7 +137,7 @@ CLAUDE.mdの一般規約(`components/`,`lib/`)に従う。ただし写真解析�
 | Anthropic API | ルールブック写真の画像解析・Web検索補完 |
 | Cloudflare Turnstile | 投稿フォームのボット対策 |
 
-テーブルが複数あり`auth.users`とのリレーションも生まれるため、ER図を置く。各カラムの正となる文章は各specのdesign.md「データベース設計」(設計フェーズで作成)。テーブル名・カラムは設計で確定する暫定値。
+テーブルが複数あり`auth.users`とのリレーションも生まれるため、ER図を置く。各カラムの正となる文章は各specのdesign.md「データベース設計」。テーブル名・カラムは設計で確定済み(`board_game_rules_games`は運営者の論理削除用に`deleted_at`を持つ。コメントは公開表示のため`author_name`を非正規化保存)。
 
 ```mermaid
 erDiagram
