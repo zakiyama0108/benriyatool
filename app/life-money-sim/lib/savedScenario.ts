@@ -43,6 +43,21 @@ export async function saveScenario(name: string, inputState: ScenarioInputState)
   }
 }
 
+// アクティブなシナリオ(直前に読み込んだ、または保存したシナリオ)を、現在の入力値一式で上書き更新する。
+// 名前は変更しない。成功/失敗を呼び出し元が判別できるよう真偽値で返す(saveScenarioと同じ方針)
+// (design.md#名前を付けて保存する処理-4)
+export async function updateScenario(id: string, inputState: ScenarioInputState): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('life_money_sim_saved_scenarios')
+      .update({ input_state: inputState })
+      .eq('id', id)
+    return !error
+  } catch {
+    return false
+  }
+}
+
 // 指定したシナリオを削除する。成功/失敗を呼び出し元が判別できるよう真偽値で返す
 // (design.md#削除する処理)
 export async function deleteScenario(id: string): Promise<boolean> {

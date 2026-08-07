@@ -1456,6 +1456,11 @@
   },
   {
     "specFile": "life-money-sim/saved-scenario/design.md",
+    "item": "マイグレーション追加分: 上書き保存のためのUPDATE権限(実装より先に単独PRで適用)",
+    "reason": "DBマイグレーション(supabase/migrations/20260806141408_add_update_policy_to_life_money_sim_saved_scenarios.sql、PR #168でマージ・適用済み)として作成済みのスキーマ・ポリシー定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md T9)"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/design.md",
     "item": "画面設計",
     "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはScenarioPanel.test.tsxでテスト済みのため"
   },
@@ -1503,6 +1508,21 @@
     "specFile": "life-money-sim/saved-scenario/requirements.md",
     "item": "ログイン時の自動読み込み [9]",
     "reason": "0件の場合は何も反映しないという不作為の要件で、対応するテスト(存在しないことの検証)を持たない。fetchScenariosが0件配列を返すこと自体はsavedScenario.test.tsxで検証済みで、page.tsx側の「呼ばない」判定は統合部分のため動作確認で担保する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/requirements.md",
+    "item": "上書き保存 [10]",
+    "reason": "自動読み込み・一覧からの読み込みでアクティブなシナリオIDを記録するpage.tsx側の状態管理(統合部分)で、本プロジェクトの方針でpage.tsx自体を単体テスト対象外としているため。上書き更新/新規保存の判定ロジック自体はScenarioPanel.test.tsxで検証済みで、page.tsxでの結線はnpm run devでの動作確認で担保する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/requirements.md",
+    "item": "上書き保存 [15]",
+    "reason": "削除した行がアクティブなシナリオIDと一致する場合にnullへ戻すpage.tsx側の状態管理(統合部分)で、本プロジェクトの方針でpage.tsx自体を単体テスト対象外としているため。npm run devでの動作確認で担保する"
+  },
+  {
+    "specFile": "life-money-sim/saved-scenario/design.md",
+    "item": "アクティブなシナリオを管理する処理",
+    "reason": "アクティブなシナリオIDというpage.tsx側のローカル状態の管理フロー(統合部分)で、本プロジェクトの方針でpage.tsx自体を単体テスト対象外としているため。個々の判定ロジック(上書き更新/新規保存の分岐・確認ダイアログ)はScenarioPanel.test.tsxで検証済みで、page.tsxでの結線はnpm run devでの動作確認で担保する"
   },
   {
     "specFile": "life-money-sim/saved-scenario/requirements.md",

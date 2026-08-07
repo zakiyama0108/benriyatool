@@ -26,7 +26,7 @@ import {
 } from './lib/monthlyBalance'
 import { calcFinalYearMonth, buildMonthlyProjectionRows, aggregateYearly } from './lib/assetProjection'
 import { getSession, onAuthChange, signInWithGoogle, signOut } from '../lib/adminAuth'
-import { fetchScenarios, saveScenario, deleteScenario, fillMissingScenarioFields } from './lib/savedScenario'
+import { fetchScenarios, saveScenario, updateScenario, deleteScenario, fillMissingScenarioFields } from './lib/savedScenario'
 import { CONTEXT_HELP_TEXT } from './lib/usageGuideContent'
 import HelpIcon from './components/HelpIcon'
 import UsageBanner from './components/UsageBanner'
@@ -89,6 +89,9 @@ export default function Page() {
   const [periodUnit, setPeriodUnit] = useState<PeriodUnit>('year')
   const [session, setSession] = useState<Session | null>(null)
   const [scenarios, setScenarios] = useState<ScenarioRecord[]>([])
+  // 自動読み込み・一覧からの読み込みで画面へ反映した、上書き更新の対象となるシナリオのID
+  // (仕様: saved-scenario/design.md#アクティブなシナリオを管理する処理)
+  const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null)
   const hasAutoLoadedRef = useRef(false)
 
   // 9枚のカードのうち、どのカードのコンテキストヘルプ(？アイコン)のポップオーバーが
@@ -101,16 +104,19 @@ export default function Page() {
     setOpenHelpId(null)
   }
 
-  // ログインセッションの取得・変化の購読(仕様: user-auth/design.md#ログイン状態を判定して表示を出し分ける処理)
+  // ログインセッションの取得・変化の購読(仕様: user-auth/design.md#ログイン状態を判定して表示を出し分ける処理)。
+  // ログアウトを検知した時点でアクティブなシナリオの指定も解除する
+  // (仕様: saved-scenario/design.md#アクティブなシナリオを管理する処理-4)
   useEffect(() => {
     let active = true
-    void getSession().then((s) => {
-      if (active) setSession(s)
-    })
+    function handleSession(s: Session | null) {
+      if (!active) return
+      setSession(s)
+      if (!s) setActiveScenarioId(null)
+    }
+    void getSession().then(handleSession)
     const unsubscribe = onAuthChange(() => {
-      void getSession().then((s) => {
-        if (active) setSession(s)
-      })
+      void getSession().then(handleSession)
     })
     return () => {
       active = false
@@ -146,7 +152,8 @@ export default function Page() {
   // (仕様: saved-scenario/design.md#ログイン直後に保存済み一覧を取得し自動反映する処理)
   useEffect(() => {
     if (!session) {
-      // ログアウト時はScenarioPanel自体を表示しないため一覧のリセットは不要(design.md#マイシナリオ操作の表示を出し分ける処理)
+      // ログアウト時はScenarioPanel自体を表示しないため一覧のリセットは不要(design.md#マイシナリオ操作の表示を出し分ける処理)。
+      // アクティブなシナリオの指定のリセットはログインセッション購読側で行う(design.md#アクティブなシナリオを管理する処理-4)
       hasAutoLoadedRef.current = false
       return
     }
@@ -157,6 +164,7 @@ export default function Page() {
         setScenarios(list)
         if (!hasAutoLoadedRef.current && list.length > 0) {
           applyScenario(list[0].inputState)
+          setActiveScenarioId(list[0].id)
         }
         hasAutoLoadedRef.current = true
       })
@@ -170,6 +178,9 @@ export default function Page() {
     }
   }, [session])
 
+  // アクティブなシナリオIDがあり、かつ名前欄がそのシナリオの名前のまま(未変更)であれば上書き更新、
+  // それ以外(アクティブなシナリオがない・名前欄が変更されている)は新規保存として扱う
+  // (仕様: saved-scenario/requirements.md#上書き保存-12〜14、design.md#名前を付けて保存する処理)
   async function handleSaveScenario(name: string) {
     const currentState: ScenarioInputState = {
       income,
@@ -182,10 +193,18 @@ export default function Page() {
       recurringEntries,
       investmentModeInput,
     }
-    const ok = await saveScenario(name, currentState)
+    const activeRecord = scenarios.find((s) => s.id === activeScenarioId) ?? null
+    const isUpdate = activeRecord !== null && activeRecord.name === name
+    const ok = isUpdate ? await updateScenario(activeRecord.id, currentState) : await saveScenario(name, currentState)
     if (ok) {
       try {
-        setScenarios(await fetchScenarios())
+        const refreshed = await fetchScenarios()
+        setScenarios(refreshed)
+        // 新規保存した直後は、新しく作成したシナリオをアクティブなシナリオにする。一覧は保存日時の新しい順
+        // のため、今保存した1件が先頭に来る(design.md#アクティブなシナリオを管理する処理-2)
+        if (!isUpdate && refreshed.length > 0) {
+          setActiveScenarioId(refreshed[0].id)
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('マイシナリオ: 保存後の一覧再取得に失敗しました', e)
@@ -194,14 +213,20 @@ export default function Page() {
     return ok
   }
 
+  // 読み込んだシナリオをアクティブなシナリオとして記録する(design.md#アクティブなシナリオを管理する処理-1)
   function handleLoadScenario(id: string) {
     const record = scenarios.find((s) => s.id === id)
-    if (record) applyScenario(record.inputState)
+    if (record) {
+      applyScenario(record.inputState)
+      setActiveScenarioId(id)
+    }
   }
 
   async function handleDeleteScenario(id: string) {
     const ok = await deleteScenario(id)
     if (ok) {
+      // 削除した行がアクティブなシナリオであれば指定を解除する(design.md#アクティブなシナリオを管理する処理-3)
+      if (id === activeScenarioId) setActiveScenarioId(null)
       try {
         setScenarios(await fetchScenarios())
       } catch (e) {
@@ -444,6 +469,7 @@ export default function Page() {
             {session ? (
               <ScenarioPanel
                 scenarios={scenarios}
+                activeScenario={scenarios.find((s) => s.id === activeScenarioId) ?? null}
                 onSave={handleSaveScenario}
                 onLoad={handleLoadScenario}
                 onDelete={handleDeleteScenario}
