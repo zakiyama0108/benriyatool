@@ -219,3 +219,16 @@ describe('削除中・削除失敗時の表示 - 処理中の行は再押下で�
     await waitFor(() => expect(screen.getByText(/削除に失敗しました/)).toBeTruthy())
   })
 })
+
+// 仕様: specs/life-money-sim/saved-scenario/requirements.md#上書き保存-16
+describe('マイシナリオの一覧 - アクティブなシナリオを他の行と区別できる表示にする', () => {
+  it('一覧内でアクティブなシナリオの行にのみ「編集中」バッジが表示されること', () => {
+    render(<ScenarioPanel activeScenario={activeScenario} scenarios={[activeScenario, scenarios[1]]} onSave={vi.fn()} onLoad={vi.fn()} onDelete={vi.fn()} />)
+    expect(screen.getAllByText('編集中').length).toBe(1)
+  })
+
+  it('アクティブなシナリオがない場合、一覧のどの行にも「編集中」バッジが表示されないこと', () => {
+    render(<ScenarioPanel activeScenario={null} scenarios={scenarios} onSave={vi.fn()} onLoad={vi.fn()} onDelete={vi.fn()} />)
+    expect(screen.queryByText('編集中')).toBeNull()
+  })
+})

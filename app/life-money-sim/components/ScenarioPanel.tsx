@@ -115,11 +115,26 @@ export default function ScenarioPanel({ scenarios, activeScenario, onSave, onLoa
             const isDeleting = deletingId === scenario.id
             // 他の行が削除処理中の間も、押しても無視されるだけの状態にせず見た目上も無効化して揃える
             const isBusy = deletingId !== null
+            // この行が上の名前欄・保存ボタンの対象(アクティブなシナリオ)かどうかを見た目で区別する
+            // (仕様: requirements.md#上書き保存-16。同名の別シナリオとの混同を防ぐ)
+            const isActive = activeScenario !== null && scenario.id === activeScenario.id
             return (
-              <li key={scenario.id} className="rounded-xl bg-white px-3 py-2 text-sm">
+              <li
+                key={scenario.id}
+                className={`rounded-xl px-3 py-2 text-sm ${
+                  isActive ? 'border border-lms-teal bg-lms-teal/10' : 'bg-white'
+                }`}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <p className="font-medium text-lms-ink">{scenario.name}</p>
+                    <p className="font-medium text-lms-ink">
+                      {scenario.name}
+                      {isActive && (
+                        <span className="ml-2 rounded-full bg-lms-teal px-2 py-0.5 text-xs font-normal text-white">
+                          編集中
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-lms-muted">{formatSavedAt(scenario.createdAt)}</p>
                   </div>
                   <div className="flex gap-2">
