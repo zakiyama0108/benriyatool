@@ -48,9 +48,10 @@ const eslintConfig = defineConfig([
     "coverage/**",
     // Skill用のエージェントツール(run-benriyatoolのドライバ等)。アプリのコード規約(no-console等)の対象外
     ".claude/**",
-    // 独立した依存関係(pg/dotenv)を持つ隔離パッケージのため、本体のtsconfigプロジェクトに含めない
-    // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」)
+    // 独立した依存関係(pg/dotenv/@supabase/supabase-js)を持つ隔離パッケージのため、本体のtsconfigプロジェクトに含めない
+    // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」、specs/board-game-rules/admin/tasks.md T8)
     "scripts/ai-dev-digest/collect-review-data/**",
+    "scripts/board-game-rules/**",
   ]),
 ]);
 

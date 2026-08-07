@@ -35,7 +35,7 @@ beforeEach(() => {
   deleteEqMock.mockReset().mockResolvedValue({ data: null, error: null })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-6、specs/board-game-rules/admin/design.md「ゲームを編集して上書き保存する処理」
+// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-6、specs/board-game-rules/admin/requirements.md#アクセス制御・権限-3、specs/board-game-rules/admin/design.md#ゲームを編集して上書き保存する処理
 describe('【管理画面】ゲームを編集して上書き保存する - 登録時と同じ検証を通す', () => {
   it('妥当な入力ではUPDATEが実行されtrueが返ること', async () => {
     const result = await editGame(validInput())
@@ -94,7 +94,7 @@ describe('【管理画面】ゲームを編集して上書き保存する - 登�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-7、specs/board-game-rules/admin/design.md「ゲームを削除する処理」
+// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-7、specs/board-game-rules/admin/design.md#ゲームを削除する処理
 describe('【管理画面】ゲームを削除する - deleted_atをセットする論理削除', () => {
   it('deleted_atに現在時刻をセットするUPDATEが実行されtrueが返ること', async () => {
     const result = await deleteGame('game-1')
@@ -114,7 +114,7 @@ describe('【管理画面】ゲームを削除する - deleted_atをセットす
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#コメントの削除-11、specs/board-game-rules/admin/design.md「コメントを削除する処理」
+// 仕様: specs/board-game-rules/admin/requirements.md#コメントの削除-11、specs/board-game-rules/admin/design.md#コメントを削除する処理
 describe('【管理画面】不適切なコメントを削除する', () => {
   it('対象コメントのDELETEが実行されtrueが返ること', async () => {
     const result = await deleteComment('comment-1')

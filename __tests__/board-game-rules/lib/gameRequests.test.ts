@@ -25,7 +25,7 @@ beforeEach(() => {
   insertMock.mockReset().mockResolvedValue({ data: null, error: null })
 })
 
-// 仕様: specs/board-game-rules/game-registration/requirements.md#依頼の送信-5、requirements.md#分類情報の任意入力-3
+// 仕様: specs/board-game-rules/game-registration/requirements.md#依頼の送信-5、specs/board-game-rules/game-registration/requirements.md#分類情報の任意入力-3
 describe('【登録依頼】写真+分類情報から登録依頼を送信する - 写真を非公開Storageに保存してからDBへINSERTする', () => {
   it('写真1枚+分類情報(すべて任意)を渡すと、写真が非公開Storageに保存され、依頼がINSERTされてtrueが返ること', async () => {
     const result = await createGameRequest({

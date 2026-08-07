@@ -81,7 +81,7 @@ beforeEach(() => {
   vi.mocked(fetchOriginalPhotos).mockReset().mockResolvedValue([])
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-1、specs/board-game-rules/admin/requirements.md#アクセス制御・権限-2
+// 仕様: specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-1、specs/board-game-rules/admin/requirements.md#アクセス制御・権限-2、specs/board-game-rules/admin/design.md#ログイン状態を判定して画面を出し分ける処理、specs/board-game-rules/admin/design.md#閲覧権限を確認する処理
 describe('【管理画面】未ログイン・権限なしでは管理データを一切取得しない', () => {
   it('未ログインのとき、ログイン案内が表示されデータ取得が行われないこと', async () => {
     vi.mocked(getSession).mockResolvedValue(null)

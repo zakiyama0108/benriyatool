@@ -16,7 +16,7 @@ beforeEach(() => {
   orderMock.mockReset().mockResolvedValue({ data: [], error: null })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#通報の確認-8、specs/board-game-rules/admin/design.md「通報を確認する処理」
+// 仕様: specs/board-game-rules/admin/requirements.md#通報の確認-8、specs/board-game-rules/admin/design.md#通報を確認する処理
 describe('【管理画面】通報一覧を取得する - 対象ゲーム・通報日時・理由テキストを新しい順に取得する', () => {
   it('board_game_rules_reportsを新しい順に取得すること', async () => {
     await fetchReports()

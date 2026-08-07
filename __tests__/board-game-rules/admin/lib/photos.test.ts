@@ -14,7 +14,7 @@ beforeEach(() => {
   createSignedUrlMock.mockReset()
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#投稿写真の照合閲覧-10、specs/board-game-rules/admin/design.md「元写真を照合閲覧する処理」
+// 仕様: specs/board-game-rules/admin/requirements.md#投稿写真の照合閲覧-10、specs/board-game-rules/admin/design.md#元写真を照合閲覧する処理
 describe('【管理画面】photo_pathsから非公開Storageの元写真を取得する - 運営者本人のみの照合閲覧', () => {
   it('各パスについて非公開Storageの署名付きURLを取得できること', async () => {
     createSignedUrlMock.mockResolvedValue({ data: { signedUrl: 'https://example.com/signed.jpg' }, error: null })

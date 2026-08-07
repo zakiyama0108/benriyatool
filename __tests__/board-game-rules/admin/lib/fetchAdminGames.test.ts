@@ -49,7 +49,7 @@ beforeEach(() => {
   fromMock.mockReset()
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-5、specs/board-game-rules/admin/design.md「ゲーム一覧を取得する処理」
+// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-5、specs/board-game-rules/admin/design.md#ゲーム一覧を取得する処理(モデレーション対象)
 describe('【管理画面】モデレーション対象のゲーム一覧を取得する - 対応が必要なものを見つけやすい順に並べる', () => {
   it('通報件数の多い順に並ぶこと', async () => {
     setup(

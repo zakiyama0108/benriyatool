@@ -2763,5 +2763,505 @@
     "specFile": "board-game-rules/user-auth/design.md",
     "item": "依存関係",
     "reason": "他specとの関係・前提を説明する見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "処理フロー",
+    "reason": "ikukyu/admin/design.md#処理フローと同一のシーケンス図であることの記述で、本spec独自の検証対象を持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "Googleでログインする処理 / ログアウトする処理",
+    "reason": "手順はikukyu/admin/design.mdの同名処理と同一(戻り先URLのみ異なる)で、実体はapp/lib/adminAuth.tsのsignInWithGoogle/signOutをそのまま呼ぶ配線のため、ikukyu/admin/lib/auth.test.ts(board-game-rules/admin/requirements.md#ログイン・アクセス制御-2、-4を併記)が検証を兼ねる"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "登録依頼からゲームを登録するローカルツール(管理画面の外)",
+    "reason": "WebアプリのコードではないClaude Code Skill(.claude/skills/board-game-rules-batch-register/)とNode.jsスクリプト(scripts/board-game-rules/registerGame.ts)のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T8参照)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "エラーハンドリング",
+    "reason": "画面の状態切り分け・失敗表示の方針記述で、個別の対応するビジネスルール(各処理のrequirements.md項目)側のテストで担保済みのため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "データベース設計",
+    "reason": "各テーブルの運営者向け操作範囲を整理した記述で、実際のRLS担保は各specのマイグレーション適用時の実機確認で行うため(game-registration/tasks.md T0、admin/tasks.md T0参照)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "元写真の非公開Storage(新規: 実装より先に単独PRで適用)",
+    "reason": "Storageバケット設定・T0の実機確認手順の記述で、TDD対象外(admin/tasks.md T0参照。マイグレーション適用時に実機確認する)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "画面設計",
+    "reason": "画面のレイアウト・構成の記述で、実際の各コンポーネントの振る舞いはGameModerationTable/GameEditForm/ReportsView/GameRequestsView/page.tsxの各テストで担保済みのため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "状態管理",
+    "reason": "画面が持つローカル状態の設計記述で、4状態の遷移はpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "セキュリティ",
+    "reason": "RLS・Storageポリシーによる実際の保護方針の記述で、アプリの単体テスト対象外(マイグレーション適用時の実機確認で担保する)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "パフォーマンス",
+    "reason": "全ゲーム取得+通報の集計取得で足りるという設計判断の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "ログ",
+    "reason": "失敗時にコンソールへエラーを出す方針の記述で、出力内容自体を検証するテストは行わない方針のため(ikukyu/adminと同一方針)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "依存関係",
+    "reason": "他spec・ADRへの参照と確認事項の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "認証手段とパスキー [4]",
+    "reason": "既存アプリの管理画面と同一の認証方針を踏襲するという運用方針の記述で、パスキー・2段階認証の運用はコードで強制できずアプリのテスト対象外のため。初回公開前の確認で担保する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "認証手段とパスキー [5]",
+    "reason": "初回公開前にRedirect URLsの設定状況を確認するという運用手順で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "通報への対応方針 [6]",
+    "reason": "通報があっても自動非表示・自動削除にしないという不作為の要件で、対応するテスト(存在しないことの検証)を持たないため。自動非表示・削除ロジック自体を実装していないことで担保する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "通知 [7]",
+    "reason": "Supabase Database Webhooks(ダッシュボードでの手動設定)によるntfy通知で、TDD対象外・手動設定のため(game-registration/tasks.md T0参照)"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "非機能要件 [1]",
+    "reason": "PC・スマートフォン双方で表示が破綻しない程度に配慮するという表示方針で、自動テストで検証する性質のものではないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "非機能要件 [2]",
+    "reason": "静的エクスポート構成を維持するという構成上の制約で、ビルド(npm run build)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "依存関係",
+    "reason": "他spec・ADRへの参照と確認事項の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "処理フロー",
+    "reason": "依頼送信のシーケンス図全体の記述で、各手順はrequirements.md#写真のアップロード・#依頼の送信の各テストで個別に担保済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "依頼を送信する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#写真のアップロード-1〜2、#分類情報の任意入力-3〜4、#依頼の送信-5〜7でテスト済み(gameRequests.test.ts、register/page.test.tsx)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "運営者へ通知する処理",
+    "reason": "Supabase Database Webhooks(ダッシュボードでの手動設定)によるntfy通知で、TDD対象外・手動設定のため(tasks.md T0参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢",
+    "reason": "固定リストの導入経緯・運用方針の説明文で、値そのものの一覧・順序・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 協力",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 対戦",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 正体隠匿",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 戦略",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > パーティー",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > ファミリー",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > カードゲーム",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > すごろく系",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > ワーカープレイスメント",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > デッキ構築",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 推理・デダクション",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 拡大再生産",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 陣取り・エリアマジョリティ",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > タイル配置",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > ドラフト",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > セットコレクション",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > ハンドマネージメント",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 競り・オークション",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > ベッティング・予想",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > トリックテイキング",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > ダイスロール",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > ブラフ・心理戦",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > アブストラクト",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > アクション",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > 表現・言葉遊び",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > レガシー",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > ウォーゲーム",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ジャンルの選択肢 > その他",
+    "reason": "設計書内の一覧表の1行(値+説明)で、GENRES定数の全項目・説明はgenres.test.ts(requirements.md#分類情報の任意入力-4)でまとめてテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "バリデーション",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#写真のアップロード-1、#入力値の制約-9でテスト済み(gameRequests.test.ts、register/page.test.tsx)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "元写真のStorage",
+    "reason": "依頼写真の保存先バケットに関する設計記述で、実際のアクセスポリシーはadmin/design.md#元写真の非公開Storageのマイグレーション適用時の実機確認で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "エラーハンドリング",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#依頼の送信-7でテスト済み(register/page.test.tsx)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "撤廃したもの(旧設計からの変更点)",
+    "reason": "旧設計との差分整理のための記述で、撤廃した機能自体が存在しないことを検証するテストは持たない(存在しないことの確認はコードレビューで担保する)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "データベース設計",
+    "reason": "board_game_rules_games/board_game_rules_game_requestsのスキーマ変更方針の記述で、実際のCHECK制約・RLSはマイグレーション適用時の実機確認で担保するため(tasks.md T0参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規)",
+    "reason": "新規テーブルの導入説明文(見出し本文なし)で、カラム定義は下記の各行・実際の制約はマイグレーションの実機確認で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > id",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > photo_paths",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > name",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > min_players",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > max_players",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > min_minutes",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > max_minutes",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > genres",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > min_age",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > difficulty",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > publisher",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > author",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > has_japanese_rules",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > awards",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > release_year",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > created_at",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > processed_at",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマ・制約はマイグレーション適用時の実機確認(tasks.md T0)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest)でテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "マイグレーション(実装より先に単独PRで適用)",
+    "reason": "マイグレーションSQL全文の記述で、TDD対象外(tasks.md T0の実機確認で担保する。既にPR #175で適用済み)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "運営者への通知(Supabase Database Webhooks + ntfy Message Templating)",
+    "reason": "Supabase Database Webhooks(ダッシュボードでの手動設定)によるntfy通知の詳細記述で、TDD対象外・手動設定のため(tasks.md T0参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "セキュリティ",
+    "reason": "課金の発生しない設計・元写真の非公開・Storage濫用への量的制約等の設計方針の記述で、実際の担保はDB/Storageのポリシー(マイグレーション適用時の実機確認)・アーキテクチャ選択(Anthropic API非呼び出し)によるため、アプリの単体テスト対象外"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ログ",
+    "reason": "失敗時にコンソールへエラーを出す方針の記述で、出力内容自体を検証するテストは行わない方針のため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "依存関係",
+    "reason": "他spec・admin側の設計への参照と確認事項の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "投稿者・運営者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "運営者への通知 [8]",
+    "reason": "Supabase Database Webhooks(ダッシュボードでの手動設定)によるntfy通知で、TDD対象外・手動設定のため(tasks.md T0参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ルール本文の著作権への配慮(根拠) [1]",
+    "reason": "運営者がローカルツールでルール本文を独自の言い回しに再構成するという運用方針の根拠説明で、Webアプリのコードが検証すべき振る舞いを持たない(生成処理自体は.claude/skills/board-game-rules-batch-register/、TDD対象外)ため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ルール本文の著作権への配慮(根拠) [2]",
+    "reason": "詳しい版は数値・条件を省略しない「精密な言い換え」とするという生成方針の記述で、生成処理自体は.claude/skills/board-game-rules-batch-register/が担い、TDD対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ルール本文の著作権への配慮(根拠) [3]",
+    "reason": "元写真を一般公開しないことで要約コンテンツと原本を分離するという設計根拠の記述で、写真の非公開はrequirements.md#写真の取り扱い-4でテスト済み(games.types.test.ts)のため重複させない"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "公開ポリシー [5]",
+    "reason": "投稿者の依頼だけでは公開されないという方針の記述で、Web側からのboard_game_rules_games直接INSERT経路自体を実装していない(存在しないことの検証)ことで担保するため。ローカル登録ツール経由の公開はTDD対象外(admin/tasks.md T8)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "公開ポリシー [6]",
+    "reason": "登録済み内容の事後訂正はadmin/requirements.mdの編集・削除機能、通報はreport/requirements.mdが担うという参照の記述で、本spec独自の検証対象を持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "匿名投稿 [7]",
+    "reason": "ログイン不要・Turnstile等のボット対策を設けないという不作為の方針記述で、対応するテスト(存在しないことの検証)を持たない。写真アップロードの量的制約はStorageバケット設定(admin/tasks.md T0)で担保する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "非機能要件 [1]",
+    "reason": "LLM呼び出しを伴わず通常のフォーム送信と同程度の応答時間という性能面の記述で、自動テストで検証する性質のものではないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]

@@ -45,8 +45,8 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  // サードパーティコードは型チェック対象外にする。collect-review-data/は独立した依存関係
-  // (pg/dotenv)を持つ隔離パッケージのため、本体の型チェック対象から除外する
-  // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」)
-  "exclude": ["node_modules", "scripts/ai-dev-digest/collect-review-data"]
+  // サードパーティコードは型チェック対象外にする。collect-review-data/・scripts/board-game-rules/は
+  // 独立した依存関係(pg/dotenv/@supabase/supabase-js)を持つ隔離パッケージのため、本体の型チェック対象から除外する
+  // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」、specs/board-game-rules/admin/tasks.md T8)
+  "exclude": ["node_modules", "scripts/ai-dev-digest/collect-review-data", "scripts/board-game-rules"]
 }

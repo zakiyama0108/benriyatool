@@ -30,7 +30,7 @@ function makeGame(overrides: Partial<AdminGame> = {}): AdminGame {
   }
 }
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-6、specs/board-game-rules/admin/design.md「ゲームを編集して上書き保存する処理」
+// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-6、specs/board-game-rules/admin/design.md#ゲームを編集して上書き保存する処理
 describe('【管理画面】ゲーム編集フォーム - 分類情報・ルール本文を編集して上書き保存する', () => {
   it('既存のゲーム情報が初期値として表示されること', () => {
     render(<GameEditForm game={makeGame()} onSave={vi.fn()} onCancel={vi.fn()} />)

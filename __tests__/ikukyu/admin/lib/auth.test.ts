@@ -43,8 +43,8 @@ describe('【管理】ログイン状態の取得 - 現在ログインしてい�
   })
 })
 
-// 仕様: specs/ikukyu/admin/requirements.md#ログイン・アクセス制御-2、specs/ikukyu/admin/requirements.md#認証手段とパスキー-2、specs/life-money-sim/admin/requirements.md#ログイン・アクセス制御-2
-// (ikukyu/admin・life-money-sim/adminはapp/lib/adminAuth.tsのログインロジックを共用するため、このテストが両specの検証を兼ねる)
+// 仕様: specs/ikukyu/admin/requirements.md#ログイン・アクセス制御-2、specs/ikukyu/admin/requirements.md#認証手段とパスキー-2、specs/life-money-sim/admin/requirements.md#ログイン・アクセス制御-2、specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-2
+// (ikukyu/admin・life-money-sim/admin・board-game-rules/adminはapp/lib/adminAuth.tsのログインロジックを共用するため、このテストが各specの検証を兼ねる)
 describe('【管理】Googleでのログイン開始 - Google OIDCで認証を始め、認証後に管理画面へ戻す', () => {
   it('Googleプロバイダで、認証後の戻り先を管理画面URLに指定してログインを開始すること', async () => {
     await signInWithGoogle('https://benriyatool.com/ikukyu/admin/')
@@ -55,7 +55,7 @@ describe('【管理】Googleでのログイン開始 - Google OIDCで認証を�
   })
 })
 
-// 仕様: specs/ikukyu/admin/requirements.md#ログイン・アクセス制御-4、specs/life-money-sim/admin/requirements.md#ログイン・アクセス制御-4
+// 仕様: specs/ikukyu/admin/requirements.md#ログイン・アクセス制御-4、specs/life-money-sim/admin/requirements.md#ログイン・アクセス制御-4、specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-4
 describe('【管理】ログアウト - ログインセッションを破棄する', () => {
   it('ログアウトを実行すること', async () => {
     await signOut()
@@ -63,7 +63,7 @@ describe('【管理】ログアウト - ログインセッションを破棄す�
   })
 })
 
-// 仕様: specs/ikukyu/admin/requirements.md#ログイン・アクセス制御-3、specs/ikukyu/admin/requirements.md#アクセス制御・権限-1、specs/life-money-sim/admin/requirements.md#アクセス制御・権限-1
+// 仕様: specs/ikukyu/admin/requirements.md#ログイン・アクセス制御-3、specs/ikukyu/admin/requirements.md#アクセス制御・権限-1、specs/life-money-sim/admin/requirements.md#アクセス制御・権限-1、specs/board-game-rules/admin/requirements.md#アクセス制御・権限-1
 describe('【管理】閲覧権限の確認 - ログイン中の本人が許可リストに登録されているかを確認する', () => {
   it('自分のアカウントが許可リストにあるとき、閲覧を許可(true)すること', async () => {
     state.adminEmailsResult = { data: [{ email: 'owner@example.com' }], error: null }

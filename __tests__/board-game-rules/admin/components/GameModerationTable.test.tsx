@@ -29,7 +29,7 @@ function makeGame(overrides: Partial<AdminGame> = {}): AdminGame {
   }
 }
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-5、specs/board-game-rules/admin/design.md「ゲーム一覧を取得する処理」
+// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-5、specs/board-game-rules/admin/design.md#ゲーム一覧を取得する処理(モデレーション対象)
 describe('【管理画面】ゲーム一覧表 - 通報件数・削除済みの区別、編集・削除・写真照合の導線', () => {
   it('ゲーム名・通報件数が表示されること', () => {
     render(

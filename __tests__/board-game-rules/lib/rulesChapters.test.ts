@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { RULE_CHAPTERS, CHAPTER_KEYS, chapterHeading } from '../../../app/board-game-rules/lib/rulesChapters'
 
-// 仕様: specs/board-game-rules/game-registration/requirements.md#LLMによる解析・生成-5
+// 仕様: specs/board-game-rules/game-registration/design.md#board_game_rules_games(変更)
 describe('【詳しい版】ルール本文の共通章立て - 章キーと表示見出しの対応', () => {
   it('共通章立ては、概要・準備・手番の流れ・勝利条件・得点計算・特殊ルールの6章をこの順で持つこと(横断分析のためキーを固定)', () => {
     expect(CHAPTER_KEYS).toEqual(['overview', 'setup', 'turn_flow', 'victory', 'scoring', 'special'])

@@ -20,7 +20,7 @@ beforeEach(() => {
   vi.mocked(createGameRequest).mockReset().mockResolvedValue(true)
 })
 
-// 仕様: specs/board-game-rules/game-registration/requirements.md#写真のアップロード-1、requirements.md#依頼の送信-5
+// 仕様: specs/board-game-rules/game-registration/requirements.md#写真のアップロード-1、specs/board-game-rules/game-registration/requirements.md#依頼の送信-5
 describe('【登録依頼画面】写真必須のバリデーション - 写真が0枚の間は送信できない', () => {
   it('写真を選択していない状態では、送信ボタンが無効であること', () => {
     render(<RegisterPage />)
@@ -99,7 +99,7 @@ describe('【登録依頼画面】下限>上限の入力を送信できないよ
   })
 })
 
-// 仕様: specs/board-game-rules/game-registration/requirements.md#写真のアップロード-2、requirements.md#依頼の送信-6、requirements.md#依頼の送信-7
+// 仕様: specs/board-game-rules/game-registration/requirements.md#写真のアップロード-2、specs/board-game-rules/game-registration/requirements.md#依頼の送信-6、specs/board-game-rules/game-registration/requirements.md#依頼の送信-7
 describe('【登録依頼画面】送信中・成功・失敗の表示切り替え', () => {
   it('送信中は送信ボタンが無効化され、送信中であることが分かる表示が出ること(二重送信防止)', async () => {
     let resolveFn: (v: boolean) => void = () => {}

@@ -14,7 +14,7 @@ beforeEach(() => {
   })
 })
 
-// 仕様: specs/board-game-rules/game-registration/requirements.md#写真のアップロード-1、design.md「依頼を送信する処理」の手順1
+// 仕様: specs/board-game-rules/game-registration/requirements.md#写真のアップロード-1
 describe('【登録依頼】写真アップローダー - 複数枚の写真選択・プレビュー表示・削除ができる', () => {
   it('写真を選択すると、選択した写真がonChangeで渡されプレビューが表示されること', () => {
     const onChange = vi.fn()
