@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Session } from '@supabase/supabase-js'
 import { useSession } from '../../../app/board-game-rules/lib/useSession'
@@ -39,6 +39,27 @@ describe('【共通】各画面がログイン状態を参照するためのセ�
 
     await waitFor(() => expect(result.current.session).not.toBeNull())
     expect(result.current.session?.user.email).toBe('taro@example.com')
+  })
+
+  it('ログイン完了・ログアウトが通知されると、セッションを取り直して最新の状態を反映すること', async () => {
+    // onAuthChangeのコールバックを捕捉し、後から任意のタイミングで発火させる
+    let notifyAuthChange: (() => void) | undefined
+    vi.mocked(adminAuth.onAuthChange).mockImplementation((cb) => {
+      notifyAuthChange = cb
+      return () => {}
+    })
+    // 初期取得は未ログイン、変化通知後の取り直しではログイン中のセッションを返す
+    vi.mocked(adminAuth.getSession)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(makeSession('taro@example.com'))
+
+    const { result } = renderHook(() => useSession())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.session).toBeNull()
+
+    // OAuthリダイレクト後のセッション確立を模擬(ログイン完了の通知)
+    act(() => notifyAuthChange?.())
+    await waitFor(() => expect(result.current.session?.user.email).toBe('taro@example.com'))
   })
 
   it('アンマウント時に、onAuthChangeの購読解除が呼ばれること(購読の後始末)', async () => {
