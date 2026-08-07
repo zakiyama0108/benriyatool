@@ -5,7 +5,7 @@
 実行主体はGitHub Actionsとする(以下を設計上の前提として明記する。要件は「実行主体はGitHub Actions」とのみ定めており、詳細は本designで確定する):
 
 - **2026-08改定の経緯**: 当初はClaude Routines(定期実行のクラウドエージェント)を実行主体とする設計だったが、実際にテスト用Routineを作成・実行して検証した結果、Routine実行環境に独自の環境変数・シークレット(`YOUTUBE_API_KEY`等)を追加するUI・APIが確認できなかった(GitHub書き込み用の`GITHUB_TOKEN`等プラットフォームが自動で用意する変数は存在するが、ユーザー独自のシークレットを追加する手段が見当たらなかった。/consultでの検証記録)。この制約が解消される見込みが立たなかったため、実行主体をGitHub Actionsに変更した
-- ワークフロー本体は`.github/workflows/ai-dev-digest-daily.yml`として1日1回(JST想定時刻をUTCのcronに変換して)起動する
+- ワークフロー本体は`.github/workflows/ai-dev-digest-daily.yml`として1日1回(JST想定時刻をUTCのcronに変換して)起動する。GitHub Actionsのscheduled workflowには起動時刻のSLAがなく、特に毎時0分は世界中のジョブが集中し起動が数十分〜数時間単位で遅延しうる(2026-08実測: 分を0にしていた際+1〜3.5時間の遅延を確認)。そのため`cron`の分は0を避けて設定し、遅延の傾向を緩和する(厳密な定刻配信までは保証しない。requirements.mdに配信時刻の厳密な固定要件はなく、朝の時間帯に届けば足りるため)
 - GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を発行し、`AI_DEV_DIGEST_GH_PAT`としてリポジトリのActions Secretsに保存する。ワークフロー既定の`GITHUB_TOKEN`は使わない(既定の`GITHUB_TOKEN`で作成したPR・pushでは、無限ループ防止のGitHub側の仕様により既存の`ci.yml`を含む後続ワークフローが自動起動されず、CIが走らないまま自動マージ判定に進めなくなるため)
 - [content-selection/design.md](../content-selection/design.md)が必要とするYouTube Data APIキーは`YOUTUBE_API_KEY`として、このリポジトリのActions Secretsに保存する(docs/adr/0004が対象とする`SUPABASE_READONLY_DB_URL`(DB読み取り権限)とは性質が異なる。本specはDBに接続しないため同ADRの対象外)
 - [content-generation](../content-generation/design.md)の翻訳・要約生成は、Anthropic APIの従量課金呼び出しではなくClaude Code CLIのヘッドレス実行(運営者個人のClaude Code Pro/Maxサブスクリプション認証)で行う(2026-08第2次改定。経緯・理由はcontent-generation/design.md「設計の前提」参照)。GitHub Actionsランナーには`npm install -g @anthropic-ai/claude-code`でClaude Code CLIをインストールし、`claude setup-token`で発行した長期(1年)OAuthトークンを`CLAUDE_CODE_OAUTH_TOKEN`としてこのリポジトリのActions Secretsに保存する(watchlist-reviewの月次ワークフローと同じ認証情報を共用する)
