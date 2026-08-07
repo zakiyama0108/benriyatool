@@ -1,7 +1,14 @@
 # 0007. 匿名投稿型コンテンツアプリのためのサーバー機能追加と管理画面の書き込み権限
 
 ## ステータス
-提案中
+提案中(2026-08、実装着手前にランタイムサーバー機能部分を撤回。下記「2026-08の見直し」参照)
+
+## 2026-08の見直し
+本ADRが前提としていた「投稿者がその場で写真を撮り即座にプレビュー・確定するライブなUX」は、実装着手前の`/consult`で撤回した。匿名投稿からのライブLLM解析は費用が発生し続けるため、代わりに「投稿者は写真+分類情報の登録依頼を送るだけ、実際の解析・登録は運営者がローカル環境(Claude Code Skill)でまとめて行う」方式に変更した(詳細: [specs/board-game-rules/game-registration/requirements.md](../../specs/board-game-rules/game-registration/requirements.md))。
+
+この見直しにより、下記「決定」1・2(Cloudflare Workers関数の追加、ADR-0001の例外化)と4(Turnstile)は**本アプリでは適用しない**。運営者のローカル環境でのLLM呼び出しは、GitHub Actionsではなく開発者自身のClaude Codeセッション(対話コンテキスト)で行う点でai-dev-digestとも異なる新しいパターンだが、いずれも「サイト自体はランタイムでLLM APIを呼ばない」という結論は共通する。
+
+決定3(管理画面の書き込み権限の例外)は**変更なく有効**。以下の本文(コンテキスト・決定・代替案・影響)は、上記の見直しに至った経緯の記録として残す。
 
 ## コンテキスト
 - 新規アプリ「ボードゲームのルール確認(board-game-rules)」では、誰でも匿名でボードゲームを登録できるようにしたい。投稿はルールブックの写真をアップロードし、LLMが写真から内容を解析してゲーム情報・ルール(簡単版/詳しい版)を生成する体験にする(要件: [specs/board-game-rules/game-registration/requirements.md](../../specs/board-game-rules/game-registration/requirements.md))
