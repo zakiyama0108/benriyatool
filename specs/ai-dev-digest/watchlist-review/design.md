@@ -5,7 +5,7 @@
 実行主体はGitHub Actionsとする。**2026-08改定(第2版)の経緯**: 当初はClaude Routines(定期実行のクラウドエージェント)を実行主体とする想定だったが、[daily-publish/design.md](../daily-publish/design.md)の検証と同じ理由(Routine実行環境に独自のシークレットを追加する手段が確認できなかったこと)により、本specもGitHub Actionsに変更した。当初はDB接続情報(`SUPABASE_READONLY_DB_URL`)をGitHub Actions Secretsに置かないというdocs/adr/0004の既定方針を優先し、本specだけはClaude Routinesのまま据え置く判断をしていたが、その後の方針転換によりGitHub Actionsへ統一することとした。これに伴い、docs/adr/0004を改定し、`benriyatool_readonly`ロール(SELECT専用・BYPASSRLSなし・RLSスコープ限定という低い権限のロール)に限りGitHub Actions Secretsへの保持を許容する例外を追加した(改定内容は[0004-agent-readonly-db-access.md](../../../docs/adr/0004-agent-readonly-db-access.md)の「GitHub Actions実行環境への対象拡大(2026-08第2次改定)」参照)。**2026-08第3次改定**: Claude Code CLIの認証をAnthropic API(`ANTHROPIC_API_KEY`、従量課金)から運営者個人のClaude Code Pro/Maxサブスクリプション認証(`CLAUDE_CODE_OAUTH_TOKEN`)に変更した(理由は[daily-publish/design.md](../daily-publish/design.md)「実行環境の前提」・[content-generation/design.md](../content-generation/design.md)「設計の前提」参照。認証情報は両specで共用する)。
 
 - ワークフロー本体は`.github/workflows/ai-dev-digest-monthly.yml`として月1回起動する
-- 「見直し案を作成する処理」(下記)はエージェントの推論を要するため、GitHub Actionsのワークフロー内でClaude Code CLIをヘッドレス(非対話)モードで起動し(`claude -p "<プロンプト>"`相当。[daily-publish](../daily-publish/design.md)のcontent-generationのような単発のAPI呼び出しでは、複数ファイル(requirements.md・watchlist.json・criteria.json)を横断して整合の取れた編集を行うタスクに対応できないため、ファイル読み書きツールを持つエージェントセッションとして実行する)、リポジトリのチェックアウト・ファイル編集・コミットまでを行わせる
+- 「見直し案を作成する処理」(下記)はエージェントの推論を要するため、GitHub Actionsのワークフロー内でClaude Code CLIをヘッドレス(非対話)モードで起動し(`claude -p "<プロンプト>"`相当。[daily-publish](../daily-publish/design.md)のcontent-generationのような単発のAPI呼び出しでは、複数ファイル(requirements.md・watchlist.json・criteria.json、必要なら選定ロジックの実装・テストファイルも)を横断して整合の取れた編集を行うタスクに対応できないため、ファイル読み書き・テスト実行(`bash`)ツールを持つエージェントセッションとして実行する)、リポジトリのチェックアウト・ファイル編集・テスト実行・コミットまでを行わせる
 - GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、[daily-publish](../daily-publish/design.md)と同じfine-grained PAT(`AI_DEV_DIGEST_GH_PAT`)を再利用する(本specは自動マージしないため、daily-publishで懸念した「同一PATによる自動マージ範囲の混同」は生じない)
 - Claude Code CLIの実行には`CLAUDE_CODE_OAUTH_TOKEN`(`claude setup-token`で発行する長期(1年)OAuthトークン。daily-publishと共用)を、DB読み取りには`SUPABASE_READONLY_DB_URL`を、それぞれこのリポジトリのActions Secretsとして保存する
 - ワークフローへの実行指示は、この`watchlist-review`のrequirements.md/design.mdと、参照先の`content-selection`のrequirements.md/design.mdをそのまま参照する形にする(専用のプロンプトファイルを別途複製しない)
@@ -29,11 +29,13 @@
   3. フィードバックが既存の採用基準(情報源単位の可否・数値閾値)では表現できない観点(例: 特定トピックが話題として不適切)を指摘している場合、新しい採用基準・フィルター観点の追加を具体的な変更案として検討する(requirements.md#見直し案の粒度・提示方法-4。既存項目の調整に限定しない。2026-08第4次改定)
   4. 見直し案には、どのフィードバック・どの実績データに基づく変更かを明記する(requirements.md#ビジネスルール・制約-2)
   5. 基準未達記録・フィードバックのいずれか1件でも材料がある場合は、必ず具体的な変更案(実際のファイル差分)を作成してPRとして提示する。「1件では根拠が薄い」等の理由で提案自体を見送り、無言で終了することはしない。基準未達記録・フィードバックの両方が0件の月のみ、実在する材料がないためPRを作成しない(requirements.md#見直し案の粒度・提示方法-5。2026-08第4次改定。自動マージしない設計のため、提案のハードルを下げても実害がなく、運営者が判断材料を得られないことの方が問題であるため)
-  6. `specs/ai-dev-digest/content-selection/requirements.md`に新しい採用基準・フィルター観点を追加した場合、その項目に対応する実装・テストがまだ存在しないため(手順3は判定方法の具体的な実装までは求めていない)、`npm run check:spec-coverage`を実行し❌にならないよう`scripts/spec-coverage-skip.json`に理由(例: 「見直し案として提案中で判定方法の設計・実装が未確定のため」)を添えて登録する。既存の実装済み項目に対する変更(閾値の調整・情報源の除外等)はこの手順の対象外(2026-08第5次改定。新規追加した見直し案自体がプロジェクト共通のCIチェック(ci.yml)を通過できず、PRのCIが失敗し続けていたため)
-- 変更対象ファイル(1つのPRでまとめて更新する。片方だけの更新はしない):
+  6. `specs/ai-dev-digest/content-selection/requirements.md`に、既存の選定ロジック(`app/ai-dev-digest/lib/selection.ts`等)ではまだ判定できない新しい種類の採用基準・フィルター観点を追加する場合、その判定ロジックの実装(TDDのテストを含む)も同じPRに含める。仕様(requirements.md/design.md)の変更だけを残し、実装を先送りにしない。実装後は`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`を実行し、いずれも成功することを確認してからコミットする(2026-08第6次改定。根拠: 実装を伴わない提案がrequirements.mdに追加されたまま実際の選定に反映されない状態が発生したため。運営者は「新しい基準がrequirements.mdに追加されたら、次回の選定に自動で反映されること」を期待している)。既存の実装済み項目に対する変更(閾値の調整・情報源の除外等)はこの手順の対象外(コード変更を伴わないため)
+  7. 手順6の実装がどうしても完了できない場合(判定方法自体に更なる検討が必要な場合等)のみ、`npm run check:spec-coverage`が❌にならないよう`scripts/spec-coverage-skip.json`に理由を添えて登録した上で、PR本文の判断材料の表(下記「見直し案をPRとして提案する処理」参照)に実装が未完了である旨を明記する。これは例外的な扱いであり、通常は手順6で完了させる
+- 変更対象ファイル(1つのPRでまとめて更新する。仕様と機械可読データの片方だけの更新はしない):
   - `specs/ai-dev-digest/content-selection/requirements.md`(ウォッチリストの表・採用基準の記述。requirements.md#承認フロー-2)
   - `content/ai-dev-digest/watchlist.json`・`content/ai-dev-digest/criteria.json`(content-selection/design.mdの機械可読データ。requirements.mdとの二重管理をこのPRで同時に維持する)
-  - `scripts/spec-coverage-skip.json`(新しい採用基準・フィルター観点を追加した場合のみ。上記手順6参照)
+  - `app/ai-dev-digest/lib/`配下の関連ファイル・`__tests__/ai-dev-digest/lib/`配下の対応するテストファイル(新しい判定ロジックの実装が必要な場合のみ。上記手順6参照)
+  - `scripts/spec-coverage-skip.json`(実装まで完了できなかった場合のみ。上記手順7の例外的な扱い)
 - 関連するビジネスルール: requirements.md#見直しの実行-1〜2、requirements.md#ビジネスルール・制約-2、requirements.md#見直し案の粒度・提示方法-4〜5
 
 ### 見直し案をPRとして提案する処理

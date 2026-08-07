@@ -76,16 +76,23 @@ jobs:
           content/ai-dev-digest/watchlist.json・content/ai-dev-digest/criteria.json を
           必ずすべて更新してください(一部だけの更新はしないでください)。
 
-          content-selection/requirements.mdに新しい採用基準・フィルター観点の項目を追加した場合、
-          その項目にはまだ対応する実装・テストが存在しません。そのままだとこのリポジトリのCI
-          (npm run check:spec-coverage)が失敗するため、scripts/spec-coverage-skip.jsonの配列に
-          以下の形式でエントリを追加してください(既存の実装済み項目に対する変更(閾値の調整・
-          情報源の除外等)のみの場合はこの対応は不要です):
+          content-selection/requirements.mdに、既存の選定ロジック(app/ai-dev-digest/lib/selection.ts等)
+          ではまだ判定できない新しい種類の採用基準・フィルター観点を追加する場合、その判定ロジックの
+          実装(TDDのテストを含む)も同じコミットに含めてください。仕様の変更だけを残し、実装を
+          先送りにしないでください(既存の実装済み項目に対する変更(閾値の調整・情報源の除外等)の
+          みの場合、この対応は不要です)。実装ファイルはapp/ai-dev-digest/lib/配下、テストファイルは
+          __tests__/ai-dev-digest/lib/配下に置いてください(選定ロジックはこの範囲にのみ存在します。
+          画面表示のコンポーネント等、他の範囲は変更しないでください)。実装後は必ず以下をすべて
+          実行し、成功することを確認してからコミットしてください:
+          npm test / npm run lint / npm run build / npm run check:spec-coverage
+
+          どうしても実装まで完了できない場合(判定方法自体にさらなる検討が必要な場合等)に限り、
+          scripts/spec-coverage-skip.jsonの配列に以下の形式でエントリを追加し、判断材料の表
+          (下記)に実装が未完了である旨を明記してください。これは例外的な扱いです:
           {"specFile": "ai-dev-digest/content-selection/requirements.md", "item": "<追加した見出し名> [<番号>]", "reason": "見直し案として提案中で判定方法の設計・実装が未確定のため"}
           itemの値は、追加した見出し(### で始まる行)のテキストと箇条書きの番号を「見出し名 [番号]」の
           形式でそのまま使ってください(例: 見出しが「### 話題の関連性」で `- [12] ...` なら
-          「話題の関連性 [12]」)。ファイルを変更した場合は、コミット前に必ず
-          npm run check:spec-coverage を実行し、❌が残っていないことを確認してください。
+          「話題の関連性 [12]」)。
 
           変更した場合は、判断材料の表(「対象フィードバック・実績」「提案内容」「適用した場合の懸念」の
           3列。1行が1つの見直し観点に対応し、複数の観点を検討した場合は複数行にする)をMarkdown形式で
@@ -96,6 +103,11 @@ jobs:
           PROMPT
           )" --dangerously-skip-permissions
 
+      # 新しい判定ロジックの実装(design.md「見直し案を作成する処理」手順6)がapp/ai-dev-digest/lib・
+      # __tests__/ai-dev-digest/libのどのファイルに及ぶかは提案内容によって変わるため、個別ファイルの
+      # 列挙ではなくディレクトリ単位で対象を指定する(2026-08第6次改定。個別ファイル列挙が漏れて
+      # 変更が失われた実例(PR #166レビュー時)を踏まえた設計)。選定ロジックはlib/配下にのみ存在する
+      # ため、components/・[date]/等の画面コードは対象に含めない(design.md「変更対象ファイル」参照)
       - name: 変更の有無を確認
         id: diff
         run: |
@@ -103,7 +115,9 @@ jobs:
             specs/ai-dev-digest/content-selection/requirements.md \
             content/ai-dev-digest/watchlist.json \
             content/ai-dev-digest/criteria.json \
-            scripts/spec-coverage-skip.json; then
+            scripts/spec-coverage-skip.json \
+            app/ai-dev-digest/lib \
+            __tests__/ai-dev-digest/lib; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -125,7 +139,9 @@ jobs:
             specs/ai-dev-digest/content-selection/requirements.md \
             content/ai-dev-digest/watchlist.json \
             content/ai-dev-digest/criteria.json \
-            scripts/spec-coverage-skip.json
+            scripts/spec-coverage-skip.json \
+            app/ai-dev-digest/lib \
+            __tests__/ai-dev-digest/lib
           git commit -m "spec(ai-dev-digest): ${YEAR_MONTH}のウォッチリスト・採用基準見直し"
           git push origin "$BRANCH"
 
