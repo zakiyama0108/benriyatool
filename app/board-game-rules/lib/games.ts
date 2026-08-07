@@ -6,7 +6,8 @@ export type RuleChapter = { key: ChapterKey; body: string }
 
 // 公開ゲーム(一覧・詳細・お気に入り対象が読む形。仕様: game-registration/design.md「データベース設計」)。
 // 元写真パス(photo_paths)は含めない=一般には返さない(列単位の秘匿はDB側でも担保)。
-// 2026-08の見直しで運営者登録タグ(is_official)を撤廃し、発売年(releaseYear)を追加した
+// 2026-08の見直しで運営者登録タグ(is_official)を撤廃し、発売年(releaseYear)を追加、
+// ジャンルを単一選択(genre)から複数選択(genres)に変更した
 // (docs/adr/0007「2026-08の見直し」参照。全ゲームが運営者経由で登録される前提になったため)。
 export type Game = {
   id: string
@@ -15,7 +16,7 @@ export type Game = {
   maxPlayers: number
   minMinutes: number
   maxMinutes: number
-  genre: Genre | null
+  genres: Genre[]
   minAge: number | null
   difficulty: string | null
   publisher: string | null
@@ -37,7 +38,7 @@ export type GameRow = {
   max_players: number
   min_minutes: number
   max_minutes: number
-  genre: string | null
+  genres: string[]
   min_age: number | null
   difficulty: string | null
   publisher: string | null
@@ -54,7 +55,7 @@ export type GameRow = {
 // この定数を各クエリで使い、photo_paths を誤って選択しないよう一元管理する
 // (anon は列単位のSELECT権限から photo_paths が除外されており、含めると権限エラーになる)。
 export const GAME_PUBLIC_COLUMNS =
-  'id, name, min_players, max_players, min_minutes, max_minutes, genre, min_age, difficulty, publisher, author, has_japanese_rules, awards, release_year, rules_simple, rules_detailed, created_at'
+  'id, name, min_players, max_players, min_minutes, max_minutes, genres, min_age, difficulty, publisher, author, has_japanese_rules, awards, release_year, rules_simple, rules_detailed, created_at'
 
 // DB行(snake_case)を画面で扱うGame(camelCase)へ変換する。
 // rules_detailed(jsonb)は共通章立ての配列としてそのまま扱う(想定外の値は空配列に倒す)。
@@ -66,7 +67,7 @@ export function mapGameRowToGame(row: GameRow): Game {
     maxPlayers: row.max_players,
     minMinutes: row.min_minutes,
     maxMinutes: row.max_minutes,
-    genre: row.genre as Genre | null,
+    genres: Array.isArray(row.genres) ? (row.genres as Genre[]) : [],
     minAge: row.min_age,
     difficulty: row.difficulty,
     publisher: row.publisher,

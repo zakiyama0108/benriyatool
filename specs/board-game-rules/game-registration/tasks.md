@@ -3,15 +3,15 @@
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 ## T0. マイグレーション適用(実装より先に単独PRで適用)
-- `board_game_rules_game_requests`テーブルとRLS(誰でもINSERT・運営者のみSELECT/UPDATE/DELETE)、下限≤上限のCHECK制約、ジャンルの固定リストCHECK制約を`supabase/migrations/`に追加しCI適用する
-- `board_game_rules_games`の変更(`is_official`列の削除、`release_year`列の追加、`genre`のCHECK制約化、anon/authenticatedのINSERTポリシー撤廃)を同じ単独PRに含める
-- design.md「データベース設計」T0の実機確認(anonの依頼INSERT可・運営者以外のSELECT/UPDATE/DELETE不可・下限>上限のCHECK拒否・ジャンル固定リスト外の拒否)を行う
-- Supabaseダッシュボードで Database Webhooks(INSERT on board_game_rules_game_requests → ntfy投稿先URL)を手動設定する(TDD対象外。design.md「運営者への通知」参照)
+- `board_game_rules_game_requests`テーブルとRLS(誰でもINSERT・運営者のみSELECT/UPDATE/DELETE)、下限≤上限のCHECK制約、ジャンル(複数選択、text[])の固定リストCHECK制約を`supabase/migrations/`に追加しCI適用する
+- `board_game_rules_games`の変更(`is_official`列の削除、`release_year`列の追加、`genre`→`genres`(text[])への変更・固定リストCHECK制約、anon/authenticatedのINSERTポリシー撤廃)を同じ単独PRに含める
+- design.md「データベース設計」T0の実機確認(anonの依頼INSERT可・運営者以外のSELECT/UPDATE/DELETE不可・下限>上限のCHECK拒否・ジャンル固定リスト外の値を含む配列の拒否)を行う
+- Supabaseダッシュボードで Database Webhooks(INSERT on board_game_rules_game_requests → ntfyのMessage Templating URL)を手動設定する(TDD対象外。design.md「運営者への通知」参照。タイトル・本文・クリックURL(管理画面へのリンク)が正しく届くことを実機確認する)
 - (TDD対象外: マイグレーションの適用と手動確認)
 
 ## T1. ジャンルの固定選択肢(`lib/genres.ts`)
-- 🔴 固定リストの値・順序が仕様どおりであることをテストする
-- 🟢 ジャンルの選択肢定数を実装する(game-list/adminと共有)
+- 🔴 固定リストの値・順序・各項目の説明が仕様どおりであることをテストする
+- 🟢 ジャンルの選択肢定数(値+説明)を実装する(game-list/adminと共有)
 - 🔵 型・命名を整理する
 
 ## T2. 依頼データ操作(`lib/gameRequests.ts`)

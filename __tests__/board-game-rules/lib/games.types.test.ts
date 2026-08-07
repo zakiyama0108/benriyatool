@@ -9,7 +9,7 @@ function makeRow(overrides: Partial<GameRow> = {}): GameRow {
     max_players: 4,
     min_minutes: 60,
     max_minutes: 90,
-    genre: '戦略',
+    genres: ['戦略', '協力'],
     min_age: 8,
     difficulty: '普通',
     publisher: 'GP',
@@ -38,10 +38,9 @@ describe('【共通】ゲーム型 - DB行(snake_case)を画面で扱う形(came
     expect(game.maxMinutes).toBe(90)
   })
 
-  it('任意項目(ジャンル・対象年齢・作者・受賞歴・言語依存度・発売年など)が未登録(NULL)のとき、nullとして保持されること', () => {
+  it('任意項目(対象年齢・作者・受賞歴・言語依存度・発売年など)が未登録(NULL)のとき、nullとして保持されること', () => {
     const game = mapGameRowToGame(
       makeRow({
-        genre: null,
         min_age: null,
         difficulty: null,
         publisher: null,
@@ -51,7 +50,6 @@ describe('【共通】ゲーム型 - DB行(snake_case)を画面で扱う形(came
         release_year: null,
       })
     )
-    expect(game.genre).toBeNull()
     expect(game.minAge).toBeNull()
     expect(game.author).toBeNull()
     expect(game.awards).toBeNull()
@@ -62,6 +60,16 @@ describe('【共通】ゲーム型 - DB行(snake_case)を画面で扱う形(came
   it('発売年が登録済みのとき、そのまま引き継がれること', () => {
     const game = mapGameRowToGame(makeRow({ release_year: 1995 }))
     expect(game.releaseYear).toBe(1995)
+  })
+
+  it('ジャンルが複数登録されているとき、配列としてそのまま引き継がれること(複数選択可)', () => {
+    const game = mapGameRowToGame(makeRow({ genres: ['協力', '対戦', 'カードゲーム'] }))
+    expect(game.genres).toEqual(['協力', '対戦', 'カードゲーム'])
+  })
+
+  it('ジャンルが未選択(空配列)のとき、空配列のまま保持されること', () => {
+    const game = mapGameRowToGame(makeRow({ genres: [] }))
+    expect(game.genres).toEqual([])
   })
 
   it('詳しい版(共通章立ての配列)がそのまま章の配列として引き継がれ、空本文の章も保持されること', () => {
@@ -85,5 +93,6 @@ describe('【共通】一覧・詳細がSELECTする公開列 - 元写真パス�
     expect(GAME_PUBLIC_COLUMNS).not.toContain('photo_paths')
     expect(GAME_PUBLIC_COLUMNS).toContain('rules_detailed')
     expect(GAME_PUBLIC_COLUMNS).toContain('release_year')
+    expect(GAME_PUBLIC_COLUMNS).toContain('genres')
   })
 })

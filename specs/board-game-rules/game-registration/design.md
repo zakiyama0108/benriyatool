@@ -31,7 +31,7 @@ sequenceDiagram
 - 対象: 登録依頼画面で入力された写真・分類情報
 - 手順:
   1. 投稿者が写真を複数枚(表紙・目次・各ページなど)選択する。最低1枚は必須(requirements.md#写真のアップロード-1)
-  2. 分類情報(ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー・作者・言語依存度・受賞歴・発売年)を任意で入力する。ジャンルは固定の選択肢(下記「ジャンルの選択肢」)から選ぶ(requirements.md#分類情報の任意入力)
+  2. 分類情報(ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー・作者・言語依存度・受賞歴・発売年)を任意で入力する。ジャンルは固定の選択肢(下記「ジャンルの選択肢」)から複数選べる(requirements.md#分類情報の任意入力-4)
   3. 送信操作で、まず写真を非公開Storageバケットへ保存し、パスを控える(既存の[admin/design.md#元写真の非公開Storage](../admin/design.md)のバケットをそのまま使う)
   4. 続けて、写真パス+入力済み分類情報を`board_game_rules_game_requests`にINSERTする(未ログインでも送信できる。requirements.md#依頼の送信-5)
   5. 保存が成功したら、完了表示に切り替える(requirements.md#依頼の送信-6)。この時点ではゲームは一覧・検索の対象にならない(公開は運営者の登録作業を経てから。requirements.md#公開ポリシー-5)
@@ -40,21 +40,35 @@ sequenceDiagram
 
 ### 運営者へ通知する処理
 - 対象: `board_game_rules_game_requests`への新規INSERT
-- 手順: Supabase Database WebhooksでINSERTイベントを購読し、運営者のntfyトピックへHTTP POSTする(既存のClaude Codeセッション通知と同じntfy運用を流用。requirements.md#運営者への通知-8)
-- 補足: 通知本文は届いた行のJSONペイロードをそのまま送る簡易な実装とする(中継サーバーを新設しないための割り切り。整形が必要になった場合は別途検討する)。ntfyのトピック名は非公開情報として扱い、マイグレーションSQLに平文で残さない(下記セキュリティ参照)
+- 手順: Supabase Database WebhooksでINSERTイベントを購読し、ntfyの**Message Templating機能**(インラインテンプレート`?tpl=yes`)を使って、届いた行のJSONペイロードからタイトル・本文・クリックURLを組み立ててHTTP POSTする(既存のClaude Codeセッション通知と同じntfy運用を流用。requirements.md#運営者への通知-8)
+- 補足(通知の中身): タイトルは「新しい登録依頼」、本文はゲーム名(入力があれば)と写真枚数、クリックURLは管理画面(`/board-game-rules/admin`)への直リンクとする。中継サーバーは新設せず、Supabase Database Webhooksの送信先URLにntfyのテンプレート構文(Goテンプレート、`{{.record.xxx}}`でペイロードのフィールドを参照)を組み込むだけで実現する(ntfy公式のテンプレート機能。詳細は[tasks.md](tasks.md)の手動設定手順で確定する)
+- 補足(トピック名の秘匿): ntfyのトピック名は非公開情報として扱い、マイグレーションSQLに平文で残さない(下記セキュリティ参照)
 - 関連するビジネスルール: requirements.md#運営者への通知-8
 
 ## ジャンルの選択肢
-一覧の絞り込み([game-list/design.md](../game-list/design.md))で選択肢を安定させるため、ジャンルは自由記述ではなく固定リストとする(requirements.md#分類情報の任意入力-4):
+一覧の絞り込み([game-list/design.md](../game-list/design.md))で選択肢を安定させるため、ジャンルは自由記述ではなく固定リストとし、**1ゲームにつき複数選択できる**(requirements.md#分類情報の任意入力-4)。選択画面(依頼フォーム・admin編集フォーム)では、各選択肢の横に説明を表示する。
 
-戦略 / パーティー / 協力 / 推理・デダクション / カードゲーム / ダイスゲーム / ワーカープレイスメント / デッキ構築 / エリアマジョリティ / ファミリー / その他
+| ジャンル | 説明 |
+|---|---|
+| 協力 | プレイヤー全員がチームとなり、共通の目標達成を目指す |
+| 対戦 | プレイヤー同士が競い合い、勝敗を決める |
+| 正体隠匿 | 自分の役職・陣営を隠しながら、味方を探したり相手を見破ったりする(人狼系) |
+| 戦略 | 運要素が少なく、長期的な計画・判断力が問われる重量級のゲーム |
+| パーティー | 大人数でわいわい盛り上がる、ルールが簡単なゲーム |
+| ファミリー | 子供から大人まで気軽に遊べる、軽いルールのゲーム |
+| カードゲーム | カードを中心に進行するゲーム |
+| すごろく系 | サイコロを振ってマスを進み、指示に従って進行する(人生ゲーム的) |
+| ワーカープレイスメント | 手持ちのコマをマスに配置してアクションを実行する |
+| デッキ構築 | プレイしながら自分のカード山を強化していく |
+| 推理・デダクション | 手がかりから答えを論理的に導き出す |
+| その他 | 上記に当てはまらないゲーム |
 
-この一覧は`app/board-game-rules/lib/genres.ts`(新規)に定義し、依頼フォーム・game-list絞り込み・admin編集フォームで共有する。DB側もCHECK制約でこの一覧に固定する(下記データベース設計)。
+この一覧(値+説明)は`app/board-game-rules/lib/genres.ts`(新規)に定義し、依頼フォーム・game-list絞り込み・admin編集フォームで共有する。DB側もCHECK制約でこの一覧の値のみで構成されることを担保する(下記データベース設計)。
 
 ## バリデーション
 - 写真: 最低1枚必須(requirements.md#写真のアップロード-1)
 - 対応人数・プレイ時間: 入力する場合、下限≤上限であること(下限>上限は送信不可。requirements.md#入力値の制約-9)。DB側でもCHECK制約で担保する(ただしどちらも未入力の場合はCHECKをスキップする。片方のみ入力は許容しない=両方揃うか両方空欄かのどちらか)
-- ジャンル: 入力する場合、上記固定リストのいずれかであること
+- ジャンル: 選択する場合、上記固定リストの値のみで構成されること(0個・複数選択のいずれも可)
 
 ## 元写真のStorage
 依頼の写真は[admin/design.md#元写真の非公開Storage](../admin/design.md)で定義済みの非公開バケット(`board-game-rules-photos`)にそのまま保存する。運営者が登録時に使う元写真もこのバケットを共有する(依頼時の写真パスをそのまま`board_game_rules_games.photo_paths`へ引き継ぐ想定。運営者側の登録処理で別の写真に差し替えることもできる)。
@@ -81,7 +95,7 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 
 ## データベース設計
 
-`board_game_rules_games`はスキーマを変更する(`is_official`列の撤廃、`release_year`列の追加、`genre`のCHECK制約化)。新規に`board_game_rules_game_requests`を追加する。
+`board_game_rules_games`はスキーマを変更する(`is_official`列の撤廃、`release_year`列の追加、`genre`(単一)から`genres`(複数、text[])への変更)。新規に`board_game_rules_game_requests`を追加する。
 
 ### board_game_rules_game_requests(新規)
 | カラム | 型 | 補足 |
@@ -93,7 +107,7 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 | max_players | int, nullable | 対応人数の上限(任意) |
 | min_minutes | int, nullable | プレイ時間の下限(分、任意) |
 | max_minutes | int, nullable | プレイ時間の上限(分、任意) |
-| genre | text, nullable | ジャンル(任意。固定リストのいずれか) |
+| genres | text[], not null, default '{}' | ジャンル(複数選択可、任意。固定リストの値のみで構成) |
 | min_age | int, nullable | 対象年齢(任意) |
 | difficulty | text, nullable | 難易度(任意) |
 | publisher | text, nullable | メーカー/出版社(任意) |
@@ -109,12 +123,13 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 ### board_game_rules_games(変更)
 - `is_official`列を撤廃する(全ゲームが運営者経由でのみ登録される前提になり、区別の意味がなくなったため)
 - `release_year int`列を追加する(発売年、任意)
-- `genre`にCHECK制約を追加し、固定リストに限定する
+- `genre text`(単一)を`genres text[]`(複数)に変更し、CHECK制約で固定リストの値のみで構成されることを担保する
 - INSERTポリシーを撤廃し、運営者のローカル登録ツール(service_role相当の権限)のみが書き込める形にする(下記マイグレーション参照。Web側からの直接INSERT経路はなくなった)
 
 ### マイグレーション(実装より先に単独PRで適用)
 ```sql
--- board_game_rules_games テーブルの新設(is_officialを持たず、release_yearを持ち、genreを固定リストに限定する)
+-- board_game_rules_games テーブルの新設(is_officialを持たず、release_yearを持ち、
+-- genresは複数選択可能な固定リスト(text[])に限定する)
 create table board_game_rules_games (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -122,10 +137,10 @@ create table board_game_rules_games (
   max_players int not null,
   min_minutes int not null,
   max_minutes int not null,
-  genre text check (genre is null or genre in (
-    '戦略', 'パーティー', '協力', '推理・デダクション', 'カードゲーム',
-    'ダイスゲーム', 'ワーカープレイスメント', 'デッキ構築', 'エリアマジョリティ', 'ファミリー', 'その他'
-  )),
+  genres text[] not null default '{}' check (genres <@ array[
+    '協力', '対戦', '正体隠匿', '戦略', 'パーティー', 'ファミリー',
+    'カードゲーム', 'すごろく系', 'ワーカープレイスメント', 'デッキ構築', '推理・デダクション', 'その他'
+  ]::text[]), -- <@ は「左辺の全要素が右辺の配列に含まれる」演算子。固定リスト外の値を1つでも含むと拒否される
   min_age int,
   difficulty text,
   publisher text,
@@ -149,7 +164,7 @@ alter table board_game_rules_games enable row level security;
 -- 閲覧: 公開中(削除されていない)の行は誰でもSELECTできる。photo_pathsは列単位のSELECT権限から除外する
 grant select (
   id, name, min_players, max_players, min_minutes, max_minutes,
-  genre, min_age, difficulty, publisher, author, has_japanese_rules,
+  genres, min_age, difficulty, publisher, author, has_japanese_rules,
   awards, release_year, rules_simple, rules_detailed, created_at, deleted_at
 ) on board_game_rules_games to anon;
 grant select on board_game_rules_games to authenticated;
@@ -184,10 +199,10 @@ create table board_game_rules_game_requests (
   max_players int,
   min_minutes int,
   max_minutes int,
-  genre text check (genre is null or genre in (
-    '戦略', 'パーティー', '協力', '推理・デダクション', 'カードゲーム',
-    'ダイスゲーム', 'ワーカープレイスメント', 'デッキ構築', 'エリアマジョリティ', 'ファミリー', 'その他'
-  )),
+  genres text[] not null default '{}' check (genres <@ array[
+    '協力', '対戦', '正体隠匿', '戦略', 'パーティー', 'ファミリー',
+    'カードゲーム', 'すごろく系', 'ワーカープレイスメント', 'デッキ構築', '推理・デダクション', 'その他'
+  ]::text[]),
   min_age int,
   difficulty text,
   publisher text,
@@ -227,17 +242,22 @@ create policy "benriyatool_readonly can select game requests" on board_game_rule
 ```
 
 T0(マイグレーション適用)の実機確認:
-- 未ログイン(anon)で依頼をINSERTできること
+- 未ログイン(anon)で依頼をINSERTできること(ジャンル複数選択・未選択どちらも成功すること)
 - anon・運営者以外のログインでは依頼をSELECT/UPDATE/DELETEできないこと。運営者本人はSELECT/UPDATE/DELETEできること
 - 下限>上限の依頼がCHECK制約で拒否されること(片方のみ入力・両方未入力は許容されること)
-- 固定リスト外のジャンル文字列がCHECK制約で拒否されること
+- 固定リスト外の値を含むジャンル配列がCHECK制約で拒否されること。固定リスト内の値を複数含む配列は成功すること
 - anon/authenticated(運営者以外)から`board_game_rules_games`へのINSERTがすべて拒否されること(INSERTポリシーが存在しないため)。service_roleキーを使ったINSERT(ローカル登録ツール相当)は成功すること
 - anon/authenticatedで`deleted_at is null`のゲームがSELECTでき、`anon`が`select photo_paths from board_game_rules_games`を発行すると権限エラーで拒否されること(列単位の秘匿)
-- 固定リスト外のジャンル文字列・下限>上限・簡単版4000字超/詳しい版40000字超のINSERT(service_role経由)がCHECK制約で拒否されること
+- 固定リスト外の値を含むジャンル配列・下限>上限・簡単版4000字超/詳しい版40000字超のINSERT(service_role経由)がCHECK制約で拒否されること
 - 運営者本人で全行(削除済み含む)がSELECTでき、UPDATEができること
 
-### 運営者への通知(Supabase Database Webhooks)
-`board_game_rules_game_requests`へのINSERTをSupabase Database Webhooks機能(ダッシュボードから設定、pg_net拡張ベース)で購読し、ntfyの通知先URLへHTTP POSTする。通知先URL(ntfyトピック)は非公開情報のため、マイグレーションSQLに平文で残さずSupabaseダッシュボードのWebhook設定画面で直接入力する(TDD対象外・手動設定。[tasks.md](tasks.md)参照)。
+### 運営者への通知(Supabase Database Webhooks + ntfy Message Templating)
+`board_game_rules_game_requests`へのINSERTをSupabase Database Webhooks機能(ダッシュボードから設定、pg_net拡張ベース)で購読し、ntfyへHTTP POSTする。送信先URLに、ntfy公式の**インラインMessage Templating**(`?tpl=yes`、Goテンプレート構文)を組み込むことで、中継サーバーを新設せずに次を実現する:
+- **タイトル**: 「新しい登録依頼」
+- **本文**: ゲーム名(`{{.record.name}}`。未入力なら空欄のまま)+写真枚数(`{{len .record.photo_paths}}`)
+- **クリックURL**: 管理画面(`https://benriyatool.com/board-game-rules/admin`)。通知をタップするとその場で依頼を確認できる
+
+参考: `https://ntfy.sh/<トピック>?tpl=yes&t=<タイトル>&m=<本文テンプレート>&click=<クリックURL>`(正確なクエリパラメータ名・URLエンコードは実装時に[ntfy公式ドキュメント](https://docs.ntfy.sh/publish/)で確認する)。通知先URL(ntfyトピック)は非公開情報のため、マイグレーションSQLに平文で残さずSupabaseダッシュボードのWebhook設定画面で直接入力する(TDD対象外・手動設定。[tasks.md](tasks.md)参照)。
 
 ## セキュリティ
 - **課金の発生しない設計**: このWebアプリ(Cloudflare Workers・Supabase)からはAnthropic APIを一切呼び出さない。写真解析・ルール生成は運営者のローカル環境で行う([admin/design.md](../admin/design.md))。匿名投稿による費用の無制限消費というリスク自体が構造的になくなる
