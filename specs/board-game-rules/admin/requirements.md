@@ -4,7 +4,7 @@
 
 ## 概要
 - 機能名: 管理画面(モデレーション)
-- 目的: 運営者本人だけがログインして、登録されたゲームの編集・削除、通報内容の確認、コメントの削除、投稿写真の照合閲覧を行えるようにする。即時公開の運用([game-registration/requirements.md#公開ポリシー](../game-registration/requirements.md))を、事後のモデレーションで支える
+- 目的: 運営者本人だけがログインして、登録されたゲームの編集・削除、通報内容の確認、コメントの削除、投稿写真の照合閲覧を行えるようにする。あわせて、利用者から届く登録依頼([game-registration/requirements.md](../game-registration/requirements.md))を確認し、外部ツールでまとめて登録する運用を支える
 - 優先度: 中
 
 ## ユーザーストーリー
@@ -14,6 +14,8 @@
 - 運営者として、登録内容に疑義が出たとき、投稿された元写真を照合用に確認したい
 - 運営者として、不適切なコメントを削除したい
 - 運営者として、管理画面を自分以外に開かれない・操作されないようにしたい
+- 運営者として、届いた登録依頼をまとめて確認し、写真をもとにゲームを登録したい
+- 運営者として、新しい登録依頼が届いたらすぐに気づけるようにしたい
 
 ## 機能要件
 
@@ -38,6 +40,11 @@
 ### コメントの削除
 - [11] 不適切なコメントを削除できる([comment/requirements.md#機能要件-10](../comment/requirements.md))。コメントの編集はできない
 
+### 登録依頼の確認
+- [12] 利用者から送信された登録依頼(写真+分類情報。[game-registration/requirements.md](../game-registration/requirements.md))を一覧で確認できる。未処理/処理済みを区別して表示する
+- [13] 依頼の写真・入力済み分類情報を参考に、外部ツール(ローカルのバッチ登録処理)でゲームを登録できる。登録処理自体は管理画面の外で行う(本specのスコープ外。[game-registration/requirements.md](../game-registration/requirements.md)参照)。登録が完了した依頼は、管理画面から処理済みとして記録できる
+- [14] 不要な依頼(スパム・重複・情報不足など)を削除できる
+
 ## ビジネスルール・制約
 
 ### アクセス制御・権限
@@ -52,17 +59,22 @@
 ### 通報への対応方針
 - [6] 通報があっても対象を自動非表示・自動削除にはせず、必ず運営者の判断を挟む([report/requirements.md#通報後の扱い](../report/requirements.md))
 
+### 通知
+- [7] 新しい登録依頼が届いたら、運営者に通知が届く(具体的な通知手段は[game-registration/design.md](../game-registration/design.md)で確定)
+
 ## 非機能要件
 - [1] 主にPC・スマートフォンの双方から利用しうる(外出先で通報に気付いて対応する場面を想定)。表示が破綻しない程度に配慮する
-- [2] 静的エクスポート構成を維持する。ただしゲームの編集・削除・写真閲覧はDB(RLS経由)への操作で行い、[game-registration/requirements.md](../game-registration/requirements.md)の写真解析用サーバー関数とは別に、モデレーション専用のサーバーを新設しない
+- [2] 静的エクスポート構成を維持する。ゲームの編集・削除・写真閲覧・登録依頼の確認はDB(RLS経由)への操作で行い、モデレーション専用のサーバーを新設しない([game-registration/requirements.md](../game-registration/requirements.md)により、本アプリはランタイムサーバー機能を持たなくなった)
 
 ## 依存関係
 - 認証方式(Google OIDC)とDB読み取り権限(RLS)の方針は[docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)に従う
 - 編集・削除の対象データは[game-registration/requirements.md](../game-registration/requirements.md)、通報は[report/requirements.md](../report/requirements.md)、コメントは[comment/requirements.md](../comment/requirements.md)に従う
+- 登録依頼(写真+分類情報)の保存構造・通知手段は[game-registration/design.md](../game-registration/design.md)で確定する
 - 投稿写真という機微になりうる情報・利用者コメントの管理経路が新設されるため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
 
 ## スコープ外
 - 複数の管理者アカウント・権限ロールの管理(利用者は運営者本人のみ)
 - 管理画面ドメイン自身をパスキー(WebAuthn)の登録先とする実装(根拠: [docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)と同じ)
 - 通報者・コメント投稿者へのペナルティ管理(アカウントBAN等)
+- 登録依頼からゲームを登録する処理そのもの(LLMによる解析・生成を含む)。管理画面はあくまで依頼の確認・処理済みマーク・削除にとどまり、登録処理はローカルツールで行う([game-registration/requirements.md](../game-registration/requirements.md)参照)
 - 編集・削除操作の履歴管理(監査ログ)
