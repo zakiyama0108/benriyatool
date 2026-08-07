@@ -249,7 +249,7 @@ create policy "benriyatool_readonly can select games" on board_game_rules_games
 T0(マイグレーション適用)の実機確認:
 - 未ログイン(anon)で`is_official=false`のINSERTができ、`is_official=true`のINSERTは拒否されること
 - 運営者以外のログインで`is_official=true`のINSERTが拒否されること、運営者本人では許可されること
-- anon/authenticatedで`deleted_at is null`の行がSELECTでき、`deleted_at`が入った行はSELECトされないこと
+- anon/authenticatedで`deleted_at is null`の行がSELECTでき、`deleted_at`が入った行はSELECTされないこと
 - anonが`select photo_paths from board_game_rules_games`を発行すると権限エラーで拒否されること(列単位の秘匿)。一方で`photo_paths`を含まない必要列のSELECTは成功すること
 - 下限>上限のINSERTがCHECK制約で拒否されること
 - 簡単版4000字超・詳しい版(jsonb全体)40000字超のINSERTがCHECK制約で拒否されること(ルール本文の防御上限)

@@ -47,7 +47,7 @@
 
 ### 認証手段とパスキー
 - [4] 既存アプリの管理画面(`ikukyu/admin`・`life-money-sim/admin`)と同一の認証方針(Google OIDC、同じ運営者アカウント、パスキー・2段階認証の運用)とする(根拠: [docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md))。Google OIDC自体の設定は新規に不要
-- [5] Supabase AuthのRedirect URLs(URL Configuration)の許可リストに、本管理画面の戻り先URL(`https://benriyatool.com/board-game-rules/admin/**`)を本番公開前に登録する(根拠: 既存の`life-money-sim/admin`で登録漏れによるリダイレクト不具合が発生した教訓)
+- [5] Supabase AuthのRedirect URLs(URL Configuration)の許可リストに、本管理画面の戻り先URL(`https://benriyatool.com/board-game-rules/admin/**`)を本番公開前に登録する(根拠: 既存の`life-money-sim/admin`で登録漏れによるリダイレクト不具合が発生した教訓)。なお[user-auth](../user-auth/requirements.md)が登録する利用者ログインの戻り先`https://benriyatool.com/board-game-rules/**`は本管理画面の`/admin/**`を包含するため、その広域エントリが登録されていれば管理画面の戻り先も兼ねられる(別エントリの二重登録は必須ではない。詳細は[admin/design.md](design.md)・[user-auth/tasks.md](../user-auth/tasks.md))
 
 ### 通報への対応方針
 - [6] 通報があっても対象を自動非表示・自動削除にはせず、必ず運営者の判断を挟む([report/requirements.md#通報後の扱い](../report/requirements.md))
