@@ -24,21 +24,33 @@
 - 🟢 運営者として元写真を取得する関数を実装する
 - 🔵 取得エラーの扱いを整理する
 
-## T4. ログイン/権限画面(`admin/components/LoginScreen.tsx`)
+## T4. 登録依頼データ操作(`admin/lib/gameRequests.ts`)
+- 🔴 登録依頼を未処理優先・次いで新しい順に取得すること、processed_atをセットするUPDATE、依頼のDELETEが実行され、失敗時にエラーを返すことをテストする(Supabaseクライアントをモック)
+- 🟢 fetchGameRequests / markGameRequestProcessed / deleteGameRequest を実装する
+- 🔵 並び順・失敗表示を整理する
+
+## T5. ログイン/権限画面(`admin/components/LoginScreen.tsx`)
 - 🔴 未ログインでログイン促し、権限なしで「権限がありません」+ログアウト、が出ることをテストする(`ikukyu/admin`のLoginScreenと同等ロジック)
 - 🟢 ログイン/権限なしの案内画面を実装する
 - 🔵 共通ロジックの再利用を整理する
 
-## T5. ゲーム一覧・編集・通報表示(`admin/components/GameModerationTable.tsx`, `GameEditForm.tsx`, `ReportsView.tsx`)
-- 🔴 ゲーム一覧(通報件数順・削除済み区別・編集/削除/写真照合導線)、編集フォーム(登録時検証の再利用・上書き保存)、削除の確認ステップ、通報一覧と対象ゲームへの導線をテストする
+## T6. ゲーム一覧・編集・通報・登録依頼表示(`admin/components/GameModerationTable.tsx`, `GameEditForm.tsx`, `ReportsView.tsx`, `GameRequestsView.tsx`)
+- 🔴 ゲーム一覧(通報件数順・削除済み区別・編集/削除/写真照合導線)、編集フォーム(登録時検証の再利用・上書き保存)、削除の確認ステップ、通報一覧と対象ゲームへの導線、登録依頼一覧(写真プレビュー・分類情報表示・処理済みマーク/削除)をテストする
 - 🟢 各コンポーネントを実装する
 - 🔵 表示・導線・確認ステップを整える
 
-## T6. 管理画面本体(`admin/page.tsx`)
-- 🔴 4状態(未ログイン/権限なし/権限あり/取得エラー)の遷移、権限ありで一覧・通報・編集・削除・写真照合・コメント削除が使えること、操作後の再取得をテストする
+## T7. 管理画面本体(`admin/page.tsx`)
+- 🔴 4状態(未ログイン/権限なし/権限あり/取得エラー)の遷移、権限ありで一覧・通報・編集・削除・写真照合・コメント削除・登録依頼の確認/処理済みマーク/削除が使えること、操作後の再取得をテストする
 - 🟢 ログイン・権限確認・各機能の組み立てを実装する
 - 🔵 状態遷移・エラー表示・二重操作防止を整理する
+
+## T8. 登録依頼からゲームを登録するローカルツール(`.claude/skills/board-game-rules-batch-register/`)
+- 対象: Claude Code Skill(Webアプリのコードではないため、通常のTDDサイクル・spec-coverageの対象外とする。動作確認は実際の写真セットで試す)
+- SKILL.mdに次を記載する: ローカルフォルダの写真セット(または`board_game_rules_game_requests`の未処理依頼)を読み、写真を解析してゲーム情報・ルール本文(簡単版・詳しい版、共通章立て)を生成する手順、生成結果をSupabaseへ書き込むNode.jsスクリプトの使い方
+- Node.jsスクリプト(例: `scripts/board-game-rules/registerGame.ts`)を用意する。`SUPABASE_SERVICE_ROLE_KEY`等の特権クレデンシャルで`board_game_rules_games`へINSERTし、依頼由来の場合は対応する`board_game_rules_game_requests.processed_at`を更新する
+- 動作確認: 実際に写真セットを用意してSkillを起動し、`board_game_rules_games`に正しく登録されること、依頼が処理済みになることを確認する
 
 ## 補足(リリース前チェック)
 - Supabase AuthのRedirect URLs許可リストに管理画面の戻り先を登録する(requirements.md#認証手段とパスキー-5)。利用者ログインの戻り先`https://benriyatool.com/board-game-rules/**`は[user-auth](../user-auth/tasks.md)の責務で登録し、これは`/board-game-rules/admin/**`を包含するため、広い方の1エントリで管理画面の戻り先も兼ねられる(user-authと重複せず整理する)
 - 運営者Googleアカウントのパスキー登録・2段階認証の維持を初回公開前に確認する(ADR-0006)
+- Supabase Database Webhooks(登録依頼のINSERT→ntfy通知)をダッシュボードで手動設定する。設定は[game-registration/tasks.md](../game-registration/tasks.md)のT0に含まれる

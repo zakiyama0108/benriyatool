@@ -21,7 +21,7 @@ function makeRow(overrides: Partial<GameRow> = {}): GameRow {
       { key: 'overview', body: '概要本文' },
       { key: 'setup', body: '' },
     ],
-    is_official: false,
+    release_year: 1995,
     created_at: '2026-08-07T00:00:00Z',
     ...overrides,
   }
@@ -38,15 +38,30 @@ describe('【共通】ゲーム型 - DB行(snake_case)を画面で扱う形(came
     expect(game.maxMinutes).toBe(90)
   })
 
-  it('任意項目(ジャンル・対象年齢・作者・受賞歴・言語依存度など)が未登録(NULL)のとき、nullとして保持されること', () => {
+  it('任意項目(ジャンル・対象年齢・作者・受賞歴・言語依存度・発売年など)が未登録(NULL)のとき、nullとして保持されること', () => {
     const game = mapGameRowToGame(
-      makeRow({ genre: null, min_age: null, difficulty: null, publisher: null, author: null, has_japanese_rules: null, awards: null })
+      makeRow({
+        genre: null,
+        min_age: null,
+        difficulty: null,
+        publisher: null,
+        author: null,
+        has_japanese_rules: null,
+        awards: null,
+        release_year: null,
+      })
     )
     expect(game.genre).toBeNull()
     expect(game.minAge).toBeNull()
     expect(game.author).toBeNull()
     expect(game.awards).toBeNull()
     expect(game.hasJapaneseRules).toBeNull()
+    expect(game.releaseYear).toBeNull()
+  })
+
+  it('発売年が登録済みのとき、そのまま引き継がれること', () => {
+    const game = mapGameRowToGame(makeRow({ release_year: 1995 }))
+    expect(game.releaseYear).toBe(1995)
   })
 
   it('詳しい版(共通章立ての配列)がそのまま章の配列として引き継がれ、空本文の章も保持されること', () => {
@@ -69,6 +84,6 @@ describe('【共通】一覧・詳細がSELECTする公開列 - 元写真パス�
   it('公開列の指定に photo_paths が含まれないこと(列単位の秘匿を画面クエリ側でも守る)', () => {
     expect(GAME_PUBLIC_COLUMNS).not.toContain('photo_paths')
     expect(GAME_PUBLIC_COLUMNS).toContain('rules_detailed')
-    expect(GAME_PUBLIC_COLUMNS).toContain('is_official')
+    expect(GAME_PUBLIC_COLUMNS).toContain('release_year')
   })
 })
