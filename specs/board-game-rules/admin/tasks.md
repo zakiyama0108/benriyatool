@@ -5,8 +5,8 @@
 前提: [game-registration](../game-registration/tasks.md)・[report](../report/tasks.md)・[comment](../comment/tasks.md)の各T0(テーブル・運営者向けRLS)が先に必要。
 
 ## T0. 元写真の非公開Storage設定(実装より先に単独PRで適用)
-- 非公開バケットの作成と、Storageのアクセスポリシー(INSERTは誰でも可、SELECT(ダウンロード)は運営者のみ、public=false)を`supabase/migrations/`に追加しCI適用する(バケット名・パス設計は実装時確定)
-- design.md「データベース設計」T0の実機確認(運営者のみ元写真取得可・anon/非運営者不可、games全行SELECT/UPDATE、reports SELECT、コメントDELETE、非運営者は不可)を行う
+- 非公開バケットの作成と、Storageのアクセスポリシー(INSERTは誰でも可(ただしサイズ上限`file_size_limit`・許可MIME`allowed_mime_types`・1ゲームあたり枚数上限の量的制約付き)、SELECT(ダウンロード)は運営者のみ、public=false)を`supabase/migrations/`に追加しCI適用する(バケット名・パス設計・制約値は実装時確定)。このバケットは[game-registration](../game-registration/tasks.md)の写真保存先で、確定適用の責務は本specに置く
+- design.md「データベース設計」T0の実機確認(運営者のみ元写真取得可・anon/非運営者不可、サイズ超過・許可外MIMEの拒否、games全行SELECT/UPDATE、reports SELECT、コメントDELETE、非運営者は不可)を行う
 - (TDD対象外)
 
 ## T1. 管理データ取得(`admin/lib/fetchAdminGames.ts`, `admin/lib/fetchReports.ts`)
@@ -40,5 +40,5 @@
 - 🔵 状態遷移・エラー表示・二重操作防止を整理する
 
 ## 補足(リリース前チェック)
-- Supabase AuthのRedirect URLs許可リストに`https://benriyatool.com/board-game-rules/admin/**`を本番公開前に登録する(requirements.md#認証手段とパスキー-5)
+- Supabase AuthのRedirect URLs許可リストに管理画面の戻り先を登録する(requirements.md#認証手段とパスキー-5)。利用者ログインの戻り先`https://benriyatool.com/board-game-rules/**`は[user-auth](../user-auth/tasks.md)の責務で登録し、これは`/board-game-rules/admin/**`を包含するため、広い方の1エントリで管理画面の戻り先も兼ねられる(user-authと重複せず整理する)
 - 運営者Googleアカウントのパスキー登録・2段階認証の維持を初回公開前に確認する(ADR-0006)

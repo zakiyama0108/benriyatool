@@ -99,7 +99,7 @@ sequenceDiagram
 ## バリデーション
 - ゲーム名・対応人数(下限/上限)・プレイ時間(下限/上限)は必須。いずれかが未入力のままでは確定操作を無効にする(requirements.md#登録の確定-11)
 - 対応人数・プレイ時間は下限≤上限であること(下限が上限を超える入力は確定できない。境界値の下限=上限は許容。requirements.md#入力値の制約-9)。範囲の妥当性は画面側で検証し、DB側でもCHECK制約で担保する(画面側の入力制限だけに頼らない。後述データベース設計・セキュリティ)
-- ルール本文(簡単版・詳しい版)には文字数の上限を設ける(requirements.md#入力値の制約-10)。上限値は実装時に、想定される説明書の分量から決める(画面側の入力制限に加え、DB側でもCHECK制約で担保する)
+- ルール本文(簡単版・詳しい版)には文字数の上限を設ける(requirements.md#入力値の制約-10)。DB側のCHECK制約は防御上限(簡単版4000字・詳しい版はjsonb全体で40000字)としてT0マイグレーションで先行適用する(後述データベース設計)。投稿者に見せる入力欄の`maxLength`(UX上限)は実装時に想定される説明書の分量から別途決める
 
 ## エラーハンドリング
 - Turnstile検証失敗は、解析関数がLLMを呼ばずに拒否する。画面は「もう一度お試しください」の趣旨の定型表示にとどめ、詳細な理由は画面に出さない(ボット・攻撃者に手がかりを与えないため)
@@ -156,7 +156,7 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 | created_at | timestamptz, not null, default now() | 登録日時。一覧の初期の並び順に使う |
 | deleted_at | timestamptz, nullable | 運営者による削除日時。NULLなら公開中。論理削除にすることで、通報・元写真の照合レコードを保持する([admin/design.md](../admin/design.md)) |
 
-- 制約: `check (min_players <= max_players)`、`check (min_minutes <= max_minutes)`。ルール本文の文字数上限も`check (char_length(...) <= N)`で担保する(上限値は実装時に確定)
+- 制約: `check (min_players <= max_players)`、`check (min_minutes <= max_minutes)`。ルール本文の文字数上限もDB側のCHECK制約で担保し、**T0マイグレーションに含めて先行適用する**(requirements.md#入力値の制約-10)。上限は「巨大データ投入を防ぐ防御上限」として、簡単版=`check (char_length(rules_simple) <= 4000)`、詳しい版=`check (char_length(rules_detailed::text) <= 40000)`とする(`rules_detailed`はjsonbのため`::text`化した全体長で担保する)。この値は防御上限であり、投稿者に見せる入力欄の`maxLength`(UX上の上限)は実装時に実際の説明書分量を見て別途決める(2段構成: 画面=UX上限/DB=防御上限)
 - 一覧・検索・詳細が対象とするのは`deleted_at is null`の行のみ([game-list/design.md](../game-list/design.md)、[game-detail/design.md](../game-detail/design.md))
 
 ### 元写真のStorage(新規: 非公開バケット)
@@ -188,7 +188,10 @@ create table board_game_rules_games (
   created_at timestamptz not null default now(),
   deleted_at timestamptz,
   check (min_players <= max_players),
-  check (min_minutes <= max_minutes)
+  check (min_minutes <= max_minutes),
+  -- ルール本文の防御上限(巨大データ投入対策)。画面のmaxLength(UX上限)とは別のDB側防御。
+  check (char_length(rules_simple) <= 4000),
+  check (char_length(rules_detailed::text) <= 40000) -- jsonbは::text化した全体長で担保
 );
 alter table board_game_rules_games enable row level security;
 
@@ -237,7 +240,11 @@ create policy "benriyatool_readonly can select games" on board_game_rules_games
 ```
 
 - 元写真の非公開Storageバケットとそのアクセスポリシー(運営者のみSELECT)は[admin/design.md](../admin/design.md)のマイグレーションで作る(通報確認・照合閲覧と同じPRにまとめてよい)。本specの登録処理は、そのバケットへ写真を保存する側になる
-- `photo_paths`列を一般に返さない扱いは、上記マイグレーションの**列単位のSELECT権限**でDB側に担保する(本specを担保の正とし、相互参照で宙吊りにしない)。`anon`には`photo_paths`を除く列のみSELECTを付与するため、細工したクライアントが`select photo_paths ...`を直接発行してもDBが拒否する。一覧・詳細・お気に入りの画面側クエリは従来どおり必要な列のみを選択する(挙動は変わらない)。運営者は`authenticated`の全列SELECT+admin RLSで`photo_paths`を取得する([admin/design.md](../admin/design.md))。なお、ログイン済みの一般利用者(`authenticated`)は`photo_paths`文字列を読みうるが、写真本体はStorageのSELECTを運営者に限定するため露出はパス文字列にとどまる(残余リスクは低。多層防御の一段はStorage側で担保)
+- `photo_paths`列を一般に返さない扱いは、上記マイグレーションの**列単位のSELECT権限**でDB側に担保する(本specを担保の正とし、相互参照で宙吊りにしない)。`anon`には`photo_paths`を除く列のみSELECTを付与するため、細工したクライアントが`select photo_paths ...`を直接発行してもDBが拒否する。一覧・詳細・お気に入りの画面側クエリは従来どおり必要な列のみを選択する(挙動は変わらない)。運営者は`authenticated`の全列SELECT+admin RLSで`photo_paths`を取得する([admin/design.md](../admin/design.md))
+- 列秘匿の残余リスク・保守上の含意(列単位GRANT採用に伴う整理):
+  - **秘匿対象は`anon`のみ**。ログイン済みの一般利用者(`authenticated`)と`benriyatool_readonly`は`photo_paths`文字列を読みうる。ただし写真本体はStorageのSELECTを運営者に限定するため、露出はパス文字列にとどまる(残余リスクは低。多層防御の一段はStorage側で担保)
+  - **列追加時の保守footgun**: 将来`board_game_rules_games`に列を追加する場合、`anon`への列単位GRANTに新列を追記しないと、`anon`の`select 新列`が権限エラーで静かに失敗する。列追加のマイグレーションでは必ずanonへのGRANT追記も併せて行う
+- **保存INSERTのRETURNING**: 確定保存のINSERTで結果を読み戻す場合(supabase-jsの`.select()`)、`anon`は`photo_paths`のSELECT列権限を持たないため、全列の読み戻しは権限エラーになり登録フロー自体が失敗する。RETURNINGは`select('id')`など`photo_paths`を含めない明示列に限定する(読み取り側と同じ「明示列取得」の規律を保存INSERTにも適用する)
 
 T0(マイグレーション適用)の実機確認:
 - 未ログイン(anon)で`is_official=false`のINSERTができ、`is_official=true`のINSERTは拒否されること
@@ -245,6 +252,7 @@ T0(マイグレーション適用)の実機確認:
 - anon/authenticatedで`deleted_at is null`の行がSELECTでき、`deleted_at`が入った行はSELECトされないこと
 - anonが`select photo_paths from board_game_rules_games`を発行すると権限エラーで拒否されること(列単位の秘匿)。一方で`photo_paths`を含まない必要列のSELECTは成功すること
 - 下限>上限のINSERTがCHECK制約で拒否されること
+- 簡単版4000字超・詳しい版(jsonb全体)40000字超のINSERTがCHECK制約で拒否されること(ルール本文の防御上限)
 
 ## API設計(解析関数のエンドポイント)
 本アプリで初めてサーバー側の処理(解析関数)を持つ。エンドポイントは1つだけで、写真解析専用とする。

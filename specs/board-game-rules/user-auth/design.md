@@ -85,5 +85,5 @@ app/board-game-rules/lib/useSession.ts (新規: セッションの取得と変�
 
 ## 依存関係
 - ログイン基盤(`app/lib/adminAuth.ts`)は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)を踏襲するが、許可リストによる権限確認(`isAuthorizedAdmin`)はログイン自体には課さない(利用者全員が対象のため)
-- Supabase AuthのRedirect URLs許可リストには、利用者ログインの戻り先である本アプリの全画面URL(`https://benriyatool.com/board-game-rules/**`)を本番公開前に登録する。adminが登録する`/board-game-rules/admin/**`だけでは利用者ログインの戻り先が漏れるため、本specの責務として登録する(詳細は[tasks.md#補足](tasks.md)、[admin/design.md](../admin/design.md)のリリース前チェックと合わせて確認)
+- Supabase AuthのRedirect URLs許可リストには、利用者ログインの戻り先である本アプリの全画面URL(`https://benriyatool.com/board-game-rules/**`)を本番公開前に登録する。adminが登録する`/board-game-rules/admin/**`だけでは利用者ログインの戻り先が漏れるため、本specの責務として登録する(詳細は[tasks.md#補足](tasks.md)、[admin/design.md](../admin/design.md)のリリース前チェックと合わせて確認)。なお`/board-game-rules/**`は`/board-game-rules/admin/**`をワイルドカードで包含するため、広い方の1エントリを登録すれば足りる(admin側と二重に登録しても害はない。2エントリ必須という意味ではない)
 - 本機能が提供するログイン状態・運営者判定は、[favorite](../favorite/requirements.md)・[comment](../comment/requirements.md)・[game-registration](../game-registration/requirements.md)・[admin](../admin/requirements.md)の前提となる

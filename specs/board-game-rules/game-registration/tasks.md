@@ -3,9 +3,9 @@
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 ## T0. マイグレーション適用(実装より先に単独PRで適用)
-- `board_game_rules_games`テーブルとRLSポリシー(anon/authenticatedのSELECT・INSERT、運営者のSELECT/UPDATE、readonlyのSELECT)を`supabase/migrations/`に追加し、mainマージでCI適用する
-- 元写真の非公開Storageバケットとポリシー(運営者のみSELECT)は[admin/design.md](../admin/design.md)のマイグレーションと同じPRにまとめる(登録処理はそこへ写真を保存する側)
-- design.md「データベース設計」T0の実機確認(anonのis_official制限、運営者のみis_official=true、削除済みの非表示、下限>上限のCHECK拒否)を行う
+- `board_game_rules_games`テーブルとRLSポリシー(anonは`photo_paths`を除く列単位SELECT・INSERT、authenticatedの全列SELECT・INSERT、運営者のSELECT/UPDATE、readonlyのSELECT)、およびCHECK制約(下限≤上限、ルール本文の防御上限=簡単版4000字・詳しい版jsonb全体40000字)を`supabase/migrations/`に追加し、mainマージでCI適用する
+- 元写真の非公開Storageバケットとポリシー(運営者のみSELECT、サイズ・MIME・枚数の量的制約)は[admin](../admin/tasks.md)のT0で作成・適用する(登録処理はそこへ写真を保存する側。同一PRにまとめてよいが、確定適用の責務はadmin側に置く)
+- design.md「データベース設計」T0の実機確認(anonのis_official制限、運営者のみis_official=true、削除済みの非表示、下限>上限のCHECK拒否、`anon`の`select photo_paths`拒否、ルール本文の上限超過CHECK拒否)を行う
 - (TDD対象外: マイグレーションの適用と手動確認)
 
 ## T1. 共通型と章立て定義(`lib/games.ts`, `lib/rulesChapters.ts`)

@@ -37,7 +37,7 @@
 ### お気に入り・コメント・通報の導線を表示する処理
 - 対象: 取得したゲーム
 - 手順:
-  1. ログイン中の利用者には、このゲームのお気に入り登録・解除操作を表示する([favorite/design.md](../favorite/design.md)の`FavoriteButton`)。このとき、[favorite/design.md#画面内のお気に入り状態をまとめて取得する処理](../favorite/design.md)に従い、このゲームが既にお気に入り登録済みかを取得(自分のお気に入りgame_id集合の取得、または当該game_idの登録有無の確認)して`FavoriteButton`へ登録済み/未登録を渡す。取得完了まで・取得失敗時は一律「未登録」として扱う([favorite/requirements.md#お気に入りの登録・解除-3](../favorite/requirements.md))。未ログインには操作を表示しない([favorite/design.md](../favorite/design.md)に揃える。ログイン導線は共通ヘッダーの`LoginStatus`に集約)
+  1. ログイン中の利用者には、このゲームのお気に入り登録・解除操作を表示する([favorite/design.md](../favorite/design.md)の`FavoriteButton`)。このとき、[favorite/design.md#画面内のお気に入り状態をまとめて取得する処理](../favorite/design.md)に従い、自分のお気に入りgame_id集合を`fetchMyFavoriteGameIds`(favorite/design.mdが定義するインターフェース)で取得し、当該game_idが集合に含まれるかで登録済み/未登録を判定して`FavoriteButton`へ渡す(単独の登録有無確認関数は設けず、集合取得に一本化する)。取得完了まで・取得失敗時は一律「未登録」として扱う([favorite/requirements.md#お気に入りの登録・解除-3](../favorite/requirements.md))。未ログインには操作を表示しない([favorite/design.md](../favorite/design.md)に揃える。ログイン導線は共通ヘッダーの`LoginStatus`に集約)
   2. このゲームのコメント欄を表示する([comment/design.md](../comment/design.md))
   3. このゲームの通報導線を表示する([report/design.md](../report/design.md))
   4. 詳細画面の閲覧自体はログイン不要(お気に入り・コメント投稿にはログインが必要。requirements.md#操作-9)

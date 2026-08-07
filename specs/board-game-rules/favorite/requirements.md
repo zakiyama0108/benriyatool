@@ -40,6 +40,7 @@
 - お気に入り対象となるゲームの識別子は[game-registration/requirements.md](../game-registration/requirements.md)で登録されるゲームのIDに従う
 - 認証・DB設計のパターンは[docs/adr/0001-user-input-database.md](../../../docs/adr/0001-user-input-database.md)、および先行実装の[ai-dev-digest/bookmark/design.md](../../ai-dev-digest/bookmark/design.md)を参照する
 - ログイン状態は[user-auth/requirements.md](../user-auth/requirements.md)に従う
+- お気に入りの保存(本人のログインに紐づく利用)を新設するため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を[user-auth](../user-auth/requirements.md)・[comment](../comment/requirements.md)と合わせて確認する(favorite自体は`user_id`+`game_id`のみで直接のPII本文は持たないが、他specと粒度を揃える)
 
 ## スコープ外
 - お気に入りの共有・公開(自分以外の利用者への表示)
