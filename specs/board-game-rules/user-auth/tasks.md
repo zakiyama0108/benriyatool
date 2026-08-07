@@ -19,5 +19,7 @@
 - 🟢 本specでの追加実装なし(既存`adminAuth.ts`を利用)
 - 🔵 なし
 
-## 補足
-- Google OIDCプロバイダ設定・Supabase AuthのRedirect URLs許可リストは、管理画面([admin/design.md](../admin/design.md))と共通のSupabase Auth設定を使う。本アプリの各画面URLを戻り先に使うため、Redirect URLsの許可リストへの登録要否は[admin/design.md](../admin/design.md)のリリース前チェックと合わせて確認する
+## 補足(リリース前チェック)
+- Google OIDCプロバイダ設定・Supabase AuthのRedirect URLs許可リストは、管理画面([admin/design.md](../admin/design.md))と共通のSupabase Auth設定を使う。
+- **Redirect URLs 許可リストへの登録は本specの責務として明示する**: 利用者ログインの戻り先は操作元の画面自身のURL(一覧`/board-game-rules`・詳細`/board-game-rules/detail`・登録`/board-game-rules/register`・お気に入り一覧`/board-game-rules/favorites`など)であり、adminが登録する`/board-game-rules/admin/**`だけではこれらが許可リストから漏れる。そこで**本アプリの全戻り先をカバーする`https://benriyatool.com/board-game-rules/**`をSupabase AuthのRedirect URLs許可リストに本番公開前に登録する**(admin側の`/admin/**`登録だけに委譲しない。既存`life-money-sim/admin`の登録漏れの教訓と同じクラスの不具合を防ぐ。[admin/design.md](../admin/design.md)のリリース前チェックと合わせて確認する)
+- **認証プロバイダのロックダウン(多層防御)**: 運営者判定はJWTの`email`クレームと`admin_emails`の突合に依存するため、`email`がGoogle検証済みであることが前提。プロジェクトのSupabase Authで有効化する認証手段はGoogle OIDCのみとし、メール/パスワード・マジックリンク等の別プロバイダで`email`を詐称する経路を作らない(ADR-0006の決定)。この設定をリリース前確認に含める

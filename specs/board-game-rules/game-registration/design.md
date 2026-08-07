@@ -98,8 +98,8 @@ sequenceDiagram
 
 ## バリデーション
 - ゲーム名・対応人数(下限/上限)・プレイ時間(下限/上限)は必須。いずれかが未入力のままでは確定操作を無効にする(requirements.md#登録の確定-11)
-- 対応人数・プレイ時間は下限≤上限であること(下限が上限を超える入力は確定できない)。範囲の妥当性は画面側で検証し、DB側でもCHECK制約で担保する(画面側の入力制限だけに頼らない。後述データベース設計・セキュリティ)
-- ルール本文(簡単版・詳しい版)には文字数の上限を設ける。上限値は実装時に、想定される説明書の分量から決める(画面側の入力制限に加え、DB側でもCHECK制約で担保する)
+- 対応人数・プレイ時間は下限≤上限であること(下限が上限を超える入力は確定できない。境界値の下限=上限は許容。requirements.md#入力値の制約-9)。範囲の妥当性は画面側で検証し、DB側でもCHECK制約で担保する(画面側の入力制限だけに頼らない。後述データベース設計・セキュリティ)
+- ルール本文(簡単版・詳しい版)には文字数の上限を設ける(requirements.md#入力値の制約-10)。上限値は実装時に、想定される説明書の分量から決める(画面側の入力制限に加え、DB側でもCHECK制約で担保する)
 
 ## エラーハンドリング
 - Turnstile検証失敗は、解析関数がLLMを呼ばずに拒否する。画面は「もう一度お試しください」の趣旨の定型表示にとどめ、詳細な理由は画面に出さない(ボット・攻撃者に手がかりを与えないため)
@@ -193,9 +193,16 @@ create table board_game_rules_games (
 alter table board_game_rules_games enable row level security;
 
 -- 閲覧: 公開中(削除されていない)の行は誰でもSELECTできる。
--- ただし photo_paths(元写真パス)を一般に返さないため、画面側は必要な列だけをSELECTする
---（列単位の秘匿はビュー等で別途担保する。詳細は admin/design.md と揃える）
-grant select on board_game_rules_games to anon, authenticated;
+-- photo_paths(元写真パス)は列単位のSELECT権限から除外し、anon が直接
+-- `select photo_paths ...` できないようにする(列単位の秘匿をDB側で担保する。本specを正とする)。
+-- 運営者は照合閲覧で photo_paths が必要なため authenticated には全列SELECTを付与し、
+-- 行はRLSで制御する(admin/design.md)。
+grant select (
+  id, name, min_players, max_players, min_minutes, max_minutes,
+  genre, min_age, difficulty, publisher, author, has_japanese_rules,
+  awards, rules_simple, rules_detailed, is_official, created_at, deleted_at
+) on board_game_rules_games to anon;
+grant select on board_game_rules_games to authenticated;
 create policy "anyone can select published games" on board_game_rules_games
   for select to anon, authenticated using (deleted_at is null);
 
@@ -230,12 +237,13 @@ create policy "benriyatool_readonly can select games" on board_game_rules_games
 ```
 
 - 元写真の非公開Storageバケットとそのアクセスポリシー(運営者のみSELECT)は[admin/design.md](../admin/design.md)のマイグレーションで作る(通報確認・照合閲覧と同じPRにまとめてよい)。本specの登録処理は、そのバケットへ写真を保存する側になる
-- `photo_paths`列を一般に返さない扱い(列単位の秘匿)は[admin/design.md](../admin/design.md)と揃えて確定する。最小の担保として、一覧・詳細のSELECTでは`photo_paths`を選択しない実装とし、加えてビュー等での列秘匿を検討する
+- `photo_paths`列を一般に返さない扱いは、上記マイグレーションの**列単位のSELECT権限**でDB側に担保する(本specを担保の正とし、相互参照で宙吊りにしない)。`anon`には`photo_paths`を除く列のみSELECTを付与するため、細工したクライアントが`select photo_paths ...`を直接発行してもDBが拒否する。一覧・詳細・お気に入りの画面側クエリは従来どおり必要な列のみを選択する(挙動は変わらない)。運営者は`authenticated`の全列SELECT+admin RLSで`photo_paths`を取得する([admin/design.md](../admin/design.md))。なお、ログイン済みの一般利用者(`authenticated`)は`photo_paths`文字列を読みうるが、写真本体はStorageのSELECTを運営者に限定するため露出はパス文字列にとどまる(残余リスクは低。多層防御の一段はStorage側で担保)
 
 T0(マイグレーション適用)の実機確認:
 - 未ログイン(anon)で`is_official=false`のINSERTができ、`is_official=true`のINSERTは拒否されること
 - 運営者以外のログインで`is_official=true`のINSERTが拒否されること、運営者本人では許可されること
 - anon/authenticatedで`deleted_at is null`の行がSELECTでき、`deleted_at`が入った行はSELECトされないこと
+- anonが`select photo_paths from board_game_rules_games`を発行すると権限エラーで拒否されること(列単位の秘匿)。一方で`photo_paths`を含まない必要列のSELECTは成功すること
 - 下限>上限のINSERTがCHECK制約で拒否されること
 
 ## API設計(解析関数のエンドポイント)
@@ -270,8 +278,9 @@ stateDiagram-v2
 ## セキュリティ
 - **APIキーの秘匿**: Anthropic APIキーとTurnstileシークレットは解析関数(Workers)のWrangler Secretsにのみ保持し、ビルド成果物・ブラウザに一切露出させない(ADR-0007)。解析関数のコードはキー露出につながる箇所を丁寧にレビューする
 - **コスト攻撃対策**: 解析関数はTurnstile検証に成功したリクエストのみLLMを呼ぶ。検証前・検証失敗時はLLMを一切呼ばない(匿名投稿によるLLM費用の無制限消費を防ぐ。ADR-0007)。あわせて、1リクエストあたりの写真枚数・サイズの上限を設け、極端な入力での費用増を抑える(上限値は実装時に確定)
+- **登録INSERT/写真アップロードの防御境界**: Turnstile・解析関数が守るのは「解析(LLMコスト)」だけである。確定保存のゲーム情報INSERT(anonキーで直接INSERT)と元写真のStorageアップロード(anonキーで直接アップロード)は解析関数もTurnstileも経由しないため、ボット対策の外にある。CHECK制約(必須・下限≤上限・文字数上限)を満たす限り、直接INSERTによるスパムゲームの即時公開は防げない。これはADR-0007が容認した割り切り(即時公開+事後モデレーション+通報)で、対応は[admin](../admin/requirements.md)のモデレーションと[report](../report/requirements.md)の通報で行う。元写真の直接アップロードによるStorage濫用への量的制約は[admin/design.md#元写真の非公開Storage](../admin/design.md)のバケットポリシー(サイズ・MIME・枚数上限)で担保する
 - **運営者登録タグの改ざん防止**: `is_official=true`はDB側のRLSで運営者本人のセッションに限定する。画面側の運営者判定を迂回して未ログイン/非運営者がタグを付けることはできない(上記データベース設計)
-- **元写真の非公開**: 投稿写真は原本の複製にあたるため一般公開しない。非公開バケットに保存し、SELECTを運営者のみに絞る([admin/design.md](../admin/design.md))。詳細画面・一覧は`photo_paths`を返さない(requirements.md#写真の取り扱い、[game-detail/requirements.md#表示対象-2](../game-detail/requirements.md))
+- **元写真の非公開**: 投稿写真は原本の複製にあたるため一般公開しない。非公開バケットに保存し、SELECTを運営者のみに絞る([admin/design.md](../admin/design.md))。詳細画面・一覧は`photo_paths`を返さないうえ、`anon`は列単位のSELECT権限から`photo_paths`が除外され直接読み取りもDBで拒否される(上記データベース設計。requirements.md#写真の取り扱い、[game-detail/requirements.md#表示対象-2](../game-detail/requirements.md))
 - **著作権配慮**: ルール本文は原文の逐語転載を避け独自の言い回しで生成する(上記「ルール本文の生成方針」)。加えて利用規約に、掲載が独自再構成であること・権利者からの申し出に速やかに対応する旨を追記する(requirements.md#利用規約への反映-8。[ai-dev-digest/content-generation](../../ai-dev-digest/content-generation/requirements.md)と同じパターン)
 - **入力のサニタイズ**: プレビューで修正されうる全項目・ルール本文は、表示時にHTMLとして解釈されない形で描画する(Reactの標準描画に任せ、`dangerouslySetInnerHTML`は使わない)。これは詳細画面([game-detail/design.md](../game-detail/design.md))でも同じ方針
 

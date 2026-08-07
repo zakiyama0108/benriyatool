@@ -21,7 +21,7 @@
 - 対象: 取得したゲームの分類情報
 - 手順:
   1. ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー/出版社・作者・言語依存度・受賞歴を表示する(requirements.md#基本情報の表示-1)
-  2. 空欄の項目は表示しない(または未登録と分かる形で示す)。どちらにするかは実装時に統一する
+  2. 空欄(未登録=NULL/空)の任意項目は、**その項目自体を表示しない**(「未登録」等のラベルも出さない)。項目が並ぶ中の空欄を減らし、登録済みの情報だけを簡潔に見せるため(requirements.md#基本情報の表示-1が設計に委ねた事項をここで確定)。必須項目(ゲーム名・対応人数・プレイ時間)は常に値があるため必ず表示する
   3. 運営者登録タグ(`is_official`)が付いたゲームは、それが分かる表示をする(requirements.md#基本情報の表示-2)
 - 関連するビジネスルール: requirements.md#基本情報の表示
 
@@ -31,13 +31,13 @@
   1. 「簡単版」「詳しい版」の2つのタブを表示し、初期表示は簡単版を選択状態にする(まず概要をつかむため。requirements.md#ルール本文の表示-5)
   2. 簡単版は要約テキストをそのまま表示する
   3. 詳しい版は、共通の章立て([game-registration/design.md#共通の章立て](../game-registration/design.md))の順に、各章の表示見出し(日本語)を付けて表示する。本文が空の章は表示しない(requirements.md#ルール本文の表示-3〜4)
-- 補足: 章キー↔表示見出しの対応は`app/board-game-rules/lib/rulesChapters.ts`を使う
+- 補足: 章キー↔表示見出しの対応は`app/board-game-rules/lib/rulesChapters.ts`を使う。`rules_detailed`はanonが任意のjsonbを直接INSERTしうる列のため、`rulesChapters.ts`に定義のない未知の章キーは表示しない(共通章立てに定義された章のみを見出し付きで描画する。壊れた構造・想定外キーへの表示側の頑健性を担保する)
 - 関連するビジネスルール: requirements.md#ルール本文の表示
 
 ### お気に入り・コメント・通報の導線を表示する処理
 - 対象: 取得したゲーム
 - 手順:
-  1. ログイン中の利用者には、このゲームのお気に入り登録・解除操作を表示する([favorite/design.md](../favorite/design.md)の`FavoriteButton`)。未ログインには操作を表示しないか、ログインを促す(requirements.md#操作-6、[favorite/requirements.md](../favorite/requirements.md))
+  1. ログイン中の利用者には、このゲームのお気に入り登録・解除操作を表示する([favorite/design.md](../favorite/design.md)の`FavoriteButton`)。このとき、[favorite/design.md#画面内のお気に入り状態をまとめて取得する処理](../favorite/design.md)に従い、このゲームが既にお気に入り登録済みかを取得(自分のお気に入りgame_id集合の取得、または当該game_idの登録有無の確認)して`FavoriteButton`へ登録済み/未登録を渡す。取得完了まで・取得失敗時は一律「未登録」として扱う([favorite/requirements.md#お気に入りの登録・解除-3](../favorite/requirements.md))。未ログインには操作を表示しない([favorite/design.md](../favorite/design.md)に揃える。ログイン導線は共通ヘッダーの`LoginStatus`に集約)
   2. このゲームのコメント欄を表示する([comment/design.md](../comment/design.md))
   3. このゲームの通報導線を表示する([report/design.md](../report/design.md))
   4. 詳細画面の閲覧自体はログイン不要(お気に入り・コメント投稿にはログインが必要。requirements.md#操作-9)
@@ -70,12 +70,12 @@ app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 - 元写真は一切表示しない(requirements.md#表示対象-2)
 
 ## 状態管理
-- 詳細画面(`detail/page.tsx`)は「取得したゲーム」「取得状態(読み込み中/表示中/該当なし/取得エラー)」「選択中のルールタブ(簡単版/詳しい版、初期=簡単版)」「ログインセッション(お気に入り・コメントの操作可否)」をローカル状態として持つ
+- 詳細画面(`detail/page.tsx`)は「取得したゲーム」「取得状態(読み込み中/表示中/該当なし/取得エラー)」「選択中のルールタブ(簡単版/詳しい版、初期=簡単版)」「ログインセッション(お気に入り・コメントの操作可否)」「このゲームのお気に入り登録状態(取得中・未ログイン・取得失敗時は未登録扱い)」をローカル状態として持つ
 - コメント欄の状態は`CommentSection`が自身で持つ([comment/design.md](../comment/design.md))
 
 ## セキュリティ
 - 取得は公開中(`deleted_at is null`)のゲームに限られ、削除済みは表示しない(RLSでも担保。requirements.md#表示対象-1)
-- `photo_paths`は取得も表示もしない。元写真は詳細に一切出さない(requirements.md#表示対象-2、[game-registration/design.md#セキュリティ](../game-registration/design.md))
+- `photo_paths`は取得も表示もしない。加えて`anon`は列単位のSELECT権限から`photo_paths`が除外され直接読み取りもDBで拒否される(列秘匿のDB担保は[game-registration/design.md#データベース設計](../game-registration/design.md)を正とする)。元写真は詳細に一切出さない(requirements.md#表示対象-2)
 - 分類情報・ルール本文は投稿者が修正しうる値だが、表示時にHTMLとして解釈しない形で描画する(`dangerouslySetInnerHTML`を使わない。[game-registration/design.md#セキュリティ](../game-registration/design.md)と同方針)。詳しい版の章本文も同様
 - URLのクエリで受け取るゲームIDは、そのままパラメータ化した問い合わせに使い、文字列としてクエリに埋め込まない。不正なID形式は「見つかりません」で処理を終える
 

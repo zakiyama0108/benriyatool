@@ -1,6 +1,6 @@
 # 設計: ゲーム一覧・絞り込み
 
-このアプリのトップ画面(`/board-game-rules`)。登録済みゲームの一覧表示と、複数分類での絞り込み(AND条件)・作者のテキスト検索を行う。データは[game-registration/design.md#データベース設計](../game-registration/design.md)の`board_game_rules_games`から取得する。ゲームの型・章立ての定義は`app/board-game-rules/lib/games.ts`を共有する。
+このアプリのトップ画面(`/board-game-rules`)。登録済みゲームの一覧表示と、複数分類での絞り込み(AND条件)・作者のテキスト検索を行う。データは[game-registration/design.md#データベース設計](../game-registration/design.md)の`board_game_rules_games`から取得する。ゲームの型定義は`app/board-game-rules/lib/games.ts`を共有する(一覧は「詳しい版」の章立てを表示しないため`rulesChapters.ts`には依存しない)。
 
 ## 処理フロー
 
@@ -19,7 +19,7 @@
   1. **対応人数**: 「この人数で遊べる」を指定した場合、その人数がゲームの対応人数の下限〜上限の範囲に収まるゲームだけを残す
   2. **プレイ時間**: 希望する時間帯を指定した場合、その時間帯とゲームのプレイ時間の下限〜上限が重なるゲームだけを残す
   3. **ジャンル**: 指定したジャンルに一致するゲームだけを残す
-  4. **対象年齢**: 指定した対象年齢の条件に合うゲームだけを残す
+  4. **対象年齢**: 「この年齢で遊べる」を指定した場合、その年齢がゲームの対象年齢(`min_age`=「◯歳以上」)を満たすゲーム、すなわち `指定年齢 ≥ min_age` のゲームだけを残す(対応人数の「この人数で遊べる」と同じ「その値で遊べるか」の考え方に揃える)。境界値(`指定年齢 = min_age`)は満たすものとして含む。`min_age`が未登録(NULL)のゲームは、この分類で絞り込みを指定したときは結果から除外する(原則。手順11)
   5. **難易度**: 指定した難易度に一致するゲームだけを残す
   6. **メーカー/出版社**: 指定したメーカーに一致するゲームだけを残す
   7. **言語依存度(日本語ルールの有無)**: 指定に合うゲーム(日本語ルールあり/なし)だけを残す
@@ -74,13 +74,14 @@ app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 - 一覧・絞り込みはログイン不要で使える(requirements.md#一覧表示-3)
 
 ## 状態管理
-- 一覧画面(`page.tsx`)は「取得したゲーム一覧」「現在の絞り込み条件」「取得状態(読み込み中/表示中/取得エラー)」「ログインセッション(お気に入り操作の可否判定に使う)」をローカル状態として持つ
+- 一覧画面(`page.tsx`)は「取得したゲーム一覧」「現在の絞り込み条件」「取得状態(読み込み中/表示中/取得エラー)」「ログインセッション(お気に入り操作の可否判定に使う)」「画面内の自分のお気に入り集合(登録済みgame_idの集合)」をローカル状態として持つ
+- お気に入り集合は、[favorite/design.md#画面内のお気に入り状態をまとめて取得する処理](../favorite/design.md)に従い、ログイン中に`fetchMyFavoriteGameIds`相当で1回まとめて取得し(各カードごとに個別取得しない)、各`GameCard`の`FavoriteButton`へ登録済み/未登録を渡す。取得完了まで・未ログイン・取得失敗時は一律「未登録」として扱う([favorite/design.md](../favorite/design.md)と同じ考え方。requirements.md#一覧表示-4、[favorite/requirements.md#お気に入りの登録・解除-3](../favorite/requirements.md))
 - 絞り込み条件の初期値は「すべて未指定(=全公開ゲームを登録日時の新しい順)」とする
 - 絞り込み条件が変わったら、取得済みデータに`filterGames`を適用し直して一覧・件数を更新する(再取得はしない)
 
 ## セキュリティ
 - 取得は公開中(`deleted_at is null`)のゲームに限られ、削除されたゲームは表示しない(RLSでも担保。requirements.md#表示対象-1)
-- 一覧・絞り込みは`photo_paths`(元写真パス)を取得しない。元写真は一覧・詳細に一切出さない([game-registration/design.md#セキュリティ](../game-registration/design.md))
+- 一覧・絞り込みは`photo_paths`(元写真パス)を取得しない。加えて`anon`は列単位のSELECT権限から`photo_paths`が除外されており、細工したクライアントでも直接読み取れない(列秘匿のDB担保は[game-registration/design.md#データベース設計](../game-registration/design.md)を正とする)。元写真は一覧・詳細に一切出さない
 - 作者テキスト検索は取得済みデータに対する画面側の部分一致で行い、任意の文字列がそのままDBクエリに渡ることはない(仮にDB側で検索する場合も、パラメータ化した問い合わせを使い、入力を埋め込まない)
 - ゲーム名・ジャンル等の表示は、投稿者が修正しうる値であってもHTMLとして解釈しない形で描画する([game-registration/design.md#セキュリティ](../game-registration/design.md)と同方針)
 
@@ -91,6 +92,6 @@ app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 - ゲーム一覧の取得が想定外に失敗した場合は、原因究明のためブラウザのコンソールにエラー内容を出す(画面には定型のエラー表示)。通常の閲覧・絞り込み操作ではログを出さない
 
 ## 依存関係
-- 一覧・絞り込みの対象データは[game-registration/design.md](../game-registration/design.md)で登録される内容に従う。ゲーム型・共通章立ては`app/board-game-rules/lib/games.ts`・`rulesChapters.ts`を共有する
+- 一覧・絞り込みの対象データは[game-registration/design.md](../game-registration/design.md)で登録される内容に従う。ゲーム型は`app/board-game-rules/lib/games.ts`を共有する(共通章立て`rulesChapters.ts`は「詳しい版」を章見出し付きで表示する[game-detail](../game-detail/design.md)専用で、章立てを表示しない一覧は依存しない)
 - 各カードからの遷移先は[game-detail/design.md](../game-detail/design.md)
 - お気に入り操作は[favorite/design.md](../favorite/design.md)に従う(`FavoriteButton`を各カードで使う)

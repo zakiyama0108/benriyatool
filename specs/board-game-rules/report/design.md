@@ -32,11 +32,11 @@ sequenceDiagram
   4. 送信が完了したら、完了が分かる表示をする(requirements.md#通報の送信-4)
   5. 通報が行われても対象ゲームは自動的に非表示にしない。公開は維持したまま運営者が管理画面で確認する(requirements.md#通報後の扱い-5)
   6. 送信に失敗した場合は、失敗が分かる表示をし、再送できるようにする(後述エラーハンドリング)
-- 補足(理由の文字数): 理由テキストには文字数上限を設ける(上限値は実装時に確定)。入力欄の`maxLength`+トリムに加え、DB側でもCHECK制約で担保する(後述セキュリティ)
+- 補足(理由の文字数): 理由テキストには文字数上限を設ける。上限は**1000文字**に確定する(根拠: 通報は「どこが誤り/不適切か」を運営者に伝える短い補足で足り、長文の記事投稿は想定しないため)。入力欄の`maxLength`+トリムに加え、DB側でもCHECK制約(`char_length(reason) <= 1000`)で担保する(後述セキュリティ)
 - 関連するビジネスルール: requirements.md#通報の送信、requirements.md#通報後の扱い、requirements.md#保存内容
 
 ## バリデーション
-- 理由テキストは任意入力(空でも送信可)。入力された場合は文字数上限を超えないこと(上限値は実装時に確定。DB側でもCHECK制約で担保)
+- 理由テキストは任意入力(空でも送信可)。入力された場合は文字数上限(1000文字。上記「通報を送信する処理」の補足)を超えないこと(DB側でもCHECK制約で担保)
 
 ## エラーハンドリング
 - 通報送信の失敗は、閲覧者が明示的に行った操作のため、失敗が分かる定型表示をし再送できるようにする(Supabaseの生エラーは画面に出さない)
@@ -46,7 +46,9 @@ sequenceDiagram
 - 通報はログイン不要のため大量送信の余地があるが、投稿([game-registration](../game-registration/requirements.md))と異なりLLM呼び出し(課金)を伴わず、通報レコードは運営者のみが見る・自動では何も起こさない(requirements.md#通報後の扱い-5)ため、1件あたりの実害は小さい。よって**初期はCloudflare Turnstileを付けず**、次の軽い抑制にとどめる(requirements.md#ボット対策・濫用防止-1):
   - 送信中のボタン無効化による二重送信防止
   - 同一ブラウザから同一ゲームへ短時間に繰り返し送るのを抑える簡易な抑制(画面側。厳密な担保はしない)
-- 濫用(スパム通報の増加)が実際に問題になった場合に、投稿フォームと同じTurnstile検証の導入を再検討する。その場合は解析関数のような専用サーバーは要さず、Turnstileトークンの検証をどこで行うか(通報も検証付きにするなら軽量な検証経路)を別途設計する
+- **残余リスク(共有DBの行・容量枯渇)**: 上記の見送り判断は「LLMコストなし・運営者のみ閲覧・自動処理なし」を根拠にするが、これは費用・晒しの軸の話で、可用性の軸は別に残る。anon公開キーでSupabaseへ直接スクリプト送信すれば、画面側の簡易抑制を無視して通報を大量INSERTでき、全アプリ共用のSupabase無料枠(行数・容量)を枯渇させうる。通報はcommentと違いログイン障壁すらないぶん攻撃が容易で、`reason`のCHECK(1行の長さ)は件数を防げない。この残余リスクは初期は受容する(小規模運用・監視で足りる前提)が、次を発動条件とする:
+  - 通報レコードが想定を超えて急増した場合(運営者が[admin](../admin/design.md)の通報一覧で気付く)、投稿フォームと同じTurnstile検証を通報にも導入する。その場合も解析関数のような専用サーバーは要さず、Turnstileトークンを検証する軽量な経路(Workers関数の軽量エンドポイント等)を別途設計する
+  - あわせて、同一ゲーム・短時間の重複通報をDB側で抑える方策(レート制限・重複抑止)も導入候補とする
 - 関連するビジネスルール: requirements.md#ボット対策・濫用防止-1
 
 ## 関連するファイル(抜粋)
@@ -63,17 +65,19 @@ app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 |---|---|---|
 | id | uuid, primary key, default gen_random_uuid() | 通報ID |
 | game_id | uuid, not null, references board_game_rules_games(id) | 対象ゲーム |
-| reason | text, nullable, check (reason is null or char_length(reason) <= N) | 任意の理由テキスト(上限N。実装時に確定)。未記入はNULL |
+| reason | text, nullable, check (reason is null or char_length(reason) <= 1000) | 任意の理由テキスト(上限1000。根拠は「通報を送信する処理」参照)。未記入はNULL |
 | created_at | timestamptz, not null, default now() | 通報日時 |
 
 - 匿名通報のため`auth.users`とのリレーションは持たない。通報者を特定する情報は保存しない(requirements.md#保存内容-2)
 
 ### マイグレーション(実装より先に単独PRで適用)
+前提: `game_id`の参照先`board_game_rules_games`([game-registration](../game-registration/design.md))と、運営者SELECTポリシーが参照する共用の`admin_emails`(`ikukyu/admin`で作成済み。本アプリでは新規作成しない)が、適用時点で存在していること([tasks.md#T0](tasks.md))。
+
 ```sql
 create table board_game_rules_reports (
   id uuid primary key default gen_random_uuid(),
   game_id uuid not null references board_game_rules_games(id),
-  reason text check (reason is null or char_length(reason) <= 1000), -- 上限は実装時に見直し
+  reason text check (reason is null or char_length(reason) <= 1000), -- 上限1000(短い補足用途。design.md「通報を送信する処理」参照)
   created_at timestamptz not null default now()
 );
 alter table board_game_rules_reports enable row level security;

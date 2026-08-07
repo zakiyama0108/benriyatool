@@ -39,6 +39,9 @@
 - [2] コメントの編集は投稿者本人のみ。削除は投稿者本人と運営者ができる。これらのアクセス制御はDB側(RLS)で担保し、画面側の表示出し分けだけに頼らない(根拠: [docs/adr/0001-user-input-database.md](../../../docs/adr/0001-user-input-database.md)のログインユーザー向けパターン+運営者判定の組み合わせ)
 - [3] ログイン基盤は[user-auth/requirements.md](../user-auth/requirements.md)のGoogle OIDCを利用する。運営者による削除は運営者判定(`isAuthorizedAdmin()`相当)を用いる
 
+### データ保護
+- [4] コメントに表示する投稿者名はGoogle OIDC由来で、実名になりうる。この表示名はログイン不要で誰でも閲覧できるコメント欄に公開されるため、利用者が意図せず実名を公開しないよう、投稿時に「公開される表示名」を明示してから投稿できるようにする(具体的な見せ方は設計で確定する。表示名の変更・仮名化はスコープ外)。氏名を含む表示名・本文を公開保存する旨は[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーに追記する
+
 ## 依存関係
 - コメント対象となるゲームの識別子は[game-registration/requirements.md](../game-registration/requirements.md)で登録されるゲームのIDに従う
 - コメント欄は[game-detail/requirements.md#機能要件-7](../game-detail/requirements.md)で表示される

@@ -2,10 +2,10 @@
 
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
-前提: [game-registration](../game-registration/tasks.md)のT0(gamesテーブル)が先に必要。
+前提(テーブル依存): ①[game-registration](../game-registration/tasks.md)のT0(`board_game_rules_games`テーブル。`game_id`の外部キー参照先)が先に必要。②運営者DELETEポリシーが参照する`admin_emails`テーブルは`ikukyu/admin`で作成済みの共用テーブルであり、本マイグレーション適用時点で存在している前提とする(本アプリでは新規作成しない。[user-auth/design.md](../user-auth/design.md)参照)。マイグレーションはこれらの後に適用する。
 
 ## T0. マイグレーション適用(実装より先に単独PRで適用)
-- `board_game_rules_comments`テーブルとRLS(誰でもSELECT、本人INSERT/UPDATE、本人+運営者DELETE、readonly SELECT)、本文のCHECK制約を`supabase/migrations/`に追加しCI適用する
+- `board_game_rules_comments`テーブルとRLS(誰でもSELECT、本人INSERT/UPDATE、本人+運営者DELETE、readonly SELECT)、本文のCHECK制約を`supabase/migrations/`に追加しCI適用する。運営者DELETEポリシーは共用の`admin_emails`を参照する(上記「前提」の②)
 - design.md「データベース設計」T0の実機確認(誰でもSELECT・本人のみINSERT/UPDATE・本人+運営者DELETE・上限CHECK)を行う
 - (TDD対象外)
 

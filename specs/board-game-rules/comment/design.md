@@ -38,10 +38,11 @@ sequenceDiagram
 - 手順:
   1. 未ログインには投稿操作を表示しないか、押下でログインを促す(requirements.md#コメントの投稿-8)
   2. 本文をトリムした結果が空文字・空白のみの場合は投稿しない(送信操作を無効化。requirements.md#コメントの投稿-6)
-  3. 本文が文字数上限を超える場合は投稿しない(上限値は実装時に確定。入力欄の`maxLength`+トリム検証。DB側でもCHECK制約で担保。後述セキュリティ)
+  3. 本文が文字数上限(2000文字。後述バリデーション)を超える場合は投稿しない(入力欄の`maxLength`+トリム検証。DB側でもCHECK制約で担保。後述セキュリティ)
   4. 本文を、ログイン中の本人のuser_idと、セッションから得た表示名(アカウント名)とともにINSERTする。1ゲームに複数件投稿できる(件数上限なし。requirements.md#コメントの投稿-5)
   5. 成功したらコメント一覧へ反映し、入力欄を空にする。失敗したら入力内容を保持し失敗が分かる表示をする
 - 補足(表示名): 表示名はログインセッションのユーザー情報(Google OIDCの氏名等)から取得し、投稿時に`author_name`として保存する。以降の表示はこの保存値を使う(anonが`auth.users`を読めないため、公開表示のコメントでは表示名を非正規化して持つ)
+- 補足(実名公開の周知): Google OIDCの表示名は実名の可能性が高く、それが誰でも閲覧できるコメント欄に公開される。利用者が意図せず実名を公開しないよう、投稿フォームに「この名前(=実際に保存・公開される表示名)で公開されます」と、公開される表示名そのものを明示してから投稿させる(requirements.md#コメントの投稿-8)。表示名の変更・仮名化はスコープ外だが、投稿時点で何が公開されるかは必ず見せる
 - 関連するビジネスルール: requirements.md#コメントの投稿、requirements.md#権限-1
 
 ### コメントを編集する処理
@@ -63,7 +64,7 @@ sequenceDiagram
 
 ## バリデーション
 - 本文はトリム後の空文字・空白のみを不可とする(requirements.md#コメントの投稿-6)
-- 本文の文字数上限を設ける(上限値は実装時に確定)。入力欄の`maxLength`+トリム検証に加え、DB側でもCHECK制約で担保する(画面側の制限だけに頼らない。理由は後述セキュリティ)
+- 本文の文字数上限は**2000文字**に確定する(requirements.md#コメントの投稿-7が設計に委ねた値をここで確定。根拠: コメントはルールの誤りの指摘・補足や遊び方のコツの共有といった短い助け合い用途で、長文の記事投稿は想定しない。長文共有はスコープ外)。入力欄の`maxLength`+トリム検証に加え、DB側でもCHECK制約(`char_length(body) <= 2000`)で担保する(画面側の制限だけに頼らない。理由は後述セキュリティ)
 
 ## エラーハンドリング
 - コメント一覧の取得失敗は、コメント欄にエラーが分かる表示をする(詳細ページ本体は妨げない)。お気に入りのように握りつぶさないのは、コメントが助け合いの主要素で、表示されないと投稿の重複や誤解を招くため
@@ -88,18 +89,20 @@ app/legal/page.tsx (既存: プライバシーポリシーにコメント(氏名
 | game_id | uuid, not null, references board_game_rules_games(id) | 対象ゲーム |
 | user_id | uuid, not null, references auth.users(id) | 投稿者本人 |
 | author_name | text, not null | 投稿時の表示名(公開表示用に非正規化)。anonが`auth.users`を読めないため保存する |
-| body | text, not null, check (char_length(body) <= N) | 本文(文字数上限N。実装時に確定。DB側でもCHECK) |
+| body | text, not null, check (char_length(body) <= 2000) | 本文(文字数上限2000。根拠は「バリデーション」参照。DB側でもCHECK) |
 | created_at | timestamptz, not null, default now() | 投稿日時。一覧の並び順に使う |
 | updated_at | timestamptz, not null, default now() | 最終編集日時(UPDATE時にアプリが現在時刻をセット。DBトリガーは使わずシンプルに保つ) |
 
 ### マイグレーション(実装より先に単独PRで適用)
+前提: `game_id`の参照先`board_game_rules_games`([game-registration](../game-registration/design.md))と、運営者DELETEポリシーが参照する共用の`admin_emails`(`ikukyu/admin`で作成済み。本アプリでは新規作成しない)が、適用時点で存在していること([tasks.md#T0](tasks.md))。
+
 ```sql
 create table board_game_rules_comments (
   id uuid primary key default gen_random_uuid(),
   game_id uuid not null references board_game_rules_games(id),
   user_id uuid not null references auth.users(id),
   author_name text not null,
-  body text not null check (char_length(body) <= 2000), -- 上限は実装時に見直し
+  body text not null check (char_length(body) <= 2000), -- 上限2000(助け合いの短文用途。design.md「バリデーション」参照)
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -144,7 +147,7 @@ T0(マイグレーション適用)の実機確認:
 ## 画面設計
 - ゲーム詳細画面のコメント欄(`CommentSection`)に、コメント一覧(投稿日時順)と投稿フォームを表示する
 - 各コメント(`CommentItem`): 投稿者の表示名・投稿日時・本文。ログイン中の本人には「編集」「削除」、運営者には「削除」を表示する
-- 投稿フォーム: ログイン中のみ表示する。未ログインには投稿操作を出さないか、押下でログインを促す。本文が空・空白のみ・上限超過では送信を無効化する
+- 投稿フォーム: ログイン中のみ表示する。未ログインには投稿操作を出さないか、押下でログインを促す。本文が空・空白のみ・上限超過では送信を無効化する。投稿ボタン付近に、公開される表示名(実際に保存されるアカウント名)を明示し、「この名前で公開されます」と分かるようにする(実名公開の予期せぬ露出を防ぐ)
 
 ## 状態管理
 - `CommentSection`は「コメント一覧」「取得状態(読み込み中/表示中/取得エラー)」「ログインセッション」「運営者判定の結果」をローカル状態として持つ
@@ -155,6 +158,7 @@ T0(マイグレーション適用)の実機確認:
 - コメント本文・表示名は、表示時にHTMLとして解釈しない形で描画する(`dangerouslySetInnerHTML`を使わない)。投稿は誰でもできるため、悪意ある入力を前提に必ずエスケープ描画する
 - 本文の文字数上限は画面側(`maxLength`+トリム)に加えDB側のCHECK制約でも担保する。コメント投稿はGoogleアカウントを持つ利用者全員に開放するため、開発者ツール等で直接巨大な文字列をINSERTされるとSupabaseの共通無料枠を消費しうる。1件あたりの上限をDB側でも防御的に持つ([bookmark/design.md#セキュリティ](../../ai-dev-digest/bookmark/design.md)と同じ考え方)
 - 表示名は投稿時のセッション由来の値を保存する。任意の表示名をブラウザから詐称してINSERTする余地はあるが、`user_id`はRLSで本人に固定されるため、なりすまし投稿(他人のuser_idでの投稿)はできない。表示名の見た目の詐称は運営者が[admin](../admin/requirements.md)で削除できる範囲の運用リスクとして扱う
+- データ保護(個人情報): 公開される表示名はGoogle OIDC由来で実名になりうる。投稿フォームで公開される表示名を明示し(上記「画面設計」)、利用者が認識したうえで投稿できるようにする。あわせて、氏名を含む表示名・本文を公開保存する旨を[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーに追記する(user-auth・favoriteと合わせて確認)
 - 運営者による削除は運営者判定(`isAuthorizedAdmin`相当)を用いる。判定の問い合わせに失敗した場合は運営者ではないものとして扱い(削除操作を出さない)、本人としての操作のみ可能にする
 
 ## ログ

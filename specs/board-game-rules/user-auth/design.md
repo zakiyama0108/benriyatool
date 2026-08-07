@@ -77,6 +77,7 @@ app/board-game-rules/lib/useSession.ts (新規: セッションの取得と変�
 ## セキュリティ
 - 本機能は許可リストによる制限をかけず、Googleアカウントを持つ人全員のログインを意図的に開放する(requirements.md#認証方式-1)。ログインで得られるのはお気に入り・コメントという本人データ機能へのアクセスのみで、他人のデータはRLSにより本人以外に返らない(詳細は[favorite/design.md](../favorite/design.md)・[comment/design.md](../comment/design.md)の各セキュリティ節)
 - 運営者判定は画面側の出し分けのためのものであり、実際の書き込み権限(運営者登録タグの付与、管理画面の編集・削除)はDB側のRLSで担保する。画面側の判定を迂回しても、運営者以外は保護された書き込みができない([admin/design.md](../admin/design.md)、[game-registration/design.md](../game-registration/design.md)参照)
+- 運営者判定はRLSの`auth.jwt() ->> 'email'`と`admin_emails`の突合に依存するため、`email`クレームがGoogle検証済みで、他の認証手段による`email`詐称経路が存在しないことが前提となる。プロジェクトのSupabase Authで有効化する認証手段はGoogle OIDCのみとし、メール/パスワード・マジックリンク等の別プロバイダを有効化しない(ADR-0006の決定を本specでも前提として明記。有効化されると`email`クレームを詐称して運営者判定を突破される余地が理論上生じるため)。Authプロバイダ設定がGoogle OIDCのみであることをリリース前確認に含める(tasks.md#補足)
 - ログインにより新たに氏名・メールアドレス等の個人情報を取得するため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーへの追記要否を確認する(本アプリ全体のログイン導入に伴う対応として、favorite・commentと合わせて確認する)
 
 ## ログ
@@ -84,4 +85,5 @@ app/board-game-rules/lib/useSession.ts (新規: セッションの取得と変�
 
 ## 依存関係
 - ログイン基盤(`app/lib/adminAuth.ts`)は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)を踏襲するが、許可リストによる権限確認(`isAuthorizedAdmin`)はログイン自体には課さない(利用者全員が対象のため)
+- Supabase AuthのRedirect URLs許可リストには、利用者ログインの戻り先である本アプリの全画面URL(`https://benriyatool.com/board-game-rules/**`)を本番公開前に登録する。adminが登録する`/board-game-rules/admin/**`だけでは利用者ログインの戻り先が漏れるため、本specの責務として登録する(詳細は[tasks.md#補足](tasks.md)、[admin/design.md](../admin/design.md)のリリース前チェックと合わせて確認)
 - 本機能が提供するログイン状態・運営者判定は、[favorite](../favorite/requirements.md)・[comment](../comment/requirements.md)・[game-registration](../game-registration/requirements.md)・[admin](../admin/requirements.md)の前提となる
