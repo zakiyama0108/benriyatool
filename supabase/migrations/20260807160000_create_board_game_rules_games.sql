@@ -1,9 +1,12 @@
 -- board_game_rules_games テーブルの新設
 -- (仕様: specs/board-game-rules/game-registration/design.md「データベース設計」、
---  方針: docs/adr/0001-user-input-database.md、docs/adr/0007-runtime-llm-server-and-writable-admin.md)
+--  方針: docs/adr/0001-user-input-database.md)
 --
--- 誰でも(anon含む)登録・閲覧できる公開ゲーム情報。運営者は編集・論理削除・元写真照合ができる。
--- 元写真パス(photo_paths)は anon の列単位SELECT権限から除外し、一般には返さない。
+-- 2026-08の見直し: 匿名投稿からのライブLLM解析(即時公開)を撤廃し、運営者がローカルツールで
+-- まとめて登録する方式に変更した(docs/adr/0007「2026-08の見直し」参照)。これに伴い、
+-- 運営者登録タグ(is_official)は全ゲームが運営者経由で登録される前提になり不要になった。
+-- anon/authenticatedからの直接INSERTは行わず、書き込みは運営者のローカル登録ツール
+-- (service_role相当の権限。RLSをバイパスする)のみが行う。
 
 create table board_game_rules_games (
   id uuid primary key default gen_random_uuid(),
@@ -12,22 +15,25 @@ create table board_game_rules_games (
   max_players int not null,
   min_minutes int not null,
   max_minutes int not null,
-  genre text,
+  genre text check (genre is null or genre in (
+    '戦略', 'パーティー', '協力', '推理・デダクション', 'カードゲーム',
+    'ダイスゲーム', 'ワーカープレイスメント', 'デッキ構築', 'エリアマジョリティ', 'ファミリー', 'その他'
+  )),
   min_age int,
   difficulty text,
   publisher text,
   author text,
   has_japanese_rules boolean,
   awards text,
+  release_year int,
   rules_simple text not null,
   rules_detailed jsonb not null,
-  is_official boolean not null default false,
   photo_paths text[] not null,
   created_at timestamptz not null default now(),
   deleted_at timestamptz,
   check (min_players <= max_players),
   check (min_minutes <= max_minutes),
-  -- ルール本文の防御上限(巨大データ投入対策)。画面のmaxLength(UX上限)とは別のDB側防御。
+  -- ルール本文の防御上限(巨大データ投入対策)。
   check (char_length(rules_simple) <= 4000),
   check (char_length(rules_detailed::text) <= 40000) -- jsonbは::text化した全体長で担保
 );
@@ -41,25 +47,15 @@ alter table board_game_rules_games enable row level security;
 grant select (
   id, name, min_players, max_players, min_minutes, max_minutes,
   genre, min_age, difficulty, publisher, author, has_japanese_rules,
-  awards, rules_simple, rules_detailed, is_official, created_at, deleted_at
+  awards, release_year, rules_simple, rules_detailed, created_at, deleted_at
 ) on board_game_rules_games to anon;
 grant select on board_game_rules_games to authenticated;
 create policy "anyone can select published games" on board_game_rules_games
   for select to anon, authenticated using (deleted_at is null);
 
--- 登録: 未ログイン(anon)は is_official=false でのみINSERTできる
-grant insert on board_game_rules_games to anon, authenticated;
-create policy "anon can insert non-official games" on board_game_rules_games
-  for insert to anon with check (is_official = false and deleted_at is null);
-
--- 登録: ログイン中は、運営者本人のときのみ is_official=true を許可。
--- 運営者以外のログインユーザーは is_official=false でのみINSERTできる
-create policy "authenticated can insert games" on board_game_rules_games
-  for insert to authenticated with check (
-    deleted_at is null
-    and (is_official = false
-         or (auth.jwt() ->> 'email') in (select email from admin_emails))
-  );
+-- 登録(INSERT)ポリシーは設けない。anon/authenticatedからの直接登録は撤廃し、
+-- 運営者のローカル登録ツールがservice_role相当の権限でRLSをバイパスして書き込む
+-- (specs/board-game-rules/admin/design.md「登録依頼からゲームを登録するローカルツール」)。
 
 -- 管理: 運営者本人は全行SELECT(削除済み含む)・UPDATE(編集・論理削除)ができる(admin/design.md)
 create policy "admin can select all games" on board_game_rules_games
