@@ -1,6 +1,8 @@
 # 設計: 管理画面(モデレーション)
 
-認証とアクセス制御の全体方針は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)にあるため重複させず、本specではこの画面固有の処理フロー・書き込み(編集・削除)・元写真の照合閲覧の具体を書く。ログイン・権限確認の処理は`ikukyu/admin/design.md`・`life-money-sim/admin/design.md`と同じロジック(共通の`admin_emails`・`adminAuth.ts`)を再利用する。本管理画面はADR-0006テンプレートの「読み取り専用」の例外として、ゲームの編集・削除、コメントの削除という書き込みを認める(ADR-0007)。モデレーション専用のサーバーは新設せず、書き込みはすべてRLS経由のDB操作で行う(requirements.md#非機能要件-2)。
+認証とアクセス制御の全体方針は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)にあるため重複させず、本specではこの画面固有の処理フロー・書き込み(編集・削除)・元写真の照合閲覧・登録依頼の確認の具体を書く。ログイン・権限確認の処理は`ikukyu/admin/design.md`・`life-money-sim/admin/design.md`と同じロジック(共通の`admin_emails`・`adminAuth.ts`)を再利用する。本管理画面はADR-0006テンプレートの「読み取り専用」の例外として、ゲームの編集・削除、コメントの削除という書き込みを認める(ADR-0007)。モデレーション専用のサーバーは新設せず、書き込みはすべてRLS経由のDB操作で行う(requirements.md#非機能要件-2)。
+
+利用者からの登録依頼([game-registration/design.md](../game-registration/design.md)の`board_game_rules_game_requests`)を実際にゲームとして登録する処理は、この管理画面(Webアプリ)ではなく**ローカルのClaude Code Skill**(下記「登録依頼からゲームを登録するローカルツール」)で行う。管理画面が担うのは依頼の確認・処理済みマーク・削除にとどまる。
 
 ## 処理フロー
 
@@ -77,10 +79,36 @@
   2. 成功したら一覧から取り除く、失敗したら失敗表示
 - 関連するビジネスルール: requirements.md#コメントの削除-11
 
+### 登録依頼を確認する処理
+- 対象: `board_game_rules_game_requests`のレコード
+- 手順:
+  1. 運営者として依頼を一覧取得する。`processed_at`がNULLの未処理を優先し、次いで新しい順に並べる(requirements.md#登録依頼の確認-12)
+  2. 各依頼の写真(非公開Storage)と入力済み分類情報を表示する
+  3. 取得に失敗した場合は、一覧を表示せずエラー表示にする(後述エラーハンドリング)
+- 関連するビジネスルール: requirements.md#登録依頼の確認-12
+
+### 登録依頼を処理済みにする処理 / 削除する処理
+- 対象: 運営者が選んだ1件の登録依頼
+- 手順:
+  1. 下記「登録依頼からゲームを登録するローカルツール」でゲームの登録が完了したら、管理画面から該当依頼の`processed_at`に現在時刻をセットするUPDATEを行う(requirements.md#登録依頼の確認-13)
+  2. 不要な依頼(スパム・重複・情報不足など)は、依頼そのものをDELETEする(requirements.md#登録依頼の確認-14)
+  3. 成功したら一覧の表示を更新、失敗したら失敗表示
+- 関連するビジネスルール: requirements.md#登録依頼の確認-13、requirements.md#登録依頼の確認-14
+
+### 登録依頼からゲームを登録するローカルツール(管理画面の外)
+- 対象: 未処理の登録依頼(写真+入力済み分類情報)
+- 手順(概要。実装の詳細は本specのタスクで扱う):
+  1. 運営者がローカル(Mac)の特定フォルダに写真セットを配置する、または`board_game_rules_game_requests`から未処理の依頼を確認する
+  2. 新規のClaude Code Skill(`.claude/skills/board-game-rules-batch-register/`)を起動する。Claude Codeが写真(依頼に入力済みの分類情報があれば参考にしつつ)を解析し、分類情報とルール本文(簡単版・詳しい版、[game-registration/design.md#ルール本文の生成方針](../game-registration/design.md)に従う独自の言い回し)を生成する
+  3. Node.jsスクリプトが、生成した内容を`board_game_rules_games`へINSERTする(下記「データベース設計」の権限で担保)
+  4. 依頼由来の場合は、対応する`board_game_rules_game_requests`の`processed_at`もあわせて更新する
+- 補足: この処理はAnthropic API呼び出しを伴うが、運営者自身のClaude Codeセッション(Pro/Maxプラン等の対話コンテキスト)上で行われ、Webアプリ・Cloudflare Workersからの追加のAPI課金は発生しない(根拠: `/consult`での判断。[game-registration/design.md](../game-registration/design.md)参照)
+- 関連するビジネスルール: requirements.md#登録依頼の確認-13
+
 ## エラーハンドリング
 - 画面の状態は「未ログイン」「ログイン済みだが権限なし」「権限あり」「取得エラー」に切り分ける(`ikukyu/admin`と同一方針)
 - 一般利用者向けの保存(お気に入り等)は失敗を握りつぶす方針だが、管理画面は運営者がモデレーションする画面のため、データ取得の失敗は握りつぶさず画面に伝える(空一覧では取得失敗と0件の区別ができないため)
-- 編集・削除・コメント削除は運営者が明示的に行う操作のため、失敗時は失敗が分かる表示をする。編集は入力を保持する。処理中は該当操作を無効化し二重実行を防ぐ
+- 編集・削除・コメント削除・登録依頼の処理済みマーク/削除は運営者が明示的に行う操作のため、失敗時は失敗が分かる表示をする。編集は入力を保持する。処理中は該当操作を無効化し二重実行を防ぐ
 
 ## 関連するファイル(抜粋)
 ```
@@ -89,21 +117,25 @@ app/board-game-rules/admin/lib/fetchAdminGames.ts (新規: 全ゲーム(削除�
 app/board-game-rules/admin/lib/moderation.ts (新規: ゲームの編集(UPDATE)・論理削除、コメント削除)
 app/board-game-rules/admin/lib/photos.ts (新規: 非公開Storageから元写真を取得する)
 app/board-game-rules/admin/lib/fetchReports.ts (新規: 通報一覧の取得)
+app/board-game-rules/admin/lib/gameRequests.ts (新規: 登録依頼の一覧取得・processed_at更新・削除)
 app/board-game-rules/admin/components/LoginScreen.tsx (新規: ログイン/権限なしの案内。ikukyu/adminのLoginScreenと同等のロジック)
 app/board-game-rules/admin/components/GameModerationTable.tsx (新規: ゲーム一覧+編集・削除・写真照合の導線)
 app/board-game-rules/admin/components/GameEditForm.tsx (新規: 分類情報・ルール本文の編集フォーム。登録時の検証を再利用)
 app/board-game-rules/admin/components/ReportsView.tsx (新規: 通報一覧と対象ゲームへの導線)
+app/board-game-rules/admin/components/GameRequestsView.tsx (新規: 登録依頼一覧+写真プレビュー+処理済みマーク/削除の導線)
 app/board-game-rules/lib/games.ts (既存: ゲーム型・共通章立てを共有)
 app/board-game-rules/lib/comments.ts (既存: 運営者によるコメント削除に deleteComment を利用)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdmin を利用)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
+.claude/skills/board-game-rules-batch-register/SKILL.md (新規: 登録依頼からゲームを登録するローカルツール。Webアプリのコードではない)
 ```
 
 ## データベース設計
-本specは`board_game_rules_games`([game-registration/design.md](../game-registration/design.md))・`board_game_rules_reports`([report/design.md](../report/design.md))・`board_game_rules_comments`([comment/design.md](../comment/design.md))を運営者権限で読み書きする。各テーブルの運営者向けRLSは各specのマイグレーションで定義済みのため、ここでは重複させない。テーブルごとに運営者へ与える操作は異なり、次のとおり(総称の「全行SELECT・UPDATE・DELETE」ではない点に注意):
-- `board_game_rules_games`: 運営者は全行SELECT+UPDATE(編集・`deleted_at`による論理削除)。物理DELETEのポリシーは持たない(削除は論理削除=UPDATE。[game-registration/design.md](../game-registration/design.md))
+本specは`board_game_rules_games`([game-registration/design.md](../game-registration/design.md))・`board_game_rules_reports`([report/design.md](../report/design.md))・`board_game_rules_comments`([comment/design.md](../comment/design.md))・`board_game_rules_game_requests`([game-registration/design.md](../game-registration/design.md))を運営者権限で読み書きする。各テーブルの運営者向けRLSは各specのマイグレーションで定義済みのため、ここでは重複させない。テーブルごとに運営者へ与える操作は異なり、次のとおり(総称の「全行SELECT・UPDATE・DELETE」ではない点に注意):
+- `board_game_rules_games`: 運営者(Web管理画面)は全行SELECT+UPDATE(編集・`deleted_at`による論理削除)。物理DELETEのポリシーは持たない(削除は論理削除=UPDATE。[game-registration/design.md](../game-registration/design.md))。**INSERT(新規登録)はWeb管理画面からは行わない**。ローカル登録ツール(下記)がservice_role相当の権限でRLSをバイパスして書き込む
 - `board_game_rules_reports`: 運営者は全行SELECTのみ(通報の確認。書き換え・削除はしない。[report/design.md](../report/design.md))
 - `board_game_rules_comments`: DELETEは本人+運営者、UPDATE(編集)は本人のみで運営者は編集不可([comment/design.md](../comment/design.md))
+- `board_game_rules_game_requests`: 運営者はSELECT・UPDATE(`processed_at`)・DELETEができる([game-registration/design.md](../game-registration/design.md))
 
 許可リスト`admin_emails`は`ikukyu/admin`で作成済みのものを共用し、新規テーブルは作らない。
 
@@ -126,11 +158,13 @@ T0(マイグレーション/Storage設定適用)の実機確認:
 - サイズ上限を超えるファイル・許可外MIMEのアップロードがバケット設定で拒否されること(匿名アップロードの量的制約)
 - 運営者本人で`board_game_rules_games`の全行(削除済み含む)がSELECTでき、UPDATE(編集・論理削除)ができること
 - 運営者本人で`board_game_rules_reports`がSELECTでき、コメントのDELETEができること
+- 運営者本人で`board_game_rules_game_requests`がSELECT/UPDATE/DELETEできること
 - 未ログイン(anon)・運営者以外では上記の保護された操作・元写真取得ができないこと
 
 ## 画面設計
 1画面に縦に並べる(PC中心・スマホでも破綻しない範囲。requirements.md#非機能要件-1):
 - 上部: ログイン中のアカウント表示とログアウト操作
+- 登録依頼一覧(`GameRequestsView`): 未処理を優先・次いで新しい順。写真プレビュー・入力済み分類情報を表示。処理済みマーク・削除の導線
 - 通報一覧(`ReportsView`): 対象ゲーム・通報日時・理由テキスト。各通報から対象ゲームの編集・削除へ進める
 - ゲーム一覧(`GameModerationTable`): 通報件数の多い順(次いで新しい順)。各行に編集・削除・元写真の照合閲覧の導線。削除済みは区別して表示
 - ゲーム編集(`GameEditForm`): 選んだゲームの分類情報・ルール本文(章ごと)の編集と上書き保存。削除は確認ステップを挟む
@@ -139,8 +173,8 @@ T0(マイグレーション/Storage設定適用)の実機確認:
 未ログイン時・権限なし時は上記を出さず、案内(ログイン/権限がない旨)だけを表示する。
 
 ## 状態管理
-- 管理画面(`page.tsx`)は「ログインセッション」「閲覧権限の判定結果」「取得したゲーム一覧・通報一覧」「編集中のゲーム」「取得/操作状態」をローカル状態として持つ(`ikukyu/admin`と同一方針)。複数画面をまたがないためグローバルな状態管理は使わない
-- 画面の4状態(未ログイン/権限なし/権限あり/取得エラー)の遷移は`ikukyu/admin/design.md#状態管理`の状態遷移図と同一構造(対象データが本アプリのテーブルに変わり、操作に編集・削除が加わる)
+- 管理画面(`page.tsx`)は「ログインセッション」「閲覧権限の判定結果」「取得したゲーム一覧・通報一覧・登録依頼一覧」「編集中のゲーム」「取得/操作状態」をローカル状態として持つ(`ikukyu/admin`と同一方針)。複数画面をまたがないためグローバルな状態管理は使わない
+- 画面の4状態(未ログイン/権限なし/権限あり/取得エラー)の遷移は`ikukyu/admin/design.md#状態管理`の状態遷移図と同一構造(対象データが本アプリのテーブルに変わり、操作に編集・削除・登録依頼の処理済みマーク/削除が加わる)
 
 ```mermaid
 stateDiagram-v2
@@ -149,7 +183,7 @@ stateDiagram-v2
     未ログイン --> 権限なし: ログイン成功・許可リストに登録なし
     権限あり --> 取得エラー: データ取得に失敗
     取得エラー --> 権限あり: 再試行して取得に成功
-    権限あり --> 権限あり: 編集・削除・コメント削除で再取得
+    権限あり --> 権限あり: 編集・削除・コメント削除・登録依頼の処理済みマーク/削除で再取得
     権限あり --> 未ログイン: ログアウト
     権限なし --> 未ログイン: ログアウト
 ```
@@ -169,6 +203,7 @@ stateDiagram-v2
 
 ## 依存関係
 - 認証方式(Google OIDC)・許可リスト(`admin_emails`)・RLS方針は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)に従う。ログイン・権限確認ロジックは`ikukyu/admin`・`life-money-sim/admin`と共用の`adminAuth.ts`を再利用する
-- 編集・削除の対象は[game-registration/design.md](../game-registration/design.md)の`board_game_rules_games`、通報は[report/design.md](../report/design.md)、コメント削除は[comment/design.md](../comment/design.md)に従う。各テーブルの運営者向けRLSは各specで定義済み
-- 元写真の非公開Storageは本specで作り、登録処理([game-registration/design.md](../game-registration/design.md))がそこへ書き込む
+- 編集・削除の対象は[game-registration/design.md](../game-registration/design.md)の`board_game_rules_games`、通報は[report/design.md](../report/design.md)、コメント削除は[comment/design.md](../comment/design.md)、登録依頼の確認は[game-registration/design.md](../game-registration/design.md)の`board_game_rules_game_requests`に従う。各テーブルの運営者向けRLSは各specで定義済み
+- 元写真の非公開Storageは本specで作り、依頼送信([game-registration/design.md](../game-registration/design.md))がそこへ書き込む
+- 登録依頼からゲームを登録するローカルツール(Claude Code Skill)の実体は`.claude/skills/board-game-rules-batch-register/`に置く。Webアプリのコードではないため`app/board-game-rules/`配下には置かない
 - Supabase AuthのRedirect URLs許可リストに本管理画面の戻り先URL(`https://benriyatool.com/board-game-rules/admin/**`)を本番公開前に登録する(requirements.md#認証手段とパスキー-5。既存`life-money-sim/admin`の登録漏れの教訓)。なお利用者ログインの戻り先(一覧・詳細・登録・お気に入り一覧など`/board-game-rules/**`)の許可リスト登録は[user-auth](../user-auth/tasks.md)の責務で、本管理画面の`/admin/**`だけに寄せない(両者を合わせてリリース前に確認する)。Googleアカウント側のパスキー・2段階認証の維持もリリース前に確認する(ADR-0006)

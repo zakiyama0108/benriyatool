@@ -2648,5 +2648,120 @@
     "specFile": "ai-dev-digest/bookmark/design.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の`### ログイン・ログアウト`の各項目([1]〜[4])側でテスト済みで、見出し自体は直接の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の`### 認証方式`『### 運営者判定』の各項目側で扱う見出しで、見出し自体は直接の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "認証方式 [1]",
+    "reason": "Google OIDCを使い許可リストによる制限をかけない方針。既存のadminAuth(getSession/signInWithGoogle)をそのまま利用し新規ロジックを持たず、ログイン導線の表示・開始はログイン・ログアウト-1/-2でテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "認証方式 [2]",
+    "reason": "ログインを任意とし未ログインでも閲覧・絞り込み・新規登録・通報を制限しない方針。ゲートの不在は各機能側(game-list/game-registration/report)で担保され、本specに検証対象のロジックがないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "運営者判定 [3]",
+    "reason": "既存のadminAuth.isAuthorizedAdminをそのまま提供するのみで本specに新規ロジックがない。判定を利用する側(game-registration/admin/comment)のテストで担保する(tasks.md T3)"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "非機能要件 [1]",
+    "reason": "リロード後のログイン維持はSupabase Authの標準セッション管理に委ねる挙動で、本specに独自の実装・検証対象がないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "依存関係",
+    "reason": "他specとの関係・前提を説明する見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/requirements.md",
+    "item": "スコープ外",
+    "reason": "本機能で扱わない範囲の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "ログイン状態を判定して導線を出し分ける処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応する振る舞いはrequirements.md#ログイン・ログアウト-1/-3でテスト済み(LoginStatus/useSession)"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "Googleでログインする処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応する振る舞いはrequirements.md#ログイン・ログアウト-2でテスト済み(LoginStatusのログイン開始)"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "ログアウトする処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応する振る舞いはrequirements.md#ログイン・ログアウト-4でテスト済み(LoginStatusのログアウト)"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "運営者判定を他機能に提供する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。既存adminAuth.isAuthorizedAdminの提供のみで、利用側spec(game-registration/admin/comment)のテストで担保する"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "エラーハンドリング",
+    "reason": "ログイン失敗はSupabase Auth標準挙動に委ねる方針の記述で、本specに独自の検証対象を持たないため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装ファイルの見取り図で、テスト対象の振る舞いを持たない見出しのため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "画面設計",
+    "reason": "画面配置の説明見出しで、表示の出し分けはrequirements.md#ログイン・ログアウトの各項目側でテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "ログイン導線(共通表示: `LoginStatus`)",
+    "reason": "LoginStatusの表示仕様の説明で、表示の出し分け(未ログイン/ログイン中)はrequirements.md#ログイン・ログアウト-1/-3でテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "状態管理",
+    "reason": "useSessionでのセッション保持方針の説明見出しで、取得・購読の挙動はrequirements.md#ログイン・ログアウト-1/-3のuseSessionテストで担保するため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "セキュリティ",
+    "reason": "許可リスト非適用・運営者判定はRLSで担保する方針の記述で、画面側の出し分け以外に本specの独自検証対象を持たない(RLSはマイグレーションの実機確認で担保)ため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "ログ",
+    "reason": "本機能独自のログは出力しない方針の記述で、テスト対象の振る舞いを持たない見出しのため"
+  },
+  {
+    "specFile": "board-game-rules/user-auth/design.md",
+    "item": "依存関係",
+    "reason": "他specとの関係・前提を説明する見出しで、テスト対象の振る舞いを持たないため"
   }
 ]
