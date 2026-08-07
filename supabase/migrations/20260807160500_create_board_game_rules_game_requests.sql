@@ -15,10 +15,10 @@ create table board_game_rules_game_requests (
   max_players int,
   min_minutes int,
   max_minutes int,
-  genre text check (genre is null or genre in (
-    '戦略', 'パーティー', '協力', '推理・デダクション', 'カードゲーム',
-    'ダイスゲーム', 'ワーカープレイスメント', 'デッキ構築', 'エリアマジョリティ', 'ファミリー', 'その他'
-  )),
+  genres text[] not null default '{}' check (genres <@ array[
+    '協力', '対戦', '正体隠匿', '戦略', 'パーティー', 'ファミリー',
+    'カードゲーム', 'すごろく系', 'ワーカープレイスメント', 'デッキ構築', '推理・デダクション', 'その他'
+  ]::text[]),
   min_age int,
   difficulty text,
   publisher text,

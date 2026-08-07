@@ -7,6 +7,7 @@
 -- 運営者登録タグ(is_official)は全ゲームが運営者経由で登録される前提になり不要になった。
 -- anon/authenticatedからの直接INSERTは行わず、書き込みは運営者のローカル登録ツール
 -- (service_role相当の権限。RLSをバイパスする)のみが行う。
+-- ジャンルは単一(genre)から複数選択可能(genres text[])に変更した。
 
 create table board_game_rules_games (
   id uuid primary key default gen_random_uuid(),
@@ -15,10 +16,10 @@ create table board_game_rules_games (
   max_players int not null,
   min_minutes int not null,
   max_minutes int not null,
-  genre text check (genre is null or genre in (
-    '戦略', 'パーティー', '協力', '推理・デダクション', 'カードゲーム',
-    'ダイスゲーム', 'ワーカープレイスメント', 'デッキ構築', 'エリアマジョリティ', 'ファミリー', 'その他'
-  )),
+  genres text[] not null default '{}' check (genres <@ array[
+    '協力', '対戦', '正体隠匿', '戦略', 'パーティー', 'ファミリー',
+    'カードゲーム', 'すごろく系', 'ワーカープレイスメント', 'デッキ構築', '推理・デダクション', 'その他'
+  ]::text[]), -- <@ は「左辺の全要素が右辺の配列に含まれる」演算子。固定リスト外の値を1つでも含むと拒否される
   min_age int,
   difficulty text,
   publisher text,
@@ -46,7 +47,7 @@ alter table board_game_rules_games enable row level security;
 -- 行はRLSで制御する(specs/board-game-rules/admin/design.md)。
 grant select (
   id, name, min_players, max_players, min_minutes, max_minutes,
-  genre, min_age, difficulty, publisher, author, has_japanese_rules,
+  genres, min_age, difficulty, publisher, author, has_japanese_rules,
   awards, release_year, rules_simple, rules_detailed, created_at, deleted_at
 ) on board_game_rules_games to anon;
 grant select on board_game_rules_games to authenticated;
