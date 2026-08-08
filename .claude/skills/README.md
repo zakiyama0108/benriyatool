@@ -166,6 +166,7 @@ flowchart TD
 | [session-report](session-report/SKILL.md) | セッションの作業内容を要約したレポートMDをObsidianのClaude-Reportフォルダに保存する | 作業の区切り・「レポートにして」の依頼時 |
 | [notion-md-sync](notion-md-sync/SKILL.md) | リポジトリ内の全MarkdownファイルをNotionにフォルダ構造ごと同期する(手動実行のみ) | 「MDをNotionに同期して」の依頼時 |
 | [mail-to-company](mail-to-company/SKILL.md) | 個人PCで用意したファイル・テキストを会社メールアドレスへ送信する(Gmail SMTP、送信元・宛先固定)。`disable-model-invocation: true`(取り消せない外部送信のため自律起動しない) | 「会社PCに送って」「メールで送れるようにして」の依頼時 |
+| [board-game-rules-batch-register](board-game-rules-batch-register/SKILL.md) | ボードゲームのルールブック写真(ローカルフォルダ、または利用者からの登録依頼)を解析し、ゲーム情報・ルール本文を生成してSupabaseへ登録する。`disable-model-invocation: true`(実データの公開書き込みのため自律起動せず、書き込み前に確認を取る) | 「ボードゲームを登録して」「登録依頼を処理して」の依頼時 |
 
 ### Agent(作業者)
 

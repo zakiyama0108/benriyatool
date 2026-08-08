@@ -27,7 +27,7 @@ function makeRow(overrides: Partial<GameRow> = {}): GameRow {
   }
 }
 
-// 仕様: specs/board-game-rules/game-registration/requirements.md#LLMによる解析・生成-3、specs/board-game-rules/game-registration/requirements.md#LLMによる解析・生成-4
+// 仕様: specs/board-game-rules/game-registration/design.md#board_game_rules_games(変更)
 describe('【共通】ゲーム型 - DB行(snake_case)を画面で扱う形(camelCase)へ変換する', () => {
   it('必須項目(名前・対応人数の下限上限・プレイ時間の下限上限)がそのまま引き継がれること', () => {
     const game = mapGameRowToGame(makeRow())

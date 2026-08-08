@@ -1,0 +1,13 @@
+{
+  "name": "benriyatool-board-game-rules-register",
+  "private": true,
+  "type": "module",
+  "description": "board-game-rules-batch-register Skillが使う、登録依頼→ゲーム登録の書き込みスクリプトの依存(本体のpackage.jsonとは隔離)",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.1",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
