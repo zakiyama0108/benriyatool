@@ -11,7 +11,10 @@ name: AI駆動開発ダイジェスト 日次記事公開
 
 on:
   schedule:
-    - cron: '0 22 * * *' # 毎日22:00 UTC = 07:00 JST(実行日はJSTの日付を使う)
+    # 毎時0分は世界中のscheduled workflowが集中し起動遅延が大きくなるため、
+    # 0分を避けた43分に設定する(実測で0分指定時は起動が+1〜3.5時間遅延しLINE配信時刻が
+    # ばらついていたための対策。design.md「実行環境の前提」参照)
+    - cron: '43 21 * * *' # 毎日21:43 UTC = 06:43 JST(実行日はJSTの日付を使う)
   workflow_dispatch: # Secrets設定後の動作確認用に手動実行できるようにする
   workflow_run:
     workflows: ['CI']
