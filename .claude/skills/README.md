@@ -192,6 +192,7 @@ Skill=手順・知識・テンプレート、Agent=別コンテキストで動�
 flowchart TD
     consult["/consult<br>方針の壁打ち"]
     requirement["/requirement<br>要件定義"]
+    uidesign["/design Step0<br>UIデザイン確定(画面を伴う機能のみ。ui-designerへ任意委譲可)"]
     design["/design<br>設計・タスク分解"]
     specreview["/spec-review<br>仕様レビュー → spec-reviewerへ委譲"]
     prspec["/pr<br>仕様承認PR"]
@@ -203,7 +204,9 @@ flowchart TD
     resolve2["/resolve<br>指摘修正"]
 
     consult -.任意.-> requirement
+    requirement -.画面を伴う機能.-> uidesign
     requirement --> design
+    uidesign --> design
     design --> specreview
     specreview -->|指摘あり| resolve1
     resolve1 -->|再レビュー| specreview
@@ -217,13 +220,13 @@ flowchart TD
 
     classDef dialogue fill:#fff3d6,stroke:#b8860b,stroke-width:2px,color:#5c4300;
     classDef agent fill:#e6f0ff,stroke:#2b6cb8,stroke-width:2px,color:#1a365d;
-    class consult,requirement,design,resolve1,resolve2,implementation dialogue;
+    class consult,requirement,uidesign,design,resolve1,resolve2,implementation dialogue;
     class specreview,implreview,primpl,release agent;
 ```
 
 - オレンジのノードは開発者がSkillと対話しながら進める工程(質問・確認が発生しうる)。青いノードは常時Agentへ委譲され、開発者には報告のみが返る工程(specreview→spec-reviewer、implreview→code-reviewer、release→release-checker。primplは作成前にimpl-pr-reviewerが常時チェックする)。白いノード(prspec)は対話も委譲も伴わない機械的なgit操作
 - design・implementationは並行開発時などにdesigner/implementerへ任意委譲できる(委譲した場合そのノードは青相当になる。委譲要否の判断基準は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)「フェーズ別の判定」参照)
-- 画面を伴う新機能では、design着手前にUIデザインの確定(ヒアリング→候補提示→承認。任意でui-designerへ候補生成を委譲)を行う場合がある。v0生成コードがある機能ではimplementationの最初のタスクとしてUI統合(任意でui-integratorへ委譲)を行う(詳細は[design](design/SKILL.md)・[implementation](implementation/SKILL.md)参照。autopilotフローは対象外)
+- 画面を伴う新機能(新しい画面・大きく見た目が変わる画面がある機能)では、design着手前にUIデザインの確定(ヒアリング→候補提示→承認。任意でui-designerへ候補生成を委譲)を**行う**(上図の`/design Step0`。既存画面への軽微な変更のみ省略可。`/consult`での会話ベースの合意は代替にならない)。v0生成コードがある機能ではimplementationの最初のタスクとしてUI統合(任意でui-integratorへ委譲)を行う(詳細は[design](design/SKILL.md)・[implementation](implementation/SKILL.md)参照。autopilotフローは対象外)
 - 太線(=)はユーザーの承認・マージ待ち。仕様承認PRがマージされるまでコード(テスト含む)は書かない(仕様承認ゲート)
 - mainへのマージは常にユーザーがGitHub UIで行う(例外: [autopilot](autopilot/SKILL.md)モードでは、同Skillの条件を満たした場合に限り自動マージする)
 
