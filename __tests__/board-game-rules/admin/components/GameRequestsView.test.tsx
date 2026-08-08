@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import GameRequestsView from '../../../../app/board-game-rules/admin/components/GameRequestsView'
 import type { GameRequest } from '../../../../app/board-game-rules/admin/lib/gameRequests'
@@ -104,5 +104,61 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
   it('依頼が0件のとき、その旨が表示されること', () => {
     render(<GameRequestsView requests={[]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={vi.fn()} />)
     expect(screen.getByText('登録依頼はありません。')).toBeTruthy()
+  })
+
+  // 仕様: specs/board-game-rules/admin/design.md「エラーハンドリング」(処理中は該当操作を無効化し二重実行を防ぐ)
+  it('処理済みにするの処理中は、ボタンが無効化され連打しても1回しか呼ばれないこと', async () => {
+    let resolveFn: () => void = () => {}
+    const onMarkProcessed = vi.fn(() => new Promise<void>((r) => (resolveFn = r)))
+    render(
+      <GameRequestsView requests={[makeRequest()]} onMarkProcessed={onMarkProcessed} onDelete={vi.fn()} onViewPhotos={vi.fn()} />
+    )
+
+    const button = screen.getByRole('button', { name: '処理済みにする' })
+    fireEvent.click(button)
+    expect(button.disabled).toBe(true)
+    fireEvent.click(button)
+    expect(onMarkProcessed).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      resolveFn()
+      await Promise.resolve()
+    })
+  })
+
+  it('削除の処理中は、ボタンが無効化され連打しても1回しか呼ばれないこと', async () => {
+    let resolveFn: () => void = () => {}
+    const onDelete = vi.fn(() => new Promise<void>((r) => (resolveFn = r)))
+    render(<GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={onDelete} onViewPhotos={vi.fn()} />)
+
+    const button = screen.getByRole('button', { name: '削除' })
+    fireEvent.click(button)
+    expect(button.disabled).toBe(true)
+    fireEvent.click(button)
+    expect(onDelete).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      resolveFn()
+      await Promise.resolve()
+    })
+  })
+
+  it('写真を確認の処理中は、ボタンが無効化され連打しても1回しか呼ばれないこと', async () => {
+    let resolveFn: (v: { path: string; url: string | null }[]) => void = () => {}
+    const onViewPhotos = vi.fn(() => new Promise<{ path: string; url: string | null }[]>((r) => (resolveFn = r)))
+    render(
+      <GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={onViewPhotos} />
+    )
+
+    const button = screen.getByRole('button', { name: '写真を確認' })
+    fireEvent.click(button)
+    expect(button.disabled).toBe(true)
+    fireEvent.click(button)
+    expect(onViewPhotos).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      resolveFn([])
+      await Promise.resolve()
+    })
   })
 })

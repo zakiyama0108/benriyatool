@@ -6,8 +6,8 @@ import type { PhotoFetchResult } from '../lib/photos'
 
 type Props = {
   requests: GameRequest[]
-  onMarkProcessed: (id: string) => void
-  onDelete: (id: string) => void
+  onMarkProcessed: (id: string) => Promise<void>
+  onDelete: (id: string) => Promise<void>
   onViewPhotos: (photoPaths: string[]) => Promise<PhotoFetchResult[]>
 }
 
@@ -16,10 +16,35 @@ type Props = {
 // (仕様: admin/design.md「登録依頼を確認する処理」「登録依頼を処理済みにする処理/削除する処理」)
 export default function GameRequestsView({ requests, onMarkProcessed, onDelete, onViewPhotos }: Props) {
   const [photosByRequestId, setPhotosByRequestId] = useState<Record<string, PhotoFetchResult[]>>({})
+  // 処理済みマーク・削除・写真取得の処理中はボタンを無効化し二重実行を防ぐ(design.md「エラーハンドリング」)
+  const [busyId, setBusyId] = useState<string | null>(null)
 
   async function handleViewPhotos(request: GameRequest) {
-    const photos = await onViewPhotos(request.photoPaths)
-    setPhotosByRequestId((prev) => ({ ...prev, [request.id]: photos }))
+    setBusyId(request.id)
+    try {
+      const photos = await onViewPhotos(request.photoPaths)
+      setPhotosByRequestId((prev) => ({ ...prev, [request.id]: photos }))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function handleMarkProcessed(id: string) {
+    setBusyId(id)
+    try {
+      await onMarkProcessed(id)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setBusyId(id)
+    try {
+      await onDelete(id)
+    } finally {
+      setBusyId(null)
+    }
   }
 
   if (requests.length === 0) {
@@ -52,23 +77,26 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
             {!request.processedAt && (
               <button
                 type="button"
-                onClick={() => onMarkProcessed(request.id)}
-                className="rounded border border-gray-300 px-3 py-1 text-xs"
+                disabled={busyId === request.id}
+                onClick={() => void handleMarkProcessed(request.id)}
+                className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40"
               >
                 処理済みにする
               </button>
             )}
             <button
               type="button"
-              onClick={() => onDelete(request.id)}
-              className="rounded border border-gray-300 px-3 py-1 text-xs"
+              disabled={busyId === request.id}
+              onClick={() => void handleDelete(request.id)}
+              className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40"
             >
               削除
             </button>
             <button
               type="button"
+              disabled={busyId === request.id}
               onClick={() => void handleViewPhotos(request)}
-              className="rounded border border-gray-300 px-3 py-1 text-xs"
+              className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40"
             >
               写真を確認
             </button>

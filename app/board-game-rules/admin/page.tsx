@@ -183,8 +183,8 @@ export default function AdminPage() {
             <h2 className="text-lg font-bold">登録依頼</h2>
             <GameRequestsView
               requests={requests}
-              onMarkProcessed={(id) => void handleMarkProcessed(id)}
-              onDelete={(id) => void handleDeleteRequest(id)}
+              onMarkProcessed={handleMarkProcessed}
+              onDelete={handleDeleteRequest}
               onViewPhotos={fetchOriginalPhotos}
             />
           </section>
@@ -199,7 +199,7 @@ export default function AdminPage() {
             <GameModerationTable
               games={games}
               onEdit={setEditingGameId}
-              onDelete={(id) => void handleDeleteGame(id)}
+              onDelete={handleDeleteGame}
               onViewPhotos={fetchOriginalPhotos}
             />
           </section>

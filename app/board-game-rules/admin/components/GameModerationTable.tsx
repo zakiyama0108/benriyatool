@@ -7,7 +7,7 @@ import type { PhotoFetchResult } from '../lib/photos'
 type Props = {
   games: AdminGame[]
   onEdit: (id: string) => void
-  onDelete: (id: string) => void
+  onDelete: (id: string) => Promise<void>
   onViewPhotos: (photoPaths: string[]) => Promise<PhotoFetchResult[]>
 }
 
@@ -17,10 +17,27 @@ type Props = {
 export default function GameModerationTable({ games, onEdit, onDelete, onViewPhotos }: Props) {
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
   const [photosByGameId, setPhotosByGameId] = useState<Record<string, PhotoFetchResult[]>>({})
+  // 元写真取得・削除の処理中はボタンを無効化し二重実行を防ぐ(design.md「エラーハンドリング」)
+  const [busyId, setBusyId] = useState<string | null>(null)
 
   async function handleViewPhotos(game: AdminGame) {
-    const photos = await onViewPhotos(game.photoPaths)
-    setPhotosByGameId((prev) => ({ ...prev, [game.id]: photos }))
+    setBusyId(game.id)
+    try {
+      const photos = await onViewPhotos(game.photoPaths)
+      setPhotosByGameId((prev) => ({ ...prev, [game.id]: photos }))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setConfirmingId(null)
+    setBusyId(id)
+    try {
+      await onDelete(id)
+    } finally {
+      setBusyId(null)
+    }
   }
 
   if (games.length === 0) {
@@ -58,8 +75,9 @@ export default function GameModerationTable({ games, onEdit, onDelete, onViewPho
             </button>
             <button
               type="button"
+              disabled={busyId === game.id}
               onClick={() => void handleViewPhotos(game)}
-              className="rounded border border-gray-300 px-3 py-1 text-xs"
+              className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40"
             >
               元写真を確認
             </button>
@@ -70,11 +88,9 @@ export default function GameModerationTable({ games, onEdit, onDelete, onViewPho
               <span>本当に削除しますか?</span>
               <button
                 type="button"
-                onClick={() => {
-                  setConfirmingId(null)
-                  onDelete(game.id)
-                }}
-                className="rounded bg-red-600 px-2 py-1 text-white"
+                disabled={busyId === game.id}
+                onClick={() => void handleDelete(game.id)}
+                className="rounded bg-red-600 px-2 py-1 text-white disabled:opacity-40"
               >
                 削除を確定
               </button>

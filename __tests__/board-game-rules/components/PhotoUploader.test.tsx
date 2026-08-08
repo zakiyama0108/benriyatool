@@ -67,3 +67,37 @@ describe('【登録依頼】写真アップローダー - 複数枚の写真選�
     expect(onChange).toHaveBeenCalledWith([photo2])
   })
 })
+
+// 仕様: specs/board-game-rules/admin/design.md「元写真の非公開Storage」(匿名アップロードの量的制約。
+// 枚数上限は登録画面(クライアント)側で担保する)
+describe('【登録依頼】写真アップローダー - 1回あたりの枚数上限(20枚)を画面側で制限する', () => {
+  it('上限ちょうどまでは選択できること', () => {
+    const onChange = vi.fn()
+    const photos = Array.from({ length: 19 }, (_, i) => makePhoto(`p${i}.jpg`))
+    render(<PhotoUploader photos={photos} onChange={onChange} />)
+
+    const last = makePhoto('last.jpg')
+    fireEvent.change(screen.getByLabelText('写真を選択'), { target: { files: [last] } })
+
+    expect(onChange).toHaveBeenCalledWith([...photos, last])
+  })
+
+  it('上限を超える枚数をまとめて選択すると、上限までしか追加されないこと', () => {
+    const onChange = vi.fn()
+    const photos = Array.from({ length: 18 }, (_, i) => makePhoto(`p${i}.jpg`))
+    render(<PhotoUploader photos={photos} onChange={onChange} />)
+
+    const extra = [makePhoto('a.jpg'), makePhoto('b.jpg'), makePhoto('c.jpg')]
+    fireEvent.change(screen.getByLabelText('写真を選択'), { target: { files: extra } })
+
+    expect(onChange).toHaveBeenCalledWith([...photos, extra[0], extra[1]])
+  })
+
+  it('上限に達している状態では、選択欄が無効化され上限に達した旨のメッセージが表示されること', () => {
+    const photos = Array.from({ length: 20 }, (_, i) => makePhoto(`p${i}.jpg`))
+    render(<PhotoUploader photos={photos} onChange={vi.fn()} />)
+
+    expect(screen.getByLabelText<HTMLInputElement>('写真を選択').disabled).toBe(true)
+    expect(screen.getByText('上限の20枚に達しました。これ以上は追加できません。')).toBeTruthy()
+  })
+})
