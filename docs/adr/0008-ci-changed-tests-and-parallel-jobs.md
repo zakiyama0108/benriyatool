@@ -4,7 +4,7 @@
 採用
 
 ## コンテキスト
-- `__tests__/`配下のテストが99ファイル(ai-dev-digest 27・board-game-rules 19・ikukyu 29・life-money-sim 21・components/legal 各1)まで増え、CIの体感速度が問題視された([/consult](../../.claude/skills/consult/SKILL.md) 2026-08-08)
+- `__tests__/`配下のテストが99ファイル(ai-dev-digest 27・board-game-rules 19・ikukyu 29・life-money-sim 21・components/legal 各1・直下page 1)まで増え、CIの体感速度が問題視された([/consult](../../.claude/skills/consult/SKILL.md) 2026-08-08)
 - 実測(直近の成功run、1ジョブ内でlint→test→build→spec-coverageを直列実行)では合計106秒のうち`npm run test:coverage`が53秒と約半分を占め、他のステップ(npm ci 16秒・lint 13秒・build 13秒・spec-coverage 0秒)は既に軽量だった
 - 「変更したアプリのテストだけ流す」という案(`specs/<アプリ名>/`↔`__tests__/<アプリ名>/`のフォルダ命名規約を使った手動振り分け)も検討したが、`app/components/`・`app/lib/`が4アプリ(ai-dev-digest/board-game-rules/ikukyu/life-money-sim)すべてから参照されている実態を確認した。フォルダ名ベースの振り分けだとこれら共有コード変更時に「どのアプリ分を流すか」を手動リストとして別途保守する必要があり、漏れると気づけない
 - `deploy.yml`(mainへのpush時)は元々テストを実行せずbuildのみ行う構成だった。これまではPR側のCIが常に全テストを実行していたため実質的な安全網になっていた
