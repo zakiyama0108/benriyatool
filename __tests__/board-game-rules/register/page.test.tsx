@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import RegisterPage from '../../../app/board-game-rules/register/page'
 import { createGameRequest } from '../../../app/board-game-rules/lib/gameRequests'
@@ -7,12 +7,25 @@ vi.mock('../../../app/board-game-rules/lib/gameRequests', () => ({
   createGameRequest: vi.fn(),
 }))
 
+// ヘッダーのLoginStatusが内部で参照するセッション取得・認証操作をモックする(supabaseClientの
+// 環境変数チェックを避けるため。LoginStatus.test.tsx と同じ方針)
+vi.mock('../../../app/board-game-rules/lib/useSession', () => ({
+  useSession: () => ({ session: null, loading: false }),
+}))
+vi.mock('../../../app/lib/adminAuth', () => ({ signInWithGoogle: vi.fn(), signOut: vi.fn() }))
+
 function makePhoto(name = 'cover.jpg'): File {
   return new File(['dummy'], name, { type: 'image/jpeg' })
 }
 
 function selectPhoto(name?: string) {
   fireEvent.change(screen.getByLabelText('写真を選択'), { target: { files: [makePhoto(name)] } })
+}
+
+// ジャンル・メカニクスのアコーディオンを開く(T6-2で既定折りたたみになったため、
+// ジャンルを選択する系のテストではこのヘルパーで先に開く)
+function openGenreSection() {
+  fireEvent.click(screen.getByRole('button', { name: 'ジャンル・メカニクス' }))
 }
 
 beforeEach(() => {
@@ -54,6 +67,7 @@ describe('【登録依頼画面】分類情報の任意入力 - すべて未入�
     fireEvent.change(screen.getByLabelText('ゲーム名'), { target: { value: 'カタン' } })
     fireEvent.change(screen.getByLabelText('対応人数(下限)'), { target: { value: '3' } })
     fireEvent.change(screen.getByLabelText('対応人数(上限)'), { target: { value: '4' } })
+    openGenreSection()
     fireEvent.click(screen.getByRole('checkbox', { name: '対戦' }))
     fireEvent.click(screen.getByRole('checkbox', { name: '戦略' }))
     fireEvent.click(screen.getByRole('button', { name: '依頼を送信する' }))
@@ -145,5 +159,78 @@ describe('【登録依頼画面】送信中・成功・失敗の表示切り替�
     vi.mocked(createGameRequest).mockResolvedValueOnce(true)
     fireEvent.click(retryButton)
     await waitFor(() => expect(createGameRequest).toHaveBeenCalledTimes(2))
+  })
+})
+
+// 仕様: specs/board-game-rules/game-registration/requirements.md#分類情報の任意入力-4
+describe('【登録依頼画面】ジャンル選択のアコーディオン - 既定で折りたたみ、開閉操作で28種の選択肢の表示を切り替える', () => {
+  it('初期表示ではジャンルの選択肢(チップ)が表示されないこと', () => {
+    render(<RegisterPage />)
+    expect(screen.queryByRole('checkbox', { name: '対戦' })).toBeNull()
+  })
+
+  it('見出しを押すとジャンルの選択肢が現れ、もう一度押すと隠れること(aria-expandedが開閉と連動する)', () => {
+    render(<RegisterPage />)
+    const toggle = screen.getByRole('button', { name: 'ジャンル・メカニクス' })
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+
+    fireEvent.click(toggle)
+    expect(toggle.getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getByRole('checkbox', { name: '対戦' })).toBeTruthy()
+
+    fireEvent.click(toggle)
+    expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByRole('checkbox', { name: '対戦' })).toBeNull()
+  })
+})
+
+// 仕様: specs/board-game-rules/game-registration/requirements.md#分類情報の任意入力-4
+describe('【登録依頼画面】ジャンルの説明文 - 選択したチップの直下にだけ表示する(情報過多を避けるため常時表示しない)', () => {
+  it('ジャンルを何も選択していない間は、説明文がどれも表示されないこと', () => {
+    render(<RegisterPage />)
+    openGenreSection()
+
+    expect(screen.queryByText('プレイヤー同士が競い合い、勝敗を決める')).toBeNull()
+    expect(screen.queryByText('プレイヤー全員がチームとなり、共通の目標達成を目指す')).toBeNull()
+  })
+
+  it('「対戦」を選択すると、その直下に「対戦」の説明文だけが表示され、未選択の「協力」の説明文は表示されないこと', () => {
+    render(<RegisterPage />)
+    openGenreSection()
+    fireEvent.click(screen.getByRole('checkbox', { name: '対戦' }))
+
+    expect(screen.getByText('プレイヤー同士が競い合い、勝敗を決める')).toBeTruthy()
+    expect(screen.queryByText('プレイヤー全員がチームとなり、共通の目標達成を目指す')).toBeNull()
+  })
+})
+
+// 仕様: specs/board-game-rules/game-registration/requirements.md#写真のアップロード-1、specs/board-game-rules/game-registration/requirements.md#分類情報の任意入力-3
+describe('【登録依頼画面】レイアウト構成 - 写真セクションを最上部の必須項目として配置し、任意項目は「詳細情報」にまとめる', () => {
+  it('写真セクションが「基本情報」より前(画面最上部)にあり、必須であることが分かる表示があること', () => {
+    render(<RegisterPage />)
+    const headingTexts = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+    const photoIndex = headingTexts.indexOf('ルールブックの写真')
+    const basicInfoIndex = headingTexts.indexOf('基本情報')
+
+    expect(photoIndex).toBeGreaterThanOrEqual(0)
+    expect(basicInfoIndex).toBeGreaterThan(photoIndex)
+    expect(screen.getByText('必須')).toBeTruthy()
+    expect(screen.getByText('0/20枚')).toBeTruthy()
+  })
+
+  it('対象年齢・難易度など任意項目が「詳細情報」の見出し配下にまとまっていること', () => {
+    render(<RegisterPage />)
+    const detailHeading = screen.getByRole('heading', { name: '詳細情報', level: 2 })
+    const detailSection = detailHeading.closest('section')
+    expect(detailSection).not.toBeNull()
+
+    const detailScreen = within(detailSection as HTMLElement)
+    expect(detailScreen.getByLabelText('対象年齢')).toBeTruthy()
+    expect(detailScreen.getByLabelText('難易度')).toBeTruthy()
+    expect(detailScreen.getByLabelText('メーカー/出版社')).toBeTruthy()
+    expect(detailScreen.getByLabelText('作者')).toBeTruthy()
+    expect(detailScreen.getByLabelText('言語依存度(日本語ルール)')).toBeTruthy()
+    expect(detailScreen.getByLabelText('受賞歴')).toBeTruthy()
+    expect(detailScreen.getByLabelText('発売年')).toBeTruthy()
   })
 })
