@@ -37,7 +37,7 @@ description: 新しい機能・アプリの要件定義を始めるときに使�
 
 - 洗い出したストーリーの数だけ`specs/<アプリ名>/<ストーリーを表す機能名>/`を並べて作る(例: 育休給付金シミュレーターなら`maternity-benefit`(出産手当金)、`paternity-leave-benefit`(産後パパ育休)、`childcare-benefit-early`(育休前期67%)、`childcare-benefit-late`(育休後期50%)、`input-form`(入力フォーム)、`payment-schedule`(振込スケジュール)のように分ける)
 - 複数のストーリーの結果を1つの画面にまとめる(合計金額表示・内訳バーなど)統合ロジックが必要な場合は、新たに統合専用specを作らず、その統合先(最終的にユーザーが見るメイン画面)を担当するstory specに書く。他のstory specの機能要件には「この結果は`<まとめ先の機能名>`の画面で使われる」と一言添えて依存関係を明示する
-- アプリ立ち上げ時は`specs/<アプリ名>/architecture.md`も最初から作成する(作成基準・書き方は[architecture-workflow](../architecture-workflow/SKILL.md)を参照)
+- アプリ立ち上げ時は`specs/<アプリ名>/architecture.md`も最初から作成する(作成基準・書き方は[architecture-workflow](../architecture-workflow/SKILL.md)を参照)。機能マップの状態列は全spec「仕様のみ(未実装)」で初期化する
 - あわせてリポジトリ直下[README.md](../../../README.md)の「アプリ一覧」テーブルに1行追加する(アプリ名・パス・概要・architecture.mdへのリンク)
 - このアプリを初めて本番公開する実装PR([/implementation](../implementation/SKILL.md))では、[specs/hub-site/requirements.md](../../../specs/hub-site/requirements.md)に従いトップページ(`app/page.tsx`)にもツールカードを追加する(README一覧は公開前でも載るが、ハブページは公開中のツールのみを載せるため別途更新が必要。2026-08時点で`/life-money-sim`がこの掲載漏れを起こした教訓)
 - 各specが育ってきて「既存機能の修正・拡張」に該当する変更が発生したら、以降は上記Step0の判断に従う
@@ -100,5 +100,7 @@ requirements.mdに書く方針は、サマリ・任意項目(非機能要件・U
 # 完了時の次ステップ案内
 
 requirements.mdが書けたら、3点セットが揃うのを待たずに[/pr](../pr/SKILL.md)の「早期仕様PR」の手順でブランチ作成・push・PR作成まで行う(要件定義の時点からレビューしてもらえるようにするため)。PRのURLを報告し、[/design](../design/SKILL.md)(設計・タスク分解)へ進むことを案内する。仕様が承認されるまでコード(テストを含む)は書き始めない。
+
+既存アプリに新規specを追加した場合(アプリ立ち上げ時の一括作成ではない)も、そのアプリが`specs/<アプリ名>/architecture.md`を持っていれば、機能マップに新しいspec行を状態「仕様のみ(未実装)」で追加し([architecture-workflow](../architecture-workflow/SKILL.md)の「更新タイミング」参照)、更新後の機能マップをこの完了報告に貼って提示する。
 
 この時点の成果物(requirements.md)はコミット・pushして早期仕様PRに乗っているため、ここでcompactや新しいセッションへの切り替えを行っても支障はない。新しいセッションの名称と次のセッションにそのまま貼り付けられるプロンプトを、1行目=名称・2行目=プロンプトの単一のコードブロックとして毎回提示してから終える(名称とプロンプトを分けて提示しない。「セッションを閉じても大丈夫」とだけ述べて済ませない。名称は前のセッションと同じ<機能名>に次工程名を()で添えた形。1行目の例: `<機能名>(設計)` / 2行目の例: `/design を実行してください。対象は specs/<アプリ名>/<機能名>/、ブランチ feature/<機能名>(PR #<番号>)です。`)。
