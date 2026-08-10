@@ -39,13 +39,34 @@ function okResult(): ClaudeCliResponse {
 
 // 仕様: specs/ai-dev-digest/content-generation/design.md「要約を書く処理」手順8・「エラーハンドリング」
 describe('classifyGenerationResult - CLI応答を成功/一時的失敗/利用枠枯渇の3種に分類する', () => {
-  it('見出しと2件以上の非空sectionsを含むJSON応答はokに分類する', () => {
+  it('見出しと非空sections(2件)を含むJSON応答はokに分類する', () => {
     const c = classifyGenerationResult(okResult())
     expect(c.kind).toBe('ok')
     if (c.kind === 'ok') {
       expect(c.content.heading).toBe('見出し')
       expect(c.content.sections).toHaveLength(2)
     }
+  })
+
+  it('非空sectionが1件のみのJSON応答もokに分類する(空sectionsのみを失敗とする境界)', () => {
+    const res: ClaudeCliResponse = {
+      result: JSON.stringify({ heading: '見出し', sections: [{ heading: 'S1', teaser: '導入1', detail: '詳細1' }] }),
+    }
+    expect(classifyGenerationResult(res).kind).toBe('ok')
+  })
+
+  it('成功応答の記事本文が上限到達の英語文言を含んでいても、is_errorでない限りokに分類する(枯渇の誤検知防止)', () => {
+    // ダイジェストの題材はAI開発ツールの利用上限が頻出テーマ。成功記事が "You've hit your weekly limit" 等を
+    // 引用していても、api_error_statusもis_errorも無い成功応答を枯渇と誤判定して丸一日落とさないこと
+    const res: ClaudeCliResponse = {
+      result: JSON.stringify({
+        heading: 'Claude Codeの週次上限について',
+        sections: [
+          { heading: '概要', teaser: '導入', detail: "記事中で「You've hit your weekly limit」という表示が紹介された。usage limit reached とも。" },
+        ],
+      }),
+    }
+    expect(classifyGenerationResult(res).kind).toBe('ok')
   })
 
   it('JSONを抽出できない応答(聞き返し等)はtransientに分類する', () => {

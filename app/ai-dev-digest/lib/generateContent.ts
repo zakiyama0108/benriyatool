@@ -28,12 +28,17 @@ export type ClassifiedResult =
   | { kind: 'transient'; detail: string } // 同じ入力の再試行で回復しうる失敗
   | { kind: 'quota'; detail: string } // 利用枠の枯渇(再試行しても回復しない)
 
-// 利用枠の枯渇(週次/5時間ごとの上限到達)かどうか。HTTP 429、または上限到達を示す英語メッセージで判定する
-// (Claude Code CLIは上限到達時にapi_error_status=429と「You've hit your weekly limit」等のresultを返す)
+// 利用枠の枯渇(週次/5時間ごとの上限到達)かどうか。Claude Code CLIは上限到達時に
+// api_error_status=429と「You've hit your weekly limit」等のresultを、いずれもis_error=trueの
+// APIエラー封筒として返す。メッセージベースの判定を成功応答にも走らせると、AI開発ツールの利用上限を
+// 話題にした記事本文(res.result)が上限到達の文言を引用しているだけで枯渇と誤判定し、その日全体を
+// 打ち切ってしまう。これを防ぐため、メッセージベースの判定はis_error=trueのエラー封筒に限定する
+// (api_error_statusは成功応答には存在しない構造化フィールドのため、gate外でそのまま判定してよい)
 function isQuotaExhausted(res: ClaudeCliResponse): boolean {
   if (res.api_error_status === 429) return true
+  if (!res.is_error) return false
   const text = res.result ?? ''
-  return /hit your (weekly|usage|5-hour) limit|usage limit reached|reset[s]? \d|weekly limit/i.test(text)
+  return /hit your (weekly|usage|5-hour) limit|usage limit reached|rate limit/i.test(text)
 }
 
 // エージェントが生成した内容として使えるか(見出しと1件以上の非空sectionが揃っているか)を判定する。
