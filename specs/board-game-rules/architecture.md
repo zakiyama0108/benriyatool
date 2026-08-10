@@ -89,16 +89,16 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 選定理由はプロジェクト横断のため[関連ADR](#11-関連adr)を参照。
 
 ## 7. 機能マップ
-| spec | 役割 | 依存 |
-|---|---|---|
-| [user-auth](user-auth/requirements.md) | Google OIDCによる任意ログイン基盤・運営者判定を提供する | [docs/adr/0006](../../docs/adr/0006-admin-screen-oidc-rls.md)を踏襲 |
-| [favorite](favorite/requirements.md) | ログイン利用者がゲームをお気に入り登録し一覧で振り返る | user-authのログイン状態、game-registrationのゲームID |
-| [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う) | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 |
-| [game-list](game-list/requirements.md) | 登録ゲームの一覧表示と複数分類での絞り込み(アプリのトップ) | game-registrationが供給する登録済みゲーム、game-detailへ遷移、favoriteのお気に入り操作 |
-| [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能 |
-| [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 |
-| [report](report/requirements.md) | 閲覧者による通報(匿名可)。自動非表示にせず運営者判断を挟む | game-detailの通報導線、adminで確認・対応 |
-| [admin](admin/requirements.md) | 運営者のモデレーション(編集・削除・通報確認・写真照合・コメント削除)と登録依頼の確認。登録依頼からのゲーム登録はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/report/commentの各データ、ADR-0006/0007 |
+| spec | 役割 | 依存 | 状態 |
+|---|---|---|---|
+| [user-auth](user-auth/requirements.md) | Google OIDCによる任意ログイン基盤・運営者判定を提供する | [docs/adr/0006](../../docs/adr/0006-admin-screen-oidc-rls.md)を踏襲 | リリース済み |
+| [favorite](favorite/requirements.md) | ログイン利用者がゲームをお気に入り登録し一覧で振り返る | user-authのログイン状態、game-registrationのゲームID | 仕様のみ(未実装) |
+| [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う) | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 | リリース済み |
+| [game-list](game-list/requirements.md) | 登録ゲームの一覧表示と複数分類での絞り込み(アプリのトップ) | game-registrationが供給する登録済みゲーム、game-detailへ遷移、favoriteのお気に入り操作 | 仕様のみ(未実装) |
+| [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能 | 仕様のみ(未実装) |
+| [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 | 仕様のみ(未実装) |
+| [report](report/requirements.md) | 閲覧者による通報(匿名可)。自動非表示にせず運営者判断を挟む | game-detailの通報導線、adminで確認・対応 | 仕様のみ(未実装) |
+| [admin](admin/requirements.md) | 運営者のモデレーション(編集・削除・通報確認・写真照合・コメント削除)と登録依頼の確認。登録依頼からのゲーム登録はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/report/commentの各データ、ADR-0006/0007 | リリース済み |
 
 ## 8. コンポーネント図
 ```mermaid
