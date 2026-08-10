@@ -2235,6 +2235,11 @@
     "reason": "完全自動マージの対象をai-dev-digest/articles/**ブランチに限定するという要件で、GitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる設計(daily-publish/design.md「PRを自動マージする処理」参照)であり、ユニットテスト対象を持たないため"
   },
   {
+    "specFile": "ai-dev-digest/daily-publish/requirements.md",
+    "item": "掲載件数の保証 [3]",
+    "reason": "仕様承認PRの段階では実装(scripts/ai-dev-digest/generate-content.ts のリトライ・除外・枯渇打ち切り)とテストが未着手のため一時的に登録する。後続の実装PRで content-generation/tasks.md Task 9(generateTopics)のテストに `// 仕様: specs/ai-dev-digest/daily-publish/requirements.md#掲載件数の保証-3` を付けて紐付け、本エントリを削除する"
+  },
+  {
     "specFile": "ai-dev-digest/line-broadcast/design.md",
     "item": "実行環境の前提(初導入のため明記する設計判断)",
     "reason": "ワークフローファイルを分割する設計判断・チャネルアクセストークンのActions Secrets管理方針の記述で、コードとしてのテスト対象を持たないため"
