@@ -99,6 +99,7 @@ design.mdに入れる図(シーケンス図・画面遷移図・状態遷移図)
 タスクの並び順・粒度は、各タスクを🔴Red(失敗するテストを書く)→🟢Green(最小実装)→🔵Refactorの順で完結できる単位にする(TDDサイクルの進め方・詳細は[/implementation](../implementation/SKILL.md)を参照)。冒頭に`> TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。`という一文を入れる。
 
 - 前述の「UIデザインの確定(Step0)」を行った機能では、最初のタスク「v0生成コードの取り込み・整形」だけはTDDサイクルの対象外になる([/implementation](../implementation/SKILL.md#ui統合タスクv0生成コードの取り込み)参照)。このタスクには🔴🟢🔵のラベルを付けず、代わりに「(TDD対象外)」と明記する
+- **新しいアプリの初回の公開画面(利用者向けトップ)を含む設計では、トップページ(`app/page.tsx`)へツールカードを追加するタスクを tasks.md に含める**([specs/hub-site/requirements.md](../../../specs/hub-site/requirements.md)参照)。バックエンド・管理画面のみで利用者向けの公開入口(例: 一覧画面)がまだ無い回は不要。既存アプリの2回目以降のリリースでも不要
 - 変更頻度が低く設計が単純な機能は requirements.md のみで可(例: legal)
 
 # architecture.mdへの反映
