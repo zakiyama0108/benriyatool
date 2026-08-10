@@ -3066,6 +3066,71 @@
   },
   {
     "specFile": "board-game-rules/game-registration/design.md",
+    "item": "画面設計(登録依頼フォームのUI)",
+    "reason": "登録依頼フォームのUI設計章の親見出し(本文はStep0確定デザインの出所説明)で、配下の見た目・レイアウト・インタラクションを束ねるメタ見出し。振る舞いはtasks.md T6-2/T6-3のテスト(register/page.test.tsx)、見た目はTDD対象外でlocalhost実機レビュー(tasks.md T6)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "デザイントークン(Analog Hearth)",
+    "reason": "配色・フォント・角丸・影なしなど見た目のスタイル定義でTDD対象外。localhost実機レビュー(tasks.md T6-1)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "デザイントークン(Analog Hearth) > 背景(生成り)",
+    "reason": "デザイントークン表の1行(用途+色)で、見た目のスタイル値の定義。TDD対象外でlocalhost実機レビュー(tasks.md T6-1)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "デザイントークン(Analog Hearth) > カード背景",
+    "reason": "デザイントークン表の1行(用途+色)で、見た目のスタイル値の定義。TDD対象外でlocalhost実機レビュー(tasks.md T6-1)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "デザイントークン(Analog Hearth) > 縁線",
+    "reason": "デザイントークン表の1行(用途+色)で、見た目のスタイル値の定義。TDD対象外でlocalhost実機レビュー(tasks.md T6-1)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "デザイントークン(Analog Hearth) > 見出し・線(チャコールブラウン)",
+    "reason": "デザイントークン表の1行(用途+色)で、見た目のスタイル値の定義。TDD対象外でlocalhost実機レビュー(tasks.md T6-1)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "デザイントークン(Analog Hearth) > サブテキスト",
+    "reason": "デザイントークン表の1行(用途+色)で、見た目のスタイル値の定義。TDD対象外でlocalhost実機レビュー(tasks.md T6-1)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "デザイントークン(Analog Hearth) > アクセント1(モスグリーン/主要操作)",
+    "reason": "デザイントークン表の1行(用途+色)で、見た目のスタイル値の定義。TDD対象外でlocalhost実機レビュー(tasks.md T6-1)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "デザイントークン(Analog Hearth) > アクセント2(テラコッタ/控えめな強調)",
+    "reason": "デザイントークン表の1行(用途+色)で、見た目のスタイル値の定義。TDD対象外でlocalhost実機レビュー(tasks.md T6-1)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ヘッダー",
+    "reason": "ロゴ・サービス名・ログイン状態表示の見た目の記述でTDD対象外。localhost実機レビュー(tasks.md T6)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "表示項目・操作(上から)",
+    "reason": "登録依頼フォームの表示項目・レイアウトの設計記述。ジャンルのアコーディオン開閉・説明文の表示条件など振る舞いはtasks.md T6-2/T6-3のテスト(register/page.test.tsx)で、見た目はTDD対象外でlocalhost実機レビュー(tasks.md T6)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "状態遷移図",
+    "reason": "入力中→送信中→完了/失敗の俯瞰用の補助図で、正は『表示項目・操作』の記述。状態遷移自体はrequirements.md#依頼の送信-6〜7のテスト(register/page.test.tsx)で担保済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "レスポンシブ",
+    "reason": "1カラム基調・最大幅720px前後・折り返しなどレイアウトの記述で、実レイアウト計算はjsdomで再現できないためlocalhost実機レビュー(tasks.md T6、スマホ幅含む)で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
     "item": "関連するファイル(抜粋)",
     "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
   },
