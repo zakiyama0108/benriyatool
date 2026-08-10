@@ -1,4 +1,8 @@
 # PR作成時にlint/test/buildを実行し、CLAUDE.mdの「PRを出す前にCIを確認する」を実効化するワークフロー
+#
+# lint/test/buildは互いに依存しないため、直列の1ジョブではなく3つの並列ジョブに分けている
+# (それぞれ個別にnpm ciし直すオーバーヘッドはあるが、全体の待ち時間は「合計」ではなく
+# 「一番遅いジョブ」に近づく。ADR-0008参照)
 name: CI
 
 on:
@@ -8,7 +12,7 @@ on:
       - main
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,14 +28,46 @@ jobs:
       # eslint.config.mjsのルール(Next.js推奨ルール+no-console等)を全ファイルに適用
       - run: npm run lint
 
-      # __tests__/配下のテストをvitest.config.mtsの設定で実行し、行/分岐カバレッジも計測する。
-      # 閾値は設定していないため数値が低くてもCIは落ちない(可視化のみ、ログで実測値を確認する用途)
-      - run: npm run test:coverage
-
       # requirements.md/design.mdの各仕様項目(見出し・箇条書きID)にテストが紐づいているかを検証。
       # テスト不要な項目はscripts/spec-coverage-skip.jsonに理由付きで登録する運用のため、
-      # ここで❌が残っている場合は「テストを書く」か「理由を添えてスキップ登録する」のどちらかが必要
+      # ここで❌が残っている場合は「テストを書く」か「理由を添えてスキップ登録する」のどちらかが必要。
+      # テスト実行を伴わない静的チェックなのでlintジョブに同居させる
       - run: npm run check:spec-coverage
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # git diffでPRの変更ファイルを特定するため、mainブランチの履歴も含めて取得する
+      # (デフォルトのfetch-depth: 1だとPRのコミットしか手元になくorigin/mainとの差分が取れない)
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # deploy.ymlと同じバージョンに揃える
+          cache: 'npm'
+
+      - run: npm ci
+
+      # __tests__/配下の全テストではなく、vitestの依存グラフ解析でorigin/mainからの変更ファイルに
+      # 影響されるテストのみを実行する(scripts/test:changed参照)。フォルダ名(アプリ名)による
+      # 手動振り分けではなく実際のimport関係で判定するため、app/components・app/lib配下の
+      # 複数アプリ共有コードを変更した場合も影響する全アプリのテストが自動的に選ばれる(ADR-0008)。
+      # 行/分岐カバレッジも計測するが、閾値は設定していないため数値が低くてもCIは落ちない
+      - run: npm run test:changed
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # deploy.ymlと同じバージョンに揃える
+          cache: 'npm'
+
+      - run: npm ci
 
       # next.config.ts・tsconfig.json(strict: true)に基づくビルド。型エラーもここで検出される。
       # ビルドが通ることまで確認し、mainマージ後のデプロイ失敗を未然に防ぐ

@@ -5,10 +5,10 @@ mainマージから本番(benriyatool.com)反映までの経路をまとめた�
 ```mermaid
 flowchart TD
     pr["実装PR(feature/*ブランチ)"]
-    ci["CI(ci.yml)<br>lint → テスト+カバレッジ → spec-coverage → ビルド"]
+    ci["CI(ci.yml)<br>lint+spec-coverage / 変更影響テスト+カバレッジ / ビルド を並列実行"]
     merge["ユーザーがGitHub UIでmainへマージ"]
     migrate["migrateジョブ(deploy.yml)<br>supabase/migrations/の未適用SQLを本番DBへ適用"]
-    deploy["deployジョブ(deploy.yml)<br>依存インストール → ビルド → Wranglerでデプロイ"]
+    deploy["deployジョブ(deploy.yml)<br>依存インストール → 全テスト → ビルド → Wranglerでデプロイ"]
     prod["Cloudflare Workers<br>本番(benriyatool.com)"]
     check["/release-check<br>デプロイ完了確認・本番スモークチェック"]
 
@@ -28,6 +28,7 @@ flowchart TD
 - **Supabaseへの接続はSession Pooler経由**: GitHub ActionsランナーはIPv6不可のため、IPv4対応のPooler(ポート5432)で接続する
 - **環境変数の埋め込み**: `NEXT_PUBLIC_SUPABASE_URL`・`NEXT_PUBLIC_SUPABASE_ANON_KEY`はビルド時に静的成果物へ埋め込まれる(GitHub ActionsのSecretsで管理し、ビルドステップでのみ渡す)
 - **サーバー環境は本番のみ**: ステージング環境はなく、mainマージ=本番反映。マージ後は毎回[/release-check](../../.claude/skills/release-check/SKILL.md)で確認する
+- **CIの並列ジョブ化と変更影響テストへの絞り込み**: ci.ymlはPRごとに変更ファイルの依存グラフから影響するテストのみを実行し高速化する一方、その分の安全網としてdeployジョブのビルド前に全テストを実行する(背景・トレードオフは[ADR-0008](../adr/0008-ci-changed-tests-and-parallel-jobs.md))
 
 ## 更新ルール
 

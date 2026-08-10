@@ -1,5 +1,7 @@
 # mainにマージされた後、DBマイグレーション適用 → 本番のCloudflare Workersへ自動デプロイするワークフロー
-# PR段階のlint/testはci.ymlが担当するため、ここではmigrate/build/deployのみ行う
+# PR段階のlint/testはci.ymlが担当するため、ここではmigrate/build/deployのみ行う。
+# ただしci.ymlはPRごとに変更影響テストのみを実行するため(ADR-0008)、mainへの反映経路のどこかで
+# 全テストを一度は通す必要があり、deployジョブのビルド前にフルスイートを実行する
 name: Deploy to Cloudflare Workers
 
 on:
@@ -42,6 +44,10 @@ jobs:
 
       # package-lock.jsonの内容通りに依存関係をクリーンインストール(npm installと違い再現性がありCI向き)
       - run: npm ci
+
+      # ci.ymlのtestジョブはPRごとの変更影響テストのみ(ADR-0008)なので、mainへの反映直前で
+      # 全テストを一度通しておく(fetch-depth: 0によるgit diff取得が不要な分、通常のtest:coverageを使う)
+      - run: npm run test:coverage
 
       # next.config.ts・tsconfig.json(strict: true)に基づくビルド。ci.ymlで通過済みだがデプロイ用に再実行する。
       # NEXT_PUBLIC_*は静的エクスポート時にビルド成果物へ埋め込まれる値のため、ビルドステップでのみ渡す

@@ -66,7 +66,7 @@ mainマージから本番反映までの経路の詳細は[デプロイメント
 | Cloudflare Workers | Next.js静的エクスポート(`out/`)の配信。カスタムドメイン`benriyatool.com`のみで公開(workers.devサブドメインは無効) | [wrangler.toml](../../wrangler.toml) |
 | Supabase Postgres | ユーザー入力・計算結果の保存。anonキーはINSERTのみ、閲覧はRLSで許可された運営者のみ | [ADR-0001](../adr/0001-user-input-database.md)、[ADR-0006](../adr/0006-admin-screen-oidc-rls.md) |
 | Supabase Auth | 管理画面の運営者ログイン(Google OIDC) | [ADR-0006](../adr/0006-admin-screen-oidc-rls.md) |
-| GitHub Actions | PR時のCI(lint・テスト・spec-coverage・ビルド)、mainマージ時のマイグレーション適用+デプロイ、週次のSupabaseヘルスチェック | [ADR-0003](../adr/0003-db-schema-migration-ci.md)、[deployment.md](deployment.md) |
+| GitHub Actions | PR時のCI(lint+spec-coverage・変更影響テスト・ビルドを並列実行)、mainマージ時のマイグレーション適用+全テスト+デプロイ、週次のSupabaseヘルスチェック | [ADR-0003](../adr/0003-db-schema-migration-ci.md)、[ADR-0008](../adr/0008-ci-changed-tests-and-parallel-jobs.md)、[deployment.md](deployment.md) |
 
 ## 課金/無料枠の境界
 
