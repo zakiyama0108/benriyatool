@@ -20,10 +20,10 @@
   1. 作業用ブランチ`ai-dev-digest/articles/<date>`を作成する(`<date>`は実行日のYYYY-MM-DD)
   2. [content-selection](../content-selection/design.md)の`scripts/ai-dev-digest/collect-and-select.ts`を実行し、その日の候補収集・採用基準判定・1日分のトピック選定(3〜5件を目安に、基準未達掲載の日は実在する候補の件数)を行う
   3. 選定結果が「候補不足によりスキップ」だった場合は、記事を作成せず後述「記事生成をスキップする処理」に進む
-  4. 選定された各候補について、`scripts/ai-dev-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでClaude Code CLI(`claude -p`)を1件ずつヘッドレス起動し、見出し・要約(日本語)を生成する(2026-08第2次改定。従来はAnthropic Messages APIを直接呼び出していた)。`extractYoutubeVideoId`でYouTube動画IDを抽出する
-  5. `assembleArticle(date, topics)`で記事データ(`date`・`topics`。article-detail/design.mdのスキーマに従う)を組み立て、`writeArticleFile`で`content/ai-dev-digest/articles/<date>.json`として書き出す
+  4. 選定された各候補について、`scripts/ai-dev-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでClaude Code CLI(`claude -p`)を1件ずつヘッドレス起動し、見出し・要約(日本語)を生成する(2026-08第2次改定。従来はAnthropic Messages APIを直接呼び出していた)。`extractYoutubeVideoId`でYouTube動画IDを抽出する。1候補の生成が一時的な失敗(応答からJSONを抽出できない・空の`sections`など。content-generation/design.md#エラーハンドリング)に終わった場合は、同じ候補を最大2回まで(初回+リトライ1回)起動し直す【推測】(リトライ回数はヒアリング未確認の設計判断。1回でも取りこぼしの多くは拾え、Claude Code CLIの起動は1回あたり分単位のため回数を増やすと全体の実行時間が延びることを踏まえた既定値)。リトライしても失敗する候補は、その候補だけを除外して次の候補に進む(後述「エラーハンドリング」)
+  5. 生成に成功した候補が1件以上あれば、`assembleArticle(date, topics)`でその候補のみから記事データ(`date`・`topics`。article-detail/design.mdのスキーマに従う)を組み立て、`writeArticleFile`で`content/ai-dev-digest/articles/<date>.json`として書き出す。選定された全候補の生成が失敗した場合、または利用枠の枯渇でその日の生成を続行できない場合は、`generate-content.ts`が明示的なエラーメッセージとともに非ゼロ終了し、後続のステップ(記事書き出し・commit・push・PR作成)を実行しない。この場合、ブランチ・PRは作られず、GitHub Actionsの実行が失敗(赤)として残る(requirements.md#掲載件数の保証-3。候補不足による正常なスキップ(緑)と区別する。後述「エラーハンドリング」)
   6. 変更をコミットし、ブランチをリモートにpushする
-- 関連するビジネスルール: requirements.md#実行-1〜3、requirements.md#掲載件数の保証-1
+- 関連するビジネスルール: requirements.md#実行-1〜3、requirements.md#掲載件数の保証-1、requirements.md#掲載件数の保証-3
 
 ### PRを作成しCIの結果を待つ処理
 - 対象: 上記で作成したブランチ
@@ -50,17 +50,20 @@
 - 関連するビジネスルール: requirements.md#実行-5
 
 ### 記事生成をスキップする処理
-- 対象: content-selectionが「候補不足」と判定した日
+- 対象: content-selectionが「候補不足」と判定した日(正常なスキップ。GitHub Actionsの実行は成功(緑)のまま終わる)
 - 手順:
   1. ブランチ・PRを作成しない(空のPRを作らない)
   2. スキップした旨と理由(候補が何件しかなかったか)を実行ログに記録する(content-selection/design.md#ログ)
   3. 翌日以降は通常どおり実行を続ける
+- 選定はできたが全候補の生成が失敗した場合・利用枠が枯渇した場合は、この正常なスキップとは区別し、実行を失敗(赤)として終える(後述「エラーハンドリング」。requirements.md#掲載件数の保証-3)
 - 関連するビジネスルール: content-selection/requirements.md#1日の掲載件数-10(候補不足時の安全策として本specのdesignで追加)
 
 ## エラーハンドリング
 
 - CIの失敗(lint/test/check:spec-coverage/buildのいずれか)は上記「CI失敗時に記録する処理」に従い、マージせずPRを残す
-- 記事生成処理自体が例外で中断した場合(外部サービスの全面障害・Claude Code CLIのサブスクリプション利用上限到達等)、ブランチ・PRは作成しない、または作成済みでコミット前に失敗した場合は何もリモートに残さない(中途半端な状態のPRを作らない)。利用上限到達時のリトライ等の特別扱いは行わず、翌日分の実行として独立して再試行する(「CI失敗時に記録する処理」と異なりPR自体が作られないため、失敗自体はGitHub Actionsの実行結果(失敗)で運営者が把握する)
+- **個々の候補の生成失敗(一時的な失敗)**: 1候補の生成が応答からのJSON抽出失敗・空の`sections`などに終わった場合は、その候補を最大2回まで(初回+リトライ1回)起動し直す。リトライの意図は、元URLの取得失敗・一時的な応答の乱れなど、同じ入力でも再実行すれば成功しうる失敗を拾い直すこと。リトライしても失敗する候補は、その候補**だけ**を除外し、生成に成功した残りの候補でその日の記事を公開する(requirements.md#掲載件数の保証-3)。除外した候補があった旨(発信者名・原文タイトル・失敗理由)は実行ログに記録する。1候補の生成失敗をその日全体の失敗に波及させない(2026-08、1候補の非JSON応答で丸一日が欠損した事象への対応)
+- **全候補の生成失敗・利用枠の枯渇(恒久的な失敗)**: 選定された全候補がリトライしても生成に失敗した場合、または応答が利用上限到達(`api_error_status`が429、応答が週次/5時間ごとの上限到達を示す等)を示す場合は、`generate-content.ts`が非ゼロ終了する。利用枠の枯渇は同じ実行内でリトライしても回復しないため上記のリトライ対象とせず、検知した時点でその候補以降の生成を打ち切って終了する。非ゼロ終了により後続ステップ(記事書き出し・commit・push・PR作成)は実行されず、ブランチ・PRは作られないまま、GitHub Actionsの実行が失敗(赤)として残る。終了時のエラーメッセージには失敗理由(全候補の生成失敗か、利用枠の枯渇か)を、JSON抽出失敗の汎用エラーと区別できる形で明示する(運営者がGitHub Actionsの実行結果から原因を判別できるようにするため。追加の通知チャネルは設けず、要件の方針どおりGitHub Actionsの失敗表示に委ねる)
+- 記事生成処理が上記以外の例外で中断した場合(外部サービスの全面障害等)も同様に非ゼロ終了し、ブランチ・PRは作成しない、または作成済みでコミット前に失敗した場合は何もリモートに残さない(中途半端な状態のPRを作らない)。翌日分の実行として独立して再試行する(失敗自体はGitHub Actionsの実行結果(失敗)で運営者が把握する)
 - 1日の実行が失敗・スキップしても、他の日([article-list](../article-list/requirements.md)・[article-detail](../article-detail/requirements.md))の表示には影響しない(該当日のファイルが存在しないだけで、一覧・詳細ページは正常に動作する)
 
 ## 関連するファイル(抜粋)
