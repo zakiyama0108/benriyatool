@@ -81,20 +81,27 @@ export default function PhotoUploader({ photos, onChange }: Props) {
         <p className="text-xs text-bgr-accent">上限の{MAX_PHOTO_COUNT}枚に達しました。これ以上は追加できません。</p>
       )}
       {photos.length > 0 && (
-        <ul className="flex flex-wrap gap-3">
+        <ul className="flex flex-wrap gap-4 pt-1">
           {photos.map((photo, index) => (
-            <li key={`${photo.name}-${index}`} className="relative">
+            // ポラロイド風の見た目(白フチ・下側厚め・軽い影・少し傾き)で「温かみのあるアナログ感」を表現する
+            // (design.md「表示項目・操作」写真アップロード/見た目のためTDD対象外・tasks.md T6-1)。
+            // 傾き角は枚数で循環させ、機械的な整列に見えないよう1枚ずつ少しずらす。ホバーで傾きを戻す。
+            <li
+              key={`${photo.name}-${index}`}
+              className="relative bg-white p-1.5 pb-5 shadow-md transition-transform duration-200 hover:z-10 hover:!rotate-0"
+              style={{ transform: `rotate(${[-3, 2, -1.5, 3, -2, 1.5][index % 6]}deg)` }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element -- 選択直後のFileをそのままプレビューするためobject URLを使う(next/imageは不要) */}
               <img
                 src={previewUrls[index]}
                 alt={`アップロード予定の写真 ${index + 1}枚目`}
-                className="h-24 w-24 rounded-lg border border-bgr-line object-cover"
+                className="h-24 w-24 object-cover"
               />
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
                 aria-label={`${index + 1}枚目の写真を削除`}
-                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-bgr-heading text-xs text-white"
+                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-bgr-heading text-xs text-white shadow"
               >
                 ×
               </button>
