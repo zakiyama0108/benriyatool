@@ -22,6 +22,25 @@
   --color-lms-bonus-ink: oklch(0.47 0.11 250);
 }
 
+/* board-game-rules(ボドゲのトリセツ)のビジュアルトーン「Analog Hearth」の配色トークン
+   (仕様: specs/board-game-rules/game-registration/design.md#デザイントークンanalog-hearth)。
+   Stitchプロジェクト(project 10756296516233709248)の生成HTMLをそのまま踏襲した16進値で、
+   温かみのあるアナログ感(MUJI風)を表現する。見出し/本文フォントの変数(--font-plus-jakarta-sans/
+   --font-work-sans)はnext/font/googleが各ページのラッパー要素に設定するCSS変数を参照し、
+   日本語は丸ゴシック優先のフォールバックを添える */
+@theme {
+  --color-bgr-bg: #f7f3ea;
+  --color-bgr-card: #efe7d6;
+  --color-bgr-line: #dcd0b4;
+  --color-bgr-heading: #43392e;
+  --color-bgr-subtext: #6b5f4f;
+  --color-bgr-primary: #6e7c58;
+  --color-bgr-primary-active: #556246;
+  --color-bgr-accent: #b96b3e;
+  --font-heading: var(--font-plus-jakarta-sans, "Hiragino Maru Gothic ProN", "BIZ UDGothic", "Yu Gothic Medium", sans-serif);
+  --font-body: var(--font-work-sans, "Hiragino Maru Gothic ProN", "BIZ UDGothic", "Yu Gothic", sans-serif);
+}
+
 @layer components {
   .section-heading {
     @apply text-base font-bold text-gray-900 mb-2.5 pl-3 border-l-[3px] border-blue-500;

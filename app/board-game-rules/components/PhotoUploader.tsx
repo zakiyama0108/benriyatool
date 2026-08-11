@@ -27,16 +27,25 @@ export default function PhotoUploader({ photos, onChange }: Props) {
     }
   }, [previewUrls])
 
-  function handleSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? [])
-    if (files.length > 0) {
-      const accepted = files.slice(0, Math.max(MAX_PHOTO_COUNT - photos.length, 0))
-      if (accepted.length > 0) {
-        onChange([...photos, ...accepted])
-      }
+  // 上限を超えた分は切り捨てて追加する(クリック選択・ドラッグ&ドロップ共通の処理)
+  function addFiles(files: File[]) {
+    if (files.length === 0 || atLimit) return
+    const accepted = files.slice(0, Math.max(MAX_PHOTO_COUNT - photos.length, 0))
+    if (accepted.length > 0) {
+      onChange([...photos, ...accepted])
     }
+  }
+
+  function handleSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    addFiles(Array.from(e.target.files ?? []))
     // 同じファイルを続けて選び直せるよう、選択後は入力をリセットする
     if (inputRef.current) inputRef.current.value = ''
+  }
+
+  // design.md「表示項目・操作」のドラッグ&ドロップ+クリック選択(見た目・操作の作り替えのためTDD対象外。tasks.md T6-1)
+  function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault()
+    addFiles(Array.from(e.dataTransfer.files ?? []))
   }
 
   function handleRemove(index: number) {
@@ -45,8 +54,14 @@ export default function PhotoUploader({ photos, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      <label htmlFor="board-game-photo-input" className="block text-sm font-medium text-gray-700">
-        ルールブックの写真(表紙・目次・各ページなど、複数枚可・最低1枚)
+      <label
+        htmlFor="board-game-photo-input"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-bgr-line bg-bgr-bg px-4 py-8 text-center text-sm text-bgr-subtext"
+      >
+        <span className="font-medium text-bgr-heading">クリックまたはドラッグ&ドロップで写真を選択</span>
+        <span className="text-xs">表紙・目次・各ページなど、複数枚可・最低1枚</span>
       </label>
       <input
         id="board-game-photo-input"
@@ -57,29 +72,36 @@ export default function PhotoUploader({ photos, onChange }: Props) {
         disabled={atLimit}
         onChange={handleSelect}
         aria-label="写真を選択"
-        className="block text-sm text-gray-600"
+        className="sr-only"
       />
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-bgr-subtext">
         {photos.length}/{MAX_PHOTO_COUNT}枚
       </p>
       {atLimit && (
-        <p className="text-xs text-amber-600">上限の{MAX_PHOTO_COUNT}枚に達しました。これ以上は追加できません。</p>
+        <p className="text-xs text-bgr-accent">上限の{MAX_PHOTO_COUNT}枚に達しました。これ以上は追加できません。</p>
       )}
       {photos.length > 0 && (
-        <ul className="flex flex-wrap gap-3">
+        <ul className="flex flex-wrap gap-4 pt-1">
           {photos.map((photo, index) => (
-            <li key={`${photo.name}-${index}`} className="relative">
+            // ポラロイド風の見た目(白フチ・下側厚め・軽い影・少し傾き)で「温かみのあるアナログ感」を表現する
+            // (design.md「表示項目・操作」写真アップロード/見た目のためTDD対象外・tasks.md T6-1)。
+            // 傾き角は枚数で循環させ、機械的な整列に見えないよう1枚ずつ少しずらす。ホバーで傾きを戻す。
+            <li
+              key={`${photo.name}-${index}`}
+              className="relative bg-white p-1.5 pb-5 shadow-md transition-transform duration-200 hover:z-10 hover:!rotate-0"
+              style={{ transform: `rotate(${[-3, 2, -1.5, 3, -2, 1.5][index % 6]}deg)` }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element -- 選択直後のFileをそのままプレビューするためobject URLを使う(next/imageは不要) */}
               <img
                 src={previewUrls[index]}
                 alt={`アップロード予定の写真 ${index + 1}枚目`}
-                className="h-24 w-24 rounded-lg border border-gray-200 object-cover"
+                className="h-24 w-24 object-cover"
               />
               <button
                 type="button"
                 onClick={() => handleRemove(index)}
                 aria-label={`${index + 1}枚目の写真を削除`}
-                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-xs text-white"
+                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-bgr-heading text-xs text-white shadow"
               >
                 ×
               </button>
