@@ -11,6 +11,11 @@
   },
   {
     "specFile": "hub-site/requirements.md",
+    "item": "機能要件 [4]",
+    "reason": "Next.jsのファイルベースアイコン規約(app/icon.*)による静的なファビコン設定であり、ユニットテストではなくビルド・目視確認(16x16表示での判別確認)で担保するため"
+  },
+  {
+    "specFile": "hub-site/requirements.md",
     "item": "ビジネスルール",
     "reason": "サイト名・リダイレクト方針など運用上の意思決定であり、自動テストで検証する性質のものではないため"
   },
