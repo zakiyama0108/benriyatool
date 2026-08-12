@@ -18,12 +18,17 @@ type Props = {
   bookmark: BookmarkSummary | null
 }
 
-// 1トピック分の表示(見出し・章立て要約(sections)・出典・種別バッジ・YouTube埋め込み・
+// 1トピック分の表示(見出し・要約・出典・種別バッジ・YouTube埋め込み・
 // 基準未達表示)と、配下に付箋操作・フィードバック入力欄を条件付きで表示する
 // (仕様: requirements.md#記事本文表示-1〜4、design.md「その日の記事本文を表示する処理」
 // 「ログイン状態に応じてフィードバック入力欄の表示を切り替える処理」、bookmark/design.md
-// 「コンポーネント設計」)。sectionsは配列順にセクション見出し(h3)+導入文(teaser、常時表示)+
-// <details><summary>詳細を見る</summary>詳細文(detail)</details>(展開表示)で構成する
+// 「コンポーネント設計」)。要約データは移行期のためisLegacyTopicで新旧フォーマットを出し分ける:
+// 旧フォーマット(sections)はDB格納順そのまま、新フォーマット(summary)は固定4観点を
+// SUMMARY_ORDERの順で描画する(content-generation/requirements.md#要約-5・12)。
+// いずれも配列順にセクション見出し(h3)+導入文(teaser、常時表示)+
+// <details><summary>詳細を見る</summary>詳細文(detail)</details>(展開表示)で構成する。
+// 新フォーマットのトピックのみ見出し横に重要度(ImportanceStars)を表示する(旧データには
+// importanceが存在しないため)
 // **DBの読み取り(SELECT)は一切行わない**。isAuthorizedAdmin(admin_emailsのSELECT)の呼び出しは
 // ArticleDetailView側の責務とし、ここでは渡されたisAdminの値だけでフィードバック欄の表示を切り替える
 // (design.md参照。architecture.md#12-セキュリティ)。付箋操作(BookmarkPanel)はセッションの有無だけで
