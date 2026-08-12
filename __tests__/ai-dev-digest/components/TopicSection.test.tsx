@@ -17,7 +17,11 @@ vi.mock('../../../app/ai-dev-digest/lib/bookmarks', () => ({
   deleteBookmark: vi.fn(),
 }))
 
-function makeTopic(overrides: Partial<Topic> = {}): Topic {
+type LegacyOverrides = Partial<Extract<Topic, { sections: unknown }>>
+type CurrentOverrides = Partial<Extract<Topic, { summary: unknown }>>
+
+// LegacyTopic(2026-08以前生成、sections形式)のfixture
+function makeTopic(overrides: LegacyOverrides = {}): Topic {
   return {
     id: 'topic-1',
     heading: 'Anthropicが新モデルを発表',
@@ -25,6 +29,27 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
       { heading: '何が発表されたか', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(500) },
       { heading: '開発者への影響', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
     ],
+    sourceType: 'official',
+    sourceName: 'Anthropic',
+    sourceUrl: 'https://www.anthropic.com/news/example',
+    sourcePublishedAt: '2026-07-31T10:00:00Z',
+    belowCriteria: false,
+    ...overrides,
+  }
+}
+
+// CurrentTopic(2026-08以降生成、固定4観点summary+importance形式)のfixture
+function makeCurrentTopic(overrides: CurrentOverrides = {}): Topic {
+  return {
+    id: 'topic-1',
+    heading: 'Anthropicが新モデルを発表',
+    summary: {
+      benefit: { heading: '何が発表されたか', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250) },
+      whatsNew: { heading: '新規性', teaser: 'い'.repeat(60), detail: 'い'.repeat(250) },
+      how: { heading: '仕組み', teaser: 'う'.repeat(60), detail: 'う'.repeat(250) },
+      howToUse: { heading: '開発者への影響', teaser: 'え'.repeat(60), detail: 'え'.repeat(250) },
+    },
+    importance: 4,
     sourceType: 'official',
     sourceName: 'Anthropic',
     sourceUrl: 'https://www.anthropic.com/news/example',
@@ -91,6 +116,25 @@ describe('トピック表示 - 要約の各セクション(小見出し+導入�
   })
 })
 
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-2、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-12、specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-13、specs/ai-dev-digest/article-detail/design.md#その日の記事本文を表示する処理
+describe('トピック表示(新形式CurrentTopic) - 固定4観点をbenefit→whatsNew→how→howToUseの順に常時表示し、重要度を表示する', () => {
+  it('4観点の見出し・導入文がこの順序で常時表示されること', () => {
+    const { container } = render(<TopicSection topic={makeCurrentTopic()} session={null} articleDate="2026-08-01" {...noop} />)
+    const headings = Array.from(container.querySelectorAll('h3')).map((h) => h.textContent)
+    expect(headings).toEqual(['何が発表されたか', '新規性', '仕組み', '開発者への影響'])
+  })
+
+  it('ImportanceStars(重要度表示)が表示されること', () => {
+    render(<TopicSection topic={makeCurrentTopic({ importance: 5 })} session={null} articleDate="2026-08-01" {...noop} />)
+    expect(screen.getByLabelText('重要度5')).toBeTruthy()
+  })
+
+  it('LegacyTopic(sections形式)の場合、ImportanceStarsは表示されないこと', () => {
+    render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" {...noop} />)
+    expect(screen.queryByLabelText(/重要度/)).toBeNull()
+  })
+})
+
 // 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-4、specs/ai-dev-digest/content-generation/requirements.md#要約-2
 describe('トピック表示 - 各セクションの詳細文(detail)はHTML標準の<details>要素で展開表示する', () => {
   it('各セクションの<details>要素が初期状態で閉じており、詳細文(detail)を含んでいること', () => {
@@ -111,6 +155,17 @@ describe('トピック表示 - 各セクションの詳細文(detail)はHTML標�
     summaries.forEach((summary) => {
       expect(summary.textContent).toBe('詳細を見る')
     })
+  })
+
+  it('CurrentTopic(固定4観点)の場合、4観点分の<details>要素が初期状態で閉じており、各観点の詳細文を含んでいること', () => {
+    const { container } = render(<TopicSection topic={makeCurrentTopic()} session={null} articleDate="2026-08-01" {...noop} />)
+    const detailsElements = container.querySelectorAll('details')
+    expect(detailsElements.length).toBe(4)
+    detailsElements.forEach((details) => {
+      expect(details.open).toBe(false)
+    })
+    expect(container.textContent).toContain('あ'.repeat(250))
+    expect(container.textContent).toContain('え'.repeat(250))
   })
 })
 

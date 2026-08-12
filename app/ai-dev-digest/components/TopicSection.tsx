@@ -1,10 +1,14 @@
 import type { Session } from '@supabase/supabase-js'
-import type { Topic } from '../lib/types'
+import { isLegacyTopic, type SummaryPerspective, type Topic } from '../lib/types'
 import { formatSourcePublishedAt } from '../lib/formatSourcePublishedAt'
 import SourceBadge from './SourceBadge'
 import YoutubeEmbed from './YoutubeEmbed'
 import FeedbackForm from './FeedbackForm'
+import ImportanceStars from './ImportanceStars'
 import BookmarkPanel, { type BookmarkSummary } from './BookmarkPanel'
+
+// 固定4観点(summary)の描画順。この順序で固定(content-generation/requirements.md#要約-5・12)
+const SUMMARY_ORDER = ['benefit', 'whatsNew', 'how', 'howToUse'] as const
 
 type Props = {
   topic: Topic
@@ -36,10 +40,16 @@ export default function TopicSection({ topic, session, isAdmin, articleDate, boo
         )}
       </div>
 
-      <h2 className="text-base font-bold leading-relaxed">{topic.heading}</h2>
+      <div className="mb-1 flex items-center gap-2">
+        {!isLegacyTopic(topic) && <ImportanceStars importance={topic.importance} />}
+        <h2 className="text-base font-bold leading-relaxed">{topic.heading}</h2>
+      </div>
 
       <div className="mt-2 space-y-3">
-        {topic.sections.map((section, index) => (
+        {(isLegacyTopic(topic)
+          ? topic.sections
+          : SUMMARY_ORDER.map((key): SummaryPerspective => topic.summary[key])
+        ).map((section, index) => (
           <div key={index}>
             <h3 className="text-sm font-semibold text-gray-800">{section.heading}</h3>
             <p className="mt-1 text-sm leading-relaxed text-gray-700">{section.teaser}</p>

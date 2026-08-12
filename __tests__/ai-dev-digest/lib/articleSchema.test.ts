@@ -31,6 +31,38 @@ function validArticle(overrides: Record<string, unknown> = {}) {
   }
 }
 
+// 固定4観点(TopicSummary)の有効なfixture(仕様: content-generation/requirements.md#要約-9〜12)
+function validSummary(overrides: Record<string, unknown> = {}) {
+  const perspective = (prefix: string) => ({
+    heading: `${prefix}見出し`,
+    teaser: prefix.repeat(60),
+    detail: prefix.repeat(250),
+  })
+  return {
+    benefit: perspective('あ'),
+    whatsNew: perspective('い'),
+    how: perspective('う'),
+    howToUse: perspective('え'),
+    ...overrides,
+  }
+}
+
+// CurrentTopic(summary+importance形式)の有効なfixture
+function validCurrentTopic(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'topic-1',
+    heading: 'Anthropicが新モデルを発表',
+    summary: validSummary(),
+    importance: 4,
+    sourceType: 'official',
+    sourceName: 'Anthropic',
+    sourceUrl: 'https://www.anthropic.com/news/example',
+    sourcePublishedAt: '2026-07-31T10:00:00Z',
+    belowCriteria: false,
+    ...overrides,
+  }
+}
+
 // 仕様: specs/ai-dev-digest/article-detail/design.md#バリデーション
 describe('記事データのスキーマ検証 - ビルド時にJSONの構造・内容を検証し、不正なデータでビルドを失敗させる', () => {
   it('1件のみのトピックを含む正常な記事データは検証を通ること', () => {
@@ -182,6 +214,57 @@ describe('記事スキーマへの導入文(teaser)分量検証の組み込み -
       }),
     ]
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/design.md#前提: 記事データの形式(この機能が定義する共有スキーマ)、specs/ai-dev-digest/article-detail/design.md#バリデーション
+describe('記事スキーマへの新旧フォーマット出し分け - sections(LegacyTopic)またはsummary+importance(CurrentTopic)のどちらか一方を要求する', () => {
+  it('sections・summaryのどちらも持たないtopicは検証エラーになること', () => {
+    const topic = validCurrentTopic()
+    delete (topic as Record<string, unknown>).summary
+    expect(() => parseArticle(validArticle({ topics: [topic] }), '2026-08-01.json')).toThrow()
+  })
+
+  it('sections・summaryの両方を持つtopicは検証エラーになること', () => {
+    const topic = { ...validCurrentTopic(), sections: validSections() }
+    expect(() => parseArticle(validArticle({ topics: [topic] }), '2026-08-01.json')).toThrow()
+  })
+
+  it('summary形式(CurrentTopic)の正常なトピックは検証を通り、importanceが保持されること', () => {
+    const article = parseArticle(validArticle({ topics: [validCurrentTopic()] }), '2026-08-01.json')
+    expect(article.topics[0]).toMatchObject({ importance: 4 })
+  })
+
+  it('summary形式でimportanceが範囲外(6)のとき、検証エラーになること', () => {
+    const topics = [validCurrentTopic({ importance: 6 })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('summary形式でimportanceが整数でない(3.5)とき、検証エラーになること', () => {
+    const topics = [validCurrentTopic({ importance: 3.5 })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('summary形式でいずれかの観点のteaserが範囲外(39字)のとき、検証エラーになること', () => {
+    const topics = [
+      validCurrentTopic({ summary: validSummary({ benefit: { heading: '見出し', teaser: 'あ'.repeat(39), detail: 'あ'.repeat(250) } }) }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('summary形式で4観点のdetail合計が範囲外(799字)のとき、検証エラーになること', () => {
+    const topics = [
+      validCurrentTopic({
+        summary: validSummary({ benefit: { heading: '見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(49) } }),
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('新形式(summary)・旧形式(sections)のtopicが同じ記事内に混在しても検証エラーにならないこと', () => {
+    const topics = [validTopic({ id: 'topic-1' }), validCurrentTopic({ id: 'topic-2' })]
+    const article = parseArticle(validArticle({ topics }), '2026-08-01.json')
+    expect(article.topics).toHaveLength(2)
   })
 })
 

@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { assembleArticle } from '../../../app/ai-dev-digest/lib/assembleArticle'
 import { parseArticle } from '../../../app/ai-dev-digest/lib/articleSchema'
+import { isLegacyTopic } from '../../../app/ai-dev-digest/lib/types'
 import type { GeneratedTopicInput } from '../../../app/ai-dev-digest/lib/assembleArticle'
 
-function makeInput(overrides: Partial<GeneratedTopicInput> = {}): GeneratedTopicInput {
+type LegacyGeneratedTopicInput = Extract<GeneratedTopicInput, { sections: unknown }>
+
+function makeInput(overrides: Partial<LegacyGeneratedTopicInput> = {}): LegacyGeneratedTopicInput {
   return {
     heading: 'Anthropicが新モデルを発表',
     sections: [
@@ -34,7 +37,8 @@ describe('記事データの組み立て - 選定結果と生成済みの見出�
       { heading: '開発者への影響', teaser: 'い'.repeat(60), detail: 'い'.repeat(500) },
     ]
     const article = assembleArticle('2026-08-01', [makeInput({ sections })])
-    expect(article.topics[0].sections).toEqual(sections)
+    const topic = article.topics[0]
+    expect(isLegacyTopic(topic) && topic.sections).toEqual(sections)
   })
 
   it('youtubeVideoIdを持つトピックはそのままArticleに含まれ、持たないトピックには含まれないこと', () => {
@@ -64,6 +68,29 @@ describe('記事データの組み立て - 選定結果と生成済みの見出�
     expect(article.topics[0].sourcePublishedAt).toBeUndefined()
   })
 
+})
+
+// 仕様: specs/ai-dev-digest/content-generation/design.md「要約を書く処理」応答JSONの形式(2026-08、固定4観点+重要度)
+describe('記事データの組み立て(新形式) - summary(固定4観点)+importanceを持つ入力からもArticleを組み立てられること', () => {
+  it('summary+importanceがそのままArticleのトピックに含まれること', () => {
+    const summary = {
+      benefit: { heading: 'b', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250) },
+      whatsNew: { heading: 'w', teaser: 'い'.repeat(60), detail: 'い'.repeat(250) },
+      how: { heading: 'h', teaser: 'う'.repeat(60), detail: 'う'.repeat(250) },
+      howToUse: { heading: 'u', teaser: 'え'.repeat(60), detail: 'え'.repeat(250) },
+    }
+    const input: GeneratedTopicInput = {
+      heading: 'Anthropicが新モデルを発表',
+      summary,
+      importance: 4,
+      sourceType: 'official',
+      sourceName: 'Anthropic',
+      sourceUrl: 'https://www.anthropic.com/news/example',
+      belowCriteria: false,
+    }
+    const article = assembleArticle('2026-08-01', [input])
+    expect(article.topics[0]).toMatchObject({ summary, importance: 4 })
+  })
 })
 
 // 仕様: specs/ai-dev-digest/daily-publish/requirements.md#実行-3
