@@ -40,6 +40,7 @@ description: 新しい機能・アプリの要件定義を始めるときに使�
 - アプリ立ち上げ時は`specs/<アプリ名>/architecture.md`も最初から作成する(作成基準・書き方は[architecture-workflow](../architecture-workflow/SKILL.md)を参照)。機能マップの状態列は全spec「仕様のみ(未実装)」で初期化する
 - あわせてリポジトリ直下[README.md](../../../README.md)の「アプリ一覧」テーブルに1行追加する(アプリ名・パス・概要・architecture.mdへのリンク)
 - このアプリを初めて本番公開する実装PR([/implementation](../implementation/SKILL.md))では、[specs/hub-site/requirements.md](../../../specs/hub-site/requirements.md)に従いトップページ(`app/page.tsx`)にもツールカードを追加する(README一覧は公開前でも載るが、ハブページは公開中のツールのみを載せるため別途更新が必要。2026-08時点で`/life-money-sim`がこの掲載漏れを起こした教訓)
+- 公開する画面のタブ名・検索結果タイトル/説明文(title/description)を、そのアプリのトップページを担当するspecのrequirements.mdに機能要件として定義したうえで、Next.jsの`metadata`に設定する。定義済みのspecは[specs/hub-site/requirements.md](../../../specs/hub-site/requirements.md)の「各ページのメタ情報」から参照する(重複管理防止のため。トップページ担当specがまだ未実装の場合は、決まるまでの暫定置き場としてhub-site側に直接定義してよい)。2026-08時点でikukyu以外の3アプリが未定義のまま公開されていた教訓
 - 各specが育ってきて「既存機能の修正・拡張」に該当する変更が発生したら、以降は上記Step0の判断に従う
 
 # 要件ヒアリング

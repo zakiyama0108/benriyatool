@@ -18,9 +18,12 @@
 - [1] トップページに`WebSite`構造化データ(JSON-LD)を設置し、Google検索結果のサイト名として「べんりやつーる」を提示する(`og:site_name`だけではGoogleがサイト名を認識せずドメイン名「benriyatool.com」が表示されるため)
 - [2] トップページのツールカード一覧には、本番公開済みの全アプリを掲載する。新しいアプリを初めて本番公開する実装PRでは、同じPRでこのカード一覧にもツールカードを追加する(README「アプリ一覧」表とは別に、公開中のツールのみを載せるハブページ側の掲載漏れを防ぐため)
 - [3] ツールカード一覧の下に、育休給付金ガイド記事一覧(`/ikukyu/guide`)への導線(軽量なテキストリンク)を設置する。記事は個別アプリ(ikukyu)の補足コンテンツであり独立したツールではないため、ツールカードとは表示を区別する(詳細: `specs/ikukyu/guide/requirements.md#記事ページ共通-12`)
-- 各ページのメタ情報(title/description)を設定する
+- 各ページのメタ情報(title/description)を設定する。原則として各アプリの機能要件側で定義し(重複管理によるずれを防ぐため)、本specでは参照リンクのみ持つ。ただしオーナーとなる機能specがまだ実装されていないアプリは、本specに直接定義する暫定運用とする
   - `/`: title「べんりやつーる | 暮らしのお金・手続きに役立つ無料ツール集」、description「暮らしのお金や手続きに関する無料ツールを提供しています。育休給付金シミュレーターをはじめ、今後も便利なツールを追加していきます。」
-  - `/ikukyu`: specs/ikukyu/simulator/requirements.md#機能要件-4 で定義する(重複管理によるずれを防ぐため、本specでは持たない)
+  - `/ikukyu`: specs/ikukyu/simulator/requirements.md#機能要件-4 で定義する
+  - `/ai-dev-digest`: specs/ai-dev-digest/article-list/requirements.md#メタ情報-1 で定義する
+  - `/life-money-sim`: specs/life-money-sim/monthly-balance/requirements.md#メタ情報-1 で定義する
+  - `/board-game-rules`: title「ボードゲームのルール確認｜人数・時間・ジャンルで探せる無料データベース」、description「ボードゲームの説明書の写真からルールを自動生成して登録し、対応人数・プレイ時間・ジャンルなどで絞り込んで探せる無料のルール確認サービスです。」(暫定定義。トップページ機能[game-list](../board-game-rules/game-list/requirements.md)が未実装のためオーナーとなる機能specが存在せず、本specに直接定義している。game-list実装時にそちらへ移設し、本行は参照リンクに置き換える)
 - [4] ファビコンを設定する。Next.jsのファイルベースアイコン規約(`app/icon.*`)により、ルートセグメント(`app/`)に置いたアイコンはドメイン全体のデフォルトになり、各アプリのセグメント(`app/<アプリ名>/`)に置いたアイコンはそのアプリ配下のページにだけ上書き適用される。デザインはGoogle Stitch(プロジェクト`2502647761156519613`)で作成し、各アプリの既存配色トークン(life-money-simの「オーシャンミント」、board-game-rulesの「Analog Hearth」等)またはハブページのツールカードで使っている絵文字のモチーフに合わせている
   - サイト全体(`/`): オレンジ背景+道具箱モチーフ
   - `/ikukyu`: オレンジ背景+電卓モチーフ
