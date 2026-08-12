@@ -746,6 +746,11 @@
   },
   {
     "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "メタ情報 [1]",
+    "reason": "Next.jsのmetadata exportによる静的なtitle/description定義であり、ユニットテストではなくビルド・目視確認で担保するため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   },
@@ -1963,6 +1968,11 @@
     "specFile": "ai-dev-digest/article-list/requirements.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/requirements.md",
+    "item": "メタ情報 [1]",
+    "reason": "Next.jsのmetadata exportによる静的なtitle/description定義であり、ユニットテストではなくビルド・目視確認で担保するため"
   },
   {
     "specFile": "ai-dev-digest/article-list/requirements.md",
