@@ -50,3 +50,13 @@
 `/ikukyu/guide`(育休給付金ガイド記事3本+一覧)がサイトマップには登録済みだが、トップページ・シミュレーター画面のどちらからもリンクされておらず未発見だったため対応する。詳細は[specs/ikukyu/guide/tasks.md](../ikukyu/guide/tasks.md)のTask 10を参照(ikukyu側の変更が主で、本specへの影響は機能要件[3]の追加のみ)。
 
 - [x] Task 8: ツールカード一覧の下にガイド記事一覧へのテキストリンクを追加(仕様コメント: `specs/hub-site/requirements.md#機能要件-3`)
+
+## ファビコンの追加(2026-08-12)
+
+サイト全体+アプリ4件(ikukyu, life-money-sim, ai-dev-digest, board-game-rules)のファビコンが未設定(既定のfavicon.icoのみ)だったため、Google Stitch(プロジェクト`2502647761156519613`)でデザインを作成し、Next.jsのファイルベースアイコン規約で配置する。静的アセットの追加のみでロジックを持たないため、TDD対象外(既存の`__tests__/page.test.tsx`等に影響なし)。
+
+- [x] Task 9: 各アプリにファビコンを配置(仕様コメント: `specs/hub-site/requirements.md#機能要件-4`)
+  - [x] `app/icon.svg`(サイト全体・オレンジ+道具箱)を追加、`app/favicon.ico`(16x16/32x32のPNG埋め込みICO)を新デザインで置き換え
+  - [x] `app/ikukyu/icon.svg`・`app/life-money-sim/icon.svg`・`app/ai-dev-digest/icon.svg`・`app/board-game-rules/icon.svg`を追加
+  - [x] life-money-simのSVGで使われていた`oklch()`の色指定は、favicon用のレンダラー(ICO変換など)が対応していない場合があるため、実測して確認した16進値(`#378a73`・`#c04442`)に変換して使用
+  - [x] 16x16表示でも5案が判別できることを確認
