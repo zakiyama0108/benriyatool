@@ -68,3 +68,21 @@
   - 🔴 セッションがあっても`isAuthorizedAdmin()`が`false`を返す場合はFeedbackFormが描画されないこと、`true`を返す場合のみ描画されること、セッションがない場合は`isAuthorizedAdmin()`自体が呼び出されないこと、`isAuthorizedAdmin()`が例外を投げた場合はFeedbackFormを描画せずコンソールにエラーを出力することを確認するテストを書く(Task 10の既存テスト「`isAuthorizedAdmin`は呼び出されないこと」はセッションなしのケースのみ有効、セッションありのケースを追加する形で更新する)
   - 🟢 `TopicSection`に`isAdmin: boolean`propを追加し、`{isAdmin && <FeedbackForm .../>}`に変更する(`session`propはbookmark仕様のBookmarkPanel表示にそのまま使う)。`ArticleDetailView`にセッション確立後`isAuthorizedAdmin()`を呼び出す処理を追加し、結果を`isAdmin`としてTopicSectionへ渡す(失敗時は`false`のまま維持しコンソールにエラー出力)
   - 実装順序の注意: [bookmark/tasks.md](../bookmark/tasks.md)のTask 5(BookmarkPanelの表示配線)と同じ`TopicSection.tsx`/`ArticleDetailView.tsx`を変更する。どちらを先に実装してもよいが、両方完了するまでは中間状態(bookmarkのみ・isAdminのみ)になる
+
+## 要約フォーマットの固定4観点化(2026-08、[/consult](../../../.claude/skills/consult/SKILL.md)での壁打ちに基づく変更)
+
+- Task 14: `LegacyTopic`/`CurrentTopic`判別用の型・型ガード(仕様: design.md「前提: 記事データの形式」)
+  - 🔴 `sections`キーを持つTopicオブジェクトに対し`isLegacyTopic`が`true`を、`summary`キーを持つTopicオブジェクトに対し`false`を返すことを確認するテストを書く
+  - 🟢 `app/ai-dev-digest/lib/types.ts`に`SummaryPerspective`/`TopicSummary`/`Importance`/`TopicBase`/`LegacyTopic`/`CurrentTopic`/`isLegacyTopic`を追加する(既存の`SummarySection`/`Topic`は`LegacyTopic`用として残し、`Topic`は`LegacyTopic | CurrentTopic`のユニオン型に変更する)
+
+- Task 15: 記事スキーマへの新形式検証の組み込み(仕様: design.md「バリデーション」、content-generation/lib/summaryValidationのisValidSummaryDetailLength/isValidImportanceを利用。[content-generation/tasks.md](../content-generation/tasks.md)Task 10で実装)
+  - 🔴 `parseArticle`が、(a)`sections`/`summary`のどちらも持たない、または両方持つtopicを拒否すること、(b)`summary`形式でimportanceが範囲外・teaserが範囲外・detail合計が範囲外のtopicを拒否すること、(c)`sections`形式(2026-08以前生成データ相当のfixture)は従来通り検証されること、(d)新旧の形式が同じ記事内(`topics`配列)に混在してもエラーにならないことを確認するテストを、Task 3の既存テストに追加する
+  - 🟢 `app/ai-dev-digest/lib/articleSchema.ts`の`parseTopic`を`sections`/`summary`キーの有無で分岐し、新形式は`isValidSummaryDetailLength`/`isValidImportance`を呼び出す
+
+- Task 16: 重要度表示コンポーネント(仕様: requirements.md#記事本文表示-12、design.md「コンポーネント設計」)
+  - 🔴 `importance`の値(1〜5)に応じて塗りつぶし★の数が変わることを確認するテストを書く
+  - 🟢 `app/ai-dev-digest/components/ImportanceStars.tsx`を実装する
+
+- Task 17: トピック表示の新旧フォーマット出し分け(仕様: requirements.md#記事本文表示-2〜3・12〜13、design.md「その日の記事本文を表示する処理」手順3〜5)
+  - 🔴 `CurrentTopic`(`summary`あり)を渡した場合、`benefit`→`whatsNew`→`how`→`howToUse`の順に各観点の見出し・導入文が常時表示され、詳細文が`<details>`で展開表示されること、ImportanceStarsが表示されることを確認するテストを書く。`LegacyTopic`(`sections`あり)を渡した場合、従来通り`sections`配列の順に表示され、ImportanceStarsは表示されないことを確認するテストを書く(Task 7の既存テストを新旧両方のfixtureに対して実行する形に拡張する)
+  - 🟢 `TopicSection.tsx`に`isLegacyTopic(topic)`による分岐を実装する
