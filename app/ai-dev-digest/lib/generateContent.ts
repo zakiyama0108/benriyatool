@@ -5,13 +5,16 @@
 // Claude Code CLIのヘッドレス起動そのもの(execFile)はscripts/ai-dev-digest/generate-content.tsが担い、
 // 本モジュールは「CLIの応答をどう分類し、失敗した候補をどう扱うか」という決定的ロジックのみを持つ
 // (CLI呼び出しを注入できる形にしてvitestで完全にテストする)。
-import type { SummarySection } from './types'
+import { isValidImportance } from './summaryValidation'
+import type { Importance, TopicSummary } from './types'
 import type { SelectedTopic } from './candidateTypes'
 
-// エージェントが生成する記事1トピック分の内容(見出し+章立て要約)
+// エージェントが生成する記事1トピック分の内容(見出し+固定4観点の要約+重要度。2026-08修正:
+// 可変長sectionsから固定4観点summary+importanceの形式に変更。content-generation/design.md「要約を書く処理」応答JSONの形式)
 export type GeneratedContent = {
   heading: string
-  sections: SummarySection[]
+  importance: Importance
+  summary: TopicSummary
 }
 
 // Claude Code CLI(`claude -p ... --output-format json`)の応答のうち、分類に使うフィールドのみを型にする。
@@ -41,24 +44,30 @@ function isQuotaExhausted(res: ClaudeCliResponse): boolean {
   return /hit your (weekly|usage|5-hour) limit|usage limit reached|rate limit/i.test(text)
 }
 
-// エージェントが生成した内容として使えるか(見出しと1件以上の非空sectionが揃っているか)を判定する。
-// 分量の上下限・セクション数の妥当性はビルド時のparseArticle(article-detail)が検証するため、ここでは
-// 「取得不能で空を返してきた」ケース(design手順8)を一時的失敗として弾くための非空チェックにとどめる
+// エージェントが生成した内容として使えるか(見出し・固定4観点summary・importanceが揃っているか)を判定する。
+// 分量の上下限の妥当性はビルド時のparseArticle(article-detail)が検証するため、ここでは
+// 「取得不能でsummary: nullを返してきた」ケース(design手順8)・観点の欠落/空文字・importanceの範囲外を
+// 一時的失敗として弾くための非空・形式チェックにとどめる(2026-08修正: 固定4観点+importance形式に変更)
+const SUMMARY_KEYS = ['benefit', 'whatsNew', 'how', 'howToUse'] as const
+
 function isUsableContent(value: unknown): value is GeneratedContent {
   if (typeof value !== 'object' || value === null) return false
-  const v = value as { heading?: unknown; sections?: unknown }
+  const v = value as { heading?: unknown; importance?: unknown; summary?: unknown }
   if (typeof v.heading !== 'string' || v.heading.trim() === '') return false
-  if (!Array.isArray(v.sections) || v.sections.length === 0) return false
-  return v.sections.every((s) => {
-    if (typeof s !== 'object' || s === null) return false
-    const sec = s as { heading?: unknown; teaser?: unknown; detail?: unknown }
+  if (!isValidImportance(v.importance)) return false
+  if (typeof v.summary !== 'object' || v.summary === null) return false
+  const summary = v.summary as Record<string, unknown>
+  return SUMMARY_KEYS.every((key) => {
+    const perspective = summary[key]
+    if (typeof perspective !== 'object' || perspective === null) return false
+    const p = perspective as { heading?: unknown; teaser?: unknown; detail?: unknown }
     return (
-      typeof sec.heading === 'string' &&
-      sec.heading.trim() !== '' &&
-      typeof sec.teaser === 'string' &&
-      sec.teaser.trim() !== '' &&
-      typeof sec.detail === 'string' &&
-      sec.detail.trim() !== ''
+      typeof p.heading === 'string' &&
+      p.heading.trim() !== '' &&
+      typeof p.teaser === 'string' &&
+      p.teaser.trim() !== '' &&
+      typeof p.detail === 'string' &&
+      p.detail.trim() !== ''
     )
   })
 }
