@@ -54,6 +54,7 @@ board-game-rules(ボドゲのトリセツ)の見た目の系統を揃える基�
   4. `mcp__stitch__list_design_systems`で作成されたデザインシステムの`assetId`を控える(以後board-game-rulesの画面生成で`designSystem`として使い回すため)。
   5. 検証で分かった利点・難点(反映の手間、Stitch側の表現力とDESIGN.mdの表現のズレなど)をDESIGN.mdまたは本design.mdに追記し、A工程(DESIGN.md一元管理を全アプリの恒久ルールにするか)の判断材料として残す。
 - **Stitchが`DESIGN.md`に期待する正確なフォーマットは実装時点で未確認のため、手順1の`upload_design_md`の実行結果を見て内容・構成を調整する前提とする**(requirements.md#stitch連携design.md一元管理の検証-7が「具体的な手順は設計・実装で確定する」と織り込み済み)。
+- **実施結果(2026-08-16)**: `list_design_systems`で確認したところ、Stitchには既に「Analog Hearth」デザインシステムが存在し、Stitch独自の`designMd`(Material Designトークン風のYAML frontmatter)を保持していた。これはリポジトリのDESIGN.md(人間可読・`bgr-*`)と表現体系が異なり、素の同居は成立しないと判断。既存の確定済みデザインシステムを壊さないため`upload_design_md`→`create_design_system_from_design_md`の実験的な追加生成は行わず、フォーマット差という核心的な知見を[DESIGN.md](../DESIGN.md)「6. Stitch連携 > 検証結果」に記録した(A工程の判断材料)。詳細はそちらを参照。
 - 複数アクター(開発者・Stitch MCPツール)間のやり取りだが、分岐のない一直線の手動ツール呼び出し手順のため、シーケンス図は付けず上記の番号付き手順を正とする(検討の上での省略)。
 
 ## エラーハンドリング
