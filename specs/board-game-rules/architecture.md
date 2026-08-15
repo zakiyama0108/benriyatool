@@ -16,57 +16,98 @@
 - 新規の登録依頼は、Supabase Database WebhooksからntfyへのHTTP POSTで運営者に通知する(中継サーバー不要)
 
 ## 4. システム構成図
+1枚に全要素を詰めると読み手が追えないため、**全体像の俯瞰図**と**利用シーン別の詳細図**(閲覧・登録依頼・運営)に分けて示す(各図はノード10・エッジ12以内を目安にする。分割の考え方は[architecture-workflow](../../.claude/skills/architecture-workflow/SKILL.md)を参照)。
+
+### 4.1 全体俯瞰
+```mermaid
+flowchart LR
+    users["訪問者・利用者<br>（ブラウザ）"]
+    admin["運営者"]
+    webapp["Webアプリ<br>（Cloudflare Workers・静的配信）"]
+    supabase[("Supabase<br>DB・Storage・Auth")]
+    ntfy["ntfy<br>（運営者への通知）"]
+    localTool["運営者のローカルツール<br>（Claude Code Skill＋LLM・Webアプリ外）"]
+
+    users -->|閲覧・依頼送信・お気に入り・コメント・通報| webapp
+    admin -->|モデレーション・依頼確認| webapp
+    webapp -->|読み書き（RLS）| supabase
+    supabase -->|新規依頼をWebhookで通知| ntfy
+    ntfy -->|通知| admin
+    admin -->|登録依頼をもとに登録| localTool
+    localTool -->|ゲーム情報をINSERT（service_role）| supabase
+```
+
+### 4.2 閲覧・利用者フロー(未ログイン閲覧＋ログイン利用者のお気に入り・コメント・通報)
 ```mermaid
 flowchart TD
-    visitor["訪問者のブラウザ(未ログイン)"]
-    userVisitor["利用者のブラウザ(ログイン済み)"]
-    cf["Cloudflare Workers(静的配信のみ)"]
+    visitor["訪問者（未ログイン）"]
+    userVisitor["利用者（ログイン済み）"]
+    cf["Cloudflare Workers<br>（静的配信）"]
     list["/board-game-rules<br>一覧・絞り込み"]
-    detail["/board-game-rules/detail?id=…<br>詳細・ルール・コメント・通報"]
-    register["/board-game-rules/register<br>写真+分類情報の登録依頼"]
+    detail["/board-game-rules/detail<br>詳細・ルール・コメント・通報"]
     favList["/board-game-rules/favorites<br>お気に入り一覧"]
-    admin["/board-game-rules/admin<br>モデレーション・依頼確認"]
-    webhook["Supabase Database Webhooks"]
-    ntfy["ntfy(運営者への通知)"]
-    localTool["運営者のローカルツール<br>(Claude Code Skill)"]
-    llm["Anthropic API<br>(Claude Codeセッション経由、追加課金なし)"]
-    auth["Supabase Auth<br>(Google OIDC)"]
-    gamesDb[("Supabase<br>board_game_rules_games")]
-    requestsDb[("Supabase<br>board_game_rules_game_requests")]
-    photosDb[("Supabase Storage<br>写真(非公開)")]
-    favDb[("Supabase<br>board_game_rules_favorites")]
-    commentDb[("Supabase<br>board_game_rules_comments")]
-    reportDb[("Supabase<br>board_game_rules_reports")]
+    auth["Supabase Auth<br>（Google OIDC）"]
+    favDb[("favorites")]
+    commentDb[("comments")]
+    reportDb[("reports")]
 
     visitor -->|ページ取得| cf
     userVisitor -->|ページ取得| cf
     cf --> list
     cf --> detail
-    cf --> register
     cf --> favList
-    cf --> admin
-    register -->|写真+分類情報の依頼を送信(anon可)| requestsDb
-    register -->|写真を保存(非公開)| photosDb
-    requestsDb -->|INSERTをトリガー| webhook
-    webhook -->|HTTP POST| ntfy
-    admin -->|依頼の確認・処理済みマーク・削除(運営者のみ、RLS)| requestsDb
-    localTool -->|写真を解析しルール生成| llm
-    localTool -->|ゲーム情報をINSERT(service_role)| gamesDb
-    localTool -->|依頼を処理済みに更新(service_role)| requestsDb
-    userVisitor -->|Googleでログイン(利用者全員)| auth
-    list -->|お気に入り登録・解除(本人の行のみ、RLS)| favDb
-    detail -->|お気に入り登録・解除(本人の行のみ、RLS)| favDb
-    favList -->|自分のお気に入りを取得・解除(本人の行のみ、RLS)| favDb
-    detail -->|コメント投稿・編集・削除(本人/運営者、RLS)| commentDb
-    detail -->|通報を送信(匿名可)| reportDb
-    admin -->|運営者判定| auth
-    admin -->|ゲームの編集・削除(運営者のみ、RLS)| gamesDb
-    admin -->|元写真の照合閲覧(運営者のみ、RLS)| photosDb
-    admin -->|通報の確認(運営者のみ、RLS)| reportDb
-    admin -->|コメントの削除(運営者のみ、RLS)| commentDb
+    userVisitor -->|Googleでログイン| auth
+    list -->|お気に入り登録・解除（本人の行のみ、RLS）| favDb
+    detail -->|お気に入り登録・解除（本人の行のみ、RLS）| favDb
+    favList -->|自分のお気に入りを取得・解除（RLS）| favDb
+    detail -->|コメント投稿・編集・削除（本人/運営者、RLS）| commentDb
+    detail -->|通報を送信（匿名可）| reportDb
 ```
 
-この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specのrequirements.md/design.md。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。画面URL・テーブル名・Storageは設計([/design](../../.claude/skills/design/SKILL.md))で確定済み(詳細画面は静的エクスポート制約によりクエリ方式 `/board-game-rules/detail?id=…`。テーブルは `board_game_rules_games`/`_game_requests`/`_favorites`/`_comments`/`_reports`、元写真は非公開Storageバケット)。`.claude/skills/board-game-rules-batch-register/`(ローカルツール)はWebアプリのコードではないため、この図では「運営者のローカルツール」として外部要素の扱いにしている。
+### 4.3 登録依頼・通知フロー(投稿→保存→運営者通知)
+```mermaid
+flowchart LR
+    poster["投稿者（未ログイン可）"]
+    cf["Cloudflare Workers<br>（静的配信）"]
+    register["/board-game-rules/register<br>登録依頼画面"]
+    requestsDb[("game_requests")]
+    photosDb[("写真Storage<br>（非公開）")]
+    webhook["Supabase Database Webhooks"]
+    ntfy["ntfy（運営者への通知）"]
+
+    poster -->|ページ取得| cf
+    cf --> register
+    register -->|写真＋分類情報の依頼を送信（anon可）| requestsDb
+    register -->|写真を保存（非公開）| photosDb
+    requestsDb -->|INSERTをトリガー| webhook
+    webhook -->|HTTP POST| ntfy
+```
+
+### 4.4 運営者の登録・モデレーションフロー
+```mermaid
+flowchart TD
+    admin["運営者<br>（/board-game-rules/admin）"]
+    localTool["運営者のローカルツール<br>（Claude Code Skill）"]
+    llm["Anthropic API<br>（Claude Codeセッション経由・追加課金なし）"]
+    auth["Supabase Auth<br>（運営者判定）"]
+    gamesDb[("games")]
+    requestsDb[("game_requests")]
+    photosDb[("写真Storage")]
+    commentDb[("comments")]
+    reportDb[("reports")]
+
+    admin -->|運営者判定| auth
+    localTool -->|写真を解析しルール生成| llm
+    localTool -->|ゲーム情報をINSERT（service_role）| gamesDb
+    localTool -->|依頼を処理済みに更新（service_role）| requestsDb
+    admin -->|依頼の確認・処理済みマーク・削除（RLS）| requestsDb
+    admin -->|ゲームの編集・削除（RLS）| gamesDb
+    admin -->|元写真の照合閲覧（RLS）| photosDb
+    admin -->|通報の確認（RLS）| reportDb
+    admin -->|コメントの削除（RLS）| commentDb
+```
+
+これらの図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specのrequirements.md/design.md。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。画面URL・テーブル名・Storageは設計([/design](../../.claude/skills/design/SKILL.md))で確定済み(詳細画面は静的エクスポート制約によりクエリ方式 `/board-game-rules/detail?id=…`。テーブルは `board_game_rules_games`/`_game_requests`/`_favorites`/`_comments`/`_reports`、元写真は非公開Storageバケット)。`.claude/skills/board-game-rules-batch-register/`(ローカルツール)はWebアプリのコードではないため、図では「運営者のローカルツール」として外部要素の扱いにしている。
 
 ## 5. アーキテクチャ概要
 Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じで、本アプリもランタイムのサーバー機能を持たない(静的配信のみ)。投稿者は`/board-game-rules/register`で写真をアップロードし、分かる範囲の分類情報(ゲーム名・対応人数・プレイ時間・ジャンルなど、すべて任意)を入力して送信すると、`board_game_rules_game_requests`に依頼として保存される([game-registration](game-registration/requirements.md))。この時点でゲームは公開されない。
@@ -93,7 +134,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 |---|---|---|---|
 | [user-auth](user-auth/requirements.md) | Google OIDCによる任意ログイン基盤・運営者判定を提供する | [docs/adr/0006](../../docs/adr/0006-admin-screen-oidc-rls.md)を踏襲 | リリース済み |
 | [favorite](favorite/requirements.md) | ログイン利用者がゲームをお気に入り登録し一覧で振り返る | user-authのログイン状態、game-registrationのゲームID | リリース済み |
-| [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う) | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 | 実装中(共通ナビ反映) |
+| [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う) | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 | リリース済み |
 | [game-list](game-list/requirements.md) | 登録ゲームの一覧表示と複数分類での絞り込み(アプリのトップ) | game-registrationが供給する登録済みゲーム、game-detailへ遷移、favoriteのお気に入り操作 | 仕様のみ(未実装) |
 | [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能 | 仕様のみ(未実装) |
 | [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 | 仕様のみ(未実装) |
@@ -122,7 +163,7 @@ flowchart LR
     detailScreen -->|ログイン・運営者判定| authLib
     adminScreen -->|運営者判定| authLib
     adminScreen -->|編集・削除・確認| dbClient
-    localTool -->|ゲーム登録(service_role)| dbClient
+    localTool -->|ゲーム登録（service_role）| dbClient
 ```
 
 この図の正となる文章は「[7. 機能マップ](#7-機能マップ)」の依存列と、各specのrequirements.mdの依存関係。
