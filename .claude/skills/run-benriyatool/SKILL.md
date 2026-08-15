@@ -83,6 +83,24 @@ EOF
 kill $(cat /tmp/benriyatool-dev.pid) 2>/dev/null; pkill -f 'next dev'
 ```
 
+## スタイルガイドのキャプチャ(styleguide.png)
+
+アプリの共通部品を並べた`app/<アプリ名>/_styleguide/page.tsx`は、`npm run dev`なしでも見た目を確認できるよう、同ディレクトリに`styleguide.png`をコミットして同居させる(運用ルールは[/implementation](../implementation/SKILL.md)の「共通部品(chrome)を変更したときのstyleguide.png撮り直し」を参照)。
+
+driverの`screenshot`は`.claude/skills/run-benriyatool/screenshots/`(gitignore済み)に保存するため、撮影後にコミット対象パスへコピーする。`<アプリ名>`は実際のアプリ名に置き換える:
+
+```bash
+node .claude/skills/run-benriyatool/driver.mjs <<'EOF'
+nav http://localhost:3000/<アプリ名>/_styleguide
+wait-for text=styleguide
+screenshot styleguide
+quit
+EOF
+cp .claude/skills/run-benriyatool/screenshots/styleguide.png app/<アプリ名>/_styleguide/styleguide.png
+```
+
+撮ったら必ずReadツールで実際に見て、真っ白・エラーでないことを確認してからコミットする。
+
 ## 起動(人間向け)
 
 `npm run dev` → http://localhost:3000 をブラウザで開く → Ctrl-Cで停止。
