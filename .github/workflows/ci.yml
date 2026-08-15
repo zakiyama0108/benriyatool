@@ -34,6 +34,11 @@ jobs:
       # テスト実行を伴わない静的チェックなのでlintジョブに同居させる
       - run: npm run check:spec-coverage
 
+      # 全Markdown中のMermaid図のエッジラベルに、描画を壊す半角括弧 ()[]{}<> が
+      # 混入していないかを検査(混入すると図全体がParse errorで表示されなくなる)。
+      # 変更ファイルに依存せず全図を対象にするため、test:changedではなくlintジョブに同居させる
+      - run: npm run check:mermaid
+
   test:
     runs-on: ubuntu-latest
     steps:
