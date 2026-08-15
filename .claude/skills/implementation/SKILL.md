@@ -90,7 +90,7 @@ describe('【パパ】出生時育児休業給付金（産後パパ育休）の�
 
 ## 共通部品(chrome)を変更したときのstyleguide.png撮り直し
 
-ヘッダー・フッター・ナビなどアプリ共通の部品(chrome)や、`app/<アプリ名>/_styleguide/page.tsx`に並べた共通部品を追加・変更したら、**同じコミットで`styleguide.png`を撮り直す**(古い画像が実装と食い違ったまま残らないように。図・キャプチャだけが古くなるのを禁じる方針は[architecture-workflow](../architecture-workflow/SKILL.md)と同じ)。撮り方は[run-benriyatool](../run-benriyatool/SKILL.md)の「スタイルガイドのキャプチャ」を参照。個別のコンテンツ画面だけの変更(共通部品に触れていない)では不要。
+ヘッダー・フッター・ナビなどアプリ共通の部品(chrome)や、`app/<アプリ名>/styleguide/page.tsx`に並べた共通部品を追加・変更したら、**同じコミットで`styleguide.png`を撮り直す**(古い画像が実装と食い違ったまま残らないように。図・キャプチャだけが古くなるのを禁じる方針は[architecture-workflow](../architecture-workflow/SKILL.md)と同じ)。撮り方は[run-benriyatool](../run-benriyatool/SKILL.md)の「スタイルガイドのキャプチャ」を参照。個別のコンテンツ画面だけの変更(共通部品に触れていない)では不要。
 
 # 完了時の次ステップ案内
 
