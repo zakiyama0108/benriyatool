@@ -36,7 +36,7 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 | [design](design/SKILL.md) | design.md(処理フロー中心)とtasks.md(TDDタスク分解)の作成。完了時に早期仕様PRへ追加コミットする。並行開発時などはdesignerエージェントに委譲可。画面を伴う機能はUIデザインの確定(Step0。ui-designerへ任意委譲可)から開始 | requirements.md作成後 | /spec-review |
 | [spec-review](spec-review/SKILL.md) | 3点セットの一括レビュー(チェックリスト・重要度・テンプレート付き)。実施はspec-reviewerエージェント | 3点セットが揃ったとき | 指摘あり: /resolve / なし: /pr(仕様承認PR) |
 | [pr](pr/SKILL.md) | 早期仕様PR(要件定義完了時に作成)・仕様承認PR・実装PRの作成。承認ゲートの運用、impl-pr-reviewer・CIの確認 | requirements.md完了時(早期仕様PR)・レビュー通過後(仕様承認PR・実装PR) | 仕様承認PR承認後: /implementation / 実装PRマージ後: /release-check |
-| [implementation](implementation/SKILL.md) | TDD実装(Red→Green→Refactor)。テスト命名・仕様コメント・spec-coverage対応付け。並行開発時などはimplementerエージェントに委譲可。v0生成コードがある場合はUI統合タスク(ui-integratorへ任意委譲可)から開始 | 仕様承認PRのマージ後 | /implementation-review |
+| [implementation](implementation/SKILL.md) | TDD実装(Red→Green→Refactor)。テスト命名・仕様コメント・spec-coverage対応付け。並行開発時などはimplementerエージェントに委譲可 | 仕様承認PRのマージ後 | /implementation-review |
 | [implementation-review](implementation-review/SKILL.md) | 実装のコードレビュー(仕様整合・テスト・品質のチェックリスト・重要度・テンプレート付き)。実施はcode-reviewerエージェント | 実装・動作確認の完了後 | 指摘あり: /resolve / なし: /pr(実装PR) |
 | [resolve](resolve/SKILL.md) | レビュー指摘の修正。重要度順に対応し、対応結果を報告する。並行開発時などはresolverエージェントに委譲可 | /spec-review・/implementation-review・PR上で指摘を受けたとき | 指摘元のレビューを再実行 → /pr |
 | [fix](fix/SKILL.md) | バグ修正・既存機能の小規模改修の入口。既存spec更新の影響洗い出しと承認要否の判断。仕様変更ありの場合はrequirements.md更新時に/prの「早期仕様PR」を作成する | 計算誤り・文言修正・スコープ外項目への対応など | 仕様変更あり: /pr(仕様承認PR) / 純粋なバグ: 修正後 /implementation-review |
@@ -183,8 +183,7 @@ Skill=手順・知識・テンプレート、Agent=別コンテキストで動�
 | [resolver](../agents/resolver.md) | レビュー指摘の修正。要件・仕様の変更を要する指摘は保留してエスカレーション報告。対象ブランチへのコミット・pushまで実施 | /resolve(並行開発時などの委譲は任意。autopilotでは常時委譲) | sonnet(仕様に拘束された作業) |
 | [law-revision-checker](../agents/law-revision-checker.md) | 法令由来の前提値と公式資料の突き合わせ(Web調査)。修正はせず報告に徹する | /law-revision-check | sonnet(法令解釈の判断あり) |
 | [ui-checker](../agents/ui-checker.md) | headless Chromeでの実機操作・スクリーンショット確認。画像は自分で見て、結果だけ文章で報告する | run-benriyatool(メインスレッドが実機確認するとき。/implementation-reviewの実機確認はcode-reviewerが自分で行う) | sonnet(画面の見た目の判断) |
-| [ui-designer](../agents/ui-designer.md) | v0向けのUI/UXデザイン候補(プロンプト・構成)の作成。書き込みツールを持たず報告に徹する | /design(Step0。画面を伴う機能のみ、任意委譲) | sonnet(拘束された作業) |
-| [ui-integrator](../agents/ui-integrator.md) | v0生成コードの既存プロジェクトへの統合(ディレクトリ配置・命名・shadcn/ui最適化・Tailwind整理)。ロジック配線・テストは後続タスクに委ねる | /implementation(UI統合タスク。任意委譲) | sonnet(拘束された作業) |
+| [ui-designer](../agents/ui-designer.md) | Stitch向けのUI/UXデザイン候補(デザイントークン・生成プロンプト)の作成。書き込みツールを持たず報告に徹する | /design(Step0。画面を伴う機能のみ、任意委譲) | sonnet(拘束された作業) |
 
 ## 遷移図1: 新機能開発の流れ
 
@@ -226,7 +225,7 @@ flowchart TD
 
 - オレンジのノードは開発者がSkillと対話しながら進める工程(質問・確認が発生しうる)。青いノードは常時Agentへ委譲され、開発者には報告のみが返る工程(specreview→spec-reviewer、implreview→code-reviewer、release→release-checker。primplは作成前にimpl-pr-reviewerが常時チェックする)。白いノード(prspec)は対話も委譲も伴わない機械的なgit操作
 - design・implementationは並行開発時などにdesigner/implementerへ任意委譲できる(委譲した場合そのノードは青相当になる。委譲要否の判断基準は[docs/adr/0002](../../docs/adr/0002-skill-agent-separation.md)「フェーズ別の判定」参照)
-- 画面を伴う新機能(新しい画面・大きく見た目が変わる画面がある機能)では、design着手前にUIデザインの確定(ヒアリング→候補提示→承認。任意でui-designerへ候補生成を委譲)を**行う**(上図の`/design Step0`。既存画面への軽微な変更のみ省略可。`/consult`での会話ベースの合意は代替にならない)。v0生成コードがある機能ではimplementationの最初のタスクとしてUI統合(任意でui-integratorへ委譲)を行う(詳細は[design](design/SKILL.md)・[implementation](implementation/SKILL.md)参照。autopilotフローは対象外)
+- 画面を伴う新機能(新しい画面・大きく見た目が変わる画面がある機能)では、design着手前にUIデザインの確定(ヒアリング→候補提示→承認。任意でui-designerへ候補生成を委譲)を**行う**(上図の`/design Step0`。既存画面への軽微な変更のみ省略可。`/consult`での会話ベースの合意は代替にならない)。UIデザインの確定はGoogle Stitch(MCPツール)で行い、確定したデザインシステム・スクリーンへの参照をdesign.mdに書いた上で通常のTDD実装に進む(詳細は[design](design/SKILL.md)参照。autopilotフローは対象外)
 - 太線(=)はユーザーの承認・マージ待ち。仕様承認PRがマージされるまでコード(テスト含む)は書かない(仕様承認ゲート)
 - mainへのマージは常にユーザーがGitHub UIで行う(例外: [autopilot](autopilot/SKILL.md)モードでは、同Skillの条件を満たした場合に限り自動マージする)
 

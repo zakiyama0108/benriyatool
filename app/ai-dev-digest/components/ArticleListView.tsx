@@ -1,4 +1,5 @@
 import type { Article } from '../lib/types'
+import { isLegacyTopic } from '../lib/types'
 import ArticleCard from './ArticleCard'
 import Pagination from './Pagination'
 
@@ -28,7 +29,10 @@ export default function ArticleListView({ articles, currentPage, totalPages }: P
           <ArticleCard
             key={article.date}
             date={article.date}
-            topicHeadings={article.topics.slice(0, MAX_CARD_HEADINGS).map((t) => t.heading)}
+            topics={article.topics.slice(0, MAX_CARD_HEADINGS).map((t) => ({
+              heading: t.heading,
+              benefitTeaser: isLegacyTopic(t) ? undefined : t.summary.benefit.teaser,
+            }))}
             totalTopicCount={article.topics.length}
           />
         ))}

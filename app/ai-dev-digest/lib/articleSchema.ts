@@ -1,5 +1,5 @@
-import type { Article, SourceType, SummarySection, Topic } from './types'
-import { isValidTeaserLength, isValidDetailLength } from './summaryValidation'
+import type { Article, CurrentTopic, LegacyTopic, SourceType, SummarySection, Topic, TopicSummary } from './types'
+import { isValidTeaserLength, isValidDetailLength, isValidSummaryDetailLength, isValidImportance } from './summaryValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
 // エージェントが生成する入力の事故を早期に検知するため、ビルド時にここで例外を投げて
@@ -68,6 +68,39 @@ function parseSections(raw: unknown, index: number): SummarySection[] {
   return sections
 }
 
+// topics[index].summary(固定4観点)1つ分を検証・パースする(仕様: article-detail/design.md「バリデーション」)
+function parsePerspective(raw: unknown, index: number, key: string) {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error(`topics[${index}].summary.${key}がオブジェクトではありません`)
+  }
+  const record = raw as Record<string, unknown>
+  if (!isNonEmptyString(record.heading)) throw new Error(`topics[${index}].summary.${key}.headingが空文字です`)
+  if (!isNonEmptyString(record.teaser)) throw new Error(`topics[${index}].summary.${key}.teaserが空文字です`)
+  if (!isNonEmptyString(record.detail)) throw new Error(`topics[${index}].summary.${key}.detailが空文字です`)
+  return { heading: record.heading, teaser: record.teaser, detail: record.detail }
+}
+
+// topics[index].summary(固定4観点)を検証・パースする。4キーの存在・各観点のteaser範囲・
+// 4観点のdetail合計範囲はisValidSummaryDetailLengthが判定する(仕様: article-detail/design.md「バリデーション」)
+function parseSummary(raw: unknown, index: number): TopicSummary {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error(`topics[${index}].summaryがオブジェクトではありません`)
+  }
+  const record = raw as Record<string, unknown>
+  const summary: TopicSummary = {
+    benefit: parsePerspective(record.benefit, index, 'benefit'),
+    whatsNew: parsePerspective(record.whatsNew, index, 'whatsNew'),
+    how: parsePerspective(record.how, index, 'how'),
+    howToUse: parsePerspective(record.howToUse, index, 'howToUse'),
+  }
+  if (!isValidSummaryDetailLength(summary)) {
+    throw new Error(
+      `topics[${index}].summaryが不正です(各観点のteaserが40〜140字・4観点のdetail合計が800〜1700字である必要があります)`
+    )
+  }
+  return summary
+}
+
 function parseTopic(raw: unknown, index: number): Topic {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error(`topics[${index}]がオブジェクトではありません`)
@@ -76,7 +109,17 @@ function parseTopic(raw: unknown, index: number): Topic {
 
   if (!isNonEmptyString(topic.id)) throw new Error(`topics[${index}].idが空文字です`)
   if (!isNonEmptyString(topic.heading)) throw new Error(`topics[${index}].headingが空文字です`)
-  const sections = parseSections(topic.sections, index)
+
+  // sections(LegacyTopic)またはsummary+importance(CurrentTopic)のどちらか一方のみを持つこと
+  // (2026-08追加。isLegacyTopicの判定と対になる制約。article-detail/design.md「バリデーション」)
+  const hasSections = topic.sections !== undefined
+  const hasSummary = topic.summary !== undefined
+  if (hasSections === hasSummary) {
+    throw new Error(
+      `topics[${index}]はsections(旧形式)またはsummary+importance(新形式)のどちらか一方のみを持つ必要があります`
+    )
+  }
+
   if (typeof topic.sourceType !== 'string' || !SOURCE_TYPES.includes(topic.sourceType as SourceType)) {
     throw new Error(`topics[${index}].sourceTypeが未定義の種別です: ${String(topic.sourceType)}`)
   }
@@ -94,19 +137,30 @@ function parseTopic(raw: unknown, index: number): Topic {
     throw new Error(`topics[${index}].belowCriteriaがtrueですがbelowCriteriaReasonが指定されていません`)
   }
 
-  const result: Topic = {
+  const base = {
     id: topic.id,
     heading: topic.heading,
-    sections,
     sourceType: topic.sourceType as SourceType,
     sourceName: topic.sourceName,
     sourceUrl: topic.sourceUrl,
     belowCriteria: topic.belowCriteria,
   }
-  if (isNonEmptyString(topic.sourcePublishedAt)) result.sourcePublishedAt = topic.sourcePublishedAt
-  if (isNonEmptyString(topic.youtubeVideoId)) result.youtubeVideoId = topic.youtubeVideoId
-  if (isNonEmptyString(topic.belowCriteriaReason)) result.belowCriteriaReason = topic.belowCriteriaReason
+  const optional: Partial<Pick<Topic, 'sourcePublishedAt' | 'youtubeVideoId' | 'belowCriteriaReason'>> = {}
+  if (isNonEmptyString(topic.sourcePublishedAt)) optional.sourcePublishedAt = topic.sourcePublishedAt
+  if (isNonEmptyString(topic.youtubeVideoId)) optional.youtubeVideoId = topic.youtubeVideoId
+  if (isNonEmptyString(topic.belowCriteriaReason)) optional.belowCriteriaReason = topic.belowCriteriaReason
 
+  if (hasSections) {
+    const sections = parseSections(topic.sections, index)
+    const result: LegacyTopic = { ...base, sections, ...optional }
+    return result
+  }
+
+  const summary = parseSummary(topic.summary, index)
+  if (!isValidImportance(topic.importance)) {
+    throw new Error(`topics[${index}].importanceが不正です(1〜5の整数である必要があります): ${JSON.stringify(topic.importance)}`)
+  }
+  const result: CurrentTopic = { ...base, summary, importance: topic.importance, ...optional }
   return result
 }
 

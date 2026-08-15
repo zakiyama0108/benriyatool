@@ -5,7 +5,13 @@ import ArticleCard from '../../../app/ai-dev-digest/components/ArticleCard'
 // 仕様: specs/ai-dev-digest/article-list/requirements.md#一覧表示-2、specs/ai-dev-digest/article-list/requirements.md#ビジネスルール・制約-1
 describe('カードに表示するトピック見出しの選択 - 詳細ページと同じ見出しを最大3件まで表示し、超過分は件数のみ示す', () => {
   it('トピックが3件以下のとき、すべての見出しが表示され「他N件」は表示されないこと', () => {
-    render(<ArticleCard date="2026-08-01" topicHeadings={['見出しA', '見出しB']} totalTopicCount={2} />)
+    render(
+      <ArticleCard
+        date="2026-08-01"
+        topics={[{ heading: '見出しA' }, { heading: '見出しB' }]}
+        totalTopicCount={2}
+      />
+    )
     expect(screen.getByText('・見出しA')).toBeTruthy()
     expect(screen.getByText('・見出しB')).toBeTruthy()
     expect(screen.queryByText(/他\d+件/)).toBeNull()
@@ -15,7 +21,7 @@ describe('カードに表示するトピック見出しの選択 - 詳細ペー�
     render(
       <ArticleCard
         date="2026-08-01"
-        topicHeadings={['見出しA', '見出しB', '見出しC']}
+        topics={[{ heading: '見出しA' }, { heading: '見出しB' }, { heading: '見出しC' }]}
         totalTopicCount={5}
       />
     )
@@ -26,8 +32,27 @@ describe('カードに表示するトピック見出しの選択 - 詳細ペー�
   })
 
   it('詳細ページへのリンクが表示されること', () => {
-    render(<ArticleCard date="2026-08-01" topicHeadings={['見出しA']} totalTopicCount={1} />)
+    render(<ArticleCard date="2026-08-01" topics={[{ heading: '見出しA' }]} totalTopicCount={1} />)
     const link = screen.getByRole('link')
     expect(link.getAttribute('href')).toBe('/ai-dev-digest/2026-08-01')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-list/requirements.md#一覧表示-4、specs/ai-dev-digest/article-list/requirements.md#ビジネスルール・制約-1、specs/ai-dev-digest/article-list/design.md#カードに表示するトピック見出し・メリット導入文を選ぶ処理
+describe('カードへのメリット観点導入文の表示(2026-08) - CurrentTopic(summaryあり)のみ見出しの下にbenefitTeaserを表示する', () => {
+  it('benefitTeaserがあるトピックは、見出しの下にその内容が表示されること', () => {
+    render(
+      <ArticleCard
+        date="2026-08-01"
+        topics={[{ heading: '見出しA', benefitTeaser: 'あ'.repeat(60) }]}
+        totalTopicCount={1}
+      />
+    )
+    expect(screen.getByText('あ'.repeat(60))).toBeTruthy()
+  })
+
+  it('benefitTeaserが渡されない(LegacyTopic相当)トピックは、見出しのみ表示され描画が壊れないこと', () => {
+    render(<ArticleCard date="2026-08-01" topics={[{ heading: '見出しA' }]} totalTopicCount={1} />)
+    expect(screen.getByText('・見出しA')).toBeTruthy()
   })
 })

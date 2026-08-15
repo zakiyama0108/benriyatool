@@ -21,3 +21,7 @@
 - Task 5: ページ組み立て(仕様: design.md「関連するファイル」)
   - `app/ai-dev-digest/page.tsx`(1ページ目)と`app/ai-dev-digest/page/[page]/page.tsx`(2ページ目以降、`generateStaticParams`で総ページ数分列挙)を実装する
   - page.tsx自体はNext.jsのルーティング用ファイルのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定に従う)。新規テストは追加せず、Task 1〜4のユニットテストで担保する
+
+- Task 6(2026-08、[/consult](../../../.claude/skills/consult/SKILL.md)での壁打ちに基づく変更): カードへのメリット観点導入文の表示(仕様: requirements.md#一覧表示-4、requirements.md#ビジネスルール・制約-1、design.md「カードに表示するトピック見出し・メリット導入文を選ぶ処理」)
+  - 🔴 `CurrentTopic`(`summary`あり)を渡した場合、見出しの下に`summary.benefit.teaser`が表示されることを確認するテストを書く。`LegacyTopic`(`sections`あり)を渡した場合、`benefitTeaser`が渡されず見出しのみ表示される(表示が壊れない)ことを確認するテストを書く(Task 2の既存テストを拡張する)
+  - 🟢 `ArticleCard`のpropsを`topicHeadings: string[]`から`topics: { heading: string; benefitTeaser?: string }[]`に変更し、`benefitTeaser`がある場合のみ見出しの下に表示する。`ArticleListView.tsx`で`isLegacyTopic(topic)`により`benefitTeaser`を組み立てて渡す(article-detail/lib/typesの`isLegacyTopic`を利用)

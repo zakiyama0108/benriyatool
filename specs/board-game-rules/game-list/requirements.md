@@ -1,6 +1,7 @@
 # 要件定義: ゲーム一覧・絞り込み
 
 > ステータス: 仕様確認中(未実装)
+> 実装着手時の対応: `/board-game-rules`のtitle/descriptionは、本specがまだ実装されていないため暫定的に[hub-site/requirements.md#各ページのメタ情報](../../hub-site/requirements.md)に直接定義している。本specの実装に着手する際は、機能要件に「メタ情報」項目としてtitle/description定義を追加してこちらへ移設し、hub-site側の記載は参照リンクに置き換える(`/ikukyu`と同じ構成にする)
 
 ## 概要
 - 機能名: ゲーム一覧・絞り込み

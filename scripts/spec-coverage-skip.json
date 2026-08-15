@@ -11,6 +11,11 @@
   },
   {
     "specFile": "hub-site/requirements.md",
+    "item": "機能要件 [4]",
+    "reason": "Next.jsのファイルベースアイコン規約(app/icon.*)による静的なファビコン設定であり、ユニットテストではなくビルド・目視確認(16x16表示での判別確認)で担保するため"
+  },
+  {
+    "specFile": "hub-site/requirements.md",
     "item": "ビジネスルール",
     "reason": "サイト名・リダイレクト方針など運用上の意思決定であり、自動テストで検証する性質のものではないため"
   },
@@ -738,6 +743,11 @@
     "specFile": "life-money-sim/monthly-balance/requirements.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "life-money-sim/monthly-balance/requirements.md",
+    "item": "メタ情報 [1]",
+    "reason": "Next.jsのmetadata exportによる静的なtitle/description定義であり、ユニットテストではなくビルド・目視確認で担保するため"
   },
   {
     "specFile": "life-money-sim/monthly-balance/requirements.md",
@@ -1961,6 +1971,11 @@
   },
   {
     "specFile": "ai-dev-digest/article-list/requirements.md",
+    "item": "メタ情報 [1]",
+    "reason": "Next.jsのmetadata exportによる静的なtitle/description定義であり、ユニットテストではなくビルド・目視確認で担保するため"
+  },
+  {
+    "specFile": "ai-dev-digest/article-list/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   },
@@ -2063,6 +2078,41 @@
     "specFile": "ai-dev-digest/content-generation/requirements.md",
     "item": "エージェントの逸脱防止 [8]",
     "reason": "エージェントに適用するガードレール文言の記述で、コードとして実装・テストしないため(daily-publishの実行指示に含める運用上の対応)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "エージェントの逸脱防止 [10]",
+    "reason": "記事内に明記されている情報を根拠とし推測で断定しないという執筆内容の質に関する要件で、コードで自動検証できないため(要約[12]と同一の制約。design.mdのエラーハンドリング参照)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "要約 [9]",
+    "reason": "各観点の見出しをテーマ名でなく結論・メリットを含む一文にするという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。分量の上下限のみコードで強制する)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "要約 [10]",
+    "reason": "WHAT→WHY→HOWの順で説明するという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "要約 [11]",
+    "reason": "記事に含める情報の優先順位というエージェントの執筆判断に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "要約 [12]",
+    "reason": "固定4観点それぞれの内容(何を書くか)を定義する執筆内容の要件で、コードで自動検証できないため(4キーの存在・分量はisValidSummaryDetailLengthでテスト済み。design.mdのエラーハンドリング参照)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "重要度(2026-08追加) [14]",
+    "reason": "★1〜★5それぞれの判断基準を定義する執筆内容の要件で、コードで自動検証できないため(1〜5の整数であることはisValidImportanceでテスト済み)"
+  },
+  {
+    "specFile": "ai-dev-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [9]",
+    "reason": "固定4観点への変更経緯・著作権リスク評価の結論を説明する記述で、テスト対象の振る舞いを持たないため(具体的な検証はrequirements.md#要約-2〜5・summaryValidation.test.tsで担保する)"
   },
   {
     "specFile": "ai-dev-digest/content-selection/design.md",
