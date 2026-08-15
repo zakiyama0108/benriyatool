@@ -6,6 +6,7 @@ import { useSession } from '../lib/useSession'
 import { signInWithGoogle } from '../../lib/adminAuth'
 import { fetchMyFavoriteGames, type FavoriteGame } from '../lib/favorites'
 import FavoriteButton from '../components/FavoriteButton'
+import BoardGameNav from '../components/BoardGameNav'
 
 // 画面の状態。セッション確認中/未ログイン/取得中/表示中の4状態
 // (design.md「状態管理」。ai-dev-digest/bookmarkのBookmarkListViewと同じ構造だが、
@@ -13,18 +14,9 @@ import FavoriteButton from '../components/FavoriteButton'
 // 「未取得」を表し、専用のphase状態を別途持たずに導出する(取得後はnullに戻らない配列)
 type Phase = 'checking' | 'login' | 'loading' | 'ready'
 
-// サービス共通の抽象ロゴ(register/page.tsxのMeepleMarkと同じ意匠)。共通コンポーネント化・
-// register画面側への反映はdesign.md「画面設計」の通り本specのスコープ外のため、この画面用に複製する
-function MeepleMark() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-bgr-primary">
-      <path d="M12 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm-3.6 7.2h7.2c1 0 1.9.7 2.1 1.7l1.5 6.4a1.1 1.1 0 0 1-1.1 1.4h-2.3l-.6 2.9a1 1 0 0 1-1 .8H8.8a1 1 0 0 1-1-.8l-.6-2.9H4.9a1.1 1.1 0 0 1-1.1-1.4l1.5-6.4c.2-1 1.1-1.7 2.1-1.7Z" />
-    </svg>
-  )
-}
-
-// ハート型アイコン(共通ナビの「お気に入り」項目、および空表示アイコンに使う。
-// components/FavoriteButton.tsxのHeartIconと同じ意匠だが、サイズ違いのため個別に定義する)
+// ハート型アイコン(未ログイン促し・0件の空表示アイコンに使う。共通ナビ側のアイコンは
+// components/BoardGameNav.tsxが持つ。components/FavoriteButton.tsxのHeartIconと同じ意匠だが、
+// サイズ・塗り分け(filled)が異なるため個別に定義する)
 function HeartIcon({ filled, className }: { filled: boolean; className: string }) {
   return (
     <svg
@@ -37,36 +29,6 @@ function HeartIcon({ filled, className }: { filled: boolean; className: string }
     >
       <path d="M12 20.3 4.6 13.1C2.5 11 2.5 7.7 4.6 5.6c2-2 5.2-2 7.2.1l.2.2.2-.2c2-2.1 5.2-2.1 7.2-.1 2.1 2.1 2.1 5.4 0 7.5L12 20.3Z" />
     </svg>
-  )
-}
-
-// 左サイドバー(design.md「画面設計」の共通ナビ)。Stitch参照デザインではHome/Search/Add Game/
-// お気に入り/Profileの5項目が並ぶが、お気に入り以外の遷移先画面は本アプリにまだ存在しない
-// (game-list/game-detail等はrequirements.mdの通り仕様のみで未実装)。存在しないURLへのリンクを
-// 置くと必ず404になるため、実装済みの「お気に入り」のみを残す(実装判断。詳細は実装報告を参照)
-function Sidebar() {
-  return (
-    <aside className="hidden shrink-0 flex-col border-r border-bgr-line bg-bgr-card px-4 py-8 md:sticky md:top-0 md:flex md:h-screen md:w-64">
-      <div className="mb-8 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-bgr-line bg-bgr-bg">
-          <MeepleMark />
-        </div>
-        <div>
-          <p className="font-heading text-sm font-bold text-bgr-heading">ボドゲのトリセツ</p>
-          <p className="text-xs text-bgr-subtext">アナログゲームガイド</p>
-        </div>
-      </div>
-      <nav className="flex flex-col gap-2">
-        <Link
-          href="/board-game-rules/favorites"
-          aria-current="page"
-          className="flex items-center gap-3 rounded-lg border-l-4 border-bgr-accent bg-bgr-bg px-3 py-2 font-bold text-bgr-primary"
-        >
-          <HeartIcon filled className="h-4 w-4" />
-          <span className="text-sm">お気に入り</span>
-        </Link>
-      </nav>
-    </aside>
   )
 }
 
@@ -129,7 +91,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="font-body flex min-h-screen bg-bgr-bg">
-      <Sidebar />
+      <BoardGameNav active="favorites" />
       <div className="w-full flex-1">
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-8">
           <nav className="flex items-center gap-1 text-xs text-bgr-subtext">

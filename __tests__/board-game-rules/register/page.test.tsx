@@ -204,6 +204,19 @@ describe('【登録依頼画面】ジャンルの説明文 - 選択したチッ�
   })
 })
 
+// 仕様: specs/board-game-rules/game-registration/design.md「画面設計(登録依頼フォームのUI)」左サイドバー(共通ナビ)
+describe('【登録依頼画面】共通ナビ(左サイドバー) - お気に入り一覧画面と同じナビを表示し、登録依頼を現在地にする', () => {
+  it('左サイドバーの共通ナビが表示され、登録依頼が現在地・お気に入りへのリンクを持つこと', () => {
+    render(<RegisterPage />)
+    const nav = screen.getByRole('navigation', { name: '共通ナビ' })
+    const register = within(nav).getByRole('link', { name: /登録依頼/ })
+    const favorites = within(nav).getByRole('link', { name: /お気に入り/ })
+
+    expect(register.getAttribute('aria-current')).toBe('page')
+    expect(favorites.getAttribute('href')).toBe('/board-game-rules/favorites')
+  })
+})
+
 // 仕様: specs/board-game-rules/game-registration/requirements.md#写真のアップロード-1、specs/board-game-rules/game-registration/requirements.md#分類情報の任意入力-3
 describe('【登録依頼画面】レイアウト構成 - 写真セクションを最上部の必須項目として配置し、任意項目は「詳細情報」にまとめる', () => {
   it('写真セクションが「基本情報」より前(画面最上部)にあり、必須であることが分かる表示があること', () => {
