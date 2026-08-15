@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:changed": "vitest run --changed origin/main --coverage",
-    "check:spec-coverage": "node scripts/check-spec-coverage.mjs"
+    "check:spec-coverage": "node scripts/check-spec-coverage.mjs",
+    "check:mermaid": "node scripts/check-mermaid.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.1",
