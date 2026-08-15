@@ -139,7 +139,7 @@ T0(マイグレーション適用)の実機確認([bookmark/design.md](../../ai-
 ### お気に入り一覧画面(新規: `/board-game-rules/favorites`)
 Step0で確定したビジュアルデザインに沿って定める(実装済みの素朴版UIからの作り替え。仕様承認PR #194時点ではStep0が抜けていた分の後追い)。
 
-**確定デザインの出所**: Google Stitchプロジェクト「ボドゲのトリセツ 登録依頼フォーム」(project ID `10756296516233709248`、デザインシステム「Analog Hearth」)の画面「お気に入り一覧 (共通ナビ適用)」。生成HTML(Tailwind)を実装の参照素材とする。register画面(game-registration)のデザイン確定後、左サイドバー形式の共通ナビゲーションをboard-game-rulesアプリ全体の視覚言語として採用する方針になり、本画面にも適用した。左サイドバーは`app/board-game-rules/components/BoardGameNav.tsx`として共通コンポーネント化し、register画面(登録依頼)と共有する(register画面側への反映は[game-registration/design.md](../game-registration/design.md)「ナビゲーション」で実施済み)。
+**確定デザインの出所**: Google Stitchプロジェクト「ボドゲのトリセツ 登録依頼フォーム」(project ID `10756296516233709248`、デザインシステム「Analog Hearth」)の画面「お気に入り一覧 (共通ナビ適用)」。生成HTML(Tailwind)を実装の参照素材とする。register画面(game-registration)のデザイン確定後、左サイドバー形式の共通ナビゲーションをboard-game-rulesアプリ全体の視覚言語として採用する方針になり、本画面にも適用した。左サイドバーは`app/board-game-rules/components/BoardGameNav.tsx`として共通コンポーネント化し、register画面(登録依頼)と共有する(register画面側への反映は[game-registration/design.md](../game-registration/design.md)「ナビゲーション」で実施済み)。配色・フォント・角丸などのトークンの定義は、アプリ共通の一元管理先 [DESIGN.md](../DESIGN.md) を参照する。
 
 - **左サイドバー(共通ナビ)**: 上部にアプリロゴ+アプリ名のブランディングブロック、その下にナビゲーションリンク一覧(`app/board-game-rules/components/BoardGameNav.tsx`。registerと共有)。Stitch参照デザインではHome/Search/Add Game/お気に入り/Profileの5項目だが、遷移先画面が実装済みなのは「登録依頼(Add Game)」と「お気に入り」の2つのため、この2項目のみをリンクとして並べ、本画面では「お気に入り」を選択中(`aria-current="page"`)でハイライトする。Home/Search/Profileの各項目は、対応する画面の実装時に追加する
 - **本文エリア**: パンくず・見出し「お気に入り」
