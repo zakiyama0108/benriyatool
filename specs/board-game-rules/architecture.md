@@ -45,25 +45,25 @@ flowchart TD
     cf --> register
     cf --> favList
     cf --> admin
-    register -->|写真+分類情報の依頼を送信(anon可)| requestsDb
-    register -->|写真を保存(非公開)| photosDb
+    register -->|写真+分類情報の依頼を送信（anon可）| requestsDb
+    register -->|写真を保存（非公開）| photosDb
     requestsDb -->|INSERTをトリガー| webhook
     webhook -->|HTTP POST| ntfy
-    admin -->|依頼の確認・処理済みマーク・削除(運営者のみ、RLS)| requestsDb
+    admin -->|依頼の確認・処理済みマーク・削除（運営者のみ、RLS）| requestsDb
     localTool -->|写真を解析しルール生成| llm
-    localTool -->|ゲーム情報をINSERT(service_role)| gamesDb
-    localTool -->|依頼を処理済みに更新(service_role)| requestsDb
-    userVisitor -->|Googleでログイン(利用者全員)| auth
-    list -->|お気に入り登録・解除(本人の行のみ、RLS)| favDb
-    detail -->|お気に入り登録・解除(本人の行のみ、RLS)| favDb
-    favList -->|自分のお気に入りを取得・解除(本人の行のみ、RLS)| favDb
-    detail -->|コメント投稿・編集・削除(本人/運営者、RLS)| commentDb
-    detail -->|通報を送信(匿名可)| reportDb
+    localTool -->|ゲーム情報をINSERT（service_role）| gamesDb
+    localTool -->|依頼を処理済みに更新（service_role）| requestsDb
+    userVisitor -->|Googleでログイン（利用者全員）| auth
+    list -->|お気に入り登録・解除（本人の行のみ、RLS）| favDb
+    detail -->|お気に入り登録・解除（本人の行のみ、RLS）| favDb
+    favList -->|自分のお気に入りを取得・解除（本人の行のみ、RLS）| favDb
+    detail -->|コメント投稿・編集・削除（本人/運営者、RLS）| commentDb
+    detail -->|通報を送信（匿名可）| reportDb
     admin -->|運営者判定| auth
-    admin -->|ゲームの編集・削除(運営者のみ、RLS)| gamesDb
-    admin -->|元写真の照合閲覧(運営者のみ、RLS)| photosDb
-    admin -->|通報の確認(運営者のみ、RLS)| reportDb
-    admin -->|コメントの削除(運営者のみ、RLS)| commentDb
+    admin -->|ゲームの編集・削除（運営者のみ、RLS）| gamesDb
+    admin -->|元写真の照合閲覧（運営者のみ、RLS）| photosDb
+    admin -->|通報の確認（運営者のみ、RLS）| reportDb
+    admin -->|コメントの削除（運営者のみ、RLS）| commentDb
 ```
 
 この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specのrequirements.md/design.md。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。画面URL・テーブル名・Storageは設計([/design](../../.claude/skills/design/SKILL.md))で確定済み(詳細画面は静的エクスポート制約によりクエリ方式 `/board-game-rules/detail?id=…`。テーブルは `board_game_rules_games`/`_game_requests`/`_favorites`/`_comments`/`_reports`、元写真は非公開Storageバケット)。`.claude/skills/board-game-rules-batch-register/`(ローカルツール)はWebアプリのコードではないため、この図では「運営者のローカルツール」として外部要素の扱いにしている。
@@ -121,7 +121,7 @@ flowchart LR
     detailScreen -->|ログイン・運営者判定| authLib
     adminScreen -->|運営者判定| authLib
     adminScreen -->|編集・削除・確認| dbClient
-    localTool -->|ゲーム登録(service_role)| dbClient
+    localTool -->|ゲーム登録（service_role）| dbClient
 ```
 
 この図の正となる文章は「[7. 機能マップ](#7-機能マップ)」の依存列と、各specのrequirements.mdの依存関係。
