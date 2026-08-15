@@ -30,9 +30,9 @@ flowchart TD
     cf --> simulator
     cf --> adminPage
     simulator -->|計算結果を保存 - anonキーでINSERTのみ| db
-    loggedInUser -->|Googleでログイン(利用者本人・任意)| auth
+    loggedInUser -->|Googleでログイン（利用者本人・任意）| auth
     simulator -->|本人のシナリオのみ保存・取得・削除 - RLSで本人限定| scenarioDb
-    adminPage -->|Googleでログイン(運営者)| auth
+    adminPage -->|Googleでログイン（運営者）| auth
     adminPage -->|許可された運営者のみ閲覧 - RLSでSELECT| db
 ```
 
