@@ -3161,8 +3161,8 @@
   },
   {
     "specFile": "board-game-rules/game-registration/design.md",
-    "item": "ヘッダー",
-    "reason": "ロゴ・サービス名・ログイン状態表示の見た目の記述でTDD対象外。localhost実機レビュー(tasks.md T6)で担保するため"
+    "item": "ナビゲーション(左サイドバー共通ナビ)",
+    "reason": "左サイドバー共通ナビ(BoardGameNav)・パンくず・ログイン状態表示の記述。ナビの振る舞い(実装済み画面リンク・現在地ハイライト)はBoardGameNav.test.tsx/register/page.test.tsxで担保済み、見た目・パンくずはTDD対象外でlocalhost実機レビューで担保するため"
   },
   {
     "specFile": "board-game-rules/game-registration/design.md",

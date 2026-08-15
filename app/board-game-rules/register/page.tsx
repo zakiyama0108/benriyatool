@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import PhotoUploader from '../components/PhotoUploader'
 import LoginStatus from '../components/LoginStatus'
+import BoardGameNav from '../components/BoardGameNav'
 import { GENRES, type Genre } from '../lib/genres'
 import { createGameRequest, type GameRequestInput } from '../lib/gameRequests'
 
@@ -56,35 +58,31 @@ const TEXT_INPUT_CLASS =
   'w-full rounded-lg border border-bgr-line bg-bgr-bg px-3 py-2 text-sm text-bgr-heading placeholder:text-bgr-subtext/60 focus:border-bgr-primary focus:outline-none'
 const LABEL_CLASS = 'block text-sm font-medium text-bgr-heading'
 
-// サービス共通の抽象ロゴ(design.md「ヘッダー」)。ボードゲームの汎用モチーフ(駒/ミープルの
-// シルエット)で、囲碁・将棋等の特定ゲームを連想させないようにする
-function MeepleMark() {
+// 共通ナビ(左サイドバー)+本文の骨組み。お気に入り一覧画面(favorites/page.tsx)と同じ
+// 左サイドバー構成に揃える(design.md「画面設計」ヘッダー→共通ナビへの作り替え)。
+// 任意ログインの状態表示(LoginStatus)は共通ナビ側ではなく本文上部に置く(共通ナビは
+// 実装済み画面リンクのみで構成し、ログイン導線は各画面本文が持つ既存方針を踏襲する)
+function RegisterShell({ children }: { children: React.ReactNode }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6 fill-bgr-primary">
-      <path d="M12 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm-3.6 7.2h7.2c1 0 1.9.7 2.1 1.7l1.5 6.4a1.1 1.1 0 0 1-1.1 1.4h-2.3l-.6 2.9a1 1 0 0 1-1 .8H8.8a1 1 0 0 1-1-.8l-.6-2.9H4.9a1.1 1.1 0 0 1-1.1-1.4l1.5-6.4c.2-1 1.1-1.7 2.1-1.7Z" />
-    </svg>
-  )
-}
-
-// ロゴ+サービス名+任意ログイン状態(design.md「ヘッダー」)。ログイン状態表示は既存のLoginStatusを踏襲する
-function Header() {
-  return (
-    <header className="border-b border-bgr-line">
-      <div className="mx-auto flex max-w-[720px] items-center justify-between px-4 py-4">
-        <div className="flex items-center gap-2">
-          <MeepleMark />
-          <span className="font-heading text-lg font-bold text-bgr-heading">ボドゲのトリセツ</span>
+    <div className="font-body flex min-h-screen bg-bgr-bg">
+      <BoardGameNav active="register" />
+      <div className="w-full flex-1">
+        <div className="mx-auto max-w-[720px] px-4 py-8 sm:px-8">
+          <div className="mb-6 flex justify-end">
+            <LoginStatus />
+          </div>
+          {children}
         </div>
-        <LoginStatus />
       </div>
-    </header>
+    </div>
   )
 }
 
 // 写真+分類情報(すべて任意)を運営者への登録依頼として送信する画面
 // (仕様: game-registration/design.md「依頼を送信する処理」)。
-// 見た目はAnalog Hearth(design.md「画面設計(登録依頼フォームのUI)」)に沿い、写真アップロードを
-// 主役に据え、ジャンルはアコーディオン+チップ選択、その他の任意項目は「詳細情報」にまとめる。
+// 見た目はAnalog Hearth(design.md「画面設計(登録依頼フォームのUI)」)に沿い、左サイドバーの
+// 共通ナビ+写真アップロードを主役に据え、ジャンルはアコーディオン+チップ選択、その他の任意項目は
+// 「詳細情報」にまとめる。
 export default function RegisterPage() {
   const [photos, setPhotos] = useState<File[]>([])
   const [form, setForm] = useState<FormState>(INITIAL_FORM)
@@ -135,22 +133,32 @@ export default function RegisterPage() {
 
   if (status === 'success') {
     return (
-      <div className="font-body min-h-screen bg-bgr-bg">
-        <Header />
-        <div className="mx-auto max-w-[720px] px-4 py-20 text-center">
+      <RegisterShell>
+        <div className="rounded-2xl border border-bgr-line bg-bgr-card px-6 py-16 text-center">
           <svg viewBox="0 0 24 24" aria-hidden="true" className="mx-auto h-12 w-12 fill-bgr-primary">
             <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.2 14.4-4.2-4.2 1.4-1.4 2.8 2.8 6-6 1.4 1.4Z" />
           </svg>
           <p className="mt-4 text-base text-bgr-heading">受け付けました。運営者確認後に追加されます。</p>
         </div>
-      </div>
+      </RegisterShell>
     )
   }
 
   return (
-    <div className="font-body min-h-screen bg-bgr-bg">
-      <Header />
-      <main className="mx-auto max-w-[720px] space-y-6 px-4 py-8">
+    <RegisterShell>
+      <nav aria-label="パンくず" className="mb-4 flex items-center gap-1 text-xs text-bgr-subtext">
+        <Link href="/" className="hover:underline">
+          べんりやつーる
+        </Link>
+        <span>›</span>
+        {/* ボドゲのトリセツのトップ(一覧・絞り込み画面)はgame-listのspecがまだ未実装のため、
+            存在しないURLへリンクしないよう非リンクのテキストにする(favorites/page.tsxと同方針) */}
+        <span>ボドゲのトリセツ</span>
+        <span>›</span>
+        <span className="font-bold text-bgr-heading">登録依頼</span>
+      </nav>
+
+      <main className="space-y-6">
         <div>
           <h1 className="font-heading text-xl font-bold text-bgr-heading">ボードゲームの登録を依頼する</h1>
           <p className="mt-1 text-sm text-bgr-subtext">
@@ -399,6 +407,6 @@ export default function RegisterPage() {
           {status === 'submitting' ? '送信中…' : '依頼を送信する'}
         </button>
       </main>
-    </div>
+    </RegisterShell>
   )
 }
