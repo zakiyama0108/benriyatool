@@ -93,7 +93,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 |---|---|---|---|
 | [user-auth](user-auth/requirements.md) | Google OIDCによる任意ログイン基盤・運営者判定を提供する | [docs/adr/0006](../../docs/adr/0006-admin-screen-oidc-rls.md)を踏襲 | リリース済み |
 | [favorite](favorite/requirements.md) | ログイン利用者がゲームをお気に入り登録し一覧で振り返る | user-authのログイン状態、game-registrationのゲームID | リリース済み |
-| [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う) | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 | 実装中(共通ナビ反映) |
+| [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う) | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 | リリース済み |
 | [game-list](game-list/requirements.md) | 登録ゲームの一覧表示と複数分類での絞り込み(アプリのトップ) | game-registrationが供給する登録済みゲーム、game-detailへ遷移、favoriteのお気に入り操作 | 仕様のみ(未実装) |
 | [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能 | 仕様のみ(未実装) |
 | [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 | 仕様のみ(未実装) |
