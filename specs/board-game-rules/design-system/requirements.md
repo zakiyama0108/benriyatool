@@ -3,7 +3,7 @@
 > ステータス: 仕様確認中(未実装)
 
 ## サマリ
-board-game-rules(ボドゲのトリセツ)のアプリ内で、今後追加する画面の見た目の系統を揃えるための「per-appデザインシステム」を立ち上げる。既に確定済みの配色・フォント「Analog Hearth」と共通ナビ(BoardGameNav)を、**アプリ直下の `specs/board-game-rules/DESIGN.md` を唯一の真実の源(トークン+chromeルールの一元管理)**として整理し、共通部品を一覧できる `app/board-game-rules/_styleguide/page.tsx`(＋同居 `styleguide.png`)を新設する。あわせて DESIGN.md を Stitch にも反映し、以後の画面生成で同じデザインシステムを使い回せる運用感を検証する(このアプリを試金石に、DESIGN.md一元管理を全アプリの恒久ルールにするか判断する材料にする)。今回のスコープは基盤整備に限り、既存 register/favorites の見た目・構造は変えない。方針の全体像は[PR #207](https://github.com/zakiyama0108/benriyatool/pull/207)と[architecture.md](../architecture.md)を土台とする。
+board-game-rules(ボドゲのトリセツ)のアプリ内で、今後追加する画面の見た目の系統を揃えるための「per-appデザインシステム」を立ち上げる。既に確定済みの配色・フォント「Analog Hearth」と共通ナビ(BoardGameNav)を、**アプリ直下の `specs/board-game-rules/DESIGN.md` を唯一の真実の源(トークン+chromeルールの一元管理)**として整理し、共通部品を一覧できる `app/board-game-rules/styleguide/page.tsx`(＋同居 `styleguide.png`)を新設する。あわせて DESIGN.md を Stitch にも反映し、以後の画面生成で同じデザインシステムを使い回せる運用感を検証する(このアプリを試金石に、DESIGN.md一元管理を全アプリの恒久ルールにするか判断する材料にする)。今回のスコープは基盤整備に限り、既存 register/favorites の見た目・構造は変えない。方針の全体像は[PR #207](https://github.com/zakiyama0108/benriyatool/pull/207)と[architecture.md](../architecture.md)を土台とする。
 
 このspecの利用者と主なユースケースは下記「[ユースケース図](#ユースケース図)」を参照。
 
@@ -46,7 +46,7 @@ flowchart LR
 - [3] コード側の実トークン定義([app/globals.css](../../../app/globals.css) の `@theme` の `bgr-*`)と DESIGN.md の記載値が一致していること(片方だけ更新されてズレない運用にする)
 
 ### 共通部品カタログ(styleguideページ)
-- [4] `app/board-game-rules/_styleguide/page.tsx` に、このアプリの共通部品(共通ナビ、ボタン、カード、フォーム部品、パンくず等の代表的な見た目)を並べて一覧確認できるページを用意する
+- [4] `app/board-game-rules/styleguide/page.tsx` に、このアプリの共通部品(共通ナビ、ボタン、カード、フォーム部品、パンくず等の代表的な見た目)を並べて一覧確認できるページを用意する
 - [5] `npm run dev` を起動しなくても見られるよう、同ディレクトリに `styleguide.png`(キャプチャ)を同居させる
 - [6] styleguideページは既存の共通部品の見た目を写す「カタログ」であり、新しいデザインや新しい共通部品をこのページのために作り起こさない(既に確定・実装済みの Analog Hearth の見た目を土台にする)
 
@@ -78,4 +78,4 @@ flowchart LR
 ## 依存関係・非機能要件
 - 確定済みのデザイントークン・ロゴ・共通ナビの意匠は [game-registration/design.md](../game-registration/design.md)・[favorite/design.md](../favorite/design.md)・[app/board-game-rules/components/BoardGameNav.tsx](../../../app/board-game-rules/components/BoardGameNav.tsx) に従う(値を書き写さず参照する)
 - 共通chrome/トークンの運用ルールは [PR #207](https://github.com/zakiyama0108/benriyatool/pull/207) が反映した [/design](../../../.claude/skills/design/SKILL.md)・[/implementation](../../../.claude/skills/implementation/SKILL.md) の該当節に従う
-- `_styleguide` は利用者向けの公開画面ではなく開発者向けの確認用ページのため、[hub-site](../../hub-site/requirements.md) のトップページカード追加や metadata 定義の対象外とする
+- `styleguide` は利用者向けの公開画面ではなく開発者向けの確認用ページのため、[hub-site](../../hub-site/requirements.md) のトップページカード追加や metadata 定義の対象外とする
