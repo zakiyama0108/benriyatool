@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 import BoardGameNav from '../../../app/board-game-rules/components/BoardGameNav'
 
-// 仕様: specs/board-game-rules/game-registration/design.md「画面設計(登録依頼フォームのUI)」左サイドバー(共通ナビ)、
+// 仕様: specs/board-game-rules/game-registration/design.md「ナビゲーション(左サイドバー共通ナビ)」、
 //       specs/board-game-rules/favorite/design.md「お気に入り一覧画面」左サイドバー(共通ナビ)
 // board-game-rulesアプリ全体で共有する左サイドバー。実装済みの遷移先(登録依頼・お気に入り)のみをリンクとして並べ、
 // activeで渡した画面をハイライト(aria-current="page")する

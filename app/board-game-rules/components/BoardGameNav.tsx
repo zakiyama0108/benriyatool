@@ -17,8 +17,8 @@ const NAV_ITEMS: { key: BoardGameNavKey; href: string; label: string }[] = [
   { key: 'favorites', href: '/board-game-rules/favorites', label: 'お気に入り' },
 ]
 
-// サービス共通の抽象ロゴ(design.md「ヘッダー」)。ボードゲームの汎用モチーフ(駒/ミープルの
-// シルエット)で、囲碁・将棋等の特定ゲームを連想させないようにする
+// サービス共通の抽象ロゴ(design.md「ナビゲーション(左サイドバー共通ナビ)」)。ボードゲームの
+// 汎用モチーフ(駒/ミープルのシルエット)で、囲碁・将棋等の特定ゲームを連想させないようにする
 function MeepleMark() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-bgr-primary">
