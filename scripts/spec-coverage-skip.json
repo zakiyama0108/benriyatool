@@ -3533,5 +3533,160 @@
     "specFile": "board-game-rules/favorite/design.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "サマリ",
+    "reason": "この章だけで概略をつかむためのメタ要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "ユースケース図",
+    "reason": "アクターとできることの俯瞰図(Mermaid)で、正となる文章側でテスト要否を判断するため、図見出し自体はテスト対象外"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "DESIGN.md（トークン+chromeルールの一元管理） [1]",
+    "reason": "成果物はドキュメント specs/board-game-rules/DESIGN.md の記載内容であり、ユニットテストではなくPR diff・目視で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "DESIGN.md（トークン+chromeルールの一元管理） [2]",
+    "reason": "各design.mdの参照付け替えというドキュメント修正で、テスト対象のコードの振る舞いを持たないため(PR diffで確認)"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "DESIGN.md（トークン+chromeルールの一元管理） [3]",
+    "reason": "DESIGN.mdとglobals.cssのトークン値一致という運用で、自動テストは表記ゆれで壊れやすく過剰(tasks.md補足)なため、レビュー時の目視で担保する"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "共通部品カタログ（styleguideページ） [6]",
+    "reason": "「新しい見た目・共通部品をこのページのために作り起こさない」という不作為の方針で、対応するテスト(存在しないことの検証)を持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "Stitch連携（DESIGN.md一元管理の検証） [7]",
+    "reason": "Stitch MCPツールによる手動反映・検証でユニットテスト対象外。実施結果はDESIGN.md「6. Stitch連携 > 検証結果」に記録して担保するため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "Stitch連携（DESIGN.md一元管理の検証） [8]",
+    "reason": "検証で分かった利点・難点をA工程の判断材料として残す運用で、テスト対象の振る舞いではないため(DESIGN.md「検証結果」に記録)"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "デザインシステムの土台（Analog Hearth） [1]",
+    "reason": "既存Analog Hearthを踏襲し新規配色を作らないという方針で、トークン値はstyleguideページのトークン見本(共通部品カタログ-4でテスト済み)と実機確認で担保するため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "デザインシステムの土台（Analog Hearth） [2]",
+    "reason": "影を使わず1px罫線で階層を表現する意匠方針で、見た目は実機確認・styleguide.pngで担保するため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "共通chromeとトークンの分離（PR #207のルール） [3]",
+    "reason": "共通chromeはコード側を真実の源にするという運用ルールで、テスト可能な個別の振る舞いを持たない(BoardGameNav自体は各画面テストで担保)ため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "共通chromeとトークンの分離（PR #207のルール） [4]",
+    "reason": "トークンをアプリ単位で1デザインシステムにまとめるという運用ルールで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "共通chromeとトークンの分離（PR #207のルール） [5]",
+    "reason": "共通部品変更時にstyleguide.pngを撮り直すというコミット運用ルールで、ユニットテスト対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "真実の源の優先順位 [6]",
+    "reason": "コードの実装値を正としDESIGN.mdを合わせるという運用方針で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "スコープ外（今回やらないこと）",
+    "reason": "対応しないと決めた項目の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/requirements.md",
+    "item": "依存関係・非機能要件",
+    "reason": "他spec・ADR・運用ルールへの参照と、公開画面でない旨の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "DESIGN.mdをトークン+chromeルールの真実の源として作る手順",
+    "reason": "DESIGN.md執筆のオーサリング手順で、成果物はドキュメントのためユニットテスト対象外(PR diff・目視で担保)"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "styleguideページを作る手順",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応する振る舞いはrequirements.md#共通部品カタログstyleguideページ-4でテスト済み(styleguide/page.test.tsx)"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "styleguide.pngをキャプチャする手順",
+    "reason": "キャプチャ作業手順でユニットテスト対象外。run-benriyatoolで実施し撮影結果を目視確認して担保するため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "DESIGN.mdをStitchに反映する手順（検証）",
+    "reason": "Stitch MCPツールを使う手動検証手順でユニットテスト対象外。結果はDESIGN.md「6. Stitch連携 > 検証結果」に記録して担保するため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "エラーハンドリング",
+    "reason": "静的な確認ページで外部通信・DB書き込みを行わず例外要因がほぼない旨の方針記述で、テスト可能な個別の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "関連するファイル（抜粋）",
+    "reason": "新規・利用ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "セキュリティ",
+    "reason": "静的カタログのリスク記述(Supabase呼び出しを増やさない・session情報を露出しない)で、テスト可能な個別の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "ログ",
+    "reason": "静的な確認ページで運用ログを出さないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "board-game-rules/design-system/design.md",
+    "item": "画面設計",
+    "reason": "styleguideのセクション構成の記述で、表示はrequirements.md#共通部品カタログstyleguideページ-4でテスト済み(styleguide/page.test.tsx)のため"
   }
 ]

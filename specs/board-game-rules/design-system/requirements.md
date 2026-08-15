@@ -1,7 +1,5 @@
 # 要件定義: board-game-rules デザインシステム
 
-> ステータス: 仕様確認中(未実装)
-
 ## サマリ
 board-game-rules(ボドゲのトリセツ)のアプリ内で、今後追加する画面の見た目の系統を揃えるための「per-appデザインシステム」を立ち上げる。既に確定済みの配色・フォント「Analog Hearth」と共通ナビ(BoardGameNav)を、**アプリ直下の `specs/board-game-rules/DESIGN.md` を唯一の真実の源(トークン+chromeルールの一元管理)**として整理し、共通部品を一覧できる `app/board-game-rules/styleguide/page.tsx`(＋同居 `styleguide.png`)を新設する。あわせて DESIGN.md を Stitch にも反映し、以後の画面生成で同じデザインシステムを使い回せる運用感を検証する(このアプリを試金石に、DESIGN.md一元管理を全アプリの恒久ルールにするか判断する材料にする)。今回のスコープは基盤整備に限り、既存 register/favorites の見た目・構造は変えない。方針の全体像は[PR #207](https://github.com/zakiyama0108/benriyatool/pull/207)と[architecture.md](../architecture.md)を土台とする。
 
