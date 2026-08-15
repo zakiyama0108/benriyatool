@@ -3378,5 +3378,160 @@
     "specFile": "board-game-rules/game-registration/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "お気に入り一覧 [8]",
+    "reason": "自分のお気に入りのみが返ることはDB側のRLS(auth.uid() = user_id)で担保する仕様であり、アプリ単体テストでは検証できないため。実機確認はT0(マイグレーション適用、design.md「データベース設計」)で実施済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "表示範囲・権限 [1]",
+    "reason": "実際のアクセス制御はDB側のRLS(auth.uid() = user_id)で担保するという方針の記述で、アプリ単体テストでは検証できないため。実機確認はT0(マイグレーション適用)で実施済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "表示範囲・権限 [2]",
+    "reason": "運営者判定(isAuthorizedAdmin)を利用しないという設計判断の記述で、呼ばないこと自体は「存在しないことの検証」になり単体テストでの検証が難しいため。コードレビュー(favorites.ts/FavoriteButton.tsx/favorites/page.tsxがisAuthorizedAdminをimportしていないこと)で担保する"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "件数の制約 [3]",
+    "reason": "お気に入り件数の上限を設けないという設計判断(何もしない)の記述で、対応するテスト(存在しないことの検証)を持たない。addFavoriteが件数チェックのロジックを持たないこと自体がこの要件を満たす"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "画面内のお気に入り状態をまとめて取得する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#お気に入りの登録・解除-3でfavorites.test.ts(fetchMyFavoriteGameIds)によりテスト済み。一覧・詳細画面での配線(未ログイン時は取得しない等)はgame-list/game-detail実装時にテストする(tasks.md補足、両spec未実装のため)"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "お気に入りを登録する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#お気に入りの登録・解除-1でfavorites.test.ts(addFavorite)・FavoriteButton.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "お気に入りを解除する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#お気に入りの登録・解除-1でfavorites.test.ts(removeFavorite)・FavoriteButton.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "お気に入り一覧を取得して表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#お気に入り一覧-4・5・7でfavorites.test.ts(fetchMyFavoriteGames)・favorites/page.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "お気に入り一覧からの解除",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#お気に入り一覧-6でfavorites/page.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "board_game_rules_favorites(新規)",
+    "reason": "テーブル定義のメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "board_game_rules_favorites(新規) > id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はT0(マイグレーション適用)で実機確認済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "board_game_rules_favorites(新規) > user_id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はT0(マイグレーション適用)で実機確認済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "board_game_rules_favorites(新規) > game_id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はT0(マイグレーション適用)で実機確認済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "board_game_rules_favorites(新規) > created_at",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はT0(マイグレーション適用)で実機確認済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "マイグレーション(実装より先に単独PRで適用)",
+    "reason": "マイグレーションSQLの定義自体で、アプリコードの振る舞いではないため。T0で適用・RLSの実機確認(本人のみ操作可・他人不可視・anon不可・一意制約)を実施済み"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはFavoriteButton.test.tsx/favorites/page.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "一覧・詳細への追加(お気に入りボタン)",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはFavoriteButton.test.tsxでテスト済みのため。一覧カード・詳細画面への実際の組み込みはgame-list/game-detail実装時に行う(tasks.md補足、両spec未実装のため)"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "お気に入り一覧画面(新規: `/board-game-rules/favorites`)",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはfavorites/page.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "状態管理",
+    "reason": "画面のローカル状態の持ち方・状態遷移図の記述で、個別の振る舞いはFavoriteButton.test.tsx/favorites/page.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "セキュリティ",
+    "reason": "RLSによる本人限定アクセスの記述。DB側の担保でアプリ単体テスト対象外(T0で実機確認済み)"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "ログ",
+    "reason": "失敗時にコンソール出力する方針の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/favorite/design.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
   }
 ]
