@@ -1,4 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+
+// games.tsはfetchPublishedGames用にsupabaseClientをモジュールスコープでimportするため、
+// このファイルが検証しないSupabase接続自体はモックして環境変数チェックを回避する
+// (admin/lib/fetchAdminGames.test.tsと同じ方針)
+vi.mock('../../../app/lib/supabaseClient', () => ({ supabase: { from: vi.fn() } }))
+
 import { mapGameRowToGame, GAME_PUBLIC_COLUMNS, type GameRow } from '../../../app/board-game-rules/lib/games'
 
 function makeRow(overrides: Partial<GameRow> = {}): GameRow {
