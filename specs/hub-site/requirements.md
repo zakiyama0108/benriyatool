@@ -23,7 +23,7 @@
   - `/ikukyu`: specs/ikukyu/simulator/requirements.md#機能要件-4 で定義する
   - `/ai-dev-digest`: specs/ai-dev-digest/article-list/requirements.md#メタ情報-1 で定義する
   - `/life-money-sim`: specs/life-money-sim/monthly-balance/requirements.md#メタ情報-1 で定義する
-  - `/board-game-rules`: title「ボードゲームのルール確認｜人数・時間・ジャンルで探せる無料データベース」、description「ボードゲームの説明書の写真からルールを自動生成して登録し、対応人数・プレイ時間・ジャンルなどで絞り込んで探せる無料のルール確認サービスです。」(暫定定義。トップページ機能[game-list](../board-game-rules/game-list/requirements.md)が未実装のためオーナーとなる機能specが存在せず、本specに直接定義している。game-list実装時にそちらへ移設し、本行は参照リンクに置き換える)
+  - `/board-game-rules`: specs/board-game-rules/game-list/requirements.md#メタ情報-10 で定義する
 - [4] ファビコンを設定する。Next.jsのファイルベースアイコン規約(`app/icon.*`)により、ルートセグメント(`app/`)に置いたアイコンはドメイン全体のデフォルトになり、各アプリのセグメント(`app/<アプリ名>/`)に置いたアイコンはそのアプリ配下のページにだけ上書き適用される。デザインはGoogle Stitch(プロジェクト`2502647761156519613`)で作成し、各アプリの既存配色トークン(life-money-simの「オーシャンミント」、board-game-rulesの「Analog Hearth」等)またはハブページのツールカードで使っている絵文字のモチーフに合わせている
   - サイト全体(`/`): オレンジ背景+道具箱モチーフ
   - `/ikukyu`: オレンジ背景+電卓モチーフ
