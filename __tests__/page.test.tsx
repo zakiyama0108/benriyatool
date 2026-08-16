@@ -4,7 +4,7 @@ import HubPage from '../app/page'
 
 // 仕様: specs/hub-site/requirements.md#機能要件-2
 describe('【トップページ】ツールカード一覧 - 本番公開済みの全アプリへのリンクを掲載する', () => {
-  it('育休給付金シミュレーター(/ikukyu)・資産推移シミュレーター(/life-money-sim)・AI駆動開発ダイジェスト(/ai-dev-digest)、すべてのカードが表示されること', () => {
+  it('育休給付金シミュレーター(/ikukyu)・資産推移シミュレーター(/life-money-sim)・AI駆動開発ダイジェスト(/ai-dev-digest)・ボドゲのトリセツ(/board-game-rules)、すべてのカードが表示されること', () => {
     render(<HubPage />)
 
     const ikukyuLink = screen.getByRole('link', { name: /育休給付金シミュレーター/ })
@@ -15,6 +15,9 @@ describe('【トップページ】ツールカード一覧 - 本番公開済み�
 
     const aiDevDigestLink = screen.getByRole('link', { name: /AI駆動開発ダイジェスト/ })
     expect(aiDevDigestLink.getAttribute('href')).toBe('/ai-dev-digest')
+
+    const boardGameRulesLink = screen.getByRole('link', { name: /ボドゲのトリセツ/ })
+    expect(boardGameRulesLink.getAttribute('href')).toBe('/board-game-rules')
   })
 })
 
