@@ -1,7 +1,7 @@
 # 設計: ゲーム一覧・絞り込み
 
 ## サマリ
-このアプリのトップ画面(`/board-game-rules`)。**Step0(UIデザイン確定)の要否宣言: 不要**(見た目は確定済みAnalog Hearth・共通chrome([DESIGN.md](../DESIGN.md))をそのまま踏襲し、新規UIデザイン検討は行わないため)。登録済みゲームの一覧表示と、複数分類での絞り込み(AND条件)・作者のテキスト検索を行う。データは[game-registration/design.md#データベース設計](../game-registration/design.md)の`board_game_rules_games`から取得する。ゲームの型定義は`app/board-game-rules/lib/games.ts`を共有する(一覧は「詳しい版」の章立てを表示しないため`rulesChapters.ts`には依存しない)。主要な設計判断は、(1)件数が少ない前提で全件取得し絞り込みは取得済みデータへ画面側で適用すること(再取得しない)、(2)本画面をアプリのトップとして共通ナビ(`BoardGameNav`)に新設エントリを追加し、register/favoritesの既存パンくずリンクもあわせて更新すること、(3)取得エラー・絞り込み結果0件など正常系以外の表示を個別に定めること。取得状態の遷移は下記「[状態管理](#状態管理)」の状態遷移図を参照。
+このアプリのトップ画面(`/board-game-rules`)。**Step0(UIデザイン確定)の要否宣言: 必要・実施済み**(共通chrome・トークンは[DESIGN.md](../DESIGN.md)で確定済みだが、絞り込みパネル・カード一覧というこの画面固有のコンテンツ構成は未確定だったため、既存のAnalog Hearthデザインシステム上でStitch画面を新規生成して確定した。詳細は下記「画面設計」参照)。登録済みゲームの一覧表示と、複数分類での絞り込み(AND条件)・作者のテキスト検索を行う。データは[game-registration/design.md#データベース設計](../game-registration/design.md)の`board_game_rules_games`から取得する。ゲームの型定義は`app/board-game-rules/lib/games.ts`を共有する(一覧は「詳しい版」の章立てを表示しないため`rulesChapters.ts`には依存しない)。主要な設計判断は、(1)件数が少ない前提で全件取得し絞り込みは取得済みデータへ画面側で適用すること(再取得しない)、(2)本画面をアプリのトップとして共通ナビ(`BoardGameNav`)に新設エントリを追加し、register/favoritesの既存パンくずリンクもあわせて更新すること、(3)取得エラー・絞り込み結果0件など正常系以外の表示を個別に定めること。取得状態の遷移は下記「[状態管理](#状態管理)」の状態遷移図を参照。
 
 ## 処理フロー
 
@@ -73,7 +73,15 @@ app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 
 ## 画面設計
 
-**確定デザインの出所**: [DESIGN.md](../DESIGN.md)で確定済みのAnalog Hearth(Google Stitchプロジェクト「ボドゲのトリセツ 登録依頼フォーム」project ID `10756296516233709248`)。本画面固有の新規UIデザイン検討は行わず、既存の確定物(トークン・共通chrome・styleguide)をそのまま適用する。
+**確定デザインの出所**: Google Stitchプロジェクト「ボドゲのトリセツ 登録依頼フォーム」(project ID `10756296516233709248`)の既存デザインシステム「Analog Hearth」(asset `assets/4c563e385f3f480d813033cba0bd22b7`)を土台に、本画面用のスクリーンを新規生成して確定した(共通chrome・トークンはこのシステムを踏襲、コンテンツ構成=絞り込みパネル・カード一覧はこの画面固有のためStitchで検討)。
+
+- **採用スクリーン(デスクトップ)**: 「ボードゲーム一覧・絞り込み (共通ナビ適用) - ボドゲのトリセツ」(`projects/10756296516233709248/screens/9681c2520a3a44edbe1391c842b356d0`)。生成HTML(Tailwind)を実装の参照素材とする(register/favoritesと同方針)
+- **採用スクリーン(モバイル)**: 「ボードゲーム一覧 (Mobile) - ボドゲのトリセツ」(`projects/10756296516233709248/screens/50288636a088448284524613bb7fb233`)。同様に実装の参照素材とする
+- Stitchの生成結果のうち、以下は今回は採用しない(理由を付記):
+  - **ページ送り**(デスクトップの「1 2 3 … 12」、モバイルの「さらに表示する」ボタン): requirements.md#スコープ外「ページネーションの詳細仕様(件数が増えた段階で別途検討する)」と矛盾するため実装しない。全件をそのまま一覧に並べる(処理フロー「公開中のゲームを取得する処理」の全件取得方針のまま)
+  - **絞り込みパネルの「検索する」ボタン**: requirements.md#絞り込み-9「絞り込み条件を変更すると、一覧表示と件数表示の両方に即座に反映される」と矛盾する(即時反映であり、明示的な送信操作を挟まない)ため実装しない。`リセット`操作のみ設ける
+  - **モバイル下部のタブバー**(Library/Search/Register/Settings): register/favoritesを含むアプリ全体のchrome変更になるため、本画面(game-list)のPRには含めない。別タスクとして切り出す(現状モバイルは`BoardGameNav`が`md`未満で非表示になり他画面への遷移導線が無い。この課題への対応として別途検討する)
+  - **モバイルのジャンルのクイックフィルターチップ**(横スクロールの「すべて/戦略・ストラテジー/カードゲーム…」): デスクトップ・モバイルともジャンルは他の分類と同じドロップダウン形式に統一し、モバイル専用の別UIは作らない
 
 ### デザイントークン(Analog Hearth)
 配色・フォント・角丸・階層表現(影を使わず1px罫線で階層を出す方針)・アクセシビリティの各トークンの定義は、アプリ共通の一元管理先 [DESIGN.md](../DESIGN.md) を参照する(値をここに書き写すと二重管理になるため。実体は`app/globals.css`の`bgr-*`)。
@@ -88,7 +96,7 @@ board-game-rulesアプリ全体で共有する左サイドバー(`components/Boa
 本画面はアプリのトップのため2階層: 「べんりやつーる(リンク`/`) › ボドゲのトリセツ(現在地・太字・非リンク)」。register/favoritesの3階層パンくずおよびstyleguideの見本([app/board-game-rules/styleguide/](../../app/board-game-rules/styleguide/))と同じマークアップパターン(`nav aria-label="パンくず"`)を用いる
 
 ### 共通部品
-- ボタン・カードは独立コンポーネントを持たず、styleguide([app/board-game-rules/styleguide/](../../app/board-game-rules/styleguide/))の見本マークアップをそのまま`FilterPanel`・`GameCard`に適用する(主要ボタン: `rounded-lg bg-bgr-primary`+白文字、押下は`bgr-primary-active`。カード: 影を使わず`rounded-lg border border-bgr-line bg-bgr-card`)
+- `FilterPanel`・`GameCard`のレイアウト(何をどう並べるか)は上記の採用スクリーンに従う。個々のボタン・カードのトークンレベルの見た目(角丸・色・影なし1px罫線)はstyleguide([app/board-game-rules/styleguide/](../../app/board-game-rules/styleguide/))の見本マークアップと揃える(主要ボタン: `rounded-lg bg-bgr-primary`+白文字、押下は`bgr-primary-active`。カード: 影を使わず`rounded-lg border border-bgr-line bg-bgr-card`)
 - お気に入りトグルは`FavoriteButton`(既存、[favorite/design.md](../favorite/design.md))をそのまま再利用する
 - 任意ログインの状態表示は既存の`LoginStatus`を本文エリア上部(右寄せ)に置く(register/favoritesのうちLoginStatusを使うregisterと同方針。favoritesはログイン促し自体を本文の状態分岐で表現しており`LoginStatus`を使っていないが、本画面は常時閲覧可能でログイン状態が一覧の主機能を左右しないため、register型の常時表示に揃える)
 
@@ -99,7 +107,7 @@ board-game-rulesアプリ全体で共有する左サイドバー(`components/Boa
 
 ### 画面構成
 - 共通ヘッダー: パンくず、`LoginStatus`(ログイン導線)。register/favoritesは本文ヘッダーに他画面への導線テキストリンクを持たない(左サイドバー共通ナビのみ。`md`未満ではナビ自体が非表示になり、モバイルでの他画面遷移導線が無い状態が既に残っている。[DESIGN.md#2-共通chromeルール](../DESIGN.md))。本画面もその既存方針に揃え、新規登録・お気に入り一覧への導線を本文ヘッダーには重複配置しない(ナビが唯一の遷移経路)
-- 絞り込みパネル(`FilterPanel`): 対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー/出版社・言語依存度・受賞歴の各絞り込みと、作者のテキスト検索、リセット操作
+- 絞り込みパネル(`FilterPanel`): 対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー/出版社・言語依存度・受賞歴の各絞り込み(ドロップダウン形式)と、作者のテキスト検索、リセット操作。採用スクリーンに合わせ、デスクトップは本文上部に常時表示、モバイルは検索欄横のアイコンボタンで開閉する(画面幅が狭いモバイルでの省スペース化。デスクトップは常時表示のため開閉不要)
 - 件数表示: 現在の条件に一致する件数
 - 一覧(`GameCard`のカード形式): 各カードにゲーム名・対応人数・プレイ時間・ジャンルを最低限表示する。ログイン中はお気に入りの登録・解除操作を表示する(requirements.md#一覧表示-4、[favorite](../favorite/requirements.md))。カードから詳細画面へ遷移できる(requirements.md#一覧表示-2)
 - 一覧・絞り込みはログイン不要で使える(requirements.md#一覧表示-3)
