@@ -60,7 +60,7 @@ describe('【一覧画面】取得→絞り込み→表示 - 取得したゲー�
   })
 })
 
-// 仕様: specs/board-game-rules/game-list/requirements.md#絞り込み-9、specs/board-game-rules/game-list/design.md#絞り込みを適用する処理
+// 仕様: specs/board-game-rules/game-list/requirements.md#絞り込み-9、specs/board-game-rules/game-list/design.md#絞り込みを適用する処理、specs/board-game-rules/game-list/design.md#パフォーマンス
 describe('【一覧画面】絞り込み条件の変更 - 再取得せず、取得済みデータへ適用する', () => {
   it('絞り込み条件を変更しても、fetchPublishedGamesは1回しか呼ばれず、一覧・件数が絞り込み後の内容に更新されること', async () => {
     vi.mocked(fetchPublishedGames).mockResolvedValue([
@@ -138,5 +138,62 @@ describe('【一覧画面】お気に入り状態の反映 - ログイン中は�
 
     await waitFor(() => expect(screen.getByText('カタン')).toBeTruthy())
     expect(fetchMyFavoriteGameIds).not.toHaveBeenCalled()
+  })
+})
+
+// 仕様: specs/board-game-rules/game-list/requirements.md#一覧表示-3
+describe('【一覧画面】未ログインでの利用 - 一覧の閲覧・絞り込みはログイン不要で利用できる', () => {
+  it('未ログインのまま、ログインを求めるブロック表示なしに一覧のカード・絞り込みパネルが操作できること', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
+    vi.mocked(fetchPublishedGames).mockResolvedValue([makeGame({ id: 'game-1', name: 'カタン' })])
+
+    render(<BoardGameRulesHomePage />)
+
+    await waitFor(() => expect(screen.getByText('カタン')).toBeTruthy())
+    expect(screen.getByLabelText('作者で検索')).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'カタン' })).toBeTruthy()
+    expect(screen.queryByText(/ログインが必要/)).toBeNull()
+  })
+})
+
+// 仕様: specs/board-game-rules/game-list/requirements.md#絞り込み-8、specs/board-game-rules/game-list/design.md#絞り込みをリセットする処理
+describe('【一覧画面】絞り込みのリセット - すべての条件を解除し、全公開ゲームを登録日時の新しい順で表示する状態に戻す', () => {
+  it('絞り込んだ後にリセットすると、件数・一覧が取得直後の全件・取得順に戻ること', async () => {
+    vi.mocked(fetchPublishedGames).mockResolvedValue([
+      makeGame({ id: 'game-2', name: 'ドミニオン', author: '宮本茂', createdAt: '2026-08-02T00:00:00.000Z' }),
+      makeGame({ id: 'game-1', name: 'カタン', author: 'クラウス・トイバー', createdAt: '2026-08-01T00:00:00.000Z' }),
+    ])
+
+    render(<BoardGameRulesHomePage />)
+    await waitFor(() => expect(screen.getByText('ドミニオン')).toBeTruthy())
+
+    fireEvent.change(screen.getByLabelText('作者で検索'), { target: { value: '宮本' } })
+    await waitFor(() => expect(screen.getByText('1件')).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: '絞り込み条件を開閉する' }))
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }))
+
+    await waitFor(() => expect(screen.getByText('2件')).toBeTruthy())
+    const list = screen.getByRole('list')
+    const names = within(list)
+      .getAllByRole('link')
+      .map((link) => link.textContent)
+    expect(names).toEqual(['ドミニオン', 'カタン'])
+  })
+})
+
+// 仕様: specs/board-game-rules/game-list/design.md#パンくず
+describe('【一覧画面】パンくず - アプリのトップのため2階層(べんりやつーる › ボドゲのトリセツ)', () => {
+  it('パンくずに「べんりやつーる」への戻りリンクと、現在地「ボドゲのトリセツ」が表示されること', async () => {
+    vi.mocked(fetchPublishedGames).mockResolvedValue([makeGame({ id: 'game-1', name: 'カタン' })])
+
+    render(<BoardGameRulesHomePage />)
+    await waitFor(() => expect(screen.getByText('カタン')).toBeTruthy())
+
+    const breadcrumb = screen.getByRole('navigation', { name: 'パンくず' })
+    const link = within(breadcrumb).getByRole('link', { name: 'べんりやつーる' })
+    expect(link.getAttribute('href')).toBe('/')
+    expect(within(breadcrumb).getByText('ボドゲのトリセツ')).toBeTruthy()
+    expect(within(breadcrumb).queryByRole('link', { name: 'ボドゲのトリセツ' })).toBeNull()
   })
 })
