@@ -36,11 +36,13 @@ function FilterIcon() {
 
 // 絞り込みパネル(仕様: requirements.md#絞り込み、design.md「画面構成」)。8分類のドロップダウン
 // (単一選択)+作者のテキスト検索+リセットで構成する。作者テキスト検索欄だけは常時表示し、
-// 残り8分類+リセットは`hidden`属性(ネイティブHTML)でモバイル時の初期状態を閉じる。
-// `hidden`はUAスタイルシート由来の最も優先度の低い規則のため、Tailwindの`md:flex`
-// (作者スタイルシート)を同時に付けると画面幅md以上では常にこの規則が`hidden`を上書きし、
-// トグル操作の有無によらず常時表示になる(デスクトップは常時展開・モバイルのみJS制御の
-// アコーディオンにする、という設計を追加のJS分岐なしで実現するCSSの技法)
+// 残り8分類+リセットはTailwindの`hidden`ユーティリティクラス(`className`経由)でモバイル時の
+// 初期状態を閉じ、`md:flex`が画面幅md以上でこのクラスを上書きして常時表示にする
+// (`hidden md:flex`は本プロジェクトの他コンポーネント(BoardGameNav等)でも使う定番パターン)。
+// ネイティブHTMLの`hidden`属性は使わない: Tailwind v4のPreflightが`[hidden]`セレクタへ
+// `display: none !important`を再宣言しており(`!important`同士の比較ではlayerの前後関係が
+// 反転するため、`md:flex`側に`!`修飾子を足しても後発のutilitiesレイヤーは勝てない)、
+// 属性ベースだとmd以上でも`hidden`が`md:flex`を上書きし続け、デスクトップで一切開けなくなる
 export default function FilterPanel({ options, filters, onChange }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -73,8 +75,9 @@ export default function FilterPanel({ options, filters, onChange }: Props) {
 
       <div
         id="filter-options-panel"
-        hidden={!mobileOpen}
-        className="mt-3 space-y-3 md:flex md:flex-wrap md:items-end md:gap-3 md:space-y-0"
+        className={`mt-3 space-y-3 md:flex md:flex-wrap md:items-end md:gap-3 md:space-y-0 ${
+          mobileOpen ? '' : 'hidden'
+        }`}
       >
         <div className="space-y-1">
           <label htmlFor="filter-player-count" className={LABEL_CLASS}>

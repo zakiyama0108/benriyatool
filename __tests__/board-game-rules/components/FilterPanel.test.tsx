@@ -125,30 +125,38 @@ describe('【絞り込みパネル】リセット操作 - すべての絞り込�
 })
 
 // 仕様: specs/board-game-rules/game-list/design.md#画面構成
+// 8分類+リセットの表示・非表示はTailwindの`hidden`ユーティリティクラス(`md:flex`が画面幅md以上で
+// 上書きし常時表示にする、`hidden md:flex`の定番パターン)で切り替える。ネイティブHTMLの`hidden`属性は
+// 使わない(Tailwind v4のPreflightが`[hidden]`セレクタへ`display: none !important`を再宣言しており、
+// 属性ベースだとmd以上でも`!important`なしの`md:flex`が勝てず、デスクトップで一切開けなくなるため)。
+// jsdomは実CSSを適用せずgetComputedStyleがクラスを解決しないため、getByRole/queryByRoleでの
+// 表示判定はできない。表示・非表示の検証は`#filter-options-panel`のクラス名に`hidden`が
+// 含まれるかどうかで行う
 describe('【絞り込みパネル】モバイル表示 - 作者テキスト検索欄は常時表示、残り8分類はアイコンボタンで開閉する初期閉状態', () => {
-  it('初期状態では、作者テキスト検索欄は表示され、対応人数などのドロップダウンとリセットは表示されないこと', () => {
+  it('初期状態では、作者テキスト検索欄は表示され、対応人数などを含むパネルはhiddenクラスで非表示になっていること', () => {
     render(<FilterPanel options={OPTIONS} filters={EMPTY_FILTERS} onChange={vi.fn()} />)
 
     expect(screen.getByLabelText('作者で検索')).toBeTruthy()
-    // hidden属性を尊重するのはrole基準のクエリのため(getByLabelTextはhiddenを無視する)、
-    // 表示・非表示の検証にはgetByRole/queryByRoleを使う
-    expect(screen.queryByRole('combobox', { name: '対応人数' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'リセット' })).toBeNull()
+    const panel = document.getElementById('filter-options-panel')
+    expect(panel?.className.split(' ')).toContain('hidden')
   })
 
-  it('開閉アイコンボタンを押すと、8分類のドロップダウンとリセットが表示され(aria-expanded=true)、もう一度押すと隠れること(aria-expanded=false)', () => {
+  it('開閉アイコンボタンを押すと、パネルのhiddenクラスが外れ(aria-expanded=true)、もう一度押すと再度hiddenクラスが付くこと(aria-expanded=false)', () => {
     render(<FilterPanel options={OPTIONS} filters={EMPTY_FILTERS} onChange={vi.fn()} />)
     const toggle = screen.getByRole('button', { name: '絞り込み条件を開閉する' })
+    const panel = document.getElementById('filter-options-panel')
     expect(toggle.getAttribute('aria-expanded')).toBe('false')
+    expect(panel?.className.split(' ')).toContain('hidden')
 
     fireEvent.click(toggle)
     expect(toggle.getAttribute('aria-expanded')).toBe('true')
+    expect(panel?.className.split(' ')).not.toContain('hidden')
     expect(screen.getByRole('combobox', { name: '対応人数' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'リセット' })).toBeTruthy()
 
     fireEvent.click(toggle)
     expect(toggle.getAttribute('aria-expanded')).toBe('false')
-    expect(screen.queryByRole('combobox', { name: '対応人数' })).toBeNull()
+    expect(panel?.className.split(' ')).toContain('hidden')
   })
 
   it('開閉中も作者テキスト検索欄は隠れず操作できること', () => {
