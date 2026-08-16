@@ -156,6 +156,7 @@ flowchart LR
 
     registerScreen -->|依頼を送信| dbClient
     listScreen -->|遷移| detailScreen
+    listScreen -->|一覧・絞り込みの取得| dbClient
     listScreen -->|お気に入り操作| dbClient
     detailScreen -->|お気に入り・コメント・通報| dbClient
     favScreen -->|お気に入りの取得・解除| dbClient
