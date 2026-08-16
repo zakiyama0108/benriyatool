@@ -15,50 +15,85 @@ AI駆動開発関連の話題コンテンツ(公式組織のブログ・YouTube�
 - ウォッチリスト・採用基準の変更([watchlist-review](watchlist-review/requirements.md))は、日次記事公開([daily-publish](daily-publish/requirements.md))と異なる自動マージポリシーを適用し、影響範囲の大きさに応じてPRの扱いを分ける
 
 ## 4. システム構成図
+1枚に全要素を詰めると読み手が追えないため、**全体像の俯瞰図**と**利用シーン別の詳細図**(閲覧・日次公開/配信・月次見直し)に分けて示す(各図はノード10・エッジ12以内を目安にする。分割の考え方は[architecture-workflow](../../.claude/skills/architecture-workflow/SKILL.md)を参照)。
+
+### 4.1 全体俯瞰
+```mermaid
+flowchart LR
+    readers["訪問者・読者<br>（ブラウザ）"]
+    webapp["Webアプリ<br>（Cloudflare Workers・静的配信）"]
+    supabase[("Supabase<br>Auth・付箋・フィードバック")]
+    github["GitHub<br>（記事JSON・Actions 日次/月次/配信）"]
+    sources["情報源<br>（公式API・RSS・ブログ・公開ページ）"]
+    line["LINE公式アカウント<br>（友だちへ配信）"]
+
+    readers -->|閲覧・付箋・フィードバック| webapp
+    webapp -->|ログイン・本人データの読み書き（RLS）| supabase
+    github -->|記事JSONをビルド・配信| webapp
+    sources -->|情報取得| github
+    github -->|新着記事を配信| line
+```
+
+### 4.2 閲覧・読者フロー(未ログイン閲覧＋ログイン読者の付箋・フィードバック)
 ```mermaid
 flowchart TD
-    visitor["訪問者のブラウザ(未ログイン)"]
-    readerVisitor["読者のブラウザ(ログイン済み)"]
-    cf["Cloudflare Workers(静的配信)"]
+    visitor["訪問者（未ログイン）"]
+    readerVisitor["読者（ログイン済み）"]
+    cf["Cloudflare Workers<br>（静的配信）"]
     list["/ai-dev-digest<br>記事一覧"]
-    detail["/ai-dev-digest/[date]<br>記事詳細・付箋・フィードバック入力"]
+    detail["/ai-dev-digest/[date]<br>記事詳細・付箋・フィードバック"]
     bookmarkList["/ai-dev-digest/bookmarks<br>付箋一覧"]
-    dailyRoutine["GitHub Actions(日次)<br>収集・翻訳・要約・記事執筆"]
-    monthlyRoutine["GitHub Actions(月次)<br>ウォッチリスト・基準の見直し"]
-    broadcastRoutine["GitHub Actions(pushトリガー)<br>LINE新着記事配信"]
-    sources["情報源<br>公式API・公式RSS・公式ブログ・公開ページ"]
-    repo["GitHubリポジトリ<br>(記事JSON・ウォッチリスト設定)"]
-    dailyPR["日次記事PR<br>(完全自動マージ)"]
-    reviewPR["見直し提案PR<br>(人間承認必須)"]
-    feedbackDb[("Supabase<br>ai_dev_digest_feedbackテーブル")]
-    bookmarkDb[("Supabase<br>ai_dev_digest_bookmarksテーブル")]
-    auth["Supabase Auth<br>(Google OIDC)"]
-    lineApi["LINE Messaging API<br>(ブロードキャスト配信)"]
-    lineFriends["LINE公式アカウントの<br>友だち"]
+    auth["Supabase Auth<br>（Google OIDC）"]
+    feedbackDb[("feedback")]
+    bookmarkDb[("bookmarks")]
 
     visitor -->|ページ取得| cf
     readerVisitor -->|ページ取得| cf
     cf --> list
     cf --> detail
     cf --> bookmarkList
+    readerVisitor -->|Googleでログイン（読者全員が対象）| auth
+    detail -->|運営者本人か判定 - 欄の表示切替のみ| auth
+    detail -->|フィードバックを保存 - authenticatedでINSERT| feedbackDb
+    detail -->|付箋を保存・編集・削除 - 本人の行のみ、RLS| bookmarkDb
+    bookmarkList -->|自分の付箋を取得・編集・削除 - RLS| bookmarkDb
+```
+
+### 4.3 日次記事の生成・公開・LINE配信フロー
+```mermaid
+flowchart LR
+    dailyRoutine["GitHub Actions（日次）<br>収集・翻訳・要約・記事執筆"]
+    sources["情報源<br>（公式API・RSS・ブログ・公開ページ）"]
+    dailyPR["日次記事PR<br>（完全自動マージ）"]
+    repo["GitHubリポジトリ<br>（記事JSON）"]
+    cf["Cloudflare Workers<br>（静的配信）"]
+    broadcastRoutine["GitHub Actions<br>（pushトリガー・LINE配信）"]
+    lineApi["LINE Messaging API"]
+    lineFriends["LINE公式アカウントの友だち"]
+
     dailyRoutine -->|情報取得| sources
     dailyRoutine -->|記事JSONを追加| dailyPR
     dailyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
-    repo -->|記事JSON新規追加のpushをトリガーに起動| broadcastRoutine
-    broadcastRoutine -->|タイトル・トピック見出し・リンクを一斉配信| lineApi
+    repo -->|記事追加のpushで起動| broadcastRoutine
+    broadcastRoutine -->|タイトル・見出し・リンクを一斉配信| lineApi
     lineApi -->|メッセージ配信| lineFriends
-    detail -->|フィードバックを保存 - authenticatedロールでINSERTのみ| feedbackDb
-    readerVisitor -->|Googleでログイン(読者全員が対象)| auth
-    detail -->|運営者本人か判定 - フィードバック欄の表示切替のみ| auth
-    detail -->|付箋を保存・編集・削除 - 本人の行のみ、RLS| bookmarkDb
-    bookmarkList -->|自分の付箋を取得・編集・削除 - 本人の行のみ、RLS| bookmarkDb
+```
+
+### 4.4 月次のウォッチリスト・採用基準の見直しフロー
+```mermaid
+flowchart LR
+    monthlyRoutine["GitHub Actions（月次）<br>ウォッチリスト・基準の見直し"]
+    feedbackDb[("feedback")]
+    reviewPR["見直し提案PR<br>（人間承認必須）"]
+    repo["GitHubリポジトリ<br>（ウォッチリスト設定）"]
+
     monthlyRoutine -->|フィードバック・掲載実績を参照| feedbackDb
     monthlyRoutine -->|見直し案を作成| reviewPR
     reviewPR -->|運営者が確認しマージ| repo
 ```
 
-この図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specの設計書。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。
+これらの図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specの設計書。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。
 
 ## 5. アーキテクチャ概要
 Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。このマージ(記事JSONの新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクをLINE Messaging APIのブロードキャスト機能で友だち全員へ配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。
