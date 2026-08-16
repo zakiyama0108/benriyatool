@@ -183,17 +183,19 @@ describe('【一覧画面】絞り込みのリセット - すべての条件を�
 })
 
 // 仕様: specs/board-game-rules/game-list/design.md#パンくず
-describe('【一覧画面】パンくず - アプリのトップのため2階層(べんりやつーる › ボドゲのトリセツ)', () => {
-  it('パンくずに「べんりやつーる」への戻りリンクと、現在地「ボドゲのトリセツ」が表示されること', async () => {
+describe('【一覧画面】パンくず - register/favoritesと同じ3階層(べんりやつーる › ボドゲのトリセツ › 一覧)', () => {
+  it('パンくずに「べんりやつーる」「ボドゲのトリセツ」への戻りリンクと、現在地「一覧」が表示されること', async () => {
     vi.mocked(fetchPublishedGames).mockResolvedValue([makeGame({ id: 'game-1', name: 'カタン' })])
 
     render(<BoardGameRulesHomePage />)
     await waitFor(() => expect(screen.getByText('カタン')).toBeTruthy())
 
     const breadcrumb = screen.getByRole('navigation', { name: 'パンくず' })
-    const link = within(breadcrumb).getByRole('link', { name: 'べんりやつーる' })
-    expect(link.getAttribute('href')).toBe('/')
-    expect(within(breadcrumb).getByText('ボドゲのトリセツ')).toBeTruthy()
-    expect(within(breadcrumb).queryByRole('link', { name: 'ボドゲのトリセツ' })).toBeNull()
+    const hubLink = within(breadcrumb).getByRole('link', { name: 'べんりやつーる' })
+    expect(hubLink.getAttribute('href')).toBe('/')
+    const appLink = within(breadcrumb).getByRole('link', { name: 'ボドゲのトリセツ' })
+    expect(appLink.getAttribute('href')).toBe('/board-game-rules')
+    expect(within(breadcrumb).getByText('一覧')).toBeTruthy()
+    expect(within(breadcrumb).queryByRole('link', { name: '一覧' })).toBeNull()
   })
 })

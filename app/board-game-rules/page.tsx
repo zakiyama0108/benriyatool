@@ -106,7 +106,11 @@ export default function BoardGameRulesHomePage() {
                 べんりやつーる
               </Link>
               <span>›</span>
-              <span className="font-bold text-bgr-heading">ボドゲのトリセツ</span>
+              <Link href="/board-game-rules" className="hover:underline">
+                ボドゲのトリセツ
+              </Link>
+              <span>›</span>
+              <span className="font-bold text-bgr-heading">一覧</span>
             </nav>
             <LoginStatus />
           </div>

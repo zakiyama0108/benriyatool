@@ -5,8 +5,10 @@ import {
   EMPTY_FILTERS,
   PLAYER_COUNT_OPTIONS,
   PLAYTIME_BAND_OPTIONS,
+  MIN_AGE_OPTIONS,
   type GameFilters,
 } from '../../../app/board-game-rules/lib/filterGames'
+import { GENRES } from '../../../app/board-game-rules/lib/genres'
 import type { Game } from '../../../app/board-game-rules/lib/games'
 
 function makeGame(overrides: Partial<Game> = {}): Game {
@@ -59,6 +61,16 @@ describe('【絞り込み】プレイ時間 - 希望する時間帯とプレイ�
     const games = [makeGame({ id: 'g1', minMinutes: 90, maxMinutes: 120 })]
     const band = { label: '30分以内', minMinutes: 0, maxMinutes: 30 }
     expect(filterGames(games, { ...EMPTY_FILTERS, playtimeBand: band })).toHaveLength(0)
+  })
+
+  it('「15分以内」を選ぶと、プレイ時間が15分以内に収まらないゲームは除外されること', () => {
+    const games = [
+      makeGame({ id: 'g1', minMinutes: 5, maxMinutes: 15 }),
+      makeGame({ id: 'g2', minMinutes: 20, maxMinutes: 30 }),
+    ]
+    const band = { label: '15分以内', minMinutes: 0, maxMinutes: 15 }
+    const result = filterGames(games, { ...EMPTY_FILTERS, playtimeBand: band })
+    expect(result.map((g) => g.id)).toEqual(['g1'])
   })
 })
 
@@ -178,25 +190,34 @@ describe('【絞り込み】複数の分類を同時に指定した場合、す�
 })
 
 // 仕様: specs/board-game-rules/game-list/requirements.md#表示対象-2、specs/board-game-rules/game-list/design.md#絞り込みの選択肢を用意する処理
-describe('【絞り込み】選択肢の組み立て - ジャンル・難易度・メーカー・対象年齢は登録データから、対応人数・プレイ時間は固定の代表値とする', () => {
-  it('ジャンル・難易度・メーカー・対象年齢は、取得済みゲームが実際に持つ値だけが選択肢になり重複しないこと', () => {
+describe('【絞り込み】選択肢の組み立て - ジャンル・対象年齢・対応人数・プレイ時間は固定の代表値、難易度・メーカーは登録データから組み立てる', () => {
+  it('難易度・メーカーは、取得済みゲームが実際に持つ値だけが選択肢になり重複しないこと', () => {
     const games = [
-      makeGame({ id: 'g1', genres: ['戦略', '協力'], difficulty: '普通', publisher: 'GP', minAge: 8 }),
-      makeGame({ id: 'g2', genres: ['協力'], difficulty: '普通', publisher: 'HABA', minAge: 10 }),
+      makeGame({ id: 'g1', difficulty: '普通', publisher: 'GP' }),
+      makeGame({ id: 'g2', difficulty: '普通', publisher: 'HABA' }),
     ]
     const options = buildFilterOptions(games)
-    expect(new Set(options.genres)).toEqual(new Set(['戦略', '協力']))
     expect(options.difficulties).toEqual(['普通'])
     expect(new Set(options.publishers)).toEqual(new Set(['GP', 'HABA']))
-    expect(options.minAges).toEqual([8, 10])
   })
 
-  it('値を持つゲームが1件もない分類は、選択肢が空になること', () => {
-    const games = [makeGame({ id: 'g1', difficulty: null, publisher: null, minAge: null })]
+  it('値を持つゲームが1件もない分類(難易度・メーカー)は、選択肢が空になること', () => {
+    const games = [makeGame({ id: 'g1', difficulty: null, publisher: null })]
     const options = buildFilterOptions(games)
     expect(options.difficulties).toEqual([])
     expect(options.publishers).toEqual([])
-    expect(options.minAges).toEqual([])
+  })
+
+  it('ジャンルの選択肢は、登録データに含まれるかどうかによらず、固定リスト(GENRES)の全件が常に選択肢になること', () => {
+    const games = [makeGame({ id: 'g1', genres: ['戦略'] })]
+    const options = buildFilterOptions(games)
+    expect(options.genres).toEqual(GENRES.map((g) => g.value))
+  })
+
+  it('対象年齢の選択肢は、登録データの値によらず固定の代表値(MIN_AGE_OPTIONS)であること', () => {
+    const games = [makeGame({ id: 'g1', minAge: 99 })]
+    const options = buildFilterOptions(games)
+    expect(options.minAges).toEqual(MIN_AGE_OPTIONS)
   })
 
   it('対応人数・プレイ時間の選択肢は、登録データの値によらず固定の代表値であること', () => {

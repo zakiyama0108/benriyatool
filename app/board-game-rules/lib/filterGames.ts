@@ -10,7 +10,15 @@ export type PlaytimeBand = { label: string; minMinutes: number; maxMinutes: numb
 // 1〜8人の代表値から選ぶ形にする(9人以上の対応ゲームは稀なため、まずはこの範囲で用意する)
 export const PLAYER_COUNT_OPTIONS: number[] = [1, 2, 3, 4, 5, 6, 7, 8]
 
+// 対象年齢の候補(design.md「絞り込みの選択肢を用意する処理」手順3)。対応人数・プレイ時間と
+// 同じく、取得データから動的に組み立てず固定の代表値を使う(画面レビューでの方針変更、2026-08)。
+// 「◯歳以上」のラベルで一般的な対象年齢の区切り(3/6/8/10/12/15歳)を用意する
+export const MIN_AGE_OPTIONS: number[] = [3, 6, 8, 10, 12, 15]
+
 export const PLAYTIME_BAND_OPTIONS: PlaytimeBand[] = [
+  // 「15分以内」は「30分以内」と範囲が重なるが、絞り込みロジック(重なり判定)とは独立した
+  // 「選択できる代表値の候補」であり問題ない(画面レビューでの追加依頼、2026-08)
+  { label: '15分以内', minMinutes: 0, maxMinutes: 15 },
   { label: '30分以内', minMinutes: 0, maxMinutes: 30 },
   { label: '30〜60分', minMinutes: 30, maxMinutes: 60 },
   { label: '60〜90分', minMinutes: 60, maxMinutes: 90 },
@@ -97,8 +105,12 @@ export function filterGames(games: Game[], filters: GameFilters): Game[] {
   return games.filter((game) => matchesFilters(game, filters))
 }
 
-// 選択式の分類の選択肢。ジャンル・難易度・メーカー・対象年齢は取得済みデータから、
-// 対応人数・プレイ時間は固定の代表値(design.md「絞り込みの選択肢を用意する処理」)。
+// 選択式の分類の選択肢。難易度・メーカーは取得済みデータから、ジャンル・対象年齢・対応人数・
+// プレイ時間は固定の代表値とする(design.md「絞り込みの選択肢を用意する処理」)。
+// ジャンル・対象年齢を固定にする理由: ジャンルはDB CHECK制約・登録フォームと同じ固定リストが
+// 既にあり、取得データの実際の値に左右されず全選択肢を出す方が探しやすい。対象年齢は対応人数・
+// プレイ時間と同じ「範囲型カラムに対する代表値」の考え方に揃える(画面レビューでの方針変更、2026-08)。
+// 難易度・メーカーは登録フォーム側が自由テキストで固定語彙を持たないため、実データに基づく方式のまま維持する。
 // 言語依存度・受賞歴は「あり/なし」「該当のみ」の固定選択肢のためFilterOptionsには含めない
 // (FilterPanel側で固定の文言を直接出す)
 export type FilterOptions = {
@@ -116,21 +128,15 @@ function uniqueInOrder<T>(values: T[]): T[] {
 }
 
 export function buildFilterOptions(games: Game[]): FilterOptions {
-  // ジャンルは登録フォームと同じ並び(GENRES定義順)のうち、実際に使われている値だけを残す
-  const usedGenres = new Set(games.flatMap((g) => g.genres))
-  const genres = GENRES.map((g) => g.value).filter((genre) => usedGenres.has(genre))
-
   const difficulties = uniqueInOrder(games.map((g) => g.difficulty).filter((v): v is string => v != null))
   const publishers = uniqueInOrder(games.map((g) => g.publisher).filter((v): v is string => v != null))
-  const minAges = uniqueInOrder(games.map((g) => g.minAge).filter((v): v is number => v != null)).sort(
-    (a, b) => a - b
-  )
 
   return {
-    genres,
+    // ジャンルは登録フォームと同じ並び(GENRES定義順)で固定リストの全件を出す(取得データには依存しない)
+    genres: GENRES.map((g) => g.value),
     difficulties,
     publishers,
-    minAges,
+    minAges: MIN_AGE_OPTIONS,
     playerCounts: PLAYER_COUNT_OPTIONS,
     playtimeBands: PLAYTIME_BAND_OPTIONS,
   }

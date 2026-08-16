@@ -37,7 +37,10 @@ describe('【絞り込みパネル】各分類の操作 - 送信ボタンを介�
 
     fireEvent.change(screen.getByLabelText('プレイ時間'), { target: { value: '60〜90分' } })
 
-    expect(onChange).toHaveBeenCalledWith({ ...EMPTY_FILTERS, playtimeBand: PLAYTIME_BAND_OPTIONS[2] })
+    expect(onChange).toHaveBeenCalledWith({
+      ...EMPTY_FILTERS,
+      playtimeBand: PLAYTIME_BAND_OPTIONS.find((band) => band.label === '60〜90分'),
+    })
   })
 
   it('ジャンルを選ぶと、onChangeへ選択したジャンルが渡ること', () => {
