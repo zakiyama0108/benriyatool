@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 
-// 仕様: specs/hub-site/requirements.md#各ページのメタ情報(トップページ担当spec game-listが未実装のため暫定でhub-site側に定義。
-// game-list実装時にそちらへ移設予定。specs/board-game-rules/game-list/requirements.md冒頭のメモ参照)
+// 仕様: specs/board-game-rules/game-list/requirements.md#メタ情報-10(値は現行のまま変更しない)
 const TITLE = 'ボードゲームのルール確認｜人数・時間・ジャンルで探せる無料データベース'
 const DESCRIPTION =
   'ボードゲームの説明書の写真からルールを自動生成して登録し、対応人数・プレイ時間・ジャンルなどで絞り込んで探せる無料のルール確認サービスです。'

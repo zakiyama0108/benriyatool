@@ -44,7 +44,7 @@ CSS変数ではなく Tailwind ユーティリティとして各画面で使う(
 「chrome」= 全画面共通の枠(ナビ等)。次のとおり、**chromeはコード側の共通コンポーネントを真実の源**とし、Stitch生成のたびに描き直さない([PR #207](https://github.com/zakiyama0108/benriyatool/pull/207)の運用ルール)。
 
 - **左サイドバー共通ナビ**が chrome の中心。コード側 [app/board-game-rules/components/BoardGameNav.tsx](../../app/board-game-rules/components/BoardGameNav.tsx) が真実の源で、全画面で再利用する。Stitch の chrome は見た目を決めるための参考であって、ピクセル一致は目指さない。
-- ナビはロゴ(汎用モチーフのミープルマーク)+ サービス名「ボドゲのトリセツ」+ 実装済み画面へのリンク(登録依頼・お気に入り)。モバイル(md未満)では隠す。
+- ナビはロゴ(汎用モチーフのミープルマーク)+ サービス名「ボドゲのトリセツ」+ 実装済み画面へのリンク(一覧・登録依頼・お気に入り)。モバイル(md未満)では隠す。
 - **トークンはアプリ単位で1デザインシステム**(この Analog Hearth)。サイト共通で1つにはしない(アプリごとに chrome・配色が異なるため)。Stitch での画面生成時は board-game-rules のデザインシステム id を毎回渡す(「5. Stitch連携」参照)。
 - 共通部品の見た目は [app/board-game-rules/styleguide/](../../app/board-game-rules/styleguide/) の styleguide ページ(+ 同居 `styleguide.png`)で一覧確認する。共通部品を変更したら同じコミットで `styleguide.png` を撮り直す。
 

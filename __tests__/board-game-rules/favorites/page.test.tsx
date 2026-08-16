@@ -49,6 +49,19 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+// 仕様: specs/board-game-rules/game-list/design.md「ナビゲーション(左サイドバー共通ナビ)」
+describe('【お気に入り一覧画面】パンくず - 「ボドゲのトリセツ」が一覧画面(/board-game-rules)へのリンクになること', () => {
+  it('パンくずの「ボドゲのトリセツ」が/board-game-rulesへのリンクであること', () => {
+    vi.mocked(useSession).mockReturnValue({ session: null, loading: true })
+
+    render(<FavoritesPage />)
+
+    const breadcrumb = screen.getByRole('navigation', { name: 'パンくず' })
+    const link = within(breadcrumb).getByRole('link', { name: 'ボドゲのトリセツ' })
+    expect(link.getAttribute('href')).toBe('/board-game-rules')
+  })
+})
+
 // 仕様: specs/board-game-rules/favorite/design.md「状態管理」(セッション確認中・取得中はローディング表示のみ)
 describe('お気に入り一覧ページ - セッション確認中・取得中はローディング表示のみを行う', () => {
   it('セッション確認中は、ログイン促し・一覧のどちらも出さず、読み込み中の表示のみが出ること', () => {

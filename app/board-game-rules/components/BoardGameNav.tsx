@@ -2,17 +2,19 @@ import Link from 'next/link'
 
 // board-game-rules(ボドゲのトリセツ)アプリ全体で共有する左サイドバーの共通ナビ。
 // 見た目はStep0で確定したAnalog Hearth(favorite/design.md「お気に入り一覧画面」・
-// game-registration/design.md「画面設計」)。Stitch参照デザインではHome/Search/Add Game/
-// お気に入り/Profileの5項目が並ぶが、遷移先画面が実装済みなのは「登録依頼(Add Game)」と
-// 「お気に入り」の2つだけ(game-list/game-detail/Profile等はrequirements.mdの通り未実装)。
-// 存在しないURLへのリンクは必ず404になるため、実装済みの2画面のみをリンクとして並べ、
-// 対応する画面が実装され次第この配列に追加する。
+// game-registration/design.md「画面設計」・game-list/design.md「ナビゲーション」)。
+// Stitch参照デザインではHome/Search/Add Game/お気に入り/Profileの5項目が並ぶが、
+// 遷移先画面が実装済みなのは「一覧(Home)」「登録依頼(Add Game)」「お気に入り」の3つだけ
+// (game-detail/Profile等はrequirements.mdの通り未実装)。存在しないURLへのリンクは必ず
+// 404になるため、実装済みの3画面のみをリンクとして並べ、対応する画面が実装され次第この配列に追加する。
 
 // 現在地を示すキー(実装済み画面)。画面追加時にここへ増やす
-export type BoardGameNavKey = 'register' | 'favorites'
+export type BoardGameNavKey = 'list' | 'register' | 'favorites'
 
-// 実装済み画面のナビ項目定義(表示順)。keyはactiveと突き合わせて現在地判定に使う
+// 実装済み画面のナビ項目定義(表示順)。keyはactiveと突き合わせて現在地判定に使う。
+// 一覧はアプリのトップのため最上段に置く(game-list/design.md「ナビゲーション」表示順)
 const NAV_ITEMS: { key: BoardGameNavKey; href: string; label: string }[] = [
+  { key: 'list', href: '/board-game-rules', label: '一覧' },
   { key: 'register', href: '/board-game-rules/register', label: '登録依頼' },
   { key: 'favorites', href: '/board-game-rules/favorites', label: 'お気に入り' },
 ]
@@ -23,6 +25,15 @@ function MeepleMark() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-bgr-primary">
       <path d="M12 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm-3.6 7.2h7.2c1 0 1.9.7 2.1 1.7l1.5 6.4a1.1 1.1 0 0 1-1.1 1.4h-2.3l-.6 2.9a1 1 0 0 1-1 .8H8.8a1 1 0 0 1-1-.8l-.6-2.9H4.9a1.1 1.1 0 0 1-1.1-1.4l1.5-6.4c.2-1 1.1-1.7 2.1-1.7Z" />
+    </svg>
+  )
+}
+
+// 「一覧」項目のアイコン(Stitch参照デザインのHome相当の家形。一覧はアプリのトップのため)
+function HomeIcon({ className }: { className: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+      <path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5L12 3Z" />
     </svg>
   )
 }
@@ -48,7 +59,9 @@ function HeartIcon({ className }: { className: string }) {
 // ナビ項目ごとのアイコンを引く(keyに対応するアイコンを返す)
 function NavIcon({ navKey }: { navKey: BoardGameNavKey }) {
   const className = 'h-4 w-4'
-  return navKey === 'register' ? <AddGameIcon className={className} /> : <HeartIcon className={className} />
+  if (navKey === 'list') return <HomeIcon className={className} />
+  if (navKey === 'register') return <AddGameIcon className={className} />
+  return <HeartIcon className={className} />
 }
 
 // 左サイドバーの共通ナビ。activeで渡した画面を現在地(aria-current="page")としてハイライトする。

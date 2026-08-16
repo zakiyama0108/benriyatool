@@ -63,6 +63,21 @@ export default function HubPage() {
             </div>
           </div>
         </Link>
+        {/* 仕様: specs/board-game-rules/game-list/requirements.md#メタ情報-11 */}
+        <Link
+          href="/board-game-rules"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">🎲</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">ボドゲのトリセツ</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                ボードゲームの説明書を撮るだけでルールを登録・検索
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* 関連記事(ツールではないためカードとは表示を区別する) */}

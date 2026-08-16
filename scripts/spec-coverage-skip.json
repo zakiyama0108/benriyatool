@@ -3688,5 +3688,110 @@
     "specFile": "board-game-rules/design-system/design.md",
     "item": "画面設計",
     "reason": "styleguideのセクション構成の記述で、表示はrequirements.md#共通部品カタログstyleguideページ-4でテスト済み(styleguide/page.test.tsx)のため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "サマリ",
+    "reason": "この章だけで概略をつかむためのメタ要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "ユースケース図",
+    "reason": "アクターとできることの俯瞰図(Mermaid)で、正となる文章側でテスト要否を判断するため、図見出し自体はテスト対象外"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出し(一覧表示・絞り込み・メタ情報)に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "メタ情報 [10]",
+    "reason": "Next.jsのmetadata exportによる静的なtitle/description定義であり、ユニットテストではなくビルド・目視確認で担保するため(値自体はapp/board-game-rules/layout.tsxに実装済みで変更していない)"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出し(表示対象・未入力項目の扱い)に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "バリデーション",
+    "reason": "対応人数・プレイ時間は、実データからの動的な選択肢組み立てを行わず固定の代表値(PLAYER_COUNT_OPTIONS/PLAYTIME_BAND_OPTIONS)からの単一選択(ドロップダウン)として実装した(design.md「絞り込みの選択肢を用意する処理」手順3)。利用者が下限・上限を個別入力する余地がなく、範囲の逆転など不正な入力状態がUI構造上そもそも発生しないため、対応するバリデーションのテストを持たない"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "画面設計",
+    "reason": "Stitch採用スクリーン・不採用要素(ページ送り・検索するボタン・タブバー・クイックフィルター)の記述で、表示・操作の振る舞いはFilterPanel.test.tsx/GameCard.test.tsx/page.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "デザイントークン(Analog Hearth)",
+    "reason": "DESIGN.mdを参照するだけの記述で、値自体の担保はDESIGN.mdの真実の源(app/globals.css)側の責務のため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "ナビゲーション(左サイドバー共通ナビ)",
+    "reason": "左サイドバー共通ナビ(BoardGameNav)・パンくず・ドキュメント更新の記述。listキー追加・現在地ハイライトはBoardGameNav.test.tsx、register/favoritesのパンくずリンク化はregister/favorites各page.test.tsxでテスト済み。見た目はTDD対象外でlocalhost実機レビューで担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "共通部品",
+    "reason": "FilterPanel/GameCardのレイアウト・トークンレベルの見た目、FavoriteButton/LoginStatusの再利用方針の記述。個々の振る舞いはFilterPanel.test.tsx/GameCard.test.tsxでテスト済みで、見た目はTDD対象外でlocalhost実機レビューで担保するため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "状態管理",
+    "reason": "page.tsxのローカル状態の持ち方・状態遷移図の記述で、個別の振る舞いはpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "セキュリティ",
+    "reason": "RLS・列単位のSELECT権限によるphoto_paths秘匿はDB側の担保でアプリ単体テスト対象外(game-registration/design.mdのT0で実機確認済み)。photo_pathsを選択しないことはgames.test.tsで、作者テキスト検索がDBクエリに入力を埋め込まないことはfilterGames.test.ts(画面側の部分一致)でそれぞれテスト済み。HTMLエスケープはReactの既定動作に委ねており独自実装を持たない"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "ログ",
+    "reason": "取得失敗時にコンソール出力する方針の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
   }
 ]
