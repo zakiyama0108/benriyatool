@@ -204,6 +204,16 @@ describe('【登録依頼画面】ジャンルの説明文 - 選択したチッ�
   })
 })
 
+// 仕様: specs/board-game-rules/game-list/design.md「ナビゲーション(左サイドバー共通ナビ)」
+describe('【登録依頼画面】パンくず - 「ボドゲのトリセツ」が一覧画面(/board-game-rules)へのリンクになること', () => {
+  it('パンくずの「ボドゲのトリセツ」が/board-game-rulesへのリンクであること', () => {
+    render(<RegisterPage />)
+    const breadcrumb = screen.getByRole('navigation', { name: 'パンくず' })
+    const link = within(breadcrumb).getByRole('link', { name: 'ボドゲのトリセツ' })
+    expect(link.getAttribute('href')).toBe('/board-game-rules')
+  })
+})
+
 // 仕様: specs/board-game-rules/game-registration/design.md「ナビゲーション(左サイドバー共通ナビ)」
 describe('【登録依頼画面】共通ナビ(左サイドバー) - お気に入り一覧画面と同じナビを表示し、登録依頼を現在地にする', () => {
   it('左サイドバーの共通ナビが表示され、登録依頼が現在地・お気に入りへのリンクを持つこと', () => {

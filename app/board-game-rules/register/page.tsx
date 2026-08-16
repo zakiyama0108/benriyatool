@@ -151,9 +151,9 @@ export default function RegisterPage() {
           べんりやつーる
         </Link>
         <span>›</span>
-        {/* ボドゲのトリセツのトップ(一覧・絞り込み画面)はgame-listのspecがまだ未実装のため、
-            存在しないURLへリンクしないよう非リンクのテキストにする(favorites/page.tsxと同方針) */}
-        <span>ボドゲのトリセツ</span>
+        <Link href="/board-game-rules" className="hover:underline">
+          ボドゲのトリセツ
+        </Link>
         <span>›</span>
         <span className="font-bold text-bgr-heading">登録依頼</span>
       </nav>

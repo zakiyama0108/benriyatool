@@ -94,14 +94,14 @@ export default function FavoritesPage() {
       <BoardGameNav active="favorites" />
       <div className="w-full flex-1">
         <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-8">
-          <nav className="flex items-center gap-1 text-xs text-bgr-subtext">
+          <nav aria-label="パンくず" className="flex items-center gap-1 text-xs text-bgr-subtext">
             <Link href="/" className="hover:underline">
               べんりやつーる
             </Link>
             <span>›</span>
-            {/* ボドゲのトリセツのトップ(一覧・絞り込み画面)はgame-listのspecがまだ未実装のため、
-                存在しないURLへリンクしないよう非リンクのテキストにする */}
-            <span>ボドゲのトリセツ</span>
+            <Link href="/board-game-rules" className="hover:underline">
+              ボドゲのトリセツ
+            </Link>
             <span>›</span>
             <span className="font-bold text-bgr-heading">お気に入り</span>
           </nav>
