@@ -2,6 +2,28 @@
 
 > ステータス: 仕様確認中(未実装)
 
+## サマリ
+1つのボードゲームについて、分類情報(人数・時間・ジャンル等)・ルール本文(簡単版/詳しい版のタブ)・紹介画像ギャラリー・コメント欄を表示する、[game-list/requirements.md](../game-list/requirements.md)の各項目からの遷移先画面。閲覧はログイン不要。お気に入り登録・コメント投稿のみログイン利用者限定([favorite/requirements.md](../favorite/requirements.md)、[comment/requirements.md](../comment/requirements.md))。通報はログイン不要([report/requirements.md](../report/requirements.md))。投稿された元写真は一切表示せず、公開対象のゲーム紹介画像のみギャラリー表示する点が本specの主な設計判断。
+
+このspecの利用者と主なユースケースは下記「[ユースケース図](#ユースケース図)」を参照。
+
+## ユースケース図
+```mermaid
+flowchart LR
+    guest[未ログイン閲覧者]
+    member[ログイン利用者]
+
+    guest --> view[基本情報・ルール本文・紹介画像を見る]
+    guest --> readComment[コメントを読む]
+    guest --> report[通報する]
+    member --> view
+    member --> readComment
+    member --> report
+    member --> favorite[お気に入りを登録・解除する]
+    member --> postComment[コメントを投稿する]
+```
+- 閲覧(基本情報・ルール本文タブ・紹介画像ギャラリー・コメント閲覧)と通報はログイン不要(requirements.md#操作-8、[report/requirements.md](../report/requirements.md))。お気に入り操作は[favorite/requirements.md](../favorite/requirements.md)、コメント投稿は[comment/requirements.md](../comment/requirements.md)に従いログイン利用者限定
+
 ## 概要
 - 機能名: ゲーム詳細
 - 目的: 1つのボードゲームについて、分類情報とルール本文(簡単版・詳しい版)、コメント欄を表示し、プレイ中のルール確認やゲーム選びの判断に使えるようにする

@@ -169,7 +169,7 @@ scripts/board-game-rules/registerGame.ts (変更: 依頼の intro_photo_paths �
 本specで新規に作るのは**元写真の非公開Storageバケットとそのアクセスポリシー**(登録時に写真を保存する先。[game-registration/design.md#元写真のStorage](../game-registration/design.md))。
 
 ### 元写真の非公開Storage(新規: 実装より先に単独PRで適用)
-- 非公開バケットを1つ作る。バケット名・パス設計は実装時に確定する(例: ゲームIDごとのフォルダ配下に写真を置く)
+- 非公開バケットを1つ作る。バケット名: `board-game-rules-photos`(`public = false`)。パス設計: `<アップロード単位のUUID>/<連番>.<拡張子>`(ゲームIDはDB採番のためアップロード時点で未確定。確定済みの写真パスは`photo_paths`に保存する)。上記は`supabase/migrations/20260807160400_create_board_game_rules_photos_storage.sql`で適用済み
 - Storageのアクセスポリシー:
   - anon・authenticated(運営者以外)は元写真をSELECT(ダウンロード)できない
   - 運営者本人(`admin_emails`に載るアカウント)のみSELECTできる
@@ -178,7 +178,7 @@ scripts/board-game-rules/registerGame.ts (変更: 依頼の intro_photo_paths �
   - ファイルサイズ上限(1ファイルあたりの最大バイト数。Supabase Storageのバケット設定 `file_size_limit`)
   - 許可MIMEタイプを画像(`image/*` の想定形式)に限定(`allowed_mime_types`)
   - 1ゲーム(1フォルダ)あたりの枚数上限を、登録画面([game-registration/design.md](../game-registration/design.md))とStorage側の両面で担保する(実装確定値: 登録画面側で20枚。Storage側はサイズ・MIMEのみを担保し、枚数はクライアント側で制限する。理由は`supabase/migrations/20260807160400_create_board_game_rules_photos_storage.sql`のコメント参照)
-- 具体的なStorageポリシーのSQL(`storage.objects`に対するRLS)・バケット設定値は、Supabase Storageの標準的な書き方に従い実装時に確定する。方針は「INSERTは誰でも可(ただしサイズ・MIME・枚数の制約付き)、SELECT(ダウンロード)は運営者のみ、バケットはpublic=false」
+- 具体的なStorageポリシーのSQL(`storage.objects`に対するRLS)・バケット設定値は上記マイグレーションで適用済み。方針は「INSERTは誰でも可(ただしサイズ・MIME・枚数の制約付き)、SELECT(ダウンロード)は運営者のみ、バケットはpublic=false」
 
 T0(マイグレーション/Storage設定適用)の実機確認:
 - 運営者本人でのみ元写真をダウンロードでき、anon・運営者以外のログインでは取得できないこと
@@ -200,6 +200,7 @@ T0(マイグレーション/Storage設定適用)の実機確認:
   - **INSERT**: 誰でも可(anon/authenticated)。投稿者の登録依頼アップロードを許すため(サイズ・MIMEはバケット設定で担保)
   - **UPDATE・DELETE**: 運営者本人のみ(`admin_emails`)。投稿者本人による事後の差し替え・削除はできない(依頼送信後の内容編集不可という既存方針[game-registration/requirements.md#スコープ外](../game-registration/requirements.md)に揃える)
   - 運営者のローカル登録ツール(自動補完)はservice_role相当の権限でRLSをバイパスして書き込む
+- **公開バケットゆえの残余リスク**: 元写真バケット(非公開)の「匿名アップロードの量的制約」と同様、本バケットもINSERTはanon/authenticatedに開放しており、アプリのUI(登録依頼画面・管理画面編集フォーム)の20枚制限を経由せずStorage REST APIを直接叩けば任意枚数の画像をアップロードされうる。加えて本バケットは`public = true`のため、アップロードされた画像は即座に誰でも取得できる公開URLを持ち、`intro_photo_paths`に登録されずアプリのモデレーション対象にも乗らない画像が公開URLとして残存しうる(元写真バケットより公開範囲が広い分、直接濫用の実害も大きい)。この残余リスクは技術的に完全には防がず、運営者が容量・アクセス状況を定期的に確認する運用(Supabaseダッシュボードでのバケット容量確認)で気付く前提とする(シンプルさ優先の方針に基づき、専用の監視機構は設けない)
 
 ```sql
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

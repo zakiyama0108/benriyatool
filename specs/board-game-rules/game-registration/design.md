@@ -163,7 +163,7 @@ app/board-game-rules/register/page.tsx (変更: 写真アップロード+分類�
 app/board-game-rules/components/BoardGameNav.tsx (新規: アプリ共通の左サイドバーナビ。register/favoritesで共有。実装済み画面のリンクのみをactiveハイライト付きで並べる)
 app/board-game-rules/lib/gameRequests.ts (変更: createGameRequest。写真Storage保存+INSERT。ゲーム紹介画像の公開Storage保存を追加)
 app/board-game-rules/lib/genres.ts (新規: ジャンルの固定選択肢定義。game-list/adminと共有)
-app/board-game-rules/lib/gamePhotos.ts (新規: ゲーム紹介画像の公開URL変換 getGamePhotoUrl。game-list/game-detail/adminと共有)
+app/board-game-rules/lib/gamePhotos.ts ([game-list/design.md](../game-list/design.md)で新規実装: ゲーム紹介画像の公開URL変換 getGamePhotoUrl。本specでは実装せずgame-list/game-detail/adminと共有利用のみ)
 app/board-game-rules/components/PhotoUploader.tsx (新規: 複数枚の写真選択・プレビュー。ルールブック写真用)
 app/board-game-rules/components/GamePhotoUploader.tsx (新規: ゲーム紹介画像用。複数枚選択・プレビュー・削除に加え「メイン画像にする」操作を持つ)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
