@@ -26,7 +26,7 @@ flowchart LR
     webapp["Webアプリ<br>（Cloudflare Workers・静的配信）"]
     supabase[("Supabase<br>DB・Storage・Auth")]
     ntfy["ntfy<br>（運営者への通知）"]
-    localTool["運営者のローカルツール<br>（Claude Code Skill＋LLM・Webアプリ外）"]
+    localTool["運営者のローカルツール<br>（Claude Code Skill＋LLM・画像検索/加工API・Webアプリ外）"]
 
     users -->|閲覧・依頼送信・お気に入り・コメント・通報| webapp
     admin -->|モデレーション・依頼確認| webapp
@@ -72,6 +72,7 @@ flowchart LR
     register["/board-game-rules/register<br>登録依頼画面"]
     requestsDb[("game_requests")]
     photosDb[("写真Storage<br>（非公開）")]
+    introPhotosDb[("紹介画像Storage<br>（公開）")]
     webhook["Supabase Database Webhooks"]
     ntfy["ntfy（運営者への通知）"]
 
@@ -79,6 +80,7 @@ flowchart LR
     cf --> register
     register -->|写真＋分類情報の依頼を送信（anon可）| requestsDb
     register -->|写真を保存（非公開）| photosDb
+    register -->|ゲーム紹介画像を保存（任意・公開）| introPhotosDb
     requestsDb -->|INSERTをトリガー| webhook
     webhook -->|HTTP POST| ntfy
 ```
@@ -88,21 +90,24 @@ flowchart LR
 flowchart TD
     admin["運営者<br>（/board-game-rules/admin）"]
     localTool["運営者のローカルツール<br>（Claude Code Skill）"]
-    llm["Anthropic API<br>（Claude Codeセッション経由・追加課金なし）"]
+    externalApis["外部API群<br>（Anthropic Claude・BoardGameGeek・Google Gemini）"]
     auth["Supabase Auth<br>（運営者判定）"]
     gamesDb[("games")]
     requestsDb[("game_requests")]
-    photosDb[("写真Storage")]
+    photosDb[("写真Storage<br>（非公開）")]
+    introPhotosDb[("紹介画像Storage<br>（公開）")]
     commentDb[("comments")]
     reportDb[("reports")]
 
     admin -->|運営者判定| auth
-    localTool -->|写真を解析しルール生成| llm
+    localTool -->|写真解析・ルール生成／画像検索・AI加工| externalApis
     localTool -->|ゲーム情報をINSERT（service_role）| gamesDb
     localTool -->|依頼を処理済みに更新（service_role）| requestsDb
+    localTool -->|紹介画像なし依頼を自動補完（service_role）| introPhotosDb
     admin -->|依頼の確認・処理済みマーク・削除（RLS）| requestsDb
     admin -->|ゲームの編集・削除（RLS）| gamesDb
     admin -->|元写真の照合閲覧（RLS）| photosDb
+    admin -->|紹介画像の差し替え・削除（RLS）| introPhotosDb
     admin -->|通報の確認（RLS）| reportDb
     admin -->|コメントの削除（RLS）| commentDb
 ```
@@ -113,6 +118,8 @@ flowchart TD
 Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じで、本アプリもランタイムのサーバー機能を持たない(静的配信のみ)。投稿者は`/board-game-rules/register`で写真をアップロードし、分かる範囲の分類情報(ゲーム名・対応人数・プレイ時間・ジャンルなど、すべて任意)を入力して送信すると、`board_game_rules_game_requests`に依頼として保存される([game-registration](game-registration/requirements.md))。この時点でゲームは公開されない。
 
 依頼のINSERTはSupabase Database Webhooksでntfyへ通知され、運営者はローカルのClaude Code Skill(`.claude/skills/board-game-rules-batch-register/`)を使って写真を確認し、ゲーム情報とルール本文(簡単版・詳しい版)を生成、`board_game_rules_games`へ登録する。このLLM呼び出しは運営者自身のClaude Codeセッション上で行われ、Webアプリからの追加のAPI課金は発生しない([admin](admin/requirements.md))。
+
+投稿者は登録依頼にゲーム紹介画像(パッケージ・コンポーネント・プレイ風景など)を任意で添付でき、一覧・詳細で公開表示される(元写真とは別の**公開**Storageバケットに保存する)。投稿者が添付しなかった場合、運営者のローカルツールがBoardGameGeek API(画像検索)とGoogle Gemini API(AI画像加工、そのまま転載しない)で自動補完する。いずれの外部APIも運営者のローカル環境から無料枠の範囲で呼び出され、Webアプリ・Cloudflare Workersのコード・課金構造には影響しない([game-registration](game-registration/requirements.md)、[admin](admin/requirements.md))。
 
 訪問者は一覧・絞り込み([game-list](game-list/requirements.md))と詳細([game-detail](game-detail/requirements.md))を未ログインで閲覧でき、ルールは簡単版・詳しい版のタブで確認できる。ログイン(Google OIDC、利用者全員が対象)した利用者は、お気に入りの登録・一覧([favorite](favorite/requirements.md))と、ゲームごとのコメント投稿([comment](comment/requirements.md))ができる。内容に問題があれば誰でも通報でき([report](report/requirements.md))、運営者は管理画面([admin](admin/requirements.md))でゲームの編集・削除、通報の確認、コメントの削除、元写真の照合閲覧、登録依頼の確認・処理済みマーク・削除を行う。管理画面は既存の読み取り専用テンプレート([ADR-0006](../../docs/adr/0006-admin-screen-oidc-rls.md))の例外として書き込みを認める([ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md))。
 
@@ -125,6 +132,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | ntfy | 運営者への新規依頼通知(既存のClaude Codeセッション通知と同じ運用) |
 | Supabase Auth(Google OIDC) | 利用者ログイン(お気に入り・コメント)、運営者判定(管理画面) |
 | Claude Code(ローカル、Skill) | 運営者が登録依頼をもとにゲーム情報・ルール本文を生成する際に使う。Webアプリの一部ではない |
+| BoardGameGeek API(ローカルツールから、無料枠) | ゲーム紹介画像が未添付の依頼を登録する際、ゲーム名で画像検索する。Webアプリの一部ではない |
+| Google Gemini API(ローカルツールから、無料枠) | 検索で見つけた画像をそのまま転載せずAI加工する。Webアプリの一部ではない |
 | Tailwind CSS | スタイリング |
 
 選定理由はプロジェクト横断のため[関連ADR](#11-関連adr)を参照。
@@ -134,12 +143,12 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 |---|---|---|---|
 | [user-auth](user-auth/requirements.md) | Google OIDCによる任意ログイン基盤・運営者判定を提供する | [docs/adr/0006](../../docs/adr/0006-admin-screen-oidc-rls.md)を踏襲 | リリース済み |
 | [favorite](favorite/requirements.md) | ログイン利用者がゲームをお気に入り登録し一覧で振り返る | user-authのログイン状態、game-registrationのゲームID | リリース済み |
-| [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う) | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 | リリース済み |
-| [game-list](game-list/requirements.md) | 登録ゲームの一覧表示と複数分類での絞り込み(アプリのトップ) | game-registrationが供給する登録済みゲーム、game-detailへ遷移、favoriteのお気に入り操作 | リリース済み |
-| [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能 | 仕様のみ(未実装) |
+| [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う)。ゲーム紹介画像の任意アップロード・並び替えも受け付ける | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 | リリース済み |
+| [game-list](game-list/requirements.md) | 登録ゲームの一覧表示と複数分類での絞り込み(アプリのトップ)。カードにゲーム紹介画像のメイン画像を表示 | game-registrationが供給する登録済みゲーム、game-detailへ遷移、favoriteのお気に入り操作 | リリース済み |
+| [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線・ゲーム紹介画像ギャラリーを表示 | 登録済みゲーム、favorite/comment/reportの各機能 | 仕様のみ(未実装) |
 | [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 | 仕様のみ(未実装) |
 | [report](report/requirements.md) | 閲覧者による通報(匿名可)。自動非表示にせず運営者判断を挟む | game-detailの通報導線、adminで確認・対応 | 仕様のみ(未実装) |
-| [admin](admin/requirements.md) | 運営者のモデレーション(編集・削除・通報確認・写真照合・コメント削除)と登録依頼の確認。登録依頼からのゲーム登録はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/report/commentの各データ、ADR-0006/0007 | リリース済み |
+| [admin](admin/requirements.md) | 運営者のモデレーション(編集・削除・通報確認・写真照合・コメント削除・ゲーム紹介画像の差し替え/削除)と登録依頼の確認。登録依頼からのゲーム登録・紹介画像の自動補完(BoardGameGeek+Gemini)はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/report/commentの各データ、ADR-0006/0007 | リリース済み |
 | [design-system](design-system/requirements.md) | アプリ内の画面の系統を揃えるper-appデザインシステムの土台(トークン+chromeルールの一元管理=[DESIGN.md](DESIGN.md)、共通部品カタログ=`app/board-game-rules/styleguide/`)。全画面の見た目の共有財産 | 確定済みAnalog Hearth([game-registration](game-registration/requirements.md))・共通ナビ、PR #207の運用ルール | リリース済み |
 
 ## 8. コンポーネント図
@@ -178,12 +187,15 @@ CLAUDE.mdの一般規約(`components/`,`lib/`)に従う。ランタイムサー�
 | Supabase(`board_game_rules_games`テーブル) | ゲームの分類情報・ルール本文(簡単版・詳しい版)の保存 |
 | Supabase(`board_game_rules_game_requests`テーブル) | 利用者からの登録依頼(写真パス+任意の分類情報)の保存 |
 | Supabase Storage(写真、非公開) | 依頼写真・登録済みゲームの元写真の保存(運営者のみ照合用に閲覧) |
+| Supabase Storage(ゲーム紹介画像、公開) | 一覧・詳細で表示するゲーム紹介画像の保存(誰でも公開URLで閲覧可) |
 | Supabase(`board_game_rules_favorites`テーブル) | ログイン利用者本人のお気に入りの保存 |
 | Supabase(`board_game_rules_comments`テーブル) | ゲームごとのコメントの保存 |
 | Supabase(`board_game_rules_reports`テーブル) | 通報の保存(匿名) |
 | Supabase Auth(Google OIDC) | 利用者ログイン・運営者判定 |
 | Supabase Database Webhooks | 登録依頼のINSERTを検知してntfyへ通知する |
 | ntfy | 運営者への新規依頼通知 |
+| BoardGameGeek API(ローカルツールから) | ゲーム紹介画像の自動補完(画像検索) |
+| Google Gemini API(ローカルツールから) | ゲーム紹介画像の自動補完(AI画像加工) |
 
 テーブルが複数あり`auth.users`とのリレーションも生まれるため、ER図を置く。各カラムの正となる文章は各specのdesign.md「データベース設計」。テーブル名・カラムは設計で確定済み(`board_game_rules_games`は運営者の論理削除用に`deleted_at`を持ち、`is_official`列は持たない。コメントは公開表示のため`author_name`を非正規化保存)。
 
@@ -206,6 +218,7 @@ erDiagram
 ## 12. セキュリティ
 - **課金の発生しない設計**: Webアプリ(Cloudflare Workers・Supabase)からはAnthropic APIを一切呼び出さない。写真解析・ルール生成は運営者のローカル環境(Claude Codeセッション)で行うため、匿名投稿によるLLM費用の無制限消費というリスクが構造的に生じない
 - 写真は機微になりうる原本のため一般公開せず、Storage側のアクセス制御で運営者のみ閲覧可能にする([admin/requirements.md](admin/requirements.md))
+- ゲーム紹介画像は元写真とは異なり公開が前提のため、別の公開Storageバケットに分離する。著作権配慮(実物撮影またはAI加工に限る)は運用ルールであり技術的な強制はできず、通報・運営者の差し替え/削除で事後対応する([game-registration/requirements.md](game-registration/requirements.md))
 - `board_game_rules_games`へのINSERTはWeb側(anon/authenticated)に一切許可しない。運営者のローカルツールがservice_role相当の権限で書き込む(匿名からのスパムゲーム直接登録という残余リスクがなくなる)
 - お気に入り・コメントは本人の行のみRLSで操作可能とし、コメント削除のみ運営者判定で例外的に許可する。管理画面の書き込み(編集・削除)、登録依頼のSELECT/UPDATE/DELETEは運営者判定+RLSで担保する
 - ntfyの通知先URL(トピック名)はリポジトリに含めず、Supabaseダッシュボードの設定として保持する
@@ -217,4 +230,5 @@ erDiagram
 ## 14. 用語集
 - **簡単版 / 詳しい版**: ルール本文の2つの版。簡単版は要点のみの要約、詳しい版は共通の章立てに沿った詳細な独自解説(数値・条件・例外は省略・改変しない精密な言い換え)
 - **登録依頼**: 利用者が写真+任意の分類情報を送信したもの(`board_game_rules_game_requests`)。それ自体では公開されず、運営者の登録作業を経て`board_game_rules_games`になる
+- **ゲーム紹介画像**: パッケージ・コンポーネント・プレイ風景などを紹介する、一般公開する画像(`intro_photo_paths`)。投稿者が任意でアップロードでき、未アップロードなら運営者のローカルツールが自動補完する。非公開の元写真(ルールブック撮影分)とは別物
 - **精密な言い換え**: 原文の言い回しは使わず独自の文章にしつつ、ルールの実質的な中身(数値・条件・例外)は一切変えない書き換え方

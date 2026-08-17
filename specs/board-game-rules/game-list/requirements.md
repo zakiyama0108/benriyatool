@@ -15,6 +15,7 @@ board-game-rules(ボドゲのトリセツ)アプリのトップ画面。登録�
 - 利用者として、今日遊べる人数・時間・好みのジャンルなどで絞り込んで、条件に合うゲームを探したい
 - 利用者として、絞り込んだ結果から気になったゲームの詳細を見たい
 - 利用者として、ログインせずに一覧の閲覧・絞り込みを使いたい
+- 利用者として、ゲームの紹介画像を見て雰囲気をつかみたい
 
 ## ユースケース図
 ```mermaid
@@ -59,6 +60,10 @@ flowchart LR
 - [10] `/board-game-rules`のメタ情報(title/description)を設定する: title「ボードゲームのルール確認｜人数・時間・ジャンルで探せる無料データベース」、description「ボードゲームの説明書の写真からルールを自動生成して登録し、対応人数・プレイ時間・ジャンルなどで絞り込んで探せる無料のルール確認サービスです。」(元は[hub-site/requirements.md](../../hub-site/requirements.md)に暫定直接定義されていたものを本specの実装着手にあわせて移設。文言は変更しない)
 - [11] トップページ([hub-site/requirements.md#機能要件-2](../../hub-site/requirements.md))のツールカード一覧に、本アプリ(ボドゲのトリセツ)のツールカードを追加する
 
+### 画像表示
+- [12] 各項目(カード)に、ゲームのメイン画像をサムネイルとして表示する([game-registration/requirements.md](../game-registration/requirements.md)で登録される、ゲーム紹介画像の並び順の先頭)
+- [13] メイン画像が未登録のゲームは、プレースホルダー表示にする(表示崩れを防ぐため)
+
 ## ビジネスルール・制約
 
 ### 表示対象
@@ -72,6 +77,7 @@ flowchart LR
 - 一覧・絞り込みの対象データ(各項目の値)は[game-registration/requirements.md#機能要件-3](../game-registration/requirements.md)で登録される内容に従う
 - 各項目からの遷移先は[game-detail/requirements.md](../game-detail/requirements.md)
 - お気に入り操作は[favorite/requirements.md](../favorite/requirements.md)に従う
+- メイン画像は[game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md)で登録・並び替えされる内容に従う
 
 ## スコープ外
 - フリーワードによる全文検索(ルール本文・コメントを対象とした検索)。絞り込みは上記の分類項目と作者テキスト検索に限定する

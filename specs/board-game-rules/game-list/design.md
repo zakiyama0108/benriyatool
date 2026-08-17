@@ -8,7 +8,7 @@
 ### 公開中のゲームを取得する処理
 - 対象: 一覧・絞り込みの元になる`board_game_rules_games`のレコード
 - 手順:
-  1. `deleted_at is null`(公開中・削除されていない)のゲームを取得する(requirements.md#表示対象-1)。`photo_paths`(元写真パス)は選択せず、一覧・絞り込み・詳細に必要な列だけを取得する([game-registration/design.md#セキュリティ](../game-registration/design.md))
+  1. `deleted_at is null`(公開中・削除されていない)のゲームを取得する(requirements.md#表示対象-1)。`photo_paths`(元写真パス)は選択せず、一覧・絞り込み・詳細に必要な列だけを取得する([game-registration/design.md#セキュリティ](../game-registration/design.md))。`intro_photo_paths`(ゲーム紹介画像、公開列)はサムネイル表示に使うため取得する
   2. 初期の並び順は登録日時の新しい順とする(並び替えの複数指定はスコープ外。requirements.md#スコープ外)
   3. 取得に失敗した場合は、一覧を表示せずエラーが分かる表示にする(後述エラーハンドリング)
 - 補足: 現状は件数が少ない前提で全件取得し、絞り込みは取得済みデータに対して画面側で行う(ページネーションの詳細はスコープ外。requirements.md#スコープ外)。件数が増えた段階で取得の分割を別途検討する
@@ -50,19 +50,29 @@
 - 手順: すべての絞り込み条件を解除し、全公開ゲームを登録日時の新しい順で表示する状態に戻す(requirements.md#絞り込み-8)
 - 関連するビジネスルール: requirements.md#絞り込み-8
 
+### メイン画像を表示する処理
+- 対象: 各ゲームの`intro_photo_paths`(順序付き。先頭がメイン画像。[game-registration/design.md#データベース設計](../game-registration/design.md))
+- 手順:
+  1. `intro_photo_paths`の先頭パスがあれば、公開Storageバケット(`board-game-rules-game-photos`)の公開URLに変換し、カード上部のサムネイルとして表示する(requirements.md#画像表示-12)
+  2. `intro_photo_paths`が空配列(メイン画像未登録)の場合は、サムネイル領域にプレースホルダー(汎用モチーフのアイコン+`bgr-card`系の背景色)を表示する。表示崩れを防ぐため、画像の有無にかかわらずカード内で同じ縦横比の領域を確保する(requirements.md#画像表示-13)
+- 補足: 公開URLへの変換は`app/board-game-rules/lib/gamePhotos.ts`の`getGamePhotoUrl`(新規)を使う。公開バケットのため署名URLの発行は不要
+- 関連するビジネスルール: requirements.md#画像表示-12、requirements.md#画像表示-13
+
 ## バリデーション
 - 対応人数・プレイ時間の指定は、数値または時間帯の選択とする。不正な入力(範囲の逆転など)は指定を無効として扱い、絞り込みに反映しない(絞り込みは元データを壊さないため、厳密なエラー表示は不要)
 
 ## エラーハンドリング
 - ゲーム一覧の取得が失敗した場合は、一覧を表示せず、取得に失敗した旨と再試行の手段を表示する(空の一覧を出すと「登録が0件」なのか「取得失敗」なのか区別できないため。管理画面のエラー方針と同じ考え方)
 - お気に入りの登録・解除の失敗は[favorite/design.md](../favorite/design.md)の方針に従う(一覧の主機能である閲覧・絞り込みは止めない)
+- カード1件のメイン画像サムネイルの読み込みに失敗しても(リンク切れ等)、そのカードをプレースホルダー表示に切り替えるだけで、他のカード・一覧全体の表示は止めない(`<img>`の個別読み込みエラーとして扱う。[game-detail/design.md#エラーハンドリング](../game-detail/design.md)と同方針)
 
 ## 関連するファイル(抜粋)
 ```
 app/board-game-rules/page.tsx (新規: 一覧・絞り込み画面の本体。取得→絞り込み→表示を持つクライアント画面)
-app/board-game-rules/lib/games.ts (既存: game-registrationで作るゲーム型・取得関数を共有。一覧取得関数 fetchPublishedGames を追加)
+app/board-game-rules/lib/games.ts (既存: game-registrationで作るゲーム型・取得関数を共有。一覧取得関数 fetchPublishedGames を追加。intro_photo_pathsを含める)
+app/board-game-rules/lib/gamePhotos.ts (新規: ゲーム紹介画像の公開URL変換 getGamePhotoUrl。game-detail/adminと共有)
 app/board-game-rules/lib/filterGames.ts (新規: 取得済みゲームに絞り込み条件を適用する純粋関数、選択肢の組み立て)
-app/board-game-rules/components/GameCard.tsx (新規: 一覧の1件。ゲーム名・対応人数・プレイ時間・ジャンル・お気に入り操作)
+app/board-game-rules/components/GameCard.tsx (新規: 一覧の1件。ゲーム名・対応人数・プレイ時間・ジャンル・お気に入り操作・メイン画像サムネイル(未登録はプレースホルダー))
 app/board-game-rules/components/FilterPanel.tsx (新規: 絞り込みの操作UI。各分類・作者テキスト検索・リセット)
 app/board-game-rules/components/LoginStatus.tsx (既存: user-authの共通ログイン導線)
 app/board-game-rules/components/FavoriteButton.tsx (favorite/design.mdで作るお気に入り操作。一覧の各カードから使う)
@@ -85,6 +95,8 @@ app/lib/supabaseClient.ts (既存の共通クライアントを利用)
   - **絞り込みパネルの「検索する」ボタン**: requirements.md#絞り込み-9「絞り込み条件を変更すると、一覧表示と件数表示の両方に即座に反映される」と矛盾する(即時反映であり、明示的な送信操作を挟まない)ため実装しない。`リセット`操作のみ設ける
   - **モバイル下部のタブバー**(Library/Search/Register/Settings): register/favoritesを含むアプリ全体のchrome変更になるため、本画面(game-list)のPRには含めない。別タスクとして切り出す(現状モバイルは`BoardGameNav`が`md`未満で非表示になり他画面への遷移導線が無い。この課題への対応として別途検討する)
   - **モバイルのジャンルのクイックフィルターチップ**(横スクロールの「すべて/戦略・ストラテジー/カードゲーム…」): デスクトップ・モバイルともジャンルは他の分類と同じドロップダウン形式に統一し、モバイル専用の別UIは作らない
+
+上記の採用スクリーンには元々、各カード上部にゲーム画像(全幅、右上にお気に入りアイコンを重ねる構成)が含まれていた。この画像表示はゲーム紹介画像の要件が確定する前は表示するデータがなかったため実装時に見送られていたが、[game-registration](../game-registration/design.md)で`intro_photo_paths`が確定したことで、確定済みスクリーンどおりに実装する(新たなStitch画面生成は不要)。画像が無いゲームのプレースホルダーはStitchスクリーンに含まれないため、`bgr-card`背景+汎用モチーフのアイコン(ナビロゴと同系統のミープルシルエット等)で新規に定める。
 
 ### デザイントークン(Analog Hearth)
 配色・フォント・角丸・階層表現(影を使わず1px罫線で階層を出す方針)・アクセシビリティの各トークンの定義は、アプリ共通の一元管理先 [DESIGN.md](../DESIGN.md) を参照する(値をここに書き写すと二重管理になるため。実体は`app/globals.css`の`bgr-*`)。
@@ -113,7 +125,7 @@ register/favoritesと同じ3階層: 「べんりやつーる(リンク`/`) › �
 - 共通ヘッダー: パンくず、`LoginStatus`(ログイン導線)。register/favoritesは本文ヘッダーに他画面への導線テキストリンクを持たない(左サイドバー共通ナビのみ。`md`未満ではナビ自体が非表示になり、モバイルでの他画面遷移導線が無い状態が既に残っている。[DESIGN.md#2-共通chromeルール](../DESIGN.md))。本画面もその既存方針に揃え、新規登録・お気に入り一覧への導線を本文ヘッダーには重複配置しない(ナビが唯一の遷移経路)
 - 絞り込みパネル(`FilterPanel`): 対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー/出版社・言語依存度・受賞歴の各絞り込み(ドロップダウン形式、いずれも単一選択。ジャンルは1つ選ぶと、そのジャンルを含む=複数ジャンルを持つゲームも対象になる。「絞り込みを適用する処理」参照)と、作者のテキスト検索、リセット操作。採用スクリーンに合わせ、デスクトップは全項目(8分類のドロップダウン+作者テキスト検索+リセット)を本文上部に常時表示する。モバイルは画面幅が狭いため、**作者テキスト検索欄のみ常時表示**とし、その右のアイコンボタンで残り8分類のドロップダウン+リセットを開閉する(初期状態は閉じている。開いている間も作者テキスト検索欄は隠れず操作できる)
 - 件数表示: 現在の条件に一致する件数
-- 一覧(`GameCard`のカード形式): 各カードにゲーム名・対応人数・プレイ時間・ジャンルを最低限表示する。ログイン中はお気に入りの登録・解除操作を表示する(requirements.md#一覧表示-4、[favorite](../favorite/requirements.md))。カードから詳細画面へ遷移できる(requirements.md#一覧表示-2)
+- 一覧(`GameCard`のカード形式): カード上部にメイン画像(またはプレースホルダー)を全幅で表示し、その下にゲーム名・対応人数・プレイ時間・ジャンルを最低限表示する。ログイン中はお気に入りの登録・解除操作を画像の右上に重ねて表示する(requirements.md#一覧表示-4、[favorite](../favorite/requirements.md))。カードから詳細画面へ遷移できる(requirements.md#一覧表示-2)
 - 一覧・絞り込みはログイン不要で使える(requirements.md#一覧表示-3)
 
 ## 状態管理
@@ -135,6 +147,7 @@ stateDiagram-v2
 ## セキュリティ
 - 取得は公開中(`deleted_at is null`)のゲームに限られ、削除されたゲームは表示しない(RLSでも担保。requirements.md#表示対象-1)
 - 一覧・絞り込みは`photo_paths`(元写真パス)を取得しない。加えて`anon`は列単位のSELECT権限から`photo_paths`が除外されており、細工したクライアントでも直接読み取れない(列秘匿のDB担保は[game-registration/design.md#データベース設計](../game-registration/design.md)を正とする)。元写真は一覧・詳細に一切出さない
+- `intro_photo_paths`(ゲーム紹介画像)は公開列・公開Storageのため、`photo_paths`のようなアクセス制御は不要(そもそも一般公開する画像。requirements.md#画像表示-12)。画像の`src`は公開URLの文字列であり、HTMLとして解釈される経路には渡さない(`<img src>`のみで使用)
 - 作者テキスト検索は取得済みデータに対する画面側の部分一致で行い、任意の文字列がそのままDBクエリに渡ることはない(仮にDB側で検索する場合も、パラメータ化した問い合わせを使い、入力を埋め込まない)
 - ゲーム名・ジャンル等の表示は、投稿者が修正しうる値であってもHTMLとして解釈しない形で描画する([game-registration/design.md#セキュリティ](../game-registration/design.md)と同方針)
 
@@ -146,7 +159,8 @@ stateDiagram-v2
 
 ## 依存関係
 - 一覧・絞り込みの対象データは[game-registration/design.md](../game-registration/design.md)で登録される内容に従う。ゲーム型は`app/board-game-rules/lib/games.ts`を共有する(共通章立て`rulesChapters.ts`は「詳しい版」を章見出し付きで表示する[game-detail](../game-detail/design.md)専用で、章立てを表示しない一覧は依存しない)
-- 各カードからの遷移先は[game-detail/design.md](../game-detail/design.md)
+- 各カードからの遷移先は[game-detail/design.md](../game-detail/design.md)。カードのメイン画像とギャラリー全体表示は`intro_photo_paths`を共通のデータソースとして参照する
 - お気に入り操作は[favorite/design.md](../favorite/design.md)に従う(`FavoriteButton`を各カードで使う)
 - 共通chrome・トークンは[DESIGN.md](../DESIGN.md)に従う(唯一の真実の源)。共通部品カタログは[design-system/design.md](../design-system/design.md)のstyleguideページを参照する
 - トップページ掲載・メタ情報は[hub-site/requirements.md](../../hub-site/requirements.md)の規約に従う(requirements.md#メタ情報)
+- ゲーム紹介画像の公開URL変換(`lib/gamePhotos.ts`の`getGamePhotoUrl`)は本specで実装し、[game-detail](../game-detail/design.md)・[admin](../admin/design.md)と共有する

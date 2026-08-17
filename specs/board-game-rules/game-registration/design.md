@@ -13,10 +13,12 @@ sequenceDiagram
     participant notify as ntfy(運営者への通知)
 
     poster ->> screen: ルールブックの写真を複数枚アップロード(必須)
+    poster ->> screen: ゲーム紹介画像を複数枚アップロード・並び替え(任意)
     poster ->> screen: 分かる範囲の分類情報を入力(すべて任意)
     poster ->> screen: 送信
-    screen ->> storage: 写真を非公開バケットに保存
-    screen ->> db: 依頼(写真パス+分類情報)をINSERT(anon可)
+    screen ->> storage: ルールブック写真を非公開バケットに保存
+    screen ->> storage: ゲーム紹介画像を公開バケットに保存(選択時のみ)
+    screen ->> db: 依頼(写真パス+紹介画像パス+分類情報)をINSERT(anon可)
     db -->> notify: INSERTをトリガーにWebhookで通知
     alt 成功
         db -->> screen: 完了
@@ -28,15 +30,27 @@ sequenceDiagram
 ```
 
 ### 依頼を送信する処理
-- 対象: 登録依頼画面で入力された写真・分類情報
+- 対象: 登録依頼画面で入力された写真・ゲーム紹介画像・分類情報
 - 手順:
   1. 投稿者が写真を複数枚(表紙・目次・各ページなど)選択する。最低1枚は必須(requirements.md#写真のアップロード-1)
-  2. 分類情報(ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー・作者・言語依存度・受賞歴・発売年)を任意で入力する。ジャンルは固定の選択肢(下記「ジャンルの選択肢」)から複数選べる(requirements.md#分類情報の任意入力-4)
-  3. 送信操作で、まず写真を非公開Storageバケットへ保存し、パスを控える(既存の[admin/design.md#元写真の非公開Storage](../admin/design.md)のバケットをそのまま使う)
-  4. 続けて、写真パス+入力済み分類情報を`board_game_rules_game_requests`にINSERTする(未ログインでも送信できる。requirements.md#依頼の送信-5)
-  5. 保存が成功したら、完了表示に切り替える(requirements.md#依頼の送信-6)。この時点ではゲームは一覧・検索の対象にならない(公開は運営者の登録作業を経てから。requirements.md#公開ポリシー-5)
-  6. 写真保存またはDB保存に失敗した場合は、入力内容を保持したまま失敗表示をし、再送できるようにする(requirements.md#依頼の送信-7)
-- 関連するビジネスルール: requirements.md#写真のアップロード、requirements.md#分類情報の任意入力、requirements.md#依頼の送信
+  2. 投稿者は、ゲーム紹介画像を複数枚(任意、上限20枚)選択できる。0枚のまま送信してもよい(requirements.md#ゲーム紹介画像のアップロード-9)
+  3. 分類情報(ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー・作者・言語依存度・受賞歴・発売年)を任意で入力する。ジャンルは固定の選択肢(下記「ジャンルの選択肢」)から複数選べる(requirements.md#分類情報の任意入力-4)
+  4. 送信操作で、まずルールブック写真を非公開Storageバケットへ保存し、パスを控える(既存の[admin/design.md#元写真の非公開Storage](../admin/design.md)のバケットをそのまま使う)
+  5. ゲーム紹介画像を選択していれば、続けて公開Storageバケット([admin/design.md#ゲーム紹介画像の公開Storage](../admin/design.md))へ、下記「ゲーム紹介画像を選択・並び替える処理」で確定した並び順どおりに保存し、パスを配列で控える(0枚の場合はこの手順をスキップし、空配列のまま次に進む)
+  6. 続けて、ルールブック写真パス+ゲーム紹介画像パス(順序付き配列)+入力済み分類情報を`board_game_rules_game_requests`にINSERTする(未ログインでも送信できる。requirements.md#依頼の送信-5)
+  7. 保存が成功したら、完了表示に切り替える(requirements.md#依頼の送信-6)。この時点ではゲームは一覧・検索の対象にならない(公開は運営者の登録作業を経てから。requirements.md#公開ポリシー-5)
+  8. いずれかの保存(ルールブック写真・ゲーム紹介画像・DB)に失敗した場合は、入力内容を保持したまま失敗表示をし、再送できるようにする(requirements.md#依頼の送信-7)
+- 関連するビジネスルール: requirements.md#写真のアップロード、requirements.md#ゲーム紹介画像のアップロード、requirements.md#分類情報の任意入力、requirements.md#依頼の送信
+
+### ゲーム紹介画像を選択・並び替える処理
+- 対象: 依頼フォームで選択したゲーム紹介画像(送信前、ブラウザ内のみで完結する操作)
+- 手順:
+  1. 投稿者はゲーム紹介画像を任意で複数枚(上限20枚。ルールブック写真とは別枠でカウントする)選択できる(requirements.md#ゲーム紹介画像のアップロード-9)
+  2. 選択した各画像に「メイン画像にする」操作を用意する。押すとその画像が選択済み画像の先頭へ移動し、他の画像は選択順を保ったまま1つずつ後ろへずれる(requirements.md#ゲーム紹介画像のアップロード-11)
+  3. 常に先頭の画像に「メイン画像」の印を表示し、どれが一覧・詳細のメイン画像になるかを投稿者が確認できるようにする(requirements.md#ゲーム紹介画像のアップロード-10)
+  4. 画像は個別に削除できる(ルールブック写真の`PhotoUploader`と同様)
+- 補足: 上限20枚に達した状態からの追加選択は切り捨てる(`PhotoUploader`の既存挙動と同じ)。並び替えの操作は「先頭へ移動」のみを提供し、任意の2枚を入れ替える汎用ドラッグ&ドロップは設けない(要件が求めるのは「どれをメイン画像にするか」の指定であり、それ以外の順序に業務上の意味を持たないため。シンプルさを優先する判断)
+- 関連するビジネスルール: requirements.md#ゲーム紹介画像のアップロード
 
 ### 運営者へ通知する処理
 - 対象: `board_game_rules_game_requests`への新規INSERT
@@ -85,11 +99,15 @@ sequenceDiagram
 
 ## バリデーション
 - 写真: 最低1枚必須(requirements.md#写真のアップロード-1)、上限20枚(匿名アップロードの量的制約。[admin/design.md#元写真の非公開Storage](../admin/design.md)参照)
-- 対応人数・プレイ時間: 入力する場合、下限≤上限であること(下限>上限は送信不可。requirements.md#入力値の制約-9)。DB側でもCHECK制約で担保する(ただしどちらも未入力の場合はCHECKをスキップする。片方のみ入力は許容しない=両方揃うか両方空欄かのどちらか)
+- ゲーム紹介画像: 0枚(任意)〜上限20枚(requirements.md#ゲーム紹介画像のアップロード-9。ルールブック写真とは別枠のカウント)
+- 対応人数・プレイ時間: 下限・上限は個別に任意入力(片方のみの入力も許容する)。両方入力されている場合のみ下限≤上限であること(下限>上限は送信不可。requirements.md#入力値の制約-9)。DB側でも同じ条件のCHECK制約で担保する(どちらか一方でもnullならCHECKをスキップする)
 - ジャンル: 選択する場合、上記固定リストの値のみで構成されること(0個・複数選択のいずれも可)
 
 ## 元写真のStorage
 依頼の写真は[admin/design.md#元写真の非公開Storage](../admin/design.md)で定義済みの非公開バケット(`board-game-rules-photos`)にそのまま保存する。運営者が登録時に使う元写真もこのバケットを共有する(依頼時の写真パスをそのまま`board_game_rules_games.photo_paths`へ引き継ぐ想定。運営者側の登録処理で別の写真に差し替えることもできる)。
+
+## ゲーム紹介画像のStorage
+ゲーム紹介画像は、上記の元写真バケットとは別の**公開**Storageバケット(`board-game-rules-game-photos`)に保存する(定義は[admin/design.md#ゲーム紹介画像の公開Storage](../admin/design.md)。バケットを分ける理由は、元写真=非公開・紹介画像=公開という公開範囲そのものが異なるため。requirements.md#ゲーム紹介画像の取り扱い-10)。依頼時点ではゲームIDが未確定のため、元写真と同じ考え方でクライアント採番のアップロードUUID配下に保存する(`<アップロードUUID>/<並び順の連番>.<拡張子>`)。運営者のローカル登録ツールが依頼由来でゲームを登録する際は、このパス配列をそのまま`board_game_rules_games.intro_photo_paths`へ引き継ぐ(admin/design.md参照)。
 
 ## エラーハンドリング
 - 依頼送信(写真保存・DB保存)の失敗は、投稿者が明示的に指示した操作の失敗のため、画面に失敗が分かる定型表示をする。入力内容は保持し、やり直せるようにする
@@ -114,6 +132,7 @@ board-game-rulesアプリ全体で共有する左サイドバー(`components/Boa
 
 ### 表示項目・操作(上から)
 - **写真アップロード(主役)**: 画面最上部に大きく配置。ドラッグ&ドロップ+クリック選択、「ルールブックの全ページを推奨」の補足、選択枚数(例 3/20枚)とサムネイル一覧・削除。必須(1枚以上)。選択済みサムネイルは**ポラロイド写真風**(白フチ・下側を厚めに・軽い影・1枚ずつわずかに傾ける)で見せ、アナログ感を演出する(ホバーで傾きを戻す)
+- **ゲーム紹介画像アップロード(任意、写真アップロードの直後)**: 「パッケージ・コンポーネント・プレイ風景などがあれば」の補足付きで、ルールブック写真と同様のドラッグ&ドロップ+クリック選択・サムネイル一覧(枚数表示 例 2/20枚)・削除を提供する。各サムネイルに「メイン画像にする」ボタンを添え、先頭(=メイン画像)には「メイン」バッジを表示する(design.md「ゲーム紹介画像を選択・並び替える処理」)。任意項目のため未選択でも送信でき、必須のルールブック写真ほど強調しない(サムネイルサイズ・見出しの強さで写真アップロードと差をつける)
 - **基本情報**: ゲーム名 / 対応人数(下限〜上限)/ プレイ時間(分、下限〜上限)。下限>上限のときインラインでエラー表示
 - **ジャンル・メカニクス(アコーディオン折りたたみ)**: 既定は閉じた1行。開くと固定リスト(28種、`lib/genres.ts`)をチップで複数選択できる。**各ジャンルの説明文は、選択したチップの直下にだけ表示する**(全項目に常時表示しない=情報過多を避ける)
 - **詳細情報(軽い区切り)**: 対象年齢 / 難易度 / メーカー・出版社 / 作者 / 言語依存度(わからない・日本語ルールあり・なし)/ 受賞歴 / 発売年。いずれも任意で、セクション見出しと淡い区切りのみでまとめる
@@ -140,11 +159,13 @@ stateDiagram-v2
 
 ## 関連するファイル(抜粋)
 ```
-app/board-game-rules/register/page.tsx (変更: 写真アップロード+分類情報の任意入力+送信のみのシンプルな画面に縮小。解析・プレビュー・確定の一連は撤廃。ナビゲーションは左サイドバー共通ナビに作り替え)
+app/board-game-rules/register/page.tsx (変更: 写真アップロード+分類情報の任意入力+送信のみのシンプルな画面に縮小。解析・プレビュー・確定の一連は撤廃。ナビゲーションは左サイドバー共通ナビに作り替え。ゲーム紹介画像アップロードを追加)
 app/board-game-rules/components/BoardGameNav.tsx (新規: アプリ共通の左サイドバーナビ。register/favoritesで共有。実装済み画面のリンクのみをactiveハイライト付きで並べる)
-app/board-game-rules/lib/gameRequests.ts (新規: createGameRequest。写真Storage保存+INSERT)
+app/board-game-rules/lib/gameRequests.ts (変更: createGameRequest。写真Storage保存+INSERT。ゲーム紹介画像の公開Storage保存を追加)
 app/board-game-rules/lib/genres.ts (新規: ジャンルの固定選択肢定義。game-list/adminと共有)
-app/board-game-rules/components/PhotoUploader.tsx (新規: 複数枚の写真選択・プレビュー)
+app/board-game-rules/lib/gamePhotos.ts ([game-list/design.md](../game-list/design.md)で新規実装: ゲーム紹介画像の公開URL変換 getGamePhotoUrl。本specでは実装せずgame-list/game-detail/adminと共有利用のみ)
+app/board-game-rules/components/PhotoUploader.tsx (新規: 複数枚の写真選択・プレビュー。ルールブック写真用)
+app/board-game-rules/components/GamePhotoUploader.tsx (新規: ゲーム紹介画像用。複数枚選択・プレビュー・削除に加え「メイン画像にする」操作を持つ)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 ```
@@ -157,13 +178,14 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 
 ## データベース設計
 
-`board_game_rules_games`はスキーマを変更する(`is_official`列の撤廃、`release_year`列の追加、`genre`(単一)から`genres`(複数、text[])への変更)。新規に`board_game_rules_game_requests`を追加する。
+`board_game_rules_games`はスキーマを変更する(`is_official`列の撤廃、`release_year`列の追加、`genre`(単一)から`genres`(複数、text[])への変更)。新規に`board_game_rules_game_requests`を追加する。今回さらに、両テーブルへ`intro_photo_paths`(ゲーム紹介画像、公開Storageバケットのパス配列)を追加する。
 
 ### board_game_rules_game_requests(新規)
 | カラム | 型 | 補足 |
 |---|---|---|
 | id | uuid, primary key, default gen_random_uuid() | 依頼ID |
 | photo_paths | text[], not null | 非公開Storageに保存した写真のパス(1枚以上) |
+| intro_photo_paths | text[], not null, default '{}' | ゲーム紹介画像(公開Storageバケット)のパス。順序付きで先頭がメイン画像候補。0枚(任意)〜20枚 |
 | name | text, nullable | ゲーム名(任意) |
 | min_players | int, nullable | 対応人数の下限(任意) |
 | max_players | int, nullable | 対応人数の上限(任意) |
@@ -187,6 +209,7 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 - `release_year int`列を追加する(発売年、任意)
 - `genre text`(単一)を`genres text[]`(複数)に変更し、CHECK制約で固定リストの値のみで構成されることを担保する
 - INSERTポリシーを撤廃し、運営者のローカル登録ツール(service_role相当の権限)のみが書き込める形にする(下記マイグレーション参照。Web側からの直接INSERT経路はなくなった)
+- `intro_photo_paths text[] not null default '{}'`列を追加する(ゲーム紹介画像、公開Storageバケットのパス。順序付きで先頭がメイン画像。requirements.md#ゲーム紹介画像の取り扱い-10)。`photo_paths`(元写真、非公開)とは異なり、この列は**公開列**としてanonのSELECT許可対象に含める(下記GRANT参照)。運営者は編集画面から差し替え・削除できる([admin/design.md](../admin/design.md))
 
 ### マイグレーション(実装より先に単独PRで適用)
 ```sql
@@ -319,6 +342,33 @@ T0(マイグレーション適用)の実機確認:
 - 固定リスト外の値を含むジャンル配列・下限>上限・簡単版4000字超/詳しい版40000字超のINSERT(service_role経由)がCHECK制約で拒否されること
 - 運営者本人で全行(削除済み含む)がSELECTでき、UPDATEができること
 
+### 追加マイグレーション(ゲーム紹介画像、実装より先に単独PRで適用)
+上記2テーブルは既に実装・適用済みのため、`intro_photo_paths`は新規マイグレーション(`ALTER TABLE`)として追加する(既存の`create table`文は変更しない)。
+
+```sql
+-- board_game_rules_game_requests へゲーム紹介画像のパス列を追加
+alter table board_game_rules_game_requests
+  add column intro_photo_paths text[] not null default '{}';
+
+-- board_game_rules_games へゲーム紹介画像のパス列を追加
+alter table board_game_rules_games
+  add column intro_photo_paths text[] not null default '{}';
+
+-- 閲覧: intro_photo_pathsはphoto_pathsと異なり公開列のため、既存のanon向け列単位GRANTに追加する
+-- (既存GRANTを一度REVOKEしてから再GRANTする。列の追加GRANTのみを行うALTERは存在しないため)
+revoke select on board_game_rules_games from anon;
+grant select (
+  id, name, min_players, max_players, min_minutes, max_minutes,
+  genres, min_age, difficulty, publisher, author, has_japanese_rules,
+  awards, release_year, rules_simple, rules_detailed, created_at, deleted_at,
+  intro_photo_paths
+) on board_game_rules_games to anon;
+```
+
+T0(追加マイグレーション適用)の実機確認:
+- `anon`が`intro_photo_paths`を含む一覧取得クエリで公開列(旧列+`intro_photo_paths`)をSELECTでき、`photo_paths`のみは引き続き権限エラーで拒否されること(列単位の秘匿が`intro_photo_paths`追加後も崩れていないこと)
+- `board_game_rules_game_requests`へのINSERT(anon)で`intro_photo_paths`に配列を渡せること、省略時は空配列がデフォルトになること
+
 ### 運営者への通知(Supabase Database Webhooks + ntfy Message Templating)
 `board_game_rules_game_requests`へのINSERTをSupabase Database Webhooks機能(ダッシュボードから設定、pg_net拡張ベース)で購読し、ntfyへHTTP POSTする。送信先URLに、ntfy公式の**インラインMessage Templating**(`?tpl=yes`、Goテンプレート構文)を組み込むことで、中継サーバーを新設せずに次を実現する:
 - **タイトル**: 「新しい登録依頼」
@@ -333,6 +383,8 @@ T0(マイグレーション適用)の実機確認:
 - **Storage濫用への量的制約**: 依頼送信はログイン不要なため、匿名の大量送信を防ぐボット対策(Turnstile)は設けない。量的な歯止めは既存のバケットポリシー(ファイルサイズ上限・許可MIME)に委ねる(残余リスクとして許容。急増した場合は[admin](../admin/requirements.md)で運営者が気付いて対応する)
 - **games直接INSERTの禁止**: `board_game_rules_games`へのINSERTポリシーはWeb側(anon/authenticated)に一切与えない。運営者のローカル登録ツールのみがservice_role相当の権限で書き込む([admin/design.md](../admin/design.md)参照)。これにより匿名からのスパムゲーム直接登録という残余リスク(旧設計で許容していたもの)自体がなくなる
 - **ntfy通知先の非公開**: 通知先URL(トピック名)はリポジトリに含めず、Supabaseダッシュボードの設定として保持する
+- **ゲーム紹介画像の著作権配慮は運用ルールであり技術的な強制はできない**: 「実物を撮影したもの、またはAI加工したものに限る」(requirements.md#ゲーム紹介画像の取り扱い-11)は、投稿者の申告・運営者の目視確認に委ねる運用ルールで、DB・Storageの仕組みで画像の出自を検証することはできない(通報([report/design.md](../report/design.md))・運営者の差し替え・削除([admin/design.md](../admin/design.md))で事後対応する)
+- **ゲーム紹介画像バケットの量的制約**: 公開バケットも匿名アップロードを許すため、元写真バケットと同じ量的制約(ファイルサイズ上限・許可MIME・枚数上限20枚のクライアント側担保)を適用する([admin/design.md#ゲーム紹介画像の公開Storage](../admin/design.md))
 
 ## ログ
 - 依頼送信の失敗は、原因究明のためコンソールにエラーを出す(画面には定型表示のみ)。成功時はログを出さない(通常操作のため)
@@ -340,5 +392,6 @@ T0(マイグレーション適用)の実機確認:
 ## 依存関係
 - 依頼を基にした登録・公開処理は[admin/design.md](../admin/design.md)(まとめて登録する処理)に委ねる
 - 元写真の非公開Storageは[admin/design.md](../admin/design.md)で定義済みのものを使う
+- ゲーム紹介画像の公開Storageも[admin/design.md#ゲーム紹介画像の公開Storage](../admin/design.md)で定義する。投稿者が未アップロードの依頼は、運営者のローカル登録ツールが画像検索(BoardGameGeek API)+AI画像加工(Google Gemini API)で自動補完する([admin/design.md](../admin/design.md)参照)
 - ジャンルの固定リストは[game-list/design.md](../game-list/design.md)の絞り込みと共有する
-- 登録されたゲームは[game-list](../game-list/design.md)・[game-detail](../game-detail/design.md)の対象になる
+- 登録されたゲームは[game-list](../game-list/design.md)・[game-detail](../game-detail/design.md)の対象になる。ゲーム紹介画像のメイン画像表示は[game-list/design.md](../game-list/design.md)、ギャラリー表示は[game-detail/design.md](../game-detail/design.md)を参照

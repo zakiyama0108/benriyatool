@@ -14,6 +14,9 @@
 - 運営者として、管理画面を自分以外に開かれない・操作されないようにしたい
 - 運営者として、届いた登録依頼をまとめて確認し、写真をもとにゲームを登録したい
 - 運営者として、新しい登録依頼が届いたらすぐに気づけるようにしたい
+- 運営者として、登録依頼に添付されたゲーム紹介画像を確認したい
+- 運営者として、投稿者が紹介画像を用意しなかった場合でも、登録時に自動的に画像を用意したい
+- 運営者として、不適切なゲーム紹介画像を差し替え・削除したい
 
 ## 機能要件
 
@@ -43,6 +46,11 @@
 - [13] 依頼の写真・入力済み分類情報を参考に、外部ツール(ローカルのバッチ登録処理)でゲームを登録できる。登録処理自体は管理画面の外で行う(本specのスコープ外。[game-registration/requirements.md](../game-registration/requirements.md)参照)。登録が完了した依頼は、管理画面から処理済みとして記録できる
 - [14] 不要な依頼(スパム・重複・情報不足など)を削除できる
 
+### ゲーム紹介画像の確認・自動補完
+- [15] 登録依頼の確認画面で、依頼に添付されたゲーム紹介画像(あれば)を確認できる([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md))
+- [16] 登録依頼にゲーム紹介画像が添付されていない場合、登録依頼からゲームを登録するローカルツール(下記)が画像検索を行い、見つけた画像をそのまま転載せずAI画像加工を施したうえで登録する(根拠: [game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)の著作権配慮の方針に従う)
+- [17] 登録済みゲームのゲーム紹介画像を、運営者がゲームの編集画面から差し替え・削除できる(不適切な画像・著作権者からの削除要望への対応)
+
 ## ビジネスルール・制約
 
 ### アクセス制御・権限
@@ -60,6 +68,9 @@
 ### 通知
 - [7] 新しい登録依頼が届いたら、運営者に通知が届く(具体的な通知手段は[game-registration/design.md](../game-registration/design.md)で確定)
 
+### ゲーム紹介画像の自動補完
+- [8] ゲーム紹介画像の画像検索・AI加工に使う外部APIは、無料枠の範囲で運用できるものを選定する(根拠: `/consult`での判断。Webアプリ側には課金構造を持ち込まない既存方針([game-registration/requirements.md](../game-registration/requirements.md))を、運営者ローカルツールの追加機能でも維持する)
+
 ## 非機能要件
 - [1] 主にPC・スマートフォンの双方から利用しうる(外出先で通報に気付いて対応する場面を想定)。表示が破綻しない程度に配慮する
 - [2] 静的エクスポート構成を維持する。ゲームの編集・削除・写真閲覧・登録依頼の確認はDB(RLS経由)への操作で行い、モデレーション専用のサーバーを新設しない([game-registration/requirements.md](../game-registration/requirements.md)により、本アプリはランタイムサーバー機能を持たなくなった)
@@ -69,6 +80,7 @@
 - 編集・削除の対象データは[game-registration/requirements.md](../game-registration/requirements.md)、通報は[report/requirements.md](../report/requirements.md)、コメントは[comment/requirements.md](../comment/requirements.md)に従う
 - 登録依頼(写真+分類情報)の保存構造・通知手段は[game-registration/design.md](../game-registration/design.md)で確定する
 - 投稿写真という機微になりうる情報・利用者コメントの管理経路が新設されるため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
+- ゲーム紹介画像の取り扱い方針(著作権配慮・削除ポリシー)は[game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)に従う
 
 ## スコープ外
 - 複数の管理者アカウント・権限ロールの管理(利用者は運営者本人のみ)

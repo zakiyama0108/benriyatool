@@ -9,13 +9,20 @@
 - Supabaseダッシュボードで Database Webhooks(INSERT on board_game_rules_game_requests → ntfyのMessage Templating URL)を手動設定する(TDD対象外。design.md「運営者への通知」参照。タイトル・本文・クリックURL(管理画面へのリンク)が正しく届くことを実機確認する)
 - (TDD対象外: マイグレーションの適用と手動確認)
 
+## T0b. 追加マイグレーション適用(ゲーム紹介画像、実装より先に単独PRで適用)
+- `board_game_rules_game_requests`・`board_game_rules_games`へ`intro_photo_paths text[] not null default '{}'`を追加する`ALTER TABLE`マイグレーションを追加しCI適用する(design.md「追加マイグレーション」)
+- `board_game_rules_games`のanon向け列単位GRANTに`intro_photo_paths`を追加する(既存GRANTのREVOKE→再GRANT)
+- ゲーム紹介画像の公開Storageバケット(`board-game-rules-game-photos`)は[admin/tasks.md](../admin/tasks.md)のT0bで作成される(本specの依頼送信・T0bはテーブル側の列追加のみ担当)
+- design.md「追加マイグレーション」T0の実機確認(anonが`intro_photo_paths`を含めてSELECTできること・`photo_paths`は引き続き拒否されること、依頼INSERTで`intro_photo_paths`を渡せること)を行う
+- (TDD対象外: マイグレーションの適用と手動確認)
+
 ## T1. ジャンルの固定選択肢(`lib/genres.ts`)
 - 🔴 固定リストの値・順序・各項目の説明が仕様どおりであることをテストする
 - 🟢 ジャンルの選択肢定数(値+説明)を実装する(game-list/adminと共有)
 - 🔵 型・命名を整理する
 
 ## T2. 依頼データ操作(`lib/gameRequests.ts`)
-- 🔴 写真1枚以上+分類情報(すべて任意)で依頼を作成できること、写真0枚では作成できないこと(画面側バリデーション)、下限>上限は送信できないこと、写真保存/INSERT失敗時にエラーを返すことをテストする(Supabaseクライアントをモック)
+- 🔴 写真1枚以上+分類情報(すべて任意)で依頼を作成できること、写真0枚では作成できないこと(画面側バリデーション)、対応人数・プレイ時間は片方のみの入力でも作成できること(design.md#バリデーション)、下限>上限は送信できないこと、写真保存/INSERT失敗時にエラーを返すことをテストする(Supabaseクライアントをモック)
 - 🟢 createGameRequest(写真Storage保存→INSERT)を実装する
 - 🔵 失敗時の握り方(入力保持・二重送信防止)を整理する
 
@@ -52,6 +59,22 @@
   - 🔵 レスポンシブ(モバイル1カラム/デスクトップ最大720px中央寄せ)を整える
 - localhostでの画面レビューで、design.mdの見た目・確定デザインと一致することを確認する(UI変更のためStep0確定物との突き合わせ)
 
+## T7. ゲーム紹介画像アップローダー(`components/GamePhotoUploader.tsx`)
+- 🔴 複数枚選択・プレビュー・削除に加え、各画像の「メイン画像にする」操作でその画像が選択済み画像の先頭へ移動すること、先頭の画像に「メイン」表示が出ることをテストする(design.md「ゲーム紹介画像を選択・並び替える処理」)
+- 🟢 `PhotoUploader`と同様の選択・プレビュー・削除に、メイン画像指定(先頭へ移動)の操作を追加して実装する
+- 🔵 表示・操作性を整える
+
+## T8. 依頼データ操作の拡張(`lib/gameRequests.ts`)
+- 🔴 ゲーム紹介画像0〜20枚を公開Storageバケット(`board-game-rules-game-photos`)へ選択順どおりに保存し`intro_photo_paths`としてINSERTできること、0枚のままでも依頼を送信できること(必須のルールブック写真とは異なる)、紹介画像の保存に失敗した場合にエラーを返すことをテストする(Supabaseクライアントをモック)
+- 🟢 `createGameRequest`を拡張し、ゲーム紹介画像の公開Storage保存+`intro_photo_paths`のINSERTを行う
+- 🔵 失敗時の握り方を整理する
+
+## T9. 登録依頼画面へのゲーム紹介画像アップロード組み込み(`register/page.tsx`)
+- 🔴 ゲーム紹介画像セクションが写真アップロードの直後に表示されること、未選択のまま送信できること(送信ボタンが無効化されないこと)、選択・並び替え・削除がT7の`GamePhotoUploader`で行えることをテストする
+- 🟢 `GamePhotoUploader`を組み込み、送信時に`createGameRequest`(T8)へ渡す
+- 🔵 レイアウト・見出しの強弱(必須の写真アップロードより控えめ)を整える
+
 ## 補足
 - 運営者側の「まとめて登録する処理」(ローカルツール・Skill)は本specのスコープ外。[admin/tasks.md](../admin/tasks.md)を参照
 - 依頼テーブルの一覧表示・処理済みマーク・削除操作(管理画面での確認)も[admin/tasks.md](../admin/tasks.md)側のタスク
+- ゲーム紹介画像の公開URL変換(`lib/gamePhotos.ts`の`getGamePhotoUrl`)は[game-list/tasks.md](../game-list/tasks.md)で実装したものを、一覧・詳細・管理画面の各specが共有する(本specでは実装しない。登録依頼画面はアップロード前のプレビューのみのため不要)

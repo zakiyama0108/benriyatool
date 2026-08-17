@@ -2831,6 +2831,11 @@
   },
   {
     "specFile": "board-game-rules/admin/design.md",
+    "item": "詳しい版の共通章立て(生成時の構造)",
+    "reason": "上記ローカルツールが生成する構造の定義であり、ローカルツール自体と同じくWebアプリのコードではないため通常のTDDサイクル・spec-coverageの対象外とする。章キー↔表示見出しの対応は`app/board-game-rules/lib/rulesChapters.ts`のコードとして存在し、表示側の描画は[game-detail/design.md#ルール本文をタブで表示する処理]のテストで担保する"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
     "item": "エラーハンドリング",
     "reason": "画面の状態切り分け・失敗表示の方針記述で、個別の対応するビジネスルール(各処理のrequirements.md項目)側のテストで担保済みのため"
   },
@@ -3793,5 +3798,105 @@
     "specFile": "board-game-rules/game-list/design.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像のアップロード [9]",
+    "reason": "一時スキップ(未実装): /fix(ゲーム紹介画像)で要件のみ追加した段階。design.md/tasks.mdの追記・実装(TDD)が完了しテストを紐づけたらこのエントリを削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像のアップロード [10]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像のアップロード [11]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像の取り扱い [10]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像の取り扱い [11]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像の取り扱い [12]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "画像表示 [12]",
+    "reason": "一時スキップ(未実装): /fix(ゲーム紹介画像)で要件のみ追加した段階。design.md/tasks.mdの追記・実装(TDD)が完了しテストを紐づけたらこのエントリを削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "画像表示 [13]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ゲーム紹介画像の確認・自動補完 [15]",
+    "reason": "一時スキップ(未実装): /fix(ゲーム紹介画像)で要件のみ追加した段階。design.md/tasks.mdの追記・実装(TDD)が完了しテストを紐づけたらこのエントリを削除する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ゲーム紹介画像の確認・自動補完 [16]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ゲーム紹介画像の確認・自動補完 [17]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ゲーム紹介画像の自動補完 [8]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ゲーム紹介画像を選択・並び替える処理",
+    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、GamePhotoUploader.test.tsx等にテストを紐づけたらこのエントリを削除する(tasks.md T7参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ゲーム紹介画像のStorage",
+    "reason": "Storageバケット設計の記述で、実際のアクセスポリシーはadmin/design.md#ゲーム紹介画像の公開Storageのマイグレーション適用時の実機確認で担保するため(tasks.md T0b参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > intro_photo_paths",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0b)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest拡張)でテストする(tasks.md T8参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "追加マイグレーション(ゲーム紹介画像、実装より先に単独PRで適用)",
+    "reason": "マイグレーションSQL・T0の実機確認手順の記述で、TDD対象外(tasks.md T0b参照。マイグレーション適用時に実機確認する)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "ゲーム紹介画像を差し替え・削除する処理",
+    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、introPhotos.test.ts等にテストを紐づけたらこのエントリを削除する(tasks.md T3b参照)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "ゲーム紹介画像を自動補完する処理(ローカルツール内、管理画面の外)",
+    "reason": "WebアプリのコードではないClaude Code Skill(.claude/skills/board-game-rules-batch-register/)とNode.jsスクリプト(scripts/board-game-rules/registerGame.ts)の処理のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T8b参照)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "ゲーム紹介画像の公開Storage(新規: 実装より先に単独PRで適用)",
+    "reason": "Storageバケット設定・T0の実機確認手順の記述で、TDD対象外(admin/tasks.md T0b参照。マイグレーション適用時に実機確認する)"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "メイン画像を表示する処理",
+    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、GameCard.test.tsx等にテストを紐づけたらこのエントリを削除する(tasks.md T10参照)"
   }
 ]
