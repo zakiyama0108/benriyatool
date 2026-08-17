@@ -30,6 +30,10 @@
   - `/life-money-sim`: ティール背景+コーラルの点+右肩上がりの折れ線モチーフ
   - `/ai-dev-digest`: ダークスレート背景+オレンジのロボットモチーフ
   - `/board-game-rules`: オリーブグリーン背景+白いサイコロモチーフ
+- [5] `sitemap.xml`はNext.jsの動的サイトマップ生成(`app/sitemap.ts`)で作成し、ビルド時に公開中の全ページを自動列挙する(手動でのURL追記を不要にするため。根拠: `public/sitemap.xml`が手動生成のまま更新漏れとなり、新規追加した3アプリのページが1件も載っていなかった問題への対応)。以下は対象外とする
+  - 管理画面(`/**/admin/**`。ログイン必須・運営者専用のため)
+  - `/board-game-rules/styleguide`(開発者向け確認用ページのため。根拠: [specs/board-game-rules/design-system/requirements.md](../board-game-rules/design-system/requirements.md)「依存関係・非機能要件」と同じ理由)
+  - `/ai-dev-digest/bookmarks`(ログイン中の読者ごとに内容が異なる個人ページのため)
 
 ## ビジネスルール
 - サイト名は「べんりやつーる」とする(根拠: 育休以外のツールも展開するハブサイトの名称として、特定分野に縛られない名前に変更した。PR #34で「ikukyu」から改名)

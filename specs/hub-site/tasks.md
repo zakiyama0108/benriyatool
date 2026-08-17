@@ -60,3 +60,14 @@
   - [x] `app/ikukyu/icon.svg`・`app/life-money-sim/icon.svg`・`app/ai-dev-digest/icon.svg`・`app/board-game-rules/icon.svg`を追加
   - [x] life-money-simのSVGで使われていた`oklch()`の色指定は、favicon用のレンダラー(ICO変換など)が対応していない場合があるため、実測して確認した16進値(`#378a73`・`#c04442`)に変換して使用
   - [x] 16x16表示でも5案が判別できることを確認
+
+## サイトマップの動的生成化(2026-08-17)
+
+`public/sitemap.xml`が手動生成のまま運用され、`life-money-sim`・`board-game-rules`・`ai-dev-digest`の3アプリのページが1件も掲載されていなかったため対応する。今後もページ追加のたびに手動更新が必要な状態を解消し、`app/sitemap.ts`(Next.jsの動的サイトマップ生成)に切り替える。
+
+- [x] Task 10: `app/sitemap.ts`を新規実装し、公開中の全ページを自動列挙する(仕様コメント: `specs/hub-site/requirements.md#機能要件-5`)
+  - [x] 🔴 Red: `__tests__/sitemap.test.ts`に、静的ページ(`/`, `/legal`, 各アプリのトップ, `/ikukyu/guide`とその3記事, `/board-game-rules/register`, `/board-game-rules/favorites`)が含まれること、および除外対象(`/**/admin/**`, `/board-game-rules/styleguide`, `/ai-dev-digest/bookmarks`)が含まれないことを検証するテストを書く
+  - [x] 🟢 Green: `app/sitemap.ts`を実装し、`public/sitemap.xml`(手動生成ファイル)を削除する
+  - [x] `ai-dev-digest`の記事詳細(`getAllArticles()`の件数分)・2ページ目以降のページネーションURLも動的に列挙されることを確認する
+  - [x] `npm run lint` / `npm test` / `npm run build`(静的エクスポート)で`out/sitemap.xml`が生成されることを確認する
+  - [x] `output: 'export'`構成では`sitemap.ts`に`export const dynamic = 'force-static'`が必須と判明(ビルドエラーで発覚)。`nextjs-notes.md`に追記済み
