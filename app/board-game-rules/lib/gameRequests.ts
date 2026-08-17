@@ -2,9 +2,15 @@ import { supabase } from '../../lib/supabaseClient'
 import type { Genre } from './genres'
 
 const PHOTOS_BUCKET = 'board-game-rules-photos'
+// ゲーム紹介画像は元写真と異なり公開Storageバケットへ保存する
+// (仕様: game-registration/design.md「ゲーム紹介画像のStorage」)。lib/gamePhotos.tsの公開URL変換と同じバケット。
+const INTRO_PHOTOS_BUCKET = 'board-game-rules-game-photos'
 
 export type GameRequestInput = {
   photos: File[]
+  // ゲーム紹介画像(任意、0〜20枚、選択順=並び順。先頭が登録後のメイン画像候補になる)
+  // (仕様: game-registration/requirements.md#ゲーム紹介画像のアップロード-9〜11)
+  introPhotos?: File[]
   name?: string
   minPlayers?: number
   maxPlayers?: number
@@ -67,8 +73,24 @@ export async function createGameRequest(input: GameRequestInput): Promise<boolea
       photoPaths.push(data.path)
     }
 
+    // ゲーム紹介画像は任意項目のため0枚のままでもよい(design.md「依頼を送信する処理」手順5)。
+    // 選択順(=並び順、先頭がメイン画像候補)どおりに連番で公開Storageへ保存する
+    const introPhotos = input.introPhotos ?? []
+    const introPhotoPaths: string[] = []
+    for (const [index, photo] of introPhotos.entries()) {
+      const path = `${requestId}/${index}.${extensionOf(photo)}`
+      const { data, error } = await supabase.storage.from(INTRO_PHOTOS_BUCKET).upload(path, photo)
+      if (error || !data) {
+        // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+        console.error('登録依頼の送信に失敗しました: ゲーム紹介画像の保存でエラーが発生しました', error)
+        return false
+      }
+      introPhotoPaths.push(data.path)
+    }
+
     const { error } = await supabase.from('board_game_rules_game_requests').insert({
       photo_paths: photoPaths,
+      intro_photo_paths: introPhotoPaths,
       name: input.name ?? null,
       min_players: input.minPlayers ?? null,
       max_players: input.maxPlayers ?? null,
