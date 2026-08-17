@@ -432,7 +432,7 @@
   {
     "specFile": "ikukyu/guide/requirements.md",
     "item": "記事ページ共通 [8]",
-    "reason": "public/sitemap.xmlは手で追記する静的ファイルで、テスト対象のコードが存在しないため(追記内容は実装PRのdiffで確認)"
+    "reason": "サイトマップ掲載はapp/sitemap.ts(動的生成)が自動で行うため本specでの個別実装を持たない。掲載自体は__tests__/sitemap.test.tsで検証済み(仕様コメント: specs/hub-site/requirements.md#機能要件-5)"
   },
   {
     "specFile": "ikukyu/guide/requirements.md",

@@ -29,3 +29,7 @@ Vitestで直接レンダリングされるクライアントコンポーネン�
 ## クライアントコンポーネントのpageでも`params`はPromise
 
 Next.js 15以降、`params`(および`searchParams`)はサーバー・クライアント問わずPromiseとして渡される。クライアントコンポーネントのpage.tsxでは`await`できないため、Reactの`use()`で同期的に展開する(`node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/dynamic-routes.md`「In Client Components」参照)。ファイルシステムアクセス(`fs`)を伴うデータ取得は`'use client'`ファイルに書くとブラウザ向けバンドルに`fs`が含まれずビルドが壊れるため、`params`を使うデータ取得はサーバーコンポーネントのpage.tsx側で行い、取得済みデータをpropsとしてクライアントコンポーネントに渡す構成にする。
+
+## `app/sitemap.ts`(メタデータルート)は`output: 'export'`で`dynamic = 'force-static'`が必須
+
+`sitemap.ts`/`robots.ts`は内部的にRoute Handler(`/sitemap.xml`という特殊ルート)として扱われる。`output: 'export'`構成では、他の通常ページと違って`export const dynamic = 'force-static'`(または`revalidate`)を明示しないとビルドが失敗する(`Error: export const dynamic = "force-static"/export const revalidate not configured on route "/sitemap.xml" with "output: export"`)。`sitemap.md`の公式サンプルコードにはこの記述がなく、静的エクスポート構成特有の要件のため見落としやすい。
