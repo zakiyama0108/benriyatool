@@ -7,6 +7,11 @@ import { getGamePhotoUrl } from '../../lib/gamePhotos'
 import type { AdminGame } from '../lib/fetchAdminGames'
 import type { GameEditInput } from '../lib/moderation'
 
+// 登録依頼画面(GamePhotoUploader)と同じ量的制約(仕様: game-registration/design.md「バリデーション」、
+// admin/design.md「ゲーム紹介画像を差し替え・削除する処理」手順2)。実際の上限判定は
+// admin/lib/introPhotos.tsのaddIntroPhotosが行う(このフォームは表示用に同じ値を持つのみ)
+const MAX_INTRO_PHOTO_COUNT = 20
+
 type Props = {
   game: AdminGame
   onSave: (input: GameEditInput) => Promise<boolean>
@@ -56,6 +61,11 @@ export default function GameEditForm({
     Object.fromEntries(RULE_CHAPTERS.map((c) => [c.key, chapterBody(game, c.key)])) as Record<ChapterKey, string>
   )
   const [status, setStatus] = useState<SaveStatus>('idle')
+  // ゲーム紹介画像の追加・削除・並び替えは保存ボタンとは別に即時UPDATEされるため、
+  // 失敗時の表示もstatus(保存ボタン用)とは別枠で管理する(design.md「ゲーム紹介画像を
+  // 差し替え・削除する処理」手順6: 失敗したら失敗表示)
+  const [introPhotoStatus, setIntroPhotoStatus] = useState<'idle' | 'error'>('idle')
+  const introPhotoAtLimit = game.introPhotoPaths.length >= MAX_INTRO_PHOTO_COUNT
 
   function toggleGenre(genre: Genre) {
     setGenres((prev) => (prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]))
@@ -87,11 +97,25 @@ export default function GameEditForm({
 
   // ゲーム紹介画像は他の項目と異なり操作ごとに即時UPDATEされる(design.md「ゲーム紹介画像を
   // 差し替え・削除する処理」)。表示は常にgame.introPhotoPaths(props)から行い、親のreloadで
-  // 最新化されたgameを受け直すことで反映する(ローカルにミラーした状態を持たない)
-  function handleAddIntroPhotos(e: React.ChangeEvent<HTMLInputElement>) {
+  // 最新化されたgameを受け直すことで反映する(ローカルにミラーした状態を持たない)。
+  // 成功時は再取得後の表示に反映されるためintroPhotoStatusをidleに戻し、失敗時は失敗表示を出す
+  async function handleAddIntroPhotos(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
-    if (files.length > 0) void onAddIntroPhotos(game.id, game.introPhotoPaths, files)
+    if (files.length > 0) {
+      const ok = await onAddIntroPhotos(game.id, game.introPhotoPaths, files)
+      setIntroPhotoStatus(ok ? 'idle' : 'error')
+    }
     e.target.value = ''
+  }
+
+  async function handleRemoveIntroPhoto(path: string) {
+    const ok = await onRemoveIntroPhoto(game.id, game.introPhotoPaths, path)
+    setIntroPhotoStatus(ok ? 'idle' : 'error')
+  }
+
+  async function handleSetMainIntroPhoto(path: string) {
+    const ok = await onSetMainIntroPhoto(game.id, game.introPhotoPaths, path)
+    setIntroPhotoStatus(ok ? 'idle' : 'error')
   }
 
   return (
@@ -310,7 +334,7 @@ export default function GameEditForm({
                 />
                 <button
                   type="button"
-                  onClick={() => void onRemoveIntroPhoto(game.id, game.introPhotoPaths, path)}
+                  onClick={() => void handleRemoveIntroPhoto(path)}
                   aria-label={`ゲーム紹介画像 ${index + 1}枚目を削除`}
                   className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-xs text-white"
                 >
@@ -319,7 +343,7 @@ export default function GameEditForm({
                 {index !== 0 && (
                   <button
                     type="button"
-                    onClick={() => void onSetMainIntroPhoto(game.id, game.introPhotoPaths, path)}
+                    onClick={() => void handleSetMainIntroPhoto(path)}
                     aria-label={`ゲーム紹介画像 ${index + 1}枚目をメイン画像にする`}
                     className="mt-1 w-full rounded border border-gray-300 px-1 py-0.5 text-[10px] text-gray-600"
                   >
@@ -330,6 +354,12 @@ export default function GameEditForm({
             ))}
           </ul>
         )}
+        <p className="text-xs text-gray-500">
+          {game.introPhotoPaths.length}/{MAX_INTRO_PHOTO_COUNT}枚
+        </p>
+        {introPhotoAtLimit && (
+          <p className="text-xs text-red-600">上限の{MAX_INTRO_PHOTO_COUNT}枚に達しました。これ以上は追加できません。</p>
+        )}
         <label htmlFor="edit-intro-photo-input" className="block text-xs text-gray-600">
           画像を追加
         </label>
@@ -338,10 +368,12 @@ export default function GameEditForm({
           type="file"
           accept="image/*"
           multiple
-          onChange={handleAddIntroPhotos}
+          disabled={introPhotoAtLimit}
+          onChange={(e) => void handleAddIntroPhotos(e)}
           aria-label="ゲーム紹介画像を追加"
           className="text-xs"
         />
+        {introPhotoStatus === 'error' && <p className="text-red-600">画像の変更に失敗しました。</p>}
       </fieldset>
 
       {status === 'success' && <p className="text-green-700">保存しました。</p>}

@@ -175,4 +175,48 @@ describe('【管理画面】ゲーム編集フォーム - ゲーム紹介画像�
       expect(onRemoveIntroPhoto).toHaveBeenCalledWith('game-1', ['game-1/0.jpg', 'game-1/1.jpg'], 'game-1/0.jpg')
     )
   })
+
+  it('登録済み枚数が「n/20枚」の形式で表示されること', () => {
+    renderForm({ game: makeGame({ introPhotoPaths: ['game-1/0.jpg', 'game-1/1.jpg'] }) })
+
+    expect(screen.getByText('2/20枚')).toBeTruthy()
+  })
+
+  it('画像追加に失敗すると失敗表示が出ること', async () => {
+    const onAddIntroPhotos = vi.fn().mockResolvedValue(false)
+    renderForm({ onAddIntroPhotos })
+
+    const file = new File(['dummy'], 'new.jpg', { type: 'image/jpeg' })
+    fireEvent.change(screen.getByLabelText('ゲーム紹介画像を追加'), { target: { files: [file] } })
+
+    await waitFor(() => expect(screen.getByText('画像の変更に失敗しました。')).toBeTruthy())
+  })
+
+  it('画像削除に失敗すると失敗表示が出ること', async () => {
+    const onRemoveIntroPhoto = vi.fn().mockResolvedValue(false)
+    const game = makeGame({ introPhotoPaths: ['game-1/0.jpg'] })
+    renderForm({ game, onRemoveIntroPhoto })
+
+    fireEvent.click(screen.getByLabelText('ゲーム紹介画像 1枚目を削除'))
+
+    await waitFor(() => expect(screen.getByText('画像の変更に失敗しました。')).toBeTruthy())
+  })
+
+  it('メイン画像への変更に失敗すると失敗表示が出ること', async () => {
+    const onSetMainIntroPhoto = vi.fn().mockResolvedValue(false)
+    const game = makeGame({ introPhotoPaths: ['game-1/0.jpg', 'game-1/1.jpg'] })
+    renderForm({ game, onSetMainIntroPhoto })
+
+    fireEvent.click(screen.getByLabelText('ゲーム紹介画像 2枚目をメイン画像にする'))
+
+    await waitFor(() => expect(screen.getByText('画像の変更に失敗しました。')).toBeTruthy())
+  })
+
+  it('登録済みが20枚に達すると、上限メッセージが表示され追加入力が無効化されること', () => {
+    const introPhotoPaths = Array.from({ length: 20 }, (_, i) => `game-1/${i}.jpg`)
+    renderForm({ game: makeGame({ introPhotoPaths }) })
+
+    expect(screen.getByText('上限の20枚に達しました。これ以上は追加できません。')).toBeTruthy()
+    expect(screen.getByLabelText<HTMLInputElement>('ゲーム紹介画像を追加').disabled).toBe(true)
+  })
 })
