@@ -53,7 +53,7 @@
   4. 記事間・記事⇄シミュレーターの内部リンクを本文とCTAに配置する
   5. 制度定数の適用期間(現行: 2025年8月1日〜2026年7月31日)の表記を記事側コードの1か所で定義し、全記事の参考資料フッターに表示する(毎年8月の改定時はこの1か所と本体定数の更新で揃う)
   6. `/ikukyu/guide/` に記事一覧ページを設け、3記事へのカードリンク(タイトル・要約・各記事のテーマカラー)を置く。パンくずの「ガイド」はこの一覧ページへリンクする
-  7. `public/sitemap.xml` に記事3本+一覧ページの4URLを追記する
+  7. サイトマップへの掲載は`app/sitemap.ts`(動的生成、[specs/hub-site/requirements.md#機能要件-5](../../hub-site/requirements.md))が自動で行うため、本specでの個別対応は不要
   8. ビルド時の計算で想定外の結果(負の金額・欠落)があった場合は例外を投げてビルドを失敗させ、誤った数値のまま公開されることを防ぐ
 - **関連するビジネスルール**: requirements.md#記事ページ共通、#YMYL・正確性の担保
 
@@ -82,7 +82,6 @@ app/ikukyu/guide/hayamihyo/page.tsx         (新規: 記事2)
 app/ikukyu/guide/fufu-ikukyu/page.tsx       (新規: 記事3)
 app/ikukyu/lib/calculator.ts                (既存: 計算関数を読み取り専用で利用。変更しない)
 app/ikukyu/lib/dateUtils.ts                 (既存: 日付計算を読み取り専用で利用。変更しない)
-public/sitemap.xml                          (既存: 4URL(記事3本+一覧)を追記)
 app/ikukyu/guide/components/ArticleSidebar.tsx (新規: PC版2カラムレイアウトの右サイドバー。下記「PC版レイアウト」参照)
 package.json                                (新規依存: lucide-react。サイドバー・目次のアイコン表示に使う)
 ```
