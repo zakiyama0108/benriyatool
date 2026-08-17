@@ -3853,5 +3853,45 @@
     "specFile": "board-game-rules/admin/requirements.md",
     "item": "ゲーム紹介画像の自動補完 [8]",
     "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ゲーム紹介画像を選択・並び替える処理",
+    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、GamePhotoUploader.test.tsx等にテストを紐づけたらこのエントリを削除する(tasks.md T7参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "ゲーム紹介画像のStorage",
+    "reason": "Storageバケット設計の記述で、実際のアクセスポリシーはadmin/design.md#ゲーム紹介画像の公開Storageのマイグレーション適用時の実機確認で担保するため(tasks.md T0b参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > intro_photo_paths",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0b)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest拡張)でテストする(tasks.md T8参照)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "追加マイグレーション(ゲーム紹介画像、実装より先に単独PRで適用)",
+    "reason": "マイグレーションSQL・T0の実機確認手順の記述で、TDD対象外(tasks.md T0b参照。マイグレーション適用時に実機確認する)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "ゲーム紹介画像を差し替え・削除する処理",
+    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、introPhotos.test.ts等にテストを紐づけたらこのエントリを削除する(tasks.md T3b参照)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "ゲーム紹介画像を自動補完する処理(ローカルツール内、管理画面の外)",
+    "reason": "WebアプリのコードではないClaude Code Skill(.claude/skills/board-game-rules-batch-register/)とNode.jsスクリプト(scripts/board-game-rules/registerGame.ts)の処理のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T8b参照)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "ゲーム紹介画像の公開Storage(新規: 実装より先に単独PRで適用)",
+    "reason": "Storageバケット設定・T0の実機確認手順の記述で、TDD対象外(admin/tasks.md T0b参照。マイグレーション適用時に実機確認する)"
+  },
+  {
+    "specFile": "board-game-rules/game-list/design.md",
+    "item": "メイン画像を表示する処理",
+    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、GameCard.test.tsx等にテストを紐づけたらこのエントリを削除する(tasks.md T10参照)"
   }
 ]

@@ -10,7 +10,6 @@
 ## ユーザーストーリー
 - 利用者として、ゲームの基本情報(人数・時間・ジャンル等)をまとめて確認したい
 - 利用者として、まず簡単版で概要をつかみ、必要なら詳しい版で細かいルールを確認したい
-- 利用者として、これは運営者が登録したゲームなのかどうかを見分けたい
 - 利用者として、気になったゲームをお気に入り登録したり、コメントを読んだりしたい
 - 閲覧者として、内容に誤りや不適切な点があれば通報したい
 - 利用者として、ゲームの紹介画像を複数枚見てイメージをつかみたい
@@ -18,22 +17,21 @@
 ## 機能要件
 
 ### 基本情報の表示
-- [1] ゲームの分類情報(ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー/出版社・作者・言語依存度・受賞歴)を表示する。空欄(未登録)の任意項目は、その項目自体を表示しない(design.mdで確定。「未登録」ラベルは出さず、登録済みの情報だけを簡潔に見せる)
-- [2] 「運営者登録」タグが付いているゲームには、それが分かる表示を行う([game-registration/requirements.md#機能要件-14](../game-registration/requirements.md)で付与される)
+- [1] ゲームの分類情報(ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー/出版社・作者・言語依存度・受賞歴・発売年)を表示する。空欄(未登録)の任意項目は、その項目自体を表示しない(design.mdで確定。「未登録」ラベルは出さず、登録済みの情報だけを簡潔に見せる)
 
 ### ルール本文の表示
-- [3] ルール本文を「簡単版」「詳しい版」の2つのタブで切り替えて表示する([game-registration/requirements.md#機能要件-4](../game-registration/requirements.md)で生成される)
-- [4] 詳しい版は、共通の章立て([game-registration/requirements.md#機能要件-5](../game-registration/requirements.md))に沿って見出し付きで表示する
-- [5] 初期表示では簡単版を選択状態にする(根拠: まず概要をつかむユーザーストーリーに合わせる)
+- [2] ルール本文を「簡単版」「詳しい版」の2つのタブで切り替えて表示する([game-registration/requirements.md#機能要件-4](../game-registration/requirements.md)で生成される)
+- [3] 詳しい版は、共通の章立て([game-registration/requirements.md#機能要件-5](../game-registration/requirements.md))に沿って見出し付きで表示する
+- [4] 初期表示では簡単版を選択状態にする(根拠: まず概要をつかむユーザーストーリーに合わせる)
 
 ### 操作
-- [6] ログイン中の利用者は、このゲームをお気に入り登録・解除できる([favorite/requirements.md](../favorite/requirements.md)に従う)
-- [7] このゲームのコメント欄を表示する([comment/requirements.md](../comment/requirements.md)に従う)
-- [8] このゲームの内容を通報できる([report/requirements.md](../report/requirements.md)に従う)
-- [9] 詳細画面はログイン不要で閲覧できる(お気に入り登録・コメント投稿にはログインが必要)
+- [5] ログイン中の利用者は、このゲームをお気に入り登録・解除できる([favorite/requirements.md](../favorite/requirements.md)に従う)
+- [6] このゲームのコメント欄を表示する([comment/requirements.md](../comment/requirements.md)に従う)
+- [7] このゲームの内容を通報できる([report/requirements.md](../report/requirements.md)に従う)
+- [8] 詳細画面はログイン不要で閲覧できる(お気に入り登録・コメント投稿にはログインが必要)
 
 ### 画像表示
-- [10] このゲームに登録されているゲーム紹介画像を、複数枚まとめてギャラリー形式で表示する([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md)で登録される画像)。画像が1枚も登録されていない場合は、ギャラリー自体を表示しない
+- [9] このゲームに登録されているゲーム紹介画像を、複数枚まとめてギャラリー形式で表示する([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md)で登録される画像)。画像が1枚も登録されていない場合は、ギャラリー自体を表示しない
 
 ## ビジネスルール・制約
 
@@ -46,6 +44,7 @@
 - 表示する分類情報・ルール本文の内容は[game-registration/requirements.md](../game-registration/requirements.md)で登録される内容に従う
 - お気に入り操作は[favorite/requirements.md](../favorite/requirements.md)、コメント欄は[comment/requirements.md](../comment/requirements.md)、通報は[report/requirements.md](../report/requirements.md)に従う
 - 一覧からの遷移元は[game-list/requirements.md](../game-list/requirements.md)
+- ゲーム紹介画像の登録・並び順は[game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md)に従う
 
 ## スコープ外
 - ルール本文の版の追加(簡単版・詳しい版の2つに固定する)

@@ -39,6 +39,22 @@
 - 🟢 hub-siteの既存カードと同じマークアップでboard-game-rulesカードを`app/page.tsx`に追加する。`/board-game-rules`のtitle/description自体は`app/board-game-rules/layout.tsx`に実装済みのため値の変更はせず、同ファイル先頭コメントの参照先を「hub-site暫定定義」からrequirements.md#メタ情報-10に更新する(コメントのみの修正、テスト対象の挙動変化なし)
 - 🔵 表示順(既存3カードとの並び)を整える
 
+## T8. ゲーム紹介画像の公開URL変換(`lib/gamePhotos.ts`)
+- 🔴 Storageパスを渡すと公開Storageバケット(`board-game-rules-game-photos`)の公開URLを返すことをテストする(Supabase Storageクライアントをモック)
+- 🟢 `getGamePhotoUrl`を実装する(`getPublicUrl`を使う)
+- 🔵 整理する
+
+## T9. 一覧取得関数の拡張(`lib/games.ts`の`fetchPublishedGames`)
+- 🔴 `intro_photo_paths`を含めて取得することをテストする(design.md「公開中のゲームを取得する処理」)
+- 🟢 `GAME_PUBLIC_COLUMNS`・`Game`型に`introPhotoPaths`を追加し、取得関数を拡張する
+- 🔵 整理する
+
+## T10. ゲームカードへのメイン画像表示(`components/GameCard.tsx`拡張)
+- 🔴 `intro_photo_paths`の先頭があれば(T8の`getGamePhotoUrl`経由で)公開URLの画像がカード上部に表示されること、空配列ならプレースホルダーが表示されることをテストする(design.md「メイン画像を表示する処理」)
+- 🟢 画像/プレースホルダーをカード上部(お気に入りアイコンより下のレイヤー)に表示する
+- 🔵 縦横比・プレースホルダーの見た目を整える
+
 ## 補足
 - お気に入り操作(`FavoriteButton`)は[favorite](../favorite/tasks.md)で実装したものを各カードに組み込む。並行開発時はfavoriteのボタン完成を待つか、仮のプレースホルダで先行する
 - T6・T7は本画面(game-list)自体の実装ではなく、トップページ追加に伴う既存画面(register/favorites/hub-site/layout)側の更新。T5(一覧画面)と同じPRでまとめて実装する
+- T8〜T10はゲーム紹介画像の要件追加に伴う拡張タスク。`lib/gamePhotos.ts`(T8)は[game-detail](../game-detail/tasks.md)・[admin](../admin/tasks.md)が共有するため、本specで先に実装する
