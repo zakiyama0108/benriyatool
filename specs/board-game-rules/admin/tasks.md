@@ -4,8 +4,8 @@
 
 前提: [game-registration](../game-registration/tasks.md)・[report](../report/tasks.md)・[comment](../comment/tasks.md)の各T0(テーブル・運営者向けRLS)が先に必要。
 
-## T0. 元写真の非公開Storage設定(実装より先に単独PRで適用)
-- 非公開バケットの作成と、Storageのアクセスポリシー(INSERTは誰でも可(ただしサイズ上限`file_size_limit`・許可MIME`allowed_mime_types`・1ゲームあたり枚数上限の量的制約付き)、SELECT(ダウンロード)は運営者のみ、public=false)を`supabase/migrations/`に追加しCI適用する(バケット名・パス設計・制約値は実装時確定)。このバケットは[game-registration](../game-registration/tasks.md)の写真保存先で、確定適用の責務は本specに置く
+## T0. 元写真の非公開Storage設定(実装より先に単独PRで適用。適用済み)
+- 非公開バケット(`board-game-rules-photos`、public=false)の作成と、Storageのアクセスポリシー(INSERTは誰でも可(ただしサイズ上限`file_size_limit`・許可MIME`allowed_mime_types`・1ゲームあたり枚数上限の量的制約付き)、SELECT(ダウンロード)は運営者のみ)を`supabase/migrations/20260807160400_create_board_game_rules_photos_storage.sql`で適用済み(design.md「元写真の非公開Storage」)。このバケットは[game-registration](../game-registration/tasks.md)の写真保存先
 - design.md「データベース設計」T0の実機確認(運営者のみ元写真取得可・anon/非運営者不可、サイズ超過・許可外MIMEの拒否、games全行SELECT/UPDATE、reports SELECT、コメントDELETE、非運営者は不可)を行う
 - (TDD対象外)
 
