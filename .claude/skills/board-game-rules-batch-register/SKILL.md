@@ -23,7 +23,7 @@ disable-model-invocation: true
 # Step2 写真を解析してゲーム情報・ルール本文を生成する
 
 - 対象フォルダ内の写真、または依頼に添付された写真(登録依頼由来の場合は運営者に元写真を管理画面からダウンロードしてローカルに用意してもらう。このSkill自身はService Roleでの写真ダウンロードを行わない)をReadツールで読み込み、内容を解析する
-- 次を判断・生成する(すべて[game-registration/design.md](../../../specs/board-game-rules/game-registration/design.md)「ジャンルの選択肢」「共通の章立て」に従う):
+- 次を判断・生成する(ジャンルは[game-registration/design.md](../../../specs/board-game-rules/game-registration/design.md)「ジャンルの選択肢」、詳しい版の章立ては[admin/design.md](../../../specs/board-game-rules/admin/design.md)「詳しい版の共通章立て(生成時の構造)」に従う):
   - 分類情報: ゲーム名、対応人数(下限・上限)、プレイ時間(下限・上限)、ジャンル(`app/board-game-rules/lib/genres.ts`の固定リストから、依頼側の選択を鵜呑みにせず写真の内容から当てはまるものを判断)、対象年齢、難易度、メーカー/出版社、作者、言語依存度、受賞歴、発売年(不明な項目はnull/省略でよい)
   - ルール本文・簡単版(`rulesSimple`): 4000字以内
   - ルール本文・詳しい版(`rulesDetailed`): `app/board-game-rules/lib/rulesChapters.ts`の共通章立て(overview/setup/turn_flow/victory/scoring/special)ごとに本文を作る(該当ルールがない章は空文字でよい)。合計40000字以内(jsonb化した全体の文字数)

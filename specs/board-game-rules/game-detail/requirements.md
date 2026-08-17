@@ -42,8 +42,8 @@ flowchart LR
 - [1] ゲームの分類情報(ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー/出版社・作者・言語依存度・受賞歴・発売年)を表示する。空欄(未登録)の任意項目は、その項目自体を表示しない(design.mdで確定。「未登録」ラベルは出さず、登録済みの情報だけを簡潔に見せる)
 
 ### ルール本文の表示
-- [2] ルール本文を「簡単版」「詳しい版」の2つのタブで切り替えて表示する([game-registration/requirements.md#機能要件-4](../game-registration/requirements.md)で生成される)
-- [3] 詳しい版は、共通の章立て([game-registration/requirements.md#機能要件-5](../game-registration/requirements.md))に沿って見出し付きで表示する
+- [2] ルール本文を「簡単版」「詳しい版」の2つのタブで切り替えて表示する([game-registration/requirements.md#ルール本文の著作権への配慮](../game-registration/requirements.md)に従って運営者が生成する)
+- [3] 詳しい版は、共通の章立て([admin/design.md#詳しい版の共通章立て(生成時の構造)](../admin/design.md))に沿って見出し付きで表示する
 - [4] 初期表示では簡単版を選択状態にする(根拠: まず概要をつかむユーザーストーリーに合わせる)
 
 ### 操作

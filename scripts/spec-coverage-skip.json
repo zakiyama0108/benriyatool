@@ -2831,6 +2831,11 @@
   },
   {
     "specFile": "board-game-rules/admin/design.md",
+    "item": "詳しい版の共通章立て(生成時の構造)",
+    "reason": "上記ローカルツールが生成する構造の定義であり、ローカルツール自体と同じくWebアプリのコードではないため通常のTDDサイクル・spec-coverageの対象外とする。章キー↔表示見出しの対応は`app/board-game-rules/lib/rulesChapters.ts`のコードとして存在し、表示側の描画は[game-detail/design.md#ルール本文をタブで表示する処理]のテストで担保する"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
     "item": "エラーハンドリング",
     "reason": "画面の状態切り分け・失敗表示の方針記述で、個別の対応するビジネスルール(各処理のrequirements.md項目)側のテストで担保済みのため"
   },

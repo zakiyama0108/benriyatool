@@ -31,7 +31,7 @@
 - 手順:
   1. 「簡単版」「詳しい版」の2つのタブを表示し、初期表示は簡単版を選択状態にする(まず概要をつかむため。requirements.md#ルール本文の表示-4)
   2. 簡単版は要約テキストをそのまま表示する
-  3. 詳しい版は、共通の章立て([game-registration/design.md#共通の章立て](../game-registration/design.md))の順に、各章の表示見出し(日本語)を付けて表示する。本文が空の章は表示しない(requirements.md#ルール本文の表示-2〜3)
+  3. 詳しい版は、共通の章立て([admin/design.md#詳しい版の共通章立て(生成時の構造)](../admin/design.md))の順に、各章の表示見出し(日本語)を付けて表示する。本文が空の章は表示しない(requirements.md#ルール本文の表示-2〜3)
 - 補足: 章キー↔表示見出しの対応は`app/board-game-rules/lib/rulesChapters.ts`を使う。`rules_detailed`はanonが任意のjsonbを直接INSERTしうる列のため、`rulesChapters.ts`に定義のない未知の章キーは表示しない(共通章立てに定義された章のみを見出し付きで描画する。壊れた構造・想定外キーへの表示側の頑健性を担保する)
 - 関連するビジネスルール: requirements.md#ルール本文の表示
 
