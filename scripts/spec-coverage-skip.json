@@ -3793,5 +3793,65 @@
     "specFile": "board-game-rules/game-list/design.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像のアップロード [9]",
+    "reason": "一時スキップ(未実装): /fix(ゲーム紹介画像)で要件のみ追加した段階。design.md/tasks.mdの追記・実装(TDD)が完了しテストを紐づけたらこのエントリを削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像のアップロード [10]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像のアップロード [11]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像の取り扱い [10]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像の取り扱い [11]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/requirements.md",
+    "item": "ゲーム紹介画像の取り扱い [12]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "画像表示 [12]",
+    "reason": "一時スキップ(未実装): /fix(ゲーム紹介画像)で要件のみ追加した段階。design.md/tasks.mdの追記・実装(TDD)が完了しテストを紐づけたらこのエントリを削除する"
+  },
+  {
+    "specFile": "board-game-rules/game-list/requirements.md",
+    "item": "画像表示 [13]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ゲーム紹介画像の確認・自動補完 [15]",
+    "reason": "一時スキップ(未実装): /fix(ゲーム紹介画像)で要件のみ追加した段階。design.md/tasks.mdの追記・実装(TDD)が完了しテストを紐づけたらこのエントリを削除する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ゲーム紹介画像の確認・自動補完 [16]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ゲーム紹介画像の確認・自動補完 [17]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ゲーム紹介画像の自動補完 [8]",
+    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
   }
 ]

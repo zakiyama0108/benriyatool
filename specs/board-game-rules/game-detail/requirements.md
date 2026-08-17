@@ -13,6 +13,7 @@
 - 利用者として、これは運営者が登録したゲームなのかどうかを見分けたい
 - 利用者として、気になったゲームをお気に入り登録したり、コメントを読んだりしたい
 - 閲覧者として、内容に誤りや不適切な点があれば通報したい
+- 利用者として、ゲームの紹介画像を複数枚見てイメージをつかみたい
 
 ## 機能要件
 
@@ -31,11 +32,15 @@
 - [8] このゲームの内容を通報できる([report/requirements.md](../report/requirements.md)に従う)
 - [9] 詳細画面はログイン不要で閲覧できる(お気に入り登録・コメント投稿にはログインが必要)
 
+### 画像表示
+- [10] このゲームに登録されているゲーム紹介画像を、複数枚まとめてギャラリー形式で表示する([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md)で登録される画像)。画像が1枚も登録されていない場合は、ギャラリー自体を表示しない
+
 ## ビジネスルール・制約
 
 ### 表示対象
 - [1] 運営者が削除したゲームの詳細は表示しない([admin/requirements.md](../admin/requirements.md)参照)
 - [2] 投稿された元の写真は詳細画面に一切表示しない(根拠: [game-registration/requirements.md#写真の取り扱い](../game-registration/requirements.md))
+- [3] ゲーム紹介画像は、上記[表示対象-2]のルールブック元写真(非公開)とは別物であり、公開対象である([game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md))
 
 ## 依存関係
 - 表示する分類情報・ルール本文の内容は[game-registration/requirements.md](../game-registration/requirements.md)で登録される内容に従う
