@@ -60,7 +60,7 @@
 - 対象: 運営者が選んだ1ゲームの`intro_photo_paths`(編集画面`GameEditForm`から)
 - 手順:
   1. 編集画面で現在の紹介画像(`intro_photo_paths`)をプレビュー表示し、個々の画像を削除できるようにする(requirements.md#ゲーム紹介画像の確認・自動補完-17)
-  2. 新しい画像を追加でアップロードできる。追加時は公開Storageバケット(`board-game-rules-game-photos`)へ当該ゲームのID配下に保存し、パスを`intro_photo_paths`の末尾に追加する
+  2. 新しい画像を追加でアップロードできる。追加時は公開Storageバケット(`board-game-rules-game-photos`)へ当該ゲームのID配下に保存し、パスを`intro_photo_paths`の末尾に追加する。既存分と合わせて上限20枚までとし、上限に達した状態からの追加選択は切り捨てる([game-registration/design.md#バリデーション](../game-registration/design.md)の`GamePhotoUploader`と同じ挙動)
   3. 削除は配列から該当パスを取り除くのみとし、Storage上のオブジェクト自体の削除は行わない(残存ファイルは公開URLを知らない限り閲覧経路がなく実害が小さいため。定期的な棚卸しはスコープ外とする)
   4. 並び替え(先頭=メイン画像への変更)は登録依頼時と同じ「メイン画像にする」操作を編集画面でも提供する([game-registration/design.md#ゲーム紹介画像を選択・並び替える処理](../game-registration/design.md)と同じUI・挙動)
   5. 変更を`board_game_rules_games`のUPDATEで保存する。運営者本人のみ実行できる(既存のゲーム編集RLSで担保)
