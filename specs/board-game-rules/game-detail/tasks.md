@@ -2,7 +2,7 @@
 
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
-前提: [game-registration](../game-registration/tasks.md)のT0(テーブル・RLS)・T1(共通型・章立て)が先に必要。
+前提: [game-registration](../game-registration/tasks.md)のT0(テーブル・RLS)が先に必要。`lib/games.ts`(Game型)・`lib/rulesChapters.ts`(共通章立て。[admin/design.md#詳しい版の共通章立て(生成時の構造)](../admin/design.md))は実装済みのため新規タスクとしては挙げない。
 
 ## T1. 単一ゲーム取得(`lib/games.ts`に`fetchGameById`を追加)
 - 🔴 指定IDの`deleted_at is null`ゲームを`photo_paths`を含めず(`intro_photo_paths`は含めて)取得すること、該当なし/取得失敗を区別して返すこと、不正なID形式は該当なし扱いになることをテストする(Supabaseクライアントをモック)
