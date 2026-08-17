@@ -22,7 +22,6 @@
 - 手順:
   1. ゲーム名・対応人数・プレイ時間・ジャンル・対象年齢・難易度・メーカー/出版社・作者・言語依存度・受賞歴を表示する(requirements.md#基本情報の表示-1)
   2. 空欄(未登録=NULL/空)の任意項目は、**その項目自体を表示しない**(「未登録」等のラベルも出さない)。項目が並ぶ中の空欄を減らし、登録済みの情報だけを簡潔に見せるため(requirements.md#基本情報の表示-1が設計に委ねた事項をここで確定)。必須項目(ゲーム名・対応人数・プレイ時間)は常に値があるため必ず表示する
-  3. 運営者登録タグ(`is_official`)が付いたゲームは、それが分かる表示をする(requirements.md#基本情報の表示-2)
 - 関連するビジネスルール: requirements.md#基本情報の表示
 
 ### ルール本文をタブで表示する処理
@@ -40,7 +39,7 @@
   1. ログイン中の利用者には、このゲームのお気に入り登録・解除操作を表示する([favorite/design.md](../favorite/design.md)の`FavoriteButton`)。このとき、[favorite/design.md#画面内のお気に入り状態をまとめて取得する処理](../favorite/design.md)に従い、自分のお気に入りgame_id集合を`fetchMyFavoriteGameIds`(favorite/design.mdが定義するインターフェース)で取得し、当該game_idが集合に含まれるかで登録済み/未登録を判定して`FavoriteButton`へ渡す(単独の登録有無確認関数は設けず、集合取得に一本化する)。取得完了まで・取得失敗時は一律「未登録」として扱う([favorite/requirements.md#お気に入りの登録・解除-3](../favorite/requirements.md))。未ログインには操作を表示しない([favorite/design.md](../favorite/design.md)に揃える。ログイン導線は共通ヘッダーの`LoginStatus`に集約)
   2. このゲームのコメント欄を表示する([comment/design.md](../comment/design.md))
   3. このゲームの通報導線を表示する([report/design.md](../report/design.md))
-  4. 詳細画面の閲覧自体はログイン不要(お気に入り・コメント投稿にはログインが必要。requirements.md#操作-9)
+  4. 詳細画面の閲覧自体はログイン不要(お気に入り・コメント投稿にはログインが必要。requirements.md#操作-8)
 - 関連するビジネスルール: requirements.md#操作
 
 ## エラーハンドリング
@@ -52,7 +51,7 @@
 app/board-game-rules/detail/page.tsx (新規: 詳細画面。クエリのIDでゲームを取得し表示するクライアント画面。パス名は実装時確定)
 app/board-game-rules/lib/games.ts (既存: ゲーム型・取得関数を共有。単一ゲーム取得 fetchGameById を追加)
 app/board-game-rules/lib/rulesChapters.ts (既存: 共通章立てのキー↔見出し対応)
-app/board-game-rules/components/GameInfo.tsx (新規: 分類情報+運営者登録タグの表示)
+app/board-game-rules/components/GameInfo.tsx (新規: 分類情報の表示)
 app/board-game-rules/components/RuleTabs.tsx (新規: 簡単版/詳しい版のタブ切り替え表示)
 app/board-game-rules/components/FavoriteButton.tsx (favorite/design.md)
 app/board-game-rules/components/CommentSection.tsx (comment/design.md)
@@ -62,11 +61,22 @@ app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 ```
 
 ## 画面設計
-- 共通ヘッダー: パンくず、`LoginStatus`、一覧へ戻る導線
-- 上部: ゲーム名・運営者登録タグ・分類情報(`GameInfo`)
-- ルール: 簡単版/詳しい版のタブ(`RuleTabs`)。初期は簡単版。詳しい版は章見出し付き
-- 操作: お気に入り登録・解除(ログイン中、`FavoriteButton`)、通報導線(`ReportButton`)
-- コメント欄: このゲームのコメント一覧・投稿(`CommentSection`、[comment/design.md](../comment/design.md))
+
+**確定デザインの出所**: Google Stitchプロジェクト「ボドゲのトリセツ 登録依頼フォーム」(project ID `10756296516233709248`)の既存デザインシステム「Analog Hearth」(asset `assets/4c563e385f3f480d813033cba0bd22b7`)を土台に、本画面(分類情報・簡単版/詳しい版タブ・コメント欄・通報導線)固有のスクリーンを新規生成して確定した(共通chrome・トークンはgame-registration/game-listと同じくこのシステムを踏襲。コンテンツ構成はこの画面固有のためStitchで検討)。レイアウトの方向性は、クックパッドのようなレシピアプリ型(材料/作り方タブに相当する「簡単版/詳しい版」タブを画面中央で大きく強調する構成)を採用した(ボドゲーマ型・ECサイト商品ページ型と比較検討の上で選定)。
+
+- **採用スクリーン(デスクトップ)**: 「ゲーム詳細 (共通ナビ適用) - ボドゲのトリセツ」(`projects/10756296516233709248/screens/ac8329d8796346e9abc32ccf8268d160`)。生成HTML(Tailwind)を実装の参照素材とする(register/game-listと同方針)
+- **採用スクリーン(モバイル)**: 「ゲーム詳細 (Mobile) - ボドゲのトリセツ」(`projects/10756296516233709248/screens/c5477da5a3da4b088d7bb0a81327a361`)。同様に実装の参照素材とする
+- 共通chrome(左サイドバー)はStitch生成のたびに見た目がズレるため、実装は生成結果のナビ表現ではなく既存の`BoardGameNav.tsx`をそのまま使う([DESIGN.md#2-共通chromeルール](../DESIGN.md)の方針どおり)
+
+### デザイントークン(Analog Hearth)
+配色・フォント・角丸・階層表現(影を使わず1px罫線で階層を出す方針)・アクセシビリティの各トークンの定義は、アプリ共通の一元管理先 [DESIGN.md](../DESIGN.md) を参照する(値をここに書き写すと二重管理になるため)。
+
+### 画面構成
+- 共通ヘッダー: パンくず(べんりやつーる › ボドゲのトリセツ › 一覧 › ゲーム名)、`LoginStatus`
+- 上部: ゲーム名見出し+分類情報を1〜2行のチップ群で表示(`GameInfo`。値がある項目だけチップとして並べる)
+- 分類情報の下: お気に入り登録・解除(ログイン中のみ、`FavoriteButton`)と、控えめな小さいテキストリンクの通報導線(`ReportButton`。目立たせない扱いをStitchで確定)を横並びに配置
+- ルール本文: 「簡単版」「詳しい版」の2つのタブを画面中央で大きく強調(`RuleTabs`)。初期は簡単版。詳しい版は章見出し付き
+- ページ下部: コメント欄(投稿フォーム+コメント一覧、`CommentSection`、[comment/design.md](../comment/design.md))
 - 元写真は一切表示しない(requirements.md#表示対象-2)
 
 ## 状態管理

@@ -34,7 +34,7 @@
 
 ## 依存関係
 - 通報対象となるゲームの識別子は[game-registration/requirements.md](../game-registration/requirements.md)で登録されるゲームのIDに従う
-- 通報の送信導線は[game-detail/requirements.md#機能要件-8](../game-detail/requirements.md)で表示される
+- 通報の送信導線は[game-detail/requirements.md#機能要件-7](../game-detail/requirements.md)で表示される
 - 通報内容の確認・対応は[admin/requirements.md](../admin/requirements.md)で行う
 
 ## スコープ外
