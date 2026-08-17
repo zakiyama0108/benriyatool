@@ -21,6 +21,7 @@ function makeGame(overrides: Partial<AdminGame> = {}): AdminGame {
     releaseYear: null,
     rulesSimple: '基本ルール',
     rulesDetailed: [],
+    introPhotoPaths: [],
     createdAt: '2026-08-01T00:00:00.000Z',
     deletedAt: null,
     photoPaths: ['game-1/0.jpg'],

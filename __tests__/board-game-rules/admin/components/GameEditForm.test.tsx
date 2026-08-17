@@ -22,6 +22,7 @@ function makeGame(overrides: Partial<AdminGame> = {}): AdminGame {
     releaseYear: null,
     rulesSimple: '基本ルールの説明',
     rulesDetailed: [{ key: 'overview', body: '拡張なしの基本セットの説明' }],
+    introPhotoPaths: [],
     createdAt: '2026-08-01T00:00:00.000Z',
     deletedAt: null,
     photoPaths: [],

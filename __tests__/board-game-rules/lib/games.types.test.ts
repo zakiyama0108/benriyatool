@@ -28,6 +28,7 @@ function makeRow(overrides: Partial<GameRow> = {}): GameRow {
       { key: 'setup', body: '' },
     ],
     release_year: 1995,
+    intro_photo_paths: [],
     created_at: '2026-08-07T00:00:00Z',
     ...overrides,
   }
@@ -91,14 +92,24 @@ describe('【共通】ゲーム型 - DB行(snake_case)を画面で扱う形(came
     expect('photoPaths' in game).toBe(false)
     expect(Object.keys(game)).not.toContain('photo_paths')
   })
+
+  it('ゲーム紹介画像の並び順配列(intro_photo_paths)がintroPhotoPathsとしてそのまま引き継がれること', () => {
+    const game = mapGameRowToGame(makeRow({ intro_photo_paths: ['g1/0.jpg', 'g1/1.jpg'] }))
+    expect(game.introPhotoPaths).toEqual(['g1/0.jpg', 'g1/1.jpg'])
+  })
 })
 
 // 仕様: specs/board-game-rules/game-registration/requirements.md#写真の取り扱い-4
 describe('【共通】一覧・詳細がSELECTする公開列 - 元写真パスを含めない', () => {
   it('公開列の指定に photo_paths が含まれないこと(列単位の秘匿を画面クエリ側でも守る)', () => {
-    expect(GAME_PUBLIC_COLUMNS).not.toContain('photo_paths')
+    // intro_photo_paths(公開列)は"photo_paths"を部分文字列として含むため、列名の完全一致で判定する
+    expect(GAME_PUBLIC_COLUMNS.split(', ')).not.toContain('photo_paths')
     expect(GAME_PUBLIC_COLUMNS).toContain('rules_detailed')
     expect(GAME_PUBLIC_COLUMNS).toContain('release_year')
     expect(GAME_PUBLIC_COLUMNS).toContain('genres')
+  })
+
+  it('ゲーム紹介画像の並び順配列(intro_photo_paths)は公開列に含まれること(元写真と異なり一般公開する画像のため)', () => {
+    expect(GAME_PUBLIC_COLUMNS.split(', ')).toContain('intro_photo_paths')
   })
 })

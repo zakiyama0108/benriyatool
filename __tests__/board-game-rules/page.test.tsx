@@ -33,6 +33,7 @@ function makeGame(overrides: Partial<Game> = {}): Game {
     releaseYear: 1995,
     rulesSimple: '',
     rulesDetailed: [],
+    introPhotoPaths: [],
     createdAt: '2026-08-01T00:00:00.000Z',
     ...overrides,
   }
