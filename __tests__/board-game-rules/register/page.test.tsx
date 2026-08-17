@@ -204,6 +204,51 @@ describe('【登録依頼画面】ジャンルの説明文 - 選択したチッ�
   })
 })
 
+// 仕様: specs/board-game-rules/game-registration/requirements.md#ゲーム紹介画像のアップロード-9
+describe('【登録依頼画面】ゲーム紹介画像アップロード - 任意項目のため未選択でも送信でき、選択・削除ができる', () => {
+  it('ゲーム紹介画像を選択していない状態でも、送信ボタンは無効化されないこと', () => {
+    render(<RegisterPage />)
+    selectPhoto()
+
+    expect(screen.getByRole('button', { name: '依頼を送信する' }).disabled).toBe(false)
+  })
+
+  it('ゲーム紹介画像を選択せずに送信すると、createGameRequestへ渡るintroPhotosが空配列であること', async () => {
+    render(<RegisterPage />)
+    selectPhoto()
+    fireEvent.click(screen.getByRole('button', { name: '依頼を送信する' }))
+
+    await waitFor(() => expect(createGameRequest).toHaveBeenCalledTimes(1))
+    const arg = vi.mocked(createGameRequest).mock.calls[0][0]
+    expect(arg.introPhotos).toEqual([])
+  })
+
+  it('ゲーム紹介画像を選択すると、選択した画像がプレビュー表示され、送信時にcreateGameRequestへ渡ること', async () => {
+    render(<RegisterPage />)
+    selectPhoto()
+    const introPhoto = makePhoto('package.jpg')
+    fireEvent.change(screen.getByLabelText('ゲーム紹介画像を選択'), { target: { files: [introPhoto] } })
+
+    expect(screen.getByAltText('ゲーム紹介画像 1枚目')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: '依頼を送信する' }))
+    await waitFor(() => expect(createGameRequest).toHaveBeenCalledTimes(1))
+    const arg = vi.mocked(createGameRequest).mock.calls[0][0]
+    expect(arg.introPhotos).toEqual([introPhoto])
+  })
+
+  it('選択したゲーム紹介画像を削除できること(GamePhotoUploaderの削除操作)', () => {
+    render(<RegisterPage />)
+    selectPhoto()
+    fireEvent.change(screen.getByLabelText('ゲーム紹介画像を選択'), { target: { files: [makePhoto('package.jpg')] } })
+    expect(screen.getByAltText('ゲーム紹介画像 1枚目')).toBeTruthy()
+
+    fireEvent.click(screen.getByLabelText('ゲーム紹介画像 1枚目を削除'))
+
+    expect(screen.queryByAltText('ゲーム紹介画像 1枚目')).toBeNull()
+  })
+})
+
 // 仕様: specs/board-game-rules/game-list/design.md「ナビゲーション(左サイドバー共通ナビ)」
 describe('【登録依頼画面】パンくず - 「ボドゲのトリセツ」が一覧画面(/board-game-rules)へのリンクになること', () => {
   it('パンくずの「ボドゲのトリセツ」が/board-game-rulesへのリンクであること', () => {
@@ -238,7 +283,19 @@ describe('【登録依頼画面】レイアウト構成 - 写真セクション�
     expect(photoIndex).toBeGreaterThanOrEqual(0)
     expect(basicInfoIndex).toBeGreaterThan(photoIndex)
     expect(screen.getByText('必須')).toBeTruthy()
-    expect(screen.getByText('0/20枚')).toBeTruthy()
+    // ゲーム紹介画像アップローダーも同じ「0/20枚」表示を持つため、件数表示自体は複数存在する前提で確認する
+    expect(screen.getAllByText('0/20枚').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('ゲーム紹介画像セクションが写真アップロードの直後(基本情報より前)にあること', () => {
+    render(<RegisterPage />)
+    const headingTexts = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+    const photoIndex = headingTexts.indexOf('ルールブックの写真')
+    const introPhotoIndex = headingTexts.indexOf('ゲーム紹介画像')
+    const basicInfoIndex = headingTexts.indexOf('基本情報')
+
+    expect(introPhotoIndex).toBeGreaterThan(photoIndex)
+    expect(basicInfoIndex).toBeGreaterThan(introPhotoIndex)
   })
 
   it('対象年齢・難易度など任意項目が「詳細情報」の見出し配下にまとまっていること', () => {

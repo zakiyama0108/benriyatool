@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import PhotoUploader from '../components/PhotoUploader'
+import GamePhotoUploader from '../components/GamePhotoUploader'
 import LoginStatus from '../components/LoginStatus'
 import BoardGameNav from '../components/BoardGameNav'
 import { GENRES, type Genre } from '../lib/genres'
@@ -85,6 +86,8 @@ function RegisterShell({ children }: { children: React.ReactNode }) {
 // 「詳細情報」にまとめる。
 export default function RegisterPage() {
   const [photos, setPhotos] = useState<File[]>([])
+  // ゲーム紹介画像は任意項目のため送信可否には影響しない(仕様: game-registration/requirements.md#ゲーム紹介画像のアップロード-9)
+  const [introPhotos, setIntroPhotos] = useState<File[]>([])
   const [form, setForm] = useState<FormState>(INITIAL_FORM)
   const [status, setStatus] = useState<Status>('idle')
   const [genreOpen, setGenreOpen] = useState(false)
@@ -112,6 +115,7 @@ export default function RegisterPage() {
 
     const input: GameRequestInput = {
       photos,
+      introPhotos,
       name: form.name || undefined,
       minPlayers,
       maxPlayers,
@@ -174,6 +178,19 @@ export default function RegisterPage() {
           <p className="mt-1 text-xs text-bgr-subtext">表紙・目次・各ページなど、ルールブックの全ページを推奨します</p>
           <div className="mt-3">
             <PhotoUploader photos={photos} onChange={setPhotos} />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-bgr-line bg-bgr-card p-4 sm:p-6">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-heading text-sm font-bold text-bgr-heading">ゲーム紹介画像</h2>
+            <span className="rounded bg-bgr-bg px-2 py-0.5 text-xs text-bgr-subtext">任意</span>
+          </div>
+          <p className="mt-1 text-xs text-bgr-subtext">
+            パッケージ・コンポーネント・プレイ風景などがあれば、一覧・詳細で使うメイン画像として掲載されます
+          </p>
+          <div className="mt-3">
+            <GamePhotoUploader photos={introPhotos} onChange={setIntroPhotos} />
           </div>
         </section>
 
