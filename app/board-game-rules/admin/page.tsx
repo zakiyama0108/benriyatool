@@ -7,6 +7,7 @@ import { fetchReports, type Report } from './lib/fetchReports'
 import { fetchGameRequests, markGameRequestProcessed, deleteGameRequest } from './lib/gameRequests'
 import { editGame, deleteGame, type GameEditInput } from './lib/moderation'
 import { fetchOriginalPhotos } from './lib/photos'
+import { addIntroPhotos, removeIntroPhoto, setMainIntroPhoto } from './lib/introPhotos'
 import LoginScreen from './components/LoginScreen'
 import GameModerationTable from './components/GameModerationTable'
 import GameEditForm from './components/GameEditForm'
@@ -107,6 +108,27 @@ export default function AdminPage() {
     if (ok) reload()
   }
 
+  // ゲーム紹介画像の追加・削除・メイン画像変更は操作ごとに即時UPDATEされるため、
+  // 成功時は他の編集操作と同様に一覧を再取得して最新の並び順・プレビューへ反映する
+  // (仕様: admin/design.md「ゲーム紹介画像を差し替え・削除する処理」)
+  async function handleAddIntroPhotos(gameId: string, existingPaths: string[], files: File[]) {
+    const ok = await addIntroPhotos(gameId, existingPaths, files)
+    if (ok) reload()
+    return ok
+  }
+
+  async function handleRemoveIntroPhoto(gameId: string, existingPaths: string[], path: string) {
+    const ok = await removeIntroPhoto(gameId, existingPaths, path)
+    if (ok) reload()
+    return ok
+  }
+
+  async function handleSetMainIntroPhoto(gameId: string, existingPaths: string[], path: string) {
+    const ok = await setMainIntroPhoto(gameId, existingPaths, path)
+    if (ok) reload()
+    return ok
+  }
+
   async function handleMarkProcessed(id: string) {
     const ok = await markGameRequestProcessed(id)
     if (ok) reload()
@@ -175,7 +197,14 @@ export default function AdminPage() {
           {editingGame && (
             <section className="space-y-2">
               <h2 className="text-lg font-bold">ゲームを編集</h2>
-              <GameEditForm game={editingGame} onSave={handleSaveGame} onCancel={() => setEditingGameId(null)} />
+              <GameEditForm
+                game={editingGame}
+                onSave={handleSaveGame}
+                onCancel={() => setEditingGameId(null)}
+                onAddIntroPhotos={handleAddIntroPhotos}
+                onRemoveIntroPhoto={handleRemoveIntroPhoto}
+                onSetMainIntroPhoto={handleSetMainIntroPhoto}
+              />
             </section>
           )}
 

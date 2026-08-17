@@ -11,6 +11,7 @@ import {
 } from '../../../app/board-game-rules/admin/lib/gameRequests'
 import { editGame, deleteGame } from '../../../app/board-game-rules/admin/lib/moderation'
 import { fetchOriginalPhotos } from '../../../app/board-game-rules/admin/lib/photos'
+import { addIntroPhotos } from '../../../app/board-game-rules/admin/lib/introPhotos'
 import type { Session } from '@supabase/supabase-js'
 import type { AdminGame } from '../../../app/board-game-rules/admin/lib/fetchAdminGames'
 
@@ -34,6 +35,15 @@ vi.mock('../../../app/board-game-rules/admin/lib/moderation', () => ({
   deleteComment: vi.fn(),
 }))
 vi.mock('../../../app/board-game-rules/admin/lib/photos', () => ({ fetchOriginalPhotos: vi.fn() }))
+vi.mock('../../../app/board-game-rules/admin/lib/introPhotos', () => ({
+  addIntroPhotos: vi.fn(),
+  removeIntroPhoto: vi.fn(),
+  setMainIntroPhoto: vi.fn(),
+}))
+// GameEditForm(T6/T7)がメイン画像表示に使う公開URL変換(gamePhotos.ts)は別spec(game-list T8)で検証済みのためモックする
+vi.mock('../../../app/board-game-rules/lib/gamePhotos', () => ({
+  getGamePhotoUrl: vi.fn((path: string) => `https://example.com/game-photos/${path}`),
+}))
 
 function makeSession(email: string): Session {
   return { user: { email } } as unknown as Session
@@ -80,6 +90,7 @@ beforeEach(() => {
   vi.mocked(editGame).mockReset().mockResolvedValue(true)
   vi.mocked(deleteGame).mockReset().mockResolvedValue(true)
   vi.mocked(fetchOriginalPhotos).mockReset().mockResolvedValue([])
+  vi.mocked(addIntroPhotos).mockReset().mockResolvedValue(true)
 })
 
 // 仕様: specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-1、specs/board-game-rules/admin/requirements.md#アクセス制御・権限-2、specs/board-game-rules/admin/design.md#ログイン状態を判定して画面を出し分ける処理、specs/board-game-rules/admin/design.md#閲覧権限を確認する処理
@@ -168,6 +179,25 @@ describe('【管理画面】ゲームの編集・削除の操作が一覧に反�
   })
 })
 
+// 仕様: specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-17
+describe('【管理画面】編集フォームでのゲーム紹介画像の追加が一覧に反映される', () => {
+  it('編集フォームで画像を追加すると、addIntroPhotosが呼ばれ一覧が再取得されること', async () => {
+    vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
+    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
+    vi.mocked(fetchAdminGames).mockResolvedValue([makeGame({ introPhotoPaths: ['game-1/0.jpg'] })])
+
+    render(<AdminPage />)
+    await waitFor(() => expect(screen.getByRole('button', { name: '編集' })).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: '編集' }))
+
+    const file = new File(['dummy'], 'new.jpg', { type: 'image/jpeg' })
+    fireEvent.change(screen.getByLabelText('ゲーム紹介画像を追加'), { target: { files: [file] } })
+
+    await waitFor(() => expect(addIntroPhotos).toHaveBeenCalledWith('game-1', ['game-1/0.jpg'], [file]))
+    await waitFor(() => expect(fetchAdminGames).toHaveBeenCalledTimes(2))
+  })
+})
+
 // 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-13、specs/board-game-rules/admin/requirements.md#登録依頼の確認-14
 describe('【管理画面】登録依頼の処理済みマーク・削除の操作が一覧に反映される', () => {
   it('処理済みにするを押すと、markGameRequestProcessedが呼ばれ一覧が再取得されること', async () => {
@@ -177,6 +207,7 @@ describe('【管理画面】登録依頼の処理済みマーク・削除の操�
       {
         id: 'req-1',
         photoPaths: [],
+        introPhotoPaths: [],
         name: 'カタン',
         minPlayers: null,
         maxPlayers: null,

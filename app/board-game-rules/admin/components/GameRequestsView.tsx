@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { GameRequest } from '../lib/gameRequests'
 import type { PhotoFetchResult } from '../lib/photos'
+import { getGamePhotoUrl } from '../../lib/gamePhotos'
 
 type Props = {
   requests: GameRequest[]
@@ -72,6 +73,22 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
             {request.minPlayers ?? '?'}〜{request.maxPlayers ?? '?'}人 / {request.minMinutes ?? '?'}〜
             {request.maxMinutes ?? '?'}分 / {request.genres.join('、') || 'ジャンル未選択'}
           </p>
+
+          {request.introPhotoPaths.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {request.introPhotoPaths.map((path, index) => (
+                // eslint-disable-next-line @next/next/no-img-element -- 公開Storageの外部URLをそのまま表示する(next/image最適化は不要)
+                <img
+                  key={path}
+                  src={getGamePhotoUrl(path)}
+                  alt={`依頼されたゲーム紹介画像 ${index + 1}枚目`}
+                  className="h-20 w-20 rounded border border-gray-200 object-cover"
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-2 text-xs text-gray-400">紹介画像なし(登録時に自動補完されます)</p>
+          )}
 
           <div className="mt-2 flex flex-wrap gap-2">
             {!request.processedAt && (
