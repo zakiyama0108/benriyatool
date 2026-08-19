@@ -73,7 +73,7 @@
 - 対象: requirements.md#ログイン・アクセス制御-18(design.md「共通ナビに管理画面への導線を表示する処理」)
 - 🔴 `AdminNavLink`が「未ログインでは何も描画しない」「ログイン中かつ`isAuthorizedAdmin`がtrueなら管理画面(`/board-game-rules/admin/`)へのリンクを描画する」「ログイン中でも権限なし(false)なら描画しない」「権限確認が例外を投げたら描画しない(フェイルクローズ)」の各ケースをテストする(`useSession`・`isAuthorizedAdmin`はモックする)
 - 🟢 `AdminNavLink`を実装し、`BoardGameNav`の`nav`末尾に差し込む(BoardGameNavはサーバーコンポーネントのまま)
-- 🔵 リンクの体裁を他ナビ項目に揃える。要件[18]の実装着手にあわせてrequirements.md先頭の`> ステータス: 仕様確認中(未実装)`行を削除する
+- 🔵 リンクの体裁を他ナビ項目に揃える。テストを紐づけたら`scripts/spec-coverage-skip.json`の一時スキップ2件(`board-game-rules/admin/requirements.md`の「ログイン・アクセス制御 [18]」、`board-game-rules/admin/design.md`の「共通ナビに管理画面への導線を表示する処理」)を削除する
 
 ## 補足(リリース前チェック)
 - Supabase AuthのRedirect URLs許可リストに管理画面の戻り先を登録する(requirements.md#認証手段とパスキー-5)。利用者ログインの戻り先`https://benriyatool.com/board-game-rules/**`は[user-auth](../user-auth/tasks.md)の責務で登録し、これは`/board-game-rules/admin/**`を包含するため、広い方の1エントリで管理画面の戻り先も兼ねられる(user-authと重複せず整理する)
