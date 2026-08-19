@@ -69,6 +69,15 @@
 - 画像検索・AI加工いずれかの失敗はゲーム登録自体を止めず、失敗理由をコンソールログに出す(design.md「ログ」)
 - 動作確認: BoardGameGeekに実在するゲーム名・実在しないゲーム名それぞれで自動補完を試し、前者は紹介画像付きで登録され、後者は紹介画像なしで登録が完了することを確認する
 
+## 方向B変更(2026-08-19): ゲーム個別モデレーションを詳細画面へ移設
+
+> 上記T1〜T7は初版(admin一覧型)の実装履歴として残す。方向Bでは以下を行う。ゲーム編集・削除・元写真照合・コメント削除・紹介画像差し替えの**新実装は[game-detail/tasks.md](../game-detail/tasks.md)**で行い、adminからは撤去する。
+
+- 🔴🟢🔵 **BT1. admin本体からゲーム一覧・編集フォームを撤去**(`admin/page.tsx`): 権限あり状態で表示するのは通報一覧(`ReportsView`)・登録依頼一覧(`GameRequestsView`)のみになること、`GameModerationTable`・`GameEditForm`を描画しないこと、状態から「ゲーム一覧」「編集中のゲーム」が消えることをテスト・実装する(既存の`admin/page.test.tsx`から一覧・編集・写真照合・コメント削除の検証を削除する)
+- 🔴🟢🔵 **BT2. `ReportsView`の対象ゲーム導線を詳細画面リンクに変更**: 「編集・削除へ進む」ボタンを、対象ゲームの詳細画面(`/board-game-rules/detail?id=<ゲームID>`)への遷移リンクに置き換えることをテスト・実装する(`GameModerationTable.test.tsx`・`GameEditForm.test.tsx`は対応コンポーネントの撤去に伴い削除する)
+- **BT3. 撤去するファイル**: `admin/lib/moderation.ts`・`admin/lib/photos.ts`・`admin/lib/introPhotos.ts`・`admin/lib/fetchAdminGames.ts`・`admin/components/GameModerationTable.tsx`・`admin/components/GameEditForm.tsx`と各テストを削除する(相当する処理はgame-detail側で新規実装。`moderation.ts`のゲーム削除は論理削除→**物理削除**に変わる点に注意)
+- **BT4. spec-coverage追随**: adminのrequirements.mdは再設計中のためWIPマーカーで除外中。実装(BT1〜BT3・game-detail側)が揃ったらWIPマーカーを外し、`scripts/spec-coverage-skip.json`の当spec向けエントリ(あれば)を整理する
+
 ## 補足(リリース前チェック)
 - Supabase AuthのRedirect URLs許可リストに管理画面の戻り先を登録する(requirements.md#認証手段とパスキー-5)。利用者ログインの戻り先`https://benriyatool.com/board-game-rules/**`は[user-auth](../user-auth/tasks.md)の責務で登録し、これは`/board-game-rules/admin/**`を包含するため、広い方の1エントリで管理画面の戻り先も兼ねられる(user-authと重複せず整理する)
 - 運営者Googleアカウントのパスキー登録・2段階認証の維持を初回公開前に確認する(ADR-0006)
