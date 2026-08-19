@@ -22,7 +22,7 @@
 
 ### 通報後の扱い
 - [5] 通報が行われても、そのゲームを自動的に非表示にはしない。公開は維持したまま、運営者が[admin/requirements.md](../admin/requirements.md)の管理画面で通報内容を確認できるようにする(根拠: 自動非表示にすると、いたずら通報で正当な登録が消える。運営者の判断を挟む。`/consult`での判断)
-- [6] 運営者は、通報内容を見て、対象ゲームの編集・削除の要否を判断する([admin/requirements.md](../admin/requirements.md)に従う)
+- [6] 運営者は、通報内容を見て、対象ゲームの編集・削除の要否を判断する。通報一覧の確認は[admin/requirements.md](../admin/requirements.md)、実際の編集・物理削除は対象ゲームの詳細画面の管理者導線([game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))で行う(方向B)
 
 ## ビジネスルール・制約
 
@@ -35,7 +35,7 @@
 ## 依存関係
 - 通報対象となるゲームの識別子は[game-registration/requirements.md](../game-registration/requirements.md)で登録されるゲームのIDに従う
 - 通報の送信導線は[game-detail/requirements.md#機能要件-7](../game-detail/requirements.md)で表示される
-- 通報内容の確認・対応は[admin/requirements.md](../admin/requirements.md)で行う
+- 通報内容の確認(一覧)は[admin/requirements.md](../admin/requirements.md)、通報を受けた編集・物理削除は[game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md)で行う(方向B)
 
 ## スコープ外
 - コメント単位の通報([comment/requirements.md](../comment/requirements.md)のスコープ外と揃える。当面はゲーム単位の通報のみ)

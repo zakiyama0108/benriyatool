@@ -45,6 +45,7 @@
 ## 依存関係
 - コメント対象となるゲームの識別子は[game-registration/requirements.md](../game-registration/requirements.md)で登録されるゲームのIDに従う
 - コメント欄は[game-detail/requirements.md#機能要件-6](../game-detail/requirements.md)で表示される
+- 運営者による不適切コメントの削除([9]〜[11]の運営者削除)の導線は、詳細画面のコメント欄に管理者ログイン時のみ表示する(方向B。[game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))
 - ログイン状態・運営者判定は[user-auth/requirements.md](../user-auth/requirements.md)に従う
 - 利用者の投稿内容(氏名を含むアカウント表示・本文)を新たに保存・公開するため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
 
