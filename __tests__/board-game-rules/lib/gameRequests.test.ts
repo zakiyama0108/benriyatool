@@ -1,11 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { uploadMock, storageFromMock, insertMock, fromMock } = vi.hoisted(() => {
+const { uploadMock, introUploadMock, storageFromMock, insertMock, fromMock } = vi.hoisted(() => {
   const uploadMock = vi.fn()
-  const storageFromMock = vi.fn(() => ({ upload: uploadMock }))
+  const introUploadMock = vi.fn()
+  // 元写真(非公開)とゲーム紹介画像(公開)は別バケットのため、バケット名で使うuploadを出し分ける
+  const storageFromMock = vi.fn((bucket: string) => {
+    if (bucket === 'board-game-rules-photos') return { upload: uploadMock }
+    if (bucket === 'board-game-rules-game-photos') return { upload: introUploadMock }
+    throw new Error(`unexpected bucket: ${bucket}`)
+  })
   const insertMock = vi.fn()
   const fromMock = vi.fn(() => ({ insert: insertMock }))
-  return { uploadMock, storageFromMock, insertMock, fromMock }
+  return { uploadMock, introUploadMock, storageFromMock, insertMock, fromMock }
 })
 
 vi.mock('../../../app/lib/supabaseClient', () => ({
@@ -22,6 +28,7 @@ beforeEach(() => {
   fromMock.mockClear()
   storageFromMock.mockClear()
   uploadMock.mockReset().mockResolvedValue({ data: { path: 'uploaded/path.jpg' }, error: null })
+  introUploadMock.mockReset().mockResolvedValue({ data: { path: 'intro-uploaded/0.jpg' }, error: null })
   insertMock.mockReset().mockResolvedValue({ data: null, error: null })
 })
 
@@ -140,5 +147,43 @@ describe('【登録依頼】写真+分類情報から登録依頼を送信する
     uploadMock.mockRejectedValue(new Error('network error'))
 
     await expect(createGameRequest({ photos: [makePhoto()] })).resolves.toBe(false)
+  })
+})
+
+// 仕様: specs/board-game-rules/game-registration/requirements.md#ゲーム紹介画像のアップロード-9、specs/board-game-rules/game-registration/design.md#ゲーム紹介画像のStorage
+describe('【登録依頼】ゲーム紹介画像を公開Storageへ保存する - 選択順どおりにintro_photo_pathsとしてINSERTする', () => {
+  it('ゲーム紹介画像を選択していない場合(0枚)でも、依頼を送信でき、intro_photo_pathsは空配列でINSERTされること', async () => {
+    const result = await createGameRequest({ photos: [makePhoto()] })
+
+    expect(result).toBe(true)
+    expect(introUploadMock).not.toHaveBeenCalled()
+    expect(insertMock).toHaveBeenCalledWith(expect.objectContaining({ intro_photo_paths: [] }))
+  })
+
+  it('ゲーム紹介画像を選択している場合、公開Storage(board-game-rules-game-photos)へ選択順どおりに保存されること', async () => {
+    introUploadMock
+      .mockResolvedValueOnce({ data: { path: 'req-1/0.jpg' }, error: null })
+      .mockResolvedValueOnce({ data: { path: 'req-1/1.jpg' }, error: null })
+
+    const result = await createGameRequest({
+      photos: [makePhoto()],
+      introPhotos: [makePhoto('package.jpg'), makePhoto('play.jpg')],
+    })
+
+    expect(result).toBe(true)
+    expect(storageFromMock).toHaveBeenCalledWith('board-game-rules-game-photos')
+    expect(introUploadMock).toHaveBeenCalledTimes(2)
+    expect(insertMock).toHaveBeenCalledWith(
+      expect.objectContaining({ intro_photo_paths: ['req-1/0.jpg', 'req-1/1.jpg'] })
+    )
+  })
+
+  it('ゲーム紹介画像の保存(公開Storage)に失敗した場合、DBへのINSERTは行われずfalseが返ること', async () => {
+    introUploadMock.mockResolvedValue({ data: null, error: { message: 'storage error' } })
+
+    const result = await createGameRequest({ photos: [makePhoto()], introPhotos: [makePhoto('package.jpg')] })
+
+    expect(result).toBe(false)
+    expect(insertMock).not.toHaveBeenCalled()
   })
 })

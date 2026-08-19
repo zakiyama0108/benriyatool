@@ -3,10 +3,16 @@ import { describe, it, expect, vi } from 'vitest'
 import GameRequestsView from '../../../../app/board-game-rules/admin/components/GameRequestsView'
 import type { GameRequest } from '../../../../app/board-game-rules/admin/lib/gameRequests'
 
+// ゲーム紹介画像プレビューに使う公開URL変換(gamePhotos.ts)は別spec(game-list T8)で検証済みのためモックする
+vi.mock('../../../../app/board-game-rules/lib/gamePhotos', () => ({
+  getGamePhotoUrl: vi.fn((path: string) => `https://example.com/game-photos/${path}`),
+}))
+
 function makeRequest(overrides: Partial<GameRequest> = {}): GameRequest {
   return {
     id: 'req-1',
     photoPaths: ['req-1/0.jpg'],
+    introPhotoPaths: [],
     name: 'カタン',
     minPlayers: 3,
     maxPlayers: 4,
@@ -160,5 +166,37 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
       resolveFn([])
       await Promise.resolve()
     })
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-15、specs/board-game-rules/admin/design.md#登録依頼を確認する処理
+describe('【管理画面】登録依頼一覧 - ゲーム紹介画像のプレビュー(0枚時は自動補完の案内)', () => {
+  it('ゲーム紹介画像が添付されている依頼では、公開URLでプレビュー表示されること', () => {
+    render(
+      <GameRequestsView
+        requests={[makeRequest({ introPhotoPaths: ['req-1/0.jpg', 'req-1/1.jpg'] })]}
+        onMarkProcessed={vi.fn()}
+        onDelete={vi.fn()}
+        onViewPhotos={vi.fn()}
+      />
+    )
+
+    const image = screen.getByAltText<HTMLImageElement>('依頼されたゲーム紹介画像 1枚目')
+    expect(image.src).toBe('https://example.com/game-photos/req-1/0.jpg')
+    expect(screen.getByAltText('依頼されたゲーム紹介画像 2枚目')).toBeTruthy()
+  })
+
+  it('ゲーム紹介画像が0枚の依頼では、自動補完される旨の案内が表示されること', () => {
+    render(
+      <GameRequestsView
+        requests={[makeRequest({ introPhotoPaths: [] })]}
+        onMarkProcessed={vi.fn()}
+        onDelete={vi.fn()}
+        onViewPhotos={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('紹介画像なし(登録時に自動補完されます)')).toBeTruthy()
+    expect(screen.queryByAltText(/依頼されたゲーム紹介画像/)).toBeNull()
   })
 })

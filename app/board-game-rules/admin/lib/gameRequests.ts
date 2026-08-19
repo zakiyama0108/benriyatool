@@ -4,6 +4,9 @@ import type { Genre } from '../../lib/genres'
 export type GameRequest = {
   id: string
   photoPaths: string[]
+  // ゲーム紹介画像(公開Storage)のパス。順序付きで先頭がメイン画像候補。0枚(自動補完対象)〜20枚
+  // (仕様: admin/requirements.md#ゲーム紹介画像の確認・自動補完-15)
+  introPhotoPaths: string[]
   name: string | null
   minPlayers: number | null
   maxPlayers: number | null
@@ -24,6 +27,7 @@ export type GameRequest = {
 type GameRequestRow = {
   id: string
   photo_paths: string[]
+  intro_photo_paths: string[]
   name: string | null
   min_players: number | null
   max_players: number | null
@@ -45,6 +49,7 @@ function mapRow(row: GameRequestRow): GameRequest {
   return {
     id: row.id,
     photoPaths: row.photo_paths,
+    introPhotoPaths: Array.isArray(row.intro_photo_paths) ? row.intro_photo_paths : [],
     name: row.name,
     minPlayers: row.min_players,
     maxPlayers: row.max_players,

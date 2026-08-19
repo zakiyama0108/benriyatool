@@ -14,6 +14,10 @@ vi.mock('../../app/board-game-rules/lib/favorites', () => ({
   removeFavorite: vi.fn(),
 }))
 vi.mock('../../app/lib/adminAuth', () => ({ signInWithGoogle: vi.fn(), signOut: vi.fn() }))
+// GameCard(T10)がメイン画像表示に使う公開URL変換(gamePhotos.ts)は別spec(T8)で検証済みのためモックする
+vi.mock('../../app/board-game-rules/lib/gamePhotos', () => ({
+  getGamePhotoUrl: vi.fn((path: string) => `https://example.com/game-photos/${path}`),
+}))
 
 function makeGame(overrides: Partial<Game> = {}): Game {
   return {
@@ -33,6 +37,7 @@ function makeGame(overrides: Partial<Game> = {}): Game {
     releaseYear: 1995,
     rulesSimple: '',
     rulesDetailed: [],
+    introPhotoPaths: [],
     createdAt: '2026-08-01T00:00:00.000Z',
     ...overrides,
   }

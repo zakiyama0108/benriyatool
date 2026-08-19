@@ -27,6 +27,10 @@ export type Game = {
   releaseYear: number | null
   rulesSimple: string
   rulesDetailed: RuleChapter[]
+  // ゲーム紹介画像(公開Storageバケット)のパス。順序付きで先頭がメイン画像
+  // (仕様: game-registration/design.md「データベース設計」、game-list/design.md「メイン画像を表示する処理」)。
+  // photo_paths(元写真、非公開)とは異なり公開列のためGame型に含める
+  introPhotoPaths: string[]
   createdAt: string
 }
 
@@ -49,14 +53,16 @@ export type GameRow = {
   release_year: number | null
   rules_simple: string
   rules_detailed: RuleChapter[]
+  intro_photo_paths: string[]
   created_at: string
 }
 
 // 一覧・詳細が SELECT する公開列(photo_paths を含めない=必要列のみ)。
 // この定数を各クエリで使い、photo_paths を誤って選択しないよう一元管理する
 // (anon は列単位のSELECT権限から photo_paths が除外されており、含めると権限エラーになる)。
+// intro_photo_paths(ゲーム紹介画像)はphoto_pathsと異なり公開列のため含める。
 export const GAME_PUBLIC_COLUMNS =
-  'id, name, min_players, max_players, min_minutes, max_minutes, genres, min_age, difficulty, publisher, author, has_japanese_rules, awards, release_year, rules_simple, rules_detailed, created_at'
+  'id, name, min_players, max_players, min_minutes, max_minutes, genres, min_age, difficulty, publisher, author, has_japanese_rules, awards, release_year, rules_simple, rules_detailed, intro_photo_paths, created_at'
 
 // DB行(snake_case)を画面で扱うGame(camelCase)へ変換する。
 // rules_detailed(jsonb)は共通章立ての配列としてそのまま扱う(想定外の値は空配列に倒す)。
@@ -78,6 +84,7 @@ export function mapGameRowToGame(row: GameRow): Game {
     releaseYear: row.release_year,
     rulesSimple: row.rules_simple,
     rulesDetailed: Array.isArray(row.rules_detailed) ? row.rules_detailed : [],
+    introPhotoPaths: Array.isArray(row.intro_photo_paths) ? row.intro_photo_paths : [],
     createdAt: row.created_at,
   }
 }

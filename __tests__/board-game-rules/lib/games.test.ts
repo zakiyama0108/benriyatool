@@ -38,6 +38,7 @@ function makeRow(overrides: Record<string, unknown> = {}) {
     release_year: null,
     rules_simple: '',
     rules_detailed: [],
+    intro_photo_paths: [],
     created_at: '2026-08-01T00:00:00.000Z',
     ...overrides,
   }
@@ -75,7 +76,8 @@ describe('【一覧・絞り込み】公開中ゲームの取得 - 並び順・�
     await fetchPublishedGames()
 
     const selectedColumns = selectMock.mock.calls[0][0] as string
-    expect(selectedColumns).not.toContain('photo_paths')
+    // intro_photo_paths(公開列)は"photo_paths"を部分文字列として含むため、列名の完全一致で判定する
+    expect(selectedColumns.split(', ')).not.toContain('photo_paths')
     expect(selectedColumns).toContain('genres')
   })
 
@@ -91,5 +93,25 @@ describe('【一覧・絞り込み】公開中ゲームの取得 - 並び順・�
     setupFrom({ data: null, error: { message: 'permission denied' } })
 
     await expect(fetchPublishedGames()).rejects.toThrow()
+  })
+})
+
+// 仕様: specs/board-game-rules/game-list/design.md#公開中のゲームを取得する処理
+describe('【一覧・絞り込み】公開中ゲームの取得 - ゲーム紹介画像の並び順配列(intro_photo_paths)を含める', () => {
+  it('選択列にintro_photo_pathsを含めること(サムネイル表示に使うため)', async () => {
+    const { selectMock } = setupFrom({ data: [makeRow()], error: null })
+
+    await fetchPublishedGames()
+
+    const selectedColumns = selectMock.mock.calls[0][0] as string
+    expect(selectedColumns).toContain('intro_photo_paths')
+  })
+
+  it('取得したintro_photo_pathsがintroPhotoPaths(camelCase)として変換されて返ること', async () => {
+    setupFrom({ data: [makeRow({ intro_photo_paths: ['game-2/0.jpg', 'game-2/1.jpg'] })], error: null })
+
+    const games = await fetchPublishedGames()
+
+    expect(games[0].introPhotoPaths).toEqual(['game-2/0.jpg', 'game-2/1.jpg'])
   })
 })

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import type { Session } from '@supabase/supabase-js'
 import GameCard from '../../../app/board-game-rules/components/GameCard'
@@ -11,6 +11,10 @@ vi.mock('../../../app/board-game-rules/lib/useSession', () => ({ useSession: vi.
 vi.mock('../../../app/board-game-rules/lib/favorites', () => ({
   addFavorite: vi.fn(),
   removeFavorite: vi.fn(),
+}))
+// メイン画像の公開URL変換(gamePhotos.ts)は別spec(T8)で検証済みのためモックする
+vi.mock('../../../app/board-game-rules/lib/gamePhotos', () => ({
+  getGamePhotoUrl: vi.fn((path: string) => `https://example.com/game-photos/${path}`),
 }))
 
 function makeGame(overrides: Partial<Game> = {}): Game {
@@ -31,6 +35,7 @@ function makeGame(overrides: Partial<Game> = {}): Game {
     releaseYear: 1995,
     rulesSimple: '',
     rulesDetailed: [],
+    introPhotoPaths: [],
     createdAt: '2026-08-01T00:00:00.000Z',
     ...overrides,
   }
@@ -80,5 +85,41 @@ describe('【一覧カード】お気に入り操作の出し分け - ログイ�
 
     const button = screen.getByRole('button')
     expect(button.getAttribute('aria-pressed')).toBe('true')
+  })
+})
+
+// 仕様: specs/board-game-rules/game-list/requirements.md#画像表示-12
+describe('【一覧カード】メイン画像の表示 - ゲーム紹介画像の並び順の先頭をサムネイルとして表示する', () => {
+  it('ゲーム紹介画像が登録されている場合、先頭画像の公開URLがカード上部に表示されること', () => {
+    vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
+    render(<GameCard game={makeGame({ introPhotoPaths: ['game-1/0.jpg', 'game-1/1.jpg'] })} favorited={false} />)
+
+    const image = screen.getByAltText<HTMLImageElement>('カタンのメイン画像')
+    expect(image.src).toBe('https://example.com/game-photos/game-1/0.jpg')
+  })
+})
+
+// 仕様: specs/board-game-rules/game-list/requirements.md#画像表示-13
+describe('【一覧カード】メイン画像未登録時の表示 - プレースホルダーにして表示崩れを防ぐ', () => {
+  it('ゲーム紹介画像が0枚(未登録)の場合、プレースホルダーが表示され、メイン画像は表示されないこと', () => {
+    vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
+    render(<GameCard game={makeGame({ introPhotoPaths: [] })} favorited={false} />)
+
+    expect(screen.getByLabelText('メイン画像未登録')).toBeTruthy()
+    expect(screen.queryByAltText('カタンのメイン画像')).toBeNull()
+  })
+})
+
+// 仕様: specs/board-game-rules/game-list/design.md#エラーハンドリング
+describe('【一覧カード】メイン画像の読み込み失敗時の扱い - このカードだけプレースホルダーに切り替える', () => {
+  it('表示中の画像でリンク切れ等の読み込みエラー(onError)が起きた場合、プレースホルダー表示へ切り替わること', () => {
+    vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
+    render(<GameCard game={makeGame({ introPhotoPaths: ['game-1/0.jpg'] })} favorited={false} />)
+
+    const image = screen.getByAltText('カタンのメイン画像')
+    fireEvent.error(image)
+
+    expect(screen.queryByAltText('カタンのメイン画像')).toBeNull()
+    expect(screen.getByLabelText('メイン画像未登録')).toBeTruthy()
   })
 })

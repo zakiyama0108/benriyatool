@@ -32,6 +32,7 @@ function makeRow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'req-1',
     photo_paths: ['req-1/0.jpg'],
+    intro_photo_paths: [],
     name: 'カタン',
     min_players: 3,
     max_players: 4,
@@ -81,6 +82,7 @@ describe('【管理画面】登録依頼一覧を取得する - 未処理を優�
       {
         id: 'req-1',
         photoPaths: ['req-1/0.jpg'],
+        introPhotoPaths: [],
         name: 'カタン',
         minPlayers: 3,
         maxPlayers: 4,
@@ -104,6 +106,17 @@ describe('【管理画面】登録依頼一覧を取得する - 未処理を優�
     order2Mock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
 
     await expect(fetchGameRequests()).rejects.toThrow()
+  })
+
+  it('ゲーム紹介画像の並び順配列(intro_photo_paths)がintroPhotoPathsとして引き継がれること', async () => {
+    order2Mock.mockResolvedValue({
+      data: [makeRow({ intro_photo_paths: ['req-1/0.jpg', 'req-1/1.jpg'] })],
+      error: null,
+    })
+
+    const requests = await fetchGameRequests()
+
+    expect(requests[0].introPhotoPaths).toEqual(['req-1/0.jpg', 'req-1/1.jpg'])
   })
 })
 
