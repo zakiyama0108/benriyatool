@@ -29,6 +29,16 @@
 - 補足: この確認は画面の出し分けのためで、実際の保護はRLSが担う。迂回して操作を試みても、運営者以外は保護されたSELECT/UPDATE/DELETE・元写真取得ができない(requirements.md#アクセス制御・権限-2)
 - 関連するビジネスルール: requirements.md#ログイン・アクセス制御-3、requirements.md#アクセス制御・権限-1〜2
 
+### 共通ナビに管理画面への導線を表示する処理
+- 対象: board-game-rulesの共通ナビ(左サイドバー `components/BoardGameNav.tsx`)を表示する各画面(一覧・登録依頼・お気に入り)
+- 手順:
+  1. ナビ内に運営者専用の導線を担うクライアント島 `components/AdminNavLink.tsx` を置く。`useSession`でログイン状態を参照する
+  2. 未ログインの場合は何も描画しない(導線を出さない)
+  3. ログイン中の場合のみ`isAuthorizedAdmin`で許可リスト(`admin_emails`)に登録があるかを確認し、登録があれば管理画面(`/board-game-rules/admin/`)へのリンクを他のナビ項目と同じ体裁で描画する。登録がなければ何も描画しない
+  4. 権限確認自体に失敗した場合(`isAuthorizedAdmin`が例外)は導線を出さない(フェイルクローズ。ナビ全体は壊さず、他項目は通常表示のまま)
+- 補足: これは運営者が管理画面へ素早く到達するための利便であって、アクセス制御ではない。導線の表示有無にかかわらず、実際の保護はRLS/Storageポリシーが担う(requirements.md#アクセス制御・権限-2、下記「セキュリティ」)。判定ロジックは「閲覧権限を確認する処理」と同じ`isAuthorizedAdmin`を再利用し、新規ロジックは持たない。管理画面自身は`BoardGameNav`を使わない独自レイアウトのため、この導線に現在地ハイライト(`aria-current`)は不要(`BoardGameNavKey`は追加しない)
+- 関連するビジネスルール: requirements.md#ログイン・アクセス制御-18、requirements.md#アクセス制御・権限-2
+
 ### ゲーム一覧を取得する処理(モデレーション対象)
 - 対象: `board_game_rules_games`の全レコード(削除済み含む)
 - 手順:
@@ -156,6 +166,9 @@ app/board-game-rules/admin/components/GameModerationTable.tsx (新規: ゲーム
 app/board-game-rules/admin/components/GameEditForm.tsx (新規: 分類情報・ルール本文の編集フォーム。登録時の検証を再利用。ゲーム紹介画像の差し替え・削除UIを含む)
 app/board-game-rules/admin/components/ReportsView.tsx (新規: 通報一覧と対象ゲームへの導線)
 app/board-game-rules/admin/components/GameRequestsView.tsx (新規: 登録依頼一覧+写真プレビュー+ゲーム紹介画像プレビュー+処理済みマーク/削除の導線)
+app/board-game-rules/components/AdminNavLink.tsx (新規: 共通ナビ内の運営者専用の管理画面導線。useSession + isAuthorizedAdmin で出し分けるクライアント島)
+app/board-game-rules/components/BoardGameNav.tsx (変更: nav末尾に AdminNavLink を差し込む。サーバーコンポーネントのまま。実装は [game-list/design.md](../game-list/design.md) が真実の源)
+app/board-game-rules/lib/useSession.ts (既存: ログイン状態の参照フックを AdminNavLink でも利用)
 app/board-game-rules/lib/games.ts (既存: ゲーム型・共通章立てを共有)
 app/board-game-rules/lib/gamePhotos.ts ([game-list/design.md](../game-list/design.md)で実装される getGamePhotoUrl を共有)
 app/board-game-rules/lib/comments.ts (既存: 運営者によるコメント削除に deleteComment を利用)
@@ -262,6 +275,8 @@ T0(ゲーム紹介画像バケット設定適用)の実機確認:
 - 元写真の照合: 選んだゲームの元写真を運営者のみ取得・表示
 
 未ログイン時・権限なし時は上記を出さず、案内(ログイン/権限がない旨)だけを表示する。
+
+本画面への導線は、他画面(一覧・登録依頼・お気に入り)の共通ナビに運営者ログイン時のみ表示する管理画面リンク(上記「共通ナビに管理画面への導線を表示する処理」)が担う。管理画面自身は`BoardGameNav`を使わない独自レイアウトのため、この画面内にはナビを持たない。
 
 ## 状態管理
 - 管理画面(`page.tsx`)は「ログインセッション」「閲覧権限の判定結果」「取得したゲーム一覧・通報一覧・登録依頼一覧」「編集中のゲーム」「取得/操作状態」をローカル状態として持つ(`ikukyu/admin`と同一方針)。複数画面をまたがないためグローバルな状態管理は使わない
