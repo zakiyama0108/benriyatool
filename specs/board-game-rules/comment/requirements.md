@@ -44,7 +44,7 @@
 
 ## 依存関係
 - コメント対象となるゲームの識別子は[game-registration/requirements.md](../game-registration/requirements.md)で登録されるゲームのIDに従う
-- コメント欄は[game-detail/requirements.md#機能要件-7](../game-detail/requirements.md)で表示される
+- コメント欄は[game-detail/requirements.md#機能要件-6](../game-detail/requirements.md)で表示される
 - ログイン状態・運営者判定は[user-auth/requirements.md](../user-auth/requirements.md)に従う
 - 利用者の投稿内容(氏名を含むアカウント表示・本文)を新たに保存・公開するため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
 
