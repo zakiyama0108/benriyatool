@@ -3898,15 +3898,5 @@
     "specFile": "board-game-rules/game-list/design.md",
     "item": "メイン画像を表示する処理",
     "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、GameCard.test.tsx等にテストを紐づけたらこのエントリを削除する(tasks.md T10参照)"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "ログイン・アクセス制御 [18]",
-    "reason": "一時スキップ(未実装): /designで共通ナビへの管理画面導線(admin/design.md#共通ナビに管理画面への導線を表示する処理)を追記した段階。実装(TDD)完了後、AdminNavLink.test.tsx等にテストを紐づけたらこのエントリを削除する(admin/tasks.md T9参照)"
-  },
-  {
-    "specFile": "board-game-rules/admin/design.md",
-    "item": "共通ナビに管理画面への導線を表示する処理",
-    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、AdminNavLink.test.tsx等にテストを紐づけたらこのエントリを削除する(admin/tasks.md T9参照)"
   }
 ]
