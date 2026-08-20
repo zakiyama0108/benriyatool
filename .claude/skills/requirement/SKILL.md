@@ -84,7 +84,7 @@ requirements.md / design.md / architecture.md には、常に**「今の正し�
 - 内輪のコードネーム・呼称(第三者・後任が読んで意味が分からない語。例:「方向B」)
 - 合意日付など、そのセッション固有の言い回し(例:「2026-08-19合意」)
 
-仕様を書き換えるときは、**あたかも最初からその仕様だったかのように現在形で書き直す**(「Aを廃止しBへ移した」ではなく「Bで行う」)。変更の意思決定・理由を残す必要がある場合は `docs/adr/` のADR等の別資料にまとめ、仕様書からは(必要なら)ADRへのリンクだけを張る。このルールは要件定義・設計・アーキテクチャすべてに共通で、[requirement](../requirement/SKILL.md)・[design](../design/SKILL.md)・[architecture-workflow](../architecture-workflow/SKILL.md)の各SKILL.mdに同じ趣旨で記載する(変更時は揃って更新する)。
+仕様を書き換えるときは、**あたかも最初からその仕様だったかのように現在形で書き直す**(「Aを廃止しBへ移した」ではなく「Bで行う」)。変更の意思決定・理由を残す必要がある場合はADR等の別資料にまとめ、仕様書からは(必要なら)ADRへのリンクだけを張る。ADRの置き場は、全アプリ横断の技術選定なら `docs/adr/`、そのアプリ配下だけで完結する判断なら `specs/<アプリ名>/adr/`([architecture-workflow](../architecture-workflow/SKILL.md)のドキュメント役割表を参照)。このルールは要件定義・設計・アーキテクチャすべてに共通で、[requirement](../requirement/SKILL.md)・[design](../design/SKILL.md)・[architecture-workflow](../architecture-workflow/SKILL.md)の各SKILL.mdに同じ趣旨で記載する(変更時は揃って更新する)。
 
 ## 会話ドリブン原則(推測で埋めない)
 
