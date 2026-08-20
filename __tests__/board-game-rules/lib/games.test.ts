@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const { fromMock } = vi.hoisted(() => ({ fromMock: vi.fn() }))
 vi.mock('../../../app/lib/supabaseClient', () => ({ supabase: { from: fromMock } }))
 
-import { fetchPublishedGames } from '../../../app/board-game-rules/lib/games'
+import { fetchPublishedGames, fetchGameById } from '../../../app/board-game-rules/lib/games'
 
 type QueryResult = { data: unknown; error: unknown }
 
@@ -19,6 +19,21 @@ function setupFrom(result: QueryResult) {
   })
   return { selectMock, isMock, orderMock }
 }
+
+// 単一ゲーム取得(fetchGameById)用のモック。select().eq('id', ...).maybeSingle() の形。
+function setupFromById(result: QueryResult) {
+  const maybeSingleMock = vi.fn().mockResolvedValue(result)
+  const eqMock = vi.fn().mockReturnValue({ maybeSingle: maybeSingleMock })
+  const selectMock = vi.fn().mockReturnValue({ eq: eqMock })
+  fromMock.mockImplementation((table: string) => {
+    if (table === 'board_game_rules_games') return { select: selectMock }
+    throw new Error(`unexpected table: ${table}`)
+  })
+  return { selectMock, eqMock, maybeSingleMock }
+}
+
+// 実在しそうなUUID(fetchGameByIdはUUID形式のみ問い合わせる)
+const VALID_UUID = '11111111-1111-4111-8111-111111111111'
 
 function makeRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -113,5 +128,56 @@ describe('【一覧・絞り込み】公開中ゲームの取得 - ゲーム紹�
     const games = await fetchPublishedGames()
 
     expect(games[0].introPhotoPaths).toEqual(['game-2/0.jpg', 'game-2/1.jpg'])
+  })
+})
+
+// 仕様: specs/board-game-rules/game-detail/requirements.md#基本情報の表示-1、specs/board-game-rules/game-detail/requirements.md#表示対象-2
+describe('【詳細】単一ゲームの取得 - 指定IDのゲームを、元写真パスを含めず紹介画像を含めて取得する', () => {
+  it('取得できた場合、found状態でGame型(intro_photo_pathsを含む)が返り、選択列にphoto_pathsを含めないこと', async () => {
+    const { selectMock } = setupFromById({
+      data: makeRow({ id: VALID_UUID, name: 'カタン', intro_photo_paths: ['g/0.jpg'] }),
+      error: null,
+    })
+
+    const result = await fetchGameById(VALID_UUID)
+
+    expect(result).toEqual({ status: 'found', game: expect.objectContaining({ id: VALID_UUID, name: 'カタン' }) })
+    const selectedColumns = selectMock.mock.calls[0][0] as string
+    expect(selectedColumns.split(', ')).not.toContain('photo_paths')
+    expect(selectedColumns).toContain('intro_photo_paths')
+  })
+
+  it('該当ゲームが存在しない(削除済みを含む)場合、notFound状態が返ること', async () => {
+    setupFromById({ data: null, error: null })
+
+    const result = await fetchGameById(VALID_UUID)
+
+    expect(result).toEqual({ status: 'notFound' })
+  })
+
+  it('取得に失敗した場合、notFoundと区別できるerror状態が返ること', async () => {
+    setupFromById({ data: null, error: { message: 'network error' } })
+
+    const result = await fetchGameById(VALID_UUID)
+
+    expect(result).toEqual({ status: 'error' })
+  })
+
+  it('不正なID形式(UUIDでない)の場合は、問い合わせをせずnotFound扱いになること', async () => {
+    const { selectMock } = setupFromById({ data: makeRow(), error: null })
+
+    const result = await fetchGameById('not-a-uuid')
+
+    expect(result).toEqual({ status: 'notFound' })
+    expect(selectMock).not.toHaveBeenCalled()
+  })
+
+  it('IDが空の場合も、問い合わせをせずnotFound扱いになること', async () => {
+    const { selectMock } = setupFromById({ data: makeRow(), error: null })
+
+    const result = await fetchGameById('')
+
+    expect(result).toEqual({ status: 'notFound' })
+    expect(selectMock).not.toHaveBeenCalled()
   })
 })

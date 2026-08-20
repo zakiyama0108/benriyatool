@@ -1,7 +1,5 @@
 # 要件定義: ゲーム詳細
 
-> ステータス: 仕様確認中(未実装)
-
 ## サマリ
 1つのボードゲームについて、分類情報(人数・時間・ジャンル等)・ルール本文(簡単版/詳しい版のタブ)・紹介画像ギャラリー・コメント欄を表示する、[game-list/requirements.md](../game-list/requirements.md)の各項目からの遷移先画面。閲覧はログイン不要。お気に入り登録・コメント投稿のみログイン利用者限定([favorite/requirements.md](../favorite/requirements.md)、[comment/requirements.md](../comment/requirements.md))。通報はログイン不要([report/requirements.md](../report/requirements.md))。投稿された元写真は一般には一切表示せず、公開対象のゲーム紹介画像のみギャラリー表示する点が本specの主な設計判断。運営者(管理者)がログインしている場合は、この画面にゲームの編集・削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示する(ゲーム1件ごとのモデレーションはその詳細画面で行う。[admin/requirements.md](../admin/requirements.md)、背景は[adr/0001](../adr/0001-moderation-on-detail-and-physical-delete.md))。
 
