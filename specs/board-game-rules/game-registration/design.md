@@ -240,7 +240,6 @@ create table board_game_rules_games (
   rules_detailed jsonb not null,
   photo_paths text[] not null,
   created_at timestamptz not null default now(),
-  deleted_at timestamptz,
   check (min_players <= max_players),
   check (min_minutes <= max_minutes),
   -- ルール本文の防御上限(巨大データ投入対策)
@@ -249,21 +248,22 @@ create table board_game_rules_games (
 );
 alter table board_game_rules_games enable row level security;
 
--- 閲覧: 公開中(削除されていない)の行は誰でもSELECTできる。photo_pathsは列単位のSELECT権限から除外する
+-- 閲覧: 登録済みの行は誰でもSELECTできる(削除は物理削除でレコード自体が消えるため、削除済みを隠す条件は持たない)。photo_pathsは列単位のSELECT権限から除外する
 grant select (
   id, name, min_players, max_players, min_minutes, max_minutes,
   genres, min_age, difficulty, publisher, author, has_japanese_rules,
-  awards, release_year, rules_simple, rules_detailed, created_at, deleted_at
+  awards, release_year, rules_simple, rules_detailed, created_at
 ) on board_game_rules_games to anon;
 grant select on board_game_rules_games to authenticated;
 create policy "anyone can select published games" on board_game_rules_games
-  for select to anon, authenticated using (deleted_at is null);
+  for select to anon, authenticated using (true);
 
 -- 登録: anon/authenticatedからのINSERTは許可しない(利用者は依頼のみ送信でき、直接ゲームを登録できない)。
 -- 書き込みは運営者のローカル登録ツール(service_role相当の権限。RLSをバイパスする)のみが行う
 -- (admin/design.md「登録依頼からゲームを登録するローカルツール」参照)。INSERTポリシーは設けない
 
--- 管理: 運営者本人は全行SELECT(削除済み含む)・UPDATE(編集・論理削除)ができる(admin/design.md)
+-- 管理: 運営者本人は全行SELECT・UPDATE(編集)ができる。物理削除(DELETE)のポリシーは
+-- game-detailの物理削除マイグレーションで追加する(game-detail/design.md「物理削除のDB設計」)
 create policy "admin can select all games" on board_game_rules_games
   for select to authenticated
   using ((auth.jwt() ->> 'email') in (select email from admin_emails));
@@ -338,9 +338,9 @@ T0(マイグレーション適用)の実機確認:
 - 下限>上限の依頼がCHECK制約で拒否されること(片方のみ入力・両方未入力は許容されること)
 - 固定リスト外の値を含むジャンル配列がCHECK制約で拒否されること。固定リスト内の値を複数含む配列は成功すること
 - anon/authenticated(運営者以外)から`board_game_rules_games`へのINSERTがすべて拒否されること(INSERTポリシーが存在しないため)。service_roleキーを使ったINSERT(ローカル登録ツール相当)は成功すること
-- anon/authenticatedで`deleted_at is null`のゲームがSELECTでき、`anon`が`select photo_paths from board_game_rules_games`を発行すると権限エラーで拒否されること(列単位の秘匿)
+- anon/authenticatedで登録済みのゲームがSELECTでき、`anon`が`select photo_paths from board_game_rules_games`を発行すると権限エラーで拒否されること(列単位の秘匿)
 - 固定リスト外の値を含むジャンル配列・下限>上限・簡単版4000字超/詳しい版40000字超のINSERT(service_role経由)がCHECK制約で拒否されること
-- 運営者本人で全行(削除済み含む)がSELECTでき、UPDATEができること
+- 運営者本人で全行がSELECTでき、UPDATEができること
 
 ### 追加マイグレーション(ゲーム紹介画像、実装より先に単独PRで適用)
 上記2テーブルは既に実装・適用済みのため、`intro_photo_paths`は新規マイグレーション(`ALTER TABLE`)として追加する(既存の`create table`文は変更しない)。
@@ -360,7 +360,7 @@ revoke select on board_game_rules_games from anon;
 grant select (
   id, name, min_players, max_players, min_minutes, max_minutes,
   genres, min_age, difficulty, publisher, author, has_japanese_rules,
-  awards, release_year, rules_simple, rules_detailed, created_at, deleted_at,
+  awards, release_year, rules_simple, rules_detailed, created_at,
   intro_photo_paths
 ) on board_game_rules_games to anon;
 ```
