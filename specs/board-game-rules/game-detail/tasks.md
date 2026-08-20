@@ -33,12 +33,18 @@
 
 > 前提: 元写真の非公開Storage・紹介画像の公開Storage([admin/tasks.md](../admin/tasks.md)のT0/T0b、適用済み)。
 
-## T6. 物理削除のマイグレーション(実装より先に単独PRで適用)
-- `board_game_rules_games`に運営者本人のみの`admin can delete games` DELETEポリシー(+`grant delete`)を追加する(design.md「物理削除のDB設計」)
-- 子テーブル`board_game_rules_comments`・`board_game_rules_favorites`・`board_game_rules_reports`の`game_id`外部キーを`ON DELETE CASCADE`に付け替える(既存FKをDROP→再作成)
-- `board_game_rules_games`から`deleted_at`列を削除し、公開SELECTのRLS`anyone can select published games`の条件を`deleted_at is null`から`true`に変更する
-- 実機確認: 運営者本人でgames行をDELETEでき、紐づくコメント・お気に入り・通報が連動削除されること/運営者以外・未ログインはDELETE不可/一般利用者が引き続き全ゲームをSELECTできること/削除後もStorage実ファイル(元写真・紹介画像)は残ること
+## T6a. 物理削除の準備マイグレーション(単独PRで先行適用可)
+- `board_game_rules_games`に運営者本人のみの`admin can delete games` DELETEポリシー(+`grant delete`)を追加する(design.md「物理削除のDB設計」1)
+- 子テーブル`board_game_rules_comments`・`board_game_rules_favorites`・`board_game_rules_reports`の`game_id`外部キーを`ON DELETE CASCADE`に付け替える(既存FKをDROP→再作成。design.md「物理削除のDB設計」2)
+- これらは稼働中コードに影響しないため、実装より先に単独で適用してよい
+- 実機確認: 運営者本人でgames行をDELETEでき、紐づくコメント・お気に入り・通報が連動削除されること/運営者以外・未ログインはDELETE不可/削除後もStorage実ファイル(元写真・紹介画像)は残ること
 - (TDD対象外・マイグレーション)
+
+## T6b. deleted_at列の削除(コード改修と同一デプロイで適用)
+- `board_game_rules_games`から`deleted_at`列を削除し、公開SELECTのRLS`anyone can select published games`の条件を`deleted_at is null`から`true`に変更する(design.md「物理削除のDB設計」3)
+- **`deleted_at`を参照する稼働中コードの改修と必ず同一マイグレーション(同一デプロイ)で行う**: `lib/games.ts`の`deleted_at is null`絞り込み除去、`lib/favorites.ts`のコメント更新、adminの論理削除(`admin/lib/moderation.ts`)・`admin/lib/fetchAdminGames.ts`の撤去/改修。列だけ先行して落とさない
+- 実機確認: 一般利用者(anon/authenticated)が引き続き全ゲームをSELECTできること(列削除・RLS変更後も閲覧が壊れないこと)
+- (TDD対象外・マイグレーション。コード側の改修はT8以降でテストする)
 
 ## T7. 管理者判定(`detail/page.tsx`に組み込み、`app/lib/adminAuth.ts`利用)
 - 🔴 管理者ログイン時のみ管理者導線を表示すること、未ログイン・一般ログイン利用者・運営者以外では一切表示しないことをテストする(`isAuthorizedAdmin`をモック)
