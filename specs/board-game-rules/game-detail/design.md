@@ -82,16 +82,17 @@
 - 関連するビジネスルール: requirements.md#運営者向けの操作-11、requirements.md#運営者による削除の方針
 
 #### 物理削除のDB設計(新規マイグレーション)
-物理削除には次の変更を新規マイグレーションで加える:
-1. `board_game_rules_games`に運営者本人のみの**DELETEポリシー**を追加する:
+物理削除には次の変更をマイグレーションで加える。適用タイミングは変更が稼働中コードに与える影響で2つに分ける(下記1・2は稼働中コードに影響しないため単独で先行適用でき、3は`deleted_at`を参照するコードの改修と同時にデプロイする):
+
+1. `board_game_rules_games`に運営者本人のみの**DELETEポリシー**を追加する(稼働中コードに影響なし=先行適用可):
 ```sql
 grant delete on board_game_rules_games to authenticated;
 create policy "admin can delete games" on board_game_rules_games
   for delete to authenticated
   using ((auth.jwt() ->> 'email') in (select email from admin_emails));
 ```
-2. 子テーブルの`game_id`外部キーを`ON DELETE CASCADE`に付け替える。対象: `board_game_rules_comments`・`board_game_rules_favorites`・`board_game_rules_reports`。各テーブルで既存FK制約をDROPし、`on delete cascade`付きで再作成する(これがないとゲーム行のDELETEがFK違反で失敗する)。FKのカスケードは参照アクションのため子テーブルのRLSに関係なく連動削除される(運営者が通報・お気に入りのDELETE RLSを持たなくても、ゲーム削除に伴い子行が消える)
-3. `board_game_rules_games`から`deleted_at`列を削除し(`drop column deleted_at`)、公開SELECTのRLS(`anyone can select published games`)の条件を`using (deleted_at is null)`から`using (true)`に変更する。物理削除に統一するため論理削除用の列・条件を持たない(このゲームテーブルのスキーマ・RLSは[game-registration/design.md#データベース設計](../game-registration/design.md)が正)
+2. 子テーブルの`game_id`外部キーを`ON DELETE CASCADE`に付け替える(稼働中コードに影響なし=先行適用可)。対象: `board_game_rules_comments`・`board_game_rules_favorites`・`board_game_rules_reports`。各テーブルで既存FK制約をDROPし、`on delete cascade`付きで再作成する(これがないとゲーム行のDELETEがFK違反で失敗する)。FKのカスケードは参照アクションのため子テーブルのRLSに関係なく連動削除される(運営者が通報・お気に入りのDELETE RLSを持たなくても、ゲーム削除に伴い子行が消える)
+3. `board_game_rules_games`から`deleted_at`列を削除し(`drop column deleted_at`)、公開SELECTのRLS(`anyone can select published games`)の条件を`using (deleted_at is null)`から`using (true)`に変更する。物理削除に統一するため論理削除用の列・条件を持たない(このゲームテーブルのスキーマ・RLSは[game-registration/design.md#データベース設計](../game-registration/design.md)が正)。**この変更は`deleted_at`を参照する稼働中コード(`lib/games.ts`の`deleted_at is null`絞り込み、admin側の論理削除など)を壊すため、それらを`deleted_at`非依存に改修するコード変更と同一マイグレーション(同一デプロイ)で適用する**(列だけ先行して落とさない)
 - 実機確認(このマイグレーションのT0相当):
   - 運営者本人で`board_game_rules_games`の行をDELETEでき、紐づくコメント・お気に入り・通報が連動して消えること
   - 運営者以外・未ログインではDELETEが拒否されること
