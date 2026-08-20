@@ -3,7 +3,7 @@
 > ステータス: 仕様確認中(未実装)
 
 ## サマリ
-1つのボードゲームについて、分類情報(人数・時間・ジャンル等)・ルール本文(簡単版/詳しい版のタブ)・紹介画像ギャラリー・コメント欄を表示する、[game-list/requirements.md](../game-list/requirements.md)の各項目からの遷移先画面。閲覧はログイン不要。お気に入り登録・コメント投稿のみログイン利用者限定([favorite/requirements.md](../favorite/requirements.md)、[comment/requirements.md](../comment/requirements.md))。通報はログイン不要([report/requirements.md](../report/requirements.md))。投稿された元写真は一般には一切表示せず、公開対象のゲーム紹介画像のみギャラリー表示する点が本specの主な設計判断。運営者(管理者)がログインしている場合は、この画面にゲームの編集・削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示する(ゲーム1件ごとのモデレーションはその詳細画面で行う。[admin/requirements.md](../admin/requirements.md)、背景は[docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md](../../../docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md))。
+1つのボードゲームについて、分類情報(人数・時間・ジャンル等)・ルール本文(簡単版/詳しい版のタブ)・紹介画像ギャラリー・コメント欄を表示する、[game-list/requirements.md](../game-list/requirements.md)の各項目からの遷移先画面。閲覧はログイン不要。お気に入り登録・コメント投稿のみログイン利用者限定([favorite/requirements.md](../favorite/requirements.md)、[comment/requirements.md](../comment/requirements.md))。通報はログイン不要([report/requirements.md](../report/requirements.md))。投稿された元写真は一般には一切表示せず、公開対象のゲーム紹介画像のみギャラリー表示する点が本specの主な設計判断。運営者(管理者)がログインしている場合は、この画面にゲームの編集・削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示する(ゲーム1件ごとのモデレーションはその詳細画面で行う。[admin/requirements.md](../admin/requirements.md)、背景は[adr/0001](../adr/0001-moderation-on-detail-and-physical-delete.md))。
 
 このspecの利用者と主なユースケースは下記「[ユースケース図](#ユースケース図)」を参照。
 
@@ -84,7 +84,7 @@ flowchart LR
 - [3] ゲーム紹介画像は、上記[表示対象-2]のルールブック元写真(非公開)とは別物であり、公開対象である([game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md))
 
 ### 運営者による削除の方針
-- [4] ゲームの削除はレコードを実際に消す物理削除とする(削除フラグによる論理削除は行わない)。削除後の追跡(通報・元写真の見返し)や誤削除の復元は行わない。削除前の元の申請内容は、別テーブルの登録依頼レコード`board_game_rules_game_requests`が独立して残るため、緩いバックアップとして機能する(背景: [docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md](../../../docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md))
+- [4] ゲームの削除はレコードを実際に消す物理削除とする(削除フラグによる論理削除は行わない)。削除後の追跡(通報・元写真の見返し)や誤削除の復元は行わない。削除前の元の申請内容は、別テーブルの登録依頼レコード`board_game_rules_game_requests`が独立して残るため、緩いバックアップとして機能する(背景: [adr/0001](../adr/0001-moderation-on-detail-and-physical-delete.md))
 - [5] ゲームを物理削除するとき、そのゲームに紐づく子レコード(コメント・お気に入り・通報・紹介画像の`intro_photo_paths`)も一緒に物理削除する(孤立した子レコードを残さない)
 - [6] ただしStorageの実ファイル(非公開の元写真・公開の紹介画像の実体)は削除時に消さない。理由: 元写真の実ファイルは登録依頼レコードとStorageパスを共有しており、削除で消すと依頼側のバックアップ写真まで巻き添えになるため。参照されなくなったStorage実ファイル(孤児オブジェクト)の掃除は、将来の定期棚卸し運用(games・game_requestsの全参照と突き合わせ、どこからも参照されない実ファイルのみ一括削除)で対応する(本specスコープ外)
 

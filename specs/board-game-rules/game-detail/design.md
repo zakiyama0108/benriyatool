@@ -53,7 +53,7 @@
 - 関連するビジネスルール: requirements.md#画像表示-9、requirements.md#表示対象-3
 
 ## 運営者向けの操作(管理者ログイン時)
-ゲーム1件ごとのモデレーション操作は、その詳細画面で行う([admin/design.md](../admin/design.md)、背景は[docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md](../../../docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md))。運営者(管理者)ログイン時のみ、閲覧表示に加えて以下の管理者導線を表示・実行できる。
+ゲーム1件ごとのモデレーション操作は、その詳細画面で行う([admin/design.md](../admin/design.md)、背景は[adr/0001](../adr/0001-moderation-on-detail-and-physical-delete.md))。運営者(管理者)ログイン時のみ、閲覧表示に加えて以下の管理者導線を表示・実行できる。
 
 ### 管理者かどうかを判定する処理
 - 対象: 詳細画面を開いた時点のログインセッション

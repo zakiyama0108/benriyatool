@@ -69,7 +69,7 @@
 - 登録依頼(写真+分類情報)の保存構造・通知手段は[game-registration/design.md](../game-registration/design.md)で確定する
 - 投稿写真という機微になりうる情報・利用者コメントの管理経路があるため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
 - ゲーム紹介画像の取り扱い方針(著作権配慮・削除ポリシー)は[game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)に従う
-- モデレーションの詳細画面集約・削除方針の背景は[docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md](../../../docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md)
+- モデレーションの詳細画面集約・削除方針の背景は[adr/0001](../adr/0001-moderation-on-detail-and-physical-delete.md)
 
 ## スコープ外
 - 複数の管理者アカウント・権限ロールの管理(利用者は運営者本人のみ)
