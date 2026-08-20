@@ -7,17 +7,16 @@ import { fetchPublishedGames, fetchGameById } from '../../../app/board-game-rule
 
 type QueryResult = { data: unknown; error: unknown }
 
-// board_game_rules_games への select().is().order() クエリをモックする
-// (admin/lib/fetchAdminGames.test.tsと同じ「テーブル名で出し分ける」方針)
+// board_game_rules_games への select().order() クエリをモックする
+// (物理削除に統一したため deleted_at 絞り込み(.is())は持たない)。
 function setupFrom(result: QueryResult) {
   const orderMock = vi.fn().mockResolvedValue(result)
-  const isMock = vi.fn().mockReturnValue({ order: orderMock })
-  const selectMock = vi.fn().mockReturnValue({ is: isMock })
+  const selectMock = vi.fn().mockReturnValue({ order: orderMock })
   fromMock.mockImplementation((table: string) => {
     if (table === 'board_game_rules_games') return { select: selectMock }
     throw new Error(`unexpected table: ${table}`)
   })
-  return { selectMock, isMock, orderMock }
+  return { selectMock, orderMock }
 }
 
 // 単一ゲーム取得(fetchGameById)用のモック。select().eq('id', ...).maybeSingle() の形。
@@ -64,14 +63,16 @@ beforeEach(() => {
 })
 
 // 仕様: specs/board-game-rules/game-list/requirements.md#表示対象-1
-describe('【一覧・絞り込み】公開中ゲームの取得 - 削除されていない(deleted_at is null)ゲームのみを対象にする', () => {
-  it('board_game_rules_gamesに対し、deleted_at is nullで絞り込むクエリを発行すること', async () => {
-    const { isMock } = setupFrom({ data: [makeRow()], error: null })
+describe('【一覧・絞り込み】公開中ゲームの取得 - 存在する全ゲームを対象にする(物理削除に統一)', () => {
+  it('board_game_rules_gamesを対象に取得し、deleted_atのような論理削除の絞り込みを行わないこと', async () => {
+    const { selectMock } = setupFrom({ data: [makeRow()], error: null })
 
     await fetchPublishedGames()
 
     expect(fromMock).toHaveBeenCalledWith('board_game_rules_games')
-    expect(isMock).toHaveBeenCalledWith('deleted_at', null)
+    // 物理削除に統一したため、選択列にもクエリにも deleted_at は現れない
+    const selectedColumns = selectMock.mock.calls[0][0] as string
+    expect(selectedColumns).not.toContain('deleted_at')
   })
 })
 
