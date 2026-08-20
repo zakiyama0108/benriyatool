@@ -24,9 +24,8 @@ export async function fetchOriginalPhotos(gameId: string): Promise<PhotoFetchRes
     console.error('元写真パスの取得に失敗しました', { gameId })
     return []
   }
-  const paths = Array.isArray((data as { photo_paths?: unknown }).photo_paths)
-    ? ((data as { photo_paths: string[] }).photo_paths)
-    : []
+  const row = data as { photo_paths?: string[] | null }
+  const paths = Array.isArray(row.photo_paths) ? row.photo_paths : []
 
   return Promise.all(
     paths.map(async (path) => {

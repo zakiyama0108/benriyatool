@@ -77,17 +77,17 @@ export async function createComment(gameId: string, body: string): Promise<Comme
     // 表示名はGoogle OIDCの氏名を優先し、無ければメールで代替する(LoginStatusの表示名と同じ導出)
     const authorName = (user.user_metadata?.full_name as string | undefined) || user.email || ''
 
-    const { data, error } = await supabase
+    const inserted = await supabase
       .from('board_game_rules_comments')
       .insert({ game_id: gameId, user_id: user.id, author_name: authorName, body: normalized })
       .select()
       .single()
-    if (error || !data) {
+    if (inserted.error || !inserted.data) {
       // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)。本文の中身は出さない
       console.error('コメントの投稿に失敗しました', { gameId })
       return null
     }
-    return mapRow(data as CommentRow)
+    return mapRow(inserted.data as CommentRow)
   } catch {
     return null
   }

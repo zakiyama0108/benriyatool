@@ -38,7 +38,7 @@ describe('分類情報の表示 - 必須項目(ゲーム名・対応人数・プ
   })
 })
 
-// 仕様: specs/board-game-rules/game-detail/design.md#分類情報を表示する処理-2
+// 仕様: specs/board-game-rules/game-detail/requirements.md#基本情報の表示-1
 describe('分類情報の表示 - 空欄(未登録)の任意項目は、その項目自体を出さない(「未登録」ラベルも出さない)', () => {
   it('対象年齢・難易度・出版社などが未登録のとき、それらの項目も「未登録」の文字も表示されないこと', () => {
     render(<GameInfo game={makeGame()} />)
@@ -56,7 +56,7 @@ describe('分類情報の表示 - 空欄(未登録)の任意項目は、その�
   })
 })
 
-// 仕様: specs/board-game-rules/game-detail/design.md#分類情報を表示する処理-3
+// 仕様: specs/board-game-rules/game-detail/requirements.md#基本情報の表示-1
 describe('分類情報の表示 - 発売年は西暦に「年」を付けて表示する', () => {
   it('発売年が2018のとき「2018年」と表示されること', () => {
     render(<GameInfo game={makeGame({ releaseYear: 2018 })} />)

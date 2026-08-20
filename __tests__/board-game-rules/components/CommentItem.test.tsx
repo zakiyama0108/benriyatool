@@ -68,7 +68,7 @@ describe('コメントの編集 - 本人が本文を編集して保存し、成�
     render(<CommentItem comment={makeComment()} isOwn={true} isAdmin={false} onUpdated={vi.fn()} onDeleted={vi.fn()} />)
     fireEvent.click(screen.getByRole('button', { name: '編集' }))
 
-    const textarea = screen.getByRole('textbox') as HTMLTextAreaElement
+    const textarea = screen.getByRole('textbox')
     expect(textarea.value).toBe('このルールは補足が必要です')
   })
 
@@ -91,7 +91,7 @@ describe('コメントの編集 - 本人が本文を編集して保存し、成�
     fireEvent.click(screen.getByRole('button', { name: '編集' }))
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '   ' } })
 
-    expect((screen.getByRole('button', { name: '保存' }) as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByRole('button', { name: '保存' })).disabled).toBe(true)
   })
 
   it('編集に失敗した場合、入力欄は開いたまま失敗が分かる表示が出て入力が保持されること', async () => {
@@ -103,7 +103,7 @@ describe('コメントの編集 - 本人が本文を編集して保存し、成�
     fireEvent.click(screen.getByRole('button', { name: '保存' }))
 
     await waitFor(() => expect(screen.getByText(/失敗/)).toBeTruthy())
-    expect((screen.getByRole('textbox') as HTMLTextAreaElement).value).toBe('修正後の本文')
+    expect((screen.getByRole('textbox')).value).toBe('修正後の本文')
   })
 })
 

@@ -16,6 +16,7 @@ export default function PhotoGallery({ paths }: Props) {
 
   return (
     <div className="mb-6">
+      {/* eslint-disable-next-line @next/next/no-img-element -- 公開StorageのURLをそのまま表示する(next/image最適化は不要) */}
       <img
         src={getGamePhotoUrl(main)}
         alt="ゲーム紹介画像"
@@ -28,6 +29,7 @@ export default function PhotoGallery({ paths }: Props) {
       {rest.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
           {rest.map((path, index) => (
+            // eslint-disable-next-line @next/next/no-img-element -- 公開StorageのURLをそのまま表示する(next/image最適化は不要)
             <img
               key={`${path}-${index}`}
               src={getGamePhotoUrl(path)}

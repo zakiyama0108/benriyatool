@@ -132,5 +132,5 @@ export async function fetchGameById(id: string): Promise<FetchGameResult> {
     return { status: 'error' }
   }
   if (!data) return { status: 'notFound' }
-  return { status: 'found', game: mapGameRowToGame(data as GameRow) }
+  return { status: 'found', game: mapGameRowToGame(data) }
 }

@@ -23,7 +23,6 @@ type Phase = 'loading' | 'found' | 'notFound' | 'error'
 // 閲覧はログイン不要。お気に入り・コメント投稿のみログインが必要(各コンポーネント側で出し分ける)。
 export default function GameDetailPage() {
   const { session } = useSession()
-  const [gameId, setGameId] = useState('')
   const [phase, setPhase] = useState<Phase>('loading')
   const [game, setGame] = useState<Game | null>(null)
   const [favorited, setFavorited] = useState(false)
@@ -35,11 +34,11 @@ export default function GameDetailPage() {
 
   // クエリのIDで対象ゲームを取得する。IDの読み取りはブラウザ上でのみ行う(静的エクスポート)
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get('id') ?? ''
-    setGameId(id)
     let active = true
-    setPhase('loading')
-    void fetchGameById(id).then((result) => {
+    async function load() {
+      const id = new URLSearchParams(window.location.search).get('id') ?? ''
+      setPhase('loading')
+      const result = await fetchGameById(id)
       if (!active) return
       if (result.status === 'found') {
         setGame(result.game)
@@ -49,7 +48,8 @@ export default function GameDetailPage() {
       } else {
         setPhase('error')
       }
-    })
+    }
+    void load()
     return () => {
       active = false
     }
@@ -60,24 +60,27 @@ export default function GameDetailPage() {
   // 取得完了まで・取得失敗時・未ログインは一律「未登録」として扱う。
   useEffect(() => {
     if (phase !== 'found' || !game) return
+    const currentGame = game
     let active = true
-    setFavoritesResolved(false)
-    if (!session) {
-      setFavorited(false)
-      setFavoritesResolved(true)
-      return
-    }
-    void fetchMyFavoriteGameIds()
-      .then((ids) => {
-        if (!active) return
-        setFavorited(ids.has(game.id))
+    async function resolveFavorite() {
+      setFavoritesResolved(false)
+      if (!session) {
+        setFavorited(false)
         setFavoritesResolved(true)
-      })
-      .catch(() => {
+        return
+      }
+      try {
+        const ids = await fetchMyFavoriteGameIds()
+        if (!active) return
+        setFavorited(ids.has(currentGame.id))
+        setFavoritesResolved(true)
+      } catch {
         if (!active) return
         setFavorited(false)
         setFavoritesResolved(true)
-      })
+      }
+    }
+    void resolveFavorite()
     return () => {
       active = false
     }
@@ -86,17 +89,19 @@ export default function GameDetailPage() {
   // ログイン中のみ運営者判定を行う。失敗時は非運営者として扱う(フェイルクローズ。design.md#セキュリティ)
   useEffect(() => {
     let active = true
-    if (!session) {
-      setIsAdmin(false)
-      return
-    }
-    void isAuthorizedAdmin()
-      .then((ok) => {
+    async function checkAdmin() {
+      if (!session) {
+        setIsAdmin(false)
+        return
+      }
+      try {
+        const ok = await isAuthorizedAdmin()
         if (active) setIsAdmin(ok)
-      })
-      .catch(() => {
+      } catch {
         if (active) setIsAdmin(false)
-      })
+      }
+    }
+    void checkAdmin()
     return () => {
       active = false
     }

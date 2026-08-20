@@ -31,16 +31,18 @@ export default function CommentSection({ gameId }: Props) {
   // 対象ゲームのコメント一覧を取得する(閲覧はログイン不要)。取得失敗はエラー表示に切り替える
   useEffect(() => {
     let active = true
-    setLoadState('loading')
-    void fetchComments(gameId)
-      .then((list) => {
+    async function load() {
+      setLoadState('loading')
+      try {
+        const list = await fetchComments(gameId)
         if (!active) return
         setComments(list)
         setLoadState('loaded')
-      })
-      .catch(() => {
+      } catch {
         if (active) setLoadState('error')
-      })
+      }
+    }
+    void load()
     return () => {
       active = false
     }
@@ -49,17 +51,19 @@ export default function CommentSection({ gameId }: Props) {
   // ログイン中のみ運営者判定を行う。失敗時は非運営者として扱う(フェイルクローズ)
   useEffect(() => {
     let active = true
-    if (!session) {
-      setIsAdmin(false)
-      return
-    }
-    void isAuthorizedAdmin()
-      .then((ok) => {
+    async function checkAdmin() {
+      if (!session) {
+        setIsAdmin(false)
+        return
+      }
+      try {
+        const ok = await isAuthorizedAdmin()
         if (active) setIsAdmin(ok)
-      })
-      .catch(() => {
+      } catch {
         if (active) setIsAdmin(false)
-      })
+      }
+    }
+    void checkAdmin()
     return () => {
       active = false
     }

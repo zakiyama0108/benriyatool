@@ -29,7 +29,7 @@ beforeEach(() => {
   storageFromMock.mockClear()
 })
 
-// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作-13、specs/board-game-rules/game-detail/requirements.md#表示対象-2
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-13、specs/board-game-rules/game-detail/requirements.md#表示対象-2
 describe('元写真の照合閲覧 - 運営者だけが非公開Storageの元写真を取得する', () => {
   it('対象ゲームのphoto_pathsを取得し、非公開バケットの署名URLへ変換して返すこと', async () => {
     setupPhotoPaths({ data: { photo_paths: ['uuid/0.jpg', 'uuid/1.jpg'] }, error: null })

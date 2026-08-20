@@ -53,7 +53,7 @@ beforeEach(() => {
   vi.mocked(setMainIntroPhoto).mockResolvedValue(true)
 })
 
-// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作-10
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-10
 describe('管理者メニュー - ゲームを編集して上書き保存する', () => {
   it('編集フォームを開いてゲーム名を書き換え保存すると、editGameが呼ばれ成功したら再取得が通知されること', async () => {
     const onChanged = vi.fn()
@@ -68,7 +68,7 @@ describe('管理者メニュー - ゲームを編集して上書き保存する'
   })
 })
 
-// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作-11
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-11
 describe('管理者メニュー - ゲームを物理削除する(誤操作防止の確認ステップを挟む)', () => {
   it('削除ボタンを押しただけでは削除されず、確認を確定して初めてdeleteGameが呼ばれること', async () => {
     const onDeleted = vi.fn()
@@ -84,7 +84,7 @@ describe('管理者メニュー - ゲームを物理削除する(誤操作防止
   })
 })
 
-// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作-13
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-13
 describe('管理者メニュー - 元写真を照合閲覧する', () => {
   it('元写真の照合ボタンを押すとfetchOriginalPhotosが呼ばれ、取得した元写真が表示されること', async () => {
     vi.mocked(fetchOriginalPhotos).mockResolvedValue([{ path: 'uuid/0.jpg', url: 'https://signed/0' }])
@@ -100,7 +100,7 @@ describe('管理者メニュー - 元写真を照合閲覧する', () => {
   })
 })
 
-// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作-12
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-12
 describe('管理者メニュー - ゲーム紹介画像を差し替え・削除・並び替えする', () => {
   it('紹介画像の削除操作でremoveIntroPhotoが呼ばれ、成功したら再取得が通知されること', async () => {
     const onChanged = vi.fn()
@@ -112,7 +112,7 @@ describe('管理者メニュー - ゲーム紹介画像を差し替え・削除�
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
   })
 
-  it('2枚目をメイン画像にする操作でsetMainIntroPhotoが呼ばれること', async () => {
+  it('2枚目をメイン画像にする操作でsetMainIntroPhotoが呼ばれること', () => {
     render(<AdminControls game={makeGame()} onChanged={vi.fn()} onDeleted={vi.fn()} />)
 
     fireEvent.click(screen.getByRole('button', { name: /2枚目をメイン画像にする/ }))

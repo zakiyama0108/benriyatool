@@ -142,7 +142,7 @@ describe('【詳細】単一ゲームの取得 - 指定IDのゲームを、元�
 
     const result = await fetchGameById(VALID_UUID)
 
-    expect(result).toEqual({ status: 'found', game: expect.objectContaining({ id: VALID_UUID, name: 'カタン' }) })
+    expect(result).toMatchObject({ status: 'found', game: { id: VALID_UUID, name: 'カタン' } })
     const selectedColumns = selectMock.mock.calls[0][0] as string
     expect(selectedColumns.split(', ')).not.toContain('photo_paths')
     expect(selectedColumns).toContain('intro_photo_paths')

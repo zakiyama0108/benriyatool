@@ -45,7 +45,7 @@ beforeEach(() => {
   fromMock.mockReset()
 })
 
-// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作-10
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-10
 describe('運営者によるゲーム編集 - 登録時と同じ検証を通して分類情報・ルール本文を上書き保存する', () => {
   it('検証を満たす入力なら、対象idの行がUPDATEされてtrueが返ること', async () => {
     const { updateMock, eqMock } = setupUpdate()
@@ -82,7 +82,7 @@ describe('運営者によるゲーム編集 - 登録時と同じ検証を通し�
   })
 })
 
-// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作-11、specs/board-game-rules/game-detail/requirements.md#運営者による削除の方針-4
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-11、specs/board-game-rules/game-detail/requirements.md#運営者による削除の方針-4
 describe('運営者によるゲーム物理削除 - 論理削除ではなく行そのものをDELETEする', () => {
   it('対象idの行がDELETE(UPDATEではない)で削除され、trueが返ること', async () => {
     const { deleteMock, updateMock, eqMock } = setupDelete()

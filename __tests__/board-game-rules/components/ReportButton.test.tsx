@@ -70,7 +70,7 @@ describe('通報の送信 - 送信中は二重送信を防ぎ、失敗時は失�
     fireEvent.click(screen.getByRole('button', { name: '通報する' }))
     fireEvent.click(screen.getByRole('button', { name: '送信' }))
 
-    expect((screen.getByRole('button', { name: '送信' }) as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByRole('button', { name: '送信' })).disabled).toBe(true)
 
     resolveSend(true)
     await waitFor(() => expect(screen.getByText(/送信しました|完了|受け付け/)).toBeTruthy())
@@ -84,6 +84,6 @@ describe('通報の送信 - 送信中は二重送信を防ぎ、失敗時は失�
     fireEvent.click(screen.getByRole('button', { name: '送信' }))
 
     await waitFor(() => expect(screen.getByText(/失敗/)).toBeTruthy())
-    expect((screen.getByRole('button', { name: '送信' }) as HTMLButtonElement).disabled).toBe(false)
+    expect((screen.getByRole('button', { name: '送信' })).disabled).toBe(false)
   })
 })

@@ -117,11 +117,11 @@ describe('コメント欄 - ログイン中の投稿と、空・空白・上限�
     const textarea = await screen.findByPlaceholderText(/コメント/)
     fireEvent.change(textarea, { target: { value: '   ' } })
 
-    expect((screen.getByRole('button', { name: '投稿' }) as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByRole('button', { name: '投稿' })).disabled).toBe(true)
   })
 })
 
-// 仕様: specs/board-game-rules/comment/requirements.md#コメントの編集・削除-9、specs/board-game-rules/comment/requirements.md#コメントの編集・削除-10
+// 仕様: specs/board-game-rules/comment/requirements.md#コメントの編集・削除-9、specs/board-game-rules/comment/requirements.md#コメントの編集・削除-10、specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-14
 describe('コメント欄 - 権限に応じて各コメントの操作を出し分ける(本人は編集・削除、運営者は削除)', () => {
   it('ログイン中の自分のコメントには編集・削除が出ること', async () => {
     vi.mocked(useSession).mockReturnValue({ session: makeSession('user-1', '山田太郎'), loading: false })
