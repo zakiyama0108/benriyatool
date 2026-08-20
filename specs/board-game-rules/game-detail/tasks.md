@@ -5,7 +5,7 @@
 前提: [game-registration](../game-registration/tasks.md)のT0(テーブル・RLS)が先に必要。`lib/games.ts`(Game型)・`lib/rulesChapters.ts`(共通章立て。[admin/design.md#詳しい版の共通章立て(生成時の構造)](../admin/design.md))は実装済みのため新規タスクとしては挙げない。
 
 ## T1. 単一ゲーム取得(`lib/games.ts`に`fetchGameById`を追加)
-- 🔴 指定IDの`deleted_at is null`ゲームを`photo_paths`を含めず(`intro_photo_paths`は含めて)取得すること、該当なし/取得失敗を区別して返すこと、不正なID形式は該当なし扱いになることをテストする(Supabaseクライアントをモック)
+- 🔴 指定IDのゲームを`photo_paths`を含めず(`intro_photo_paths`は含めて)取得すること、該当なし(存在しない)/取得失敗を区別して返すこと、不正なID形式は該当なし扱いになることをテストする(Supabaseクライアントをモック)
 - 🟢 クエリのIDで単一ゲームを取得する関数を実装する
 - 🔵 該当なし・失敗の返し方を整理する
 
@@ -29,14 +29,15 @@
 - 🟢 クエリのIDで取得し、`PhotoGallery`・`GameInfo`・`RuleTabs`・`FavoriteButton`・`CommentSection`・`ReportButton`を組み立てる
 - 🔵 取得状態(読み込み中/表示中/該当なし/エラー)の切り替えを整理する
 
-## 運営者向けの操作(管理者ログイン時) — 方向B(2026-08-19)
+## 運営者向けの操作(管理者ログイン時)
 
-> 旧・管理画面から移設。ゲーム削除は論理削除→**物理削除**に変わる。前提: adminの元写真非公開Storage・紹介画像公開Storage(適用済み)。
+> 前提: 元写真の非公開Storage・紹介画像の公開Storage([admin/tasks.md](../admin/tasks.md)のT0/T0b、適用済み)。
 
 ## T6. 物理削除のマイグレーション(実装より先に単独PRで適用)
 - `board_game_rules_games`に運営者本人のみの`admin can delete games` DELETEポリシー(+`grant delete`)を追加する(design.md「物理削除のDB設計」)
 - 子テーブル`board_game_rules_comments`・`board_game_rules_favorites`・`board_game_rules_reports`の`game_id`外部キーを`ON DELETE CASCADE`に付け替える(既存FKをDROP→再作成)
-- 実機確認: 運営者本人でgames行をDELETEでき、紐づくコメント・お気に入り・通報が連動削除されること/運営者以外・未ログインはDELETE不可/削除後もStorage実ファイル(元写真・紹介画像)は残ること
+- `board_game_rules_games`から`deleted_at`列を削除し、公開SELECTのRLS`anyone can select published games`の条件を`deleted_at is null`から`true`に変更する
+- 実機確認: 運営者本人でgames行をDELETEでき、紐づくコメント・お気に入り・通報が連動削除されること/運営者以外・未ログインはDELETE不可/一般利用者が引き続き全ゲームをSELECTできること/削除後もStorage実ファイル(元写真・紹介画像)は残ること
 - (TDD対象外・マイグレーション)
 
 ## T7. 管理者判定(`detail/page.tsx`に組み込み、`app/lib/adminAuth.ts`利用)
@@ -45,23 +46,22 @@
 - 🔵 判定タイミング・取得中の扱いを整理する
 
 ## T8. ゲーム編集・物理削除・コメント削除(`lib/gameModeration.ts`)
-- 🔴 編集(登録時と同じ検証を通したUPDATE)、**物理削除(games行のDELETE)**、コメント削除(comments.deleteComment利用)が実行され、失敗時にエラーを返すことをテストする(Supabaseクライアントをモック)。物理削除は論理削除(deleted_at UPDATE)ではなくDELETEであることを明示的にテストする
-- 🟢 編集・物理削除・コメント削除を実装する(旧admin/lib/moderation.tsを移設し削除を物理DELETEに変更)
+- 🔴 編集(登録時と同じ検証を通したUPDATE)、**物理削除(games行のDELETE)**、コメント削除(comments.deleteComment利用)が実行され、失敗時にエラーを返すことをテストする(Supabaseクライアントをモック)。削除はDELETEであることを明示的にテストする
+- 🟢 編集・物理削除・コメント削除を実装する
 - 🔵 検証再利用・失敗表示を整理する
 
 ## T9. 元写真照合・紹介画像差し替え(`lib/originalPhotos.ts`, `lib/introPhotos.ts`)
 - 🔴 元写真: `photo_paths`から非公開Storageの元写真を運営者として取得できること、失敗時の扱いをテストする(Storageクライアントをモック)
-- 🔴 紹介画像: 新規画像を公開バケットへアップロードし`intro_photo_paths`末尾に追加(上限20枚の切り捨て含む)・指定パスの削除(Storage実体は消さない)・メイン画像への並び替え・UPDATE保存が実行され、失敗時にエラーを返すことをテストする(旧admin/lib/introPhotos.tsを移設)
+- 🔴 紹介画像: 新規画像を公開バケットへアップロードし`intro_photo_paths`末尾に追加(上限20枚の切り捨て含む)・指定パスの削除(Storage実体は消さない)・メイン画像への並び替え・UPDATE保存が実行され、失敗時にエラーを返すことをテストする
 - 🟢 元写真取得・紹介画像の追加/削除/並び替えを実装する
 - 🔵 取得・失敗の扱いを整理する
 
 ## T10. 管理者導線コンポーネント(`components/AdminControls.tsx`、`CommentSection`の削除導線)
 - 🔴 管理者時のみ、編集フォーム展開→上書き保存、物理削除(確認ステップ付き)、元写真照合の表示、紹介画像の差し替え/削除/並び替え、コメント各行の削除導線が出ること、非管理者では出ないことをテストする
-- 🟢 `AdminControls`と各導線を実装する(編集フォームは旧`GameEditForm`を流用・再構成)
+- 🟢 `AdminControls`と各導線を実装する
 - 🔵 配置・確認ステップ・二重操作防止を整える
 
 ## 補足
-- 管理者導線の各libは旧`admin/lib/*`(moderation/photos/introPhotos)を移設したもの。adminからは撤去する([admin/tasks.md](../admin/tasks.md)のBT3)
 - `FavoriteButton`([favorite](../favorite/tasks.md))・`CommentSection`([comment](../comment/tasks.md))・`ReportButton`([report](../report/tasks.md))は各specで実装したものを組み込む。並行開発時は依存先の完成を待つか仮プレースホルダで先行する
 - 静的エクスポート下でクエリIDを扱う方式(単一ページ+クライアント取得)を採る。`[id]`動的ルートは使わない(design.md「詳細画面のルーティング」)
 - `lib/gamePhotos.ts`(`getGamePhotoUrl`)は[game-list/tasks.md](../game-list/tasks.md)で先に実装されたものを共有する(重複実装しない)

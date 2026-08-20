@@ -8,7 +8,7 @@
 ### 公開中のゲームを取得する処理
 - 対象: 一覧・絞り込みの元になる`board_game_rules_games`のレコード
 - 手順:
-  1. `deleted_at is null`(公開中・削除されていない)のゲームを取得する(requirements.md#表示対象-1)。`photo_paths`(元写真パス)は選択せず、一覧・絞り込み・詳細に必要な列だけを取得する([game-registration/design.md#セキュリティ](../game-registration/design.md))。`intro_photo_paths`(ゲーム紹介画像、公開列)はサムネイル表示に使うため取得する
+  1. 登録済みのゲームを取得する(削除されたゲームは物理削除でレコードが存在しないため取得されない。requirements.md#表示対象-1)。`photo_paths`(元写真パス)は選択せず、一覧・絞り込み・詳細に必要な列だけを取得する([game-registration/design.md#セキュリティ](../game-registration/design.md))。`intro_photo_paths`(ゲーム紹介画像、公開列)はサムネイル表示に使うため取得する
   2. 初期の並び順は登録日時の新しい順とする(並び替えの複数指定はスコープ外。requirements.md#スコープ外)
   3. 取得に失敗した場合は、一覧を表示せずエラーが分かる表示にする(後述エラーハンドリング)
 - 補足: 現状は件数が少ない前提で全件取得し、絞り込みは取得済みデータに対して画面側で行う(ページネーションの詳細はスコープ外。requirements.md#スコープ外)。件数が増えた段階で取得の分割を別途検討する
@@ -145,7 +145,7 @@ stateDiagram-v2
 ```
 
 ## セキュリティ
-- 取得は公開中(`deleted_at is null`)のゲームに限られ、削除されたゲームは表示しない(RLSでも担保。requirements.md#表示対象-1)
+- 削除されたゲームは物理削除でレコードが存在しないため表示されない(requirements.md#表示対象-1)
 - 一覧・絞り込みは`photo_paths`(元写真パス)を取得しない。加えて`anon`は列単位のSELECT権限から`photo_paths`が除外されており、細工したクライアントでも直接読み取れない(列秘匿のDB担保は[game-registration/design.md#データベース設計](../game-registration/design.md)を正とする)。元写真は一覧・詳細に一切出さない
 - `intro_photo_paths`(ゲーム紹介画像)は公開列・公開Storageのため、`photo_paths`のようなアクセス制御は不要(そもそも一般公開する画像。requirements.md#画像表示-12)。画像の`src`は公開URLの文字列であり、HTMLとして解釈される経路には渡さない(`<img src>`のみで使用)
 - 作者テキスト検索は取得済みデータに対する画面側の部分一致で行い、任意の文字列がそのままDBクエリに渡ることはない(仮にDB側で検索する場合も、パラメータ化した問い合わせを使い、入力を埋め込まない)

@@ -1,6 +1,6 @@
 # 設計: 管理画面(モデレーション)
 
-認証とアクセス制御の全体方針は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)にあるため重複させず、本specではこの画面固有の処理フロー(通報一覧の確認・登録依頼の確認/処理)を書く。**方向B(2026-08-19合意)により、ゲーム個別のモデレーション操作(編集・物理削除・紹介画像差し替え・元写真照合・コメント削除)の処理フローは本design.mdから削除し、[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md)に移設した。** ログイン・権限確認の処理は`ikukyu/admin/design.md`・`life-money-sim/admin/design.md`と同じロジック(共通の`admin_emails`・`adminAuth.ts`)を再利用する。本管理画面と詳細画面の管理者導線はADR-0006テンプレートの「読み取り専用」の例外として、運営者本人の書き込み(ゲームの編集・物理削除、コメントの削除、紹介画像の差し替え、登録依頼の処理)を認める(ADR-0007)。モデレーション専用のサーバーは新設せず、書き込みはすべてRLS経由のDB操作で行う(requirements.md#非機能要件-2)。
+認証とアクセス制御の全体方針は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)にあるため重複させず、本specではこの画面固有の処理フロー(通報一覧の確認・登録依頼の確認/処理)を書く。ゲーム1件ごとのモデレーション操作(編集・削除・紹介画像差し替え・元写真照合・コメント削除)の設計は[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md)にある。ログイン・権限確認の処理は`ikukyu/admin/design.md`・`life-money-sim/admin/design.md`と同じロジック(共通の`admin_emails`・`adminAuth.ts`)を再利用する。本管理画面と詳細画面の管理者導線はADR-0006テンプレートの「読み取り専用」の例外として、運営者本人の書き込み(ゲームの編集・削除、コメントの削除、紹介画像の差し替え、登録依頼の処理)を認める(ADR-0007)。モデレーション専用のサーバーは新設せず、書き込みはすべてRLS経由のDB操作で行う(requirements.md#非機能要件-2)。
 
 利用者からの登録依頼([game-registration/design.md](../game-registration/design.md)の`board_game_rules_game_requests`)を実際にゲームとして登録する処理は、この管理画面(Webアプリ)ではなく**ローカルのClaude Code Skill**(下記「登録依頼からゲームを登録するローカルツール」)で行う。管理画面が担うのは依頼の確認・処理済みマーク・削除にとどまる。
 
@@ -29,7 +29,7 @@
 - 補足: この確認は画面の出し分けのためで、実際の保護はRLSが担う。迂回して操作を試みても、運営者以外は保護されたSELECT/UPDATE/DELETE・元写真取得ができない(requirements.md#アクセス制御・権限-2)
 - 関連するビジネスルール: requirements.md#ログイン・アクセス制御-3、requirements.md#アクセス制御・権限-1〜2
 
-> **【方向Bで移設】** ゲーム一覧の取得・ゲームの編集・ゲームの物理削除・紹介画像の差し替え/削除・元写真の照合閲覧・コメントの削除の各処理フローは、詳細画面の管理者導線に移した。設計は[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md)を参照する。本管理画面は以下の「通報を確認する処理」「登録依頼を確認する処理」以降のみを担う。
+本管理画面が担う処理は、以下の「通報を確認する処理」と「登録依頼を確認する処理」以降である。ゲーム1件ごとの編集・削除・紹介画像差し替え・元写真照合・コメント削除の設計は[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md)にある。
 
 ### 通報を確認する処理
 - 対象: `board_game_rules_reports`の通報レコード
@@ -93,31 +93,25 @@
 
 ## 関連するファイル(抜粋)
 ```
-app/board-game-rules/admin/page.tsx (変更: 管理画面本体。ゲーム一覧・編集フォームを撤去し、通報一覧・登録依頼一覧のみを出し分ける)
-app/board-game-rules/admin/lib/fetchReports.ts (既存: 通報一覧の取得)
-app/board-game-rules/admin/lib/gameRequests.ts (既存: 登録依頼の一覧取得・processed_at更新・削除)
-app/board-game-rules/admin/components/LoginScreen.tsx (既存: ログイン/権限なしの案内)
-app/board-game-rules/admin/components/ReportsView.tsx (変更: 通報一覧。対象ゲームの「編集・削除に進む」導線を、詳細画面(game-detail)への遷移リンクに変更)
-app/board-game-rules/admin/components/GameRequestsView.tsx (既存: 登録依頼一覧+写真プレビュー+ゲーム紹介画像プレビュー+処理済みマーク/削除の導線)
-app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdmin を利用)
-app/lib/supabaseClient.ts (既存の共通クライアントを利用)
-.claude/skills/board-game-rules-batch-register/SKILL.md (変更: 登録依頼からゲームを登録するローカルツール。Webアプリのコードではない。ゲーム紹介画像の自動補完(BoardGameGeek API検索 + Google Gemini API加工)の手順を追記する)
-scripts/board-game-rules/registerGame.ts (変更: 依頼の intro_photo_paths を引き継ぐ処理、0枚時の自動補完(画像検索・AI加工・アップロード)を追加する)
+app/board-game-rules/admin/page.tsx (管理画面本体。ログイン・権限で出し分け、通報一覧・登録依頼一覧を表示するクライアント画面)
+app/board-game-rules/admin/lib/fetchReports.ts (通報一覧の取得)
+app/board-game-rules/admin/lib/gameRequests.ts (登録依頼の一覧取得・processed_at更新・削除)
+app/board-game-rules/admin/components/LoginScreen.tsx (ログイン/権限なしの案内)
+app/board-game-rules/admin/components/ReportsView.tsx (通報一覧。各通報に対象ゲームの詳細画面への遷移リンクを出す)
+app/board-game-rules/admin/components/GameRequestsView.tsx (登録依頼一覧+写真プレビュー+ゲーム紹介画像プレビュー+処理済みマーク/削除の導線)
+app/lib/adminAuth.ts (getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdmin を利用)
+app/lib/supabaseClient.ts (共通クライアントを利用)
+.claude/skills/board-game-rules-batch-register/SKILL.md (登録依頼からゲームを登録するローカルツール。Webアプリのコードではない。ゲーム紹介画像の自動補完(BoardGameGeek API検索 + Google Gemini API加工)を含む)
+scripts/board-game-rules/registerGame.ts (依頼の intro_photo_paths の引き継ぎ、0枚時の自動補完(画像検索・AI加工・アップロード))
 ```
 
-> **【方向Bで移設】** 以下のファイルは管理画面から詳細画面(game-detail)側へ移す(詳細は[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md)の関連ファイル):
-> - `admin/lib/moderation.ts`(ゲームの編集UPDATE・削除・コメント削除)→ 物理DELETEに変更のうえ game-detail 側の管理者操作libへ
-> - `admin/lib/photos.ts`(非公開Storageから元写真取得)→ game-detail の管理者モード元写真照合へ
-> - `admin/lib/introPhotos.ts`(紹介画像の追加/削除/並び替え)→ game-detail の管理者モード紹介画像差し替えへ
-> - `admin/lib/fetchAdminGames.ts`(全ゲーム取得)→ ゲーム一覧廃止のため不要(通報の対象ゲーム表示は通報レコードのgame参照で足りる)
-> - `admin/components/GameModerationTable.tsx`・`GameEditForm.tsx` → 撤去(編集UIは game-detail の管理者導線として作り直す)
-> - `lib/comments.ts`(`deleteComment`)・`lib/gamePhotos.ts` → game-detail 側から利用
+ゲーム個別のモデレーション操作(編集・削除・紹介画像差し替え・元写真照合・コメント削除)のコンポーネント・libは詳細画面側にある([game-detail/design.md#関連するファイル抜粋](../game-detail/design.md))。
 
 ## データベース設計
-本specは`board_game_rules_games`([game-registration/design.md](../game-registration/design.md))・`board_game_rules_reports`([report/design.md](../report/design.md))・`board_game_rules_comments`([comment/design.md](../comment/design.md))・`board_game_rules_game_requests`([game-registration/design.md](../game-registration/design.md))を運営者権限で読み書きする。各テーブルの運営者向けRLSは各specのマイグレーションで定義済みのため、ここでは重複させない。テーブルごとに運営者へ与える操作は異なり、次のとおり(総称の「全行SELECT・UPDATE・DELETE」ではない点に注意):
-- `board_game_rules_games`: **本管理画面(横断ビュー)は全行SELECTのみ**を使う(通報の対象ゲーム名の表示など)。編集(UPDATE)・**物理削除(DELETE)**は詳細画面の管理者導線に移設し、そのRLS(運営者本人のみのDELETEポリシー)・関連子レコードのカスケード削除・`deleted_at`の扱いは[game-detail/design.md#運営者による物理削除の処理](../game-detail/design.md)で定義する(方向B)。**INSERT(新規登録)はWeb画面からは行わない**。ローカル登録ツール(下記)がservice_role相当の権限でRLSをバイパスして書き込む
+本specは`board_game_rules_reports`([report/design.md](../report/design.md))・`board_game_rules_game_requests`([game-registration/design.md](../game-registration/design.md))を運営者権限で読み書きし、通報の対象ゲーム名の表示のため`board_game_rules_games`([game-registration/design.md](../game-registration/design.md))をSELECTする。各テーブルの運営者向けRLSは各specのマイグレーションで定義済みのため、ここでは重複させない。テーブルごとに運営者へ与える操作は次のとおり:
+- `board_game_rules_games`: 本管理画面は全行SELECTのみを使う(通報の対象ゲーム名の表示など)。ゲームの編集(UPDATE)・削除(DELETE)は詳細画面で行い、そのRLS・子レコードのカスケード削除は[game-detail/design.md#運営者による削除の処理](../game-detail/design.md)で定義する。INSERT(新規登録)はWeb画面からは行わない。ローカル登録ツール(下記)がservice_role相当の権限でRLSをバイパスして書き込む
 - `board_game_rules_reports`: 運営者は全行SELECTのみ(通報の確認。書き換え・削除はしない。[report/design.md](../report/design.md))
-- `board_game_rules_comments`: DELETEは本人+運営者、UPDATE(編集)は本人のみで運営者は編集不可([comment/design.md](../comment/design.md))。運営者によるコメント削除の導線は詳細画面へ移設([game-detail/design.md](../game-detail/design.md))
+- `board_game_rules_comments`: DELETEは本人+運営者、UPDATE(編集)は本人のみで運営者は編集不可([comment/design.md](../comment/design.md))。運営者によるコメント削除の導線は詳細画面にある([game-detail/design.md](../game-detail/design.md))
 - `board_game_rules_game_requests`: 運営者はSELECT・UPDATE(`processed_at`)・DELETEができる([game-registration/design.md](../game-registration/design.md))
 
 許可リスト`admin_emails`は`ikukyu/admin`で作成済みのものを共用し、新規テーブルは作らない。
@@ -139,7 +133,7 @@ scripts/board-game-rules/registerGame.ts (変更: 依頼の intro_photo_paths �
 T0(マイグレーション/Storage設定適用)の実機確認:
 - 運営者本人でのみ元写真をダウンロードでき、anon・運営者以外のログインでは取得できないこと(元写真照合は詳細画面の管理者モードで行うが、Storageポリシーは本バケットのもの)
 - サイズ上限を超えるファイル・許可外MIMEのアップロードがバケット設定で拒否されること(匿名アップロードの量的制約)
-- 運営者本人で`board_game_rules_games`の全行がSELECTでき、UPDATE(編集)・**DELETE(物理削除)**ができること(編集・物理削除の実機確認・カスケードの確認は[game-detail/design.md](../game-detail/design.md)側で行う)
+- 運営者本人で`board_game_rules_games`の全行がSELECTできること(編集・削除の権限とカスケードの実機確認は[game-detail/design.md](../game-detail/design.md)側で行う)
 - 運営者本人で`board_game_rules_reports`がSELECTできること
 - 運営者本人で`board_game_rules_game_requests`がSELECT/UPDATE/DELETEできること
 - 未ログイン(anon)・運営者以外では上記の保護された操作・元写真取得ができないこと
@@ -149,14 +143,14 @@ T0(マイグレーション/Storage設定適用)の実機確認:
 
 - バケット名: `board-game-rules-game-photos`(`public = true`)
 - サイズ上限(`file_size_limit`)・許可MIME(`allowed_mime_types`)は元写真バケットと同じ値を流用する(既存の防御上限をそのまま踏襲。10MiB/ファイル、`image/jpeg`・`image/png`・`image/webp`・`image/heic`・`image/heif`)
-- 枚数上限(1ゲームあたり20枚)はStorage側では担保せず、登録依頼画面([game-registration/design.md](../game-registration/design.md))・管理画面編集フォーム側のクライアント制限で担保する(元写真バケットと同じ考え方)
+- 枚数上限(1ゲームあたり20枚)はStorage側では担保せず、登録依頼画面([game-registration/design.md](../game-registration/design.md))・詳細画面の紹介画像差し替えUI側のクライアント制限で担保する(元写真バケットと同じ考え方)
 - パス設計: 登録依頼時は`<アップロードUUID>/<並び順の連番>.<拡張子>`(ゲームID未確定のため)、登録済みゲームへの追加(運営者の差し替え・ローカルツールの自動補完)は`<ゲームID>/<連番>.<拡張子>`とする([game-registration/design.md#ゲーム紹介画像のStorage](../game-registration/design.md))
 - `public = true`のバケットは`getPublicUrl()`で生成した公開URLがRLSを経由せず配信されるため、ダウンロード(SELECT)用のRLSポリシーは不要(非公開の元写真バケットとの違い)
 - 書き込みポリシー(`storage.objects`へのRLS。バケット公開設定とは別に、INSERT/UPDATE/DELETEは引き続きRLS対象):
   - **INSERT**: 誰でも可(anon/authenticated)。投稿者の登録依頼アップロードを許すため(サイズ・MIMEはバケット設定で担保)
   - **UPDATE・DELETE**: 運営者本人のみ(`admin_emails`)。投稿者本人による事後の差し替え・削除はできない(依頼送信後の内容編集不可という既存方針[game-registration/requirements.md#スコープ外](../game-registration/requirements.md)に揃える)
   - 運営者のローカル登録ツール(自動補完)はservice_role相当の権限でRLSをバイパスして書き込む
-- **公開バケットゆえの残余リスク**: 元写真バケット(非公開)の「匿名アップロードの量的制約」と同様、本バケットもINSERTはanon/authenticatedに開放しており、アプリのUI(登録依頼画面・管理画面編集フォーム)の20枚制限を経由せずStorage REST APIを直接叩けば任意枚数の画像をアップロードされうる。加えて本バケットは`public = true`のため、アップロードされた画像は即座に誰でも取得できる公開URLを持ち、`intro_photo_paths`に登録されずアプリのモデレーション対象にも乗らない画像が公開URLとして残存しうる(元写真バケットより公開範囲が広い分、直接濫用の実害も大きい)。この残余リスクは技術的に完全には防がず、運営者が容量・アクセス状況を定期的に確認する運用(Supabaseダッシュボードでのバケット容量確認)で気付く前提とする(シンプルさ優先の方針に基づき、専用の監視機構は設けない)
+- **公開バケットゆえの残余リスク**: 元写真バケット(非公開)の「匿名アップロードの量的制約」と同様、本バケットもINSERTはanon/authenticatedに開放しており、アプリのUI(登録依頼画面・詳細画面の紹介画像差し替えUI)の20枚制限を経由せずStorage REST APIを直接叩けば任意枚数の画像をアップロードされうる。加えて本バケットは`public = true`のため、アップロードされた画像は即座に誰でも取得できる公開URLを持ち、`intro_photo_paths`に登録されずアプリのモデレーション対象にも乗らない画像が公開URLとして残存しうる(元写真バケットより公開範囲が広い分、直接濫用の実害も大きい)。この残余リスクは技術的に完全には防がず、運営者が容量・アクセス状況を定期的に確認する運用(Supabaseダッシュボードでのバケット容量確認)で気付く前提とする(シンプルさ優先の方針に基づき、専用の監視機構は設けない)
 
 ```sql
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -201,7 +195,7 @@ T0(ゲーム紹介画像バケット設定適用)の実機確認:
 - anon・運営者以外のログインでは、既存オブジェクトのUPDATE(差し替え)・DELETEができないこと。運営者本人はUPDATE・DELETEができること
 
 ## 画面設計
-1画面に縦に並べる(PC中心・スマホでも破綻しない範囲。requirements.md#非機能要件-1)。方向Bでゲーム一覧・ゲーム編集・元写真照合は撤去し、詳細画面(game-detail)の管理者導線に移した:
+1画面に縦に並べる(PC中心・スマホでも破綻しない範囲。requirements.md#非機能要件-1)。ゲーム個別の編集・削除・元写真照合・紹介画像差し替え・コメント削除は詳細画面(game-detail)の管理者導線で行うため、本画面には持たない:
 - 上部: ログイン中のアカウント表示とログアウト操作
 - 登録依頼一覧(`GameRequestsView`): 未処理を優先・次いで新しい順。写真プレビュー・ゲーム紹介画像プレビュー(0枚なら「紹介画像なし(登録時に自動補完されます)」の案内)・入力済み分類情報を表示。処理済みマーク・削除の導線
 - 通報一覧(`ReportsView`): 対象ゲーム・通報日時・理由テキスト。各通報から**対象ゲームの詳細画面(game-detail)へのリンク**を出す。編集・削除はその詳細画面の管理者導線で行う([game-detail/design.md](../game-detail/design.md))
@@ -209,7 +203,7 @@ T0(ゲーム紹介画像バケット設定適用)の実機確認:
 未ログイン時・権限なし時は上記を出さず、案内(ログイン/権限がない旨)だけを表示する。
 
 ## 状態管理
-- 管理画面(`page.tsx`)は「ログインセッション」「閲覧権限の判定結果」「取得した通報一覧・登録依頼一覧」「取得/操作状態」をローカル状態として持つ(`ikukyu/admin`と同一方針)。ゲーム一覧・編集中のゲームは持たなくなった(方向B)。複数画面をまたがないためグローバルな状態管理は使わない
+- 管理画面(`page.tsx`)は「ログインセッション」「閲覧権限の判定結果」「取得した通報一覧・登録依頼一覧」「取得/操作状態」をローカル状態として持つ(`ikukyu/admin`と同一方針)。複数画面をまたがないためグローバルな状態管理は使わない
 - 画面の4状態(未ログイン/権限なし/権限あり/取得エラー)の遷移は`ikukyu/admin/design.md#状態管理`の状態遷移図と同一構造(対象データが本アプリのテーブルに変わり、操作に登録依頼の処理済みマーク/削除が加わる)
 
 ```mermaid
@@ -234,7 +228,7 @@ stateDiagram-v2
 - BoardGameGeek API・Google Gemini APIの呼び出しは運営者のローカル環境(Claude Codeセッション)から行われ、Webアプリ・Cloudflare Workersのコードには一切含まれない。Gemini APIキーはローカルの`.env`等で管理し、リポジトリにコミットしない([game-registration/design.md#セキュリティ](../game-registration/design.md)の「課金の発生しない設計」と同じ考え方を、外部API呼び出し一般に拡張したもの)
 
 ## パフォーマンス
-- 通報一覧・登録依頼一覧は件数が少ない前提で、単純な全件取得で足りる(小規模運用)。件数が増えた場合はページングを別途見直す(ゲーム一覧+通報件数集計は方向Bで撤去した)
+- 通報一覧・登録依頼一覧は件数が少ない前提で、単純な全件取得で足りる(小規模運用)。件数が増えた場合はページングを別途見直す
 
 ## ログ
 - 通報・登録依頼のデータ取得が想定外に失敗した場合、原因究明のためコンソールにエラーを出す(`ikukyu/admin`と同一方針)。ログにはゲーム情報・通報本文の中身を含めず、失敗の事実・種別にとどめる。運営者自身のブラウザで確認できるため出力する価値がある(ゲーム編集・削除・元写真取得のログは詳細画面側。[game-detail/design.md](../game-detail/design.md))

@@ -3,7 +3,7 @@
 > ステータス: 仕様確認中(未実装)
 
 ## サマリ
-1つのボードゲームについて、分類情報(人数・時間・ジャンル等)・ルール本文(簡単版/詳しい版のタブ)・紹介画像ギャラリー・コメント欄を表示する、[game-list/requirements.md](../game-list/requirements.md)の各項目からの遷移先画面。閲覧はログイン不要。お気に入り登録・コメント投稿のみログイン利用者限定([favorite/requirements.md](../favorite/requirements.md)、[comment/requirements.md](../comment/requirements.md))。通報はログイン不要([report/requirements.md](../report/requirements.md))。投稿された元写真は一般には一切表示せず、公開対象のゲーム紹介画像のみギャラリー表示する点が本specの主な設計判断。**方向B(2026-08-19合意)により、運営者(管理者)がログインしている場合は、この画面にゲームの編集・物理削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示する**(旧・管理画面のゲーム一覧を廃止し、モデレーション操作を対象ゲームの詳細画面に集約。[admin/requirements.md](../admin/requirements.md))。
+1つのボードゲームについて、分類情報(人数・時間・ジャンル等)・ルール本文(簡単版/詳しい版のタブ)・紹介画像ギャラリー・コメント欄を表示する、[game-list/requirements.md](../game-list/requirements.md)の各項目からの遷移先画面。閲覧はログイン不要。お気に入り登録・コメント投稿のみログイン利用者限定([favorite/requirements.md](../favorite/requirements.md)、[comment/requirements.md](../comment/requirements.md))。通報はログイン不要([report/requirements.md](../report/requirements.md))。投稿された元写真は一般には一切表示せず、公開対象のゲーム紹介画像のみギャラリー表示する点が本specの主な設計判断。運営者(管理者)がログインしている場合は、この画面にゲームの編集・削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示する(ゲーム1件ごとのモデレーションはその詳細画面で行う。[admin/requirements.md](../admin/requirements.md)、背景は[docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md](../../../docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md))。
 
 このspecの利用者と主なユースケースは下記「[ユースケース図](#ユースケース図)」を参照。
 
@@ -69,9 +69,9 @@ flowchart LR
 - [9] このゲームに登録されているゲーム紹介画像を、複数枚まとめてギャラリー形式で表示する([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md)で登録される画像)。画像が1枚も登録されていない場合は、ギャラリー自体を表示しない
 
 ### 運営者向けの操作(管理者ログイン時)
-運営者(管理者)がログインしている場合のみ、この詳細画面に以下の管理者導線を表示する。一般の閲覧者・ログイン利用者には表示しない(方向B。旧・管理画面のゲーム一覧を廃止し集約したもの。[admin/requirements.md](../admin/requirements.md))。
+運営者(管理者)がログインしている場合のみ、この詳細画面に以下の管理者導線を表示する。一般の閲覧者・ログイン利用者には表示しない(ゲーム1件ごとのモデレーションはその詳細画面で行う。[admin/requirements.md](../admin/requirements.md))。
 - [10] 表示中のゲームの分類情報・ルール本文(簡単版・詳しい版)を編集して上書き保存できる(登録時と同じ検証を通す。[game-registration/requirements.md](../game-registration/requirements.md))
-- [11] 表示中のゲームを物理削除できる。削除後はゲーム本体と、そのゲームに紐づくコメント・お気に入り・通報・紹介画像の各レコードが消え、一覧・詳細・絞り込みの対象から外れる(削除ルールの詳細は下記[運営者による削除の方針](#運営者による削除の方針))。誤操作防止の確認ステップを挟む
+- [11] 表示中のゲームを削除できる。削除するとゲーム本体と、そのゲームに紐づくコメント・お気に入り・通報・紹介画像の各レコードが消え、一覧・詳細・絞り込みの対象から外れる(削除ルールの詳細は下記[運営者による削除の方針](#運営者による削除の方針))。誤操作防止の確認ステップを挟む
 - [12] 表示中のゲームの紹介画像を差し替え・削除できる(追加アップロード・不要画像の削除・メイン画像の並び替え。不適切な画像・著作権者からの削除要望への対応)
 - [13] 表示中のゲームについて、投稿時にアップロードされた元写真を運営者だけが照合用に閲覧できる(一般表示では出さない[表示対象-2]の元写真を、運営者に限り取得・表示する。根拠: 登録内容の疑義の照合用。[game-registration/requirements.md#写真の取り扱い](../game-registration/requirements.md))
 - [14] コメント欄の各コメントを削除できる(編集はしない。[comment/requirements.md#機能要件-10](../comment/requirements.md))
@@ -79,12 +79,12 @@ flowchart LR
 ## ビジネスルール・制約
 
 ### 表示対象
-- [1] 運営者が削除したゲームの詳細は表示しない。方向Bで削除は物理削除になったため、削除されたゲームはレコード自体が存在せず「見つかりません」表示になる([運営者による削除の方針](#運営者による削除の方針))
+- [1] 運営者が削除したゲームの詳細は表示しない。削除されたゲームはレコード自体が存在しないため、詳細画面では「見つかりません」表示になる([運営者による削除の方針](#運営者による削除の方針))
 - [2] 投稿された元の写真は、一般の閲覧者・ログイン利用者には詳細画面に一切表示しない(根拠: [game-registration/requirements.md#写真の取り扱い](../game-registration/requirements.md))。運営者(管理者)ログイン時の照合閲覧([運営者向けの操作-13](#運営者向けの操作管理者ログイン時))は例外で、運営者本人のみ取得できる
 - [3] ゲーム紹介画像は、上記[表示対象-2]のルールブック元写真(非公開)とは別物であり、公開対象である([game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md))
 
 ### 運営者による削除の方針
-- [4] ゲームの削除は物理削除とする(方向B。論理削除=`deleted_at`は廃止)。削除後の追跡(通報・元写真の見返し)や誤削除の復元は行わない前提とする(2026-08-19合意。削除前の元の申請内容は、別テーブルの登録依頼レコード`board_game_rules_game_requests`が独立して残るため、緩いバックアップとして機能する)
+- [4] ゲームの削除はレコードを実際に消す物理削除とする(削除フラグによる論理削除は行わない)。削除後の追跡(通報・元写真の見返し)や誤削除の復元は行わない。削除前の元の申請内容は、別テーブルの登録依頼レコード`board_game_rules_game_requests`が独立して残るため、緩いバックアップとして機能する(背景: [docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md](../../../docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md))
 - [5] ゲームを物理削除するとき、そのゲームに紐づく子レコード(コメント・お気に入り・通報・紹介画像の`intro_photo_paths`)も一緒に物理削除する(孤立した子レコードを残さない)
 - [6] ただしStorageの実ファイル(非公開の元写真・公開の紹介画像の実体)は削除時に消さない。理由: 元写真の実ファイルは登録依頼レコードとStorageパスを共有しており、削除で消すと依頼側のバックアップ写真まで巻き添えになるため。参照されなくなったStorage実ファイル(孤児オブジェクト)の掃除は、将来の定期棚卸し運用(games・game_requestsの全参照と突き合わせ、どこからも参照されない実ファイルのみ一括削除)で対応する(本specスコープ外)
 
@@ -97,7 +97,7 @@ flowchart LR
 - お気に入り操作は[favorite/requirements.md](../favorite/requirements.md)、コメント欄は[comment/requirements.md](../comment/requirements.md)、通報は[report/requirements.md](../report/requirements.md)に従う
 - 一覧からの遷移元は[game-list/requirements.md](../game-list/requirements.md)
 - ゲーム紹介画像の登録・並び順は[game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md)に従う
-- 運営者向けの操作(編集・物理削除・紹介画像差し替え・元写真照合・コメント削除)は方向Bで管理画面([admin/requirements.md](../admin/requirements.md))から移設したもの。運営者判定・認証・アクセス制御方針は[admin/requirements.md#アクセス制御・権限](../admin/requirements.md)・[docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)・[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)に従う。コメント削除の権限は[comment/requirements.md](../comment/requirements.md)に従う
+- 運営者向けの操作(編集・削除・紹介画像差し替え・元写真照合・コメント削除)の運営者判定・認証・アクセス制御方針は[admin/requirements.md#アクセス制御・権限](../admin/requirements.md)・[docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)・[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)に従う。コメント削除の権限は[comment/requirements.md](../comment/requirements.md)に従う
 - 通報一覧([admin/requirements.md#通報の確認](../admin/requirements.md))から対象ゲームのこの詳細画面へ遷移してモデレーションを行う
 
 ## スコープ外

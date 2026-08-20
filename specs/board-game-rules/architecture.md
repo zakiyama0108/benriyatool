@@ -115,7 +115,7 @@ flowchart TD
     adminDetail -->|コメントの削除（RLS）| commentDb
 ```
 
-> 方向B(2026-08-19)により、ゲーム個別のモデレーション操作(編集・物理削除・紹介画像差し替え・元写真照合・コメント削除)は管理画面のゲーム一覧を廃止して詳細画面の管理者導線へ集約した。管理画面は通報一覧・登録依頼一覧の横断ビューを担う。
+> ゲーム個別のモデレーション操作(編集・物理削除・紹介画像差し替え・元写真照合・コメント削除)は、対象ゲームの詳細画面に運営者ログイン時のみ表示する管理者導線で行う。管理画面は通報一覧・登録依頼一覧の横断ビューを担う([docs/adr/0009](../../docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md))。
 
 これらの図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specのrequirements.md/design.md。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。画面URL・テーブル名・Storageは設計([/design](../../.claude/skills/design/SKILL.md))で確定済み(詳細画面は静的エクスポート制約によりクエリ方式 `/board-game-rules/detail?id=…`。テーブルは `board_game_rules_games`/`_game_requests`/`_favorites`/`_comments`/`_reports`、元写真は非公開Storageバケット)。`.claude/skills/board-game-rules-batch-register/`(ローカルツール)はWebアプリのコードではないため、図では「運営者のローカルツール」として外部要素の扱いにしている。
 
@@ -126,7 +126,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 
 投稿者は登録依頼にゲーム紹介画像(パッケージ・コンポーネント・プレイ風景など)を任意で添付でき、一覧・詳細で公開表示される(元写真とは別の**公開**Storageバケットに保存する)。投稿者が添付しなかった場合、運営者のローカルツールがBoardGameGeek API(画像検索)とGoogle Gemini API(AI画像加工、そのまま転載しない)で自動補完する。いずれの外部APIも運営者のローカル環境から無料枠の範囲で呼び出され、Webアプリ・Cloudflare Workersのコード・課金構造には影響しない([game-registration](game-registration/requirements.md)、[admin](admin/requirements.md))。
 
-訪問者は一覧・絞り込み([game-list](game-list/requirements.md))と詳細([game-detail](game-detail/requirements.md))を未ログインで閲覧でき、ルールは簡単版・詳しい版のタブで確認できる。ログイン(Google OIDC、利用者全員が対象)した利用者は、お気に入りの登録・一覧([favorite](favorite/requirements.md))と、ゲームごとのコメント投稿([comment](comment/requirements.md))ができる。内容に問題があれば誰でも通報でき([report](report/requirements.md))、運営者は管理画面([admin](admin/requirements.md))で通報の確認・登録依頼の確認/処理を行う。方向B(2026-08-19)により、ゲーム個別のモデレーション(編集・物理削除・コメント削除・元写真照合・紹介画像差し替え)は管理画面のゲーム一覧を廃止し、対象ゲームの詳細画面([game-detail](game-detail/requirements.md))の管理者導線に集約した(削除は物理削除で、子レコードはFKカスケード削除・Storage実体は残す)。管理画面と詳細画面の管理者導線は既存の読み取り専用テンプレート([ADR-0006](../../docs/adr/0006-admin-screen-oidc-rls.md))の例外として書き込みを認める([ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md))。
+訪問者は一覧・絞り込み([game-list](game-list/requirements.md))と詳細([game-detail](game-detail/requirements.md))を未ログインで閲覧でき、ルールは簡単版・詳しい版のタブで確認できる。ログイン(Google OIDC、利用者全員が対象)した利用者は、お気に入りの登録・一覧([favorite](favorite/requirements.md))と、ゲームごとのコメント投稿([comment](comment/requirements.md))ができる。内容に問題があれば誰でも通報でき([report](report/requirements.md))、運営者は管理画面([admin](admin/requirements.md))で通報の確認・登録依頼の確認/処理を行う。ゲーム個別のモデレーション(編集・削除・コメント削除・元写真照合・紹介画像差し替え)は、対象ゲームの詳細画面([game-detail](game-detail/requirements.md))に運営者ログイン時のみ表示する管理者導線で行う(削除は物理削除で、子レコードはFKカスケード削除・Storage実体は残す。[ADR-0009](../../docs/adr/0009-board-game-moderation-on-detail-and-physical-delete.md))。管理画面と詳細画面の管理者導線は既存の読み取り専用テンプレート([ADR-0006](../../docs/adr/0006-admin-screen-oidc-rls.md))の例外として書き込みを認める([ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -150,10 +150,10 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [favorite](favorite/requirements.md) | ログイン利用者がゲームをお気に入り登録し一覧で振り返る | user-authのログイン状態、game-registrationのゲームID | リリース済み |
 | [game-registration](game-registration/requirements.md) | 写真+分類情報の登録依頼を受け付け、運営者へ通知する(実際の登録・LLM解析は運営者側で行う)。ゲーム紹介画像の任意アップロード・並び替えも受け付ける | user-authは不要(ログイン不要)、admin側のローカルツールへ依頼を供給 | 実装中(ゲーム紹介画像アップロードを追加実装中) |
 | [game-list](game-list/requirements.md) | 登録ゲームの一覧表示と複数分類での絞り込み(アプリのトップ)。カードにゲーム紹介画像のメイン画像を表示 | game-registrationが供給する登録済みゲーム、game-detailへ遷移、favoriteのお気に入り操作 | 実装中(カードへのゲーム紹介画像表示を追加実装中) |
-| [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線・ゲーム紹介画像ギャラリーを表示。**運営者ログイン時は編集・物理削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示(方向B)** | 登録済みゲーム、favorite/comment/reportの各機能、adminの運営者判定/RLS/Storageポリシー | 仕様のみ(未実装・方向Bで管理者操作を追加) |
+| [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線・ゲーム紹介画像ギャラリーを表示。運営者ログイン時は編集・物理削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能、adminの運営者判定/RLS/Storageポリシー | 仕様のみ(未実装) |
 | [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 | 仕様のみ(未実装) |
 | [report](report/requirements.md) | 閲覧者による通報(匿名可)。自動非表示にせず運営者判断を挟む | game-detailの通報導線、adminで確認・対応 | 仕様のみ(未実装) |
-| [admin](admin/requirements.md) | 運営者の横断ビュー(通報一覧の確認・登録依頼の確認/処理)とログイン・アクセス制御。**ゲーム個別の編集・物理削除・写真照合・コメント削除・紹介画像差し替えは方向Bでgame-detailへ移設**。登録依頼からのゲーム登録・紹介画像の自動補完(BoardGameGeek+Gemini)はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/reportの各データ、ADR-0006/0007。ゲーム個別操作はgame-detailへ移設 | 実装中(方向B: ゲーム個別操作をgame-detailへ移設・物理削除化を仕様確定中) |
+| [admin](admin/requirements.md) | 運営者の横断ビュー(通報一覧の確認・登録依頼の確認/処理)とログイン・アクセス制御。ゲーム個別の編集・削除・写真照合・コメント削除・紹介画像差し替えは詳細画面(game-detail)で行う。登録依頼からのゲーム登録・紹介画像の自動補完(BoardGameGeek+Gemini)はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/reportの各データ、ADR-0006/0007/0009 | 実装中 |
 | [design-system](design-system/requirements.md) | アプリ内の画面の系統を揃えるper-appデザインシステムの土台(トークン+chromeルールの一元管理=[DESIGN.md](DESIGN.md)、共通部品カタログ=`app/board-game-rules/styleguide/`)。全画面の見た目の共有財産 | 確定済みAnalog Hearth([game-registration](game-registration/requirements.md))・共通ナビ、PR #207の運用ルール | リリース済み |
 
 ## 8. コンポーネント図
@@ -202,7 +202,7 @@ CLAUDE.mdの一般規約(`components/`,`lib/`)に従う。ランタイムサー�
 | BoardGameGeek API(ローカルツールから) | ゲーム紹介画像の自動補完(画像検索) |
 | Google Gemini API(ローカルツールから) | ゲーム紹介画像の自動補完(AI画像加工) |
 
-テーブルが複数あり`auth.users`とのリレーションも生まれるため、ER図を置く。各カラムの正となる文章は各specのdesign.md「データベース設計」。テーブル名・カラムは設計で確定済み(`board_game_rules_games`は運営者の論理削除用に`deleted_at`を持ち、`is_official`列は持たない。コメントは公開表示のため`author_name`を非正規化保存)。
+テーブルが複数あり`auth.users`とのリレーションも生まれるため、ER図を置く。各カラムの正となる文章は各specのdesign.md「データベース設計」。テーブル名・カラムは設計で確定済み(`board_game_rules_games`は物理削除のため削除フラグ列を持たず、`is_official`列も持たない。コメントは公開表示のため`author_name`を非正規化保存)。
 
 ```mermaid
 erDiagram
