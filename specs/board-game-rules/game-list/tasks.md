@@ -5,7 +5,7 @@
 前提: [game-registration](../game-registration/tasks.md)のT0(テーブル・RLS)が先に必要。`lib/games.ts`(Game型)・`lib/rulesChapters.ts`(共通章立て)は実装済みのため新規タスクとしては挙げない。
 
 ## T1. 一覧取得関数(`lib/games.ts`に`fetchPublishedGames`を追加)
-- 🔴 `deleted_at is null`の行だけを、登録日時の新しい順で、`photo_paths`を含めずに取得すること、失敗時にエラーを返すことをテストする(Supabaseクライアントをモック)
+- 🔴 登録済みのゲームを、登録日時の新しい順で、`photo_paths`を含めずに取得すること、失敗時にエラーを返すことをテストする(Supabaseクライアントをモック)
 - 🟢 公開中ゲームの取得関数を実装する(必要列のみ選択)
 - 🔵 取得列・並び順を整理する
 
