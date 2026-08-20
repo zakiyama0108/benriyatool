@@ -153,7 +153,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線・ゲーム紹介画像ギャラリーを表示。運営者ログイン時は編集・物理削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能、adminの運営者判定/RLS/Storageポリシー | 仕様のみ(未実装) |
 | [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 | 仕様のみ(未実装) |
 | [report](report/requirements.md) | 閲覧者による通報(匿名可)。自動非表示にせず運営者判断を挟む | game-detailの通報導線、adminで確認・対応 | 仕様のみ(未実装) |
-| [admin](admin/requirements.md) | 運営者の横断ビュー(通報一覧の確認・登録依頼の確認/処理)とログイン・アクセス制御。ゲーム個別の編集・削除・写真照合・コメント削除・紹介画像差し替えは詳細画面(game-detail)で行う。登録依頼からのゲーム登録・紹介画像の自動補完(BoardGameGeek+Gemini)はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/reportの各データ、ADR-0006/0007・[adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md) | 実装中 |
+| [admin](admin/requirements.md) | 運営者の横断ビュー(通報一覧の確認・登録依頼の確認/処理)とログイン・アクセス制御、共通ナビ(BoardGameNav)への管理画面導線表示。ゲーム個別の編集・削除・写真照合・コメント削除・紹介画像差し替えは詳細画面(game-detail)で行う。登録依頼からのゲーム登録・紹介画像の自動補完(BoardGameGeek+Gemini)はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/reportの各データ、ADR-0006/0007・[adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md) | 実装中 |
 | [design-system](design-system/requirements.md) | アプリ内の画面の系統を揃えるper-appデザインシステムの土台(トークン+chromeルールの一元管理=[DESIGN.md](DESIGN.md)、共通部品カタログ=`app/board-game-rules/styleguide/`)。全画面の見た目の共有財産 | 確定済みAnalog Hearth([game-registration](game-registration/requirements.md))・共通ナビ、PR #207の運用ルール | リリース済み |
 
 ## 8. コンポーネント図
@@ -174,8 +174,10 @@ flowchart LR
     listScreen -->|お気に入り操作| dbClient
     detailScreen -->|お気に入り・コメント・通報| dbClient
     favScreen -->|お気に入りの取得・解除| dbClient
-    favScreen -->|ログイン状態| authLib
+    favScreen -->|ログイン状態・運営者判定（共通ナビ導線）| authLib
     detailScreen -->|ログイン・運営者判定| authLib
+    listScreen -->|運営者判定（共通ナビ導線）| authLib
+    registerScreen -->|運営者判定（共通ナビ導線）| authLib
     adminScreen -->|運営者判定| authLib
     adminScreen -->|編集・削除・確認| dbClient
     localTool -->|ゲーム登録（service_role）| dbClient

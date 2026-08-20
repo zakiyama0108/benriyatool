@@ -107,6 +107,7 @@ board-game-rulesアプリ全体で共有する左サイドバー(`components/Boa
 - 本画面はアプリのトップ(requirements.md#概要)のため、`BoardGameNavKey`に新しいキー`list`を追加し、ナビの最上段に「一覧」項目として配置する(表示順: 一覧→登録依頼→お気に入り。Stitch参照デザインのHome/Add Game/お気に入りの並びに準じる)。本画面を選択中は`aria-current="page"`でハイライトする
 - 本画面の実装により、register・favoritesのパンくずで非リンクだった「ボドゲのトリセツ」の遷移先ができる。register/favoritesのコード上のコメント(「game-list未実装のため非リンク」)は古くなるため、本画面の実装にあわせて`/board-game-rules`へのリンクに更新する(対象: `app/board-game-rules/register/page.tsx`、`app/board-game-rules/favorites/page.tsx`)。あわせて、同じ注記が書かれている[game-registration/design.md#画面設計(登録依頼フォームのUI)](../game-registration/design.md)の「パンくず」の一文(「ボドゲのトリセツのトップはgame-list未実装のため非リンク」)も、リンク化された旨に更新する(`favorite/design.md`には同種の注記はない)
 - 共通chromeの「唯一の真実の源」である[DESIGN.md#2-共通chromeルール](../DESIGN.md)の現況記述「ナビはロゴ...+実装済み画面へのリンク(登録依頼・お気に入り)」も、`list`追加後の実態(一覧・登録依頼・お気に入りの3リンク)に合わせて更新する
+- (後日追記)`nav`末尾に運営者ログイン時のみ表示する管理画面リンク(`AdminNavLink`)を差し込む。判定・出し分けの設計は[admin/design.md](../admin/design.md)「共通ナビに管理画面への導線を表示する処理」を真実の源とし、本節では重複させない(`BoardGameNav.tsx`のファイル自体はこのspecが真実の源のため、変更が入る旨だけ記す)
 
 ### パンくず
 register/favoritesと同じ3階層: 「べんりやつーる(リンク`/`) › ボドゲのトリセツ(リンク`/board-game-rules`) › 一覧(現在地・太字・非リンク)」。本画面はアプリのトップだが、全画面でパンくずの階層構造を統一するため2階層の特例は設けない(画面レビューでの方針決定、2026-08)。styleguideの見本([app/board-game-rules/styleguide/](../../app/board-game-rules/styleguide/))と同じマークアップパターン(`nav aria-label="パンくず"`)を用いる
