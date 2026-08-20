@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSession } from '../lib/useSession'
+import { isAuthorizedAdmin } from '../../lib/adminAuth'
 import { fetchGameById, type Game } from '../lib/games'
 import { fetchMyFavoriteGameIds } from '../lib/favorites'
 import BoardGameNav from '../components/BoardGameNav'
@@ -12,6 +13,7 @@ import RuleTabs from '../components/RuleTabs'
 import FavoriteButton from '../components/FavoriteButton'
 import CommentSection from '../components/CommentSection'
 import ReportButton from '../components/ReportButton'
+import AdminControls from '../components/AdminControls'
 
 // 取得状態(game-detail/design.md「状態管理」の状態遷移図): 読み込み中/表示中/該当なし/取得エラー
 type Phase = 'loading' | 'found' | 'notFound' | 'error'
@@ -26,6 +28,8 @@ export default function GameDetailPage() {
   const [game, setGame] = useState<Game | null>(null)
   const [favorited, setFavorited] = useState(false)
   const [favoritesResolved, setFavoritesResolved] = useState(false)
+  // 運営者(管理者)かどうか。ログイン中のみisAuthorizedAdminで判定し、失敗時は非運営者扱い(フェイルクローズ)
+  const [isAdmin, setIsAdmin] = useState(false)
   // 取得エラーからの再試行(design.md「状態管理」: 取得エラー→読み込み中)でこの値を増やして再取得する
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -78,6 +82,25 @@ export default function GameDetailPage() {
       active = false
     }
   }, [session, phase, game])
+
+  // ログイン中のみ運営者判定を行う。失敗時は非運営者として扱う(フェイルクローズ。design.md#セキュリティ)
+  useEffect(() => {
+    let active = true
+    if (!session) {
+      setIsAdmin(false)
+      return
+    }
+    void isAuthorizedAdmin()
+      .then((ok) => {
+        if (active) setIsAdmin(ok)
+      })
+      .catch(() => {
+        if (active) setIsAdmin(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [session])
 
   return (
     <div className="font-body flex min-h-screen bg-bgr-bg">
@@ -132,6 +155,14 @@ export default function GameDetailPage() {
             <>
               <PhotoGallery paths={game.introPhotoPaths} />
               <GameInfo game={game} />
+
+              {isAdmin && (
+                <AdminControls
+                  game={game}
+                  onChanged={() => setReloadKey((n) => n + 1)}
+                  onDeleted={() => window.location.assign('/board-game-rules')}
+                />
+              )}
 
               <div className="flex items-center justify-between gap-3">
                 {/* お気に入り状態の集合取得が済んでから確定した初期値でマウントする(keyで再マウント) */}

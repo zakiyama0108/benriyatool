@@ -6,6 +6,7 @@ import type { Game } from '../../../app/board-game-rules/lib/games'
 import { fetchGameById } from '../../../app/board-game-rules/lib/games'
 import { fetchMyFavoriteGameIds } from '../../../app/board-game-rules/lib/favorites'
 import { useSession } from '../../../app/board-game-rules/lib/useSession'
+import { isAuthorizedAdmin } from '../../../app/lib/adminAuth'
 
 // 取得系・セッションはモックし、重い子コンポーネントは配置確認用のマーカーに差し替える。
 // これにより「クエリIDでの取得・状態の出し分け・各導線の配置」だけを検証する
@@ -14,6 +15,10 @@ import { useSession } from '../../../app/board-game-rules/lib/useSession'
 vi.mock('../../../app/board-game-rules/lib/games', () => ({ fetchGameById: vi.fn() }))
 vi.mock('../../../app/board-game-rules/lib/favorites', () => ({ fetchMyFavoriteGameIds: vi.fn() }))
 vi.mock('../../../app/board-game-rules/lib/useSession', () => ({ useSession: vi.fn() }))
+vi.mock('../../../app/lib/adminAuth', () => ({ isAuthorizedAdmin: vi.fn() }))
+vi.mock('../../../app/board-game-rules/components/AdminControls', () => ({
+  default: ({ game }: { game: { id: string } }) => <div data-testid="admin-controls">{game.id}</div>,
+}))
 vi.mock('../../../app/board-game-rules/lib/gamePhotos', () => ({
   getGamePhotoUrl: (path: string) => `https://cdn.example/${path}`,
 }))
@@ -72,6 +77,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
   vi.mocked(fetchMyFavoriteGameIds).mockResolvedValue(new Set())
+  vi.mocked(isAuthorizedAdmin).mockResolvedValue(false)
   vi.mocked(fetchGameById).mockResolvedValue({ status: 'found', game: makeGame() })
   setQuery(GAME_ID)
 })
@@ -158,5 +164,47 @@ describe('ゲーム詳細画面 - 該当なしと取得エラーを区別して�
     fireEvent.click(screen.getByRole('button', { name: /再試行/ }))
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'カタン' })).toBeTruthy())
+  })
+})
+
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者操作のアクセス制御-7
+describe('ゲーム詳細画面 - 運営者ログイン時のみ管理者導線を表示する', () => {
+  it('運営者(isAuthorizedAdminがtrue)ログイン時は管理者メニューが表示されること', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: makeSession('admin-1'), loading: false })
+    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
+
+    render(<GameDetailPage />)
+
+    await waitFor(() => expect(screen.getByTestId('admin-controls')).toBeTruthy())
+    expect(screen.getByTestId('admin-controls').textContent).toBe(GAME_ID)
+  })
+
+  it('未ログインでは管理者導線を表示しないこと', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
+
+    render(<GameDetailPage />)
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'カタン' })).toBeTruthy())
+    expect(screen.queryByTestId('admin-controls')).toBeNull()
+  })
+
+  it('一般ログイン利用者(isAuthorizedAdminがfalse)には管理者導線を表示しないこと', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: makeSession('user-1'), loading: false })
+    vi.mocked(isAuthorizedAdmin).mockResolvedValue(false)
+
+    render(<GameDetailPage />)
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'カタン' })).toBeTruthy())
+    expect(screen.queryByTestId('admin-controls')).toBeNull()
+  })
+
+  it('運営者判定が例外を投げた場合は管理者導線を表示しないこと(フェイルクローズ)', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: makeSession('admin-1'), loading: false })
+    vi.mocked(isAuthorizedAdmin).mockRejectedValue(new Error('network error'))
+
+    render(<GameDetailPage />)
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'カタン' })).toBeTruthy())
+    expect(screen.queryByTestId('admin-controls')).toBeNull()
   })
 })
