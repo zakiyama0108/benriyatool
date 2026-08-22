@@ -7,7 +7,9 @@ import { signInWithGoogle } from '../../../app/lib/adminAuth'
 import { fetchMyFavoriteGames, removeFavorite, type FavoriteGame } from '../../../app/board-game-rules/lib/favorites'
 
 vi.mock('../../../app/board-game-rules/lib/useSession', () => ({ useSession: vi.fn() }))
-vi.mock('../../../app/lib/adminAuth', () => ({ signInWithGoogle: vi.fn() }))
+// isAuthorizedAdminは共通ナビの管理画面導線(AdminNavLink)が呼ぶ。本ファイルの検証対象外のため、
+// 常に非運営者(false)としてリンクを出さない状態にする(AdminNavLink自体の出し分けはAdminNavLink.test.tsxで検証)
+vi.mock('../../../app/lib/adminAuth', () => ({ signInWithGoogle: vi.fn(), isAuthorizedAdmin: vi.fn().mockResolvedValue(false) }))
 vi.mock('../../../app/board-game-rules/lib/favorites', () => ({
   fetchMyFavoriteGames: vi.fn(),
   addFavorite: vi.fn(),

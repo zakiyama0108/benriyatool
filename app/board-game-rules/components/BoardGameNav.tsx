@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AdminNavLink from './AdminNavLink'
 
 // board-game-rules(ボドゲのトリセツ)アプリ全体で共有する左サイドバーの共通ナビ。
 // 見た目はStep0で確定したAnalog Hearth(favorite/design.md「お気に入り一覧画面」・
@@ -97,6 +98,9 @@ export default function BoardGameNav({ active }: { active: BoardGameNavKey }) {
             </Link>
           )
         })}
+        {/* 運営者ログイン中のみ表示される管理画面導線(クライアント島)。BoardGameNav自体は
+            サーバーコンポーネントのまま(design.md「共通ナビに管理画面への導線を表示する処理」) */}
+        <AdminNavLink />
       </nav>
     </aside>
   )
