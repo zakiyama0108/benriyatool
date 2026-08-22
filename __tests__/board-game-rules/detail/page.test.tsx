@@ -15,7 +15,11 @@ import { isAuthorizedAdmin } from '../../../app/lib/adminAuth'
 vi.mock('../../../app/board-game-rules/lib/games', () => ({ fetchGameById: vi.fn() }))
 vi.mock('../../../app/board-game-rules/lib/favorites', () => ({ fetchMyFavoriteGameIds: vi.fn() }))
 vi.mock('../../../app/board-game-rules/lib/useSession', () => ({ useSession: vi.fn() }))
-vi.mock('../../../app/lib/adminAuth', () => ({ isAuthorizedAdmin: vi.fn() }))
+vi.mock('../../../app/lib/adminAuth', () => ({
+  isAuthorizedAdmin: vi.fn(),
+  signInWithGoogle: vi.fn(),
+  signOut: vi.fn(),
+}))
 vi.mock('../../../app/board-game-rules/components/AdminControls', () => ({
   default: ({ game }: { game: { id: string } }) => <div data-testid="admin-controls">{game.id}</div>,
 }))
@@ -109,6 +113,17 @@ describe('ゲーム詳細画面 - 閲覧はログイン不要', () => {
     render(<GameDetailPage />)
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'カタン' })).toBeTruthy())
+  })
+})
+
+// 仕様: specs/board-game-rules/game-detail/requirements.md#操作-8
+describe('ゲーム詳細画面 - ヘッダーにログイン導線(LoginStatus)を置く', () => {
+  it('未ログイン時、詳細ページ上から直接ログインできるよう「Googleでログイン」導線が表示されること', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
+
+    render(<GameDetailPage />)
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Googleでログイン' })).toBeTruthy())
   })
 })
 

@@ -14,6 +14,7 @@ import FavoriteButton from '../components/FavoriteButton'
 import CommentSection from '../components/CommentSection'
 import ReportButton from '../components/ReportButton'
 import AdminControls from '../components/AdminControls'
+import LoginStatus from '../components/LoginStatus'
 
 // 取得状態(game-detail/design.md「状態管理」の状態遷移図): 読み込み中/表示中/該当なし/取得エラー
 type Phase = 'loading' | 'found' | 'notFound' | 'error'
@@ -112,25 +113,30 @@ export default function GameDetailPage() {
       <BoardGameNav active="list" />
       <div className="w-full flex-1">
         <main className="mx-auto max-w-3xl space-y-4 px-4 py-8 sm:px-8">
-          <nav aria-label="パンくず" className="flex items-center gap-1 text-xs text-bgr-subtext">
-            <Link href="/" className="hover:underline">
-              べんりやつーる
-            </Link>
-            <span>›</span>
-            <Link href="/board-game-rules" className="hover:underline">
-              ボドゲのトリセツ
-            </Link>
-            <span>›</span>
-            <Link href="/board-game-rules" className="hover:underline">
-              一覧
-            </Link>
-            {phase === 'found' && game && (
-              <>
-                <span>›</span>
-                <span className="font-bold text-bgr-heading">{game.name}</span>
-              </>
-            )}
-          </nav>
+          {/* 共通ヘッダー: パンくず + ログイン導線(design.md「画面構成」)。
+              未ログインでも詳細ページから直接ログインできるようLoginStatusを置く(一覧・登録依頼画面と揃える) */}
+          <div className="flex items-center justify-between gap-3">
+            <nav aria-label="パンくず" className="flex items-center gap-1 text-xs text-bgr-subtext">
+              <Link href="/" className="hover:underline">
+                べんりやつーる
+              </Link>
+              <span>›</span>
+              <Link href="/board-game-rules" className="hover:underline">
+                ボドゲのトリセツ
+              </Link>
+              <span>›</span>
+              <Link href="/board-game-rules" className="hover:underline">
+                一覧
+              </Link>
+              {phase === 'found' && game && (
+                <>
+                  <span>›</span>
+                  <span className="font-bold text-bgr-heading">{game.name}</span>
+                </>
+              )}
+            </nav>
+            <LoginStatus />
+          </div>
 
           {phase === 'loading' && <p className="py-16 text-center text-sm text-bgr-subtext">読み込み中…</p>}
 
