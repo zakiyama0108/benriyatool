@@ -2857,7 +2857,7 @@
   {
     "specFile": "board-game-rules/admin/design.md",
     "item": "画面設計",
-    "reason": "画面のレイアウト・構成の記述で、実際の各コンポーネントの振る舞いはGameModerationTable/GameEditForm/ReportsView/GameRequestsView/page.tsxの各テストで担保済みのため"
+    "reason": "画面のレイアウト・構成の記述で、実際の各コンポーネントの振る舞いはReportsView/GameRequestsView/LoginScreen/page.tsxの各テストで担保済みのため"
   },
   {
     "specFile": "board-game-rules/admin/design.md",
@@ -3863,11 +3863,6 @@
     "specFile": "board-game-rules/game-registration/design.md",
     "item": "追加マイグレーション(ゲーム紹介画像、実装より先に単独PRで適用)",
     "reason": "マイグレーションSQL・T0の実機確認手順の記述で、TDD対象外(tasks.md T0b参照。マイグレーション適用時に実機確認する)"
-  },
-  {
-    "specFile": "board-game-rules/admin/design.md",
-    "item": "ゲーム紹介画像を差し替え・削除する処理",
-    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、introPhotos.test.ts等にテストを紐づけたらこのエントリを削除する(tasks.md T3b参照)"
   },
   {
     "specFile": "board-game-rules/admin/design.md",

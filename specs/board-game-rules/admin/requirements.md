@@ -2,6 +2,11 @@
 
 > ステータス: 仕様確認中(未実装)
 
+## サマリ
+運営者本人だけがログインして使う管理画面。通報([report/requirements.md](../report/requirements.md))と利用者からの登録依頼([game-registration/requirements.md](../game-registration/requirements.md))を横断で一覧確認し、登録依頼は写真・分類情報をもとに外部ツール(管理画面の外)でゲーム登録できる。ゲーム1件ごとの編集・削除・紹介画像差し替え・コメント削除は詳細画面([game-detail/requirements.md](../game-detail/requirements.md))で行う。アクセス制御はGoogle OIDCログイン+DB側RLSで担保し、画面はboard-game-rules共通の左サイドバーナビ・パンくずを備えて他画面と回遊できる。
+
+このspecの利用者と主なユースケースは下記「[ユースケース図](#ユースケース図)」を参照。
+
 ## 概要
 - 機能名: 管理画面(モデレーション)
 - 目的: 運営者本人だけがログインして、複数ゲームを横断する運用(通報内容の確認、利用者から届く登録依頼([game-registration/requirements.md](../game-registration/requirements.md))の確認・処理)を行えるようにする
@@ -20,6 +25,22 @@
 - 運営者として、管理画面が他の画面と同じ見た目・同じナビで、違和感なく使いたい
 
 ゲーム1件ごとの編集・削除・紹介画像差し替え・元写真照合・コメント削除は、そのゲームの詳細画面で行う([game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))。
+
+## ユースケース図
+```mermaid
+flowchart LR
+    admin[運営者]
+
+    admin --> viewReports[通報を一覧で確認する]
+    admin --> gotoGame[通報から対象ゲームの詳細画面へ遷移する]
+    admin --> viewRequests[登録依頼を一覧で確認する]
+    admin --> viewRequestPhoto[登録依頼の紹介画像を確認する]
+    admin --> markProcessed[登録依頼を処理済みにする]
+    admin --> deleteRequest[不要な登録依頼を削除する]
+    admin --> notified[新着登録依頼の通知を受け取る]
+    admin --> navigate[共通ナビ・パンくずで他画面と回遊する]
+```
+- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-5・requirements.md#通報の確認-6、登録依頼の確認・処理・削除はrequirements.md#登録依頼の確認-7〜9、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-10、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログインアクセス制御-18・requirements.md#画面レイアウト回遊導線-19〜20に対応する
 
 ## 機能要件
 
