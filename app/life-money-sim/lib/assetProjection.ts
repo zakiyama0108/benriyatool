@@ -122,11 +122,18 @@ export function buildSavingsAssetSeries(startingAsset: number, netSurpluses: num
   return series
 }
 
+// 想定利回り(年率・%)を月利に換算する。年率を単純に12等分する近似式を採用する(仕様: requirements.md#複利計算-1)。
+// 資産積み上げ(buildInvestmentAssetSeries)と運用益算出(buildGainSeries)で同じ式を使い、
+// 複利式の変更が片方だけに漏れて資産推移と運用益が乖離することを防ぐ
+function toMonthlyRate(expectedAnnualRate: number): number {
+  return sanitizeAmount(expectedAnnualRate) / 100 / 12
+}
+
 // 資産運用モード: 想定利回り(年率・%)を12で割った月利で、前月末の資産額に運用益を加えたうえで
 // 当月の差引後余剰を積み上げる(仕様: requirements.md#複利計算-1、requirements.md#複利計算-2、
 // design.md#資産運用モードで月次資産額を積み上げる処理)
 export function buildInvestmentAssetSeries(startingAsset: number, netSurpluses: number[], expectedAnnualRate: number): number[] {
-  const monthlyRate = sanitizeAmount(expectedAnnualRate) / 100 / 12
+  const monthlyRate = toMonthlyRate(expectedAnnualRate)
   const series: number[] = []
   let asset = sanitizeAmount(startingAsset)
   for (const netSurplus of netSurpluses) {
@@ -146,7 +153,7 @@ export function buildGainSeries(
   expectedAnnualRate: number
 ): number[] {
   if (!investmentMode) return assetSeries.map(() => 0)
-  const monthlyRate = sanitizeAmount(expectedAnnualRate) / 100 / 12
+  const monthlyRate = toMonthlyRate(expectedAnnualRate)
   let prevAsset = sanitizeAmount(startingAsset)
   return assetSeries.map((asset) => {
     const gain = prevAsset * monthlyRate

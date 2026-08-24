@@ -148,24 +148,24 @@
 
 ## 修正: 通常ボーナスの支給月反映と運用益カラムの追加(2026-08)
 
-- [ ] Task 32: 行の型に運用益を追加(仕様: requirements.md#月次の資産推移-6、design.md#関連するファイル(抜粋))
-  - [ ] `app/life-money-sim/lib/types.ts`の`MonthlyProjectionRow`/`YearlyProjectionRow`に`investmentGain: number`(その月/その年の運用益・万円。貯蓄のみモードは0)を追加する
+- [x] Task 32: 行の型に運用益を追加(仕様: requirements.md#月次の資産推移-6、design.md#関連するファイル(抜粋))
+  - [x] `app/life-money-sim/lib/types.ts`の`MonthlyProjectionRow`/`YearlyProjectionRow`に`investmentGain: number`(その月/その年の運用益・万円。貯蓄のみモードは0)を追加する
 
-- [ ] Task 33: 当月の通常ボーナスを差引後余剰に反映(仕様: requirements.md#月次の資産推移-2、requirements.md#月次の資産推移-5、design.md#当月の通常ボーナスを求める処理、design.md#当月の差引後余剰を求める処理)
-  - [ ] 🔴 対象年月の月が`monthly-balance`収入の支給月一覧に該当する場合は1回あたりの金額、非該当は0を返す関数(`calcRegularBonus`など)のテストを書く(毎年繰り返し該当すること・不正な金額は0扱いを含む)
-  - [ ] 🟢 `calcRegularBonus`を実装する
-  - [ ] 🔴 `buildMonthlyProjectionRows`が、支給月に該当する月の`bonusAmount`へ通常ボーナスと賞与登録の合算額を積み、差引後余剰にも反映することを確認するテストを追加する
-  - [ ] 🟢 `buildMonthlyProjectionRows`のシグネチャに支給月・1回あたり金額(または`IncomeInput`)を追加し、実装する
+- [x] Task 33: 当月の通常ボーナスを差引後余剰に反映(仕様: requirements.md#月次の資産推移-2、requirements.md#月次の資産推移-5、design.md#当月の通常ボーナスを求める処理、design.md#当月の差引後余剰を求める処理)
+  - [x] 🔴 対象年月の月が`monthly-balance`収入の支給月一覧に該当する場合は1回あたりの金額、非該当は0を返す関数(`calcRegularBonus`など)のテストを書く(毎年繰り返し該当すること・不正な金額は0扱いを含む)
+  - [x] 🟢 `calcRegularBonus`を実装する
+  - [x] 🔴 `buildMonthlyProjectionRows`が、支給月に該当する月の`bonusAmount`へ通常ボーナスと賞与登録の合算額を積み、差引後余剰にも反映することを確認するテストを追加する
+  - [x] 🟢 `buildMonthlyProjectionRows`のシグネチャに支給月・1回あたり金額(または`IncomeInput`)を追加し、実装する
 
-- [ ] Task 34: 月次積み上げで運用益を算出(仕様: requirements.md#月次の資産推移-6、design.md#貯蓄のみモードで月次資産額を積み上げる処理、design.md#資産運用モードで月次資産額を積み上げる処理)
-  - [ ] 🔴 貯蓄のみ/資産運用それぞれの月次積み上げ関数が、資産額の系列に加えて各月の運用益(貯蓄のみは全月0、資産運用は前月末資産額×月利)を返すことを確認するテストに書き換える
-  - [ ] 🟢 `buildSavingsAssetSeries`・`buildInvestmentAssetSeries`を、資産額と運用益の両方を返す形に実装し直し、`buildMonthlyProjectionRows`が各行に`investmentGain`を持たせるようにする
+- [x] Task 34: 月次積み上げで運用益を算出(仕様: requirements.md#月次の資産推移-6、design.md#貯蓄のみモードで月次資産額を積み上げる処理、design.md#資産運用モードで月次資産額を積み上げる処理)
+  - [x] 🔴 各月の運用益系列を求める関数(貯蓄のみは全月0、資産運用は前月末資産額×月利)のテストを書く
+  - [x] 🟢 `buildGainSeries`を追加し(複利式は`buildInvestmentAssetSeries`と共通の月利換算`toMonthlyRate`を使う)、`buildMonthlyProjectionRows`が各行に`investmentGain`を持たせるようにする
 
-- [ ] Task 35: 年次集計に運用益・賞与合計を反映(仕様: requirements.md#表示単位の切り替え-2、design.md#月次データを年次にまとめる処理)
-  - [ ] 🔴 `aggregateYearly`が、その年の`investmentGain`を月次合計にすること、`bonusAmount`が通常ボーナス+賞与登録の年間合計になることを確認するテストを追加する
-  - [ ] 🟢 `aggregateYearly`を実装し直す
+- [x] Task 35: 年次集計に運用益・賞与合計を反映(仕様: requirements.md#表示単位の切り替え-2、design.md#月次データを年次にまとめる処理)
+  - [x] 🔴 `aggregateYearly`が、その年の`investmentGain`を月次合計にすること、`bonusAmount`が通常ボーナス+賞与登録の年間合計になることを確認するテストを追加する
+  - [x] 🟢 `aggregateYearly`を実装し直す
 
-- [ ] Task 36: 資産推移テーブルに運用益カラムを追加(仕様: requirements.md#月次の資産推移-6、design.md#資産推移テーブルに金額を表示する処理)
-  - [ ] 🔴 `AssetProjectionTable`のテストに、資産運用モードでは各行に運用益が表示され、貯蓄のみモードでは「−」表記になることを確認するケースを追加する
-  - [ ] 🟢 `AssetProjectionTable.tsx`に運用益列を追加する
+- [x] Task 36: 資産推移テーブルに運用益カラムを追加(仕様: requirements.md#月次の資産推移-6、design.md#資産推移テーブルに金額を表示する処理)
+  - [x] 🔴 `AssetProjectionTable`のテストに、資産運用モードでは各行に運用益が表示され、貯蓄のみモードでは「−」表記になることを確認するケースを追加する
+  - [x] 🟢 `AssetProjectionTable.tsx`に運用益列を追加する
   - [ ] `/run`(run-benriyatoolスキル)で、収入セクションのボーナス支給月・金額を設定すると該当月/年に賞与が表示・資産額に反映されること、資産運用モードで運用益カラムに値が出ることを実機確認する

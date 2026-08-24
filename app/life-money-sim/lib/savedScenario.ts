@@ -12,6 +12,16 @@ function toBonusMonths(income: Partial<IncomeInput> & { bonusCount?: number }): 
   return LEGACY_BONUS_MONTH_PREFERENCE.slice(0, Math.min(count, 12)).sort((a, b) => a - b)
 }
 
+// 保存済みの収入を現在の型(IncomeInput)の3フィールドだけを持つ形へ正規化する。
+// 旧データに残る型外プロパティ(bonusCount)を落とし、再保存時にDBへ混入しないようにする
+function normalizeStoredIncome(stored: Partial<IncomeInput> & { bonusCount?: number }, fallback: IncomeInput): IncomeInput {
+  return {
+    monthlySalary: typeof stored.monthlySalary === 'number' ? stored.monthlySalary : fallback.monthlySalary,
+    bonusMonths: toBonusMonths(stored),
+    bonusAmountPerTime: typeof stored.bonusAmountPerTime === 'number' ? stored.bonusAmountPerTime : fallback.bonusAmountPerTime,
+  }
+}
+
 // DB上のスネークケース行から画面で使うScenarioRecordへ変換する
 type ScenarioRow = {
   id: string
@@ -88,10 +98,8 @@ export function fillMissingScenarioFields(
 ): ScenarioInputState {
   return {
     // incomeはフィールド単位でマージする(bonusMonths導入前の旧データはbonusCountしか持たないため、
-    // 支給月へ変換して補う)
-    income: stored.income
-      ? { ...currentDefault.income, ...stored.income, bonusMonths: toBonusMonths(stored.income) }
-      : currentDefault.income,
+    // 支給月へ変換して補い、型外の旧プロパティは落とす)
+    income: stored.income ? normalizeStoredIncome(stored.income, currentDefault.income) : currentDefault.income,
     personalExpense: stored.personalExpense ?? currentDefault.personalExpense,
     household: stored.household ?? currentDefault.household,
     familyProfile: stored.familyProfile ?? currentDefault.familyProfile,

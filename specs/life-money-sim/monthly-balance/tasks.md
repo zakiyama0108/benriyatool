@@ -54,15 +54,15 @@
 
 ## 修正: 手取りボーナスの支給月入力化(2026-08)
 
-- [ ] Task 13: 収入型の支給月化(仕様: requirements.md#収入-2、asset-projection/design.md#関連するファイル(抜粋))
-  - [ ] `app/life-money-sim/lib/types.ts`の`IncomeInput.bonusCount: number`を`bonusMonths: number[]`(支給月・1〜12)に置き換える
-  - [ ] `saved-scenario`の復元(`fillMissingScenarioFields`)で、旧データの`bonusCount`しか持たない`income`にも`bonusMonths`を補って復元できるようにする(欠損時のフォールバック)
+- [x] Task 13: 収入型の支給月化(仕様: requirements.md#収入-2、asset-projection/design.md#関連するファイル(抜粋))
+  - [x] `app/life-money-sim/lib/types.ts`の`IncomeInput.bonusCount: number`を`bonusMonths: number[]`(支給月・1〜12)に置き換える
+  - [x] `saved-scenario`の復元(`fillMissingScenarioFields`)で、旧データの`bonusCount`しか持たない`income`にも`bonusMonths`を補って復元できるようにする(欠損時のフォールバック)
 
-- [ ] Task 14: 年間余剰資金の計算を支給月数ベースに(仕様: requirements.md#余剰資金の計算-2、design.md#年間収支をまとめる処理)
-  - [ ] 🔴 `calcAnnualSurplus`が「月次余剰資金×12 + 支給月の数×1回あたりの金額」になることを確認するテストに更新する
-  - [ ] 🟢 `page.tsx`側で支給月の数を渡すか、`calcAnnualSurplus`のシグネチャを支給月ベースに更新して実装する
+- [x] Task 14: 年間余剰資金の計算を支給月数ベースに(仕様: requirements.md#余剰資金の計算-2、design.md#年間収支をまとめる処理)
+  - [x] 🔴 `calcAnnualSurplus`が「月次余剰資金×12 + 支給月の数×1回あたりの金額」になることを確認するテストに更新する
+  - [x] 🟢 `page.tsx`側で支給月の数(`bonusMonths.length`)を`calcAnnualSurplus`へ渡して実装する
 
-- [ ] Task 15: 収入セクションの支給月入力UI(仕様: requirements.md#収入-2、design.md#画面設計)
-  - [ ] 🔴 `IncomeForm`のテストに、支給月(1〜12月)を選択でき、選択状態が`onChange`で親に伝わることを確認するケースを追加する
-  - [ ] 🟢 `IncomeForm.tsx`のボーナス回数入力を、支給月の複数選択UI(1〜12月のトグル)に置き換える。1回あたりの金額入力は維持する
+- [x] Task 15: 収入セクションの支給月入力UI(仕様: requirements.md#収入-2、design.md#画面設計)
+  - [x] 🔴 `IncomeForm`のテストに、支給月(1〜12月)を選択でき、選択状態が`onChange`で親に伝わることを確認するケースを追加する
+  - [x] 🟢 `IncomeForm.tsx`のボーナス回数入力を、支給月の複数選択UI(1〜12月のトグル)に置き換える。1回あたりの金額入力は維持する
   - [ ] `/run`(run-benriyatoolスキル)で、支給月を選ぶと収入サマリー・年間余剰資金・資産推移が更新されることを実機確認する
