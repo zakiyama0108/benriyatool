@@ -214,9 +214,10 @@ erDiagram
     board_game_rules_games ||--o{ board_game_rules_favorites : "game_id"
     board_game_rules_games ||--o{ board_game_rules_comments : "game_id"
     board_game_rules_games ||--o{ board_game_rules_reports : "game_id"
+    board_game_rules_games |o--o{ board_game_rules_game_requests : "published_game_id(on delete set null)"
 ```
 
-`board_game_rules_reports`・`board_game_rules_game_requests`は匿名のため`auth.users`とのリレーションを持たない(`game_requests`は依頼者を特定する情報を保存しない)。写真はStorageに置き、`board_game_rules_games`・`board_game_rules_game_requests`の各レコードから参照する(詳細は設計で確定)。
+`board_game_rules_reports`・`board_game_rules_game_requests`は匿名のため`auth.users`とのリレーションを持たない(`game_requests`は依頼者を特定する情報を保存しない)。`game_requests.published_game_id`は「公開する」操作でゲームが登録された後にのみ紐づく任意の参照で、参照先のゲームが物理削除されるとNULLに戻る(依頼レコード自体は消えない。[game-registration/design.md#追加マイグレーション登録実行・下書きレビュー](game-registration/design.md))。写真はStorageに置き、`board_game_rules_games`・`board_game_rules_game_requests`の各レコードから参照する(詳細は設計で確定)。
 
 ## 11. 関連ADR
 

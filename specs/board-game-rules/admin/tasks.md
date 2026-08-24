@@ -3,7 +3,7 @@
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 > 本管理画面はログイン・通報一覧の確認・登録依頼の確認/処理を担う。ゲーム1件ごとの編集・削除・紹介画像差し替え・元写真照合・コメント削除は詳細画面([game-detail/tasks.md](../game-detail/tasks.md))で実装する。
 
-前提: [game-registration](../game-registration/tasks.md)・[report](../report/tasks.md)・[comment](../comment/tasks.md)の各T0(テーブル・運営者向けRLS)が先に必要。
+前提: [game-registration](../game-registration/tasks.md)・[report](../report/tasks.md)・[comment](../comment/tasks.md)の各T0(テーブル・運営者向けRLS)に加え、[game-registration](../game-registration/tasks.md)のT0c(登録実行・下書きレビュー用の状態管理カラム・`board_game_rules_games`INSERTポリシー追加)が先に必要(下記T2b・T4bが使う`status`/`draft_content`等はT0cで追加される)。
 
 ## T0. 元写真の非公開Storage設定(実装より先に単独PRで適用。適用済み)
 - 非公開バケット(`board-game-rules-photos`、public=false)の作成と、Storageのアクセスポリシー(INSERTは誰でも可(サイズ上限`file_size_limit`・許可MIME`allowed_mime_types`・1ゲームあたり枚数上限の量的制約付き)、SELECT(ダウンロード)は運営者のみ)を`supabase/migrations/20260807160400_create_board_game_rules_photos_storage.sql`で適用済み(design.md「元写真の非公開Storage」)。このバケットは[game-registration](../game-registration/tasks.md)の写真保存先
@@ -31,7 +31,7 @@
 - 🔴 次をテストする(Supabaseクライアントをモック):
   - `triggerRegistration`: `status`が`pending`/`failed`の依頼に対して`status`を`queued`にUPDATEすること、それ以外の`status`では実行できないこと
   - `requestRevision`: 入力した要望を`revision_note`にセットし`status`を`queued`にUPDATEすること(`draft_content`は変更しないこと)
-  - `publishDraft`: `draft_content`の内容で`board_game_rules_games`へINSERTすること、成功したら対応する依頼に`processed_at`・`published_game_id`・`status: 'published'`をUPDATEすること、INSERT失敗時はUPDATEを行わずエラーを返すこと
+  - `publishDraft`: `draft_content`の内容(`photo_paths`・`intro_photo_paths`は含まない)に、対象依頼行の`photo_paths`・`intro_photo_paths`を合わせて`board_game_rules_games`へINSERTすること、成功したら対応する依頼に`processed_at`・`published_game_id`・`status: 'published'`をUPDATEすること、INSERT失敗時はUPDATEを行わずエラーを返すこと
   - いずれも失敗時にエラーを返すこと
 - 🟢 `triggerRegistration` / `requestRevision` / `publishDraft` を実装する
 - 🔵 状態遷移の妥当性チェック(不正な`status`からの操作を防ぐガード)を整理する

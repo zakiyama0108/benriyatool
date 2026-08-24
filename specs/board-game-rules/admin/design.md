@@ -64,7 +64,7 @@
   1. **登録実行**: `status`が`pending`または`failed`の依頼で「登録実行」を押すと、`status`を`queued`にUPDATEする(requirements.md#登録実行・下書きレビュー-1)。実際の解析・生成は下記「ローカル環境の定期処理」が担う
   2. **状況表示**: 一覧は`status`に応じて「未着手/処理中/下書きあり/公開済み/失敗」のいずれかを表示する(requirements.md#登録実行・下書きレビュー-2)。`queued`・`running`は「処理中」として表示をまとめる(運営者にとって意味のある区別ではないため)
   3. **下書き確認**: `status`が`draft`になったら、`draft_content`(ゲーム名・対応人数・プレイ時間・ジャンル・簡単版ルールの抜粋など)を表示する(requirements.md#登録実行・下書きレビュー-3)
-  4. **公開する**: `draft_content`の内容で`board_game_rules_games`へINSERTする(下記「データベース設計」の運営者向けINSERT権限)。成功したら、対応する依頼の`processed_at`に現在時刻を、`published_game_id`に発行されたゲームID、`status`に`published`をセットするUPDATEを行う(requirements.md#登録実行・下書きレビュー-4、requirements.md#登録依頼の確認-8)
+  4. **公開する**: `draft_content`(ゲーム名・対応人数・プレイ時間・ジャンル等の分類情報とルール本文。`photo_paths`・`intro_photo_paths`は含まない)に、対象の登録依頼行が持つ`photo_paths`(元写真、必須のため常に1枚以上)と`intro_photo_paths`(紹介画像。下記「ローカル環境の定期処理」手順5・「ゲーム紹介画像を自動補完する処理」で確定済みの値)をそのまま合わせて`board_game_rules_games`へINSERTする(下記「データベース設計」の運営者向けINSERT権限)。成功したら、対応する依頼の`processed_at`に現在時刻を、`published_game_id`に発行されたゲームID、`status`に`published`をセットするUPDATEを行う(requirements.md#登録実行・下書きレビュー-4、requirements.md#登録依頼の確認-8)
   5. **再調整を依頼**: 入力した要望テキストを`revision_note`にセットし、`status`を`queued`に戻すUPDATEを行う(requirements.md#登録実行・下書きレビュー-4)。`draft_content`・`revision_round`・`revision_history`は変更しない(「ローカル環境の定期処理」が完了後に更新する)
   6. **履歴表示**: `revision_history`(`{round, note, created_at}`の配列)を新しい順に表示する(requirements.md#登録実行・下書きレビュー-5)
   7. **失敗表示**: `status`が`failed`の依頼は`error_message`を表示する。「登録実行」を再度押せば手順1と同じ操作(`status`を`queued`に戻す)で再試行できる(requirements.md#登録実行・下書きレビュー-6)
@@ -94,7 +94,7 @@ stateDiagram-v2
   2. スクリプトは`status='queued'`の依頼を1件、`status='running'`への条件付きUPDATE(`WHERE status = 'queued'`)で排他的に取得する(同時に複数のポーリング実行が重複して処理しないようにする)
   3. `draft_content`が未設定(初回)なら依頼の写真(非公開Storageから[service_role](#データベース設計)で取得)と入力済み分類情報を、`draft_content`が既にある(再調整)なら直前の下書きと`revision_note`をあわせて、ヘッドレスのClaude Codeセッション(`claude -p`)へ渡す
   4. Claude Codeが写真(初回)または直前の下書き+要望(再調整)をもとに、分類情報とルール本文(簡単版・詳しい版、[game-registration/requirements.md#ルール本文の著作権への配慮](../game-registration/requirements.md)に従う独自の言い回し。詳しい版は下記「詳しい版の共通章立て(生成時の構造)」に沿う)を生成し、構造化された内容を出力する
-  5. 依頼にゲーム紹介画像(`intro_photo_paths`)が添付されていれば、そのままそのゲームの紹介画像として引き継ぐ。添付が0枚(かつ初回)の場合は「ゲーム紹介画像を自動補完する処理」(下記)で補う(requirements.md#ゲーム紹介画像の確認・自動補完-11)
+  5. 依頼にゲーム紹介画像(`intro_photo_paths`)が添付されていれば、そのままそのゲームの紹介画像として引き継ぐ(依頼行の`intro_photo_paths`列はそのまま)。添付が0枚(かつ初回)の場合は「ゲーム紹介画像を自動補完する処理」(下記)で補う。自動補完で生成した画像パスは依頼行の`intro_photo_paths`列をUPDATEして書き戻す(新たな列・`draft_content`側への保存はしない。requirements.md#ゲーム紹介画像の確認・自動補完-11)
   6. 成功したら、スクリプトが`draft_content`を更新し、`revision_round`を+1、`revision_history`に`{round, note, created_at}`を追記し(`note`は初回`null`、再調整時は消費した`revision_note`)、`revision_note`を`null`に戻し、`status`を`draft`にUPDATEする
   7. 失敗したら(写真解析・生成・出力の構造化のいずれかで例外が起きたら)、`status`を`failed`に、`error_message`に原因をセットする。ゲームの登録(INSERT)自体はまだ行わないため、失敗しても`board_game_rules_games`には影響しない
 - 補足: この処理はAnthropic API呼び出しを伴うが、運営者自身のClaude Codeセッション(Pro/Maxプラン等の対話コンテキスト)上で行われ、Webアプリ・Cloudflare Workersからの追加のAPI課金は発生しない(根拠: `/consult`での判断。requirements.md#登録実行のローカル処理起動-9)
@@ -115,7 +115,7 @@ stateDiagram-v2
   1. **画像検索**: BoardGameGeek API(`https://boardgamegeek.com/xmlapi2/search`等、APIキー不要・無料)へ、依頼のゲーム名(未入力ならAIが写真から読み取ったゲーム名)で検索する。該当するゲームが見つかれば、そのthing詳細からbox art画像URLを取得する
   2. 該当するゲームが見つからない場合は、紹介画像なしのまま処理を続行する(`intro_photo_paths`は空配列。requirements.md#ゲーム紹介画像の確認・自動補完-11の自動補完は「見つけた場合」の処理であり、見つからない場合まで無理に画像を用意しない)
   3. **AI画像加工**: 取得した画像URLをGoogle Gemini API(画像生成/編集モデル、無料枠)へ渡し、そのまま転載しない新規画像を生成する(requirements.md#ゲーム紹介画像の取り扱い-12。具体的な加工プロンプト・生成パラメータは本specのタスクで扱う実装詳細とする)
-  4. 生成した画像を公開Storageバケット(`board-game-rules-game-photos`)へ、新規採番したアップロードUUID配下にアップロードし、`intro_photo_paths`に1枚として設定する(登録実行・下書きレビューの自動フローでは、この時点でゲームIDはまだ確定していない(公開はWeb管理画面の操作で後から行われるため)。依頼時点の投稿画像と同じ「アップロードUUID配下」の命名規則を使い、公開時もパスの付け替えは行わない。[game-registration/design.md#ゲーム紹介画像のStorage](../game-registration/design.md)と同じ考え方)
+  4. 生成した画像を公開Storageバケット(`board-game-rules-game-photos`)へ、新規採番したアップロードUUID配下にアップロードし、対象の登録依頼行の`intro_photo_paths`列を`[<アップロードしたパス>]`でUPDATEする(登録実行・下書きレビューの自動フローでは、この時点でゲームIDはまだ確定していない(公開はWeb管理画面の操作で後から行われるため)。依頼時点の投稿画像と同じ「アップロードUUID配下」の命名規則を使い、公開時もパスの付け替えは行わない。[game-registration/design.md#ゲーム紹介画像のStorage](../game-registration/design.md)と同じ考え方)
   5. 画像検索・AI加工のいずれかが失敗した場合も、処理自体は止めない(紹介画像なしで続行し、失敗はローカルのコンソールログに残す。下記「ログ」参照)
 - 補足: BoardGameGeek API・Google Gemini APIの呼び出しは運営者のローカル環境から行われ、Webアプリ・Cloudflare Workersのコード・課金構造には一切影響しない(requirements.md#ゲーム紹介画像の自動補完-8「無料枠の範囲で運用できるものを選定する」を満たす)。Gemini APIキーは運営者のローカル`.env`等で管理し、リポジトリ・Cloudflare Workers Secretsには含めない
 - 関連するビジネスルール: requirements.md#ゲーム紹介画像の確認・自動補完-11、requirements.md#ゲーム紹介画像の自動補完-8
