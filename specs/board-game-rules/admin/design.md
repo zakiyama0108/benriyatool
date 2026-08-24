@@ -1,5 +1,11 @@
 # 設計: 管理画面(モデレーション)
 
+## サマリ
+- 全体像: 運営者本人だけがログインして、通報一覧・登録依頼一覧を確認/処理する画面。ゲーム1件ごとの編集・削除・紹介画像差し替え・元写真照合・コメント削除は詳細画面(game-detail)の管理者導線が担い、本画面は複数ゲーム横断の運用に絞る。
+- 主要な設計判断(見た目・回遊): 管理画面を他画面(一覧・登録依頼・お気に入り)と同じboard-game-rules共通デザイン(Analog Hearth)・共通の左サイドバーナビ(`BoardGameNav`)・パンくずの共通chromeに載せる。管理画面表示中は「管理」を現在地としてハイライトする(`BoardGameNavKey`に`admin`を追加し、`AdminNavLink`が現在地表示に対応)。狭幅(スマートフォン)ではサイドバーを隠し、パンくずで他画面へ回遊できる。この導線・現在地表示は運営者の回遊のための利便であって、アクセス制御ではない(保護はRLS/Storageポリシーが担い、導線の見た目にかかわらず未権限者は管理機能を利用できない)。
+- 主要な設計判断(DB/エラー/セキュリティ): アクセス制御はRLS(ADR-0006)、書き込みの例外はADR-0007。データ取得の失敗は握りつぶさず画面に伝える(空一覧では取得失敗と0件を区別できないため)。利用者投稿・匿名通報の任意テキストはHTMLとして解釈しない形で描画する。
+- 主要図: 画面遷移図(回遊)は[#画面設計](#画面設計)、画面の4状態の遷移は[#状態管理](#状態管理)に置く。ログイン〜閲覧のシーケンスは`ikukyu/admin/design.md#処理フロー`と同一のため本specには再掲しない。
+
 認証とアクセス制御の全体方針は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)にあるため重複させず、本specではこの画面固有の処理フロー(通報一覧の確認・登録依頼の確認/処理)を書く。ゲーム1件ごとのモデレーション操作(編集・削除・紹介画像差し替え・元写真照合・コメント削除)の設計は[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md)にある。ログイン・権限確認の処理は`ikukyu/admin/design.md`・`life-money-sim/admin/design.md`と同じロジック(共通の`admin_emails`・`adminAuth.ts`)を再利用する。本管理画面と詳細画面の管理者導線はADR-0006テンプレートの「読み取り専用」の例外として、運営者本人の書き込み(ゲームの編集・削除、コメントの削除、紹介画像の差し替え、登録依頼の処理)を認める(ADR-0007)。モデレーション専用のサーバーは新設せず、書き込みはすべてRLS経由のDB操作で行う(requirements.md#非機能要件-2)。
 
 利用者からの登録依頼([game-registration/design.md](../game-registration/design.md)の`board_game_rules_game_requests`)を実際にゲームとして登録する処理は、この管理画面(Webアプリ)ではなく**ローカルのClaude Code Skill**(下記「登録依頼からゲームを登録するローカルツール」)で行う。管理画面が担うのは依頼の確認・処理済みマーク・削除にとどまる。
@@ -37,9 +43,19 @@
   1. ナビ内に運営者専用の導線を担うクライアント島 `components/AdminNavLink.tsx` を置く。`useSession`でログイン状態を参照する
   2. 未ログインの場合は何も描画しない(導線を出さない)
   3. ログイン中の場合のみ`isAuthorizedAdmin`で許可リスト(`admin_emails`)に登録があるかを確認し、登録があれば管理画面(`/board-game-rules/admin/`)へのリンクを他のナビ項目と同じ体裁で描画する。登録がなければ何も描画しない
-  4. 権限確認自体に失敗した場合(`isAuthorizedAdmin`が例外)は導線を出さない(フェイルクローズ。ナビ全体は壊さず、他項目は通常表示のまま)
-- 補足: これは運営者が管理画面へ素早く到達するための利便であって、アクセス制御ではない。導線の表示有無にかかわらず、実際の保護はRLS/Storageポリシーが担う(requirements.md#アクセス制御・権限-2、下記「セキュリティ」)。判定ロジックは「閲覧権限を確認する処理」と同じ`isAuthorizedAdmin`を再利用し、新規ロジックは持たない。管理画面自身は`BoardGameNav`を使わない独自レイアウトのため、この導線に現在地ハイライト(`aria-current`)は不要(`BoardGameNavKey`は追加しない)
-- 関連するビジネスルール: requirements.md#ログイン・アクセス制御-18、requirements.md#アクセス制御・権限-2
+  4. `BoardGameNav`が現在表示している画面(`active`)を`AdminNavLink`へ渡す。管理画面を表示している(`active`が`admin`)場合は、この導線を現在地(他ナビ項目と同じ`aria-current="page"`・ハイライト体裁)として描画する。それ以外の画面(一覧・登録依頼・お気に入り)では通常の未選択体裁で描画する
+  5. 権限確認自体に失敗した場合(`isAuthorizedAdmin`が例外)は導線を出さない(フェイルクローズ。ナビ全体は壊さず、他項目は通常表示のまま)
+- 補足: これは運営者が管理画面へ素早く到達するための利便であって、アクセス制御ではない。導線の表示有無・現在地表示にかかわらず、実際の保護はRLS/Storageポリシーが担う(requirements.md#アクセス制御・権限-2、下記「セキュリティ」)。判定ロジックは「閲覧権限を確認する処理」と同じ`isAuthorizedAdmin`を再利用し、新規ロジックは持たない。管理画面自身も他画面と同じ`BoardGameNav`を共通ナビとして表示するため(下記「画面設計」)、現在地キー`admin`を`BoardGameNavKey`に追加し、`admin`は運営者ログイン時のみ表示される`AdminNavLink`が現在地表示を担う(固定の`NAV_ITEMS`には加えない。未ログイン・権限なしでは管理項目自体を出さないため)
+- 関連するビジネスルール: requirements.md#ログイン・アクセス制御-18、requirements.md#画面レイアウト・回遊導線-19、requirements.md#アクセス制御・権限-2
+
+### 管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理
+- 対象: 管理画面(`admin/page.tsx`)の全状態(未ログイン/権限なし/権限あり/取得エラー)の枠
+- 手順:
+  1. 管理画面を、他画面(一覧・登録依頼・お気に入り)と同じ共通レイアウトの枠に載せる。すなわち左サイドバーに共通ナビ`BoardGameNav`を`active="admin"`で表示し、本文上部にパンくず(べんりやつーる › ボドゲのトリセツ › 管理)を表示する(requirements.md#画面レイアウト・回遊導線-19、requirements.md#画面レイアウト・回遊導線-20)。この枠は権限判定より外側に置き、未ログイン・権限なし・取得エラーの各状態でも同じ枠を保つ(どの状態でも他画面へ回遊できるようにするため)
+  2. 共通ナビ内では「管理」を現在地としてハイライトする。管理項目は運営者ログイン時のみ表示される`AdminNavLink`が担うため、現在地表示も同コンポーネントが行う(上記「共通ナビに管理画面への導線を表示する処理」)。未ログイン・権限なしでは管理項目自体が出ないため、その状態ではハイライト対象もない(一覧・登録依頼・お気に入りの3項目とパンくずは表示され、回遊はできる)
+  3. 狭幅(スマートフォン)ではサイドバーを隠す(他画面と同じく`md`未満で非表示)。この場合でもパンくずは常に表示し、上位画面(べんりやつーる・ボドゲのトリセツ)へ回遊できるようにする(requirements.md#画面レイアウト・回遊導線-20。外出先での対応を狭幅でも満たす)
+- 補足: 共通ナビ・パンくずの導線は運営者が画面間を移動するための利便であって、アクセス制御ではない。導線を表示していても、未権限者はRLS/Storageポリシーにより管理機能を利用できない(requirements.md#画面レイアウト・回遊導線-21、requirements.md#アクセス制御・権限-2)。共通chrome(ナビ・パンくずの枠・配色トークン)の定義は他画面と共有する1つのboard-game-rules共通デザインに従い、管理画面固有の独自レイアウト・独自トークンは持たない([design-system/requirements.md](../design-system/requirements.md)、[DESIGN.md](../DESIGN.md)、UI/UX要件[1][2])
+- 関連するビジネスルール: requirements.md#画面レイアウト・回遊導線-19〜21、requirements.md#UI/UX要件-1、requirements.md#UI/UX要件-2
 
 ### 通報を確認する処理
 - 対象: `board_game_rules_reports`の通報レコード
@@ -103,14 +119,14 @@
 
 ## 関連するファイル(抜粋)
 ```
-app/board-game-rules/admin/page.tsx (管理画面本体。ログイン・権限で出し分け、通報一覧・登録依頼一覧を表示するクライアント画面)
+app/board-game-rules/admin/page.tsx (管理画面本体。共通レイアウト(BoardGameNav active="admin" + パンくず)の枠内で、ログイン・権限で出し分け、通報一覧・登録依頼一覧を表示するクライアント画面。配色・カード・ボタンは他画面と同じ bgr-* トークンに揃える)
 app/board-game-rules/admin/lib/fetchReports.ts (通報一覧の取得)
 app/board-game-rules/admin/lib/gameRequests.ts (登録依頼の一覧取得・processed_at更新・削除)
-app/board-game-rules/admin/components/LoginScreen.tsx (ログイン/権限なしの案内)
+app/board-game-rules/admin/components/LoginScreen.tsx (ログイン/権限なしの案内。共通デザインのカード・ボタン体裁に揃える)
 app/board-game-rules/admin/components/ReportsView.tsx (通報一覧。各通報に対象ゲームの詳細画面への遷移リンクを出す)
 app/board-game-rules/admin/components/GameRequestsView.tsx (登録依頼一覧+写真プレビュー+ゲーム紹介画像プレビュー+処理済みマーク/削除の導線)
-app/board-game-rules/components/AdminNavLink.tsx (共通ナビ内の運営者専用の管理画面導線。useSession + isAuthorizedAdmin で出し分けるクライアント島)
-app/board-game-rules/components/BoardGameNav.tsx (nav末尾に AdminNavLink を差し込む。サーバーコンポーネントのまま。実装は [game-list/design.md](../game-list/design.md) が真実の源)
+app/board-game-rules/components/AdminNavLink.tsx (共通ナビ内の運営者専用の管理画面導線。useSession + isAuthorizedAdmin で出し分けるクライアント島。BoardGameNav から渡る active を受け取り、管理画面表示中は現在地(aria-current="page")として描画する)
+app/board-game-rules/components/BoardGameNav.tsx (nav末尾に AdminNavLink を差し込み、active が admin かどうかを AdminNavLink へ渡す。BoardGameNavKey に admin を追加。サーバーコンポーネントのまま。実装は [game-list/design.md](../game-list/design.md) が真実の源)
 app/board-game-rules/lib/useSession.ts (ログイン状態の参照フックを AdminNavLink でも利用)
 app/lib/adminAuth.ts (getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdmin を利用)
 app/lib/supabaseClient.ts (共通クライアントを利用)
@@ -208,14 +224,28 @@ T0(ゲーム紹介画像バケット設定適用)の実機確認:
 - anon・運営者以外のログインでは、既存オブジェクトのUPDATE(差し替え)・DELETEができないこと。運営者本人はUPDATE・DELETEができること
 
 ## 画面設計
-1画面に縦に並べる(PC中心・スマホでも破綻しない範囲。requirements.md#非機能要件-1)。ゲーム個別の編集・削除・元写真照合・紹介画像差し替え・コメント削除は詳細画面(game-detail)の管理者導線で行うため、本画面には持たない:
+管理画面は他画面(一覧・登録依頼・お気に入り)と同じ共通レイアウトの枠に載せる。すなわち左サイドバーに共通ナビ`BoardGameNav`を`active="admin"`で表示し、本文上部にパンくず(べんりやつーる › ボドゲのトリセツ › 管理)を置く(上記「管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理」)。配色・カード・ボタン・見出しはすべて他画面と同じboard-game-rules共通デザイン(Analog Hearth)のトークン(`bgr-*`)に揃え、管理画面固有の独自の見た目を持ち込まない(UI/UX要件[1][2])。狭幅(`md`未満)ではサイドバーを隠すが、パンくずは常に表示して回遊できるようにする。この枠は権限判定より外側にあり、下記4状態のいずれでも共通に表示される。
+
+本文の中身は、権限ありの状態では1画面に縦に並べる(PC中心・スマホでも破綻しない範囲。requirements.md#非機能要件-1)。ゲーム個別の編集・削除・元写真照合・紹介画像差し替え・コメント削除は詳細画面(game-detail)の管理者導線で行うため、本画面には持たない:
 - 上部: ログイン中のアカウント表示とログアウト操作
 - 登録依頼一覧(`GameRequestsView`): 未処理を優先・次いで新しい順。写真プレビュー・ゲーム紹介画像プレビュー(0枚なら「紹介画像なし(登録時に自動補完されます)」の案内)・入力済み分類情報を表示。処理済みマーク・削除の導線
 - 通報一覧(`ReportsView`): 対象ゲーム・通報日時・理由テキスト。各通報から**対象ゲームの詳細画面(game-detail)へのリンク**を出す。編集・削除はその詳細画面の管理者導線で行う([game-detail/design.md](../game-detail/design.md))
 
-未ログイン時・権限なし時は上記を出さず、案内(ログイン/権限がない旨)だけを表示する。
+未ログイン時・権限なし時・取得エラー時は上記の管理機能を出さず、案内(ログイン/権限がない旨/再試行)だけを本文に表示する。いずれの状態でも共通ナビ・パンくずの枠は保つため、管理者でない利用者でも他画面へ回遊できる。
 
-本画面への導線は、他画面(一覧・登録依頼・お気に入り)の共通ナビに運営者ログイン時のみ表示する管理画面リンク(上記「共通ナビに管理画面への導線を表示する処理」)が担う。管理画面自身は`BoardGameNav`を使わない独自レイアウトのため、この画面内にはナビを持たない。
+### 画面遷移図(回遊)
+共通ナビ・パンくずから、管理画面と他画面の間を相互に行き来できる。通報一覧からは対象ゲームの詳細画面(game-detail)へ遷移する(編集・削除はそちらの管理者導線)。管理項目は運営者ログイン時のみ共通ナビに表示され、そのとき「管理」が現在地になる。正となる遷移の説明は上記処理フロー・本節の箇条書きで、下図はその俯瞰:
+
+```mermaid
+flowchart LR
+    List[一覧] <--> Admin[管理画面]
+    Register[登録依頼] <--> Admin
+    Favorites[お気に入り] <--> Admin
+    Breadcrumb[パンくず 上位画面] --> Admin
+    Admin --> Detail[通報の対象ゲーム詳細]
+```
+
+図中の一覧・登録依頼・お気に入り↔管理画面は共通の左サイドバーナビ(狭幅ではパンくず)で相互遷移する。管理画面→ゲーム詳細は通報一覧内のリンクによる片方向遷移(戻りは共通ナビ・パンくず)。
 
 ## 状態管理
 - 管理画面(`page.tsx`)は「ログインセッション」「閲覧権限の判定結果」「取得した通報一覧・登録依頼一覧」「取得/操作状態」をローカル状態として持つ(`ikukyu/admin`と同一方針)。複数画面をまたがないためグローバルな状態管理は使わない
