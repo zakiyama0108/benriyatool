@@ -16,6 +16,8 @@
 - 運営者として、登録依頼に添付されたゲーム紹介画像を確認したい
 - 運営者として、投稿者が紹介画像を用意しなかった場合でも、登録時に自動的に画像を用意したい
 - 運営者として、共通ナビから管理画面へ素早く到達したい
+- 運営者として、管理画面から一覧など他の画面へ戻り、迷わず回遊したい
+- 運営者として、管理画面が他の画面と同じ見た目・同じナビで、違和感なく使いたい
 
 ゲーム1件ごとの編集・削除・紹介画像差し替え・元写真照合・コメント削除は、そのゲームの詳細画面で行う([game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))。
 
@@ -41,6 +43,11 @@
 - [10] 登録依頼の確認画面で、依頼に添付されたゲーム紹介画像(あれば)を確認できる([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md))
 - [11] 登録依頼にゲーム紹介画像が添付されていない場合、登録依頼からゲームを登録するローカルツールが画像検索を行い、見つけた画像をそのまま転載せずAI画像加工を施したうえで登録する(根拠: [game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)の著作権配慮の方針に従う)
 
+### 画面レイアウト・回遊導線
+- [19] 管理画面に、board-game-rules共通の左サイドバーナビ(一覧・登録依頼・お気に入り・管理へのリンク)を、他画面(一覧・登録依頼・お気に入り)と同じ体裁で表示する。管理画面を表示している間は「管理」を現在地として示す
+- [20] 画面上部にパンくず(べんりやつーる › ボドゲのトリセツ › 管理)を表示し、上位画面へ遷移できる。左サイドバーを表示しない狭幅(スマートフォン)でもパンくずで他画面へ回遊できるようにする(根拠: 非機能要件[1]の外出先での対応を、狭幅でも回遊手段が残る形で満たす)
+- [21] サイドバー・パンくずの導線は運営者が画面間を移動するための利便であって、アクセス制御ではない(未権限者の保護は下記[ビジネスルール2]のRLSが担い、導線の表示有無にかかわらず未権限者は管理機能を利用できない)
+
 ## ビジネスルール・制約
 
 ### アクセス制御・権限
@@ -65,6 +72,10 @@
 - [1] 主にPC・スマートフォンの双方から利用しうる(外出先で通報に気付いて対応する場面を想定)。表示が破綻しない程度に配慮する
 - [2] 静的エクスポート構成を維持する。通報・登録依頼の確認はDB(RLS経由)への操作で行い、モデレーション専用のサーバーを新設しない([game-registration/requirements.md](../game-registration/requirements.md)により、本アプリはランタイムサーバー機能を持たない)
 
+## UI/UX要件
+- [1] 管理画面の見た目を、board-game-rules共通のデザイン(配色・カード・タイポグラフィ・共通ナビ)に踏襲し、一覧・登録依頼・お気に入りの各画面と一貫させる(根拠: 運営者が画面間を行き来するため見た目が揃っている方が迷いにくい。管理画面だけがデザインから乖離している状態を解消する)
+- [2] 通報一覧・登録依頼一覧・ログイン/権限なし表示など管理画面内の各要素も、共通デザインのカード・ボタン・見出しの体裁に揃える(独自の見た目を持ち込まない)
+
 ## 依存関係
 - 認証方式(Google OIDC)とDB読み取り権限(RLS)の方針は[docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)に従う
 - ゲームの編集・削除・紹介画像差し替え・元写真照合・コメント削除は詳細画面で行う。それらの要件・ルールは[game-detail/requirements.md](../game-detail/requirements.md)に従う。編集・削除の対象データは[game-registration/requirements.md](../game-registration/requirements.md)、通報は[report/requirements.md](../report/requirements.md)、コメントは[comment/requirements.md](../comment/requirements.md)に従う
@@ -72,6 +83,7 @@
 - 投稿写真という機微になりうる情報・利用者コメントの管理経路があるため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
 - ゲーム紹介画像の取り扱い方針(著作権配慮・削除ポリシー)は[game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)に従う
 - モデレーションの詳細画面集約・削除方針の背景は[adr/0001](../adr/0001-moderation-on-detail-and-physical-delete.md)
+- 管理画面の見た目・共通ナビ(BoardGameNav)・パンくずの体裁(UI/UX要件[1][2]・機能要件[19][20])は、他画面と同じboard-game-rules共通デザインに従う。共通デザインのトークンと共通chrome(ナビ・パンくず等の枠)の定義は[design-system/requirements.md](../design-system/requirements.md)および[DESIGN.md](../DESIGN.md)に従う
 
 ## スコープ外
 - 複数の管理者アカウント・権限ロールの管理(利用者は運営者本人のみ)
@@ -79,3 +91,4 @@
 - 通報者・コメント投稿者へのペナルティ管理(アカウントBAN等)
 - 登録依頼からゲームを登録する処理そのもの(LLMによる解析・生成を含む)。管理画面はあくまで依頼の確認・処理済みマーク・削除にとどまり、登録処理はローカルツールで行う([game-registration/requirements.md](../game-registration/requirements.md)参照)
 - 編集・削除操作の履歴管理(監査ログ)
+- 通報一覧・登録依頼一覧の取得ロジック・並び順・データ構造そのものの変更(機能要件[19][20]とUI/UX要件は管理画面の見た目と回遊導線を対象とし、モデレーション機能の動作は変えない)
