@@ -2,15 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { getSession, onAuthChange, isAuthorizedAdmin, signInWithGoogle, signOut } from '../../lib/adminAuth'
-import { fetchAdminGames, type AdminGame } from './lib/fetchAdminGames'
+import { fetchPublishedGames } from '../lib/games'
 import { fetchReports, type Report } from './lib/fetchReports'
 import { fetchGameRequests, markGameRequestProcessed, deleteGameRequest } from './lib/gameRequests'
-import { editGame, deleteGame, type GameEditInput } from './lib/moderation'
 import { fetchOriginalPhotos } from './lib/photos'
-import { addIntroPhotos, removeIntroPhoto, setMainIntroPhoto } from './lib/introPhotos'
 import LoginScreen from './components/LoginScreen'
-import GameModerationTable from './components/GameModerationTable'
-import GameEditForm from './components/GameEditForm'
 import ReportsView from './components/ReportsView'
 import GameRequestsView from './components/GameRequestsView'
 
@@ -18,21 +14,20 @@ import GameRequestsView from './components/GameRequestsView'
 // (仕様: admin/design.md「状態管理」。ikukyu/admin・life-money-sim/adminと同一方針)
 type Phase = 'loading' | 'login' | 'denied' | 'authorized' | 'authError'
 
-// コメントの削除(requirements.md#コメントの削除-11)は、この管理ダッシュボードではなく
-// comment specのゲーム詳細画面(CommentItem.tsx、未実装)側で運営者判定つきの削除操作として
-// 提供する想定のため、本ページには専用UIを置かない(admin/design.mdの画面設計にも
-// コメント一覧セクションはない)。DB操作自体はmoderation.tsのdeleteCommentとして実装済み。
+// 管理画面本体(仕様: admin/design.md「画面設計」)。この画面が担うのは複数ゲームを横断する運用
+// (通報一覧の確認・登録依頼の確認/処理)とログイン・アクセス制御のみ。ゲーム1件ごとの編集・削除・
+// 紹介画像差し替え・元写真照合・コメント削除は詳細画面(game-detail)の管理者導線で行う(adr/0001)。
 export default function AdminPage() {
   const [phase, setPhase] = useState<Phase>('loading')
   const [email, setEmail] = useState<string | null>(null)
 
-  const [games, setGames] = useState<AdminGame[]>([])
   const [reports, setReports] = useState<Report[]>([])
   const [requests, setRequests] = useState<Awaited<ReturnType<typeof fetchGameRequests>>>([])
+  // 通報一覧で対象ゲーム名を表示するための game_id → 名前 の対応(公開ゲーム一覧から作る)
+  const [gameNames, setGameNames] = useState<Record<string, string>>({})
   const [dataError, setDataError] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [editingGameId, setEditingGameId] = useState<string | null>(null)
-  // 編集・削除・処理済みマークなど各操作の成功後にインクリメントし、下のeffectを再実行して最新化する
+  // 処理済みマーク・削除など各操作の成功後にインクリメントし、下のeffectを再実行して最新化する
   const [reloadCount, setReloadCount] = useState(0)
 
   useEffect(() => {
@@ -69,15 +64,15 @@ export default function AdminPage() {
       setLoading(true)
       setDataError(false)
       try {
-        const [gamesResult, reportsResult, requestsResult] = await Promise.all([
-          fetchAdminGames(),
+        const [reportsResult, requestsResult, gamesResult] = await Promise.all([
           fetchReports(),
           fetchGameRequests(),
+          fetchPublishedGames(),
         ])
         if (!active) return
-        setGames(gamesResult)
         setReports(reportsResult)
         setRequests(requestsResult)
+        setGameNames(Object.fromEntries(gamesResult.map((game) => [game.id, game.name])))
       } catch (e) {
         if (!active) return
         // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
@@ -95,38 +90,6 @@ export default function AdminPage() {
 
   function reload() {
     setReloadCount((n) => n + 1)
-  }
-
-  async function handleSaveGame(input: GameEditInput): Promise<boolean> {
-    const ok = await editGame(input)
-    if (ok) reload()
-    return ok
-  }
-
-  async function handleDeleteGame(id: string) {
-    const ok = await deleteGame(id)
-    if (ok) reload()
-  }
-
-  // ゲーム紹介画像の追加・削除・メイン画像変更は操作ごとに即時UPDATEされるため、
-  // 成功時は他の編集操作と同様に一覧を再取得して最新の並び順・プレビューへ反映する
-  // (仕様: admin/design.md「ゲーム紹介画像を差し替え・削除する処理」)
-  async function handleAddIntroPhotos(gameId: string, existingPaths: string[], files: File[]) {
-    const ok = await addIntroPhotos(gameId, existingPaths, files)
-    if (ok) reload()
-    return ok
-  }
-
-  async function handleRemoveIntroPhoto(gameId: string, existingPaths: string[], path: string) {
-    const ok = await removeIntroPhoto(gameId, existingPaths, path)
-    if (ok) reload()
-    return ok
-  }
-
-  async function handleSetMainIntroPhoto(gameId: string, existingPaths: string[], path: string) {
-    const ok = await setMainIntroPhoto(gameId, existingPaths, path)
-    if (ok) reload()
-    return ok
   }
 
   async function handleMarkProcessed(id: string) {
@@ -169,8 +132,6 @@ export default function AdminPage() {
   }
 
   // phase === 'authorized'
-  const editingGame = games.find((g) => g.id === editingGameId) ?? null
-
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-6">
       <div className="flex items-center justify-between">
@@ -194,20 +155,6 @@ export default function AdminPage() {
         <p className="py-8 text-center text-sm text-gray-400">読み込み中…</p>
       ) : (
         <>
-          {editingGame && (
-            <section className="space-y-2">
-              <h2 className="text-lg font-bold">ゲームを編集</h2>
-              <GameEditForm
-                game={editingGame}
-                onSave={handleSaveGame}
-                onCancel={() => setEditingGameId(null)}
-                onAddIntroPhotos={handleAddIntroPhotos}
-                onRemoveIntroPhoto={handleRemoveIntroPhoto}
-                onSetMainIntroPhoto={handleSetMainIntroPhoto}
-              />
-            </section>
-          )}
-
           <section className="space-y-2">
             <h2 className="text-lg font-bold">登録依頼</h2>
             <GameRequestsView
@@ -220,17 +167,7 @@ export default function AdminPage() {
 
           <section className="space-y-2">
             <h2 className="text-lg font-bold">通報</h2>
-            <ReportsView reports={reports} games={games} onSelectGame={setEditingGameId} />
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="text-lg font-bold">ゲーム一覧</h2>
-            <GameModerationTable
-              games={games}
-              onEdit={setEditingGameId}
-              onDelete={handleDeleteGame}
-              onViewPhotos={fetchOriginalPhotos}
-            />
+            <ReportsView reports={reports} gameNames={gameNames} />
           </section>
         </>
       )}
