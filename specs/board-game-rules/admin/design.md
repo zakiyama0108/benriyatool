@@ -46,7 +46,7 @@
   4. `BoardGameNav`が現在表示している画面(`active`)を`AdminNavLink`へ渡す。管理画面を表示している(`active`が`admin`)場合は、この導線を現在地(他ナビ項目と同じ`aria-current="page"`・ハイライト体裁)として描画する。それ以外の画面(一覧・登録依頼・お気に入り)では通常の未選択体裁で描画する
   5. 権限確認自体に失敗した場合(`isAuthorizedAdmin`が例外)は導線を出さない(フェイルクローズ。ナビ全体は壊さず、他項目は通常表示のまま)
 - 補足: これは運営者が管理画面へ素早く到達するための利便であって、アクセス制御ではない。導線の表示有無・現在地表示にかかわらず、実際の保護はRLS/Storageポリシーが担う(requirements.md#アクセス制御・権限-2、下記「セキュリティ」)。判定ロジックは「閲覧権限を確認する処理」と同じ`isAuthorizedAdmin`を再利用し、新規ロジックは持たない。管理画面自身も他画面と同じ`BoardGameNav`を共通ナビとして表示するため(下記「画面設計」)、現在地キー`admin`を`BoardGameNavKey`に追加し、`admin`は運営者ログイン時のみ表示される`AdminNavLink`が現在地表示を担う(固定の`NAV_ITEMS`には加えない。未ログイン・権限なしでは管理項目自体を出さないため)
-- 関連するビジネスルール: requirements.md#ログイン・アクセス制御-12、requirements.md#画面レイアウト・回遊導線-13、requirements.md#アクセス制御・権限-2
+- 関連するビジネスルール: requirements.md#ログイン・アクセス制御-5、requirements.md#画面レイアウト・回遊導線-13、requirements.md#アクセス制御・権限-2
 
 ### 管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理
 - 対象: 管理画面(`admin/page.tsx`)の全状態(未ログイン/権限なし/権限あり/取得エラー)の枠
@@ -60,38 +60,38 @@
 ### 通報を確認する処理
 - 対象: `board_game_rules_reports`の通報レコード
 - 手順:
-  1. 通報を一覧で確認できるようにする。各通報に対象ゲーム・通報日時・理由テキストを表示する(requirements.md#通報の確認-5)
-  2. 通報一覧から対象ゲームの詳細画面(game-detail)へ遷移できるようにする。編集・削除はその詳細画面の管理者導線で行う(requirements.md#通報の確認-6、[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md))
+  1. 通報を一覧で確認できるようにする。各通報に対象ゲーム・通報日時・理由テキストを表示する(requirements.md#通報の確認-6)
+  2. 通報一覧から対象ゲームの詳細画面(game-detail)へ遷移できるようにする。編集・削除はその詳細画面の管理者導線で行う(requirements.md#通報の確認-7、[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md))
   3. 通報があっても対象を自動非表示・自動削除にはせず、必ず運営者の判断を挟む(requirements.md#通報への対応方針-6、[report/design.md](../report/design.md))
 - 関連するビジネスルール: requirements.md#通報の確認、requirements.md#通報への対応方針
 
 ### 登録依頼を確認する処理
 - 対象: `board_game_rules_game_requests`のレコード
 - 手順:
-  1. 運営者として依頼を一覧取得する。`processed_at`がNULLの未処理を優先し、次いで新しい順に並べる(requirements.md#登録依頼の確認-7)
-  2. 各依頼の写真(非公開Storage)と入力済み分類情報を表示する
-  3. 依頼に添付されたゲーム紹介画像(`intro_photo_paths`)があれば、公開Storageバケットの公開URLでプレビュー表示する。0枚の場合は「紹介画像なし(登録時に自動補完されます)」の旨を表示する(requirements.md#ゲーム紹介画像の確認・自動補完-10)
+  1. 運営者として依頼を一覧取得する。`processed_at`がNULLの未処理を優先し、次いで新しい順に並べる(requirements.md#登録依頼の確認-8)
+  2. 各依頼の写真(非公開Storage)と入力済み分類情報を表示する(requirements.md#登録依頼の確認-8)。写真は運営者が「写真を確認」を押した時点で`fetchOriginalPhotos`(`admin/lib/photos.ts`)が署名付きURLを取得する
+  3. 依頼に添付されたゲーム紹介画像(`intro_photo_paths`)があれば、公開Storageバケットの公開URLでプレビュー表示する。0枚の場合は「紹介画像なし(登録時に自動補完されます)」の旨を表示する(requirements.md#ゲーム紹介画像の確認・自動補完-11)
   4. 取得に失敗した場合は、一覧を表示せずエラー表示にする(後述エラーハンドリング)
-- 関連するビジネスルール: requirements.md#登録依頼の確認-7、requirements.md#ゲーム紹介画像の確認・自動補完-10
+- 関連するビジネスルール: requirements.md#登録依頼の確認-8、requirements.md#ゲーム紹介画像の確認・自動補完-11
 
 ### 登録依頼を処理済みにする処理 / 削除する処理
 - 対象: 運営者が選んだ1件の登録依頼
 - 手順:
-  1. 下記「登録依頼からゲームを登録するローカルツール」でゲームの登録が完了したら、管理画面から該当依頼の`processed_at`に現在時刻をセットするUPDATEを行う(requirements.md#登録依頼の確認-8)
-  2. 不要な依頼(スパム・重複・情報不足など)は、依頼そのものをDELETEする(requirements.md#登録依頼の確認-9)
+  1. 下記「登録依頼からゲームを登録するローカルツール」でゲームの登録が完了したら、管理画面から該当依頼の`processed_at`に現在時刻をセットするUPDATEを行う(requirements.md#登録依頼の確認-9)
+  2. 不要な依頼(スパム・重複・情報不足など)は、依頼そのものをDELETEする(requirements.md#登録依頼の確認-10)
   3. 成功したら一覧の表示を更新、失敗したら失敗表示
-- 関連するビジネスルール: requirements.md#登録依頼の確認-8、requirements.md#登録依頼の確認-9
+- 関連するビジネスルール: requirements.md#登録依頼の確認-9、requirements.md#登録依頼の確認-10
 
 ### 登録依頼からゲームを登録するローカルツール(管理画面の外)
 - 対象: 未処理の登録依頼(写真+入力済み分類情報)
 - 手順(概要。実装の詳細は本specのタスクで扱う):
   1. 運営者がローカル(Mac)の特定フォルダに写真セットを配置する、または`board_game_rules_game_requests`から未処理の依頼を確認する
   2. 新規のClaude Code Skill(`.claude/skills/board-game-rules-batch-register/`)を起動する。Claude Codeが写真(依頼に入力済みの分類情報があれば参考にしつつ)を解析し、分類情報とルール本文(簡単版・詳しい版、[game-registration/requirements.md#ルール本文の著作権への配慮](../game-registration/requirements.md)に従う独自の言い回し。詳しい版は下記「詳しい版の共通章立て(生成時の構造)」に沿う)を生成する
-  3. 依頼にゲーム紹介画像(`intro_photo_paths`)が添付されていれば、そのままそのゲームの紹介画像として引き継ぐ。添付が0枚の場合は「ゲーム紹介画像を自動補完する処理」(下記)で補う(requirements.md#ゲーム紹介画像の確認・自動補完-11)
+  3. 依頼にゲーム紹介画像(`intro_photo_paths`)が添付されていれば、そのままそのゲームの紹介画像として引き継ぐ。添付が0枚の場合は「ゲーム紹介画像を自動補完する処理」(下記)で補う(requirements.md#ゲーム紹介画像の確認・自動補完-12)
   4. Node.jsスクリプトが、生成した内容(紹介画像パスを含む)を`board_game_rules_games`へINSERTする(下記「データベース設計」の権限で担保)
   5. 依頼由来の場合は、対応する`board_game_rules_game_requests`の`processed_at`もあわせて更新する
 - 補足: この処理はAnthropic API呼び出しを伴うが、運営者自身のClaude Codeセッション(Pro/Maxプラン等の対話コンテキスト)上で行われ、Webアプリ・Cloudflare Workersからの追加のAPI課金は発生しない(根拠: `/consult`での判断。[game-registration/design.md](../game-registration/design.md)参照)
-- 関連するビジネスルール: requirements.md#登録依頼の確認-8
+- 関連するビジネスルール: requirements.md#登録依頼の確認-9
 
 ### 詳しい版の共通章立て(生成時の構造)
 - 対象: 上記手順2で生成する「詳しい版」ルール本文の構造
@@ -105,12 +105,12 @@
 - 対象: 紹介画像が0枚の登録依頼から登録するゲーム(上記手順3)
 - 手順:
   1. **画像検索**: BoardGameGeek API(`https://boardgamegeek.com/xmlapi2/search`等、APIキー不要・無料)へ、依頼のゲーム名(未入力ならAIが写真から読み取ったゲーム名)で検索する。該当するゲームが見つかれば、そのthing詳細からbox art画像URLを取得する
-  2. 該当するゲームが見つからない場合は、紹介画像なしのまま登録する(`intro_photo_paths`は空配列。requirements.md#ゲーム紹介画像の確認・自動補完-11の自動補完は「見つけた場合」の処理であり、見つからない場合まで無理に画像を用意しない)
+  2. 該当するゲームが見つからない場合は、紹介画像なしのまま登録する(`intro_photo_paths`は空配列。requirements.md#ゲーム紹介画像の確認・自動補完-12の自動補完は「見つけた場合」の処理であり、見つからない場合まで無理に画像を用意しない)
   3. **AI画像加工**: 取得した画像URLをGoogle Gemini API(画像生成/編集モデル、無料枠)へ渡し、そのまま転載しない新規画像を生成する(game-registration/requirements.md#ゲーム紹介画像の取り扱い-12。具体的な加工プロンプト・生成パラメータは本specのタスクで扱う実装詳細とする)
   4. 生成した画像を公開Storageバケット(`board-game-rules-game-photos`)へ、登録するゲームのID配下にアップロードし、`intro_photo_paths`に1枚として設定する
   5. 画像検索・AI加工のいずれかが失敗した場合も、ゲーム自体の登録処理は止めない(紹介画像なしで登録を続行し、失敗はローカルのコンソールログに残す。下記「ログ」参照)
 - 補足: BoardGameGeek API・Google Gemini APIの呼び出しは運営者のローカル環境から行われ、Webアプリ・Cloudflare Workersのコード・課金構造には一切影響しない(requirements.md#ゲーム紹介画像の自動補完-8「無料枠の範囲で運用できるものを選定する」を満たす)。Gemini APIキーは運営者のローカル`.env`等で管理し、リポジトリ・Cloudflare Workers Secretsには含めない
-- 関連するビジネスルール: requirements.md#ゲーム紹介画像の確認・自動補完-11、requirements.md#ゲーム紹介画像の自動補完-8
+- 関連するビジネスルール: requirements.md#ゲーム紹介画像の確認・自動補完-12、requirements.md#ゲーム紹介画像の自動補完-8
 
 ## エラーハンドリング
 - 画面の状態は「未ログイン」「ログイン済みだが権限なし」「権限あり」「取得エラー」に切り分ける(`ikukyu/admin`と同一方針)
@@ -122,6 +122,7 @@
 app/board-game-rules/admin/page.tsx (管理画面本体。共通レイアウト(BoardGameNav active="admin" + パンくず)の枠内で、ログイン・権限で出し分け、通報一覧・登録依頼一覧を表示するクライアント画面。配色・カード・ボタンは他画面と同じ bgr-* トークンに揃える)
 app/board-game-rules/admin/lib/fetchReports.ts (通報一覧の取得)
 app/board-game-rules/admin/lib/gameRequests.ts (登録依頼の一覧取得・processed_at更新・削除)
+app/board-game-rules/admin/lib/photos.ts (登録依頼の非公開Storageの元写真を運営者本人として署名付きURLで取得。「写真を確認」操作から呼ばれる)
 app/board-game-rules/admin/components/LoginScreen.tsx (ログイン/権限なしの案内。共通デザインのカード・ボタン体裁に揃える)
 app/board-game-rules/admin/components/ReportsView.tsx (通報一覧。各通報に対象ゲームの詳細画面への遷移リンクを出す)
 app/board-game-rules/admin/components/GameRequestsView.tsx (登録依頼一覧+写真プレビュー+ゲーム紹介画像プレビュー+処理済みマーク/削除の導線)

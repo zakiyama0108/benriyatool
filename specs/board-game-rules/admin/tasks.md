@@ -58,10 +58,10 @@
 - 動作確認: BoardGameGeekに実在するゲーム名・実在しないゲーム名それぞれで自動補完を試し、前者は紹介画像付きで登録され、後者は紹介画像なしで登録が完了することを確認する
 
 ## T9. 共通ナビに管理画面への導線を表示(`components/AdminNavLink.tsx`, `components/BoardGameNav.tsx`)
-- 対象: requirements.md#ログイン・アクセス制御-12(design.md「共通ナビに管理画面への導線を表示する処理」)
+- 対象: requirements.md#ログイン・アクセス制御-5(design.md「共通ナビに管理画面への導線を表示する処理」)
 - 🔴 `AdminNavLink`が「未ログインでは何も描画しない」「ログイン中かつ`isAuthorizedAdmin`がtrueなら管理画面(`/board-game-rules/admin/`)へのリンクを描画する」「ログイン中でも権限なし(false)なら描画しない」「権限確認が例外を投げたら描画しない(フェイルクローズ)」の各ケースをテストする(`useSession`・`isAuthorizedAdmin`はモックする)
 - 🟢 `AdminNavLink`を実装し、`BoardGameNav`の`nav`末尾に差し込む(BoardGameNavはサーバーコンポーネントのまま)
-- 🔵 リンクの体裁を他ナビ項目に揃える。`scripts/spec-coverage-skip.json`に`board-game-rules/admin/requirements.md`の「ログイン・アクセス制御 [12]」・`board-game-rules/admin/design.md`の「共通ナビに管理画面への導線を表示する処理」の個別エントリが存在しないことを確認する(requirements.mdのWIPマーカーによりadminフォルダ全体がspec-coverageから除外されているため個別エントリは追加されていない。マーカーを外す際の扱いは下記T10末尾を参照)
+- 🔵 リンクの体裁を他ナビ項目に揃える。`scripts/spec-coverage-skip.json`に`board-game-rules/admin/requirements.md`の「ログイン・アクセス制御 [5]」・`board-game-rules/admin/design.md`の「共通ナビに管理画面への導線を表示する処理」の個別エントリが存在しないことを確認する(requirements.mdのWIPマーカーによりadminフォルダ全体がspec-coverageから除外されているため個別エントリは追加されていない。マーカーを外す際の扱いは下記T10末尾を参照)
 
 ## T10. 管理画面を共通デザイン・共通ナビ・パンくずへ揃える(`admin/page.tsx`, `admin/components/LoginScreen.tsx`, `components/BoardGameNav.tsx`, `components/AdminNavLink.tsx`)
 - 対象: requirements.md#画面レイアウト・回遊導線-13〜15、requirements.md#UI/UX要件-1〜2(design.md「管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理」「画面設計」)

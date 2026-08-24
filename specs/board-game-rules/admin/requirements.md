@@ -40,7 +40,7 @@ flowchart LR
     admin --> notified[新着登録依頼の通知を受け取る]
     admin --> navigate[共通ナビ・パンくずで他画面と回遊する]
 ```
-- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-5・requirements.md#通報の確認-6、登録依頼の確認・処理・削除はrequirements.md#登録依頼の確認-7〜9、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-10、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログインアクセス制御-12・requirements.md#画面レイアウト回遊導線-13〜14に対応する
+- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-6・requirements.md#通報の確認-7、登録依頼の確認・処理・削除はrequirements.md#登録依頼の確認-8〜10、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-11、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログイン・アクセス制御-5・requirements.md#画面レイアウト・回遊導線-13〜14に対応する
 
 ## 機能要件
 
@@ -49,20 +49,20 @@ flowchart LR
 - [2] Googleアカウントでログイン(OIDC)できること。既存アプリの管理画面と同じ運営者アカウントを使う
 - [3] 運営者本人以外のアカウントでログインした場合、管理機能を表示せず、操作できない旨を表示する
 - [4] ログアウトできること
-- [12] 運営者本人としてログインしている場合に限り、board-game-rulesの共通ナビ(左サイドバー)に管理画面(`/board-game-rules/admin/`)への導線を表示する。未ログイン・運営者以外のアカウントでは表示しない。これは運営者が管理画面へ素早く到達するための利便であって、アクセス制御ではない(保護は下記[ビジネスルール2]のRLSが担い、導線の表示有無にかかわらず未権限者は管理機能を利用できない)。運営者判定は既存の共通運営者判定を再利用し、新規のロジックは持たない(判定の実装詳細は[admin/design.md](design.md)を正とする)
+- [5] 運営者本人としてログインしている場合に限り、board-game-rulesの共通ナビ(左サイドバー)に管理画面(`/board-game-rules/admin/`)への導線を表示する。未ログイン・運営者以外のアカウントでは表示しない。これは運営者が管理画面へ素早く到達するための利便であって、アクセス制御ではない(保護は下記[ビジネスルール2]のRLSが担い、導線の表示有無にかかわらず未権限者は管理機能を利用できない)。運営者判定は既存の共通運営者判定を再利用し、新規のロジックは持たない(判定の実装詳細は[admin/design.md](design.md)を正とする)
 
 ### 通報の確認
-- [5] 通報([report/requirements.md](../report/requirements.md))された内容を一覧で確認できる。各通報には対象ゲーム・通報日時・理由テキストを表示する
-- [6] 通報の一覧から対象ゲームの詳細画面へ遷移できる。編集・削除はその詳細画面の管理者導線([game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))で行う
+- [6] 通報([report/requirements.md](../report/requirements.md))された内容を一覧で確認できる。各通報には対象ゲーム・通報日時・理由テキストを表示する
+- [7] 通報の一覧から対象ゲームの詳細画面へ遷移できる。編集・削除はその詳細画面の管理者導線([game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))で行う
 
 ### 登録依頼の確認
-- [7] 利用者から送信された登録依頼(写真+分類情報。[game-registration/requirements.md](../game-registration/requirements.md))を一覧で確認できる。未処理/処理済みを区別して表示する
-- [8] 依頼の写真・入力済み分類情報を参考に、外部ツール(ローカルのバッチ登録処理)でゲームを登録できる。登録処理自体は管理画面の外で行う(本specのスコープ外。[game-registration/requirements.md](../game-registration/requirements.md)参照)。登録が完了した依頼は、管理画面から処理済みとして記録できる
-- [9] 不要な依頼(スパム・重複・情報不足など)を削除できる
+- [8] 利用者から送信された登録依頼(写真+分類情報。[game-registration/requirements.md](../game-registration/requirements.md))を一覧で確認できる。未処理/処理済みを区別して表示する
+- [9] 依頼の写真・入力済み分類情報を参考に、外部ツール(ローカルのバッチ登録処理)でゲームを登録できる。登録処理自体は管理画面の外で行う(本specのスコープ外。[game-registration/requirements.md](../game-registration/requirements.md)参照)。登録が完了した依頼は、管理画面から処理済みとして記録できる
+- [10] 不要な依頼(スパム・重複・情報不足など)を削除できる
 
 ### ゲーム紹介画像の確認・自動補完
-- [10] 登録依頼の確認画面で、依頼に添付されたゲーム紹介画像(あれば)を確認できる([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md))
-- [11] 登録依頼にゲーム紹介画像が添付されていない場合、登録依頼からゲームを登録するローカルツールが画像検索を行い、見つけた画像をそのまま転載せずAI画像加工を施したうえで登録する(根拠: [game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)の著作権配慮の方針に従う)
+- [11] 登録依頼の確認画面で、依頼に添付されたゲーム紹介画像(あれば)を確認できる([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md))
+- [12] 登録依頼にゲーム紹介画像が添付されていない場合、登録依頼からゲームを登録するローカルツールが画像検索を行い、見つけた画像をそのまま転載せずAI画像加工を施したうえで登録する(根拠: [game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)の著作権配慮の方針に従う)
 
 ### 画面レイアウト・回遊導線
 - [13] 管理画面に、board-game-rules共通の左サイドバーナビ(一覧・登録依頼・お気に入り・管理へのリンク)を、他画面(一覧・登録依頼・お気に入り)と同じ体裁で表示する。管理画面を表示している間は「管理」を現在地として示す

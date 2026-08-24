@@ -14,7 +14,7 @@ function makeSession(email: string): Session {
   return { user: { email } } as unknown as Session
 }
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-12、specs/board-game-rules/admin/design.md#共通ナビに管理画面への導線を表示する処理
+// 仕様: specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-5、specs/board-game-rules/admin/design.md#共通ナビに管理画面への導線を表示する処理
 describe('共通ナビの管理画面導線(AdminNavLink) - 運営者ログイン中に限り管理画面へのリンクを表示する', () => {
   beforeEach(() => {
     vi.clearAllMocks()
