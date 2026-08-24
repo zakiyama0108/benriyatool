@@ -26,6 +26,16 @@
 - 🟢 fetchGameRequests / markGameRequestProcessed / deleteGameRequest を実装する
 - 🔵 並び順・失敗表示を整理する
 
+## T2b. 登録実行・下書きレビューのデータ操作(`admin/lib/gameRequests.ts`)
+- 対象: requirements.md#登録実行・下書きレビュー(design.md「登録実行・下書きレビューの処理」)
+- 🔴 次をテストする(Supabaseクライアントをモック):
+  - `triggerRegistration`: `status`が`pending`/`failed`の依頼に対して`status`を`queued`にUPDATEすること、それ以外の`status`では実行できないこと
+  - `requestRevision`: 入力した要望を`revision_note`にセットし`status`を`queued`にUPDATEすること(`draft_content`は変更しないこと)
+  - `publishDraft`: `draft_content`の内容で`board_game_rules_games`へINSERTすること、成功したら対応する依頼に`processed_at`・`published_game_id`・`status: 'published'`をUPDATEすること、INSERT失敗時はUPDATEを行わずエラーを返すこと
+  - いずれも失敗時にエラーを返すこと
+- 🟢 `triggerRegistration` / `requestRevision` / `publishDraft` を実装する
+- 🔵 状態遷移の妥当性チェック(不正な`status`からの操作を防ぐガード)を整理する
+
 ## T3. ログイン/権限画面(`admin/components/LoginScreen.tsx`)
 - 🔴 未ログインでログイン促し、権限なしで「権限がありません」+ログアウト、が出ることをテストする(`ikukyu/admin`のLoginScreenと同等ロジック)
 - 🟢 ログイン/権限なしの案内画面を実装する
@@ -36,24 +46,46 @@
 - 🟢 各コンポーネントを実装する
 - 🔵 表示・導線を整える
 
+## T4b. 登録実行・下書きレビューUI(`admin/components/DraftReviewCard.tsx`)
+- 対象: requirements.md#登録実行・下書きレビュー(design.md「画面設計」)
+- 🔴 次をテストする:
+  - `status`ごとの表示切り替え(未着手・失敗→登録実行ボタン、処理中→操作無効化、下書きあり→下書き内容+公開する/再調整を依頼ボタン+履歴、公開済み→操作なし)
+  - 失敗時に`error_message`が表示されること
+  - 「登録実行」「公開する」を押すとT2bの関数が呼ばれること、処理中は二重押下できないこと
+  - 「再調整を依頼」で要望テキストを入力して送信するとT2bの`requestRevision`が要望テキストとともに呼ばれること
+  - `revision_history`が新しい順に表示されること
+- 🟢 `DraftReviewCard`を実装し、`GameRequestsView`の各依頼行に組み込む
+- 🔵 表示・導線を整える
+
 ## T5. 管理画面本体(`admin/page.tsx`)
 - 🔴 4状態(未ログイン/権限なし/権限あり/取得エラー)の遷移、権限ありで通報一覧・登録依頼の確認/処理済みマーク/削除が使えること、操作後の再取得をテストする
 - 🟢 ログイン・権限確認・通報一覧・登録依頼一覧の組み立てを実装する
 - 🔵 状態遷移・エラー表示・二重操作防止を整理する
 
-## T6. 登録依頼からゲームを登録するローカルツール(`.claude/skills/board-game-rules-batch-register/`)
+## T6. 写真解析・ルール生成のローカルツール(`.claude/skills/board-game-rules-batch-register/`)
 - 対象: Claude Code Skill(Webアプリのコードではないため、通常のTDDサイクル・spec-coverageの対象外とする。動作確認は実際の写真セットで試す)
-- SKILL.mdに次を記載する: ローカルフォルダの写真セット(または`board_game_rules_game_requests`の未処理依頼)を読み、写真を解析してゲーム情報・ルール本文(簡単版・詳しい版、共通章立て)を生成する手順、生成結果をSupabaseへ書き込むNode.jsスクリプトの使い方、依頼のゲーム紹介画像(`intro_photo_paths`)をそのまま引き継ぐ手順、0枚の場合の自動補完手順(下記T6b)
-- Node.jsスクリプト(例: `scripts/board-game-rules/registerGame.ts`)を用意する。`SUPABASE_SERVICE_ROLE_KEY`等の特権クレデンシャルで`board_game_rules_games`へINSERTし、依頼由来の場合は対応する`board_game_rules_game_requests.processed_at`を更新する
-- 動作確認: 実際に写真セットを用意してSkillを起動し、`board_game_rules_games`に正しく登録されること、依頼が処理済みになることを確認する
+- SKILL.mdに次を記載する: ローカルフォルダの写真セット、または`board_game_rules_game_requests`の未処理依頼を読み、写真を解析してゲーム情報・ルール本文(簡単版・詳しい版、共通章立て)を生成する手順、依頼のゲーム紹介画像(`intro_photo_paths`)をそのまま引き継ぐ手順、0枚の場合の自動補完手順(下記T6b)。**このSkillは2通りの起動経路を持つ**: (1)運営者が対話セッションで明示的に起動する既存の手動フロー(`registerGame.ts`。`photosDir`・`requestId`のいずれも扱い、Step4の公開前確認を経てSupabaseへ直接INSERTする。従来どおり`disable-model-invocation: true`を維持し、自動化が止まった場合の手動フォールバックとしても使える)、(2)下記T7の`processRegistrationQueue.ts`がヘッドレスの`claude -p`から呼び出す自動フロー(依頼由来。生成結果はSupabaseへ直接INSERTせず、`board_game_rules_game_requests.draft_content`に書き戻すのみ。公開はWeb管理画面の操作(T2bの`publishDraft`)に委ねるため、自動フローが確認なしで公開することはない)
+- 動作確認: 実際に写真セットを用意して手動フローでSkillを起動し、`board_game_rules_games`に正しく登録されることを確認する(自動フローの動作確認は下記T7)
 
 ## T6b. ゲーム紹介画像の自動補完(`.claude/skills/board-game-rules-batch-register/`、`scripts/board-game-rules/registerGame.ts`)
 - 対象: T6と同じくClaude Code Skill+Node.jsスクリプト(通常のTDDサイクル・spec-coverageの対象外。動作確認は実際のAPI呼び出しで試す)
 - 画像検索: BoardGameGeek API(`https://boardgamegeek.com/xmlapi2/search`等)をゲーム名で呼び出し、box art画像URLを取得する処理を実装する(design.md「ゲーム紹介画像を自動補完する処理」手順1)。該当なしの場合は紹介画像なしで登録処理を続行する
 - AI画像加工: 取得した画像を参考にGoogle Gemini API(画像生成/編集モデル)で新規画像を生成する処理を実装する(手順3)。`GEMINI_API_KEY`はローカル`.env`で管理する(リポジトリにコミットしない)
-- 生成画像を公開Storageバケット(`board-game-rules-game-photos`)へゲームID配下でアップロードし、`intro_photo_paths`へ設定してからT6のINSERTに含める
+- 生成画像を公開Storageバケット(`board-game-rules-game-photos`)へ新規採番したアップロードUUID配下でアップロードし、`intro_photo_paths`へ設定する(design.md「ゲーム紹介画像を自動補完する処理」手順4。ゲームIDではなくアップロードUUIDを使う理由は同手順参照)
 - 画像検索・AI加工いずれかの失敗はゲーム登録自体を止めず、失敗理由をコンソールログに出す(design.md「ログ」)
 - 動作確認: BoardGameGeekに実在するゲーム名・実在しないゲーム名それぞれで自動補完を試し、前者は紹介画像付きで登録され、後者は紹介画像なしで登録が完了することを確認する
+
+## T7. ローカル環境の定期処理(`scripts/board-game-rules/processRegistrationQueue.ts`)
+- 対象: Node.jsスクリプト(Webアプリのコードではないため、通常のTDDサイクル・spec-coverageの対象外とする。動作確認は実際の依頼で試す)。design.md「ローカル環境の定期処理」
+- 次を実装する:
+  - `status='queued'`の依頼を1件、`status='running'`への条件付きUPDATE(`WHERE status = 'queued'`)で排他的に取得する
+  - `draft_content`の有無で初回/再調整を判定し、非公開Storageから写真を取得(service_role)、直前の下書き+`revision_note`(再調整時)を組み立てる
+  - ヘッドレスの`claude -p`を起動し、T6のSkillの手順(写真解析・ルール生成、章立て、ゲーム紹介画像の自動補完)に沿った構造化出力(JSON)を得る
+  - 成功時: `draft_content`・`revision_round`(+1)・`revision_history`(要望を追記)・`status: 'draft'`・`revision_note: null`をUPDATEする
+  - 失敗時(写真取得・`claude -p`呼び出し・出力の構造化パースのいずれかで例外): `status: 'failed'`・`error_message`をUPDATEする
+- `SUPABASE_SERVICE_ROLE_KEY`等の特権クレデンシャルで認証する(`registerGame.ts`と同様)
+- launchdの定期起動設定(`scripts/board-game-rules/com.benriyatool.board-game-rules-registration.plist`)を用意する。`StartInterval`を60秒とし、`ProgramArguments`に`node`・スクリプトの絶対パスを指定、`EnvironmentVariables`で`SUPABASE_SERVICE_ROLE_KEY`等を注入する(design.md「セキュリティ」。対話シェルのPATHを引き継がないため、`claude`・`node`は絶対パスで指定する)。`StandardOutPath`/`StandardErrorPath`でログファイルへ出力する
+- 動作確認: 実際に登録依頼を1件作成し、「登録実行」を押してから最大60秒待ち、`draft_content`が生成され`status`が`draft`になることを確認する。あわせて「再調整を依頼」→再度`draft`になること、写真解析に失敗するケース(壊れた画像など)で`status`が`failed`になり`error_message`が記録されることを確認する。launchd経由での起動(手動の`launchctl load`)でも同様に動作することを確認する(対話シェルのPATHに依存していないことの実機確認)
 
 ## T9. 共通ナビに管理画面への導線を表示(`components/AdminNavLink.tsx`, `components/BoardGameNav.tsx`)
 - 対象: requirements.md#ログイン・アクセス制御-18(design.md「共通ナビに管理画面への導線を表示する処理」)

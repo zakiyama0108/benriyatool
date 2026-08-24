@@ -16,6 +16,12 @@
 - design.md「追加マイグレーション」T0の実機確認(anonが`intro_photo_paths`を含めてSELECTできること・`photo_paths`は引き続き拒否されること、依頼INSERTで`intro_photo_paths`を渡せること)を行う
 - (TDD対象外: マイグレーションの適用と手動確認)
 
+## T0c. 追加マイグレーション適用(登録実行・下書きレビュー、実装より先に単独PRで適用)
+- `board_game_rules_game_requests`へ`status`/`draft_content`/`revision_note`/`revision_round`/`revision_history`/`error_message`/`published_game_id`を追加する`ALTER TABLE`マイグレーションを追加しCI適用する(design.md「追加マイグレーション(登録実行・下書きレビュー)」)
+- `board_game_rules_games`へ運営者本人限定のINSERTポリシー(`admin can insert games`)を追加する
+- design.md「追加マイグレーション(登録実行・下書きレビュー)」T0の実機確認(`status`のデフォルト・CHECK制約、運営者本人のgames INSERT可・anon/authenticatedのINSERT不可、運営者本人による新カラムのUPDATE可)を行う
+- (TDD対象外: マイグレーションの適用と手動確認)
+
 ## T1. ジャンルの固定選択肢(`lib/genres.ts`)
 - 🔴 固定リストの値・順序・各項目の説明が仕様どおりであることをテストする
 - 🟢 ジャンルの選択肢定数(値+説明)を実装する(game-list/adminと共有)

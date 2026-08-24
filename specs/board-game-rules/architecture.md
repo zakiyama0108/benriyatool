@@ -8,9 +8,9 @@
 - ルール本文を共通の章立てで構造化し、将来、章単位での全ゲーム横断分析・分類に使えるデータ資産にする
 
 ## 3. 設計方針
-- 静的配信(Cloudflare Workersでの静的アセット配信)のみで完結させる。**ランタイムのサーバー機能(LLM呼び出し用のCloudflare Workers関数)は持たない**(方針転換の経緯: `/consult`で、匿名投稿からのライブLLM解析は費用が発生し続けるため撤廃した。既存アプリ(ai-dev-digest)のLLM処理と同じ「オフラインバッチ」の考え方を踏襲しつつ、GitHub Actionsではなく運営者のローカル環境(Claude Code Skill)で実行する)
+- 静的配信(Cloudflare Workersでの静的アセット配信)のみで完結させる。**ランタイムのサーバー機能(LLM呼び出し用のCloudflare Workers関数)は持たない**(方針転換の経緯: `/consult`で、匿名投稿からのライブLLM解析は費用が発生し続けるため撤廃した。既存アプリ(ai-dev-digest)のLLM処理と同じ「オフラインバッチ」の考え方を踏襲しつつ、GitHub Actionsではなく運営者のローカル環境で実行する)。管理画面の「登録実行」は運営者のローカル環境上のポーリング(launchdの定期起動。常駐プロセスは持たない)へ処理を橋渡しするだけで、Webアプリ・Supabaseから直接LLM APIを呼び出すことはない(根拠: `/consult`での判断)
 - ルール本文は説明書原文の逐語転載を避け、独自の言い回しで再構成する。「詳しい版」は数値・条件・例外を省略・改変しない「精密な言い換え」とし、要約的な性質を保ちつつ実用精度を確保する(根拠: [game-registration/requirements.md#ルール本文の著作権への配慮](game-registration/requirements.md))。原本にあたる投稿写真は一般公開せず運営者の照合用に限定保存する
-- 投稿者からの依頼は即時公開しない。運営者が依頼(写真+入力済み分類情報)を確認し、ローカルツールでルール本文を生成・登録して初めて公開される(根拠: `/consult`での判断、[game-registration/requirements.md#公開ポリシー](game-registration/requirements.md))。登録済みの内容への品質対応は事後モデレーション(管理画面)と閲覧者通報で補う
+- 投稿者からの依頼は即時公開しない。運営者が管理画面から登録実行を起動するとローカル環境が下書き(分類情報・ルール本文案)を生成し、運営者が下書きを確認して管理画面から公開して初めて公開される。下書きが意図と異なる場合は要望を伝えて再生成を依頼でき、この繰り返しに回数の上限はない(根拠: `/consult`での判断、[game-registration/requirements.md#公開ポリシー](game-registration/requirements.md))。登録済みの内容への品質対応は事後モデレーション(管理画面)と閲覧者通報で補う
 - 管理画面は既存の読み取り専用テンプレート([ADR-0006](../../docs/adr/0006-admin-screen-oidc-rls.md))の例外として、モデレーションのための書き込み(編集・削除)を認める(根拠: [ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)。本アプリではランタイムLLMサーバー機能は不要になったが、書き込み権限の例外という方針は維持する)
 - ログイン(Google OIDC)は、お気に入り・コメントという利用者本人のデータ機能のために導入する。既存の`ai-dev-digest/bookmark`の「本人の行のみRLSで操作可」パターンを踏襲する。閲覧・依頼送信・通報はログイン不要
 - 新規の登録依頼は、Supabase Database WebhooksからntfyへのHTTP POSTで運営者に通知する(中継サーバー不要)
@@ -29,12 +29,12 @@ flowchart LR
     localTool["運営者のローカルツール<br>（Claude Code Skill＋LLM・画像検索/加工API・Webアプリ外）"]
 
     users -->|閲覧・依頼送信・お気に入り・コメント・通報| webapp
-    admin -->|モデレーション・依頼確認| webapp
-    webapp -->|読み書き（RLS）| supabase
+    admin -->|モデレーション・依頼確認・登録実行の起動・下書き確認・公開| webapp
+    webapp -->|読み書き（RLS。公開時はgamesへ直接INSERT）| supabase
     supabase -->|新規依頼をWebhookで通知| ntfy
     ntfy -->|通知| admin
-    admin -->|登録依頼をもとに登録| localTool
-    localTool -->|ゲーム情報をINSERT（service_role）| supabase
+    supabase -->|登録実行待ちの依頼をポーリングで検知| localTool
+    localTool -->|下書きを書き戻す（service_role）| supabase
 ```
 
 ### 4.2 閲覧・利用者フロー(未ログイン閲覧＋ログイン利用者のお気に入り・コメント・通報)
@@ -103,10 +103,10 @@ flowchart TD
     admin -->|運営者判定| auth
     adminDetail -->|運営者判定| auth
     localTool -->|写真解析・ルール生成／画像検索・AI加工| externalApis
-    localTool -->|ゲーム情報をINSERT（service_role）| gamesDb
-    localTool -->|依頼を処理済みに更新（service_role）| requestsDb
+    localTool -->|下書きを書き戻す（service_role）| requestsDb
     localTool -->|紹介画像なし依頼を自動補完（service_role）| introPhotosDb
-    admin -->|依頼の確認・処理済みマーク・削除（RLS）| requestsDb
+    admin -->|依頼の確認・登録実行の起動・下書き確認・削除（RLS）| requestsDb
+    admin -->|下書きを公開する操作でゲームをINSERT（RLS、運営者本人限定）| gamesDb
     admin -->|通報の確認（RLS）| reportDb
     admin -->|通報から対象ゲームの詳細画面へ遷移| adminDetail
     adminDetail -->|ゲームの編集・物理削除（RLS。子はFKカスケード削除）| gamesDb
@@ -117,12 +117,12 @@ flowchart TD
 
 > ゲーム個別のモデレーション操作(編集・物理削除・紹介画像差し替え・元写真照合・コメント削除)は、対象ゲームの詳細画面に運営者ログイン時のみ表示する管理者導線で行う。管理画面は通報一覧・登録依頼一覧の横断ビューを担う([adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md))。
 
-これらの図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specのrequirements.md/design.md。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。画面URL・テーブル名・Storageは設計([/design](../../.claude/skills/design/SKILL.md))で確定済み(詳細画面は静的エクスポート制約によりクエリ方式 `/board-game-rules/detail?id=…`。テーブルは `board_game_rules_games`/`_game_requests`/`_favorites`/`_comments`/`_reports`、元写真は非公開Storageバケット)。`.claude/skills/board-game-rules-batch-register/`(ローカルツール)はWebアプリのコードではないため、図では「運営者のローカルツール」として外部要素の扱いにしている。
+これらの図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specのrequirements.md/design.md。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。画面URL・テーブル名・Storageは設計([/design](../../.claude/skills/design/SKILL.md))で確定済み(詳細画面は静的エクスポート制約によりクエリ方式 `/board-game-rules/detail?id=…`。テーブルは `board_game_rules_games`/`_game_requests`/`_favorites`/`_comments`/`_reports`、元写真は非公開Storageバケット)。`.claude/skills/board-game-rules-batch-register/`・`scripts/board-game-rules/processRegistrationQueue.ts`・launchdの定期起動設定(ローカルツール)はWebアプリのコードではないため、図では「運営者のローカルツール」として外部要素の扱いにしている。
 
 ## 5. アーキテクチャ概要
 Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じで、本アプリもランタイムのサーバー機能を持たない(静的配信のみ)。投稿者は`/board-game-rules/register`で写真をアップロードし、分かる範囲の分類情報(ゲーム名・対応人数・プレイ時間・ジャンルなど、すべて任意)を入力して送信すると、`board_game_rules_game_requests`に依頼として保存される([game-registration](game-registration/requirements.md))。この時点でゲームは公開されない。
 
-依頼のINSERTはSupabase Database Webhooksでntfyへ通知され、運営者はローカルのClaude Code Skill(`.claude/skills/board-game-rules-batch-register/`)を使って写真を確認し、ゲーム情報とルール本文(簡単版・詳しい版)を生成、`board_game_rules_games`へ登録する。このLLM呼び出しは運営者自身のClaude Codeセッション上で行われ、Webアプリからの追加のAPI課金は発生しない([admin](admin/requirements.md))。
+依頼のINSERTはSupabase Database Webhooksでntfyへ通知され、運営者は管理画面から「登録実行」を押す。押した時点ではSupabase上の状態(`status`)が更新されるだけで、実際の写真解析・ルール本文(簡単版・詳しい版)の生成は運営者のローカル環境が定期的にポーリング(launchd、常駐プロセスなし)して行い、生成結果は下書きとして`board_game_rules_game_requests`へ書き戻される。このLLM呼び出しは運営者自身のClaude Codeセッション上で行われ、Webアプリからの追加のAPI課金は発生しない([admin](admin/requirements.md))。運営者は下書きを確認し、管理画面から直接「公開する」(運営者本人に限定したRLSで`board_game_rules_games`へINSERT)か、要望を伝えて「再調整を依頼」(ローカル環境が再度生成)を選ぶ。
 
 投稿者は登録依頼にゲーム紹介画像(パッケージ・コンポーネント・プレイ風景など)を任意で添付でき、一覧・詳細で公開表示される(元写真とは別の**公開**Storageバケットに保存する)。投稿者が添付しなかった場合、運営者のローカルツールがBoardGameGeek API(画像検索)とGoogle Gemini API(AI画像加工、そのまま転載しない)で自動補完する。いずれの外部APIも運営者のローカル環境から無料枠の範囲で呼び出され、Webアプリ・Cloudflare Workersのコード・課金構造には影響しない([game-registration](game-registration/requirements.md)、[admin](admin/requirements.md))。
 
@@ -137,6 +137,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | ntfy | 運営者への新規依頼通知(既存のClaude Codeセッション通知と同じ運用) |
 | Supabase Auth(Google OIDC) | 利用者ログイン(お気に入り・コメント)、運営者判定(管理画面) |
 | Claude Code(ローカル、Skill) | 運営者が登録依頼をもとにゲーム情報・ルール本文を生成する際に使う。Webアプリの一部ではない |
+| launchd(ローカル、定期起動) | 管理画面からの登録実行・再調整の要求(Supabase上のstatus)を60秒間隔でポーリングし、`claude -p`をヘッドレスで起動する。常駐プロセスは持たない。Webアプリの一部ではない |
 | BoardGameGeek API(ローカルツールから、無料枠) | ゲーム紹介画像が未添付の依頼を登録する際、ゲーム名で画像検索する。Webアプリの一部ではない |
 | Google Gemini API(ローカルツールから、無料枠) | 検索で見つけた画像をそのまま転載せずAI加工する。Webアプリの一部ではない |
 | Tailwind CSS | スタイリング |
@@ -153,7 +154,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線・ゲーム紹介画像ギャラリーを表示。運営者ログイン時は編集・物理削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能、adminの運営者判定/RLS/Storageポリシー | リリース済み |
 | [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 | リリース済み |
 | [report](report/requirements.md) | 閲覧者による通報(匿名可)。自動非表示にせず運営者判断を挟む | game-detailの通報導線、adminで確認・対応 | リリース済み |
-| [admin](admin/requirements.md) | 運営者の横断ビュー(通報一覧の確認・登録依頼の確認/処理)とログイン・アクセス制御、共通ナビ(BoardGameNav)への管理画面導線表示。ゲーム個別の編集・削除・写真照合・コメント削除・紹介画像差し替えは詳細画面(game-detail)で行う。登録依頼からのゲーム登録・紹介画像の自動補完(BoardGameGeek+Gemini)はローカルツール(Claude Code Skill)で行う | user-authの運営者判定、game-registration/reportの各データ、ADR-0006/0007・[adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md) | 実装中 |
+| [admin](admin/requirements.md) | 運営者の横断ビュー(通報一覧の確認・登録依頼の確認/処理、登録実行の起動・下書きレビュー・公開判断)とログイン・アクセス制御、共通ナビ(BoardGameNav)への管理画面導線表示。ゲーム個別の編集・削除・写真照合・コメント削除・紹介画像差し替えは詳細画面(game-detail)で行う。写真解析・ルール生成・紹介画像の自動補完(BoardGameGeek+Gemini)はローカル環境(launchd定期起動+Claude Code)で行う | user-authの運営者判定、game-registration/reportの各データ、ADR-0006/0007・[adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md) | 実装中(登録実行・下書きレビューの要件・設計を追加。実装は未着手) |
 | [design-system](design-system/requirements.md) | アプリ内の画面の系統を揃えるper-appデザインシステムの土台(トークン+chromeルールの一元管理=[DESIGN.md](DESIGN.md)、共通部品カタログ=`app/board-game-rules/styleguide/`)。全画面の見た目の共有財産 | 確定済みAnalog Hearth([game-registration](game-registration/requirements.md))・共通ナビ、PR #207の運用ルール | リリース済み |
 
 ## 8. コンポーネント図
@@ -231,7 +232,7 @@ erDiagram
 - **課金の発生しない設計**: Webアプリ(Cloudflare Workers・Supabase)からはAnthropic APIを一切呼び出さない。写真解析・ルール生成は運営者のローカル環境(Claude Codeセッション)で行うため、匿名投稿によるLLM費用の無制限消費というリスクが構造的に生じない
 - 写真は機微になりうる原本のため一般公開せず、Storage側のアクセス制御で運営者のみ閲覧可能にする([admin/requirements.md](admin/requirements.md))
 - ゲーム紹介画像は元写真とは異なり公開が前提のため、別の公開Storageバケットに分離する。著作権配慮(実物撮影またはAI加工に限る)は運用ルールであり技術的な強制はできず、通報・運営者の差し替え/削除で事後対応する([game-registration/requirements.md](game-registration/requirements.md))
-- `board_game_rules_games`へのINSERTはWeb側(anon/authenticated)に一切許可しない。運営者のローカルツールがservice_role相当の権限で書き込む(匿名からのスパムゲーム直接登録という残余リスクがなくなる)
+- `board_game_rules_games`へのINSERTは、匿名(anon)を含む一般利用者には一切許可しない。認証済みの運営者本人(`admin_emails`)のみ、下書きを公開する操作としてRLS経由で直接INSERTできる(匿名からのスパムゲーム直接登録という残余リスクはなくならないが、書き込める主体を運営者本人に限定することで実質的に排除する)。写真解析・ルール生成の過程ではservice_role相当の権限を持つローカル環境が`board_game_rules_game_requests`(下書き)のみを更新し、`board_game_rules_games`へは書き込まない
 - お気に入り・コメントは本人の行のみRLSで操作可能とし、コメント削除のみ運営者判定で例外的に許可する。管理画面の書き込み(編集・削除)、登録依頼のSELECT/UPDATE/DELETEは運営者判定+RLSで担保する
 - ntfyの通知先URL(トピック名)はリポジトリに含めず、Supabaseダッシュボードの設定として保持する
 - 機微情報・利用者投稿の保存経路が新設されるため、[specs/legal/requirements.md](../legal/requirements.md)のプライバシーポリシー・利用規約の更新要否を確認する

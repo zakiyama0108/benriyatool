@@ -2826,8 +2826,13 @@
   },
   {
     "specFile": "board-game-rules/admin/design.md",
-    "item": "登録依頼からゲームを登録するローカルツール(管理画面の外)",
-    "reason": "WebアプリのコードではないClaude Code Skill(.claude/skills/board-game-rules-batch-register/)とNode.jsスクリプト(scripts/board-game-rules/registerGame.ts)のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T8参照)"
+    "item": "ローカル環境の定期処理(管理画面の外)",
+    "reason": "WebアプリのコードではないNode.jsスクリプト(scripts/board-game-rules/processRegistrationQueue.ts)とlaunchd設定のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T7参照)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "登録実行・下書きレビューの処理",
+    "reason": "一時スキップ(未実装): /fixで要件・設計のみ追加した段階。実装(TDD)完了後、gameRequests.test.ts(T2b)・DraftReviewCard.test.tsx(T4b)にテストを紐づけたらこのエントリを削除する"
   },
   {
     "specFile": "board-game-rules/admin/design.md",
@@ -3878,6 +3883,46 @@
     "specFile": "board-game-rules/game-registration/design.md",
     "item": "追加マイグレーション(ゲーム紹介画像、実装より先に単独PRで適用)",
     "reason": "マイグレーションSQL・T0の実機確認手順の記述で、TDD対象外(tasks.md T0b参照。マイグレーション適用時に実機確認する)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > status",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0c)で担保するため。書き込み内容はgameRequests.test.ts(admin/tasks.md T2b)でテストする"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > draft_content",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0c)で担保するため。書き込み内容はgameRequests.test.ts(admin/tasks.md T2b)でテストする"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > revision_note",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0c)で担保するため。書き込み内容はgameRequests.test.ts(admin/tasks.md T2b)でテストする"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > revision_round",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0c)で担保するため。書き込み内容はprocessRegistrationQueue.ts(admin/tasks.md T7、TDD対象外)が担う"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > revision_history",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0c)で担保するため。書き込み内容はprocessRegistrationQueue.ts(admin/tasks.md T7、TDD対象外)が担う"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > error_message",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0c)で担保するため。書き込み内容はprocessRegistrationQueue.ts(admin/tasks.md T7、TDD対象外)が担う"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "board_game_rules_game_requests(新規) > published_game_id",
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0c)で担保するため。書き込み内容はgameRequests.test.ts(admin/tasks.md T2b)でテストする"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "追加マイグレーション(登録実行・下書きレビュー、実装より先に単独PRで適用)",
+    "reason": "マイグレーションSQL・T0の実機確認手順の記述で、TDD対象外(tasks.md T0c参照。マイグレーション適用時に実機確認する)"
   },
   {
     "specFile": "board-game-rules/admin/design.md",

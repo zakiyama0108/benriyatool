@@ -201,6 +201,13 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 | release_year | int, nullable | 発売年(任意) |
 | created_at | timestamptz, not null, default now() | 依頼日時 |
 | processed_at | timestamptz, nullable | 運営者が登録処理を終えた日時。NULLは未処理([admin/design.md](../admin/design.md)の一覧で区別) |
+| status | text, not null, default `'pending'` | 登録実行の進行状態。`pending`(未着手)/`queued`(ローカル処理待ち)/`running`(処理中)/`draft`(下書きあり)/`published`(公開済み)/`failed`(失敗)。CHECK制約でこの6値のみ許可する([admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)) |
+| draft_content | jsonb, nullable | 生成された下書き(`GameRegistrationInput`と同形。`scripts/board-game-rules/registerGame.ts`参照)。常に最新1件のみを保持し、再調整のたびに上書きする |
+| revision_note | text, nullable | 運営者が「再調整を依頼」で入力した直近の要望。ローカル処理が消費すると空にする |
+| revision_round | int, not null, default 0 | 完了した生成回数(初回生成で1、以降の再調整ごとに+1) |
+| revision_history | jsonb, not null, default `'[]'` | 各回の要望テキストの履歴(`{round, note, created_at}`の配列。noteは初回はnull) |
+| error_message | text, nullable | `status='failed'`のときの失敗理由 |
+| published_game_id | uuid, nullable, references `board_game_rules_games(id)` | 公開時にINSERTしたゲームのID |
 
 - 匿名投稿のため`auth.users`とのリレーションは持たない(reportsと同様)
 
@@ -368,6 +375,40 @@ grant select (
 T0(追加マイグレーション適用)の実機確認:
 - `anon`が`intro_photo_paths`を含む一覧取得クエリで公開列(旧列+`intro_photo_paths`)をSELECTでき、`photo_paths`のみは引き続き権限エラーで拒否されること(列単位の秘匿が`intro_photo_paths`追加後も崩れていないこと)
 - `board_game_rules_game_requests`へのINSERT(anon)で`intro_photo_paths`に配列を渡せること、省略時は空配列がデフォルトになること
+
+### 追加マイグレーション(登録実行・下書きレビュー、実装より先に単独PRで適用)
+[admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)が使う状態管理カラムを`board_game_rules_game_requests`へ追加し、公開時のINSERTを運営者本人のログインセッションから直接行えるよう`board_game_rules_games`にINSERTポリシーを追加する。
+
+```sql
+-- board_game_rules_game_requests へ登録実行・下書きレビュー用のカラムを追加
+alter table board_game_rules_game_requests
+  add column status text not null default 'pending'
+    check (status in ('pending', 'queued', 'running', 'draft', 'published', 'failed')),
+  add column draft_content jsonb,
+  add column revision_note text,
+  add column revision_round int not null default 0,
+  add column revision_history jsonb not null default '[]',
+  add column error_message text,
+  add column published_game_id uuid references board_game_rules_games(id);
+
+-- 登録: 運営者本人による公開操作(下書きの内容でゲームをINSERT)を認める。
+-- anon/authenticatedへの一般INSERT許可は行わず、admin_emailsに載る運営者本人のみに限定する
+-- (既存のINSERTポリシー撤廃の方針は維持しつつ、運営者本人の書き込み例外(ADR-0007)を拡張する)
+grant insert on board_game_rules_games to authenticated;
+create policy "admin can insert games" on board_game_rules_games
+  for insert to authenticated
+  with check ((auth.jwt() ->> 'email') in (select email from admin_emails));
+
+-- status/draft_content等の新規カラムは、既存の
+-- "admin can update game requests"(grant update on board_game_rules_game_requests to authenticated、
+-- テーブル単位のUPDATE)がそのまま適用されるため、追加のGRANT・ポリシーは不要
+```
+
+T0(追加マイグレーション適用)の実機確認:
+- `status`のデフォルトが`pending`になること、CHECK制約外の値のUPDATEが拒否されること
+- 運営者本人が`board_game_rules_games`へINSERTでき、公開したゲームがanonからSELECTできること(下書きの内容がそのまま公開ゲームとして見えること)
+- anon・運営者以外の認証ユーザーからの`board_game_rules_games`へのINSERTが拒否されること
+- 運営者本人が`board_game_rules_game_requests`の`status`・`draft_content`・`revision_note`・`revision_history`をUPDATEできること(既存の運営者向けUPDATEポリシーが新カラムにも及ぶこと)
 
 ### 運営者への通知(Supabase Database Webhooks + ntfy Message Templating)
 `board_game_rules_game_requests`へのINSERTをSupabase Database Webhooks機能(ダッシュボードから設定、pg_net拡張ベース)で購読し、ntfyへHTTP POSTする。送信先URLに、ntfy公式の**インラインMessage Templating**(`?tpl=yes`、Goテンプレート構文)を組み込むことで、中継サーバーを新設せずに次を実現する:
