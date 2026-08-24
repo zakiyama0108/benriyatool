@@ -3841,21 +3841,6 @@
   },
   {
     "specFile": "board-game-rules/admin/requirements.md",
-    "item": "ゲーム紹介画像の確認・自動補完 [15]",
-    "reason": "一時スキップ(未実装): /fix(ゲーム紹介画像)で要件のみ追加した段階。design.md/tasks.mdの追記・実装(TDD)が完了しテストを紐づけたらこのエントリを削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "ゲーム紹介画像の確認・自動補完 [16]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "ゲーム紹介画像の確認・自動補完 [17]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
     "item": "ゲーム紹介画像の自動補完 [8]",
     "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
   },
