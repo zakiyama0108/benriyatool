@@ -51,3 +51,18 @@
 - [x] Task 12: 左カラム(アコーディオン群)・右カラム(結果ダッシュボード)への画面配線(仕様: design.md#画面設計)
   - [x] `page.tsx`で、収入・個人支出・家計支出の各アコーディオンを左カラムに、`BalanceSummary.tsx`の収支サマリーを右カラムの資産推移ダッシュボード(ヒーローカード・グラフ・テーブル)に続けて配置するよう配線し直す
   - [x] `/run`(run-benriyatoolスキル)で、PC幅(1280px)・モバイル幅(390px)双方で収支サマリーのタイルが崩れず表示されることを実機確認する
+
+## 修正: 手取りボーナスの支給月入力化(2026-08)
+
+- [ ] Task 13: 収入型の支給月化(仕様: requirements.md#収入-2、asset-projection/design.md#関連するファイル(抜粋))
+  - [ ] `app/life-money-sim/lib/types.ts`の`IncomeInput.bonusCount: number`を`bonusMonths: number[]`(支給月・1〜12)に置き換える
+  - [ ] `saved-scenario`の復元(`fillMissingScenarioFields`)で、旧データの`bonusCount`しか持たない`income`にも`bonusMonths`を補って復元できるようにする(欠損時のフォールバック)
+
+- [ ] Task 14: 年間余剰資金の計算を支給月数ベースに(仕様: requirements.md#余剰資金の計算-2、design.md#年間収支をまとめる処理)
+  - [ ] 🔴 `calcAnnualSurplus`が「月次余剰資金×12 + 支給月の数×1回あたりの金額」になることを確認するテストに更新する
+  - [ ] 🟢 `page.tsx`側で支給月の数を渡すか、`calcAnnualSurplus`のシグネチャを支給月ベースに更新して実装する
+
+- [ ] Task 15: 収入セクションの支給月入力UI(仕様: requirements.md#収入-2、design.md#画面設計)
+  - [ ] 🔴 `IncomeForm`のテストに、支給月(1〜12月)を選択でき、選択状態が`onChange`で親に伝わることを確認するケースを追加する
+  - [ ] 🟢 `IncomeForm.tsx`のボーナス回数入力を、支給月の複数選択UI(1〜12月のトグル)に置き換える。1回あたりの金額入力は維持する
+  - [ ] `/run`(run-benriyatoolスキル)で、支給月を選ぶと収入サマリー・年間余剰資金・資産推移が更新されることを実機確認する
