@@ -3898,5 +3898,470 @@
     "specFile": "board-game-rules/game-list/design.md",
     "item": "メイン画像を表示する処理",
     "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、GameCard.test.tsx等にテストを紐づけたらこのエントリを削除する(tasks.md T10参照)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "コメント一覧を取得して表示する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "コメントを投稿する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "コメントを編集する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "コメントを削除する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "バリデーション",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "エラーハンドリング",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "データベース設計",
+    "reason": "配下のテーブル定義・マイグレーションに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "board_game_rules_comments(新規)",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "board_game_rules_comments(新規) > id",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "board_game_rules_comments(新規) > game_id",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "board_game_rules_comments(新規) > user_id",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "board_game_rules_comments(新規) > author_name",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "board_game_rules_comments(新規) > body",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "board_game_rules_comments(新規) > created_at",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "board_game_rules_comments(新規) > updated_at",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "マイグレーション(実装より先に単独PRで適用)",
+    "reason": "テーブル・RLSの定義でマイグレーションとして適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "画面設計",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "状態管理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "セキュリティ",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "ログ",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/comment/design.md",
+    "item": "依存関係",
+    "reason": "他specとの関係を示す記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "権限 [1]",
+    "reason": "閲覧は誰でも・投稿はログイン中の利用者という権限方針。画面の出し分けはコメントの表示・投稿の各テストで、実際のアクセス制御はDB側RLSで担保しT0で実機確認するため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "権限 [2]",
+    "reason": "編集は本人のみ・削除は本人+運営者という権限方針。画面の出し分けはコメントの編集・削除-9〜11のテストで検証し、実際の権限はDB側RLSで担保しT0で実機確認するため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "権限 [3]",
+    "reason": "ログイン基盤(Google OIDC)と運営者判定(isAuthorizedAdmin)を再利用する方針で、判定の呼び出しはCommentSectionのテストで検証済み。基盤自体はuser-auth/adminの責務のため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "依存関係",
+    "reason": "他specとの関係を示す記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/comment/requirements.md",
+    "item": "スコープ外",
+    "reason": "対象外を明示する見出しで、実装・テストの対象ではないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "サマリ",
+    "reason": "画面の概要・設計判断を俯瞰するメタ見出しで、個別の振る舞いは配下の各処理・要件のテストでカバーするため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "詳細画面のルーティング(静的エクスポート下での設計判断)",
+    "reason": "静的エクスポート下の設計判断の記述で、個別の振る舞いは各処理のテストでカバーするため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "対象ゲームを取得して表示する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "分類情報を表示する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "ルール本文をタブで表示する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "お気に入り・コメント・通報の導線を表示する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "ゲーム紹介画像をギャラリー表示する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "運営者向けの操作(管理者ログイン時)",
+    "reason": "配下の[n]箇条書きに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "管理者かどうかを判定する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "ゲームを編集して上書き保存する処理(管理者)",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "運営者による物理削除の処理(管理者)",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "物理削除のDB設計(新規マイグレーション)",
+    "reason": "DELETEポリシー・子FKカスケード・deleted_at列削除・RLS変更はマイグレーションで適用しT0/T6bで実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "元写真を照合閲覧する処理(管理者)",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "コメントを削除する処理(管理者)",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "画面設計",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "デザイントークン(Analog Hearth)",
+    "reason": "DESIGN.mdを参照するデザイントークンの記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "画面構成",
+    "reason": "画面レイアウトの記述で、見た目の詳細は実機確認で担保しテスト対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "状態管理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "セキュリティ",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "ログ",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/design.md",
+    "item": "依存関係",
+    "reason": "他specとの関係を示す記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "サマリ",
+    "reason": "画面の概要・設計判断を俯瞰するメタ見出しで、個別の振る舞いは配下の各処理・要件のテストでカバーするため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "ユースケース図",
+    "reason": "利用者と主なユースケースを俯瞰する図で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "表示対象 [3]",
+    "reason": "ゲーム紹介画像が公開対象という区分の記述。公開表示はPhotoGallery(画像表示-9)、元写真の非表示はfetchGameByIdのphoto_paths除外(表示対象-2)でテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "運営者による削除の方針 [5]",
+    "reason": "物理削除時に子レコードも削除する方針。連動削除は子FKのON DELETE CASCADE(マイグレーション)で担保しT0で実機確認する。アプリ側で削除するのはgames行のみ(deleteGameでテスト済み)のため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "運営者による削除の方針 [6]",
+    "reason": "削除時にStorage実ファイルは消さない方針。紹介画像の配列削除はintroPhotos(Storageの削除を呼ばない)でテスト済み、元写真も同方針で実体を消さないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "運営者操作のアクセス制御 [8]",
+    "reason": "運営者判定・ログイン手段が管理画面と同一という記述で、判定の再利用はdetail/AdminControlsのテストで検証済み。基盤自体はadminの責務のため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "依存関係",
+    "reason": "他specとの関係を示す記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/game-detail/requirements.md",
+    "item": "スコープ外",
+    "reason": "対象外を明示する見出しで、実装・テストの対象ではないため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "通報を送信する処理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "バリデーション",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "ボット対策・濫用防止(設計判断)",
+    "reason": "初期はTurnstileを付けない設計判断の記述で、対応するコードを持たずテスト対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "データベース設計",
+    "reason": "配下のテーブル定義・マイグレーションに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "board_game_rules_reports(新規)",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "board_game_rules_reports(新規) > id",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "board_game_rules_reports(新規) > game_id",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "board_game_rules_reports(新規) > reason",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "board_game_rules_reports(新規) > created_at",
+    "reason": "テーブルのカラム定義で、RLS・CHECK制約はマイグレーションで適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "マイグレーション(実装より先に単独PRで適用)",
+    "reason": "テーブル・RLSの定義でマイグレーションとして適用しT0で実機確認する。アプリ単体テストの対象外のため"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "画面設計",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "状態管理",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "セキュリティ",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "ログ",
+    "reason": "design.mdの処理フロー・方針記述で、対応するロジックはrequirements.mdの[n]項目に紐づくテストで検証済み(docs/spec-workflow.md: design.mdの処理フローは原則テストから参照しない)"
+  },
+  {
+    "specFile": "board-game-rules/report/design.md",
+    "item": "依存関係",
+    "reason": "他specとの関係を示す記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "通報の送信 [2]",
+    "reason": "ログイン不要で誰でも通報できるという方針。ReportButtonはセッションに依存せず常時表示し、createReportはanon可としてテスト済み。実際のanon INSERT可否はRLSで担保しT0で実機確認するため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "通報後の扱い [5]",
+    "reason": "通報しても自動非表示・自動削除にしない方針。通報はreports行のINSERTのみで自動処理のロジックを持たず(対応するコードがない)、運営判断を挟む運用のため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "通報後の扱い [6]",
+    "reason": "運営者が管理画面で確認し詳細画面で対処する運用フロー。確認はadmin、対処はgame-detailの運営者導線でテスト済みのため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "依存関係",
+    "reason": "他specとの関係を示す記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/report/requirements.md",
+    "item": "スコープ外",
+    "reason": "対象外を明示する見出しで、実装・テストの対象ではないため"
   }
 ]

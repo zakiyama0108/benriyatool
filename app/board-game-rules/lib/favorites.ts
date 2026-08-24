@@ -20,11 +20,10 @@ export async function fetchMyFavoriteGameIds(): Promise<Set<string>> {
 // ログイン中の本人のお気に入りゲームを、登録日時の新しい順に取得する
 // (design.md「お気に入り一覧を取得して表示する処理」)。取得方法は、design.mdが挙げる2案
 // (結合 or game_id集合取得)のうち後者を選んだ: お気に入り行(game_id・created_at)をまず取得し、
-// 対象ゲームをgame_idの集合でまとめて取得する2段階方式(既存実装のadmin/fetchAdminGames.tsと
-// 同じ「関連データを別クエリでまとめて取る」パターンに揃えられ、supabase-jsの結合構文に頼らず
-// シンプルなため)。ゲーム側のSELECTはRLS(`deleted_at is null`)で公開中のもののみ返るため、
-// 削除済みゲームのお気に入りはgameMapに存在せず自然に一覧から除外される(design.md手順3)。
-// 取得に失敗した場合は呼び出し元が「0件」として扱えるよう例外を投げる
+// 対象ゲームをgame_idの集合でまとめて取得する2段階方式(「関連データを別クエリでまとめて取る」
+// パターンに揃えられ、supabase-jsの結合構文に頼らずシンプルなため)。削除は物理削除に統一した
+// ため(adr/0001)、削除済みゲームは行自体が存在せずgameMapに含まれず、そのお気に入りは自然に
+// 一覧から除外される(design.md手順3)。取得に失敗した場合は呼び出し元が「0件」として扱えるよう例外を投げる
 export async function fetchMyFavoriteGames(): Promise<FavoriteGame[]> {
   const favoritesResult = await supabase
     .from('board_game_rules_favorites')
