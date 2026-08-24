@@ -1,6 +1,14 @@
 import { render, screen, within } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import BoardGameNav from '../../../app/board-game-rules/components/BoardGameNav'
+import { useSession } from '../../../app/board-game-rules/lib/useSession'
+
+// nav末尾の運営者専用導線(AdminNavLink)自体の出し分けはAdminNavLink.test.tsxで検証済みのため、
+// ここでは常に未ログイン扱いにして本ファイルの検証対象(実装済み画面へのリンク)に影響させない。
+// adminAuthはsupabaseClient初期化(環境変数必須)を伴うため、未使用でもモックして読み込みを避ける
+vi.mock('../../../app/board-game-rules/lib/useSession', () => ({ useSession: vi.fn() }))
+vi.mock('../../../app/lib/adminAuth', () => ({ isAuthorizedAdmin: vi.fn() }))
+vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
 
 // 仕様: specs/board-game-rules/game-registration/design.md「ナビゲーション(左サイドバー共通ナビ)」、
 //       specs/board-game-rules/favorite/design.md「お気に入り一覧画面」左サイドバー(共通ナビ)、
