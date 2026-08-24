@@ -5,10 +5,17 @@ type Props = {
   periodUnit: PeriodUnit
   monthlyRows: MonthlyProjectionRow[]
   yearlyRows: YearlyProjectionRow[]
+  investmentMode: boolean
 }
 
 function formatManYen(amount: number): string {
   return `${Math.round(amount * 10) / 10}万円`
+}
+
+// 運用益列の表示。資産運用モードでは金額を、貯蓄のみモード(運用益なし)では控えめな「−」を表示する
+// (仕様: requirements.md#月次の資産推移-6、design.md#資産推移テーブルに金額を表示する処理)
+function formatGain(gain: number, investmentMode: boolean): string {
+  return investmentMode ? formatManYen(gain) : '—'
 }
 
 function formatAge(age: number | undefined): string {
@@ -74,7 +81,7 @@ function EventCell({
 // 月次/年次の年齢・イベント名目・差引後余剰(または年次余剰資金)・資産推移累計額を表形式で表示する。
 // イベント・賞与のある行はサンドイエローの行ハイライトで、最終行(表示範囲の終点)はティール地で強調する
 // (仕様: requirements.md#月次の資産推移、requirements.md#表示単位の切り替え-2)
-export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRows }: Props) {
+export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRows, investmentMode }: Props) {
   if (periodUnit === 'month') {
     return (
       <div className="max-h-[520px] overflow-auto rounded-[35px] border border-lms-line-strong bg-lms-card p-2">
@@ -87,6 +94,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
               <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">子ども</th>
               <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">イベント</th>
               <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">差引後余剰</th>
+              <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">運用益</th>
               <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">資産額</th>
             </tr>
           </thead>
@@ -113,6 +121,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
                     <EventCell bonusAmount={row.bonusAmount} eventItems={row.eventItems} recurringLabels={row.recurringLabels} isFinal={isFinal} />
                   </td>
                   <td className="whitespace-nowrap px-2 py-1.5 tabular-nums">{formatManYen(row.netSurplus)}</td>
+                  <td className="whitespace-nowrap px-2 py-1.5 tabular-nums">{formatGain(row.investmentGain, investmentMode)}</td>
                   <td className="whitespace-nowrap px-2 py-1.5 font-bold tabular-nums">{formatManYen(row.asset)}</td>
                 </tr>
               )
@@ -134,6 +143,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
             <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">子ども</th>
             <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">イベント</th>
             <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">年次余剰資金</th>
+            <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">運用益</th>
             <th className="sticky top-0 z-20 whitespace-nowrap bg-white px-2 py-1.5 font-semibold">資産額</th>
           </tr>
         </thead>
@@ -160,6 +170,7 @@ export default function AssetProjectionTable({ periodUnit, monthlyRows, yearlyRo
                   <EventCell bonusAmount={row.bonusAmount} eventItems={row.eventItems} recurringLabels={row.recurringLabels} isFinal={isFinal} />
                 </td>
                 <td className="whitespace-nowrap px-2 py-1.5 tabular-nums">{formatManYen(row.yearlySurplus)}</td>
+                <td className="whitespace-nowrap px-2 py-1.5 tabular-nums">{formatGain(row.investmentGain, investmentMode)}</td>
                 <td className="whitespace-nowrap px-2 py-1.5 font-bold tabular-nums">{formatManYen(row.asset)}</td>
               </tr>
             )

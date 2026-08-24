@@ -2,9 +2,11 @@ import { describe, it, expect } from 'vitest'
 import {
   calcAge,
   calcNetSurplus,
+  calcRegularBonus,
   calcFinalYearMonth,
   buildSavingsAssetSeries,
   buildInvestmentAssetSeries,
+  buildGainSeries,
   aggregateYearly,
   isRecurringEntryApplicable,
   calcRecurringTotals,
@@ -216,6 +218,7 @@ describe('月次データを年次にまとめる集計', () => {
       eventItems: [],
       bonusAmount: 0,
       recurringLabels: [],
+      investmentGain: 0,
       ...partial,
     }
   }
@@ -286,6 +289,16 @@ describe('月次データを年次にまとめる集計', () => {
     expect(result[0].bonusAmount).toBe(50)
   })
 
+  // 仕様: specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-6
+  it('その年の運用益が月次合計として年の行に集計されること', () => {
+    const rows: MonthlyProjectionRow[] = [
+      row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, investmentGain: 1 }),
+      row({ yearMonth: '2026-09', netSurplus: 10, asset: 120, investmentGain: 1.2 }),
+    ]
+    const result = aggregateYearly(rows)
+    expect(result[0].investmentGain).toBeCloseTo(2.2)
+  })
+
   it('その年のどの月にも賞与の登録がなければ、年の行のbonusAmountは0になること', () => {
     const rows: MonthlyProjectionRow[] = [
       row({ yearMonth: '2026-06', netSurplus: 10, asset: 110, bonusAmount: 0 }),
@@ -327,6 +340,8 @@ describe('月次積み上げへの定期収入・支出の反映 - 該当月の�
     selfBirthMonth: null,
     spouseBirthMonth: null,
     childrenBirthMonths: [],
+    bonusMonths: [],
+    bonusAmountPerTime: 0,
     bonuses: [],
     events: [],
     investmentMode: false,
@@ -367,6 +382,8 @@ describe('月次積み上げへの賞与・イベントの金額反映 - 該当�
     selfBirthMonth: null,
     spouseBirthMonth: null,
     childrenBirthMonths: [],
+    bonusMonths: [],
+    bonusAmountPerTime: 0,
     recurringEntries: [],
     investmentMode: false,
     expectedAnnualRate: 0,
@@ -396,5 +413,88 @@ describe('月次積み上げへの賞与・イベントの金額反映 - 該当�
     })
     expect(rows[0].bonusAmount).toBe(50)
     expect(rows[1].bonusAmount).toBe(0)
+  })
+})
+
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-5
+describe('当月の通常ボーナス - 収入で登録した支給月に1回あたりの金額を返す', () => {
+  it('対象年月の月が支給月に含まれる場合、1回あたりの金額を返すこと', () => {
+    expect(calcRegularBonus([6, 12], 150, '2026-06')).toBe(150)
+    expect(calcRegularBonus([6, 12], 150, '2027-12')).toBe(150)
+  })
+
+  it('対象年月の月が支給月に含まれない場合、0を返すこと', () => {
+    expect(calcRegularBonus([6, 12], 150, '2026-05')).toBe(0)
+  })
+
+  it('支給月が未選択(空配列)の場合、常に0を返すこと', () => {
+    expect(calcRegularBonus([], 150, '2026-06')).toBe(0)
+  })
+
+  it('1回あたりの金額が負数・NaNなど不正な場合、0として扱うこと', () => {
+    expect(calcRegularBonus([6], -10, '2026-06')).toBe(0)
+    expect(calcRegularBonus([6], NaN, '2026-06')).toBe(0)
+  })
+})
+
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-6、specs/life-money-sim/asset-projection/requirements.md#複利計算-2
+describe('各月の運用益の系列', () => {
+  it('貯蓄のみモードでは、運用益は全月0になること', () => {
+    expect(buildGainSeries(100, [110, 130, 125], false, 12)).toEqual([0, 0, 0])
+  })
+
+  it('資産運用モードでは、各月の運用益が前月末の資産額(初月は開始資産額)×月利になること', () => {
+    // 年率12%→月利1%。開始100万円、資産系列[101, 102.01]
+    // 1か月目の運用益: 100*0.01=1、2か月目: 101*0.01=1.01
+    const gains = buildGainSeries(100, [101, 102.01], true, 12)
+    expect(gains[0]).toBeCloseTo(1)
+    expect(gains[1]).toBeCloseTo(1.01)
+  })
+})
+
+// 仕様: specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-5、specs/life-money-sim/asset-projection/requirements.md#月次の資産推移-6
+describe('月次積み上げへの通常ボーナス・運用益の反映', () => {
+  const baseParams = {
+    startYearMonth: '2026-05',
+    finalYearMonth: '2026-06',
+    startingAsset: 0,
+    monthlySurplus: 0,
+    selfBirthMonth: null,
+    spouseBirthMonth: null,
+    childrenBirthMonths: [],
+    bonusMonths: [] as number[],
+    bonusAmountPerTime: 0,
+    bonuses: [],
+    events: [],
+    recurringEntries: [],
+    investmentMode: false,
+    expectedAnnualRate: 0,
+  }
+
+  it('収入の支給月に該当する月は、bonusAmountに通常ボーナスが積まれ、netSurplusにも反映されること', () => {
+    const rows = buildMonthlyProjectionRows({ ...baseParams, bonusMonths: [6], bonusAmountPerTime: 150 })
+    // 2026-05は非該当、2026-06は該当
+    expect(rows[0].bonusAmount).toBe(0)
+    expect(rows[1].bonusAmount).toBe(150)
+    expect(rows[1].netSurplus).toBe(150)
+  })
+
+  it('通常ボーナスと賞与登録が同じ月に重なる場合、bonusAmountは両者の合算になること', () => {
+    const rows = buildMonthlyProjectionRows({
+      ...baseParams,
+      bonusMonths: [6],
+      bonusAmountPerTime: 150,
+      bonuses: [{ yearMonth: '2026-06', amount: 20 }],
+    })
+    expect(rows[1].bonusAmount).toBe(170)
+  })
+
+  it('資産運用モードでは各行のinvestmentGainに当月の運用益が入り、貯蓄のみモードでは0になること', () => {
+    const savings = buildMonthlyProjectionRows({ ...baseParams, startingAsset: 100 })
+    expect(savings[0].investmentGain).toBe(0)
+
+    // 年率12%→月利1%、開始100万円・余剰0 → 初月の運用益=100*0.01=1
+    const investment = buildMonthlyProjectionRows({ ...baseParams, startingAsset: 100, investmentMode: true, expectedAnnualRate: 12 })
+    expect(investment[0].investmentGain).toBeCloseTo(1)
   })
 })

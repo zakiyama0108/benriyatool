@@ -10,7 +10,7 @@ export type ExpenseItem = {
 // 収入の入力(手取り月給・手取りボーナス)
 export type IncomeInput = {
   monthlySalary: number // 手取り月給・万円
-  bonusCount: number // 手取りボーナスの年間回数
+  bonusMonths: number[] // 手取りボーナスの支給月(1〜12)。年間支給回数は要素数で決まる(仕様: monthly-balance/requirements.md#収入-2)
   bonusAmountPerTime: number // 手取りボーナス1回あたりの金額・万円
 }
 
@@ -108,6 +108,7 @@ export type MonthlyProjectionRow = {
   bonusAmount: number // その月に登録された賞与の合計額・万円。0は登録なし(仕様: requirements.md#賞与・イベントの登録-4)
   recurringLabels: RecurringLabel[] // その月に該当した定期収入・定期支出の名目・金額一覧(仕様: requirements.md#定期的な収入・支出の登録-6)
   netSurplus: number // 差引後余剰・万円
+  investmentGain: number // その月の運用益・万円。貯蓄のみモードは0(仕様: requirements.md#月次の資産推移-6)
   asset: number // その月末時点の資産額・万円
 }
 
@@ -121,6 +122,7 @@ export type YearlyProjectionRow = {
   bonusAmount: number // その年に該当した賞与の合計額・万円
   recurringLabels: RecurringLabel[] // その年に該当した定期収入・定期支出を名目・種別ごとに合算した一覧
   yearlySurplus: number // 年次余剰資金・万円
+  investmentGain: number // その年の運用益の合計・万円。貯蓄のみモードは0(仕様: requirements.md#月次の資産推移-6)
   asset: number // 年末(またはその年の最終月)時点の資産額・万円
 }
 
