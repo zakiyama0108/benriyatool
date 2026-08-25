@@ -56,7 +56,7 @@ flowchart TD
     cf --> list
     cf --> detail
     cf --> favList
-    userVisitor -->|Googleでログイン| auth
+    visitor -->|Googleでログイン| auth
     list -->|お気に入り登録・解除（本人の行のみ、RLS）| favDb
     detail -->|お気に入り登録・解除（本人の行のみ、RLS）| favDb
     favList -->|自分のお気に入りを取得・解除（RLS）| favDb
