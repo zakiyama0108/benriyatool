@@ -205,7 +205,8 @@ export function aggregateYearly(rows: MonthlyProjectionRow[]): YearlyProjectionR
         spouseAge: last.spouseAge,
         childrenAges: last.childrenAges,
         eventItems: yearRows.flatMap((r) => r.eventItems),
-        bonusAmount: yearRows.reduce((sum, r) => sum + r.bonusAmount, 0),
+        incomeBonusAmount: yearRows.reduce((sum, r) => sum + r.incomeBonusAmount, 0),
+        eventBonusAmount: yearRows.reduce((sum, r) => sum + r.eventBonusAmount, 0),
         recurringLabels: aggregateRecurringLabelsForYear(yearRows),
         yearlySurplus: yearRows.reduce((sum, r) => sum + r.netSurplus, 0),
         investmentGain: yearRows.reduce((sum, r) => sum + r.investmentGain, 0),
@@ -242,14 +243,14 @@ export function buildMonthlyProjectionRows(params: {
     cursor = cursor.month === 12 ? { year: cursor.year + 1, month: 1 } : { year: cursor.year, month: cursor.month + 1 }
   }
 
-  // 月ごとの賞与・イベント・定期項目の金額を一度だけ求め、差引後余剰の計算とテーブル表示
-  // (eventItems・bonusAmount・recurringLabels)の両方に使い回す。
-  // bonusAmountは通常ボーナス(収入で登録した支給月×1回あたり)と賞与登録(特定年月)の合算額
+  // 月ごとの賞与・イベント・定期項目の金額を一度だけ求め、差引後余剰の計算とテーブル表示の両方に使い回す。
+  // 収入賞与(支給月×1回あたり)と賞与登録(特定年月)は、表で別列に表示するため合算せず別々に保持する。
+  // 差引後余剰の計算では両者を合算した額を賞与として使う
   const monthlyDetails = yearMonths.map((ym) => {
-    const registeredBonus = params.bonuses
+    const incomeBonusAmount = calcRegularBonus(params.bonusMonths, params.bonusAmountPerTime, ym)
+    const eventBonusAmount = params.bonuses
       .filter((b) => b.yearMonth === ym)
       .reduce((sum, b) => sum + sanitizeAmount(b.amount), 0)
-    const bonusAmount = calcRegularBonus(params.bonusMonths, params.bonusAmountPerTime, ym) + registeredBonus
     const eventItems = params.events
       .filter((e) => e.yearMonth === ym)
       .map((e) => ({ label: e.label, amount: sanitizeAmount(e.amount) }))
@@ -258,8 +259,8 @@ export function buildMonthlyProjectionRows(params: {
       .filter((entry) => isRecurringEntryApplicable(entry, ym))
       .map((entry) => ({ label: entry.label, type: entry.type, amount: sanitizeAmount(entry.amount) }))
     const { incomeTotal, expenseTotal } = calcRecurringTotals(params.recurringEntries, ym)
-    const netSurplus = calcNetSurplus(params.monthlySurplus, bonusAmount, eventTotal, incomeTotal, expenseTotal)
-    return { bonusAmount, eventItems, recurringLabels, netSurplus }
+    const netSurplus = calcNetSurplus(params.monthlySurplus, incomeBonusAmount + eventBonusAmount, eventTotal, incomeTotal, expenseTotal)
+    return { incomeBonusAmount, eventBonusAmount, eventItems, recurringLabels, netSurplus }
   })
 
   const netSurpluses = monthlyDetails.map((d) => d.netSurplus)
@@ -274,7 +275,8 @@ export function buildMonthlyProjectionRows(params: {
     spouseAge: calcAge(params.spouseBirthMonth, yearMonth),
     childrenAges: params.childrenBirthMonths.map((b) => calcAge(b, yearMonth)),
     eventItems: monthlyDetails[i].eventItems,
-    bonusAmount: monthlyDetails[i].bonusAmount,
+    incomeBonusAmount: monthlyDetails[i].incomeBonusAmount,
+    eventBonusAmount: monthlyDetails[i].eventBonusAmount,
     recurringLabels: monthlyDetails[i].recurringLabels,
     netSurplus: monthlyDetails[i].netSurplus,
     investmentGain: gainSeries[i],

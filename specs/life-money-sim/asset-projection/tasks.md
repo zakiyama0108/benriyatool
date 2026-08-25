@@ -169,3 +169,8 @@
   - [x] 🔴 `AssetProjectionTable`のテストに、資産運用モードでは各行に運用益が表示され、貯蓄のみモードでは「−」表記になることを確認するケースを追加する
   - [x] 🟢 `AssetProjectionTable.tsx`に運用益列を追加する
   - [ ] `/run`(run-benriyatoolスキル)で、収入セクションのボーナス支給月・金額を設定すると該当月/年に賞与が表示・資産額に反映されること、資産運用モードで運用益カラムに値が出ることを実機確認する
+
+- [x] Task 37: 賞与を「賞与(収入)」「賞与(イベント)」の2列に分割表示(仕様: requirements.md#賞与・イベントの登録-4、design.md#資産推移テーブルに金額を表示する処理)
+  - [x] 🔴 `AssetProjectionTable`のテストを、収入賞与・イベント賞与がそれぞれの列に別々に表示されること・両者を合算しないことの確認に更新する
+  - [x] 🔴 `aggregateYearly`が収入賞与・イベント賞与を別々に年間合計することのテストに更新する
+  - [x] 🟢 `MonthlyProjectionRow`/`YearlyProjectionRow`の`bonusAmount`を`incomeBonusAmount`・`eventBonusAmount`に分割し、`buildMonthlyProjectionRows`・`aggregateYearly`・`AssetProjectionTable`を2列表示に実装し直す(差引後余剰では両者を合算)

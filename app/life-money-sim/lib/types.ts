@@ -105,7 +105,8 @@ export type MonthlyProjectionRow = {
   spouseAge?: number
   childrenAges: (number | undefined)[]
   eventItems: EventItem[] // その月に発生したイベントの名目・金額一覧
-  bonusAmount: number // その月に登録された賞与の合計額・万円。0は登録なし(仕様: requirements.md#賞与・イベントの登録-4)
+  incomeBonusAmount: number // その月の収入賞与(収入で登録した支給月×1回あたり)・万円。0は該当なし(仕様: requirements.md#賞与・イベントの登録-4)
+  eventBonusAmount: number // その月に登録された賞与(賞与・イベント)の合計額・万円。0は登録なし(仕様: requirements.md#賞与・イベントの登録-4)
   recurringLabels: RecurringLabel[] // その月に該当した定期収入・定期支出の名目・金額一覧(仕様: requirements.md#定期的な収入・支出の登録-6)
   netSurplus: number // 差引後余剰・万円
   investmentGain: number // その月の運用益・万円。貯蓄のみモードは0(仕様: requirements.md#月次の資産推移-6)
@@ -119,7 +120,8 @@ export type YearlyProjectionRow = {
   spouseAge?: number
   childrenAges: (number | undefined)[]
   eventItems: EventItem[] // その年に発生したイベントの名目・金額一覧(同じ名目でも合算せずすべて集める)
-  bonusAmount: number // その年に該当した賞与の合計額・万円
+  incomeBonusAmount: number // その年の収入賞与の合計額・万円
+  eventBonusAmount: number // その年に登録された賞与(賞与・イベント)の合計額・万円
   recurringLabels: RecurringLabel[] // その年に該当した定期収入・定期支出を名目・種別ごとに合算した一覧
   yearlySurplus: number // 年次余剰資金・万円
   investmentGain: number // その年の運用益の合計・万円。貯蓄のみモードは0(仕様: requirements.md#月次の資産推移-6)
