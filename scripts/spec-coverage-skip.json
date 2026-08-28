@@ -771,6 +771,11 @@
   },
   {
     "specFile": "life-money-sim/asset-projection/design.md",
+    "item": "当月の通常ボーナスを求める処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#月次の資産推移-5でテスト済み(assetProjection.test.ts)"
+  },
+  {
+    "specFile": "life-money-sim/asset-projection/design.md",
     "item": "当月の差引後余剰を求める処理",
     "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#月次の資産推移-2でテスト済み(assetProjection.test.ts)"
   },

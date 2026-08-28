@@ -1,5 +1,26 @@
 import { supabase } from '../../lib/supabaseClient'
-import type { ScenarioInputState, ScenarioRecord } from './types'
+import type { IncomeInput, ScenarioInputState, ScenarioRecord } from './types'
+
+// bonusMonths(支給月)導入前に保存された収入は、支給月ではなく年間回数(bonusCount)しか持たない。
+// 支給月が不明なため、回数分を代表的な支給月(夏=6月・冬=12月を優先し、それ以上は他月へ広げる)へ
+// 割り当てて復元し、賞与額が資産推移から失われないようにする(仕様: monthly-balance/requirements.md#収入-2)
+const LEGACY_BONUS_MONTH_PREFERENCE = [6, 12, 3, 9, 1, 7, 4, 10, 2, 8, 5, 11]
+
+function toBonusMonths(income: Partial<IncomeInput> & { bonusCount?: number }): number[] {
+  if (Array.isArray(income.bonusMonths)) return income.bonusMonths
+  const count = typeof income.bonusCount === 'number' && income.bonusCount > 0 ? Math.floor(income.bonusCount) : 0
+  return LEGACY_BONUS_MONTH_PREFERENCE.slice(0, Math.min(count, 12)).sort((a, b) => a - b)
+}
+
+// 保存済みの収入を現在の型(IncomeInput)の3フィールドだけを持つ形へ正規化する。
+// 旧データに残る型外プロパティ(bonusCount)を落とし、再保存時にDBへ混入しないようにする
+function normalizeStoredIncome(stored: Partial<IncomeInput> & { bonusCount?: number }, fallback: IncomeInput): IncomeInput {
+  return {
+    monthlySalary: typeof stored.monthlySalary === 'number' ? stored.monthlySalary : fallback.monthlySalary,
+    bonusMonths: toBonusMonths(stored),
+    bonusAmountPerTime: typeof stored.bonusAmountPerTime === 'number' ? stored.bonusAmountPerTime : fallback.bonusAmountPerTime,
+  }
+}
 
 // DB上のスネークケース行から画面で使うScenarioRecordへ変換する
 type ScenarioRow = {
@@ -76,7 +97,9 @@ export function fillMissingScenarioFields(
   currentDefault: ScenarioInputState
 ): ScenarioInputState {
   return {
-    income: stored.income ?? currentDefault.income,
+    // incomeはフィールド単位でマージする(bonusMonths導入前の旧データはbonusCountしか持たないため、
+    // 支給月へ変換して補い、型外の旧プロパティは落とす)
+    income: stored.income ? normalizeStoredIncome(stored.income, currentDefault.income) : currentDefault.income,
     personalExpense: stored.personalExpense ?? currentDefault.personalExpense,
     household: stored.household ?? currentDefault.household,
     familyProfile: stored.familyProfile ?? currentDefault.familyProfile,
