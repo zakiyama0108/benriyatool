@@ -9,8 +9,10 @@ import AdminNavLink from './AdminNavLink'
 // (game-detail/Profile等はrequirements.mdの通り未実装)。存在しないURLへのリンクは必ず
 // 404になるため、実装済みの3画面のみをリンクとして並べ、対応する画面が実装され次第この配列に追加する。
 
-// 現在地を示すキー(実装済み画面)。画面追加時にここへ増やす
-export type BoardGameNavKey = 'list' | 'register' | 'favorites'
+// 現在地を示すキー(実装済み画面)。画面追加時にここへ増やす。
+// 'admin'はNAV_ITEMS(固定項目)には含めない。運営者ログイン時のみ表示されるAdminNavLinkが
+// 自分自身の現在地表示を担うため(design.md「共通ナビに管理画面への導線を表示する処理」)
+export type BoardGameNavKey = 'list' | 'register' | 'favorites' | 'admin'
 
 // 実装済み画面のナビ項目定義(表示順)。keyはactiveと突き合わせて現在地判定に使う。
 // 一覧はアプリのトップのため最上段に置く(game-list/design.md「ナビゲーション」表示順)
@@ -99,8 +101,9 @@ export default function BoardGameNav({ active }: { active: BoardGameNavKey }) {
           )
         })}
         {/* 運営者ログイン中のみ表示される管理画面導線(クライアント島)。BoardGameNav自体は
-            サーバーコンポーネントのまま(design.md「共通ナビに管理画面への導線を表示する処理」) */}
-        <AdminNavLink />
+            サーバーコンポーネントのまま(design.md「共通ナビに管理画面への導線を表示する処理」)。
+            activeが"admin"のとき(管理画面自身を表示中)は現在地として渡す */}
+        <AdminNavLink active={active === 'admin'} />
       </nav>
     </aside>
   )
