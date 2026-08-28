@@ -2832,7 +2832,7 @@
   {
     "specFile": "board-game-rules/admin/design.md",
     "item": "登録依頼からゲームを登録するローカルツール(管理画面の外)",
-    "reason": "WebアプリのコードではないClaude Code Skill(.claude/skills/board-game-rules-batch-register/)とNode.jsスクリプト(scripts/board-game-rules/registerGame.ts)のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T8参照)"
+    "reason": "WebアプリのコードではないClaude Code Skill(.claude/skills/board-game-rules-batch-register/)とNode.jsスクリプト(scripts/board-game-rules/registerGame.ts)のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T6参照)"
   },
   {
     "specFile": "board-game-rules/admin/design.md",
@@ -2862,7 +2862,7 @@
   {
     "specFile": "board-game-rules/admin/design.md",
     "item": "画面設計",
-    "reason": "画面のレイアウト・構成の記述で、実際の各コンポーネントの振る舞いはGameModerationTable/GameEditForm/ReportsView/GameRequestsView/page.tsxの各テストで担保済みのため"
+    "reason": "画面のレイアウト・構成の記述で、実際の各コンポーネントの振る舞いはReportsView/GameRequestsView/LoginScreen/page.tsxの各テストで担保済みのため"
   },
   {
     "specFile": "board-game-rules/admin/design.md",
@@ -3362,7 +3362,7 @@
   {
     "specFile": "board-game-rules/game-registration/requirements.md",
     "item": "公開ポリシー [5]",
-    "reason": "投稿者の依頼だけでは公開されないという方針の記述で、Web側からのboard_game_rules_games直接INSERT経路自体を実装していない(存在しないことの検証)ことで担保するため。ローカル登録ツール経由の公開はTDD対象外(admin/tasks.md T8)"
+    "reason": "投稿者の依頼だけでは公開されないという方針の記述で、Web側からのboard_game_rules_games直接INSERT経路自体を実装していない(存在しないことの検証)ことで担保するため。ローカル登録ツール経由の公開はTDD対象外(admin/tasks.md T6)"
   },
   {
     "specFile": "board-game-rules/game-registration/requirements.md",
@@ -3846,21 +3846,6 @@
   },
   {
     "specFile": "board-game-rules/admin/requirements.md",
-    "item": "ゲーム紹介画像の確認・自動補完 [15]",
-    "reason": "一時スキップ(未実装): /fix(ゲーム紹介画像)で要件のみ追加した段階。design.md/tasks.mdの追記・実装(TDD)が完了しテストを紐づけたらこのエントリを削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "ゲーム紹介画像の確認・自動補完 [16]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "ゲーム紹介画像の確認・自動補完 [17]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
     "item": "ゲーム紹介画像の自動補完 [8]",
     "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
   },
@@ -3877,7 +3862,7 @@
   {
     "specFile": "board-game-rules/game-registration/design.md",
     "item": "board_game_rules_game_requests(新規) > intro_photo_paths",
-    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0b)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest拡張)でテストする(tasks.md T8参照)"
+    "reason": "マイグレーションのカラム定義表の1行で、実際のスキーマはマイグレーション適用時の実機確認(tasks.md T0b)で担保するため。書き込み内容はgameRequests.test.ts(createGameRequest拡張)でテストする(tasks.md T6参照)"
   },
   {
     "specFile": "board-game-rules/game-registration/design.md",
@@ -3886,13 +3871,8 @@
   },
   {
     "specFile": "board-game-rules/admin/design.md",
-    "item": "ゲーム紹介画像を差し替え・削除する処理",
-    "reason": "一時スキップ(未実装): /designで処理フローを追記した段階。実装(TDD)完了後、introPhotos.test.ts等にテストを紐づけたらこのエントリを削除する(tasks.md T3b参照)"
-  },
-  {
-    "specFile": "board-game-rules/admin/design.md",
     "item": "ゲーム紹介画像を自動補完する処理(ローカルツール内、管理画面の外)",
-    "reason": "WebアプリのコードではないClaude Code Skill(.claude/skills/board-game-rules-batch-register/)とNode.jsスクリプト(scripts/board-game-rules/registerGame.ts)の処理のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T8b参照)"
+    "reason": "WebアプリのコードではないClaude Code Skill(.claude/skills/board-game-rules-batch-register/)とNode.jsスクリプト(scripts/board-game-rules/registerGame.ts)の処理のため、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T6b参照)"
   },
   {
     "specFile": "board-game-rules/admin/design.md",

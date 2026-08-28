@@ -63,7 +63,7 @@ beforeEach(() => {
   deleteEqMock.mockReset().mockResolvedValue({ data: null, error: null })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-12、specs/board-game-rules/admin/design.md#登録依頼を確認する処理
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-8、specs/board-game-rules/admin/design.md#登録依頼を確認する処理
 describe('【管理画面】登録依頼一覧を取得する - 未処理を優先し、次いで新しい順に並べる', () => {
   it('未処理優先(processed_atがNULL優先)・次いで新しい順で取得すること', async () => {
     await fetchGameRequests()
@@ -120,7 +120,7 @@ describe('【管理画面】登録依頼一覧を取得する - 未処理を優�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-13、specs/board-game-rules/admin/design.md#登録依頼を処理済みにする処理 / 削除する処理
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-9、specs/board-game-rules/admin/design.md#登録依頼を処理済みにする処理 / 削除する処理
 describe('【管理画面】登録依頼を処理済みにする', () => {
   it('processed_atに現在時刻をセットするUPDATEが実行されtrueが返ること', async () => {
     const result = await markGameRequestProcessed('req-1')
@@ -141,7 +141,7 @@ describe('【管理画面】登録依頼を処理済みにする', () => {
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-14
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-10
 describe('【管理画面】不要な登録依頼を削除する', () => {
   it('対象依頼のDELETEが実行されtrueが返ること', async () => {
     const result = await deleteGameRequest('req-1')
