@@ -170,7 +170,7 @@ describe('【管理画面】登録依頼の処理済みマーク・削除の操�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-13、specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-14、specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-15、specs/board-game-rules/admin/requirements.md#UI/UX要件-1、specs/board-game-rules/admin/requirements.md#UI/UX要件-2、specs/board-game-rules/admin/design.md#管理画面を共通chrome共通ナビパンくずで表示し回遊できるようにする処理
+// 仕様: specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-13、specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-14、specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-15、specs/board-game-rules/admin/requirements.md#UI/UX要件-1、specs/board-game-rules/admin/requirements.md#UI/UX要件-2、specs/board-game-rules/admin/design.md#管理画面を共通chrome共通ナビ・パンくずで表示し回遊できるようにする処理
 describe('【管理画面】共通ナビ・パンくずの枠(chrome)を全状態で表示し、他画面へ回遊できる', () => {
   it('未ログインのときも、共通ナビ(一覧・登録依頼・お気に入り)とパンくずが表示され、他画面へ回遊できること', async () => {
     vi.mocked(getSession).mockResolvedValue(null)
