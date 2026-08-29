@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSession } from '../lib/useSession'
 import { isAuthorizedAdmin } from '../../lib/adminAuth'
 
-// 共通ナビ(左サイドバー)に置く、運営者専用の管理画面導線(仕様: admin/requirements.md#ログイン・アクセス制御-18、
+// 共通ナビ(左サイドバー)に置く、運営者専用の管理画面導線(仕様: admin/requirements.md#ログイン・アクセス制御-5、
 // admin/design.md「共通ナビに管理画面への導線を表示する処理」)。
 // これは運営者が管理画面へ素早く到達するための利便であって、アクセス制御ではない
 // (実際の保護はRLS/Storageポリシーが担う)。判定ロジックは既存の共通運営者判定(isAuthorizedAdmin)を

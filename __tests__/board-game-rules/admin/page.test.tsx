@@ -94,7 +94,7 @@ describe('【管理画面】未ログイン・権限なしでは管理データ�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#通報の確認-5、specs/board-game-rules/admin/requirements.md#登録依頼の確認-7
+// 仕様: specs/board-game-rules/admin/requirements.md#通報の確認-6、specs/board-game-rules/admin/requirements.md#登録依頼の確認-8
 describe('【管理画面】権限ありで通報一覧・登録依頼一覧を取得して表示する', () => {
   it('権限があるとき、通報一覧・登録依頼一覧が取得され、通報に対象ゲーム名が表示されること', async () => {
     vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
@@ -133,7 +133,7 @@ describe('【管理画面】権限ありで通報一覧・登録依頼一覧を�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-8、specs/board-game-rules/admin/requirements.md#登録依頼の確認-9
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-9、specs/board-game-rules/admin/requirements.md#登録依頼の確認-10
 describe('【管理画面】登録依頼の処理済みマーク・削除の操作が一覧に反映される', () => {
   it('処理済みにするを押すと、markGameRequestProcessedが呼ばれ一覧が再取得されること', async () => {
     vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))

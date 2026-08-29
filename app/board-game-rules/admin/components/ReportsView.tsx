@@ -11,7 +11,7 @@ type Props = {
 }
 
 // 通報一覧。各通報に対象ゲーム・通報日時・理由テキストを表示し、対象ゲームの詳細画面(game-detail)へ
-// 遷移するリンクを出す(仕様: admin/requirements.md#通報の確認-5、#通報の確認-6)。編集・削除は遷移先の
+// 遷移するリンクを出す(仕様: admin/requirements.md#通報の確認-6、#通報の確認-7)。編集・削除は遷移先の
 // 詳細画面の管理者導線で行う。通報者・第三者は自分の通報も含め読めない(SELECT権限なし)ため、
 // ここに出るのは運営者だけが見る内容。理由テキストはHTMLとして解釈しない形で描画する(design.md#セキュリティ)。
 export default function ReportsView({ reports, gameNames }: Props) {
