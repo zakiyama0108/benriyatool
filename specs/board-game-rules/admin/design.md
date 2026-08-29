@@ -72,7 +72,7 @@
   2. 各依頼の写真(非公開Storage)と入力済み分類情報を表示する(requirements.md#登録依頼の確認-8)。写真は運営者が「写真を確認」を押した時点で`fetchOriginalPhotos`(`admin/lib/photos.ts`)が署名付きURLを取得する
   3. 依頼に添付されたゲーム紹介画像(`intro_photo_paths`)があれば、公開Storageバケットの公開URLでプレビュー表示する。0枚の場合は「紹介画像なし(登録時に自動補完されます)」の旨を表示する(requirements.md#ゲーム紹介画像の確認・自動補完-11)
   4. 取得に失敗した場合は、一覧を表示せずエラー表示にする(後述エラーハンドリング)
-- 関連するビジネスルール: requirements.md#登録依頼の確認-8、requirements.md#ゲーム紹介画像の確認・自動補完-11
+- 関連するビジネスルール: requirements.md#登録依頼の確認-8、requirements.md#登録依頼の確認-9、requirements.md#ゲーム紹介画像の確認・自動補完-11
 
 ### 登録依頼を処理済みにする処理 / 削除する処理
 - 対象: `board_game_rules_game_requests`のレコード
