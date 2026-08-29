@@ -2482,27 +2482,47 @@
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "見直しの実行 [2]",
-    "reason": "見直し案をcontent-selection/requirements.mdへの変更提案としてブランチ・PRの形で作成するという運用フローの要件で、このリポジトリのコードとして実装しないため"
+    "reason": "見直しの対象領域(選定領域・生成領域)を宣言する要件で、ヘッドレスClaude Codeへの指示内容でありコードとして実装・テストしないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
-    "item": "承認フロー [3]",
+    "item": "見直しの実行 [3]",
+    "reason": "各フィードバックを選定領域・生成領域・対象外に振り分けるというヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "見直しの実行 [4]",
+    "reason": "選定・生成いずれの領域にも該当しないフィードバックをPR本文の表に対象外として記録するという、エージェントが作成するPR本文の記述内容に関する要件で、コードとして実装・テストしないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "承認フロー [5]",
     "reason": "見直し案のPRを自動マージせず運営者が確認してマージするという要件で、ワークフロー実装(tasks.md Task4)が`gh pr merge --auto`を一切呼ばないという不作為によって担保され、対応するテスト(存在しないことの検証)を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
-    "item": "見直し案の粒度・提示方法 [4]",
+    "item": "選定領域の見直し案の粒度・提示方法 [6]",
     "reason": "見直し案の対象範囲(新しい採用基準・フィルター観点の追加提案も含む)というヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
-    "item": "見直し案の粒度・提示方法 [5]",
+    "item": "選定領域の見直し案の粒度・提示方法 [7]",
     "reason": "材料が1件でもあれば提案を見送らないというヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため(材料が両方0件の場合のPRスキップ判定自体はgit diff --quietの結果で機械的に決まるが、その分岐に至る「1件でもあれば提案する」という判断はエージェント側の責務)"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
-    "item": "見直し案の粒度・提示方法 [6]",
+    "item": "選定領域の見直し案の粒度・提示方法 [8]",
     "reason": "新しい判定ロジックの実装(テスト含む)を同じPRに含めるというヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論・実装作業に委ねる部分でありこのリポジトリのユニットテスト対象を持たないため。実際に生成されたPRの実装コードは、そのPR自体のCI(ci.yml)とレビューで確認される"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "生成領域の見直し案の粒度・提示方法 [9]",
+    "reason": "生成領域(content-generation)の変更対象ファイル・観点を示すヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "生成領域の見直し案の粒度・提示方法 [10]",
+    "reason": "生成領域の反映はルール文(content-generation/requirements.md・design.md、必要ならgenerate-content.ts内の転記箇所)の更新をもって足りるという要件で、generate-content.tsが両ファイルを実行時に読み込む既存実装への依存の説明であり、この要件自体に対応する新規のユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
@@ -2513,6 +2533,11 @@
     "specFile": "ai-dev-digest/watchlist-review/requirements.md",
     "item": "ビジネスルール・制約 [2]",
     "reason": "見直し案にPR本文として変更理由(判断材料の表を含む)を明記するという、エージェントが作成するPR本文の記述内容に関する要件で、コードとして実装・テストしないため"
+  },
+  {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "ビジネスルール・制約 [3]",
+    "reason": "生成領域の見直し案がcontent-generation/requirements.md#著作権への配慮(根拠)の緩和策を弱めてはならないという制約で、ヘッドレスClaude Codeが見直し案を検討する際の推論に委ねる部分でありコードとして実装・テストしないため。生成された見直し案PR自体の内容は運営者のレビューで確認される"
   },
   {
     "specFile": "ai-dev-digest/bookmark/requirements.md",
