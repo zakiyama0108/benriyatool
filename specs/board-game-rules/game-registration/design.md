@@ -1,6 +1,6 @@
 # 設計: ボードゲームの新規登録(写真からのルール生成)
 
-DB/anonキー方針は[ADR-0001](../../../docs/adr/0001-user-input-database.md)にあるため重複させず、本specでは「写真+分類情報の依頼送信→保存→運営者への通知」という処理フローと、依頼の保存構造を書く。**LLM解析はこのWebアプリ(Cloudflare Workers)上では一切行わない**(方針転換の経緯: `/consult`で、匿名投稿からのライブLLM解析は費用が発生し続けるため撤廃し、運営者がローカルツールでまとめて登録する方式に変更した)。運営者による実際の登録処理は[admin/design.md](../admin/design.md)を参照。
+DB/anonキー方針は[ADR-0001](../../../docs/adr/0001-user-input-database.md)にあるため重複させず、本specでは「写真+分類情報の依頼送信→保存→運営者への通知」という処理フローと、依頼の保存構造を書く。**LLM解析はこのWebアプリ(Cloudflare Workers)上では一切行わない**。利用者は写真+分類情報の依頼を送信するだけで、写真解析・ルール生成・登録は運営者のローカル環境で行う(背景は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md))。運営者による実際の登録処理は[admin/design.md](../admin/design.md)を参照。
 
 ## 処理フロー
 
@@ -201,6 +201,13 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 | release_year | int, nullable | 発売年(任意) |
 | created_at | timestamptz, not null, default now() | 依頼日時 |
 | processed_at | timestamptz, nullable | 運営者が登録処理を終えた日時。NULLは未処理([admin/design.md](../admin/design.md)の一覧で区別) |
+| status | text, not null, default `'pending'` | 登録実行の進行状態。`pending`(未着手)/`queued`(ローカル処理待ち)/`running`(処理中)/`draft`(下書きあり)/`published`(公開済み)/`failed`(失敗)。CHECK制約でこの6値のみ許可する([admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)) |
+| draft_content | jsonb, nullable | 生成された下書き(`GameRegistrationInput`と同形。`scripts/board-game-rules/registerGame.ts`参照)。常に最新1件のみを保持し、再調整のたびに上書きする |
+| revision_note | text, nullable | 運営者が「再調整を依頼」で入力した直近の要望。ローカル処理が消費すると空にする |
+| revision_round | int, not null, default 0 | 完了した生成回数(初回生成で1、以降の再調整ごとに+1) |
+| revision_history | jsonb, not null, default `'[]'` | 各回の要望テキストの履歴(`{round, note, created_at}`の配列。noteは初回はnull) |
+| error_message | text, nullable | `status='failed'`のときの失敗理由 |
+| published_game_id | uuid, nullable, references `board_game_rules_games(id)` on delete set null | 公開時にINSERTしたゲームのID。参照先のゲームが物理削除された場合はNULLに戻る(依頼レコード自体は残す) |
 
 - 匿名投稿のため`auth.users`とのリレーションは持たない(reportsと同様)
 
@@ -208,7 +215,7 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 - `is_official`列を撤廃する(全ゲームが運営者経由でのみ登録される前提になり、区別の意味がなくなったため)
 - `release_year int`列を追加する(発売年、任意)
 - `genre text`(単一)を`genres text[]`(複数)に変更し、CHECK制約で固定リストの値のみで構成されることを担保する
-- INSERTポリシーを撤廃し、運営者のローカル登録ツール(service_role相当の権限)のみが書き込める形にする(下記マイグレーション参照。Web側からの直接INSERT経路はなくなった)
+- `board_game_rules_games`へのINSERTを許可するのは、運営者のローカル登録ツール(service_role相当の権限)と、運営者本人のログインセッション(「公開する」操作。ポリシーは下記「追加マイグレーション(登録実行・下書きレビュー)」、根拠は[adr/0002](../adr/0002-operator-publish-insert.md))のみ。anon・運営者以外のauthenticatedからの直接INSERT経路は持たない(このマイグレーションで従来のanon向けINSERTポリシーをDROPする)
 - `intro_photo_paths text[] not null default '{}'`列を追加する(ゲーム紹介画像、公開Storageバケットのパス。順序付きで先頭がメイン画像。requirements.md#ゲーム紹介画像の取り扱い-10)。`photo_paths`(元写真、非公開)とは異なり、この列は**公開列**としてanonのSELECT許可対象に含める(下記GRANT参照)。運営者は編集画面から差し替え・削除できる([admin/design.md](../admin/design.md))
 
 ### マイグレーション(実装より先に単独PRで適用)
@@ -369,6 +376,44 @@ T0(追加マイグレーション適用)の実機確認:
 - `anon`が`intro_photo_paths`を含む一覧取得クエリで公開列(旧列+`intro_photo_paths`)をSELECTでき、`photo_paths`のみは引き続き権限エラーで拒否されること(列単位の秘匿が`intro_photo_paths`追加後も崩れていないこと)
 - `board_game_rules_game_requests`へのINSERT(anon)で`intro_photo_paths`に配列を渡せること、省略時は空配列がデフォルトになること
 
+### 追加マイグレーション(登録実行・下書きレビュー、実装より先に単独PRで適用)
+[admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)が使う状態管理カラムを`board_game_rules_game_requests`へ追加し、公開時のINSERTを運営者本人のログインセッションから直接行えるよう`board_game_rules_games`にINSERTポリシーを追加する(このポリシーの根拠は[adr/0002](../adr/0002-operator-publish-insert.md))。`draft_content`・`revision_note`・`revision_history`には`board_game_rules_games`の`rules_simple`/`rules_detailed`のような文字数上限CHECKを設けない(書き込み主体がservice_role相当のローカル処理・運営者本人に限られ、匿名からの巨大データ投入という脅威が構造的にないため。公開時にINSERTされる`board_game_rules_games`側には既存の上限CHECKが引き続き適用される)。
+
+```sql
+-- board_game_rules_game_requests へ登録実行・下書きレビュー用のカラムを追加
+alter table board_game_rules_game_requests
+  add column status text not null default 'pending'
+    check (status in ('pending', 'queued', 'running', 'draft', 'published', 'failed')),
+  add column draft_content jsonb,
+  add column revision_note text,
+  add column revision_round int not null default 0,
+  add column revision_history jsonb not null default '[]',
+  add column error_message text,
+  -- on delete set nullにする理由: デフォルト(no action)のままだと、依頼経由で公開したゲームを
+  -- 運営者が物理削除しようとした際にFK違反で失敗し、既存の物理削除機能(game-detail/design.md
+  -- 「物理削除のDB設計」)を壊す。games行が消えても依頼レコード自体は残したいためcascadeではなくset nullにする
+  add column published_game_id uuid references board_game_rules_games(id) on delete set null;
+
+-- 登録: 運営者本人による公開操作(下書きの内容でゲームをINSERT)を認める。
+-- anon/authenticatedへの一般INSERT許可は行わず、admin_emailsに載る運営者本人のみに限定する
+-- (根拠: specs/board-game-rules/adr/0002-operator-publish-insert.md)
+grant insert on board_game_rules_games to authenticated;
+create policy "admin can insert games" on board_game_rules_games
+  for insert to authenticated
+  with check ((auth.jwt() ->> 'email') in (select email from admin_emails));
+
+-- status/draft_content等の新規カラムは、既存の
+-- "admin can update game requests"(grant update on board_game_rules_game_requests to authenticated、
+-- テーブル単位のUPDATE)がそのまま適用されるため、追加のGRANT・ポリシーは不要
+```
+
+T0(追加マイグレーション適用)の実機確認:
+- `status`のデフォルトが`pending`になること、CHECK制約外の値のUPDATEが拒否されること
+- 運営者本人が`board_game_rules_games`へINSERTでき、公開したゲームがanonからSELECTできること(下書きの内容がそのまま公開ゲームとして見えること)
+- anon・運営者以外の認証ユーザーからの`board_game_rules_games`へのINSERTが拒否されること
+- 運営者本人が`board_game_rules_game_requests`の`status`・`draft_content`・`revision_note`・`revision_history`をUPDATEできること(既存の運営者向けUPDATEポリシーが新カラムにも及ぶこと)
+- `published_game_id`が指すゲームを運営者本人が物理削除([game-detail/design.md#物理削除のDB設計](../game-detail/design.md))してもFK違反にならず成功し、対応する依頼行の`published_game_id`がNULLに戻ること
+
 ### 運営者への通知(Supabase Database Webhooks + ntfy Message Templating)
 `board_game_rules_game_requests`へのINSERTをSupabase Database Webhooks機能(ダッシュボードから設定、pg_net拡張ベース)で購読し、ntfyへHTTP POSTする。送信先URLに、ntfy公式の**インラインMessage Templating**(`?tpl=yes`、Goテンプレート構文)を組み込むことで、中継サーバーを新設せずに次を実現する:
 - **タイトル**: 「新しい登録依頼」
@@ -381,7 +426,7 @@ T0(追加マイグレーション適用)の実機確認:
 - **課金の発生しない設計**: このWebアプリ(Cloudflare Workers・Supabase)からはAnthropic APIを一切呼び出さない。写真解析・ルール生成は運営者のローカル環境で行う([admin/design.md](../admin/design.md))。匿名投稿による費用の無制限消費というリスク自体が構造的になくなる
 - **元写真の非公開**: 依頼写真は一般公開しない。既存の非公開Storageバケットのアクセスポリシー(運営者のみSELECT、サイズ・MIME上限)をそのまま適用する([admin/design.md](../admin/design.md))
 - **Storage濫用への量的制約**: 依頼送信はログイン不要なため、匿名の大量送信を防ぐボット対策(Turnstile)は設けない。量的な歯止めは既存のバケットポリシー(ファイルサイズ上限・許可MIME)に委ねる(残余リスクとして許容。急増した場合は[admin](../admin/requirements.md)で運営者が気付いて対応する)
-- **games直接INSERTの禁止**: `board_game_rules_games`へのINSERTポリシーはWeb側(anon/authenticated)に一切与えない。運営者のローカル登録ツールのみがservice_role相当の権限で書き込む([admin/design.md](../admin/design.md)参照)。これにより匿名からのスパムゲーム直接登録という残余リスク(旧設計で許容していたもの)自体がなくなる
+- **games直接INSERTの制限**: `board_game_rules_games`へのINSERTポリシーは、anon・運営者以外のauthenticatedには一切与えない。書き込めるのは、運営者のローカル登録ツール(service_role相当の権限)と、運営者本人のログインセッション([admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)「公開する」操作用、下記「追加マイグレーション(登録実行・下書きレビュー)」)のみ。これにより匿名からのスパムゲーム直接登録という残余リスク(旧設計で許容していたもの)自体がなくなる
 - **ntfy通知先の非公開**: 通知先URL(トピック名)はリポジトリに含めず、Supabaseダッシュボードの設定として保持する
 - **ゲーム紹介画像の著作権配慮は運用ルールであり技術的な強制はできない**: 「実物を撮影したもの、またはAI加工したものに限る」(requirements.md#ゲーム紹介画像の取り扱い-11)は、投稿者の申告・運営者の目視確認に委ねる運用ルールで、DB・Storageの仕組みで画像の出自を検証することはできない(通報([report/design.md](../report/design.md))・運営者の差し替え・削除([admin/design.md](../admin/design.md))で事後対応する)
 - **ゲーム紹介画像バケットの量的制約**: 公開バケットも匿名アップロードを許すため、元写真バケットと同じ量的制約(ファイルサイズ上限・許可MIME・枚数上限20枚のクライアント側担保)を適用する([admin/design.md#ゲーム紹介画像の公開Storage](../admin/design.md))

@@ -120,7 +120,7 @@ describe('【管理画面】登録依頼一覧を取得する - 未処理を優�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-9、specs/board-game-rules/admin/design.md#登録依頼を処理済みにする処理 / 削除する処理
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-22、specs/board-game-rules/admin/design.md#登録依頼を処理済みにする処理 / 削除する処理
 describe('【管理画面】登録依頼を処理済みにする', () => {
   it('processed_atに現在時刻をセットするUPDATEが実行されtrueが返ること', async () => {
     const result = await markGameRequestProcessed('req-1')

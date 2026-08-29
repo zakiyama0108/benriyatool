@@ -8,7 +8,7 @@
 
 認証とアクセス制御の全体方針は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)にあるため重複させず、本specではこの画面固有の処理フロー(通報一覧の確認・登録依頼の確認/処理)を書く。ゲーム1件ごとのモデレーション操作(編集・削除・紹介画像差し替え・元写真照合・コメント削除)の設計は[game-detail/design.md#運営者向けの操作(管理者ログイン時)](../game-detail/design.md)にある。ログイン・権限確認の処理は`ikukyu/admin/design.md`・`life-money-sim/admin/design.md`と同じロジック(共通の`admin_emails`・`adminAuth.ts`)を再利用する。本管理画面と詳細画面の管理者導線はADR-0006テンプレートの「読み取り専用」の例外として、運営者本人の書き込み(ゲームの編集・削除、コメントの削除、紹介画像の差し替え、登録依頼の処理)を認める(ADR-0007)。モデレーション専用のサーバーは新設せず、書き込みはすべてRLS経由のDB操作で行う(requirements.md#非機能要件-2)。
 
-利用者からの登録依頼([game-registration/design.md](../game-registration/design.md)の`board_game_rules_game_requests`)を実際にゲームとして登録する処理は、この管理画面(Webアプリ)ではなく**ローカルのClaude Code Skill**(下記「登録依頼からゲームを登録するローカルツール」)で行う。管理画面が担うのは依頼の確認・処理済みマーク・削除にとどまる。
+利用者からの登録依頼([game-registration/design.md](../game-registration/design.md)の`board_game_rules_game_requests`)の写真解析・ルール本文の生成は、この管理画面(Webアプリ)ではなく**ローカルの自動処理**(下記「登録実行・下書きレビューの処理」「ローカル環境の定期処理」)で行う。管理画面が担うのは依頼の確認・登録実行の起動・下書きの確認と公開判断・削除である。
 
 ## 処理フロー
 
@@ -72,26 +72,59 @@
   2. 各依頼の写真(非公開Storage)と入力済み分類情報を表示する(requirements.md#登録依頼の確認-8)。写真は運営者が「写真を確認」を押した時点で`fetchOriginalPhotos`(`admin/lib/photos.ts`)が署名付きURLを取得する
   3. 依頼に添付されたゲーム紹介画像(`intro_photo_paths`)があれば、公開Storageバケットの公開URLでプレビュー表示する。0枚の場合は「紹介画像なし(登録時に自動補完されます)」の旨を表示する(requirements.md#ゲーム紹介画像の確認・自動補完-11)
   4. 取得に失敗した場合は、一覧を表示せずエラー表示にする(後述エラーハンドリング)
-- 関連するビジネスルール: requirements.md#登録依頼の確認-8、requirements.md#ゲーム紹介画像の確認・自動補完-11
+- 関連するビジネスルール: requirements.md#登録依頼の確認-8、requirements.md#登録依頼の確認-9、requirements.md#ゲーム紹介画像の確認・自動補完-11
 
 ### 登録依頼を処理済みにする処理 / 削除する処理
-- 対象: 運営者が選んだ1件の登録依頼
+- 対象: `board_game_rules_game_requests`のレコード
 - 手順:
-  1. 下記「登録依頼からゲームを登録するローカルツール」でゲームの登録が完了したら、管理画面から該当依頼の`processed_at`に現在時刻をセットするUPDATEを行う(requirements.md#登録依頼の確認-9)
-  2. 不要な依頼(スパム・重複・情報不足など)は、依頼そのものをDELETEする(requirements.md#登録依頼の確認-10)
-  3. 成功したら一覧の表示を更新、失敗したら失敗表示
-- 関連するビジネスルール: requirements.md#登録依頼の確認-9、requirements.md#登録依頼の確認-10
+  1. **処理済みにする**: 「公開する」を経由せず外部の手動フォールバック(`scripts/board-game-rules/registerGame.ts`)でゲームを登録した依頼について、運営者が「処理済みにする」を押すと`processed_at`に現在時刻をセットするUPDATEを行う(`markGameRequestProcessed`。requirements.md#登録依頼の確認-22)。通常の下書きレビュー経由の公開では「登録実行・下書きレビューの処理」手順4が`processed_at`を自動でセットするため、この操作は手動フォールバック運用のための補助導線
+  2. **削除する**: 不要な依頼(スパム・重複・情報不足など)は依頼そのものをDELETEする(`deleteGameRequest`。requirements.md#登録依頼の確認-10)。下書きの有無にかかわらず削除操作は共通(「登録実行・下書きレビューの処理」手順8「破棄」と同じ操作)
+  3. いずれも運営者が明示的に行う操作のため、処理中は該当操作を無効化し、成功したら一覧を更新、失敗したら失敗表示にする
+- 関連するビジネスルール: requirements.md#登録依頼の確認-10、requirements.md#登録依頼の確認-22
 
-### 登録依頼からゲームを登録するローカルツール(管理画面の外)
-- 対象: 未処理の登録依頼(写真+入力済み分類情報)
+### 登録実行・下書きレビューの処理
+- 対象: 運営者が選んだ1件の登録依頼(`board_game_rules_game_requests`)
+- 手順:
+  1. **登録実行**: `status`が`pending`または`failed`の依頼で「登録実行」を押すと、`status`を`queued`にUPDATEする(requirements.md#登録実行・下書きレビュー-16)。実際の解析・生成は下記「ローカル環境の定期処理」が担う
+  2. **状況表示**: 一覧は`status`に応じて「未着手/処理中/下書きあり/公開済み/失敗」のいずれかを表示する(requirements.md#登録実行・下書きレビュー-17)。`queued`・`running`は「処理中」として表示をまとめる(運営者にとって意味のある区別ではないため)
+  3. **下書き確認**: `status`が`draft`になったら、`draft_content`(ゲーム名・対応人数・プレイ時間・ジャンル・簡単版ルールの抜粋など)を表示する(requirements.md#登録実行・下書きレビュー-18)
+  4. **公開する**: `draft_content`(ゲーム名・対応人数・プレイ時間・ジャンル等の分類情報とルール本文。`photo_paths`・`intro_photo_paths`は含まない)に、対象の登録依頼行が持つ`photo_paths`(元写真、必須のため常に1枚以上)と`intro_photo_paths`(紹介画像。下記「ローカル環境の定期処理」手順5・「ゲーム紹介画像を自動補完する処理」で確定済みの値)をそのまま合わせて`board_game_rules_games`へINSERTする(下記「データベース設計」の運営者向けINSERT権限)。成功したら、対応する依頼の`processed_at`に現在時刻を、`published_game_id`に発行されたゲームID、`status`に`published`をセットするUPDATEを行う。INSERT成功後にこの後段UPDATEが失敗した場合は、ゲームは公開済みだが依頼は`draft`のまま残る。運営者が再度「公開する」を押したときの重複INSERTを避けるため、`publishDraft`は実行前に対象依頼の`published_game_id`がすでに設定されていないかを確認し、設定済みなら新規INSERTを行わず後段UPDATEのみを冪等に再実行する(requirements.md#登録実行・下書きレビュー-19)
+  5. **再調整を依頼**: 入力した要望テキストを`revision_note`にセットし、`status`を`queued`に戻すUPDATEを行う(requirements.md#登録実行・下書きレビュー-19)。`draft_content`・`revision_round`・`revision_history`は変更しない(「ローカル環境の定期処理」が完了後に更新する)
+  6. **履歴表示**: `revision_history`(`{round, note, created_at}`の配列)を新しい順に表示する(requirements.md#登録実行・下書きレビュー-20)
+  7. **失敗表示**: `status`が`failed`の依頼は`error_message`を表示する。「登録実行」を再度押せば手順1と同じ操作(`status`を`queued`に戻す)で再試行できる(requirements.md#登録実行・下書きレビュー-21)
+  8. **破棄**: 依頼そのものをDELETEする(requirements.md#登録依頼の確認-10、requirements.md#登録実行・下書きレビュー-19「破棄」)。下書きの有無にかかわらず、削除操作は共通
+  9. いずれの操作も、処理中は該当操作を無効化し二重実行を防ぐ。成功したら一覧の表示を更新、失敗したら失敗表示
+- 関連するビジネスルール: requirements.md#登録実行・下書きレビュー、requirements.md#登録実行のローカル処理起動
+
+`status`(登録依頼1件ごとの進行状態)の遷移は次のとおり。破棄(依頼のDELETE)はどの状態からも行える操作のため状態遷移には含めない。
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending: 依頼受信
+    pending --> queued: 登録実行を押す
+    queued --> running: ポーリングが取得
+    running --> draft: 生成成功
+    running --> failed: 生成失敗
+    failed --> queued: 登録実行を再度押す(再試行)
+    draft --> queued: 再調整を依頼(要望を送信)
+    draft --> published: 公開する
+    published --> [*]
+```
+
+### ローカル環境の定期処理(管理画面の外)
+- 対象: `status`が`queued`の登録依頼
 - 手順(概要。実装の詳細は本specのタスクで扱う):
-  1. 運営者がローカル(Mac)の特定フォルダに写真セットを配置する、または`board_game_rules_game_requests`から未処理の依頼を確認する
-  2. 新規のClaude Code Skill(`.claude/skills/board-game-rules-batch-register/`)を起動する。Claude Codeが写真(依頼に入力済みの分類情報があれば参考にしつつ)を解析し、分類情報とルール本文(簡単版・詳しい版、[game-registration/requirements.md#ルール本文の著作権への配慮](../game-registration/requirements.md)に従う独自の言い回し。詳しい版は下記「詳しい版の共通章立て(生成時の構造)」に沿う)を生成する
-  3. 依頼にゲーム紹介画像(`intro_photo_paths`)が添付されていれば、そのままそのゲームの紹介画像として引き継ぐ。添付が0枚の場合は「ゲーム紹介画像を自動補完する処理」(下記)で補う(requirements.md#ゲーム紹介画像の確認・自動補完-12)
-  4. Node.jsスクリプトが、生成した内容(紹介画像パスを含む)を`board_game_rules_games`へINSERTする(下記「データベース設計」の権限で担保)
-  5. 依頼由来の場合は、対応する`board_game_rules_game_requests`の`processed_at`もあわせて更新する
-- 補足: この処理はAnthropic API呼び出しを伴うが、運営者自身のClaude Codeセッション(Pro/Maxプラン等の対話コンテキスト)上で行われ、Webアプリ・Cloudflare Workersからの追加のAPI課金は発生しない(根拠: `/consult`での判断。[game-registration/design.md](../game-registration/design.md)参照)
-- 関連するビジネスルール: requirements.md#登録依頼の確認-9
+  1. 運営者のMac上でlaunchdが一定間隔(60秒。requirements.md#登録実行のローカル処理起動-10)ごとにポーリングスクリプトを起動する(常駐プロセスは持たない)。処理対象がなければ何もせず終了する
+  2. スクリプトは`status='queued'`の依頼を1件、`status='running'`への条件付きUPDATE(`WHERE status = 'queued'`)で排他的に取得する(同時に複数のポーリング実行が重複して処理しないようにする)
+  3. `draft_content`が未設定(初回)なら依頼の写真(非公開Storageから[service_role](#データベース設計)で取得)と入力済み分類情報を、`draft_content`が既にある(再調整)なら直前の下書きと`revision_note`をあわせて、ヘッドレスのClaude Codeセッション(`claude -p`)へ渡す
+  4. Claude Codeが写真(初回)または直前の下書き+要望(再調整)をもとに、分類情報とルール本文(簡単版・詳しい版、[game-registration/requirements.md#ルール本文の著作権への配慮](../game-registration/requirements.md)に従う独自の言い回し。詳しい版は下記「詳しい版の共通章立て(生成時の構造)」に沿う)を生成し、構造化された内容を出力する
+  5. 依頼にゲーム紹介画像(`intro_photo_paths`)が添付されていれば、そのままそのゲームの紹介画像として引き継ぐ(依頼行の`intro_photo_paths`列はそのまま)。添付が0枚(かつ初回)の場合は「ゲーム紹介画像を自動補完する処理」(下記)で補う。自動補完で生成した画像パスは依頼行の`intro_photo_paths`列をUPDATEして書き戻す(新たな列・`draft_content`側への保存はしない。requirements.md#ゲーム紹介画像の確認・自動補完-12)
+  6. 成功したら、スクリプトが`draft_content`を更新し、`revision_round`を+1、`revision_history`に`{round, note, created_at}`を追記し(`note`は初回`null`、再調整時は消費した`revision_note`)、`revision_note`を`null`に戻し、`status`を`draft`にUPDATEする
+  7. 失敗したら(写真解析・生成・出力の構造化のいずれかで例外が起きたら)、`status`を`failed`に、`error_message`に原因をセットする。ゲームの登録(INSERT)自体はまだ行わないため、失敗しても`board_game_rules_games`には影響しない
+- 補足: 入力となる写真は匿名アップロードのため攻撃者が内容を完全に制御できる前提で扱う。ヘッドレス`claude -p`は最小権限で起動し(危険なツールを付与しない・作業ディレクトリを隔離しリポジトリへの書き込みを許さない)、`SUPABASE_SERVICE_ROLE_KEY`等の資格情報を持つプロセスから画像内の埋め込みテキストによって意図しない操作が行われないようにする。公開前の運営者レビュー(手順4「公開する」)は生成内容の品質を担保するものであって、プロンプトインジェクション対策そのものではない(下記「セキュリティ」)
+- 補足: この処理はAnthropic API呼び出しを伴うが、運営者自身のClaude Codeセッション(Pro/Maxプラン等の対話コンテキスト)上で行われ、Webアプリ・Cloudflare Workersからの追加のAPI課金は発生しない(根拠: `/consult`での判断。requirements.md#登録実行のローカル処理起動-9)
+- 補足: 運営者のMacが起動していない・オフラインの間は`queued`のまま処理が進まない。次にMacが起動しポーリングが走った時点で処理が再開する(requirements.md#登録実行のローカル処理起動-10)
+- 関連するビジネスルール: requirements.md#登録実行のローカル処理起動
 
 ### 詳しい版の共通章立て(生成時の構造)
 - 対象: 上記手順2で生成する「詳しい版」ルール本文の構造
@@ -102,47 +135,51 @@
 - 言い回しの再構成方針(原文の逐語転載をしない・数値や条件を省略しない「精密な言い換え」)は[game-registration/requirements.md#ルール本文の著作権への配慮](../game-registration/requirements.md)に従う
 
 ### ゲーム紹介画像を自動補完する処理(ローカルツール内、管理画面の外)
-- 対象: 紹介画像が0枚の登録依頼から登録するゲーム(上記手順3)
+- 対象: 紹介画像が0枚の登録依頼(上記「登録実行・下書きレビューの処理」手順3、または`registerGame.ts`の手動フロー)
 - 手順:
   1. **画像検索**: BoardGameGeek API(`https://boardgamegeek.com/xmlapi2/search`等、APIキー不要・無料)へ、依頼のゲーム名(未入力ならAIが写真から読み取ったゲーム名)で検索する。該当するゲームが見つかれば、そのthing詳細からbox art画像URLを取得する
-  2. 該当するゲームが見つからない場合は、紹介画像なしのまま登録する(`intro_photo_paths`は空配列。requirements.md#ゲーム紹介画像の確認・自動補完-12の自動補完は「見つけた場合」の処理であり、見つからない場合まで無理に画像を用意しない)
-  3. **AI画像加工**: 取得した画像URLをGoogle Gemini API(画像生成/編集モデル、無料枠)へ渡し、そのまま転載しない新規画像を生成する(game-registration/requirements.md#ゲーム紹介画像の取り扱い-12。具体的な加工プロンプト・生成パラメータは本specのタスクで扱う実装詳細とする)
-  4. 生成した画像を公開Storageバケット(`board-game-rules-game-photos`)へ、登録するゲームのID配下にアップロードし、`intro_photo_paths`に1枚として設定する
-  5. 画像検索・AI加工のいずれかが失敗した場合も、ゲーム自体の登録処理は止めない(紹介画像なしで登録を続行し、失敗はローカルのコンソールログに残す。下記「ログ」参照)
+  2. 該当するゲームが見つからない場合は、紹介画像なしのまま処理を続行する(`intro_photo_paths`は空配列。requirements.md#ゲーム紹介画像の確認・自動補完-12の自動補完は「見つけた場合」の処理であり、見つからない場合まで無理に画像を用意しない)
+  3. **AI画像加工**: 取得した画像URLをGoogle Gemini API(画像生成/編集モデル、無料枠)へ渡し、そのまま転載しない新規画像を生成する([game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)-12。具体的な加工プロンプト・生成パラメータは本specのタスクで扱う実装詳細とする)
+  4. 生成した画像を公開Storageバケット(`board-game-rules-game-photos`)へ、新規採番したアップロードUUID配下にアップロードし、対象の登録依頼行の`intro_photo_paths`列を`[<アップロードしたパス>]`でUPDATEする(登録実行・下書きレビューの自動フローでは、この時点でゲームIDはまだ確定していない(公開はWeb管理画面の操作で後から行われるため)。依頼時点の投稿画像と同じ「アップロードUUID配下」の命名規則を使い、公開時もパスの付け替えは行わない。[game-registration/design.md#ゲーム紹介画像のStorage](../game-registration/design.md)と同じ考え方)
+  5. 画像検索・AI加工のいずれかが失敗した場合も、処理自体は止めない(紹介画像なしで続行し、失敗はローカルのコンソールログに残す。下記「ログ」参照)
 - 補足: BoardGameGeek API・Google Gemini APIの呼び出しは運営者のローカル環境から行われ、Webアプリ・Cloudflare Workersのコード・課金構造には一切影響しない(requirements.md#ゲーム紹介画像の自動補完-8「無料枠の範囲で運用できるものを選定する」を満たす)。Gemini APIキーは運営者のローカル`.env`等で管理し、リポジトリ・Cloudflare Workers Secretsには含めない
 - 関連するビジネスルール: requirements.md#ゲーム紹介画像の確認・自動補完-12、requirements.md#ゲーム紹介画像の自動補完-8
 
 ## エラーハンドリング
 - 画面の状態は「未ログイン」「ログイン済みだが権限なし」「権限あり」「取得エラー」に切り分ける(`ikukyu/admin`と同一方針)
 - 一般利用者向けの保存(お気に入り等)は失敗を握りつぶす方針だが、管理画面は運営者がモデレーションする画面のため、データ取得の失敗は握りつぶさず画面に伝える(空一覧では取得失敗と0件の区別ができないため)
-- 登録依頼の処理済みマーク/削除は運営者が明示的に行う操作のため、失敗時は失敗が分かる表示をする。処理中は該当操作を無効化し二重実行を防ぐ(ゲームの編集・削除・コメント削除の失敗処理は詳細画面側。[game-detail/design.md](../game-detail/design.md))
+- 登録依頼の処理済みマーク/削除、登録実行/公開する/再調整を依頼は運営者が明示的に行う操作のため、失敗時は失敗が分かる表示をする。処理中は該当操作を無効化し二重実行を防ぐ(ゲームの編集・削除・コメント削除の失敗処理は詳細画面側。[game-detail/design.md](../game-detail/design.md))。ローカル環境の定期処理自体の失敗は上記「登録実行・下書きレビューの処理」手順7の`error_message`表示で扱う(Web側の操作失敗とは別系統)
+- 「公開する」のINSERTが`board_game_rules_games`の文字数上限CHECK(`rules_simple`・`rules_detailed`)違反で失敗した場合は、どの項目が長すぎるかが分かる表示をし、「再調整を依頼」で短縮を依頼できるよう促す(下書きは`board_game_rules_game_requests`側に上限CHECKを持たないため、超過は公開時に初めて顕在化する。[adr/0002](../adr/0002-operator-publish-insert.md)影響欄)
 
 ## 関連するファイル(抜粋)
 ```
 app/board-game-rules/admin/page.tsx (管理画面本体。共通レイアウト(BoardGameNav active="admin" + パンくず)の枠内で、ログイン・権限で出し分け、通報一覧・登録依頼一覧を表示するクライアント画面。配色・カード・ボタンは他画面と同じ bgr-* トークンに揃える)
 app/board-game-rules/admin/lib/fetchReports.ts (通報一覧の取得)
-app/board-game-rules/admin/lib/gameRequests.ts (登録依頼の一覧取得・processed_at更新・削除)
+app/board-game-rules/admin/lib/gameRequests.ts (登録依頼の一覧取得・processed_at更新・削除・登録実行/再調整のstatus更新・公開時のgames INSERT)
 app/board-game-rules/admin/lib/photos.ts (登録依頼の非公開Storageの元写真を運営者本人として署名付きURLで取得。「写真を確認」操作から呼ばれる)
 app/board-game-rules/admin/components/LoginScreen.tsx (ログイン/権限なしの案内。共通デザインのカード・ボタン体裁に揃える)
 app/board-game-rules/admin/components/ReportsView.tsx (通報一覧。各通報に対象ゲームの詳細画面への遷移リンクを出す)
 app/board-game-rules/admin/components/GameRequestsView.tsx (登録依頼一覧+写真プレビュー+ゲーム紹介画像プレビュー+処理済みマーク/削除の導線)
+app/board-game-rules/admin/components/DraftReviewCard.tsx (依頼1件の状況表示+下書き内容+公開する/再調整を依頼/破棄の導線+再調整履歴)
 app/board-game-rules/components/AdminNavLink.tsx (共通ナビ内の運営者専用の管理画面導線。useSession + isAuthorizedAdmin で出し分けるクライアント島。BoardGameNav から渡る active を受け取り、管理画面表示中は現在地(aria-current="page")として描画する)
 app/board-game-rules/components/BoardGameNav.tsx (nav末尾に AdminNavLink を差し込み、active が admin かどうかを AdminNavLink へ渡す。BoardGameNavKey に admin を追加。サーバーコンポーネントのまま。実装は [game-list/design.md](../game-list/design.md) が真実の源)
 app/board-game-rules/lib/useSession.ts (ログイン状態の参照フックを AdminNavLink でも利用)
 app/lib/adminAuth.ts (getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdmin を利用)
 app/lib/supabaseClient.ts (共通クライアントを利用)
-.claude/skills/board-game-rules-batch-register/SKILL.md (登録依頼からゲームを登録するローカルツール。Webアプリのコードではない。ゲーム紹介画像の自動補完(BoardGameGeek API検索 + Google Gemini API加工)を含む)
-scripts/board-game-rules/registerGame.ts (依頼の intro_photo_paths の引き継ぎ、0枚時の自動補完(画像検索・AI加工・アップロード))
+.claude/skills/board-game-rules-batch-register/SKILL.md (ローカル環境の定期処理が呼び出す、写真解析・ルール本文生成の手順を定めたSkill。Webアプリのコードではない。ゲーム紹介画像の自動補完(BoardGameGeek API検索 + Google Gemini API加工)を含む)
+scripts/board-game-rules/registerGame.ts (運営者が対話セッションで明示的に起動する既存の手動フロー。`photosDir`・`requestId`いずれもSupabaseへ直接INSERTする。自動化が止まった場合の手動フォールバックとしても使う)
+scripts/board-game-rules/processRegistrationQueue.ts (ローカル環境の定期処理の本体。queuedな依頼を1件取得し、写真取得→`claude -p`呼び出し→結果の構造化→board_game_rules_game_requestsのdraft_content等の更新までを行う。board_game_rules_gamesへは書き込まない)
+scripts/board-game-rules/com.benriyatool.board-game-rules-registration.plist (launchdの定期起動設定。StartIntervalでprocessRegistrationQueue.tsを60秒ごとに起動する。常駐プロセスではない)
 ```
 
 ゲーム個別のモデレーション操作(編集・削除・紹介画像差し替え・元写真照合・コメント削除)のコンポーネント・libは詳細画面側にある([game-detail/design.md#関連するファイル抜粋](../game-detail/design.md))。
 
 ## データベース設計
 本specは`board_game_rules_reports`([report/design.md](../report/design.md))・`board_game_rules_game_requests`([game-registration/design.md](../game-registration/design.md))を運営者権限で読み書きし、通報の対象ゲーム名の表示のため`board_game_rules_games`([game-registration/design.md](../game-registration/design.md))をSELECTする。各テーブルの運営者向けRLSは各specのマイグレーションで定義済みのため、ここでは重複させない。テーブルごとに運営者へ与える操作は次のとおり:
-- `board_game_rules_games`: 本管理画面は全行SELECTのみを使う(通報の対象ゲーム名の表示など)。ゲームの編集(UPDATE)・削除(DELETE)は詳細画面で行い、そのRLS・子レコードのカスケード削除は[game-detail/design.md#運営者による物理削除の処理](../game-detail/design.md)で定義する。INSERT(新規登録)はWeb画面からは行わない。ローカル登録ツール(下記)がservice_role相当の権限でRLSをバイパスして書き込む
+- `board_game_rules_games`: 本管理画面は全行SELECT(通報の対象ゲーム名の表示など)に加え、「公開する」操作のためINSERTを使う(運営者本人のログインセッションから直接。権限拡張の判断は[adr/0002](../adr/0002-operator-publish-insert.md)、RLSは[game-registration/design.md#追加マイグレーション登録実行・下書きレビュー](../game-registration/design.md)で担保)。ゲームの編集(UPDATE)・削除(DELETE)は詳細画面で行い、そのRLS・子レコードのカスケード削除は[game-detail/design.md#運営者による物理削除の処理](../game-detail/design.md)で定義する。写真解析・ルール生成に伴う書き込みは行わない(そちらはservice_role相当の権限を持つローカル定期処理が下書き段階で完結させ、games への書き込みは「公開する」操作でのみ発生する)
 - `board_game_rules_reports`: 運営者は全行SELECTのみ(通報の確認。書き換え・削除はしない。[report/design.md](../report/design.md))
 - `board_game_rules_comments`: DELETEは本人+運営者、UPDATE(編集)は本人のみで運営者は編集不可([comment/design.md](../comment/design.md))。運営者によるコメント削除の導線は詳細画面にある([game-detail/design.md](../game-detail/design.md))
-- `board_game_rules_game_requests`: 運営者はSELECT・UPDATE(`processed_at`)・DELETEができる([game-registration/design.md](../game-registration/design.md))
+- `board_game_rules_game_requests`: 運営者はSELECT・UPDATE(`processed_at`・`status`・`draft_content`・`revision_note`・`revision_history`等)・DELETEができる([game-registration/design.md](../game-registration/design.md))。ローカル定期処理はservice_role相当の権限でRLSをバイパスして`status`・`draft_content`等を更新する
 
 許可リスト`admin_emails`は`ikukyu/admin`で作成済みのものを共用し、新規テーブルは作らない。
 
@@ -229,7 +266,11 @@ T0(ゲーム紹介画像バケット設定適用)の実機確認:
 
 本文の中身は、権限ありの状態では1画面に縦に並べる(PC中心・スマホでも破綻しない範囲。requirements.md#非機能要件-1)。ゲーム個別の編集・削除・元写真照合・紹介画像差し替え・コメント削除は詳細画面(game-detail)の管理者導線で行うため、本画面には持たない:
 - 上部: ログイン中のアカウント表示とログアウト操作
-- 登録依頼一覧(`GameRequestsView`): 未処理を優先・次いで新しい順。写真プレビュー・ゲーム紹介画像プレビュー(0枚なら「紹介画像なし(登録時に自動補完されます)」の案内)・入力済み分類情報を表示。処理済みマーク・削除の導線
+- 登録依頼一覧(`GameRequestsView`): 未処理を優先・次いで新しい順。写真プレビュー・ゲーム紹介画像プレビュー(0枚なら「紹介画像なし(登録時に自動補完されます)」の案内)・入力済み分類情報を表示。処理済みマーク・削除の導線。各依頼は`status`(未着手/処理中/下書きあり/公開済み/失敗)のバッジと、状態に応じた操作(`DraftReviewCard`)を持つ:
+  - 未着手・失敗: 「登録実行」ボタン(失敗時はあわせて`error_message`を表示)
+  - 処理中(queued/running): 進行中の表示のみ(操作は無効化)
+  - 下書きあり: 下書きの内容(ゲーム名・対応人数・プレイ時間・ジャンル・簡単版ルールの抜粋)、「公開する」「再調整を依頼」ボタン、再調整の要望入力欄、再調整履歴(新しい順)
+  - 公開済み: 「公開済み」の表示のみ(操作なし)
 - 通報一覧(`ReportsView`): 対象ゲーム・通報日時・理由テキスト。各通報から**対象ゲームの詳細画面(game-detail)へのリンク**を出す。編集・削除はその詳細画面の管理者導線で行う([game-detail/design.md](../game-detail/design.md))
 
 未ログイン時・権限なし時・取得エラー時は上記の管理機能を出さず、案内(ログイン/権限がない旨/再試行)だけを本文に表示する。いずれの状態でも共通ナビ・パンくずの枠は保つため、管理者でない利用者でも他画面へ回遊できる。
@@ -268,10 +309,14 @@ stateDiagram-v2
 - 実際のアクセス制御はDB側のRLSとStorageのアクセスポリシーで担保する(ADR-0006)。画面側の権限確認・出し分けは案内のためのもので、突破されても運営者以外は保護された読み書き・元写真取得ができない
 - 運営者のメールアドレスは`admin_emails`(`ikukyu/admin`と共用)にのみ持ち、gitにもクライアントのJSバンドルにも置かない。画面側は「自分のメールが許可リストにあるか」を問い合わせるだけで、許可メールの値を保持しない(`ikukyu/admin`と同方針)
 - 静的サイトのため管理画面URLは誰でも開ける。守るのは「開けること」ではなく「データの読み書き・元写真取得ができること」であり、未ログイン・権限なしでは保護された処理を走らせない
-- 本管理画面はADR-0006テンプレートの読み取り専用の例外として書き込み(編集・削除)を認めるが、書き込みはRLSで運営者本人に限定する(ADR-0007)。モデレーション専用の別サーバーは新設しない(requirements.md#非機能要件-2)
+- 本管理画面はADR-0006テンプレートの読み取り専用の例外として書き込み(編集・削除、および下書きの「公開する」によるゲームの新規INSERT)を認めるが、書き込みはRLSで運営者本人に限定する(ADR-0007、および新規INSERTへの拡張は[adr/0002](../adr/0002-operator-publish-insert.md))。モデレーション専用の別サーバーは新設しない(requirements.md#非機能要件-2)
 - 通報理由・コメント本文・ゲーム情報を運営者画面に表示する際は、HTMLとして解釈しない形で描画する(利用者投稿・匿名通報の任意テキストを含むため。[comment/design.md](../comment/design.md)・[report/design.md](../report/design.md)と同方針)
 - ゲーム紹介画像の差し替え・削除は、`board_game_rules_games`のUPDATE権限と同じRLS(運営者本人のみ)で担保する。Storage側も同バケットのUPDATE/DELETEポリシーを運営者本人に限定する(上記「ゲーム紹介画像の公開Storage」)
-- BoardGameGeek API・Google Gemini APIの呼び出しは運営者のローカル環境(Claude Codeセッション)から行われ、Webアプリ・Cloudflare Workersのコードには一切含まれない。Gemini APIキーはローカルの`.env`等で管理し、リポジトリにコミットしない([game-registration/design.md#セキュリティ](../game-registration/design.md)の「課金の発生しない設計」と同じ考え方を、外部API呼び出し一般に拡張したもの)
+- BoardGameGeek API・Google Gemini APIの呼び出しは運営者のローカル環境(Claude Codeセッション)から行われ、Webアプリ・Cloudflare Workersのコードには一切含まれない。Gemini APIキーはローカルの`.env`等で管理し、リポジトリにコミットしない(外部API呼び出しは運営者のローカル環境に閉じるという方針。[game-registration/design.md#セキュリティ](../game-registration/design.md)の「課金の発生しない設計」と同じ)
+- 「公開する」操作(`board_game_rules_games`へのINSERT)は運営者本人(`admin_emails`)に限定するRLSで担保する。anon/authenticated(運営者以外)からの直接INSERTは引き続き拒否される([game-registration/design.md#追加マイグレーション登録実行・下書きレビュー](../game-registration/design.md))
+- ローカル環境の定期処理(`processRegistrationQueue.ts`)はlaunchdから起動されるため、対話シェルのPATH・環境変数を引き継がない。`claude`・`node`コマンドは絶対パスで指定し、`SUPABASE_SERVICE_ROLE_KEY`等の資格情報はlaunchdの`EnvironmentVariables`または明示的な`.env`読み込みで注入する(教訓: launchd常駐のPATH欠落で処理が全く動いていなかった別ツールの事例があるため、実機での動作確認を必ず行う)
+- `SUPABASE_SERVICE_ROLE_KEY`はRLSを全バイパスする全権キーのため、Gemini APIキーと同様に実値をリポジトリに置かない。リポジトリに含める`com.benriyatool.board-game-rules-registration.plist`はプレースホルダまたは外部`.env`読み込みのみを記した雛形とし、資格情報の実値を書き込んだ稼働用plistは`~/Library/LaunchAgents/`側にのみ置く
+- ヘッドレス`claude -p`(`processRegistrationQueue.ts`が起動)へ渡す依頼写真は匿名アップロードで攻撃者が内容を制御できる前提とし、最小権限で起動する(危険なツールを付与しない・作業ディレクトリを隔離しリポジトリへの書き込みを許さない)。画像内に埋め込まれた敵対的テキストによるプロンプトインジェクションで、`SUPABASE_SERVICE_ROLE_KEY`を持つプロセスから意図しないコマンド実行・ファイル操作・DB破壊が起きないようにする。公開前の運営者レビューは生成内容の品質担保でありインジェクション対策ではない。許可ツールの具体的な制約はローカルツールSkill(`.claude/skills/board-game-rules-batch-register/`)側で定める
 
 ## パフォーマンス
 - 通報一覧・登録依頼一覧は件数が少ない前提で、単純な全件取得で足りる(小規模運用)。件数が増えた場合はページングを別途見直す
@@ -279,10 +324,12 @@ stateDiagram-v2
 ## ログ
 - 通報・登録依頼のデータ取得が想定外に失敗した場合、原因究明のためコンソールにエラーを出す(`ikukyu/admin`と同一方針)。ログにはゲーム情報・通報本文の中身を含めず、失敗の事実・種別にとどめる。運営者自身のブラウザで確認できるため出力する価値がある(ゲーム編集・削除・元写真取得のログは詳細画面側。[game-detail/design.md](../game-detail/design.md))
 - ローカル登録ツールの画像自動補完(BoardGameGeek検索・Gemini加工)が失敗した場合、原因(検索ヒットなし/API呼び出し失敗など)をローカルのコンソールに出す。ゲーム自体の登録は続行するため、運営者は登録完了後にログを見て紹介画像の有無を把握する
+- ローカル環境の定期処理(`processRegistrationQueue.ts`)が失敗した場合、原因を`board_game_rules_game_requests.error_message`に記録する(管理画面で確認できるようにするため)ほか、launchdの標準出力/エラー出力をローカルのログファイルへリダイレクトする(`plist`の`StandardOutPath`/`StandardErrorPath`。運営者がMac上で原因を追えるようにする)
 
 ## 依存関係
 - 認証方式(Google OIDC)・許可リスト(`admin_emails`)・RLS方針は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)に従う。ログイン・権限確認ロジックは`ikukyu/admin`・`life-money-sim/admin`と共用の`adminAuth.ts`を再利用する
 - 編集・削除の対象は[game-registration/design.md](../game-registration/design.md)の`board_game_rules_games`(`intro_photo_paths`を含む)、通報は[report/design.md](../report/design.md)、コメント削除は[comment/design.md](../comment/design.md)、登録依頼の確認は[game-registration/design.md](../game-registration/design.md)の`board_game_rules_game_requests`に従う。各テーブルの運営者向けRLSは各specで定義済み
+- 登録実行・下書きレビュー用のカラム(`status`・`draft_content`・`revision_note`・`revision_round`・`revision_history`・`error_message`・`published_game_id`)と、公開操作用の`board_game_rules_games`INSERTポリシーは[game-registration/design.md#追加マイグレーション登録実行・下書きレビュー](../game-registration/design.md)で定義する
 - 元写真の非公開Storageは本specで作り、依頼送信([game-registration/design.md](../game-registration/design.md))がそこへ書き込む
 - ゲーム紹介画像の公開Storage(`board-game-rules-game-photos`)も本specで作る。依頼送信([game-registration/design.md](../game-registration/design.md))・本spec(差し替え・削除、ローカルツールの自動補完)が書き込み、公開URLは[game-list/design.md](../game-list/design.md)・[game-detail/design.md](../game-detail/design.md)が表示に使う
 - 登録依頼からゲームを登録するローカルツール(Claude Code Skill)の実体は`.claude/skills/board-game-rules-batch-register/`に置く。Webアプリのコードではないため`app/board-game-rules/`配下には置かない

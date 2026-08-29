@@ -91,7 +91,7 @@ create policy "admin can delete games" on board_game_rules_games
   for delete to authenticated
   using ((auth.jwt() ->> 'email') in (select email from admin_emails));
 ```
-2. 子テーブルの`game_id`外部キーを`ON DELETE CASCADE`に付け替える(稼働中コードに影響なし=先行適用可)。対象: `board_game_rules_comments`・`board_game_rules_favorites`・`board_game_rules_reports`。各テーブルで既存FK制約をDROPし、`on delete cascade`付きで再作成する(これがないとゲーム行のDELETEがFK違反で失敗する)。FKのカスケードは参照アクションのため子テーブルのRLSに関係なく連動削除される(運営者が通報・お気に入りのDELETE RLSを持たなくても、ゲーム削除に伴い子行が消える)
+2. 子テーブルの`game_id`外部キーを`ON DELETE CASCADE`に付け替える(稼働中コードに影響なし=先行適用可)。対象: `board_game_rules_comments`・`board_game_rules_favorites`・`board_game_rules_reports`。各テーブルで既存FK制約をDROPし、`on delete cascade`付きで再作成する(これがないとゲーム行のDELETEがFK違反で失敗する)。FKのカスケードは参照アクションのため子テーブルのRLSに関係なく連動削除される(運営者が通報・お気に入りのDELETE RLSを持たなくても、ゲーム削除に伴い子行が消える)。なお`board_game_rules_game_requests.published_game_id`もgames行を参照するFKだが、こちらはCASCADEではなく`on delete set null`で[game-registration/design.md#追加マイグレーション登録実行・下書きレビュー](../game-registration/design.md)側が定義済みのため、本マイグレーションでの追加対応は不要(依頼レコードは削除されずNULLに戻るのみ)
 3. `board_game_rules_games`から`deleted_at`列を削除し(`drop column deleted_at`)、公開SELECTのRLS(`anyone can select published games`)の条件を`using (deleted_at is null)`から`using (true)`に変更する。物理削除に統一するため論理削除用の列・条件を持たない(このゲームテーブルのスキーマ・RLSは[game-registration/design.md#データベース設計](../game-registration/design.md)が正)。**この変更は`deleted_at`を参照する稼働中コード(`lib/games.ts`の`deleted_at is null`絞り込み、admin側の論理削除など)を壊すため、それらを`deleted_at`非依存に改修するコード変更と同一マイグレーション(同一デプロイ)で適用する**(列だけ先行して落とさない)
 - 実機確認(このマイグレーションのT0相当):
   - 運営者本人で`board_game_rules_games`の行をDELETEでき、紐づくコメント・お気に入り・通報が連動して消えること

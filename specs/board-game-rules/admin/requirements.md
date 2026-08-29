@@ -16,6 +16,10 @@
 - 運営者として、管理画面を自分以外に開かれない・操作されないようにしたい
 - 運営者として、届いた登録依頼をまとめて確認し、写真をもとにゲームを登録したい
 - 運営者として、新しい登録依頼が届いたらすぐに気づけるようにしたい
+- 運営者として、管理画面の「登録実行」を押すだけで、ローカル環境での解析処理を起動したい(手動でセッションを開かずに済ませたい)
+- 運営者として、生成された下書きの内容を確認してから公開するか判断したい
+- 運営者として、下書きの内容が思っていたのと違う場合、直してほしい点を伝えて再生成してもらいたい
+- 運営者として、処理が失敗した場合に原因を把握し、改めて実行し直したい
 - 運営者として、登録依頼に添付されたゲーム紹介画像を確認したい
 - 運営者として、投稿者が紹介画像を用意しなかった場合でも、登録時に自動的に画像を用意したい
 - 運営者として、共通ナビから管理画面へ素早く到達したい
@@ -33,12 +37,16 @@ flowchart LR
     admin --> gotoGame[通報から対象ゲームの詳細画面へ遷移する]
     admin --> viewRequests[登録依頼を一覧で確認する]
     admin --> viewRequestPhoto[登録依頼の紹介画像を確認する]
+    admin --> triggerRegistration[登録実行を起動する]
+    admin --> reviewDraft[生成された下書きを確認して公開する]
+    admin --> requestRevision[下書きの再調整を依頼する]
+    admin --> retryFailed[失敗した処理を再試行する]
     admin --> markProcessed[登録依頼を処理済みにする]
     admin --> deleteRequest[不要な登録依頼を削除する]
     admin --> notified[新着登録依頼の通知を受け取る]
     admin --> navigate[共通ナビ・パンくずで他画面と回遊する]
 ```
-- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-6・requirements.md#通報の確認-7、登録依頼の確認・処理・削除はrequirements.md#登録依頼の確認-8〜10、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-11、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログイン・アクセス制御-5・requirements.md#画面レイアウト・回遊導線-13〜14に対応する
+- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-6・requirements.md#通報の確認-7、登録依頼の一覧確認・削除はrequirements.md#登録依頼の確認-8・requirements.md#登録依頼の確認-10、手動フォールバック分の処理済みマークはrequirements.md#登録依頼の確認-22、登録実行の起動・下書き確認・公開・再調整・再試行はrequirements.md#登録実行・下書きレビュー-16〜21、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-11、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログイン・アクセス制御-5・requirements.md#画面レイアウト・回遊導線-13〜14に対応する
 
 ## 機能要件
 
@@ -55,8 +63,20 @@ flowchart LR
 
 ### 登録依頼の確認
 - [8] 利用者から送信された登録依頼(写真+分類情報。[game-registration/requirements.md](../game-registration/requirements.md))を一覧で確認できる。未処理/処理済みを区別して表示する
-- [9] 依頼の写真・入力済み分類情報を参考に、外部ツール(ローカルのバッチ登録処理)でゲームを登録できる。登録処理自体は管理画面の外で行う(本specのスコープ外。[game-registration/requirements.md](../game-registration/requirements.md)参照)。登録が完了した依頼は、管理画面から処理済みとして記録できる
+- [9] 依頼ごとに、投稿された写真・入力済み分類情報・添付のゲーム紹介画像を確認できる。この確認画面が下記「登録実行・下書きレビュー」[16]〜[21]の各操作の起点になる
 - [10] 不要な依頼(スパム・重複・情報不足など)を削除できる
+- [22] 外部の手動フォールバック(`registerGame.ts`。自動フローが止まった場合に使う)でゲームを登録した依頼を、管理画面から処理済みとして記録できる(下書きレビュー経由で「公開する」を押した場合は処理済みが自動で記録されるため、この操作は手動フォールバック運用のための補助)
+
+### 登録実行・下書きレビュー
+- [16] 未処理の登録依頼に対して「登録実行」を押すと、ローカル環境での解析処理(写真解析・分類情報とルール本文の生成)が起動する。押した時点で処理が完了するわけではないため、進行中であることが分かる表示をする
+- [17] 依頼ごとの処理状況(未着手/処理中/下書きあり/公開済み/失敗)を一覧で確認できる
+- [18] 処理が完了すると下書き(生成された分類情報・ルール本文)が確認できるようになる。ゲーム名・対応人数・プレイ時間・ジャンル・簡単版ルールの抜粋などを確認できる
+- [19] 下書きに対して、次のいずれかを選べる:
+  - **公開する**: 下書きの内容でゲームを登録・即時公開する。あわせて依頼は処理済みとして記録される
+  - **再調整を依頼**: 直してほしい点を自由記述で入力して送信すると、ローカル環境での再生成処理が起動し、直前の下書きと今回の要望をもとに下書きが更新される。回数の上限は設けず、何度でも繰り返せる
+  - **破棄**: 上記「登録依頼の確認」[10]の依頼削除の操作を使う(下書き専用の別操作は設けない)
+- [20] 過去に依頼した再調整の要望を、下書きの履歴として新しい順に確認できる
+- [21] 処理が失敗した場合、失敗した旨と原因(分かる範囲)を表示する。「登録実行」を再度押すことで再試行できる
 
 ### ゲーム紹介画像の確認・自動補完
 - [11] 登録依頼の確認画面で、依頼に添付されたゲーム紹介画像(あれば)を確認できる([game-registration/requirements.md#ゲーム紹介画像のアップロード](../game-registration/requirements.md))
@@ -72,7 +92,7 @@ flowchart LR
 ### アクセス制御・権限
 - [1] 管理機能を利用できるのは運営者本人のアカウントのみとする。ログインしていない状態・運営者以外のアカウントでは、管理機能を利用できず、投稿写真も取得できないこと(根拠: [docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md))
 - [2] アクセス制御は画面上の表示の出し分けではなく、DB側のルール(RLS)で担保する(根拠: 静的サイトのため画面側だけの制御は迂回されうる)
-- [3] 本管理画面と、詳細画面に載る管理者導線は、ADR-0006のテンプレートが定める「読み取り専用」の例外とし、運営者本人による書き込み操作(ゲームの編集・削除、コメントの削除、紹介画像の差し替え、登録依頼の処理)を認める(根拠: 利用者が投稿する公開コンテンツのモデレーションが必要なため。[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md))。詳細画面側でも書き込みは運営者本人に限定する(RLSで担保。[game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))
+- [3] 本管理画面と、詳細画面に載る管理者導線は、ADR-0006のテンプレートが定める「読み取り専用」の例外とし、運営者本人による書き込み操作(ゲームの編集・削除、コメントの削除、紹介画像の差し替え、登録依頼の処理、下書きの「公開する」によるゲームの新規登録)を認める(根拠: 利用者が投稿する公開コンテンツのモデレーションが必要なため。[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)。「公開する」による新規登録は[adr/0002](../adr/0002-operator-publish-insert.md))。詳細画面側でも書き込みは運営者本人に限定する(RLSで担保。[game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))
 
 ### 認証手段とパスキー
 - [4] 既存アプリの管理画面(`ikukyu/admin`・`life-money-sim/admin`)と同一の認証方針(Google OIDC、同じ運営者アカウント、パスキー・2段階認証の運用)とする(根拠: [docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md))。Google OIDC自体の設定は新規に不要
@@ -87,6 +107,12 @@ flowchart LR
 ### ゲーム紹介画像の自動補完
 - [8] ゲーム紹介画像の画像検索・AI加工に使う外部APIは、無料枠の範囲で運用できるものを選定する(根拠: `/consult`での判断。Webアプリ側には課金構造を持ち込まない既存方針([game-registration/requirements.md](../game-registration/requirements.md))を、運営者ローカルツールの追加機能でも維持する)
 
+### 登録実行のローカル処理起動
+- [9] 管理画面からの「登録実行」「再調整を依頼」は、Supabase上の状態を更新する操作にとどまり、実際の写真解析・ルール生成は運営者のローカル環境(Claude Codeセッション)で行われる。Webアプリ(Cloudflare Workers)・Supabaseから直接LLM APIを呼び出すことは一切ない(根拠: `/consult`での判断。既存の「課金の発生しない設計」方針(requirements.md#登録依頼の確認)を維持する)
+- [10] ローカル環境は、起動を待つ依頼を定期的に確認して処理を開始する。運営者のMacが起動していない・オフラインの間は処理が進まない(根拠: 常駐サーバーを持たない静的サイト構成のため。低頻度運用のため許容する。具体的な検知間隔は[admin/design.md](design.md)で確定する)
+- [11] 「公開する」操作は、運営者本人のログインセッションから直接ゲームとして登録される(ローカル処理を経由せず、押した時点で即時公開される)。この書き込みは運営者本人(`admin_emails`)に限定する(RLSで担保)。根拠は[adr/0002](../adr/0002-operator-publish-insert.md)
+- [12] 下書きは常に最新の1件のみを保持する(過去の下書き本文そのものは保存せず、再調整で上書きされる)。再調整の要望テキストのみを履歴として残す(根拠: シンプルさを優先する方針。過去の下書き本文を見返す運用は想定しない)
+
 ## 非機能要件
 - [1] 主にPC・スマートフォンの双方から利用しうる(外出先で通報に気付いて対応する場面を想定)。表示が破綻しない程度に配慮する
 - [2] 静的エクスポート構成を維持する。通報・登録依頼の確認はDB(RLS経由)への操作で行い、モデレーション専用のサーバーを新設しない([game-registration/requirements.md](../game-registration/requirements.md)により、本アプリはランタイムサーバー機能を持たない)
@@ -96,9 +122,9 @@ flowchart LR
 - [2] 通報一覧・登録依頼一覧・ログイン/権限なし表示など管理画面内の各要素も、共通デザインのカード・ボタン・見出しの体裁に揃える(独自の見た目を持ち込まない)
 
 ## 依存関係
-- 認証方式(Google OIDC)とDB読み取り権限(RLS)の方針は[docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)に従う
+- 認証方式(Google OIDC)とDB読み取り権限(RLS)の方針は[docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、運営者本人の書き込み権限は[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)(編集・削除)および[adr/0002-operator-publish-insert.md](../adr/0002-operator-publish-insert.md)(「公開する」による新規INSERT)に従う
 - ゲームの編集・削除・紹介画像差し替え・元写真照合・コメント削除は詳細画面で行う。それらの要件・ルールは[game-detail/requirements.md](../game-detail/requirements.md)に従う。編集・削除の対象データは[game-registration/requirements.md](../game-registration/requirements.md)、通報は[report/requirements.md](../report/requirements.md)、コメントは[comment/requirements.md](../comment/requirements.md)に従う
-- 登録依頼(写真+分類情報)の保存構造・通知手段は[game-registration/design.md](../game-registration/design.md)で確定する
+- 登録依頼(写真+分類情報)の保存構造・通知手段、および登録実行・下書き・再調整の状態を保持するカラムは[game-registration/design.md](../game-registration/design.md)で確定する
 - 投稿写真という機微になりうる情報・利用者コメントの管理経路があるため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
 - ゲーム紹介画像の取り扱い方針(著作権配慮・削除ポリシー)は[game-registration/requirements.md#ゲーム紹介画像の取り扱い](../game-registration/requirements.md)に従う
 - モデレーションの詳細画面集約・削除方針の背景は[adr/0001](../adr/0001-moderation-on-detail-and-physical-delete.md)
@@ -108,6 +134,8 @@ flowchart LR
 - 複数の管理者アカウント・権限ロールの管理(利用者は運営者本人のみ)
 - 管理画面ドメイン自身をパスキー(WebAuthn)の登録先とする実装(根拠: [docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)と同じ)
 - 通報者・コメント投稿者へのペナルティ管理(アカウントBAN等)
-- 登録依頼からゲームを登録する処理そのもの(LLMによる解析・生成を含む)。管理画面はあくまで依頼の確認・処理済みマーク・削除にとどまり、登録処理はローカルツールで行う([game-registration/requirements.md](../game-registration/requirements.md)参照)
+- 写真解析・ルール本文の生成そのもの(ローカル環境で行われる処理の中身)。管理画面が担うのは処理の起動・状況確認・下書きの確認・公開判断であり、解析・生成のロジック自体はローカルツール(`.claude/skills/board-game-rules-batch-register/`)側の実装とする
 - 編集・削除操作の履歴管理(監査ログ)
+- 再調整の要望に対する内容の自動的な妥当性チェック(運営者が下書きを見て都度判断する)
+- 下書きの複数バージョンの並行保持・過去の下書き本文の閲覧(常に最新1件のみを保持する。上記[ビジネスルール12]参照)
 - 通報一覧・登録依頼一覧の取得ロジック・並び順・データ構造そのものの変更(機能要件[13][14]とUI/UX要件は管理画面の見た目と回遊導線を対象とし、モデレーション機能の動作は変えない)

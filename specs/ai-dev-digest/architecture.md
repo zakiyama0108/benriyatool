@@ -4,7 +4,7 @@
 AI駆動開発関連の話題コンテンツ(公式組織のブログ・YouTube、個人YouTube、個人ブログ、Qiita、Zenn)を1日1回自動で収集・翻訳・要約し、日次のダイジェスト記事として公開するアプリ。URL: `/ai-dev-digest`
 
 ## 2. アーキテクチャの目的
-- コンテンツの収集・選定([content-selection](content-selection/requirements.md))と翻訳・要約([content-generation](content-generation/requirements.md))を分離し、それぞれの基準を独立して見直せるようにする
+- コンテンツの収集・選定([content-selection](content-selection/requirements.md))と翻訳・要約([content-generation](content-generation/requirements.md))を分離し、それぞれの基準を独立して調整できるようにする(月次見直し([watchlist-review](watchlist-review/requirements.md))は選定・生成の両方を対象にするが、変更対象のファイル・基準は領域ごとに分かれたまま扱う)
 - サーバーを持たない静的サイトの構成を維持したまま、GitHub Actionsによる日次の記事生成・PR作成、月次の見直し提案・PR作成という新しい運用パターンを導入する(2026-08改定: 当初は日次・月次ともClaude Routinesを想定していたが、Routine実行環境に外部APIキー・DB接続情報等を渡す手段が確認できず、両方ともGitHub Actionsに変更した。月次がDB(`SUPABASE_READONLY_DB_URL`)を読み取る点についてはdocs/adr/0004を改定し、`benriyatool_readonly`ロールに限りGitHub Actions Secretsへの保持を許容した。詳細は[daily-publish/design.md](daily-publish/design.md)・[watchlist-review/design.md](watchlist-review/design.md)の「実行環境の前提」参照)
 - 通常はPRレビューが必須のこのプロジェクトの運用に対し、日次記事の完全自動マージという例外を[daily-publish](daily-publish/requirements.md)に明確に限定し、ウォッチリスト変更等の影響が大きい変更([watchlist-review](watchlist-review/requirements.md))には人間承認を残す
 
@@ -80,16 +80,16 @@ flowchart LR
     lineApi -->|メッセージ配信| lineFriends
 ```
 
-### 4.4 月次のウォッチリスト・採用基準の見直しフロー
+### 4.4 月次の見直し(選定・生成)フロー
 ```mermaid
 flowchart LR
-    monthlyRoutine["GitHub Actions（月次）<br>ウォッチリスト・基準の見直し"]
+    monthlyRoutine["GitHub Actions（月次）<br>選定・生成の見直し"]
     feedbackDb[("feedback")]
     reviewPR["見直し提案PR<br>（人間承認必須）"]
-    repo["GitHubリポジトリ<br>（ウォッチリスト設定）"]
+    repo["GitHubリポジトリ<br>（採用基準・記事執筆ルール）"]
 
     monthlyRoutine -->|フィードバック・掲載実績を参照| feedbackDb
-    monthlyRoutine -->|見直し案を作成| reviewPR
+    monthlyRoutine -->|フィードバックを選定/生成/対象外に振り分け見直し案を作成| reviewPR
     reviewPR -->|運営者が確認しマージ| repo
 ```
 
@@ -98,7 +98,7 @@ flowchart LR
 ## 5. アーキテクチャ概要
 Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。このマージ(記事JSONの新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクをLINE Messaging APIのブロードキャスト機能で友だち全員へ配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。
 
-2026-08追加: 記事詳細ページのGoogle OIDCログインは読者全員に開放されており、ログイン中の読者はトピックに自由記述メモ付きの付箋を貼り([bookmark](bookmark/requirements.md))、専用の一覧画面(`/ai-dev-digest/bookmarks`)から自分の付箋を振り返れる(付箋データは本人の行のみRLSで操作可能な`ai_dev_digest_bookmarks`テーブルに保存)。この変更に伴い、運営者向けフィードバック欄(記事詳細ページの各トピック下)の表示条件は「ログイン中」から「ログイン中かつ運営者本人」に変更された(既存のINSERT専用パターン(`authenticated`ロール)自体は変更なし。表示切り替えのみ`admin_emails`のSELECTを追加で利用)。月次のGitHub Actionsワークフローがフィードバックと掲載実績を読み、ヘッドレス起動したClaude Code経由でウォッチリスト・採用基準の見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
+2026-08追加: 記事詳細ページのGoogle OIDCログインは読者全員に開放されており、ログイン中の読者はトピックに自由記述メモ付きの付箋を貼り([bookmark](bookmark/requirements.md))、専用の一覧画面(`/ai-dev-digest/bookmarks`)から自分の付箋を振り返れる(付箋データは本人の行のみRLSで操作可能な`ai_dev_digest_bookmarks`テーブルに保存)。この変更に伴い、運営者向けフィードバック欄(記事詳細ページの各トピック下)の表示条件は「ログイン中」から「ログイン中かつ運営者本人」に変更された(既存のINSERT専用パターン(`authenticated`ロール)自体は変更なし。表示切り替えのみ`admin_emails`のSELECTを追加で利用)。月次のGitHub Actionsワークフローがフィードバックと掲載実績を読み、ヘッドレス起動したClaude Code経由で、各フィードバックを選定領域(ウォッチリスト・採用基準)・生成領域(翻訳・要約・記事執筆ルール)・対象外に振り分けたうえで見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -106,7 +106,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | Next.js(静的エクスポート) | 記事一覧・詳細・付箋一覧ページの描画 |
 | Supabase | 運営者フィードバックの保存(`ai_dev_digest_feedback`テーブル)、読者の付箋の保存(`ai_dev_digest_bookmarks`テーブル、2026-08追加) |
 | Supabase Auth(Google OIDC) | 記事詳細ページ・付箋一覧ページのログイン(読者全員が対象、2026-08で運営者限定から拡大)。フィードバック入力欄の表示切り替え(運営者判定)にも利用 |
-| GitHub Actions | 日次の記事生成・月次のウォッチリスト・基準見直し(スケジュール実行)・LINE新着記事配信(pushトリガー)の実行基盤 |
+| GitHub Actions | 日次の記事生成・月次の選定/生成の見直し(スケジュール実行)・LINE新着記事配信(pushトリガー)の実行基盤 |
 | Claude Code(ヘッドレス実行) | 月次見直し案の検討・複数ファイルの編集(watchlist-review内でGitHub Actionsから起動) |
 | LINE Messaging API | 新着記事のLINE公式アカウントからの一斉配信(line-broadcast内でGitHub Actionsから呼び出し) |
 | Tailwind CSS | スタイリング |
@@ -123,7 +123,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルールを定める | content-selectionの選定結果を受け取る([content-selection/requirements.md#機能要件](content-selection/requirements.md)) |
 | [daily-publish](daily-publish/requirements.md) | 収集・翻訳・要約・記事公開を1日1回自動実行し、完全自動マージする | content-selection・content-generationの結果を公開する |
 | [line-broadcast](line-broadcast/requirements.md) | daily-publishの日次記事PRがmainへ自動マージされた直後に、新着記事をLINE公式アカウントの友だち全員へ自動配信する | daily-publishのマージタイミング([daily-publish/requirements.md#実行](daily-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))、content-generationのタイトル導出処理([content-generation/design.md](content-generation/design.md))に従う |
-| [watchlist-review](watchlist-review/requirements.md) | 月次でウォッチリスト・採用基準の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック([article-detail/requirements.md#運営者向けフィードバック](article-detail/requirements.md))、content-selectionの掲載実績([content-selection/requirements.md#1日の掲載件数](content-selection/requirements.md))を参照 |
+| [watchlist-review](watchlist-review/requirements.md) | 月次でウォッチリスト・採用基準(選定領域)と翻訳・要約・記事執筆ルール(生成領域)の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック([article-detail/requirements.md#運営者向けフィードバック](article-detail/requirements.md))、content-selectionの掲載実績([content-selection/requirements.md#1日の掲載件数](content-selection/requirements.md))、生成領域の変更対象として[content-generation/requirements.md](content-generation/requirements.md)を参照 |
 
 ## 8. コンポーネント図
 ```mermaid
@@ -149,7 +149,8 @@ flowchart LR
     bookmarkScreen -->|自分の付箋の取得・編集・削除に利用| client
     bookmarkScreen -->|記事タイトル導出・トピック見出しの参照に利用| detailScreen
     review -->|フィードバック・実績を参照| detailScreen
-    review -->|見直し案を反映| selection
+    review -->|選定領域の見直し案を反映| selection
+    review -->|生成領域の見直し案を反映| generation
 ```
 
 この図の正となる文章は「[7. 機能マップ](#7-機能マップ)」の依存列と、各specのrequirements.mdの依存関係。
