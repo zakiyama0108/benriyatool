@@ -2535,6 +2535,11 @@
     "reason": "見直し案にPR本文として変更理由(判断材料の表を含む)を明記するという、エージェントが作成するPR本文の記述内容に関する要件で、コードとして実装・テストしないため"
   },
   {
+    "specFile": "ai-dev-digest/watchlist-review/requirements.md",
+    "item": "ビジネスルール・制約 [3]",
+    "reason": "生成領域の見直し案がcontent-generation/requirements.md#著作権への配慮(根拠)の緩和策を弱めてはならないという制約で、ヘッドレスClaude Codeが見直し案を検討する際の推論に委ねる部分でありコードとして実装・テストしないため。生成された見直し案PR自体の内容は運営者のレビューで確認される"
+  },
+  {
     "specFile": "ai-dev-digest/bookmark/requirements.md",
     "item": "概要",
     "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"

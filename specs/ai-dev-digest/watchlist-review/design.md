@@ -2,7 +2,7 @@
 
 ## 実行環境の前提
 
-実行主体はGitHub Actionsとする。**2026-08改定(第2版)の経緯**: 当初はClaude Routines(定期実行のクラウドエージェント)を実行主体とする想定だったが、[daily-publish/design.md](../daily-publish/design.md)の検証と同じ理由(Routine実行環境に独自のシークレットを追加する手段が確認できなかったこと)により、本specもGitHub Actionsに変更した。当初はDB接続情報(`SUPABASE_READONLY_DB_URL`)をGitHub Actions Secretsに置かないというdocs/adr/0004の既定方針を優先し、本specだけはClaude Routinesのまま据え置く判断をしていたが、その後の方針転換によりGitHub Actionsへ統一することとした。これに伴い、docs/adr/0004を改定し、`benriyatool_readonly`ロール(SELECT専用・BYPASSRLSなし・RLSスコープ限定という低い権限のロール)に限りGitHub Actions Secretsへの保持を許容する例外を追加した(改定内容は[0004-agent-readonly-db-access.md](../../../docs/adr/0004-agent-readonly-db-access.md)の「GitHub Actions実行環境への対象拡大(2026-08第2次改定)」参照)。**2026-08第3次改定**: Claude Code CLIの認証をAnthropic API(`ANTHROPIC_API_KEY`、従量課金)から運営者個人のClaude Code Pro/Maxサブスクリプション認証(`CLAUDE_CODE_OAUTH_TOKEN`)に変更した(理由は[daily-publish/design.md](../daily-publish/design.md)「実行環境の前提」・[content-generation/design.md](../content-generation/design.md)「設計の前提」参照。認証情報は両specで共用する)。
+実行主体はGitHub Actionsとする。DB接続情報(`SUPABASE_READONLY_DB_URL`)は、`benriyatool_readonly`ロール(SELECT専用・BYPASSRLSなし・RLSスコープ限定という低い権限のロール)に限りGitHub Actions Secretsへの保持を許容する(根拠は[0004-agent-readonly-db-access.md](../../../docs/adr/0004-agent-readonly-db-access.md)参照)。Claude Code CLIの認証は運営者個人のClaude Code Pro/Maxサブスクリプション認証(`CLAUDE_CODE_OAUTH_TOKEN`)を用いる(理由は[daily-publish/design.md](../daily-publish/design.md)「実行環境の前提」・[content-generation/design.md](../content-generation/design.md)「設計の前提」参照。認証情報は両specで共用する)。
 
 - ワークフロー本体は`.github/workflows/ai-dev-digest-monthly.yml`として月1回起動する
 - 「見直し案を作成する処理」(下記)はエージェントの推論を要するため、GitHub Actionsのワークフロー内でClaude Code CLIをヘッドレス(非対話)モードで起動し(`claude -p "<プロンプト>"`相当。[daily-publish](../daily-publish/design.md)のcontent-generationのような単発のAPI呼び出しでは、複数ファイル(選定領域: requirements.md・watchlist.json・criteria.json、必要なら選定ロジックの実装・テストファイル / 生成領域: content-generation/requirements.md・design.md、必要ならgenerate-content.ts)を横断して整合の取れた編集を行うタスクに対応できないため、ファイル読み書き・テスト実行(`bash`)ツールを持つエージェントセッションとして実行する)、リポジトリのチェックアウト・ファイル編集・テスト実行・コミットまでを行わせる
@@ -10,6 +10,7 @@
 - Claude Code CLIの実行には`CLAUDE_CODE_OAUTH_TOKEN`(`claude setup-token`で発行する長期(1年)OAuthトークン。daily-publishと共用)を、DB読み取りには`SUPABASE_READONLY_DB_URL`を、それぞれこのリポジトリのActions Secretsとして保存する
 - ワークフローへの実行指示は、この`watchlist-review`のrequirements.md/design.mdと、参照先の`content-selection`・`content-generation`のrequirements.md/design.mdをそのまま参照する形にする(専用のプロンプトファイルを別途複製しない)
 - 運用開始前に、上記のPAT・APIキー・DB接続情報が実際にリポジトリのActions Secretsに設定されていることを確認する
+- フォルダ名は`watchlist-review`のまま据え置く。見直し対象が選定領域だけでなく生成領域も含むため実態としては`monthly-review`等が近いが、リネームの影響が作業ブランチ接頭辞`ai-dev-digest/watchlist-review/`・ワークフロー`.github/workflows/ai-dev-digest-monthly.yml`内の参照パス・[architecture.md](../architecture.md)のcross-link・関連Skill(機能マップ等)のリンクに及び、コストに見合わないため。将来リネームする場合はこれらの追従が必要
 
 ## 処理フロー
 
@@ -34,7 +35,8 @@
      - フィードバックが既存の採用基準(情報源単位の可否・数値閾値)では表現できない観点(例: 特定トピックが話題として不適切)を指摘している場合、新しい採用基準・フィルター観点の追加を具体的な変更案として検討する(requirements.md#選定領域の見直し案の粒度・提示方法-6。既存項目の調整に限定しない)
   3. 生成領域(生成領域に振り分けたフィードバック)の見直し案を検討する:
      - フィードバックが指摘する分かりやすさ・情報の取捨選択・重要度の付け方の問題に対し、`content-generation/requirements.md`の機能要件・ビジネスルール(要約の分量[3][4]、固定4観点の構成・内容[5][9]〜[12]、書き出しの順序[10]、情報の優先順位[11]、重要度の基準[13][14]など)と`content-generation/design.md`の該当処理の文言を、具体的な変更案(実際のファイル差分)として検討する(requirements.md#生成領域の見直し案の粒度・提示方法-9)
-     - 変更は既存ルールの調整(数値・順序・観点の言い換え)にとどめ、著作権リスク低減の前提(原文の構成をなぞらない独自の再構成、数値・結論の網羅的な転記の回避、出典の明記。content-generation/requirements.md#著作権への配慮)を弱める変更は提案しない
+     - 変更は既存ルールの調整(数値・順序・観点の言い換え)にとどめ、著作権リスク低減の前提(原文の構成をなぞらない独自の再構成、数値・結論の網羅的な転記の回避、出典の明記。content-generation/requirements.md#著作権への配慮(根拠))を弱める変更は提案しない(requirements.md#ビジネスルール・制約-3)
+     - 生成領域に振り分けたフィードバックでも、上記の著作権ガード(requirements.md#ビジネスルール・制約-3)に抵触するため採用できない要望(例: 「要約が浅いので原文の数値を全部載せてほしい」等)は、見直し案に反映しない。requirements.md#見直しの実行-4 の「いずれの領域にも該当しない」フィードバックと同様に、却下した旨と理由をPR本文の判断材料の表の行として残す(requirements.md#生成領域の見直し案の粒度・提示方法-9)
   4. 見直し案には、どのフィードバック・どの実績データに基づく変更かを明記する(requirements.md#ビジネスルール・制約-2)
   5. 選定領域・生成領域それぞれについて、振り分けた材料(選定領域は基準未達記録も含む)が1件でもある場合は、必ず具体的な変更案(実際のファイル差分)を作成してPRとして提示する。「1件では根拠が薄い」等の理由で提案自体を見送り、無言で終了することはしない。両領域とも材料が0件の月のみ、実在する材料がないためPRを作成しない(requirements.md#選定領域の見直し案の粒度・提示方法-7、requirements.md#生成領域の見直し案の粒度・提示方法-9。自動マージしない設計のため、提案のハードルを下げても実害がなく、運営者が判断材料を得られないことの方が問題であるため)
   6. 選定領域で、`specs/ai-dev-digest/content-selection/requirements.md`に既存の選定ロジック(`app/ai-dev-digest/lib/selection.ts`等)ではまだ判定できない新しい種類の採用基準・フィルター観点を追加する場合、その判定ロジックの実装(TDDのテストを含む)も同じPRに含める。仕様の変更だけを残し、実装を先送りにしない。実装後は`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`を実行し、いずれも成功することを確認してからコミットする(requirements.md#選定領域の見直し案の粒度・提示方法-8)。既存の実装済み項目に対する変更(閾値の調整・情報源の除外等)はこの手順の対象外(コード変更を伴わないため)
@@ -44,13 +46,13 @@
   - 選定領域: `specs/ai-dev-digest/content-selection/requirements.md`(ウォッチリストの表・採用基準の記述)と`content/ai-dev-digest/watchlist.json`・`content/ai-dev-digest/criteria.json`(機械可読データ。二重管理をこのPRで同時に維持する)。新しい判定ロジックが必要な場合は`app/ai-dev-digest/lib/`配下の関連ファイル・`__tests__/ai-dev-digest/lib/`配下の対応テスト(上記手順6)
   - 生成領域: `specs/ai-dev-digest/content-generation/requirements.md`・`specs/ai-dev-digest/content-generation/design.md`。変更が転記箇所に及ぶ場合は`scripts/ai-dev-digest/generate-content.ts`(上記手順8)
   - `scripts/spec-coverage-skip.json`(選定領域の実装まで完了できなかった場合のみ。上記手順7の例外的な扱い)
-- 関連するビジネスルール: requirements.md#見直しの実行-1〜4、requirements.md#ビジネスルール・制約-2、requirements.md#選定領域の見直し案の粒度・提示方法-6〜8、requirements.md#生成領域の見直し案の粒度・提示方法-9〜10
+- 関連するビジネスルール: requirements.md#見直しの実行-1〜4、requirements.md#ビジネスルール・制約-2〜3、requirements.md#選定領域の見直し案の粒度・提示方法-6〜8、requirements.md#生成領域の見直し案の粒度・提示方法-9〜10
 
 ### 見直し案をPRとして提案する処理
 - 対象: 上記で作成した変更内容
 - 手順:
   1. 作業用ブランチ`ai-dev-digest/watchlist-review/<year-month>`(例: `ai-dev-digest/watchlist-review/2026-08`)を作成する
-  2. 変更内容をコミットし、`main`向けにPRを作成する。PR本文には判断材料として「対象フィードバック・実績」「提案内容」「適用した場合の懸念」の3列からなる表を含める(requirements.md#ビジネスルール・制約-2。表の1行が1つの見直し観点に対応し、複数の観点を検討した場合は複数行にする)。振り分けの結果いずれの領域にも該当しなかったフィードバックも、内容と「対象外」である旨を表の行として残す(requirements.md#見直しの実行-4)。Claude Code CLIには、この表をMarkdown形式で`/tmp/watchlist-review-pr-body.md`に書き出すよう指示し、PR作成時に`gh pr create --body-file`でこれを読み込む(ヘッドレス実行の応答をシェル変数経由で受け渡すより、ファイル経由の方が長文・特殊文字を扱いやすいため)
+  2. 変更内容をコミットし、`main`向けにPRを作成する。PR本文には判断材料として「対象フィードバック・実績」「提案内容」「適用した場合の懸念」の3列からなる表を含める(requirements.md#ビジネスルール・制約-2。表の1行が1つの見直し観点に対応し、複数の観点を検討した場合は複数行にする)。振り分けの結果いずれの領域にも該当しなかったフィードバックも、内容と「対象外」である旨を表の行として残す(requirements.md#見直しの実行-4)。生成領域に振り分けたが著作権ガード(requirements.md#ビジネスルール・制約-3)に抵触するため却下した要望も、却下理由とともに表の行として残す(requirements.md#生成領域の見直し案の粒度・提示方法-9)。Claude Code CLIには、この表をMarkdown形式で`/tmp/watchlist-review-pr-body.md`に書き出すよう指示し、PR作成時に`gh pr create --body-file`でこれを読み込む(ヘッドレス実行の応答をシェル変数経由で受け渡すより、ファイル経由の方が長文・特殊文字を扱いやすいため)
   3. **このPRは自動マージしない。** [daily-publish](../daily-publish/design.md)の自動マージ対象は`ai-dev-digest/articles/**`ブランチのみであり、`ai-dev-digest/watchlist-review/**`は対象外(ブランチ命名で明確に区別する)。通常のリポジトリのブランチ保護(レビュー必須)がそのまま適用され、運営者が内容を確認してマージする
 - シーケンス図(俯瞰用。正は上記の手順の文章):
 
