@@ -89,18 +89,48 @@ export function mapGameRowToGame(row: GameRow): Game {
   }
 }
 
-// 一覧・絞り込み(game-list)の対象になる公開中ゲームを、登録日時の新しい順に取得する
-// (design.md「公開中のゲームを取得する処理」)。deleted_at is nullで明示的に絞り込む
-// (RLS「anyone can select published games」でも同条件が担保されるが、クライアント側の
-// クエリでも同じ条件を持たせ、意図を自己文書化する)。件数が少ない前提で全件取得し、
-// 絞り込みは取得済みデータへ画面側(lib/filterGames.ts)で適用する(再取得しない)。
+// 一覧・絞り込み(game-list)の対象になるゲームを、登録日時の新しい順に取得する
+// (design.md「公開中のゲームを取得する処理」)。削除は物理削除に統一したため(adr/0001)、
+// 存在する行はすべて公開対象で、deleted_atのような絞り込み条件は持たない(公開SELECTのRLSも
+// using(true)。20260820140000マイグレーション)。件数が少ない前提で全件取得し、絞り込みは
+// 取得済みデータへ画面側(lib/filterGames.ts)で適用する(再取得しない)。
 // 取得に失敗した場合は呼び出し元(画面)がエラー表示できるよう例外を投げる。
 export async function fetchPublishedGames(): Promise<Game[]> {
   const { data, error } = await supabase
     .from('board_game_rules_games')
     .select(GAME_PUBLIC_COLUMNS)
-    .is('deleted_at', null)
     .order('created_at', { ascending: false })
   if (error) throw new Error(`ゲーム一覧の取得に失敗しました: ${error.message}`)
   return ((data ?? []) as GameRow[]).map(mapGameRowToGame)
+}
+
+// 単一ゲーム取得の結果(game-detail/design.md「対象ゲームを取得して表示する処理」)。
+// 「該当なし(存在しない/削除済み)」と「取得失敗」は画面で出し分けるため区別して返す。
+export type FetchGameResult =
+  | { status: 'found'; game: Game }
+  | { status: 'notFound' }
+  | { status: 'error' }
+
+// UUID形式の簡易判定。詳細画面のクエリIDは、DBへ渡す前に形式を検証し、
+// 不正な文字列はそのまま「見つかりません」で終える(design.md#セキュリティ。SQLへ文字列を埋め込まない)。
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// 指定IDの公開ゲームを1件取得する(game-detail/design.md「対象ゲームを取得して表示する処理」)。
+// photo_paths(元写真)は含めず、intro_photo_paths(公開)は含める(GAME_PUBLIC_COLUMNS)。
+// 削除は物理削除のため、削除済みは行が存在せずnotFoundになる(deleted_atでの絞り込みはしない)。
+// 不正なID形式・該当なしはnotFound、想定外の取得失敗はerrorを返す(呼び出し元が再試行手段を出せる)。
+export async function fetchGameById(id: string): Promise<FetchGameResult> {
+  if (!id || !UUID_RE.test(id)) return { status: 'notFound' }
+  const { data, error } = await supabase
+    .from('board_game_rules_games')
+    .select(GAME_PUBLIC_COLUMNS)
+    .eq('id', id)
+    .maybeSingle()
+  if (error) {
+    // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)。ゲーム情報の中身は出さない
+    console.error('ゲーム詳細の取得に失敗しました', { id })
+    return { status: 'error' }
+  }
+  if (!data) return { status: 'notFound' }
+  return { status: 'found', game: mapGameRowToGame(data) }
 }

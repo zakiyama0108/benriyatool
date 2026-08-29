@@ -8,11 +8,11 @@ const { uploadMock, storageFromMock, updateEqMock, updateMock, fromMock } = vi.h
   const fromMock = vi.fn(() => ({ update: updateMock }))
   return { uploadMock, storageFromMock, updateEqMock, updateMock, fromMock }
 })
-vi.mock('../../../../app/lib/supabaseClient', () => ({
+vi.mock('../../../app/lib/supabaseClient', () => ({
   supabase: { from: fromMock, storage: { from: storageFromMock } },
 }))
 
-import { addIntroPhotos, removeIntroPhoto, setMainIntroPhoto } from '../../../../app/board-game-rules/admin/lib/introPhotos'
+import { addIntroPhotos, removeIntroPhoto, setMainIntroPhoto } from '../../../app/board-game-rules/lib/introPhotos'
 
 function makePhoto(name = 'photo.jpg'): File {
   return new File(['dummy'], name, { type: 'image/jpeg' })
@@ -26,8 +26,8 @@ beforeEach(() => {
   updateEqMock.mockReset().mockResolvedValue({ data: null, error: null })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-17、specs/board-game-rules/admin/design.md#ゲーム紹介画像を差し替え・削除する処理
-describe('【管理画面】ゲーム紹介画像の追加アップロード - 公開Storageへ保存しintro_photo_pathsの末尾に追加する', () => {
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-12、specs/board-game-rules/game-detail/design.md#ゲーム紹介画像を差し替え・削除する処理(管理者)
+describe('ゲーム紹介画像の追加アップロード - 公開Storageへ保存しintro_photo_pathsの末尾に追加する', () => {
   it('新しい画像を公開Storage(board-game-rules-game-photos)へゲームID配下でアップロードし、既存パスの末尾に追加してUPDATEすること', async () => {
     const result = await addIntroPhotos('game-1', ['game-1/0.jpg'], [makePhoto()])
 
@@ -79,8 +79,8 @@ describe('【管理画面】ゲーム紹介画像の追加アップロード - �
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-17、specs/board-game-rules/admin/design.md#ゲーム紹介画像を差し替え・削除する処理
-describe('【管理画面】ゲーム紹介画像の削除 - 配列から取り除きUPDATEする(Storageオブジェクト自体は削除しない)', () => {
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-12、specs/board-game-rules/game-detail/design.md#ゲーム紹介画像を差し替え・削除する処理(管理者)
+describe('ゲーム紹介画像の削除 - 配列から取り除きUPDATEする(Storageオブジェクト自体は削除しない)', () => {
   it('指定パスを配列から取り除いた内容でUPDATEされ、Storageの削除は呼ばれないこと', async () => {
     const result = await removeIntroPhoto('game-1', ['game-1/0.jpg', 'game-1/1.jpg'], 'game-1/0.jpg')
 
@@ -98,8 +98,8 @@ describe('【管理画面】ゲーム紹介画像の削除 - 配列から取り�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-17、specs/board-game-rules/admin/design.md#ゲーム紹介画像を差し替え・削除する処理
-describe('【管理画面】ゲーム紹介画像のメイン画像変更 - 指定画像を先頭へ移動してUPDATEする', () => {
+// 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-12、specs/board-game-rules/game-detail/design.md#ゲーム紹介画像を差し替え・削除する処理(管理者)
+describe('ゲーム紹介画像のメイン画像変更 - 指定画像を先頭へ移動してUPDATEする', () => {
   it('指定パスが先頭へ移動し、他のパスは順序を保ったまま後ろへずれた内容でUPDATEされること', async () => {
     const result = await setMainIntroPhoto('game-1', ['game-1/0.jpg', 'game-1/1.jpg', 'game-1/2.jpg'], 'game-1/2.jpg')
 

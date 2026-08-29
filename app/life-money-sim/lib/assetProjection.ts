@@ -35,6 +35,14 @@ export function calcAge(birthYearMonth: YearMonth | null, targetYearMonth: YearM
   return target.year - birth.year - (hasHadBirthdayThisYear ? 0 : 1)
 }
 
+// 収入で登録したボーナス支給月(1〜12)に対象年月の月が該当すれば「1回あたりの金額」を、
+// 該当しなければ0を返す。支給月は年を問わず毎年繰り返し該当する
+// (仕様: requirements.md#月次の資産推移-5、monthly-balance/requirements.md#収入-2、design.md#当月の通常ボーナスを求める処理)
+export function calcRegularBonus(bonusMonths: number[], bonusAmountPerTime: number, targetYearMonth: YearMonth): number {
+  const { month } = parseYearMonth(targetYearMonth)
+  return bonusMonths.includes(month) ? sanitizeAmount(bonusAmountPerTime) : 0
+}
+
 // 月次余剰資金(賞与抜き)に当月の賞与・定期収入を加え、当月のイベント合計・定期支出を差し引いた
 // 「当月の差引後余剰」を求める(仕様: requirements.md#月次の資産推移-2、design.md#当月の差引後余剰を求める処理)
 export function calcNetSurplus(
@@ -114,11 +122,18 @@ export function buildSavingsAssetSeries(startingAsset: number, netSurpluses: num
   return series
 }
 
+// 想定利回り(年率・%)を月利に換算する。年率を単純に12等分する近似式を採用する(仕様: requirements.md#複利計算-1)。
+// 資産積み上げ(buildInvestmentAssetSeries)と運用益算出(buildGainSeries)で同じ式を使い、
+// 複利式の変更が片方だけに漏れて資産推移と運用益が乖離することを防ぐ
+function toMonthlyRate(expectedAnnualRate: number): number {
+  return sanitizeAmount(expectedAnnualRate) / 100 / 12
+}
+
 // 資産運用モード: 想定利回り(年率・%)を12で割った月利で、前月末の資産額に運用益を加えたうえで
 // 当月の差引後余剰を積み上げる(仕様: requirements.md#複利計算-1、requirements.md#複利計算-2、
 // design.md#資産運用モードで月次資産額を積み上げる処理)
 export function buildInvestmentAssetSeries(startingAsset: number, netSurpluses: number[], expectedAnnualRate: number): number[] {
-  const monthlyRate = sanitizeAmount(expectedAnnualRate) / 100 / 12
+  const monthlyRate = toMonthlyRate(expectedAnnualRate)
   const series: number[] = []
   let asset = sanitizeAmount(startingAsset)
   for (const netSurplus of netSurpluses) {
@@ -126,6 +141,25 @@ export function buildInvestmentAssetSeries(startingAsset: number, netSurpluses: 
     series.push(asset)
   }
   return series
+}
+
+// 各月の運用益(前月末の資産額×月利)の系列を求める。貯蓄のみモードは運用益が発生しないため全月0とする。
+// 資産運用モードでは、当月の運用益は前月末の資産額(初月は開始資産額)に月利を掛けた値とする
+// (仕様: requirements.md#月次の資産推移-6、requirements.md#複利計算-2、design.md#資産運用モードで月次資産額を積み上げる処理)
+export function buildGainSeries(
+  startingAsset: number,
+  assetSeries: number[],
+  investmentMode: boolean,
+  expectedAnnualRate: number
+): number[] {
+  if (!investmentMode) return assetSeries.map(() => 0)
+  const monthlyRate = toMonthlyRate(expectedAnnualRate)
+  let prevAsset = sanitizeAmount(startingAsset)
+  return assetSeries.map((asset) => {
+    const gain = prevAsset * monthlyRate
+    prevAsset = asset
+    return gain
+  })
 }
 
 // その年に該当した定期項目を名目・種別ごとに1件へまとめ、該当した月の金額を合計する
@@ -171,9 +205,11 @@ export function aggregateYearly(rows: MonthlyProjectionRow[]): YearlyProjectionR
         spouseAge: last.spouseAge,
         childrenAges: last.childrenAges,
         eventItems: yearRows.flatMap((r) => r.eventItems),
-        bonusAmount: yearRows.reduce((sum, r) => sum + r.bonusAmount, 0),
+        incomeBonusAmount: yearRows.reduce((sum, r) => sum + r.incomeBonusAmount, 0),
+        eventBonusAmount: yearRows.reduce((sum, r) => sum + r.eventBonusAmount, 0),
         recurringLabels: aggregateRecurringLabelsForYear(yearRows),
         yearlySurplus: yearRows.reduce((sum, r) => sum + r.netSurplus, 0),
+        investmentGain: yearRows.reduce((sum, r) => sum + r.investmentGain, 0),
         asset: last.asset,
       }
     })
@@ -191,6 +227,8 @@ export function buildMonthlyProjectionRows(params: {
   selfBirthMonth: YearMonth | null
   spouseBirthMonth: YearMonth | null
   childrenBirthMonths: (YearMonth | null)[]
+  bonusMonths: number[]
+  bonusAmountPerTime: number
   bonuses: BonusEntry[]
   events: EventEntry[]
   recurringEntries: RecurringEntry[]
@@ -205,10 +243,12 @@ export function buildMonthlyProjectionRows(params: {
     cursor = cursor.month === 12 ? { year: cursor.year + 1, month: 1 } : { year: cursor.year, month: cursor.month + 1 }
   }
 
-  // 月ごとの賞与・イベント・定期項目の金額を一度だけ求め、差引後余剰の計算とテーブル表示
-  // (eventItems・bonusAmount・recurringLabels)の両方に使い回す
+  // 月ごとの賞与・イベント・定期項目の金額を一度だけ求め、差引後余剰の計算とテーブル表示の両方に使い回す。
+  // 収入賞与(支給月×1回あたり)と賞与登録(特定年月)は、表で別列に表示するため合算せず別々に保持する。
+  // 差引後余剰の計算では両者を合算した額を賞与として使う
   const monthlyDetails = yearMonths.map((ym) => {
-    const bonusAmount = params.bonuses
+    const incomeBonusAmount = calcRegularBonus(params.bonusMonths, params.bonusAmountPerTime, ym)
+    const eventBonusAmount = params.bonuses
       .filter((b) => b.yearMonth === ym)
       .reduce((sum, b) => sum + sanitizeAmount(b.amount), 0)
     const eventItems = params.events
@@ -219,14 +259,15 @@ export function buildMonthlyProjectionRows(params: {
       .filter((entry) => isRecurringEntryApplicable(entry, ym))
       .map((entry) => ({ label: entry.label, type: entry.type, amount: sanitizeAmount(entry.amount) }))
     const { incomeTotal, expenseTotal } = calcRecurringTotals(params.recurringEntries, ym)
-    const netSurplus = calcNetSurplus(params.monthlySurplus, bonusAmount, eventTotal, incomeTotal, expenseTotal)
-    return { bonusAmount, eventItems, recurringLabels, netSurplus }
+    const netSurplus = calcNetSurplus(params.monthlySurplus, incomeBonusAmount + eventBonusAmount, eventTotal, incomeTotal, expenseTotal)
+    return { incomeBonusAmount, eventBonusAmount, eventItems, recurringLabels, netSurplus }
   })
 
   const netSurpluses = monthlyDetails.map((d) => d.netSurplus)
   const assetSeries = params.investmentMode
     ? buildInvestmentAssetSeries(params.startingAsset, netSurpluses, params.expectedAnnualRate)
     : buildSavingsAssetSeries(params.startingAsset, netSurpluses)
+  const gainSeries = buildGainSeries(params.startingAsset, assetSeries, params.investmentMode, params.expectedAnnualRate)
 
   return yearMonths.map((yearMonth, i) => ({
     yearMonth,
@@ -234,9 +275,11 @@ export function buildMonthlyProjectionRows(params: {
     spouseAge: calcAge(params.spouseBirthMonth, yearMonth),
     childrenAges: params.childrenBirthMonths.map((b) => calcAge(b, yearMonth)),
     eventItems: monthlyDetails[i].eventItems,
-    bonusAmount: monthlyDetails[i].bonusAmount,
+    incomeBonusAmount: monthlyDetails[i].incomeBonusAmount,
+    eventBonusAmount: monthlyDetails[i].eventBonusAmount,
     recurringLabels: monthlyDetails[i].recurringLabels,
     netSurplus: monthlyDetails[i].netSurplus,
+    investmentGain: gainSeries[i],
     asset: assetSeries[i],
   }))
 }

@@ -2,18 +2,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import AdminPage from '../../../app/board-game-rules/admin/page'
 import { getSession, onAuthChange, isAuthorizedAdmin, signInWithGoogle, signOut } from '../../../app/lib/adminAuth'
-import { fetchAdminGames } from '../../../app/board-game-rules/admin/lib/fetchAdminGames'
+import { fetchPublishedGames } from '../../../app/board-game-rules/lib/games'
 import { fetchReports } from '../../../app/board-game-rules/admin/lib/fetchReports'
 import {
   fetchGameRequests,
   markGameRequestProcessed,
   deleteGameRequest,
 } from '../../../app/board-game-rules/admin/lib/gameRequests'
-import { editGame, deleteGame } from '../../../app/board-game-rules/admin/lib/moderation'
 import { fetchOriginalPhotos } from '../../../app/board-game-rules/admin/lib/photos'
-import { addIntroPhotos } from '../../../app/board-game-rules/admin/lib/introPhotos'
 import type { Session } from '@supabase/supabase-js'
-import type { AdminGame } from '../../../app/board-game-rules/admin/lib/fetchAdminGames'
 
 vi.mock('../../../app/lib/adminAuth', () => ({
   getSession: vi.fn(),
@@ -22,25 +19,15 @@ vi.mock('../../../app/lib/adminAuth', () => ({
   signInWithGoogle: vi.fn(),
   signOut: vi.fn(),
 }))
-vi.mock('../../../app/board-game-rules/admin/lib/fetchAdminGames', () => ({ fetchAdminGames: vi.fn() }))
+vi.mock('../../../app/board-game-rules/lib/games', () => ({ fetchPublishedGames: vi.fn() }))
 vi.mock('../../../app/board-game-rules/admin/lib/fetchReports', () => ({ fetchReports: vi.fn() }))
 vi.mock('../../../app/board-game-rules/admin/lib/gameRequests', () => ({
   fetchGameRequests: vi.fn(),
   markGameRequestProcessed: vi.fn(),
   deleteGameRequest: vi.fn(),
 }))
-vi.mock('../../../app/board-game-rules/admin/lib/moderation', () => ({
-  editGame: vi.fn(),
-  deleteGame: vi.fn(),
-  deleteComment: vi.fn(),
-}))
 vi.mock('../../../app/board-game-rules/admin/lib/photos', () => ({ fetchOriginalPhotos: vi.fn() }))
-vi.mock('../../../app/board-game-rules/admin/lib/introPhotos', () => ({
-  addIntroPhotos: vi.fn(),
-  removeIntroPhoto: vi.fn(),
-  setMainIntroPhoto: vi.fn(),
-}))
-// GameEditForm(T6/T7)がメイン画像表示に使う公開URL変換(gamePhotos.ts)は別spec(game-list T8)で検証済みのためモックする
+// GameRequestsViewが紹介画像プレビューに使う公開URL変換(gamePhotos.ts)は別spec(game-list T8)で検証済みのためモックする
 vi.mock('../../../app/board-game-rules/lib/gamePhotos', () => ({
   getGamePhotoUrl: vi.fn((path: string) => `https://example.com/game-photos/${path}`),
 }))
@@ -49,10 +36,11 @@ function makeSession(email: string): Session {
   return { user: { email } } as unknown as Session
 }
 
-function makeGame(overrides: Partial<AdminGame> = {}): AdminGame {
+// fetchPublishedGamesが返すGame相当(通報の対象ゲーム名の表示に使う。テストで必要な最小限)
+function makePublishedGame(id: string, name: string) {
   return {
-    id: 'game-1',
-    name: 'カタン',
+    id,
+    name,
     minPlayers: 3,
     maxPlayers: 4,
     minMinutes: 60,
@@ -69,10 +57,6 @@ function makeGame(overrides: Partial<AdminGame> = {}): AdminGame {
     rulesDetailed: [],
     introPhotoPaths: [],
     createdAt: '2026-08-01T00:00:00.000Z',
-    deletedAt: null,
-    photoPaths: [],
-    reportCount: 0,
-    ...overrides,
   }
 }
 
@@ -82,25 +66,22 @@ beforeEach(() => {
   vi.mocked(isAuthorizedAdmin).mockReset()
   vi.mocked(signInWithGoogle).mockReset()
   vi.mocked(signOut).mockReset()
-  vi.mocked(fetchAdminGames).mockReset().mockResolvedValue([])
+  vi.mocked(fetchPublishedGames).mockReset().mockResolvedValue([])
   vi.mocked(fetchReports).mockReset().mockResolvedValue([])
   vi.mocked(fetchGameRequests).mockReset().mockResolvedValue([])
   vi.mocked(markGameRequestProcessed).mockReset().mockResolvedValue(true)
   vi.mocked(deleteGameRequest).mockReset().mockResolvedValue(true)
-  vi.mocked(editGame).mockReset().mockResolvedValue(true)
-  vi.mocked(deleteGame).mockReset().mockResolvedValue(true)
   vi.mocked(fetchOriginalPhotos).mockReset().mockResolvedValue([])
-  vi.mocked(addIntroPhotos).mockReset().mockResolvedValue(true)
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-1、specs/board-game-rules/admin/requirements.md#アクセス制御・権限-2、specs/board-game-rules/admin/design.md#ログイン状態を判定して画面を出し分ける処理、specs/board-game-rules/admin/design.md#閲覧権限を確認する処理
+// 仕様: specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-1、specs/board-game-rules/admin/requirements.md#ログイン・アクセス制御-3、specs/board-game-rules/admin/requirements.md#アクセス制御・権限-2
 describe('【管理画面】未ログイン・権限なしでは管理データを一切取得しない', () => {
   it('未ログインのとき、ログイン案内が表示されデータ取得が行われないこと', async () => {
     vi.mocked(getSession).mockResolvedValue(null)
     render(<AdminPage />)
 
     await waitFor(() => expect(screen.getByRole('button', { name: 'Googleでログイン' })).toBeTruthy())
-    expect(fetchAdminGames).not.toHaveBeenCalled()
+    expect(fetchReports).not.toHaveBeenCalled()
   })
 
   it('権限がないとき、権限なしの案内が表示されデータ取得が行われないこと', async () => {
@@ -109,21 +90,23 @@ describe('【管理画面】未ログイン・権限なしでは管理データ�
     render(<AdminPage />)
 
     await waitFor(() => expect(screen.getByText(/権限がありません/)).toBeTruthy())
-    expect(fetchAdminGames).not.toHaveBeenCalled()
+    expect(fetchReports).not.toHaveBeenCalled()
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-5、specs/board-game-rules/admin/requirements.md#通報の確認-8、specs/board-game-rules/admin/requirements.md#登録依頼の確認-12
-describe('【管理画面】権限ありでモデレーションデータを取得して表示する', () => {
-  it('権限があるとき、ゲーム一覧・通報一覧・登録依頼一覧が取得され表示されること', async () => {
+// 仕様: specs/board-game-rules/admin/requirements.md#通報の確認-6、specs/board-game-rules/admin/requirements.md#登録依頼の確認-8
+describe('【管理画面】権限ありで通報一覧・登録依頼一覧を取得して表示する', () => {
+  it('権限があるとき、通報一覧・登録依頼一覧が取得され、通報に対象ゲーム名が表示されること', async () => {
     vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
     vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
-    vi.mocked(fetchAdminGames).mockResolvedValue([makeGame()])
+    vi.mocked(fetchPublishedGames).mockResolvedValue([makePublishedGame('game-1', 'カタン')] as never)
+    vi.mocked(fetchReports).mockResolvedValue([
+      { id: 'r1', gameId: 'game-1', reason: '内容が古い', createdAt: '2026-08-01T00:00:00.000Z' },
+    ])
 
     render(<AdminPage />)
 
     await waitFor(() => expect(screen.getByText('カタン')).toBeTruthy())
-    expect(fetchAdminGames).toHaveBeenCalled()
     expect(fetchReports).toHaveBeenCalled()
     expect(fetchGameRequests).toHaveBeenCalled()
   })
@@ -131,7 +114,7 @@ describe('【管理画面】権限ありでモデレーションデータを取�
   it('データ取得に失敗した場合、エラー表示になり一覧は表示されないこと', async () => {
     vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
     vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
-    vi.mocked(fetchAdminGames).mockRejectedValue(new Error('permission denied'))
+    vi.mocked(fetchReports).mockRejectedValue(new Error('permission denied'))
 
     render(<AdminPage />)
 
@@ -150,55 +133,7 @@ describe('【管理画面】権限ありでモデレーションデータを取�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-6、specs/board-game-rules/admin/requirements.md#ゲームの編集・削除-7
-describe('【管理画面】ゲームの編集・削除の操作が一覧に反映される', () => {
-  it('一覧の編集を選ぶと編集フォームが表示されること', async () => {
-    vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
-    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
-    vi.mocked(fetchAdminGames).mockResolvedValue([makeGame()])
-
-    render(<AdminPage />)
-    await waitFor(() => expect(screen.getByRole('button', { name: '編集' })).toBeTruthy())
-    fireEvent.click(screen.getByRole('button', { name: '編集' }))
-
-    expect(screen.getByRole('button', { name: '保存する' })).toBeTruthy()
-  })
-
-  it('削除を確定すると、deleteGameが呼ばれ一覧が再取得されること', async () => {
-    vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
-    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
-    vi.mocked(fetchAdminGames).mockResolvedValue([makeGame()])
-
-    render(<AdminPage />)
-    await waitFor(() => expect(screen.getByRole('button', { name: '削除' })).toBeTruthy())
-    fireEvent.click(screen.getByRole('button', { name: '削除' }))
-    fireEvent.click(screen.getByRole('button', { name: '削除を確定' }))
-
-    await waitFor(() => expect(deleteGame).toHaveBeenCalledWith('game-1'))
-    await waitFor(() => expect(fetchAdminGames).toHaveBeenCalledTimes(2))
-  })
-})
-
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-17
-describe('【管理画面】編集フォームでのゲーム紹介画像の追加が一覧に反映される', () => {
-  it('編集フォームで画像を追加すると、addIntroPhotosが呼ばれ一覧が再取得されること', async () => {
-    vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
-    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
-    vi.mocked(fetchAdminGames).mockResolvedValue([makeGame({ introPhotoPaths: ['game-1/0.jpg'] })])
-
-    render(<AdminPage />)
-    await waitFor(() => expect(screen.getByRole('button', { name: '編集' })).toBeTruthy())
-    fireEvent.click(screen.getByRole('button', { name: '編集' }))
-
-    const file = new File(['dummy'], 'new.jpg', { type: 'image/jpeg' })
-    fireEvent.change(screen.getByLabelText('ゲーム紹介画像を追加'), { target: { files: [file] } })
-
-    await waitFor(() => expect(addIntroPhotos).toHaveBeenCalledWith('game-1', ['game-1/0.jpg'], [file]))
-    await waitFor(() => expect(fetchAdminGames).toHaveBeenCalledTimes(2))
-  })
-})
-
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-13、specs/board-game-rules/admin/requirements.md#登録依頼の確認-14
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-9、specs/board-game-rules/admin/requirements.md#登録依頼の確認-10
 describe('【管理画面】登録依頼の処理済みマーク・削除の操作が一覧に反映される', () => {
   it('処理済みにするを押すと、markGameRequestProcessedが呼ばれ一覧が再取得されること', async () => {
     vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))

@@ -5,7 +5,7 @@ export type GameRequest = {
   id: string
   photoPaths: string[]
   // ゲーム紹介画像(公開Storage)のパス。順序付きで先頭がメイン画像候補。0枚(自動補完対象)〜20枚
-  // (仕様: admin/requirements.md#ゲーム紹介画像の確認・自動補完-15)
+  // (仕様: admin/requirements.md#ゲーム紹介画像の確認・自動補完-11)
   introPhotoPaths: string[]
   name: string | null
   minPlayers: number | null

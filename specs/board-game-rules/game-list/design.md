@@ -8,7 +8,7 @@
 ### 公開中のゲームを取得する処理
 - 対象: 一覧・絞り込みの元になる`board_game_rules_games`のレコード
 - 手順:
-  1. `deleted_at is null`(公開中・削除されていない)のゲームを取得する(requirements.md#表示対象-1)。`photo_paths`(元写真パス)は選択せず、一覧・絞り込み・詳細に必要な列だけを取得する([game-registration/design.md#セキュリティ](../game-registration/design.md))。`intro_photo_paths`(ゲーム紹介画像、公開列)はサムネイル表示に使うため取得する
+  1. 登録済みのゲームを取得する(削除されたゲームは物理削除でレコードが存在しないため取得されない。requirements.md#表示対象-1)。`photo_paths`(元写真パス)は選択せず、一覧・絞り込み・詳細に必要な列だけを取得する([game-registration/design.md#セキュリティ](../game-registration/design.md))。`intro_photo_paths`(ゲーム紹介画像、公開列)はサムネイル表示に使うため取得する
   2. 初期の並び順は登録日時の新しい順とする(並び替えの複数指定はスコープ外。requirements.md#スコープ外)
   3. 取得に失敗した場合は、一覧を表示せずエラーが分かる表示にする(後述エラーハンドリング)
 - 補足: 現状は件数が少ない前提で全件取得し、絞り込みは取得済みデータに対して画面側で行う(ページネーションの詳細はスコープ外。requirements.md#スコープ外)。件数が増えた段階で取得の分割を別途検討する
@@ -107,6 +107,7 @@ board-game-rulesアプリ全体で共有する左サイドバー(`components/Boa
 - 本画面はアプリのトップ(requirements.md#概要)のため、`BoardGameNavKey`に新しいキー`list`を追加し、ナビの最上段に「一覧」項目として配置する(表示順: 一覧→登録依頼→お気に入り。Stitch参照デザインのHome/Add Game/お気に入りの並びに準じる)。本画面を選択中は`aria-current="page"`でハイライトする
 - 本画面の実装により、register・favoritesのパンくずで非リンクだった「ボドゲのトリセツ」の遷移先ができる。register/favoritesのコード上のコメント(「game-list未実装のため非リンク」)は古くなるため、本画面の実装にあわせて`/board-game-rules`へのリンクに更新する(対象: `app/board-game-rules/register/page.tsx`、`app/board-game-rules/favorites/page.tsx`)。あわせて、同じ注記が書かれている[game-registration/design.md#画面設計(登録依頼フォームのUI)](../game-registration/design.md)の「パンくず」の一文(「ボドゲのトリセツのトップはgame-list未実装のため非リンク」)も、リンク化された旨に更新する(`favorite/design.md`には同種の注記はない)
 - 共通chromeの「唯一の真実の源」である[DESIGN.md#2-共通chromeルール](../DESIGN.md)の現況記述「ナビはロゴ...+実装済み画面へのリンク(登録依頼・お気に入り)」も、`list`追加後の実態(一覧・登録依頼・お気に入りの3リンク)に合わせて更新する
+- (後日追記)`nav`末尾に運営者ログイン時のみ表示する管理画面リンク(`AdminNavLink`)を差し込む。判定・出し分けの設計は[admin/design.md](../admin/design.md)「共通ナビに管理画面への導線を表示する処理」を真実の源とし、本節では重複させない(`BoardGameNav.tsx`のファイル自体はこのspecが真実の源のため、変更が入る旨だけ記す)
 
 ### パンくず
 register/favoritesと同じ3階層: 「べんりやつーる(リンク`/`) › ボドゲのトリセツ(リンク`/board-game-rules`) › 一覧(現在地・太字・非リンク)」。本画面はアプリのトップだが、全画面でパンくずの階層構造を統一するため2階層の特例は設けない(画面レビューでの方針決定、2026-08)。styleguideの見本([app/board-game-rules/styleguide/](../../app/board-game-rules/styleguide/))と同じマークアップパターン(`nav aria-label="パンくず"`)を用いる
@@ -145,7 +146,7 @@ stateDiagram-v2
 ```
 
 ## セキュリティ
-- 取得は公開中(`deleted_at is null`)のゲームに限られ、削除されたゲームは表示しない(RLSでも担保。requirements.md#表示対象-1)
+- 削除されたゲームは物理削除でレコードが存在しないため表示されない(requirements.md#表示対象-1)
 - 一覧・絞り込みは`photo_paths`(元写真パス)を取得しない。加えて`anon`は列単位のSELECT権限から`photo_paths`が除外されており、細工したクライアントでも直接読み取れない(列秘匿のDB担保は[game-registration/design.md#データベース設計](../game-registration/design.md)を正とする)。元写真は一覧・詳細に一切出さない
 - `intro_photo_paths`(ゲーム紹介画像)は公開列・公開Storageのため、`photo_paths`のようなアクセス制御は不要(そもそも一般公開する画像。requirements.md#画像表示-12)。画像の`src`は公開URLの文字列であり、HTMLとして解釈される経路には渡さない(`<img src>`のみで使用)
 - 作者テキスト検索は取得済みデータに対する画面側の部分一致で行い、任意の文字列がそのままDBクエリに渡ることはない(仮にDB側で検索する場合も、パラメータ化した問い合わせを使い、入力を埋め込まない)

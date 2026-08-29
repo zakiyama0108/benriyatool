@@ -1,7 +1,5 @@
 # 要件定義: 通報(ゲーム内容への気付き)
 
-> ステータス: 仕様確認中(未実装)
-
 ## 概要
 - 機能名: 通報(ゲーム内容への気付き)
 - 目的: 登録されたゲームの内容に誤り・不適切な点・著作権上の問題などがあるとき、閲覧者が運営者に気付かせられるようにする。即時公開の運用([game-registration/requirements.md#公開ポリシー](../game-registration/requirements.md))を、事後の気付き導線で補う
@@ -22,7 +20,7 @@
 
 ### 通報後の扱い
 - [5] 通報が行われても、そのゲームを自動的に非表示にはしない。公開は維持したまま、運営者が[admin/requirements.md](../admin/requirements.md)の管理画面で通報内容を確認できるようにする(根拠: 自動非表示にすると、いたずら通報で正当な登録が消える。運営者の判断を挟む。`/consult`での判断)
-- [6] 運営者は、通報内容を見て、対象ゲームの編集・削除の要否を判断する([admin/requirements.md](../admin/requirements.md)に従う)
+- [6] 運営者は、通報内容を見て、対象ゲームの編集・削除の要否を判断する。通報一覧の確認は[admin/requirements.md](../admin/requirements.md)、実際の編集・削除は対象ゲームの詳細画面の管理者導線([game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))で行う
 
 ## ビジネスルール・制約
 
@@ -34,8 +32,8 @@
 
 ## 依存関係
 - 通報対象となるゲームの識別子は[game-registration/requirements.md](../game-registration/requirements.md)で登録されるゲームのIDに従う
-- 通報の送信導線は[game-detail/requirements.md#機能要件-8](../game-detail/requirements.md)で表示される
-- 通報内容の確認・対応は[admin/requirements.md](../admin/requirements.md)で行う
+- 通報の送信導線は[game-detail/requirements.md#機能要件-7](../game-detail/requirements.md)で表示される
+- 通報内容の確認(一覧)は[admin/requirements.md](../admin/requirements.md)、通報を受けた編集・削除は[game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md)で行う
 
 ## スコープ外
 - コメント単位の通報([comment/requirements.md](../comment/requirements.md)のスコープ外と揃える。当面はゲーム単位の通報のみ)

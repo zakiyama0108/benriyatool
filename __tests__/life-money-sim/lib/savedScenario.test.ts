@@ -31,7 +31,7 @@ beforeEach(() => {
 })
 
 const inputState: ScenarioInputState = {
-  income: { monthlySalary: 35, bonusCount: 2, bonusAmountPerTime: 10 },
+  income: { monthlySalary: 35, bonusMonths: [6, 12], bonusAmountPerTime: 10 },
   personalExpense: { annualItems: [], monthlyItems: [] },
   household: { hasSpouse: false, items: [], myShare: 0 },
   familyProfile: { selfBirthMonth: '1990-04', spouseBirthMonth: null, childrenCount: 0, childrenBirthMonths: [] },
@@ -160,5 +160,17 @@ describe('保存済み入力値の欠損フィールド補完 - 将来の型変�
     }
     const result = fillMissingScenarioFields(legacyStored, currentDefault)
     expect(result.recurringEntries).toEqual(currentDefault.recurringEntries)
+  })
+
+  // 仕様: specs/life-money-sim/monthly-balance/requirements.md#収入-2
+  it('保存済みデータのincomeがbonusMonthsを持たずbonusCountのみの場合(支給月導入前の旧データ)、回数分の代表的な支給月へ変換して復元されること', () => {
+    // bonusMonths導入前の旧income(bonusCount: 2)。型にないフィールドのためキャストして表現する
+    const legacyIncome = { monthlySalary: 40, bonusCount: 2, bonusAmountPerTime: 60 } as unknown as ScenarioInputState['income']
+    const stored: Partial<ScenarioInputState> = { ...inputState, income: legacyIncome }
+    const result = fillMissingScenarioFields(stored, inputState)
+    // 回数2 → 代表的な支給月(夏=6月・冬=12月)へ割り当て、金額・月給は保存値のまま
+    expect(result.income.bonusMonths).toEqual([6, 12])
+    expect(result.income.bonusAmountPerTime).toBe(60)
+    expect(result.income.monthlySalary).toBe(40)
   })
 })
