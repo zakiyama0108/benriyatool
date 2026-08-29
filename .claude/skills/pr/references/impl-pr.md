@@ -8,6 +8,8 @@ PR作成前にimpl-pr-reviewerエージェント(`.claude/agents/impl-pr-reviewe
 
 `npm run check:spec-coverage`でrequirements.md/design.mdの各仕様項目にテストが紐づいているかを確認する(CIでも同じチェックが走り、❌が残っていると失敗する)。テストが不要な項目は`scripts/spec-coverage-skip.json`に理由を添えて登録する([/implementation](../../implementation/SKILL.md)参照)。
 
+**機能マップの状態更新(`specs/<アプリ名>/architecture.md`を持つアプリのみ):** `gh pr create`の前に、機能マップの該当spec行の状態を「リリース済み」に更新してこのPRのコミットに含める(マージ=本番リリース確実の前提。後追いで状態更新専用のPRを作らない。[architecture-workflow](../../architecture-workflow/SKILL.md)の「更新タイミング」参照)。更新後の機能マップ全体(表)は、PR作成の報告にそのまま貼って提示する。デプロイ・スモークチェックでの反映確認は[/release-check](../../release-check/SKILL.md)が行い、失敗時のみ「実装中」へ戻す。
+
 本文テンプレート:
 
 ```markdown
