@@ -377,7 +377,7 @@ T0(追加マイグレーション適用)の実機確認:
 - `board_game_rules_game_requests`へのINSERT(anon)で`intro_photo_paths`に配列を渡せること、省略時は空配列がデフォルトになること
 
 ### 追加マイグレーション(登録実行・下書きレビュー、実装より先に単独PRで適用)
-[admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)が使う状態管理カラムを`board_game_rules_game_requests`へ追加し、公開時のINSERTを運営者本人のログインセッションから直接行えるよう`board_game_rules_games`にINSERTポリシーを追加する。`draft_content`・`revision_note`・`revision_history`には`board_game_rules_games`の`rules_simple`/`rules_detailed`のような文字数上限CHECKを設けない(書き込み主体がservice_role相当のローカル処理・運営者本人に限られ、匿名からの巨大データ投入という脅威が構造的にないため。公開時にINSERTされる`board_game_rules_games`側には既存の上限CHECKが引き続き適用される)。
+[admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)が使う状態管理カラムを`board_game_rules_game_requests`へ追加し、公開時のINSERTを運営者本人のログインセッションから直接行えるよう`board_game_rules_games`にINSERTポリシーを追加する(この権限拡張の判断は[adr/0002](../adr/0002-operator-publish-insert.md))。`draft_content`・`revision_note`・`revision_history`には`board_game_rules_games`の`rules_simple`/`rules_detailed`のような文字数上限CHECKを設けない(書き込み主体がservice_role相当のローカル処理・運営者本人に限られ、匿名からの巨大データ投入という脅威が構造的にないため。公開時にINSERTされる`board_game_rules_games`側には既存の上限CHECKが引き続き適用される)。
 
 ```sql
 -- board_game_rules_game_requests へ登録実行・下書きレビュー用のカラムを追加
@@ -396,7 +396,8 @@ alter table board_game_rules_game_requests
 
 -- 登録: 運営者本人による公開操作(下書きの内容でゲームをINSERT)を認める。
 -- anon/authenticatedへの一般INSERT許可は行わず、admin_emailsに載る運営者本人のみに限定する
--- (既存のINSERTポリシー撤廃の方針は維持しつつ、運営者本人の書き込み例外(ADR-0007)を拡張する)
+-- (既存のINSERTポリシー撤廃の方針は維持しつつ、運営者本人の書き込み例外(ADR-0007)を
+--  下書きを目視確認したうえでの新規登録へ拡張する。判断の記録は specs/board-game-rules/adr/0002-operator-publish-insert.md)
 grant insert on board_game_rules_games to authenticated;
 create policy "admin can insert games" on board_game_rules_games
   for insert to authenticated

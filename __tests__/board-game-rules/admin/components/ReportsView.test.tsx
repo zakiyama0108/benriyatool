@@ -5,7 +5,7 @@ import type { Report } from '../../../../app/board-game-rules/admin/lib/fetchRep
 
 const gameNames = { 'game-1': 'カタン' }
 
-// 仕様: specs/board-game-rules/admin/requirements.md#通報の確認-5、specs/board-game-rules/admin/requirements.md#通報の確認-6
+// 仕様: specs/board-game-rules/admin/requirements.md#通報の確認-6、specs/board-game-rules/admin/requirements.md#通報の確認-7
 describe('【管理画面】通報一覧 - 対象ゲーム・通報日時・理由テキストを表示し、対象ゲームの詳細画面へ導く', () => {
   it('対象ゲーム名・通報理由が表示されること', () => {
     const report: Report = { id: 'r1', gameId: 'game-1', reason: '内容が古い', createdAt: '2026-08-01T00:00:00.000Z' }

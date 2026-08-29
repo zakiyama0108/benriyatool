@@ -5,6 +5,8 @@
 
 前提: [game-registration](../game-registration/tasks.md)・[report](../report/tasks.md)・[comment](../comment/tasks.md)の各T0(テーブル・運営者向けRLS)に加え、[game-registration](../game-registration/tasks.md)のT0c(登録実行・下書きレビュー用の状態管理カラム・`board_game_rules_games`INSERTポリシー追加)が先に必要(下記T2b・T4bが使う`status`/`draft_content`等はT0cで追加される)。
 
+共通デザイン・回遊導線のタスク(T8)は、モデレーションを詳細画面へ集約した管理画面(通報一覧+登録依頼一覧。ゲーム編集表・元写真照合UIを持たない。[adr/0001](../adr/0001-moderation-on-detail-and-physical-delete.md))を土台に行う。T8着手時は、その集約後の`admin/page.tsx`・`admin/components/`(通報一覧・登録依頼一覧・ログイン画面)がmainに入っていることを前提とする。
+
 ## T0. 元写真の非公開Storage設定(実装より先に単独PRで適用。適用済み)
 - 非公開バケット(`board-game-rules-photos`、public=false)の作成と、Storageのアクセスポリシー(INSERTは誰でも可(サイズ上限`file_size_limit`・許可MIME`allowed_mime_types`・1ゲームあたり枚数上限の量的制約付き)、SELECT(ダウンロード)は運営者のみ)を`supabase/migrations/20260807160400_create_board_game_rules_photos_storage.sql`で適用済み(design.md「元写真の非公開Storage」)。このバケットは[game-registration](../game-registration/tasks.md)の写真保存先
 - design.md「元写真の非公開Storage」T0の実機確認(運営者のみ元写真取得可・anon/非運営者不可、サイズ超過・許可外MIMEの拒否、games全行SELECT、reports SELECT、game_requests SELECT/UPDATE/DELETE、非運営者は不可)を行う
@@ -31,7 +33,7 @@
 - 🔴 次をテストする(Supabaseクライアントをモック):
   - `triggerRegistration`: `status`が`pending`/`failed`の依頼に対して`status`を`queued`にUPDATEすること、それ以外の`status`では実行できないこと
   - `requestRevision`: 入力した要望を`revision_note`にセットし`status`を`queued`にUPDATEすること(`draft_content`は変更しないこと)
-  - `publishDraft`: `draft_content`の内容(`photo_paths`・`intro_photo_paths`は含まない)に、対象依頼行の`photo_paths`・`intro_photo_paths`を合わせて`board_game_rules_games`へINSERTすること、成功したら対応する依頼に`processed_at`・`published_game_id`・`status: 'published'`をUPDATEすること、INSERT失敗時はUPDATEを行わずエラーを返すこと
+  - `publishDraft`: `draft_content`の内容(`photo_paths`・`intro_photo_paths`は含まない)に、対象依頼行の`photo_paths`・`intro_photo_paths`を合わせて`board_game_rules_games`へINSERTすること、成功したら対応する依頼に`processed_at`・`published_game_id`・`status: 'published'`をUPDATEすること、INSERT失敗時はUPDATEを行わずエラーを返すこと、対象依頼に`published_game_id`がすでに設定されている場合は新規INSERTせず後段UPDATEのみを冪等に再実行すること(INSERT後のUPDATE失敗→再押下での重複登録を防ぐ。design.md「登録実行・下書きレビューの処理」手順4)
   - いずれも失敗時にエラーを返すこと
 - 🟢 `triggerRegistration` / `requestRevision` / `publishDraft` を実装する
 - 🔵 状態遷移の妥当性チェック(不正な`status`からの操作を防ぐガード)を整理する
@@ -75,7 +77,25 @@
 - 画像検索・AI加工いずれかの失敗はゲーム登録自体を止めず、失敗理由をコンソールログに出す(design.md「ログ」)
 - 動作確認: BoardGameGeekに実在するゲーム名・実在しないゲーム名それぞれで自動補完を試し、前者は紹介画像付きで登録され、後者は紹介画像なしで登録が完了することを確認する
 
-## T7. ローカル環境の定期処理(`scripts/board-game-rules/processRegistrationQueue.ts`)
+## T7. 共通ナビに管理画面への導線を表示(`components/AdminNavLink.tsx`, `components/BoardGameNav.tsx`)
+- 対象: requirements.md#ログイン・アクセス制御-5(design.md「共通ナビに管理画面への導線を表示する処理」)
+- 🔴 `AdminNavLink`が「未ログインでは何も描画しない」「ログイン中かつ`isAuthorizedAdmin`がtrueなら管理画面(`/board-game-rules/admin/`)へのリンクを描画する」「ログイン中でも権限なし(false)なら描画しない」「権限確認が例外を投げたら描画しない(フェイルクローズ)」の各ケースをテストする(`useSession`・`isAuthorizedAdmin`はモックする)
+- 🟢 `AdminNavLink`を実装し、`BoardGameNav`の`nav`末尾に差し込む(BoardGameNavはサーバーコンポーネントのまま)
+- 🔵 リンクの体裁を他ナビ項目に揃える。`scripts/spec-coverage-skip.json`に`board-game-rules/admin/requirements.md`の「ログイン・アクセス制御 [5]」・`board-game-rules/admin/design.md`の「共通ナビに管理画面への導線を表示する処理」の個別エントリが存在しないことを確認する(requirements.mdのWIPマーカーによりadminフォルダ全体がspec-coverageから除外されているため個別エントリは追加されていない。マーカーを外す際の扱いは下記T8末尾を参照)
+
+## T8. 管理画面を共通デザイン・共通ナビ・パンくずへ揃える(`admin/page.tsx`, `admin/components/LoginScreen.tsx`, `components/BoardGameNav.tsx`, `components/AdminNavLink.tsx`)
+- 対象: requirements.md#画面レイアウト・回遊導線-13〜15、requirements.md#UI/UX要件-1〜2(design.md「管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理」「画面設計」)
+- T8a. 共通ナビの現在地キーに`admin`を追加(`components/BoardGameNav.tsx`, `components/AdminNavLink.tsx`)
+  - 🔴 `BoardGameNavKey`に`admin`が含まれること、`BoardGameNav`に`active="admin"`を渡すと`AdminNavLink`へ現在地である旨が伝わること、`AdminNavLink`が「`active`かつ権限ありなら現在地(`aria-current="page"`・ハイライト体裁)で描画」「`active`でなければ通常体裁で描画」「未ログイン/権限なし/権限確認例外では従来どおり何も描画しない」をテストする(`useSession`・`isAuthorizedAdmin`はモック)
+  - 🟢 `BoardGameNavKey`に`admin`を追加し、`BoardGameNav`が`active === 'admin'`を`AdminNavLink`へ渡す。`AdminNavLink`が現在地表示に対応する
+  - 🔵 現在地の体裁を他ナビ項目(`NAV_ITEMS`)と揃える。既存T7の描画テストと重複しないよう整理する
+- T8b. 管理画面を共通レイアウト(サイドバー+パンくず)へ載せ替え、配色を`bgr-*`トークンへ揃える(`admin/page.tsx`, `admin/components/LoginScreen.tsx`)
+  - 🔴 管理画面の全状態(未ログイン/権限なし/取得エラー/権限あり)で、共通ナビ(`BoardGameNav active="admin"`)とパンくず(べんりやつーる › ボドゲのトリセツ › 管理)が描画されること、権限ありでは通報一覧・登録依頼一覧が引き続き表示されることをテストする(既存T5の状態遷移テストは維持)
+  - 🟢 `admin/page.tsx`を他画面(favorites/register)と同じ枠(`flex min-h-screen bg-bgr-bg` + `BoardGameNav` + 本文の`main`にパンくず)に載せ替える。枠は権限判定より外側に置き、4状態共通で表示する。`LoginScreen`・アカウント表示・ログアウト・データエラー表示・各カード/ボタンの配色を`gray-*`から共通デザインの`bgr-*`トークンへ揃える
+  - 🔵 他画面とマークアップ・トークンの使い方を突き合わせて重複や不揃いを整理する。狭幅でサイドバーが隠れてもパンくずで回遊できることを確認する(実機確認は/implementation-reviewで行う)
+- spec-coverage: 本design.mdの新規見出し「管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理」はT8a・T8bのテストで担保する(スキップ登録は不要)。requirements.mdのWIPマーカー(「仕様確認中(未実装)」)がある間は本adminフォルダ全体がspec-coverageから除外されるため、マーカーを外すのは通報一覧・登録依頼一覧・ログイン・共通ナビ導線・本T8・下記T9まで含めて実装・テストが揃った時点とする
+
+## T9. ローカル環境の定期処理(`scripts/board-game-rules/processRegistrationQueue.ts`)
 - 対象: Node.jsスクリプト(Webアプリのコードではないため、通常のTDDサイクル・spec-coverageの対象外とする。動作確認は実際の依頼で試す)。design.md「ローカル環境の定期処理」
 - 次を実装する:
   - `status='queued'`の依頼を1件、`status='running'`への条件付きUPDATE(`WHERE status = 'queued'`)で排他的に取得する
@@ -83,15 +103,10 @@
   - ヘッドレスの`claude -p`を起動し、T6のSkillの手順(写真解析・ルール生成、章立て、ゲーム紹介画像の自動補完)に沿った構造化出力(JSON)を得る
   - 成功時: `draft_content`・`revision_round`(+1)・`revision_history`(要望を追記)・`status: 'draft'`・`revision_note: null`をUPDATEする
   - 失敗時(写真取得・`claude -p`呼び出し・出力の構造化パースのいずれかで例外): `status: 'failed'`・`error_message`をUPDATEする
-- `SUPABASE_SERVICE_ROLE_KEY`等の特権クレデンシャルで認証する(`registerGame.ts`と同様)
-- launchdの定期起動設定(`scripts/board-game-rules/com.benriyatool.board-game-rules-registration.plist`)を用意する。`StartInterval`を60秒とし、`ProgramArguments`に`node`・スクリプトの絶対パスを指定、`EnvironmentVariables`で`SUPABASE_SERVICE_ROLE_KEY`等を注入する(design.md「セキュリティ」。対話シェルのPATHを引き継がないため、`claude`・`node`は絶対パスで指定する)。`StandardOutPath`/`StandardErrorPath`でログファイルへ出力する
+- ヘッドレス`claude -p`は最小権限で起動する(危険なツールを付与しない・作業ディレクトリを隔離しリポジトリへの書き込みを許さない)。入力画像は匿名アップロードで攻撃者が内容を制御できる前提とし、画像内の埋め込みテキストによるプロンプトインジェクションを想定した制約を置く(design.md「セキュリティ」)
+- `SUPABASE_SERVICE_ROLE_KEY`等の特権クレデンシャルで認証する(`registerGame.ts`と同様)。稼働用の`.plist`に資格情報の実値を書かない(リポジトリにはプレースホルダ雛形のみ置き、実キーは`~/Library/LaunchAgents/`側の`.plist`または`.env`で注入する。design.md「セキュリティ」)
+- launchdの定期起動設定の雛形(`scripts/board-game-rules/com.benriyatool.board-game-rules-registration.plist`)を用意する。`StartInterval`を60秒とし、`ProgramArguments`に`node`・スクリプトの絶対パスを指定、`EnvironmentVariables`または外部`.env`で`SUPABASE_SERVICE_ROLE_KEY`等を注入する(design.md「セキュリティ」。対話シェルのPATHを引き継がないため、`claude`・`node`は絶対パスで指定する)。`StandardOutPath`/`StandardErrorPath`でログファイルへ出力する
 - 動作確認: 実際に登録依頼を1件作成し、「登録実行」を押してから最大60秒待ち、`draft_content`が生成され`status`が`draft`になることを確認する。あわせて「再調整を依頼」→再度`draft`になること、写真解析に失敗するケース(壊れた画像など)で`status`が`failed`になり`error_message`が記録されることを確認する。launchd経由での起動(手動の`launchctl load`)でも同様に動作することを確認する(対話シェルのPATHに依存していないことの実機確認)
-
-## T9. 共通ナビに管理画面への導線を表示(`components/AdminNavLink.tsx`, `components/BoardGameNav.tsx`)
-- 対象: requirements.md#ログイン・アクセス制御-18(design.md「共通ナビに管理画面への導線を表示する処理」)
-- 🔴 `AdminNavLink`が「未ログインでは何も描画しない」「ログイン中かつ`isAuthorizedAdmin`がtrueなら管理画面(`/board-game-rules/admin/`)へのリンクを描画する」「ログイン中でも権限なし(false)なら描画しない」「権限確認が例外を投げたら描画しない(フェイルクローズ)」の各ケースをテストする(`useSession`・`isAuthorizedAdmin`はモックする)
-- 🟢 `AdminNavLink`を実装し、`BoardGameNav`の`nav`末尾に差し込む(BoardGameNavはサーバーコンポーネントのまま)
-- 🔵 リンクの体裁を他ナビ項目に揃える。テストを紐づけたら`scripts/spec-coverage-skip.json`の一時スキップ2件(`board-game-rules/admin/requirements.md`の「ログイン・アクセス制御 [18]」、`board-game-rules/admin/design.md`の「共通ナビに管理画面への導線を表示する処理」)を削除する
 
 ## 補足(リリース前チェック)
 - Supabase AuthのRedirect URLs許可リストに管理画面の戻り先を登録する(requirements.md#認証手段とパスキー-5)。利用者ログインの戻り先`https://benriyatool.com/board-game-rules/**`は[user-auth](../user-auth/tasks.md)の責務で登録し、これは`/board-game-rules/admin/**`を包含するため、広い方の1エントリで管理画面の戻り先も兼ねられる(user-authと重複せず整理する)

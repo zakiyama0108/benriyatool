@@ -64,7 +64,7 @@ function currentYearMonth(): string {
 // 1カラムで積み上げる(サマリーファースト・常時ダッシュボード型。仕様: monthly-balance/design.md#画面設計、
 // asset-projection/design.md#画面設計)。入力状態はここで一括保持する(仕様: monthly-balance/design.md#状態管理)
 export default function Page() {
-  const [income, setIncome] = useState<IncomeInput>({ monthlySalary: 0, bonusCount: 0, bonusAmountPerTime: 0 })
+  const [income, setIncome] = useState<IncomeInput>({ monthlySalary: 0, bonusMonths: [], bonusAmountPerTime: 0 })
   const [personalExpense, setPersonalExpense] = useState<PersonalExpenseInput>({ annualItems: [], monthlyItems: [] })
   const [household, setHousehold] = useState<HouseholdExpenseInput>({ hasSpouse: false, items: [], myShare: 0 })
 
@@ -127,7 +127,7 @@ export default function Page() {
   // 保存対象の入力値一式を復元する(仕様: saved-scenario/design.md#読み込む処理、design.md#保存対象の入力値)
   function applyScenario(inputState: ScenarioInputState) {
     const filled = fillMissingScenarioFields(inputState, {
-      income: { monthlySalary: 0, bonusCount: 0, bonusAmountPerTime: 0 },
+      income: { monthlySalary: 0, bonusMonths: [], bonusAmountPerTime: 0 },
       personalExpense: { annualItems: [], monthlyItems: [] },
       household: { hasSpouse: false, items: [], myShare: 0 },
       familyProfile: { selfBirthMonth: null, spouseBirthMonth: null, childrenCount: 0, childrenBirthMonths: [] },
@@ -240,7 +240,7 @@ export default function Page() {
   const personalExpenseMonthly = calcPersonalExpenseMonthly(personalExpense.annualItems, personalExpense.monthlyItems)
   const householdExpenseTotal = calcHouseholdExpenseTotal(household.hasSpouse, household.items)
   const monthlySurplus = calcMonthlySurplus(income.monthlySalary, personalExpenseMonthly, household.hasSpouse, household.myShare)
-  const annualSurplus = calcAnnualSurplus(monthlySurplus, income.bonusCount, income.bonusAmountPerTime)
+  const annualSurplus = calcAnnualSurplus(monthlySurplus, income.bonusMonths.length, income.bonusAmountPerTime)
   const expenseRatio = calcExpenseRatio(personalExpenseMonthly, household.hasSpouse, household.myShare, income.monthlySalary)
 
   const personalExpenseItems = [...personalExpense.annualItems, ...personalExpense.monthlyItems]
@@ -254,6 +254,8 @@ export default function Page() {
     selfBirthMonth: familyProfile.selfBirthMonth,
     spouseBirthMonth: household.hasSpouse ? familyProfile.spouseBirthMonth : null,
     childrenBirthMonths: familyProfile.childrenBirthMonths,
+    bonusMonths: income.bonusMonths,
+    bonusAmountPerTime: income.bonusAmountPerTime,
     bonuses,
     events,
     recurringEntries,
@@ -315,7 +317,7 @@ export default function Page() {
               openHelpId={openHelpId}
               onToggleHelp={toggleHelp}
               onCloseHelp={closeHelp}
-              summary={`手取り${income.monthlySalary}万円/月・賞与 年${income.bonusCount}回`}
+              summary={`手取り${income.monthlySalary}万円/月・賞与 年${income.bonusMonths.length}回`}
               defaultOpen
             >
               <IncomeForm income={income} onChange={setIncome} />
@@ -450,7 +452,7 @@ export default function Page() {
 
             <AssetProjectionChart periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
 
-            <AssetProjectionTable periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} />
+            <AssetProjectionTable periodUnit={periodUnit} monthlyRows={monthlyRows} yearlyRows={yearlyRows} investmentMode={investmentModeInput.investmentMode} />
 
             <BalanceSummary
               personalExpenseMonthly={personalExpenseMonthly}

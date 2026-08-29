@@ -49,27 +49,27 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
   }
 
   if (requests.length === 0) {
-    return <p className="py-4 text-center text-sm text-gray-400">登録依頼はありません。</p>
+    return <p className="py-4 text-center text-sm text-bgr-subtext">登録依頼はありません。</p>
   }
 
   return (
     <div className="space-y-3">
       {requests.map((request) => (
-        <div key={request.id} className="rounded-lg border border-gray-200 p-4 text-sm">
+        <div key={request.id} className="rounded-lg border border-bgr-line bg-bgr-card p-4 text-sm">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium">{request.name || 'ゲーム名未入力'}</span>
+            <span className="font-bold text-bgr-heading">{request.name || 'ゲーム名未入力'}</span>
             <span
               className={
                 request.processedAt
-                  ? 'rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600'
-                  : 'rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-700'
+                  ? 'rounded-full bg-bgr-bg px-2 py-0.5 text-xs text-bgr-subtext'
+                  : 'rounded-full bg-bgr-accent/20 px-2 py-0.5 text-xs text-bgr-accent'
               }
             >
               {request.processedAt ? '処理済み' : '未処理'}
             </span>
           </div>
 
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-bgr-subtext">
             {request.minPlayers ?? '?'}〜{request.maxPlayers ?? '?'}人 / {request.minMinutes ?? '?'}〜
             {request.maxMinutes ?? '?'}分 / {request.genres.join('、') || 'ジャンル未選択'}
           </p>
@@ -82,12 +82,12 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
                   key={path}
                   src={getGamePhotoUrl(path)}
                   alt={`依頼されたゲーム紹介画像 ${index + 1}枚目`}
-                  className="h-20 w-20 rounded border border-gray-200 object-cover"
+                  className="h-20 w-20 rounded border border-bgr-line object-cover"
                 />
               ))}
             </div>
           ) : (
-            <p className="mt-2 text-xs text-gray-400">紹介画像なし(登録時に自動補完されます)</p>
+            <p className="mt-2 text-xs text-bgr-subtext">紹介画像なし(登録時に自動補完されます)</p>
           )}
 
           <div className="mt-2 flex flex-wrap gap-2">
@@ -96,7 +96,7 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
                 type="button"
                 disabled={busyId === request.id}
                 onClick={() => void handleMarkProcessed(request.id)}
-                className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40"
+                className="rounded border border-bgr-line px-3 py-1 text-xs text-bgr-heading hover:bg-bgr-bg disabled:opacity-40"
               >
                 処理済みにする
               </button>
@@ -105,7 +105,7 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
               type="button"
               disabled={busyId === request.id}
               onClick={() => void handleDelete(request.id)}
-              className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40"
+              className="rounded border border-bgr-line px-3 py-1 text-xs text-bgr-heading hover:bg-bgr-bg disabled:opacity-40"
             >
               削除
             </button>
@@ -113,7 +113,7 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
               type="button"
               disabled={busyId === request.id}
               onClick={() => void handleViewPhotos(request)}
-              className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40"
+              className="rounded border border-bgr-line px-3 py-1 text-xs text-bgr-heading hover:bg-bgr-bg disabled:opacity-40"
             >
               写真を確認
             </button>
@@ -128,10 +128,10 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
                     key={photo.path}
                     src={photo.url}
                     alt="依頼された元写真"
-                    className="h-20 w-20 rounded border border-gray-200 object-cover"
+                    className="h-20 w-20 rounded border border-bgr-line object-cover"
                   />
                 ) : (
-                  <span key={photo.path} className="text-xs text-gray-400">
+                  <span key={photo.path} className="text-xs text-bgr-subtext">
                     (取得失敗: {photo.path})
                   </span>
                 )

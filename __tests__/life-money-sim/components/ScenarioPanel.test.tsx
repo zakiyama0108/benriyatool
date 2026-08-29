@@ -4,7 +4,7 @@ import ScenarioPanel from '../../../app/life-money-sim/components/ScenarioPanel'
 import type { ScenarioRecord } from '../../../app/life-money-sim/lib/types'
 
 const dummyInputState = {
-  income: { monthlySalary: 0, bonusCount: 0, bonusAmountPerTime: 0 },
+  income: { monthlySalary: 0, bonusMonths: [], bonusAmountPerTime: 0 },
   personalExpense: { annualItems: [], monthlyItems: [] },
   household: { hasSpouse: false, items: [], myShare: 0 },
   familyProfile: { selfBirthMonth: null, spouseBirthMonth: null, childrenCount: 0, childrenBirthMonths: [] },

@@ -11,12 +11,12 @@ type Props = {
 }
 
 // 通報一覧。各通報に対象ゲーム・通報日時・理由テキストを表示し、対象ゲームの詳細画面(game-detail)へ
-// 遷移するリンクを出す(仕様: admin/requirements.md#通報の確認-5、#通報の確認-6)。編集・削除は遷移先の
+// 遷移するリンクを出す(仕様: admin/requirements.md#通報の確認-6、#通報の確認-7)。編集・削除は遷移先の
 // 詳細画面の管理者導線で行う。通報者・第三者は自分の通報も含め読めない(SELECT権限なし)ため、
 // ここに出るのは運営者だけが見る内容。理由テキストはHTMLとして解釈しない形で描画する(design.md#セキュリティ)。
 export default function ReportsView({ reports, gameNames }: Props) {
   if (reports.length === 0) {
-    return <p className="py-4 text-center text-sm text-gray-400">通報はありません。</p>
+    return <p className="py-4 text-center text-sm text-bgr-subtext">通報はありません。</p>
   }
 
   return (
@@ -24,15 +24,15 @@ export default function ReportsView({ reports, gameNames }: Props) {
       {reports.map((report) => {
         const gameName = gameNames[report.gameId] ?? '(削除された、または取得できないゲーム)'
         return (
-          <li key={report.id} className="rounded-lg border border-gray-200 p-3 text-sm">
+          <li key={report.id} className="rounded-lg border border-bgr-line bg-bgr-card p-3 text-sm">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium">{gameName}</span>
-              <span className="text-xs text-gray-400">{report.createdAt}</span>
+              <span className="font-bold text-bgr-heading">{gameName}</span>
+              <span className="text-xs text-bgr-subtext">{report.createdAt}</span>
             </div>
-            <p className="mt-1 text-gray-700">{report.reason || '理由の記載なし'}</p>
+            <p className="mt-1 text-bgr-heading">{report.reason || '理由の記載なし'}</p>
             <Link
               href={`/board-game-rules/detail?id=${report.gameId}`}
-              className="mt-2 inline-block rounded border border-gray-300 px-3 py-1 text-xs"
+              className="mt-2 inline-block rounded border border-bgr-line px-3 py-1 text-xs text-bgr-heading hover:bg-bgr-bg"
             >
               対象ゲームの詳細を開く
             </Link>
