@@ -3892,7 +3892,7 @@
   {
     "specFile": "board-game-rules/admin/requirements.md",
     "item": "登録実行・下書きレビュー [16]",
-    "reason": "一時スキップ(未実装): 登録実行のローカルトリガー化・下書きレビューの要件・設計を追加した段階。実装(TDD)完了後、gameRequests.test.ts(T2b)・DraftReviewCard.test.tsx(T4b)にテストを紐づけたらこのエントリを削除する"
+    "reason": "一時スキップ(未実装): 登録実行・下書きレビュー機能。実装(TDD)完了後、gameRequests.test.ts(T2b)・DraftReviewCard.test.tsx(T4b)にテストを紐づけたらこのエントリを削除する"
   },
   {
     "specFile": "board-game-rules/admin/requirements.md",
@@ -3922,7 +3922,7 @@
   {
     "specFile": "board-game-rules/admin/requirements.md",
     "item": "登録実行のローカル処理起動 [9]",
-    "reason": "一時スキップ(未実装): 登録実行のローカルトリガー化の要件・設計を追加した段階。ローカル処理(processRegistrationQueue.ts、T9)はTDD対象外・実機確認で担保し、Web側の状態更新はT2bのテスト紐づけ後にこのエントリを削除する"
+    "reason": "一時スキップ(未実装): 登録実行のローカル処理起動。ローカル処理(processRegistrationQueue.ts、T9)はTDD対象外・実機確認で担保し、Web側の状態更新はT2bのテスト紐づけ後にこのエントリを削除する"
   },
   {
     "specFile": "board-game-rules/admin/requirements.md",

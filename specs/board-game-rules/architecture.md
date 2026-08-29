@@ -8,10 +8,10 @@
 - ルール本文を共通の章立てで構造化し、将来、章単位での全ゲーム横断分析・分類に使えるデータ資産にする
 
 ## 3. 設計方針
-- 静的配信(Cloudflare Workersでの静的アセット配信)のみで完結させる。**ランタイムのサーバー機能(LLM呼び出し用のCloudflare Workers関数)は持たない**(方針転換の経緯: `/consult`で、匿名投稿からのライブLLM解析は費用が発生し続けるため撤廃した。既存アプリ(ai-dev-digest)のLLM処理と同じ「オフラインバッチ」の考え方を踏襲しつつ、GitHub Actionsではなく運営者のローカル環境で実行する)。管理画面の「登録実行」は運営者のローカル環境上のポーリング(launchdの定期起動。常駐プロセスは持たない)へ処理を橋渡しするだけで、Webアプリ・Supabaseから直接LLM APIを呼び出すことはない(根拠: `/consult`での判断)
+- 静的配信(Cloudflare Workersでの静的アセット配信)のみで完結させる。**ランタイムのサーバー機能(LLM呼び出し用のCloudflare Workers関数)は持たない**。写真解析・ルール生成は運営者のローカル環境で行い、既存アプリ(ai-dev-digest)のLLM処理と同じ「オフラインバッチ」の考え方に沿う(GitHub Actionsではなく運営者のローカル環境で実行する点が異なる)。管理画面の「登録実行」は運営者のローカル環境上のポーリング(launchdの定期起動。常駐プロセスは持たない)へ処理を橋渡しするだけで、Webアプリ・Supabaseから直接LLM APIを呼び出すことはない。背景は[docs/adr/0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)
 - ルール本文は説明書原文の逐語転載を避け、独自の言い回しで再構成する。「詳しい版」は数値・条件・例外を省略・改変しない「精密な言い換え」とし、要約的な性質を保ちつつ実用精度を確保する(根拠: [game-registration/requirements.md#ルール本文の著作権への配慮](game-registration/requirements.md))。原本にあたる投稿写真は一般公開せず運営者の照合用に限定保存する
 - 投稿者からの依頼は即時公開しない。運営者が管理画面から登録実行を起動するとローカル環境が下書き(分類情報・ルール本文案)を生成し、運営者が下書きを確認して管理画面から公開して初めて公開される。下書きが意図と異なる場合は要望を伝えて再生成を依頼でき、この繰り返しに回数の上限はない(根拠: `/consult`での判断、[game-registration/requirements.md#公開ポリシー](game-registration/requirements.md))。登録済みの内容への品質対応は事後モデレーション(管理画面)と閲覧者通報で補う
-- 管理画面は既存の読み取り専用テンプレート([ADR-0006](../../docs/adr/0006-admin-screen-oidc-rls.md))の例外として、モデレーションのための書き込み(編集・削除)を認める(根拠: [ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)。本アプリではランタイムLLMサーバー機能は不要になったが、書き込み権限の例外という方針は維持する)。加えて下書きの「公開する」操作による `board_game_rules_games` への新規INSERTも運営者本人に限り認める(根拠: [adr/0002](adr/0002-operator-publish-insert.md)。ADR-0007の書き込み例外を新規作成へ拡張)
+- 管理画面は読み取り専用テンプレート([ADR-0006](../../docs/adr/0006-admin-screen-oidc-rls.md))の例外として、運営者本人による書き込みを認める。モデレーションのための編集・削除は[ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)、下書きの「公開する」操作による `board_game_rules_games` への新規INSERTは[adr/0002](adr/0002-operator-publish-insert.md)を根拠とする。本アプリはランタイムLLMサーバー機能を持たない
 - ログイン(Google OIDC)は、お気に入り・コメントという利用者本人のデータ機能のために導入する。既存の`ai-dev-digest/bookmark`の「本人の行のみRLSで操作可」パターンを踏襲する。閲覧・依頼送信・通報はログイン不要
 - 新規の登録依頼は、Supabase Database WebhooksからntfyへのHTTP POSTで運営者に通知する(中継サーバー不要)
 
@@ -126,7 +126,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 
 投稿者は登録依頼にゲーム紹介画像(パッケージ・コンポーネント・プレイ風景など)を任意で添付でき、一覧・詳細で公開表示される(元写真とは別の**公開**Storageバケットに保存する)。投稿者が添付しなかった場合、運営者のローカルツールがBoardGameGeek API(画像検索)とGoogle Gemini API(AI画像加工、そのまま転載しない)で自動補完する。いずれの外部APIも運営者のローカル環境から無料枠の範囲で呼び出され、Webアプリ・Cloudflare Workersのコード・課金構造には影響しない([game-registration](game-registration/requirements.md)、[admin](admin/requirements.md))。
 
-訪問者は一覧・絞り込み([game-list](game-list/requirements.md))と詳細([game-detail](game-detail/requirements.md))を未ログインで閲覧でき、ルールは簡単版・詳しい版のタブで確認できる。ログイン(Google OIDC、利用者全員が対象)した利用者は、お気に入りの登録・一覧([favorite](favorite/requirements.md))と、ゲームごとのコメント投稿([comment](comment/requirements.md))ができる。内容に問題があれば誰でも通報でき([report](report/requirements.md))、運営者は管理画面([admin](admin/requirements.md))で通報の確認・登録依頼の確認/処理を行う。ゲーム個別のモデレーション(編集・削除・コメント削除・元写真照合・紹介画像差し替え)は、対象ゲームの詳細画面([game-detail](game-detail/requirements.md))に運営者ログイン時のみ表示する管理者導線で行う(削除は物理削除で、子レコードはFKカスケード削除・Storage実体は残す。[adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md))。管理画面と詳細画面の管理者導線は既存の読み取り専用テンプレート([ADR-0006](../../docs/adr/0006-admin-screen-oidc-rls.md))の例外として書き込みを認める([ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)、および下書き公開時の新規INSERTを認める[adr/0002](adr/0002-operator-publish-insert.md))。
+訪問者は一覧・絞り込み([game-list](game-list/requirements.md))と詳細([game-detail](game-detail/requirements.md))を未ログインで閲覧でき、ルールは簡単版・詳しい版のタブで確認できる。ログイン(Google OIDC、利用者全員が対象)した利用者は、お気に入りの登録・一覧([favorite](favorite/requirements.md))と、ゲームごとのコメント投稿([comment](comment/requirements.md))ができる。内容に問題があれば誰でも通報でき([report](report/requirements.md))、運営者は管理画面([admin](admin/requirements.md))で通報の確認・登録依頼の確認/処理を行う。ゲーム個別のモデレーション(編集・削除・コメント削除・元写真照合・紹介画像差し替え)は、対象ゲームの詳細画面([game-detail](game-detail/requirements.md))に運営者ログイン時のみ表示する管理者導線で行う(削除は物理削除で、子レコードはFKカスケード削除・Storage実体は残す。[adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md))。管理画面と詳細画面の管理者導線は読み取り専用テンプレート([ADR-0006](../../docs/adr/0006-admin-screen-oidc-rls.md))の例外として、運営者本人の書き込みを認める(編集・削除は[ADR-0007](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)、下書き公開時の新規INSERTは[adr/0002](adr/0002-operator-publish-insert.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -154,7 +154,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [game-detail](game-detail/requirements.md) | 1ゲームの分類情報・ルール(2タブ)・コメント・通報導線・ゲーム紹介画像ギャラリーを表示。運営者ログイン時は編集・物理削除・紹介画像差し替え・元写真照合・コメント削除の管理者導線を表示 | 登録済みゲーム、favorite/comment/reportの各機能、adminの運営者判定/RLS/Storageポリシー | リリース済み |
 | [comment](comment/requirements.md) | ゲームごとの助け合いコメント(ログイン利用者が複数投稿可) | user-authのログイン・運営者判定、game-detailで表示 | リリース済み |
 | [report](report/requirements.md) | 閲覧者による通報(匿名可)。自動非表示にせず運営者判断を挟む | game-detailの通報導線、adminで確認・対応 | リリース済み |
-| [admin](admin/requirements.md) | 運営者の横断ビュー(通報一覧の確認・登録依頼の確認/処理、登録実行の起動・下書きレビュー・公開判断)とログイン・アクセス制御、共通ナビ(BoardGameNav)への管理画面導線表示。画面自体も他画面と同じboard-game-rules共通デザイン・共通ナビ・パンくずに揃え回遊できる。ゲーム個別の編集・削除・写真照合・コメント削除・紹介画像差し替えは詳細画面(game-detail)で行う。写真解析・ルール生成・紹介画像の自動補完(BoardGameGeek+Gemini)はローカル環境(launchd定期起動+Claude Code)で行い、「公開する」操作のみ運営者本人のログインセッションから直接ゲームをINSERTする | user-authの運営者判定、game-registration/reportの各データ、ADR-0006/0007・[adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md)・[adr/0002](adr/0002-operator-publish-insert.md) | 実装中(通報一覧・登録依頼・共通デザインはリリース済み。登録実行・下書きレビュー・公開操作は未実装) |
+| [admin](admin/requirements.md) | 運営者の横断ビュー(通報一覧の確認・登録依頼の確認/処理、登録実行の起動・下書きレビュー・公開判断)とログイン・アクセス制御、共通ナビ(BoardGameNav)への管理画面導線表示。画面自体も他画面と同じboard-game-rules共通デザイン・共通ナビ・パンくずに揃え回遊できる。ゲーム個別の編集・削除・写真照合・コメント削除・紹介画像差し替えは詳細画面(game-detail)で行う。写真解析・ルール生成・紹介画像の自動補完(BoardGameGeek+Gemini)はローカル環境(launchd定期起動+Claude Code)で行い、「公開する」操作のみ運営者本人のログインセッションから直接ゲームをINSERTする | user-authの運営者判定、game-registration/reportの各データ、ADR-0006/0007・[adr/0001](adr/0001-moderation-on-detail-and-physical-delete.md)・[adr/0002](adr/0002-operator-publish-insert.md) | 実装中(登録実行・下書きレビュー・「公開する」操作は未実装) |
 | [design-system](design-system/requirements.md) | アプリ内の画面の系統を揃えるper-appデザインシステムの土台(トークン+chromeルールの一元管理=[DESIGN.md](DESIGN.md)、共通部品カタログ=`app/board-game-rules/styleguide/`)。全画面の見た目の共有財産 | 確定済みAnalog Hearth([game-registration](game-registration/requirements.md))・共通ナビ、PR #207の運用ルール | リリース済み |
 
 ## 8. コンポーネント図
@@ -224,11 +224,11 @@ erDiagram
 全アプリ横断のADR(`docs/adr/`):
 - [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 全アプリ共通のDB/BaaS選定(Supabase・RLS)
 - [0006-admin-screen-oidc-rls.md](../../docs/adr/0006-admin-screen-oidc-rls.md) — 認証付き管理画面のGoogle OIDC/RLS方針・全アプリ共通テンプレート
-- [0007-runtime-llm-server-and-writable-admin.md](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md) — 管理画面の書き込み権限の例外の根拠。本アプリが当初計画していたランタイムLLMサーバー関数は`/consult`での方針転換により不要になった(ADR本文に経緯を追記)
+- [0007-runtime-llm-server-and-writable-admin.md](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md) — 管理画面の書き込み権限の例外の根拠、およびランタイムLLMサーバー機能を持たない方針の背景
 
 本アプリ固有のADR(`specs/board-game-rules/adr/`):
 - [adr/0001-moderation-on-detail-and-physical-delete.md](adr/0001-moderation-on-detail-and-physical-delete.md) — ゲームモデレーションを詳細画面へ集約し、削除を物理削除にした判断の背景
-- [adr/0002-operator-publish-insert.md](adr/0002-operator-publish-insert.md) — 下書きの「公開する」操作を運営者本人のログインセッションからの直接INSERTで行う判断(ADR-0007の書き込み例外を新規作成へ拡張)
+- [adr/0002-operator-publish-insert.md](adr/0002-operator-publish-insert.md) — 下書きの「公開する」操作を運営者本人のログインセッションからの直接INSERTで行う判断と、その認可・残余リスク
 
 ## 12. セキュリティ
 - **課金の発生しない設計**: Webアプリ(Cloudflare Workers・Supabase)からはAnthropic APIを一切呼び出さない。写真解析・ルール生成は運営者のローカル環境(Claude Codeセッション)で行うため、匿名投稿によるLLM費用の無制限消費というリスクが構造的に生じない

@@ -312,10 +312,10 @@ stateDiagram-v2
 - 本管理画面はADR-0006テンプレートの読み取り専用の例外として書き込み(編集・削除、および下書きの「公開する」によるゲームの新規INSERT)を認めるが、書き込みはRLSで運営者本人に限定する(ADR-0007、および新規INSERTへの拡張は[adr/0002](../adr/0002-operator-publish-insert.md))。モデレーション専用の別サーバーは新設しない(requirements.md#非機能要件-2)
 - 通報理由・コメント本文・ゲーム情報を運営者画面に表示する際は、HTMLとして解釈しない形で描画する(利用者投稿・匿名通報の任意テキストを含むため。[comment/design.md](../comment/design.md)・[report/design.md](../report/design.md)と同方針)
 - ゲーム紹介画像の差し替え・削除は、`board_game_rules_games`のUPDATE権限と同じRLS(運営者本人のみ)で担保する。Storage側も同バケットのUPDATE/DELETEポリシーを運営者本人に限定する(上記「ゲーム紹介画像の公開Storage」)
-- BoardGameGeek API・Google Gemini APIの呼び出しは運営者のローカル環境(Claude Codeセッション)から行われ、Webアプリ・Cloudflare Workersのコードには一切含まれない。Gemini APIキーはローカルの`.env`等で管理し、リポジトリにコミットしない([game-registration/design.md#セキュリティ](../game-registration/design.md)の「課金の発生しない設計」と同じ考え方を、外部API呼び出し一般に拡張したもの)
+- BoardGameGeek API・Google Gemini APIの呼び出しは運営者のローカル環境(Claude Codeセッション)から行われ、Webアプリ・Cloudflare Workersのコードには一切含まれない。Gemini APIキーはローカルの`.env`等で管理し、リポジトリにコミットしない(外部API呼び出しは運営者のローカル環境に閉じるという方針。[game-registration/design.md#セキュリティ](../game-registration/design.md)の「課金の発生しない設計」と同じ)
 - 「公開する」操作(`board_game_rules_games`へのINSERT)は運営者本人(`admin_emails`)に限定するRLSで担保する。anon/authenticated(運営者以外)からの直接INSERTは引き続き拒否される([game-registration/design.md#追加マイグレーション登録実行・下書きレビュー](../game-registration/design.md))
 - ローカル環境の定期処理(`processRegistrationQueue.ts`)はlaunchdから起動されるため、対話シェルのPATH・環境変数を引き継がない。`claude`・`node`コマンドは絶対パスで指定し、`SUPABASE_SERVICE_ROLE_KEY`等の資格情報はlaunchdの`EnvironmentVariables`または明示的な`.env`読み込みで注入する(教訓: launchd常駐のPATH欠落で処理が全く動いていなかった別ツールの事例があるため、実機での動作確認を必ず行う)
-- `SUPABASE_SERVICE_ROLE_KEY`はRLSを全バイパスする全権キーのため、実値をリポジトリに置かない。リポジトリに含める`com.benriyatool.board-game-rules-registration.plist`はプレースホルダまたは外部`.env`読み込みのみを記した雛形とし、資格情報の実値を書き込んだ稼働用plistは`~/Library/LaunchAgents/`側にのみ置く(Gemini APIキーをリポジトリに含めないのと同じ扱いをservice_roleキー・plistへ拡張する)
+- `SUPABASE_SERVICE_ROLE_KEY`はRLSを全バイパスする全権キーのため、Gemini APIキーと同様に実値をリポジトリに置かない。リポジトリに含める`com.benriyatool.board-game-rules-registration.plist`はプレースホルダまたは外部`.env`読み込みのみを記した雛形とし、資格情報の実値を書き込んだ稼働用plistは`~/Library/LaunchAgents/`側にのみ置く
 - ヘッドレス`claude -p`(`processRegistrationQueue.ts`が起動)へ渡す依頼写真は匿名アップロードで攻撃者が内容を制御できる前提とし、最小権限で起動する(危険なツールを付与しない・作業ディレクトリを隔離しリポジトリへの書き込みを許さない)。画像内に埋め込まれた敵対的テキストによるプロンプトインジェクションで、`SUPABASE_SERVICE_ROLE_KEY`を持つプロセスから意図しないコマンド実行・ファイル操作・DB破壊が起きないようにする。公開前の運営者レビューは生成内容の品質担保でありインジェクション対策ではない。許可ツールの具体的な制約はローカルツールSkill(`.claude/skills/board-game-rules-batch-register/`)側で定める
 
 ## パフォーマンス

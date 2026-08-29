@@ -1,6 +1,6 @@
 # 設計: ボードゲームの新規登録(写真からのルール生成)
 
-DB/anonキー方針は[ADR-0001](../../../docs/adr/0001-user-input-database.md)にあるため重複させず、本specでは「写真+分類情報の依頼送信→保存→運営者への通知」という処理フローと、依頼の保存構造を書く。**LLM解析はこのWebアプリ(Cloudflare Workers)上では一切行わない**(方針転換の経緯: `/consult`で、匿名投稿からのライブLLM解析は費用が発生し続けるため撤廃し、運営者がローカルツールでまとめて登録する方式に変更した)。運営者による実際の登録処理は[admin/design.md](../admin/design.md)を参照。
+DB/anonキー方針は[ADR-0001](../../../docs/adr/0001-user-input-database.md)にあるため重複させず、本specでは「写真+分類情報の依頼送信→保存→運営者への通知」という処理フローと、依頼の保存構造を書く。**LLM解析はこのWebアプリ(Cloudflare Workers)上では一切行わない**。利用者は写真+分類情報の依頼を送信するだけで、写真解析・ルール生成・登録は運営者のローカル環境で行う(背景は[docs/adr/0007](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md))。運営者による実際の登録処理は[admin/design.md](../admin/design.md)を参照。
 
 ## 処理フロー
 
@@ -215,7 +215,7 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 - `is_official`列を撤廃する(全ゲームが運営者経由でのみ登録される前提になり、区別の意味がなくなったため)
 - `release_year int`列を追加する(発売年、任意)
 - `genre text`(単一)を`genres text[]`(複数)に変更し、CHECK制約で固定リストの値のみで構成されることを担保する
-- INSERTポリシーを撤廃し、運営者のローカル登録ツール(service_role相当の権限)のみが書き込める形にする(下記マイグレーション参照)。**その後、下記「追加マイグレーション(登録実行・下書きレビュー)」で運営者本人のログインセッションからの直接INSERT(公開する操作)を許可する例外ポリシーを追加している**。anon/authenticated(運営者以外)からの直接INSERT経路はいずれの時点でもない
+- `board_game_rules_games`へのINSERTを許可するのは、運営者のローカル登録ツール(service_role相当の権限)と、運営者本人のログインセッション(「公開する」操作。ポリシーは下記「追加マイグレーション(登録実行・下書きレビュー)」、根拠は[adr/0002](../adr/0002-operator-publish-insert.md))のみ。anon・運営者以外のauthenticatedからの直接INSERT経路は持たない(このマイグレーションで従来のanon向けINSERTポリシーをDROPする)
 - `intro_photo_paths text[] not null default '{}'`列を追加する(ゲーム紹介画像、公開Storageバケットのパス。順序付きで先頭がメイン画像。requirements.md#ゲーム紹介画像の取り扱い-10)。`photo_paths`(元写真、非公開)とは異なり、この列は**公開列**としてanonのSELECT許可対象に含める(下記GRANT参照)。運営者は編集画面から差し替え・削除できる([admin/design.md](../admin/design.md))
 
 ### マイグレーション(実装より先に単独PRで適用)
@@ -377,7 +377,7 @@ T0(追加マイグレーション適用)の実機確認:
 - `board_game_rules_game_requests`へのINSERT(anon)で`intro_photo_paths`に配列を渡せること、省略時は空配列がデフォルトになること
 
 ### 追加マイグレーション(登録実行・下書きレビュー、実装より先に単独PRで適用)
-[admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)が使う状態管理カラムを`board_game_rules_game_requests`へ追加し、公開時のINSERTを運営者本人のログインセッションから直接行えるよう`board_game_rules_games`にINSERTポリシーを追加する(この権限拡張の判断は[adr/0002](../adr/0002-operator-publish-insert.md))。`draft_content`・`revision_note`・`revision_history`には`board_game_rules_games`の`rules_simple`/`rules_detailed`のような文字数上限CHECKを設けない(書き込み主体がservice_role相当のローカル処理・運営者本人に限られ、匿名からの巨大データ投入という脅威が構造的にないため。公開時にINSERTされる`board_game_rules_games`側には既存の上限CHECKが引き続き適用される)。
+[admin/design.md#登録実行・下書きレビューの処理](../admin/design.md)が使う状態管理カラムを`board_game_rules_game_requests`へ追加し、公開時のINSERTを運営者本人のログインセッションから直接行えるよう`board_game_rules_games`にINSERTポリシーを追加する(このポリシーの根拠は[adr/0002](../adr/0002-operator-publish-insert.md))。`draft_content`・`revision_note`・`revision_history`には`board_game_rules_games`の`rules_simple`/`rules_detailed`のような文字数上限CHECKを設けない(書き込み主体がservice_role相当のローカル処理・運営者本人に限られ、匿名からの巨大データ投入という脅威が構造的にないため。公開時にINSERTされる`board_game_rules_games`側には既存の上限CHECKが引き続き適用される)。
 
 ```sql
 -- board_game_rules_game_requests へ登録実行・下書きレビュー用のカラムを追加
@@ -396,8 +396,7 @@ alter table board_game_rules_game_requests
 
 -- 登録: 運営者本人による公開操作(下書きの内容でゲームをINSERT)を認める。
 -- anon/authenticatedへの一般INSERT許可は行わず、admin_emailsに載る運営者本人のみに限定する
--- (既存のINSERTポリシー撤廃の方針は維持しつつ、運営者本人の書き込み例外(ADR-0007)を
---  下書きを目視確認したうえでの新規登録へ拡張する。判断の記録は specs/board-game-rules/adr/0002-operator-publish-insert.md)
+-- (根拠: specs/board-game-rules/adr/0002-operator-publish-insert.md)
 grant insert on board_game_rules_games to authenticated;
 create policy "admin can insert games" on board_game_rules_games
   for insert to authenticated

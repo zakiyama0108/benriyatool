@@ -92,7 +92,7 @@ flowchart LR
 ### アクセス制御・権限
 - [1] 管理機能を利用できるのは運営者本人のアカウントのみとする。ログインしていない状態・運営者以外のアカウントでは、管理機能を利用できず、投稿写真も取得できないこと(根拠: [docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md))
 - [2] アクセス制御は画面上の表示の出し分けではなく、DB側のルール(RLS)で担保する(根拠: 静的サイトのため画面側だけの制御は迂回されうる)
-- [3] 本管理画面と、詳細画面に載る管理者導線は、ADR-0006のテンプレートが定める「読み取り専用」の例外とし、運営者本人による書き込み操作(ゲームの編集・削除、コメントの削除、紹介画像の差し替え、登録依頼の処理、下書きの「公開する」によるゲームの新規登録)を認める(根拠: 利用者が投稿する公開コンテンツのモデレーションが必要なため。[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)。「公開する」による新規登録への拡張は[adr/0002](../adr/0002-operator-publish-insert.md))。詳細画面側でも書き込みは運営者本人に限定する(RLSで担保。[game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))
+- [3] 本管理画面と、詳細画面に載る管理者導線は、ADR-0006のテンプレートが定める「読み取り専用」の例外とし、運営者本人による書き込み操作(ゲームの編集・削除、コメントの削除、紹介画像の差し替え、登録依頼の処理、下書きの「公開する」によるゲームの新規登録)を認める(根拠: 利用者が投稿する公開コンテンツのモデレーションが必要なため。[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)。「公開する」による新規登録は[adr/0002](../adr/0002-operator-publish-insert.md))。詳細画面側でも書き込みは運営者本人に限定する(RLSで担保。[game-detail/requirements.md#運営者向けの操作管理者ログイン時](../game-detail/requirements.md))
 
 ### 認証手段とパスキー
 - [4] 既存アプリの管理画面(`ikukyu/admin`・`life-money-sim/admin`)と同一の認証方針(Google OIDC、同じ運営者アカウント、パスキー・2段階認証の運用)とする(根拠: [docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md))。Google OIDC自体の設定は新規に不要
@@ -110,7 +110,7 @@ flowchart LR
 ### 登録実行のローカル処理起動
 - [9] 管理画面からの「登録実行」「再調整を依頼」は、Supabase上の状態を更新する操作にとどまり、実際の写真解析・ルール生成は運営者のローカル環境(Claude Codeセッション)で行われる。Webアプリ(Cloudflare Workers)・Supabaseから直接LLM APIを呼び出すことは一切ない(根拠: `/consult`での判断。既存の「課金の発生しない設計」方針(requirements.md#登録依頼の確認)を維持する)
 - [10] ローカル環境は、起動を待つ依頼を定期的に確認して処理を開始する。運営者のMacが起動していない・オフラインの間は処理が進まない(根拠: 常駐サーバーを持たない静的サイト構成のため。低頻度運用のため許容する。具体的な検知間隔は[admin/design.md](design.md)で確定する)
-- [11] 「公開する」操作は、運営者本人のログインセッションから直接ゲームとして登録される(ローカル処理を経由せず、押した時点で即時公開される)。これは既存の「編集・削除」に限定していた運営者本人の書き込み例外([docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md))を、下書きを目視確認したうえでの新規登録(INSERT)へ拡張するもので、その判断は[adr/0002](../adr/0002-operator-publish-insert.md)に記録する
+- [11] 「公開する」操作は、運営者本人のログインセッションから直接ゲームとして登録される(ローカル処理を経由せず、押した時点で即時公開される)。この書き込みは運営者本人(`admin_emails`)に限定する(RLSで担保)。根拠は[adr/0002](../adr/0002-operator-publish-insert.md)
 - [12] 下書きは常に最新の1件のみを保持する(過去の下書き本文そのものは保存せず、再調整で上書きされる)。再調整の要望テキストのみを履歴として残す(根拠: シンプルさを優先する方針。過去の下書き本文を見返す運用は想定しない)
 
 ## 非機能要件
@@ -122,7 +122,7 @@ flowchart LR
 - [2] 通報一覧・登録依頼一覧・ログイン/権限なし表示など管理画面内の各要素も、共通デザインのカード・ボタン・見出しの体裁に揃える(独自の見た目を持ち込まない)
 
 ## 依存関係
-- 認証方式(Google OIDC)とDB読み取り権限(RLS)の方針は[docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、書き込み権限の例外は[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)および[adr/0002-operator-publish-insert.md](../adr/0002-operator-publish-insert.md)(「公開する」による新規INSERT)に従う
+- 認証方式(Google OIDC)とDB読み取り権限(RLS)の方針は[docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、運営者本人の書き込み権限は[docs/adr/0007-runtime-llm-server-and-writable-admin.md](../../../docs/adr/0007-runtime-llm-server-and-writable-admin.md)(編集・削除)および[adr/0002-operator-publish-insert.md](../adr/0002-operator-publish-insert.md)(「公開する」による新規INSERT)に従う
 - ゲームの編集・削除・紹介画像差し替え・元写真照合・コメント削除は詳細画面で行う。それらの要件・ルールは[game-detail/requirements.md](../game-detail/requirements.md)に従う。編集・削除の対象データは[game-registration/requirements.md](../game-registration/requirements.md)、通報は[report/requirements.md](../report/requirements.md)、コメントは[comment/requirements.md](../comment/requirements.md)に従う
 - 登録依頼(写真+分類情報)の保存構造・通知手段、および登録実行・下書き・再調整の状態を保持するカラムは[game-registration/design.md](../game-registration/design.md)で確定する
 - 投稿写真という機微になりうる情報・利用者コメントの管理経路があるため、[specs/legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
