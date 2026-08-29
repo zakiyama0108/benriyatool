@@ -169,7 +169,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-11、specs/board-game-rules/admin/design.md#登録依頼を確認する処理
+// 仕様: specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-11、specs/board-game-rules/admin/requirements.md#ゲーム紹介画像の確認・自動補完-12、specs/board-game-rules/admin/design.md#登録依頼を確認する処理
 describe('【管理画面】登録依頼一覧 - ゲーム紹介画像のプレビュー(0枚時は自動補完の案内)', () => {
   it('ゲーム紹介画像が添付されている依頼では、公開URLでプレビュー表示されること', () => {
     render(

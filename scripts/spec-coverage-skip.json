@@ -2821,8 +2821,28 @@
   },
   {
     "specFile": "board-game-rules/admin/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
     "item": "処理フロー",
     "reason": "ikukyu/admin/design.md#処理フローと同一のシーケンス図であることの記述で、本spec独自の検証対象を持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "ログイン状態を判定して画面を出し分ける処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-1、requirements.md#アクセス制御・権限-1でテスト済み(page.test.tsxの未ログイン時の状態遷移テスト)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "閲覧権限を確認する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ログイン・アクセス制御-3、requirements.md#アクセス制御・権限-1〜2でテスト済み(page.test.tsxの権限なし時の状態遷移テスト)"
+  },
+  {
+    "specFile": "board-game-rules/admin/design.md",
+    "item": "画面遷移図(回遊)",
+    "reason": "共通ナビ・パンくずによる画面間の相互遷移を俯瞰するMermaid図で、正となる文章側(上の「管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理」)がpage.test.tsxでテスト済みのため、図見出し自体はテスト対象外"
   },
   {
     "specFile": "board-game-rules/admin/design.md",
@@ -2888,6 +2908,21 @@
     "specFile": "board-game-rules/admin/design.md",
     "item": "依存関係",
     "reason": "他spec・ADRへの参照と確認事項の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "サマリ",
+    "reason": "この章だけで概略をつかむためのメタ要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "ユースケース図",
+    "reason": "アクターとできることの俯瞰図(Mermaid)で、正となる文章側でテスト要否を判断するため、図見出し自体はテスト対象外"
+  },
+  {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "アクセス制御・権限 [3]",
+    "reason": "本管理画面・詳細画面の管理者導線が書き込み操作を認める例外である旨の根拠記述で、実際の書き込み操作(ゲーム編集・削除・コメント削除・紹介画像差し替え)はgame-detail specの管理者導線側のテストで、登録依頼の処理済みマーク/削除はgameRequests.test.ts・page.test.tsxでテスト済みのため、本項目自体に対応する単体テストは持たない"
   },
   {
     "specFile": "board-game-rules/admin/requirements.md",
