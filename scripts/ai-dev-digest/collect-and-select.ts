@@ -14,7 +14,9 @@ import watchlistData from '../../content/ai-dev-digest/watchlist.json'
 import criteriaData from '../../content/ai-dev-digest/criteria.json'
 
 const watchlist = watchlistData as WatchlistEntry[]
-const criteria: Criteria = criteriaData
+// criteria.jsonのimportはduplicateSuppressionSourceTypesがstring[]と推論されるため、
+// SourceType[]を要求するCriteria型へ明示的にアサートする(watchlist行と同じ扱い)
+const criteria = criteriaData as Criteria
 
 async function main() {
   const date = process.argv[2]

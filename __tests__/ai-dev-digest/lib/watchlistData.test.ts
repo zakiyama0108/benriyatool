@@ -4,7 +4,9 @@ import criteriaData from '../../../content/ai-dev-digest/criteria.json'
 import type { WatchlistEntry, Criteria } from '../../../app/ai-dev-digest/lib/watchlistTypes'
 
 const watchlist = watchlistData as WatchlistEntry[]
-const criteria: Criteria = criteriaData
+// criteria.jsonのimportはduplicateSuppressionSourceTypesがstring[]と推論されるため、
+// SourceType[]を要求するCriteria型へ明示的にアサートする(watchlist行と同じ扱い)
+const criteria = criteriaData as Criteria
 
 const EXPECTED_NAMES = [
   'Anthropic',
