@@ -8,6 +8,9 @@ const {
   updateEqMock,
   deleteMock,
   deleteEqMock,
+  insertMock,
+  insertSelectMock,
+  insertSingleMock,
   fromMock,
 } = vi.hoisted(() => {
   const order2Mock = vi.fn()
@@ -17,8 +20,28 @@ const {
   const updateMock = vi.fn(() => ({ eq: updateEqMock }))
   const deleteEqMock = vi.fn()
   const deleteMock = vi.fn(() => ({ eq: deleteEqMock }))
-  const fromMock = vi.fn(() => ({ select: selectMock, update: updateMock, delete: deleteMock }))
-  return { selectMock, orderMock, order2Mock, updateMock, updateEqMock, deleteMock, deleteEqMock, fromMock }
+  const insertSingleMock = vi.fn()
+  const insertSelectMock = vi.fn(() => ({ single: insertSingleMock }))
+  const insertMock = vi.fn(() => ({ select: insertSelectMock }))
+  const fromMock = vi.fn(() => ({
+    select: selectMock,
+    update: updateMock,
+    delete: deleteMock,
+    insert: insertMock,
+  }))
+  return {
+    selectMock,
+    orderMock,
+    order2Mock,
+    updateMock,
+    updateEqMock,
+    deleteMock,
+    deleteEqMock,
+    insertMock,
+    insertSelectMock,
+    insertSingleMock,
+    fromMock,
+  }
 })
 vi.mock('../../../../app/lib/supabaseClient', () => ({ supabase: { from: fromMock } }))
 
@@ -26,6 +49,10 @@ import {
   fetchGameRequests,
   markGameRequestProcessed,
   deleteGameRequest,
+  triggerRegistration,
+  requestRevision,
+  publishDraft,
+  type GameRequest,
 } from '../../../../app/board-game-rules/admin/lib/gameRequests'
 
 function makeRow(overrides: Record<string, unknown> = {}) {
@@ -48,6 +75,60 @@ function makeRow(overrides: Record<string, unknown> = {}) {
     release_year: null,
     created_at: '2026-08-01T00:00:00.000Z',
     processed_at: null,
+    status: 'pending',
+    draft_content: null,
+    revision_note: null,
+    revision_round: 0,
+    revision_history: [],
+    error_message: null,
+    published_game_id: null,
+    ...overrides,
+  }
+}
+
+// 下書き(GameRegistrationInput同形)の最小データ
+function makeDraft(overrides: Record<string, unknown> = {}) {
+  return {
+    name: 'カタン',
+    minPlayers: 3,
+    maxPlayers: 4,
+    minMinutes: 60,
+    maxMinutes: 90,
+    genres: ['対戦'],
+    rulesSimple: 'かんたんなルール',
+    rulesDetailed: [{ key: 'overview', body: '概要' }],
+    ...overrides,
+  }
+}
+
+// publishDraftへ渡すGameRequest(camelCase)を組み立てる
+function makeGameRequest(overrides: Partial<GameRequest> = {}): GameRequest {
+  return {
+    id: 'req-1',
+    photoPaths: ['upload-uuid/0.jpg'],
+    introPhotoPaths: ['intro-uuid/0.jpg'],
+    name: 'カタン',
+    minPlayers: 3,
+    maxPlayers: 4,
+    minMinutes: 60,
+    maxMinutes: 90,
+    genres: ['対戦'],
+    minAge: null,
+    difficulty: null,
+    publisher: null,
+    author: null,
+    hasJapaneseRules: null,
+    awards: null,
+    releaseYear: null,
+    createdAt: '2026-08-01T00:00:00.000Z',
+    processedAt: null,
+    status: 'draft',
+    draftContent: makeDraft(),
+    revisionNote: null,
+    revisionRound: 1,
+    revisionHistory: [],
+    errorMessage: null,
+    publishedGameId: null,
     ...overrides,
   }
 }
@@ -61,6 +142,9 @@ beforeEach(() => {
   updateEqMock.mockReset().mockResolvedValue({ data: null, error: null })
   deleteMock.mockClear()
   deleteEqMock.mockReset().mockResolvedValue({ data: null, error: null })
+  insertMock.mockClear()
+  insertSelectMock.mockClear()
+  insertSingleMock.mockReset().mockResolvedValue({ data: { id: 'game-1' }, error: null })
 })
 
 // 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-8、specs/board-game-rules/admin/design.md#登録依頼を確認する処理
@@ -98,6 +182,13 @@ describe('【管理画面】登録依頼一覧を取得する - 未処理を優�
         releaseYear: null,
         createdAt: '2026-08-01T00:00:00.000Z',
         processedAt: null,
+        status: 'pending',
+        draftContent: null,
+        revisionNote: null,
+        revisionRound: 0,
+        revisionHistory: [],
+        errorMessage: null,
+        publishedGameId: null,
       },
     ])
   })
@@ -138,6 +229,148 @@ describe('【管理画面】登録依頼を処理済みにする', () => {
     const result = await markGameRequestProcessed('req-1')
 
     expect(result).toBe(false)
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-16、specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-21、specs/board-game-rules/admin/requirements.md#登録実行のローカル処理起動-9、specs/board-game-rules/admin/requirements.md#登録実行のローカル処理起動-10、specs/board-game-rules/admin/design.md#登録実行・下書きレビューの処理
+describe('【管理画面】「登録実行」でローカル処理の起動を待つ状態(queued)にする', () => {
+  it('未着手(pending)の依頼で登録実行すると、statusをqueuedにするUPDATEだけが行われること(写真解析はローカルで走る)', async () => {
+    const result = await triggerRegistration('req-1', 'pending')
+
+    expect(result.ok).toBe(true)
+    expect(fromMock).toHaveBeenCalledWith('board_game_rules_game_requests')
+    expect(updateMock).toHaveBeenCalledWith({ status: 'queued' })
+    expect(updateEqMock).toHaveBeenCalledWith('id', 'req-1')
+  })
+
+  it('失敗(failed)の依頼で登録実行を再度押すと、再試行としてstatusをqueuedに戻すこと', async () => {
+    const result = await triggerRegistration('req-1', 'failed')
+
+    expect(result.ok).toBe(true)
+    expect(updateMock).toHaveBeenCalledWith({ status: 'queued' })
+  })
+
+  it('処理中(running)など pending/failed 以外の状態からは登録実行できず、UPDATEを行わないこと', async () => {
+    const result = await triggerRegistration('req-1', 'running')
+
+    expect(result.ok).toBe(false)
+    expect(result.error).toBeTruthy()
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('公開済み(published)の依頼からは登録実行できないこと', async () => {
+    const result = await triggerRegistration('req-1', 'published')
+
+    expect(result.ok).toBe(false)
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('UPDATEに失敗した場合、失敗が分かる結果を返すこと', async () => {
+    updateEqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
+
+    const result = await triggerRegistration('req-1', 'pending')
+
+    expect(result.ok).toBe(false)
+    expect(result.error).toContain('permission denied')
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-19、specs/board-game-rules/admin/requirements.md#登録実行のローカル処理起動-12、specs/board-game-rules/admin/design.md#登録実行・下書きレビューの処理
+describe('【管理画面】「再調整を依頼」で要望を残してローカル再生成の起動待ちにする', () => {
+  it('下書きあり(draft)の依頼で要望を送信すると、revision_noteに要望・statusをqueuedにするUPDATEが行われ、draft_contentは触らないこと', async () => {
+    const result = await requestRevision('req-1', 'プレイ時間の表記を直して', 'draft')
+
+    expect(result.ok).toBe(true)
+    expect(updateMock).toHaveBeenCalledWith({
+      revision_note: 'プレイ時間の表記を直して',
+      status: 'queued',
+    })
+    // draft_content・revision_round・revision_history はここでは更新しない(ローカル処理が完了後に更新する)
+    expect(updateMock.mock.calls[0][0]).not.toHaveProperty('draft_content')
+    expect(updateMock.mock.calls[0][0]).not.toHaveProperty('revision_history')
+    expect(updateEqMock).toHaveBeenCalledWith('id', 'req-1')
+  })
+
+  it('下書きがない状態(pending等)からは再調整を依頼できず、UPDATEを行わないこと', async () => {
+    const result = await requestRevision('req-1', 'なおして', 'pending')
+
+    expect(result.ok).toBe(false)
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('UPDATEに失敗した場合、失敗が分かる結果を返すこと', async () => {
+    updateEqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
+
+    const result = await requestRevision('req-1', 'なおして', 'draft')
+
+    expect(result.ok).toBe(false)
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-19、specs/board-game-rules/admin/requirements.md#登録実行のローカル処理起動-11、specs/board-game-rules/admin/design.md#登録実行・下書きレビューの処理
+describe('【管理画面】「公開する」で下書き内容をゲームとして登録し依頼を公開済みにする', () => {
+  it('下書きの分類情報・ルール本文に、依頼行の元写真パス・紹介画像パスを合わせてゲームをINSERTすること', async () => {
+    await publishDraft(makeGameRequest())
+
+    expect(fromMock).toHaveBeenCalledWith('board_game_rules_games')
+    const insertArg = insertMock.mock.calls[0][0] as Record<string, unknown>
+    expect(insertArg.name).toBe('カタン')
+    expect(insertArg.rules_simple).toBe('かんたんなルール')
+    expect(insertArg.rules_detailed).toEqual([{ key: 'overview', body: '概要' }])
+    // draft_contentにはphoto_paths・intro_photo_pathsが含まれないため、依頼行の値を合わせる
+    expect(insertArg.photo_paths).toEqual(['upload-uuid/0.jpg'])
+    expect(insertArg.intro_photo_paths).toEqual(['intro-uuid/0.jpg'])
+  })
+
+  it('INSERT成功後、依頼にprocessed_at・published_game_id・status=publishedをUPDATEすること', async () => {
+    const result = await publishDraft(makeGameRequest())
+
+    expect(result.ok).toBe(true)
+    expect(fromMock).toHaveBeenCalledWith('board_game_rules_game_requests')
+    const updateArg = updateMock.mock.calls[0][0] as Record<string, unknown>
+    expect(typeof updateArg.processed_at).toBe('string')
+    expect(updateArg.published_game_id).toBe('game-1')
+    expect(updateArg.status).toBe('published')
+    expect(updateEqMock).toHaveBeenCalledWith('id', 'req-1')
+  })
+
+  it('ゲームのINSERTに失敗した場合、依頼のUPDATEを行わず失敗を返すこと', async () => {
+    insertSingleMock.mockResolvedValue({ data: null, error: { message: 'insert failed' } })
+
+    const result = await publishDraft(makeGameRequest())
+
+    expect(result.ok).toBe(false)
+    expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('簡単版ルールの文字数上限CHECK違反のときは、どの項目が長すぎるかが分かる文言を返すこと', async () => {
+    insertSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: 'new row violates check constraint "board_game_rules_games_rules_simple_check"' },
+    })
+
+    const result = await publishDraft(makeGameRequest())
+
+    expect(result.ok).toBe(false)
+    expect(result.error).toContain('簡単版ルール')
+  })
+
+  it('依頼にpublished_game_idが既にある(INSERT後のUPDATEが失敗して再度押された)場合、再INSERTせず後段UPDATEのみを冪等に再実行すること', async () => {
+    const result = await publishDraft(makeGameRequest({ publishedGameId: 'game-1' }))
+
+    expect(result.ok).toBe(true)
+    expect(insertMock).not.toHaveBeenCalled()
+    const updateArg = updateMock.mock.calls[0][0] as Record<string, unknown>
+    expect(updateArg.published_game_id).toBe('game-1')
+    expect(updateArg.status).toBe('published')
+  })
+
+  it('後段の依頼UPDATEに失敗した場合、失敗を返すこと(次回押下時に冪等再実行できる)', async () => {
+    updateEqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
+
+    const result = await publishDraft(makeGameRequest())
+
+    expect(result.ok).toBe(false)
   })
 })
 
