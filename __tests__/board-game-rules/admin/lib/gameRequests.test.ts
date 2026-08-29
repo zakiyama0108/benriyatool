@@ -322,15 +322,17 @@ describe('【管理画面】「公開する」で下書き内容をゲームと�
     expect(insertArg.intro_photo_paths).toEqual(['intro-uuid/0.jpg'])
   })
 
-  it('INSERT成功後、依頼にprocessed_at・published_game_id・status=publishedをUPDATEすること', async () => {
+  it('INSERT成功後、まずpublished_game_idだけを単独UPDATEで永続化し、続けてprocessed_at・status=publishedをUPDATEすること', async () => {
     const result = await publishDraft(makeGameRequest())
 
     expect(result.ok).toBe(true)
     expect(fromMock).toHaveBeenCalledWith('board_game_rules_game_requests')
-    const updateArg = updateMock.mock.calls[0][0] as Record<string, unknown>
-    expect(typeof updateArg.processed_at).toBe('string')
-    expect(updateArg.published_game_id).toBe('game-1')
-    expect(updateArg.status).toBe('published')
+    // 1回目: published_game_id のみを先に永続化(後段UPDATE失敗時の重複INSERT防止の判定材料を残す)
+    expect(updateMock.mock.calls[0][0]).toEqual({ published_game_id: 'game-1' })
+    // 2回目: 依頼を公開済みにする
+    const finalArg = updateMock.mock.calls[1][0] as Record<string, unknown>
+    expect(typeof finalArg.processed_at).toBe('string')
+    expect(finalArg.status).toBe('published')
     expect(updateEqMock).toHaveBeenCalledWith('id', 'req-1')
   })
 
@@ -360,6 +362,8 @@ describe('【管理画面】「公開する」で下書き内容をゲームと�
 
     expect(result.ok).toBe(true)
     expect(insertMock).not.toHaveBeenCalled()
+    // published_game_id は既に永続化済みなので単独UPDATEはスキップし、公開済み化UPDATEのみ実行する
+    expect(updateMock).toHaveBeenCalledTimes(1)
     const updateArg = updateMock.mock.calls[0][0] as Record<string, unknown>
     expect(updateArg.published_game_id).toBe('game-1')
     expect(updateArg.status).toBe('published')
@@ -371,6 +375,32 @@ describe('【管理画面】「公開する」で下書き内容をゲームと�
     const result = await publishDraft(makeGameRequest())
 
     expect(result.ok).toBe(false)
+  })
+
+  it('INSERT成功 → published_game_id永続化成功 → 後段UPDATE失敗 のあと、再押下では再INSERTせず後段UPDATEのみ実行して公開済みにできること', async () => {
+    // 1回目: published_game_id の永続化は成功、続く公開済み化UPDATEが失敗
+    updateEqMock
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: { message: 'permission denied' } })
+
+    const first = await publishDraft(makeGameRequest())
+
+    expect(first.ok).toBe(false)
+    expect(insertMock).toHaveBeenCalledTimes(1)
+    expect(updateMock.mock.calls[0][0]).toEqual({ published_game_id: 'game-1' })
+
+    insertMock.mockClear()
+    updateMock.mockClear()
+    updateEqMock.mockReset().mockResolvedValue({ data: null, error: null })
+
+    // 2回目: 依頼行に published_game_id が設定された状態で再押下(DB永続化されている前提)
+    const second = await publishDraft(makeGameRequest({ publishedGameId: 'game-1' }))
+
+    expect(second.ok).toBe(true)
+    expect(insertMock).not.toHaveBeenCalled()
+    expect(updateMock).toHaveBeenCalledTimes(1)
+    const finalArg = updateMock.mock.calls[0][0] as Record<string, unknown>
+    expect(finalArg.status).toBe('published')
   })
 })
 

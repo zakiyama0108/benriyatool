@@ -229,6 +229,8 @@ function describePublishError(message: string): string {
 // draft_content(photo_paths・intro_photo_pathsを含まない)に、依頼行が持つ photo_paths・intro_photo_paths を
 // 合わせてINSERTする。INSERT成功後の依頼UPDATEが失敗して再度押されたときの重複INSERTを避けるため、
 // 依頼に published_game_id が既にあれば新規INSERTせず後段UPDATEのみを冪等に再実行する(手順4)。
+// さらに、INSERT直後にまず published_game_id だけを単独UPDATEで永続化してから公開済み化のUPDATEを行う。
+// これにより後段UPDATEが失敗しても再INSERT防止の判定材料(published_game_id)が必ずDBに残る。
 export async function publishDraft(
   request: GameRequest
 ): Promise<RequestMutationResult & { gameId?: string }> {
@@ -265,7 +267,18 @@ export async function publishDraft(
       }
       const inserted: { id: string } = data
       gameId = inserted.id
+      // INSERT直後に published_game_id だけを先に永続化する。続く公開済み化UPDATEが失敗しても、
+      // 次回押下時にこの値を検出して再INSERTを避けられる(design.md「登録実行・下書きレビューの処理」手順4)
+      const { error: linkError } = await supabase
+        .from('board_game_rules_game_requests')
+        .update({ published_game_id: gameId })
+        .eq('id', request.id)
+      if (linkError) {
+        return { ok: false, error: `依頼の更新に失敗しました: ${linkError.message}` }
+      }
     }
+    // 依頼を公開済みにする後段UPDATE。再押下時(published_game_id 検出でINSERTをスキップした場合)は
+    // ここだけが冪等に再実行される
     const { error: updateError } = await supabase
       .from('board_game_rules_game_requests')
       .update({
