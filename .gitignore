@@ -30,6 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# board-game-rules ローカル定期処理(launchd)のログ出力
+scripts/board-game-rules/*.log
+
 # env files (can opt-in for committing if needed)
 .env*
 
