@@ -2856,11 +2856,6 @@
   },
   {
     "specFile": "board-game-rules/admin/design.md",
-    "item": "登録実行・下書きレビューの処理",
-    "reason": "一時スキップ(未実装): 要件・設計を追加した段階。実装(TDD)完了後、gameRequests.test.ts(T2b)・DraftReviewCard.test.tsx(T4b)にテストを紐づけたらこのエントリを削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/design.md",
     "item": "詳しい版の共通章立て(生成時の構造)",
     "reason": "上記ローカルツールが生成する構造の定義であり、ローカルツール自体と同じくWebアプリのコードではないため通常のTDDサイクル・spec-coverageの対象外とする。章キー↔表示見出しの対応は`app/board-game-rules/lib/rulesChapters.ts`のコードとして存在し、表示側の描画は[game-detail/design.md#ルール本文をタブで表示する処理]のテストで担保する"
   },
@@ -3887,57 +3882,7 @@
   {
     "specFile": "board-game-rules/admin/requirements.md",
     "item": "ゲーム紹介画像の自動補完 [8]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行・下書きレビュー [16]",
-    "reason": "一時スキップ(未実装): 登録実行・下書きレビュー機能。実装(TDD)完了後、gameRequests.test.ts(T2b)・DraftReviewCard.test.tsx(T4b)にテストを紐づけたらこのエントリを削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行・下書きレビュー [17]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行・下書きレビュー [18]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行・下書きレビュー [19]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行・下書きレビュー [20]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行・下書きレビュー [21]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行のローカル処理起動 [9]",
-    "reason": "一時スキップ(未実装): 登録実行のローカル処理起動。ローカル処理(processRegistrationQueue.ts、T9)はTDD対象外・実機確認で担保し、Web側の状態更新はT2bのテスト紐づけ後にこのエントリを削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行のローカル処理起動 [10]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行のローカル処理起動 [11]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
-  },
-  {
-    "specFile": "board-game-rules/admin/requirements.md",
-    "item": "登録実行のローカル処理起動 [12]",
-    "reason": "一時スキップ(未実装): 同上、実装完了時に削除する"
+    "reason": "外部API(BoardGameGeek・Google Gemini)の選定・呼び出しは運営者ローカルのNode.jsスクリプト(scripts/board-game-rules/gameIntroPhotos.ts、registerGame.ts、processRegistrationQueue.ts)で行い、Webアプリのコードではないため通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T6b。動作確認は実在/非実在のゲーム名での実呼び出しで行う)"
   },
   {
     "specFile": "board-game-rules/game-registration/design.md",

@@ -230,7 +230,7 @@ describe('【管理画面】下書きの再調整を要望テキストととも�
         onRequestRevision={onRequestRevision}
       />
     )
-    expect((screen.getByRole('button', { name: '再調整を依頼' }) as HTMLButtonElement).disabled).toBe(true)
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: '再調整を依頼' }).disabled).toBe(true)
   })
 })
 

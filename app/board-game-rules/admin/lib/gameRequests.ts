@@ -263,7 +263,8 @@ export async function publishDraft(
       if (error || !data) {
         return { ok: false, error: describePublishError(error?.message ?? 'ゲームの登録に失敗しました') }
       }
-      gameId = (data as { id: string }).id
+      const inserted: { id: string } = data
+      gameId = inserted.id
     }
     const { error: updateError } = await supabase
       .from('board_game_rules_game_requests')
