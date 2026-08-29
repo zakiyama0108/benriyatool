@@ -69,6 +69,7 @@
 - 対象トピックの選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
 - 生成された記事は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 記事の生成・公開タイミングは[daily-publish/requirements.md](../daily-publish/requirements.md)に従う
+- ここで定める翻訳・要約・記事執筆のルールは、蓄積された運営者フィードバックをもとに[watchlist-review/requirements.md](../watchlist-review/requirements.md)の月次見直し(生成領域)で調整される。実際のルール文は記事生成CLI(`scripts/ai-dev-digest/generate-content.ts`)が実行時にこのrequirements.mdと[design.md](design.md)を読み込んでプロンプトへ渡す
 
 ## スコープ外
 - 日本語以外の言語への翻訳(対象読者は日本語話者のみ)

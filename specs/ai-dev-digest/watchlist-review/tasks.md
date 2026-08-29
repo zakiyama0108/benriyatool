@@ -57,3 +57,19 @@
 
 - Task 11: 通しの動作確認(仕様: requirements.md#見直し案の粒度・提示方法-6)
   - 既存の選定ロジックでは判定できない新しい観点のフィードバックが存在する状態で月次実行を行い、requirements.mdの変更提案だけでなく、対応する実装・テストファイルの変更も含むPRが作成されることを確認する
+
+## 見直し対象に生成領域(記事執筆ルール)を追加
+
+> この改修で機能要件の見出し・番号を再編した(見直し案の粒度・提示方法 → 選定領域/生成領域の2見出し。旧 [3]〜[6] を [5]〜[8] にシフト)。Task 6〜11 の仕様参照(旧見出し名)は履歴として残す。
+
+- Task 12: フィードバックの領域振り分け(仕様: requirements.md#見直しの実行-3〜4、design.md「見直し案を作成する処理」手順1)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整のため)
+  - `.github/workflows/ai-dev-digest-monthly.yml`のプロンプトに、各フィードバックを「選定領域」「生成領域」「いずれにも該当しない」に振り分けること、いずれにも該当しないものはPR本文の表に「対象外」として記録することを追記する
+  - `collectReviewData.ts`は変更しない(フィードバックは領域で絞らず全件返す。振り分けはエージェントの推論)
+
+- Task 13: 生成領域の見直し案(仕様: requirements.md#生成領域の見直し案の粒度・提示方法-9〜10、design.md「見直し案を作成する処理」手順3・8)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整とワークフロー定義ファイルの変更のため)
+  - `.github/workflows/ai-dev-digest-monthly.yml`のプロンプトに、生成領域に振り分けたフィードバックがある場合は`specs/ai-dev-digest/content-generation/requirements.md`・`design.md`への具体的な変更案を作成すること、著作権リスク低減の前提を弱めないこと、変更が`scripts/ai-dev-digest/generate-content.ts`内の転記箇所(`GUARDRAIL`定数・JSONスキーマ例の字数指定)に及ぶ場合はそこも同じPRで更新することを追記する
+  - 「変更の有無を確認」ステップの`git diff --quiet`対象・「ブランチ作成・コミット・PR作成」ステップの`git add`対象に、`specs/ai-dev-digest/content-generation`・`scripts/ai-dev-digest/generate-content.ts`を追加する
+
+- Task 14: 通しの動作確認(仕様: requirements.md#見直しの実行-2〜3、requirements.md#生成領域の見直し案の粒度・提示方法-9)
+  - 記事の書きぶりに関するフィードバックが存在する状態で月次実行を行い、`content-generation/requirements.md`(必要なら`design.md`・`generate-content.ts`)への変更提案を含むPRが作成されることを確認する
+  - 選定領域・生成領域の両方に材料がある月に、1つのPRに両領域の変更がまとまることを確認する
