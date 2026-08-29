@@ -16,6 +16,7 @@ const criteria: Criteria = {
   qiitaMinLikes: 30,
   zennMinLikes: 30,
   topicExcludeKeywords: [],
+  duplicateSuppressionSourceTypes: ['individual-blog'],
 }
 
 function makeHttp(overrides: Partial<HttpClient> = {}): HttpClient {

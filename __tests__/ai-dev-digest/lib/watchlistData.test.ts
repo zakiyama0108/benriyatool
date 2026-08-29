@@ -4,7 +4,9 @@ import criteriaData from '../../../content/ai-dev-digest/criteria.json'
 import type { WatchlistEntry, Criteria } from '../../../app/ai-dev-digest/lib/watchlistTypes'
 
 const watchlist = watchlistData as WatchlistEntry[]
-const criteria: Criteria = criteriaData
+// criteria.jsonのimportはduplicateSuppressionSourceTypesがstring[]と推論されるため、
+// SourceType[]を要求するCriteria型へ明示的にアサートする(watchlist行と同じ扱い)
+const criteria = criteriaData as Criteria
 
 const EXPECTED_NAMES = [
   'Anthropic',
@@ -59,6 +61,14 @@ describe('採用基準データの構造 - watchlist-reviewによる更新後も
     for (const keyword of criteria.topicExcludeKeywords) {
       expect(typeof keyword).toBe('string')
       expect(keyword.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('duplicateSuppressionSourceTypesが配列で、各要素がCandidate.sourceTypeとして有効な種別であること', () => {
+    const validSourceTypes = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn']
+    expect(Array.isArray(criteria.duplicateSuppressionSourceTypes)).toBe(true)
+    for (const sourceType of criteria.duplicateSuppressionSourceTypes) {
+      expect(validSourceTypes).toContain(sourceType)
     }
   })
 })
