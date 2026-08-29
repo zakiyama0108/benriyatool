@@ -39,8 +39,10 @@ const PHOTOS_BUCKET = 'board-game-rules-photos'
 const SKILL_PATH = path.join(__dirname, '../../.claude/skills/board-game-rules-batch-register/SKILL.md')
 // launchd は対話シェルのPATHを引き継がないため、claude の絶対パスを環境変数で指定できるようにする
 const CLAUDE_BIN = process.env.BGR_CLAUDE_BIN || 'claude'
-// claude -p に渡さない危険ツール(リポジトリ改変・任意コマンド実行・外部通信の面)
-const DISALLOWED_TOOLS = 'Bash,Write,Edit,MultiEdit,NotebookEdit,WebSearch,WebFetch'
+// claude -p に許可するツール(allowlist)。写真解析に必要なのは非公開Storageから落とした画像・
+// SKILL.md の読み取りだけ。denylist だと将来追加ツール・MCPツールを取りこぼすため、
+// 明示した読み取り系のみを許可する(design.md「セキュリティ」= 最小権限で起動する)。
+const ALLOWED_TOOLS = 'Read,Glob,Grep'
 const CLAUDE_TIMEOUT_MS = 1000 * 60 * 10
 
 type GameRequestRow = {
@@ -240,7 +242,7 @@ async function main() {
     const prompt = buildPrompt(req, localPhotoNames, skill)
     const { stdout } = await execFileAsync(
       CLAUDE_BIN,
-      ['-p', prompt, '--output-format', 'json', '--disallowedTools', DISALLOWED_TOOLS],
+      ['-p', prompt, '--output-format', 'json', '--allowedTools', ALLOWED_TOOLS],
       { cwd: workDir, env: scrubbedEnv(), maxBuffer: 1024 * 1024 * 64, timeout: CLAUDE_TIMEOUT_MS }
     ).catch((error: unknown) => {
       const withStdout = error as { stdout?: string }
