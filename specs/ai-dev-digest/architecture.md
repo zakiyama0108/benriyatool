@@ -106,7 +106,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | Next.js(静的エクスポート) | 記事一覧・詳細・付箋一覧ページの描画 |
 | Supabase | 運営者フィードバックの保存(`ai_dev_digest_feedback`テーブル)、読者の付箋の保存(`ai_dev_digest_bookmarks`テーブル、2026-08追加) |
 | Supabase Auth(Google OIDC) | 記事詳細ページ・付箋一覧ページのログイン(読者全員が対象、2026-08で運営者限定から拡大)。フィードバック入力欄の表示切り替え(運営者判定)にも利用 |
-| GitHub Actions | 日次の記事生成・月次のウォッチリスト・基準見直し(スケジュール実行)・LINE新着記事配信(pushトリガー)の実行基盤 |
+| GitHub Actions | 日次の記事生成・月次の選定/生成の見直し(スケジュール実行)・LINE新着記事配信(pushトリガー)の実行基盤 |
 | Claude Code(ヘッドレス実行) | 月次見直し案の検討・複数ファイルの編集(watchlist-review内でGitHub Actionsから起動) |
 | LINE Messaging API | 新着記事のLINE公式アカウントからの一斉配信(line-broadcast内でGitHub Actionsから呼び出し) |
 | Tailwind CSS | スタイリング |
