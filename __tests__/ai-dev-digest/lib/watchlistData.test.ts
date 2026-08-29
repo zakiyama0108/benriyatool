@@ -61,4 +61,12 @@ describe('採用基準データの構造 - watchlist-reviewによる更新後も
       expect(keyword.length).toBeGreaterThan(0)
     }
   })
+
+  it('duplicateSuppressionSourceTypesが配列で、各要素がCandidate.sourceTypeとして有効な種別であること', () => {
+    const validSourceTypes = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn']
+    expect(Array.isArray(criteria.duplicateSuppressionSourceTypes)).toBe(true)
+    for (const sourceType of criteria.duplicateSuppressionSourceTypes) {
+      expect(validSourceTypes).toContain(sourceType)
+    }
+  })
 })
