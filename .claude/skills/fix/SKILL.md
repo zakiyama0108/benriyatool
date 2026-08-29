@@ -48,6 +48,8 @@ description: バグ修正・既存機能の小規模な改修を行うときに�
 
 `feature/<機能名>`ブランチを切り、まずバグ・問題を再現する失敗テスト(🔴Red)を書いてから修正する。別の機能開発に割り込む形で修正する場合は、ブランチを切り替えず[parallel-work](../parallel-work/SKILL.md)(worktree)で作業ディレクトリを分ける(テストの命名・仕様コメントのルールは[/implementation](../implementation/SKILL.md)を参照)。Step2で洗い出した仕様書・テストコメント・`scripts/spec-coverage-skip.json`の追随も同じ変更の中で行う。Next.js固有の挙動差分にぶつかったら、[/implementation](../implementation/SKILL.md)の[references/nextjs-notes.md](../implementation/references/nextjs-notes.md)を確認・追記する。
 
+`specs/<アプリ名>/architecture.md`を持つアプリで、対象specがリリース済みの場合: ブランチを切った直後に機能マップの該当spec行の状態を「実装中」に更新してコミットする。修正が仕上がったら、修正PRを出す前に同じ行を「リリース済み」に戻してそのPRのコミットに含める([/pr](../pr/SKILL.md)の[references/impl-pr.md](../pr/references/impl-pr.md)・[architecture-workflow](../architecture-workflow/SKILL.md)の「更新タイミング」。状態更新専用の後追いPRは作らない)。いずれのタイミングでも更新後の機能マップ全体(表)をチャットに貼って提示する。
+
 # 完了時の次ステップ案内
 
 修正・テスト・動作確認が済んだら、[/implementation-review](../implementation-review/SKILL.md)(コードレビュー)→[/pr](../pr/SKILL.md)(実装PR)へ進むことを案内する。動作確認・URL案内の方法は[/implementation](../implementation/SKILL.md)の「動作確認」を参照(画面に変更がある修正では、devサーバーを起動したままアクセスURLをこの案内に明記する)。

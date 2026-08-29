@@ -12,7 +12,7 @@ description: 承認済みの仕様をTDDで実装するときに使う。Red→G
 - **着手前チェック(重複作業の防止):** `git fetch origin main` でローカルmainの遅れを確認し、遅れていれば先に最新化する。続けて `gh pr list --state all --limit 20 --search "<対象のアプリ名や機能名>"` と `git ls-remote --heads origin` で、同じspec・同じ機能を扱う既存PR・進行中ブランチがないか確認する。該当しそうなブランチ/PRが複数見つかった場合は、PR本文・ブランチ名を`specs/<アプリ名>/<機能名>/`のパスで絞り込む。それでも複数残る、またはどれが自分の続きか判断できない場合は、推測でどれかを選ばず候補一覧をユーザーに提示して確認する。1件に絞れた場合、それが「自分がこれから進める工程の一つ前の工程が作ったもの」(例: /requirementが作った`feature/<機能名>`ブランチに/designで続きを積む場合)であればそれは重複ではないので、そのブランチをcheckoutして続行する。それ以外(既に先の工程まで進んでいる、または別セッション・別人の作業)は作業を始めずユーザーに報告する(この項は requirement/design/fix/implementation の4Skillに同文で記載。変更時は揃って更新する)
 - 仕様の承認を得てから着手する(3点セットの仕様承認PRがマージ済みであること。承認前はコード・テストを書かない。運用は[/pr](../pr/SKILL.md)の仕様承認ゲートを参照)。3点セットが未作成なら[/requirement](../requirement/SKILL.md)から、作成済みで未承認なら[/spec-review](../spec-review/SKILL.md)→[/pr](../pr/SKILL.md)から始める
 - `feature/<機能名>` ブランチを切る(mainでは作業しない)。別の機能の作業と並行する場合は[parallel-work](../parallel-work/SKILL.md)(worktree)で作業ディレクトリを分ける
-- 対象アプリが`specs/<アプリ名>/architecture.md`を持つ場合、ブランチを切った直後に機能マップの該当spec行の状態を「実装中」に更新してコミットする(未着手→着手の切り替わりを記録する。詳細は[architecture-workflow](../architecture-workflow/SKILL.md)の「更新タイミング」参照)。更新後の機能マップをこの前提確認の報告に貼って提示する
+- 対象アプリが`specs/<アプリ名>/architecture.md`を持つ場合、ブランチを切った直後に機能マップの該当spec行の状態を「実装中」に更新してコミットする(未着手→着手の切り替わりを記録する。詳細は[architecture-workflow](../architecture-workflow/SKILL.md)の「更新タイミング」参照)。更新後の機能マップをこの前提確認の報告に貼って提示する。実装完了後・実装PRを出す前に同じ行を「リリース済み」に更新する手順は[/pr](../pr/SKILL.md)の[references/impl-pr.md](../pr/references/impl-pr.md)にある(状態更新専用の後追いPRは作らない)
 
 # 実施方法(メインスレッド or implementerエージェント)
 
