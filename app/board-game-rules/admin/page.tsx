@@ -5,7 +5,16 @@ import Link from 'next/link'
 import { getSession, onAuthChange, isAuthorizedAdmin, signInWithGoogle, signOut } from '../../lib/adminAuth'
 import { fetchPublishedGames } from '../lib/games'
 import { fetchReports, type Report } from './lib/fetchReports'
-import { fetchGameRequests, markGameRequestProcessed, deleteGameRequest } from './lib/gameRequests'
+import {
+  fetchGameRequests,
+  markGameRequestProcessed,
+  deleteGameRequest,
+  triggerRegistration,
+  requestRevision,
+  publishDraft,
+  type GameRequest,
+  type GameRequestStatus,
+} from './lib/gameRequests'
 import { fetchOriginalPhotos } from './lib/photos'
 import LoginScreen from './components/LoginScreen'
 import ReportsView from './components/ReportsView'
@@ -133,6 +142,25 @@ export default function AdminPage() {
     if (ok) reload()
   }
 
+  // 登録実行・下書きレビューの操作(T2b)。成功したら一覧を最新化し、失敗内容はDraftReviewCardが表示する
+  async function handleTrigger(id: string, currentStatus: GameRequestStatus) {
+    const result = await triggerRegistration(id, currentStatus)
+    if (result.ok) reload()
+    return result
+  }
+
+  async function handlePublish(request: GameRequest) {
+    const result = await publishDraft(request)
+    if (result.ok) reload()
+    return result
+  }
+
+  async function handleRequestRevision(id: string, note: string, currentStatus: GameRequestStatus) {
+    const result = await requestRevision(id, note, currentStatus)
+    if (result.ok) reload()
+    return result
+  }
+
   if (phase === 'loading') {
     return (
       <AdminShell>
@@ -214,6 +242,9 @@ export default function AdminPage() {
               onMarkProcessed={handleMarkProcessed}
               onDelete={handleDeleteRequest}
               onViewPhotos={fetchOriginalPhotos}
+              onTrigger={handleTrigger}
+              onPublish={handlePublish}
+              onRequestRevision={handleRequestRevision}
             />
           </section>
 

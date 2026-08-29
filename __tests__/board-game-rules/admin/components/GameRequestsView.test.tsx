@@ -8,6 +8,14 @@ vi.mock('../../../../app/board-game-rules/lib/gamePhotos', () => ({
   getGamePhotoUrl: vi.fn((path: string) => `https://example.com/game-photos/${path}`),
 }))
 
+// 登録実行・下書きレビューの操作(DraftReviewCard向け。本テストはT4bのDraftReviewCard.test.tsxで
+// 詳細に検証するため、ここではGameRequestsViewが各行にカードを組み込むことだけを確認する)
+const draftHandlers = {
+  onTrigger: vi.fn().mockResolvedValue({ ok: true }),
+  onPublish: vi.fn().mockResolvedValue({ ok: true }),
+  onRequestRevision: vi.fn().mockResolvedValue({ ok: true }),
+}
+
 function makeRequest(overrides: Partial<GameRequest> = {}): GameRequest {
   return {
     id: 'req-1',
@@ -28,6 +36,13 @@ function makeRequest(overrides: Partial<GameRequest> = {}): GameRequest {
     releaseYear: null,
     createdAt: '2026-08-01T00:00:00.000Z',
     processedAt: null,
+    status: 'pending',
+    draftContent: null,
+    revisionNote: null,
+    revisionRound: 0,
+    revisionHistory: [],
+    errorMessage: null,
+    publishedGameId: null,
     ...overrides,
   }
 }
@@ -35,7 +50,7 @@ function makeRequest(overrides: Partial<GameRequest> = {}): GameRequest {
 // 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-8、specs/board-game-rules/admin/requirements.md#登録依頼の確認-9、specs/board-game-rules/admin/requirements.md#登録依頼の確認-10
 describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示、処理済みマーク・削除の導線', () => {
   it('依頼のゲーム名・分類情報が表示されること', () => {
-    render(<GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={vi.fn()} />)
+    render(<GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={vi.fn()} {...draftHandlers} />)
     expect(screen.getByText('カタン')).toBeTruthy()
   })
 
@@ -45,7 +60,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
         requests={[makeRequest({ name: null })]}
         onMarkProcessed={vi.fn()}
         onDelete={vi.fn()}
-        onViewPhotos={vi.fn()}
+        onViewPhotos={vi.fn()} {...draftHandlers}
       />
     )
     expect(screen.getByText('ゲーム名未入力')).toBeTruthy()
@@ -57,7 +72,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
         requests={[makeRequest({ id: 'req-1', processedAt: null }), makeRequest({ id: 'req-2', processedAt: '2026-08-02T00:00:00.000Z' })]}
         onMarkProcessed={vi.fn()}
         onDelete={vi.fn()}
-        onViewPhotos={vi.fn()}
+        onViewPhotos={vi.fn()} {...draftHandlers}
       />
     )
     expect(screen.getByText('未処理')).toBeTruthy()
@@ -71,7 +86,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
         requests={[makeRequest()]}
         onMarkProcessed={onMarkProcessed}
         onDelete={vi.fn()}
-        onViewPhotos={vi.fn()}
+        onViewPhotos={vi.fn()} {...draftHandlers}
       />
     )
     fireEvent.click(screen.getByRole('button', { name: '処理済みにする' }))
@@ -84,7 +99,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
         requests={[makeRequest({ processedAt: '2026-08-02T00:00:00.000Z' })]}
         onMarkProcessed={vi.fn()}
         onDelete={vi.fn()}
-        onViewPhotos={vi.fn()}
+        onViewPhotos={vi.fn()} {...draftHandlers}
       />
     )
     expect(screen.queryByRole('button', { name: '処理済みにする' })).toBeNull()
@@ -92,7 +107,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
 
   it('削除ボタンを押すと、対象依頼IDでonDeleteが呼ばれること', () => {
     const onDelete = vi.fn()
-    render(<GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={onDelete} onViewPhotos={vi.fn()} />)
+    render(<GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={onDelete} onViewPhotos={vi.fn()} {...draftHandlers} />)
     fireEvent.click(screen.getByRole('button', { name: '削除' }))
     expect(onDelete).toHaveBeenCalledWith('req-1')
   })
@@ -100,7 +115,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
   it('「写真を確認」ボタンを押すとonViewPhotosが呼ばれ、取得できた写真が表示されること', async () => {
     const onViewPhotos = vi.fn().mockResolvedValue([{ path: 'req-1/0.jpg', url: 'https://example.com/a.jpg' }])
     render(
-      <GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={onViewPhotos} />
+      <GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={onViewPhotos} {...draftHandlers} />
     )
     fireEvent.click(screen.getByRole('button', { name: '写真を確認' }))
     expect(onViewPhotos).toHaveBeenCalledWith(['req-1/0.jpg'])
@@ -108,7 +123,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
   })
 
   it('依頼が0件のとき、その旨が表示されること', () => {
-    render(<GameRequestsView requests={[]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={vi.fn()} />)
+    render(<GameRequestsView requests={[]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={vi.fn()} {...draftHandlers} />)
     expect(screen.getByText('登録依頼はありません。')).toBeTruthy()
   })
 
@@ -117,7 +132,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
     let resolveFn: () => void = () => {}
     const onMarkProcessed = vi.fn(() => new Promise<void>((r) => (resolveFn = r)))
     render(
-      <GameRequestsView requests={[makeRequest()]} onMarkProcessed={onMarkProcessed} onDelete={vi.fn()} onViewPhotos={vi.fn()} />
+      <GameRequestsView requests={[makeRequest()]} onMarkProcessed={onMarkProcessed} onDelete={vi.fn()} onViewPhotos={vi.fn()} {...draftHandlers} />
     )
 
     const button = screen.getByRole('button', { name: '処理済みにする' })
@@ -135,7 +150,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
   it('削除の処理中は、ボタンが無効化され連打しても1回しか呼ばれないこと', async () => {
     let resolveFn: () => void = () => {}
     const onDelete = vi.fn(() => new Promise<void>((r) => (resolveFn = r)))
-    render(<GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={onDelete} onViewPhotos={vi.fn()} />)
+    render(<GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={onDelete} onViewPhotos={vi.fn()} {...draftHandlers} />)
 
     const button = screen.getByRole('button', { name: '削除' })
     fireEvent.click(button)
@@ -153,7 +168,7 @@ describe('【管理画面】登録依頼一覧 - 写真・分類情報の表示�
     let resolveFn: (v: { path: string; url: string | null }[]) => void = () => {}
     const onViewPhotos = vi.fn(() => new Promise<{ path: string; url: string | null }[]>((r) => (resolveFn = r)))
     render(
-      <GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={onViewPhotos} />
+      <GameRequestsView requests={[makeRequest()]} onMarkProcessed={vi.fn()} onDelete={vi.fn()} onViewPhotos={onViewPhotos} {...draftHandlers} />
     )
 
     const button = screen.getByRole('button', { name: '写真を確認' })
@@ -177,7 +192,7 @@ describe('【管理画面】登録依頼一覧 - ゲーム紹介画像のプレ�
         requests={[makeRequest({ introPhotoPaths: ['req-1/0.jpg', 'req-1/1.jpg'] })]}
         onMarkProcessed={vi.fn()}
         onDelete={vi.fn()}
-        onViewPhotos={vi.fn()}
+        onViewPhotos={vi.fn()} {...draftHandlers}
       />
     )
 
@@ -192,11 +207,62 @@ describe('【管理画面】登録依頼一覧 - ゲーム紹介画像のプレ�
         requests={[makeRequest({ introPhotoPaths: [] })]}
         onMarkProcessed={vi.fn()}
         onDelete={vi.fn()}
-        onViewPhotos={vi.fn()}
+        onViewPhotos={vi.fn()} {...draftHandlers}
       />
     )
 
     expect(screen.getByText('紹介画像なし(登録時に自動補完されます)')).toBeTruthy()
     expect(screen.queryByAltText(/依頼されたゲーム紹介画像/)).toBeNull()
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-16、specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-18、specs/board-game-rules/admin/design.md#登録実行・下書きレビューの処理
+describe('【管理画面】登録依頼一覧 - 各依頼行に登録実行・下書きレビューの操作(DraftReviewCard)を組み込む', () => {
+  it('未着手の依頼行に「登録実行」ボタンが出て、押すとその依頼のstatusとともにonTriggerが呼ばれること', () => {
+    const onTrigger = vi.fn().mockResolvedValue({ ok: true })
+    render(
+      <GameRequestsView
+        requests={[makeRequest({ id: 'req-9', status: 'pending' })]}
+        onMarkProcessed={vi.fn()}
+        onDelete={vi.fn()}
+        onViewPhotos={vi.fn()}
+        onTrigger={onTrigger}
+        onPublish={vi.fn()}
+        onRequestRevision={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: '登録実行' }))
+    expect(onTrigger).toHaveBeenCalledWith('req-9', 'pending')
+  })
+
+  it('下書きありの依頼行に下書き内容と「公開する」ボタンが出ること', () => {
+    render(
+      <GameRequestsView
+        requests={[
+          makeRequest({
+            id: 'req-9',
+            status: 'draft',
+            draftContent: {
+              name: 'ドミニオン',
+              minPlayers: 2,
+              maxPlayers: 4,
+              minMinutes: 30,
+              maxMinutes: 30,
+              genres: ['デッキ構築'],
+              rulesSimple: 'カードを買い集めて勝利点を稼ぐ。',
+              rulesDetailed: [],
+            },
+          }),
+        ]}
+        onMarkProcessed={vi.fn()}
+        onDelete={vi.fn()}
+        onViewPhotos={vi.fn()}
+        onTrigger={vi.fn()}
+        onPublish={vi.fn().mockResolvedValue({ ok: true })}
+        onRequestRevision={vi.fn()}
+      />
+    )
+    expect(screen.getByText('ドミニオン')).toBeTruthy()
+    expect(screen.getByRole('button', { name: '公開する' })).toBeTruthy()
   })
 })

@@ -1,21 +1,38 @@
 'use client'
 
 import { useState } from 'react'
-import type { GameRequest } from '../lib/gameRequests'
+import type { GameRequest, GameRequestStatus, RequestMutationResult } from '../lib/gameRequests'
 import type { PhotoFetchResult } from '../lib/photos'
 import { getGamePhotoUrl } from '../../lib/gamePhotos'
+import DraftReviewCard from './DraftReviewCard'
 
 type Props = {
   requests: GameRequest[]
   onMarkProcessed: (id: string) => Promise<void>
   onDelete: (id: string) => Promise<void>
   onViewPhotos: (photoPaths: string[]) => Promise<PhotoFetchResult[]>
+  // 登録実行・下書きレビューの操作(T2b。DraftReviewCardへ渡す)
+  onTrigger: (id: string, currentStatus: GameRequestStatus) => Promise<RequestMutationResult>
+  onPublish: (request: GameRequest) => Promise<RequestMutationResult>
+  onRequestRevision: (
+    id: string,
+    note: string,
+    currentStatus: GameRequestStatus
+  ) => Promise<RequestMutationResult>
 }
 
 // 登録依頼一覧(未処理優先・次いで新しい順。並びは呼び出し元が渡す時点で確定済み)。
 // 写真プレビュー(オンデマンド取得)・入力済み分類情報を表示し、処理済みマーク・削除の導線を出す
 // (仕様: admin/design.md「登録依頼を確認する処理」「登録依頼を処理済みにする処理/削除する処理」)
-export default function GameRequestsView({ requests, onMarkProcessed, onDelete, onViewPhotos }: Props) {
+export default function GameRequestsView({
+  requests,
+  onMarkProcessed,
+  onDelete,
+  onViewPhotos,
+  onTrigger,
+  onPublish,
+  onRequestRevision,
+}: Props) {
   const [photosByRequestId, setPhotosByRequestId] = useState<Record<string, PhotoFetchResult[]>>({})
   // 処理済みマーク・削除・写真取得の処理中はボタンを無効化し二重実行を防ぐ(design.md「エラーハンドリング」)
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -138,6 +155,13 @@ export default function GameRequestsView({ requests, onMarkProcessed, onDelete, 
               )}
             </div>
           )}
+
+          <DraftReviewCard
+            request={request}
+            onTrigger={onTrigger}
+            onPublish={onPublish}
+            onRequestRevision={onRequestRevision}
+          />
         </div>
       ))}
     </div>

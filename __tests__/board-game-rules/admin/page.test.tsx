@@ -8,6 +8,8 @@ import {
   fetchGameRequests,
   markGameRequestProcessed,
   deleteGameRequest,
+  triggerRegistration,
+  publishDraft,
 } from '../../../app/board-game-rules/admin/lib/gameRequests'
 import { fetchOriginalPhotos } from '../../../app/board-game-rules/admin/lib/photos'
 import type { Session } from '@supabase/supabase-js'
@@ -25,6 +27,9 @@ vi.mock('../../../app/board-game-rules/admin/lib/gameRequests', () => ({
   fetchGameRequests: vi.fn(),
   markGameRequestProcessed: vi.fn(),
   deleteGameRequest: vi.fn(),
+  triggerRegistration: vi.fn(),
+  requestRevision: vi.fn(),
+  publishDraft: vi.fn(),
 }))
 vi.mock('../../../app/board-game-rules/admin/lib/photos', () => ({ fetchOriginalPhotos: vi.fn() }))
 // GameRequestsViewが紹介画像プレビューに使う公開URL変換(gamePhotos.ts)は別spec(game-list T8)で検証済みのためモックする
@@ -71,6 +76,8 @@ beforeEach(() => {
   vi.mocked(fetchGameRequests).mockReset().mockResolvedValue([])
   vi.mocked(markGameRequestProcessed).mockReset().mockResolvedValue(true)
   vi.mocked(deleteGameRequest).mockReset().mockResolvedValue(true)
+  vi.mocked(triggerRegistration).mockReset().mockResolvedValue({ ok: true })
+  vi.mocked(publishDraft).mockReset().mockResolvedValue({ ok: true })
   vi.mocked(fetchOriginalPhotos).mockReset().mockResolvedValue([])
 })
 
@@ -158,6 +165,13 @@ describe('【管理画面】登録依頼の処理済みマーク・削除の操�
         releaseYear: null,
         createdAt: '2026-08-01T00:00:00.000Z',
         processedAt: null,
+        status: 'pending',
+        draftContent: null,
+        revisionNote: null,
+        revisionRound: 0,
+        revisionHistory: [],
+        errorMessage: null,
+        publishedGameId: null,
       },
     ])
 
