@@ -51,7 +51,13 @@
   <key>RunAtLoad</key>
   <true/>
 
-  <!-- 前回の起動が10分以上残っていても多重起動しない(claude -p のタイムアウトと揃える) -->
+  <!--
+    ジョブ本体(processRegistrationQueue.ts)の終了時、同じプロセスグループに残った子プロセス
+    (タイムアウト等で残存した claude -p など)も launchd がまとめて終了させる。孤児プロセスを
+    残さないための既定動作を明示している(true にすると残存プロセスを放置する)。
+    なお StartInterval のジョブは前回の実行が終わるまで再起動されないため、多重起動はこの設定とは
+    無関係に起きない。
+  -->
   <key>AbandonProcessGroup</key>
   <false/>
 
