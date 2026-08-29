@@ -1,7 +1,5 @@
 # 要件定義: 管理画面(モデレーション)
 
-> ステータス: 仕様確認中(未実装)
-
 ## サマリ
 運営者本人だけがログインして使う管理画面。通報([report/requirements.md](../report/requirements.md))と利用者からの登録依頼([game-registration/requirements.md](../game-registration/requirements.md))を横断で一覧確認し、登録依頼は写真・分類情報をもとに外部ツール(管理画面の外)でゲーム登録できる。ゲーム1件ごとの編集・削除・紹介画像差し替え・コメント削除は詳細画面([game-detail/requirements.md](../game-detail/requirements.md))で行う。アクセス制御はGoogle OIDCログイン+DB側RLSで担保し、画面はboard-game-rules共通の左サイドバーナビ・パンくずを備えて他画面と回遊できる。
 

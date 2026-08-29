@@ -61,3 +61,30 @@ describe('共通ナビの管理画面導線(AdminNavLink) - 運営者ログイ�
     expect(container.firstChild).toBeNull()
   })
 })
+
+// 仕様: specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-13、specs/board-game-rules/admin/design.md#共通ナビに管理画面への導線を表示する処理
+describe('共通ナビの管理画面導線(AdminNavLink) - 管理画面を表示している間は現在地としてハイライトする', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('管理画面を表示している(active=true)かつ運営者本人のとき、他ナビ項目と同じ現在地体裁(aria-current="page")で描画すること', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: makeSession('admin@example.com'), loading: false })
+    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
+
+    render(<AdminNavLink active />)
+
+    const link = await screen.findByRole('link', { name: /管理画面/ })
+    expect(link.getAttribute('aria-current')).toBe('page')
+  })
+
+  it('管理画面以外を表示している(activeを渡さない/false)場合は、権限があってもaria-currentを付けない通常体裁で描画すること', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: makeSession('admin@example.com'), loading: false })
+    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
+
+    render(<AdminNavLink active={false} />)
+
+    const link = await screen.findByRole('link', { name: /管理画面/ })
+    expect(link.getAttribute('aria-current')).toBeNull()
+  })
+})

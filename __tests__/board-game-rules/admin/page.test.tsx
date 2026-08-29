@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import AdminPage from '../../../app/board-game-rules/admin/page'
 import { getSession, onAuthChange, isAuthorizedAdmin, signInWithGoogle, signOut } from '../../../app/lib/adminAuth'
@@ -167,5 +167,57 @@ describe('【管理画面】登録依頼の処理済みマーク・削除の操�
 
     await waitFor(() => expect(markGameRequestProcessed).toHaveBeenCalledWith('req-1'))
     await waitFor(() => expect(fetchGameRequests).toHaveBeenCalledTimes(2))
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-13、specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-14、specs/board-game-rules/admin/requirements.md#画面レイアウト・回遊導線-15、specs/board-game-rules/admin/requirements.md#UI/UX要件-1、specs/board-game-rules/admin/requirements.md#UI/UX要件-2、specs/board-game-rules/admin/design.md#管理画面を共通chrome共通ナビ・パンくずで表示し回遊できるようにする処理
+describe('【管理画面】共通ナビ・パンくずの枠(chrome)を全状態で表示し、他画面へ回遊できる', () => {
+  it('未ログインのときも、共通ナビ(一覧・登録依頼・お気に入り)とパンくずが表示され、他画面へ回遊できること', async () => {
+    vi.mocked(getSession).mockResolvedValue(null)
+    render(<AdminPage />)
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Googleでログイン' })).toBeTruthy())
+    const nav = screen.getByRole('navigation', { name: '共通ナビ' })
+    expect(within(nav).getByRole('link', { name: /一覧/ }).getAttribute('href')).toBe('/board-game-rules')
+    const breadcrumb = screen.getByRole('navigation', { name: 'パンくず' })
+    expect(within(breadcrumb).getByRole('link', { name: 'ボドゲのトリセツ' }).getAttribute('href')).toBe('/board-game-rules')
+    expect(within(breadcrumb).getByText('管理')).toBeTruthy()
+  })
+
+  it('権限がないときも、共通ナビ・パンくずが表示されること', async () => {
+    vi.mocked(getSession).mockResolvedValue(makeSession('other@example.com'))
+    vi.mocked(isAuthorizedAdmin).mockResolvedValue(false)
+    render(<AdminPage />)
+
+    await waitFor(() => expect(screen.getByText(/権限がありません/)).toBeTruthy())
+    expect(screen.getByRole('navigation', { name: '共通ナビ' })).toBeTruthy()
+    expect(screen.getByRole('navigation', { name: 'パンくず' })).toBeTruthy()
+  })
+
+  it('データ取得に失敗した(取得エラー)ときも、共通ナビ・パンくずが表示されること', async () => {
+    vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
+    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
+    vi.mocked(fetchReports).mockRejectedValue(new Error('permission denied'))
+    render(<AdminPage />)
+
+    await waitFor(() => expect(screen.getByText(/データの取得に失敗しました/)).toBeTruthy())
+    expect(screen.getByRole('navigation', { name: '共通ナビ' })).toBeTruthy()
+    expect(screen.getByRole('navigation', { name: 'パンくず' })).toBeTruthy()
+  })
+
+  it('権限があるとき、共通ナビ・パンくずの枠内で通報一覧・登録依頼一覧が引き続き表示されること', async () => {
+    vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
+    vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
+    vi.mocked(fetchPublishedGames).mockResolvedValue([makePublishedGame('game-1', 'カタン')] as never)
+    vi.mocked(fetchReports).mockResolvedValue([
+      { id: 'r1', gameId: 'game-1', reason: '内容が古い', createdAt: '2026-08-01T00:00:00.000Z' },
+    ])
+
+    render(<AdminPage />)
+
+    await waitFor(() => expect(screen.getByText('カタン')).toBeTruthy())
+    expect(screen.getByRole('navigation', { name: '共通ナビ' })).toBeTruthy()
+    const breadcrumb = screen.getByRole('navigation', { name: 'パンくず' })
+    expect(within(breadcrumb).getByRole('link', { name: 'べんりやつーる' }).getAttribute('href')).toBe('/')
   })
 })

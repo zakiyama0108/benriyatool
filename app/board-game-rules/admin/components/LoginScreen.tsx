@@ -12,24 +12,24 @@ type Props = {
 // ikukyu/admin/components/LoginScreen.tsxと同等のロジック)
 export default function LoginScreen({ variant, onLogin, onLogout }: Props) {
   return (
-    <div className="mx-auto max-w-sm px-4 py-16 text-center space-y-4">
-      <h1 className="text-xl font-bold">ボードゲームのルール解説 管理画面</h1>
+    <div className="mx-auto max-w-sm space-y-4 rounded-2xl border border-bgr-line bg-bgr-card px-4 py-16 text-center">
+      <h1 className="font-heading text-xl font-bold text-bgr-heading">ボードゲームのルール解説 管理画面</h1>
       {variant === 'login' ? (
         <>
-          <p className="text-sm text-gray-500">閲覧するにはログインが必要です。</p>
+          <p className="text-sm text-bgr-subtext">閲覧するにはログインが必要です。</p>
           <button
             onClick={onLogin}
-            className="w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white"
+            className="w-full rounded-lg bg-bgr-primary py-2.5 text-sm font-bold text-white transition-colors hover:bg-bgr-primary-active"
           >
             Googleでログイン
           </button>
         </>
       ) : (
         <>
-          <p className="text-sm text-gray-700">このアカウントには閲覧する権限がありません。</p>
+          <p className="text-sm text-bgr-subtext">このアカウントには閲覧する権限がありません。</p>
           <button
             onClick={onLogout}
-            className="w-full rounded-lg border border-gray-300 py-2.5 text-sm font-medium text-gray-700"
+            className="w-full rounded-lg border border-bgr-line py-2.5 text-sm font-bold text-bgr-heading hover:bg-bgr-bg"
           >
             ログアウト
           </button>
