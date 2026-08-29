@@ -37,12 +37,16 @@ flowchart LR
     admin --> gotoGame[通報から対象ゲームの詳細画面へ遷移する]
     admin --> viewRequests[登録依頼を一覧で確認する]
     admin --> viewRequestPhoto[登録依頼の紹介画像を確認する]
+    admin --> triggerRegistration[登録実行を起動する]
+    admin --> reviewDraft[生成された下書きを確認して公開する]
+    admin --> requestRevision[下書きの再調整を依頼する]
+    admin --> retryFailed[失敗した処理を再試行する]
     admin --> markProcessed[登録依頼を処理済みにする]
     admin --> deleteRequest[不要な登録依頼を削除する]
     admin --> notified[新着登録依頼の通知を受け取る]
     admin --> navigate[共通ナビ・パンくずで他画面と回遊する]
 ```
-- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-6・requirements.md#通報の確認-7、登録依頼の確認・処理・削除はrequirements.md#登録依頼の確認-8〜10、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-11、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログイン・アクセス制御-5・requirements.md#画面レイアウト・回遊導線-13〜14に対応する
+- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-6・requirements.md#通報の確認-7、登録依頼の一覧確認・削除はrequirements.md#登録依頼の確認-8・requirements.md#登録依頼の確認-10、手動フォールバック分の処理済みマークはrequirements.md#登録依頼の確認-22、登録実行の起動・下書き確認・公開・再調整・再試行はrequirements.md#登録実行・下書きレビュー-16〜21、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-11、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログイン・アクセス制御-5・requirements.md#画面レイアウト・回遊導線-13〜14に対応する
 
 ## 機能要件
 
@@ -59,7 +63,7 @@ flowchart LR
 
 ### 登録依頼の確認
 - [8] 利用者から送信された登録依頼(写真+分類情報。[game-registration/requirements.md](../game-registration/requirements.md))を一覧で確認できる。未処理/処理済みを区別して表示する
-- [9] 依頼の写真・入力済み分類情報をもとに、管理画面から登録処理を起動できる(詳細は下記「登録実行・下書きレビュー」)。写真解析・ルール本文の生成そのものは運営者のローカル環境で行われる
+- [9] 依頼ごとに、投稿された写真・入力済み分類情報・添付のゲーム紹介画像を確認できる。この確認画面を起点に、下記「登録実行・下書きレビュー」の各操作(登録実行・下書き確認・公開・再調整・破棄)へ進む
 - [10] 不要な依頼(スパム・重複・情報不足など)を削除できる
 - [22] 外部の手動フォールバック(`registerGame.ts`。自動フローが止まった場合に使う)でゲームを登録した依頼を、管理画面から処理済みとして記録できる(下書きレビュー経由で「公開する」を押した場合は処理済みが自動で記録されるため、この操作は手動フォールバック運用のための補助)
 

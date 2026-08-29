@@ -81,7 +81,7 @@
 - 対象: requirements.md#ログイン・アクセス制御-5(design.md「共通ナビに管理画面への導線を表示する処理」)
 - 🔴 `AdminNavLink`が「未ログインでは何も描画しない」「ログイン中かつ`isAuthorizedAdmin`がtrueなら管理画面(`/board-game-rules/admin/`)へのリンクを描画する」「ログイン中でも権限なし(false)なら描画しない」「権限確認が例外を投げたら描画しない(フェイルクローズ)」の各ケースをテストする(`useSession`・`isAuthorizedAdmin`はモックする)
 - 🟢 `AdminNavLink`を実装し、`BoardGameNav`の`nav`末尾に差し込む(BoardGameNavはサーバーコンポーネントのまま)
-- 🔵 リンクの体裁を他ナビ項目に揃える。`scripts/spec-coverage-skip.json`に`board-game-rules/admin/requirements.md`の「ログイン・アクセス制御 [5]」・`board-game-rules/admin/design.md`の「共通ナビに管理画面への導線を表示する処理」の個別エントリが存在しないことを確認する(requirements.mdのWIPマーカーによりadminフォルダ全体がspec-coverageから除外されているため個別エントリは追加されていない。マーカーを外す際の扱いは下記T8末尾を参照)
+- 🔵 リンクの体裁を他ナビ項目に揃える。requirements.md#ログイン・アクセス制御-5 は`AdminNavLink.test.tsx`で、design.md「共通ナビに管理画面への導線を表示する処理」は同テストで担保する(spec-coverageのスキップ登録は不要)
 
 ## T8. 管理画面を共通デザイン・共通ナビ・パンくずへ揃える(`admin/page.tsx`, `admin/components/LoginScreen.tsx`, `components/BoardGameNav.tsx`, `components/AdminNavLink.tsx`)
 - 対象: requirements.md#画面レイアウト・回遊導線-13〜15、requirements.md#UI/UX要件-1〜2(design.md「管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理」「画面設計」)
@@ -93,7 +93,7 @@
   - 🔴 管理画面の全状態(未ログイン/権限なし/取得エラー/権限あり)で、共通ナビ(`BoardGameNav active="admin"`)とパンくず(べんりやつーる › ボドゲのトリセツ › 管理)が描画されること、権限ありでは通報一覧・登録依頼一覧が引き続き表示されることをテストする(既存T5の状態遷移テストは維持)
   - 🟢 `admin/page.tsx`を他画面(favorites/register)と同じ枠(`flex min-h-screen bg-bgr-bg` + `BoardGameNav` + 本文の`main`にパンくず)に載せ替える。枠は権限判定より外側に置き、4状態共通で表示する。`LoginScreen`・アカウント表示・ログアウト・データエラー表示・各カード/ボタンの配色を`gray-*`から共通デザインの`bgr-*`トークンへ揃える
   - 🔵 他画面とマークアップ・トークンの使い方を突き合わせて重複や不揃いを整理する。狭幅でサイドバーが隠れてもパンくずで回遊できることを確認する(実機確認は/implementation-reviewで行う)
-- spec-coverage: 本design.mdの新規見出し「管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理」はT8a・T8bのテストで担保する(スキップ登録は不要)。requirements.mdのWIPマーカー(「仕様確認中(未実装)」)がある間は本adminフォルダ全体がspec-coverageから除外されるため、マーカーを外すのは通報一覧・登録依頼一覧・ログイン・共通ナビ導線・本T8・下記T9まで含めて実装・テストが揃った時点とする
+- spec-coverage: 本design.mdの新規見出し「管理画面を共通chrome(共通ナビ・パンくず)で表示し回遊できるようにする処理」はT8a・T8bのテストで担保する(スキップ登録は不要)。adminフォルダはWIPマーカーを使わず(通報一覧・登録依頼一覧・ログイン・共通デザインは実装・リリース済みのため)、未実装の項目のみを`scripts/spec-coverage-skip.json`に「一時スキップ(未実装)」で個別登録する。下記T9関連(登録実行・下書きレビュー [16]〜[21]、登録実行のローカル処理起動 [9]〜[12]、design.md「登録実行・下書きレビューの処理」「ローカル環境の定期処理」)がその対象で、実装・テストが揃った時点で各エントリを削除する
 
 ## T9. ローカル環境の定期処理(`scripts/board-game-rules/processRegistrationQueue.ts`)
 - 対象: Node.jsスクリプト(Webアプリのコードではないため、通常のTDDサイクル・spec-coverageの対象外とする。動作確認は実際の依頼で試す)。design.md「ローカル環境の定期処理」
