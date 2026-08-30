@@ -4,7 +4,7 @@
 
 - Task 1: ウォッチリスト・採用基準データの作成(仕様: requirements.md#情報源(ウォッチリスト)-1、requirements.md#採用基準)
   - `app/ai-dev-digest/lib/watchlistTypes.ts`に型を定義する(TDD対象外。型定義のみのため)
-  - `content/ai-dev-digest/watchlist.json`に13件のウォッチリストを作成する(requirements.mdの表と完全一致させる)
+  - `content/ai-dev-digest/watchlist.json`にウォッチリストを作成する(requirements.md#情報源(ウォッチリスト)-1の表と完全一致させる。件数はその後 Task 9 で18件に更新)
   - `content/ai-dev-digest/criteria.json`にdesign.mdの初期値を設定する
 
 - Task 2: 候補・選定結果の型定義(仕様: design.md「データ設計」)
@@ -37,18 +37,18 @@
   - `app/ai-dev-digest/lib/watchlistTypes.ts`の`Criteria`型に`topicExcludeKeywords: string[]`を追加する(TDD対象外。型定義のみのため)
   - `content/ai-dev-digest/criteria.json`の`topicRelevanceGuideline`(未使用の自由記述フィールド)を、実際にフィルタで使う`topicExcludeKeywords`配列に置き換える(TDD対象外。データ変更のみのため)
 
-## 情報源内の重複抑制の実装(2026-08第3次改定。PR #253 で実装済み・design.md/tasks.mdへの追随が漏れていた分)
+## 情報源内の重複抑制の実装(selection.ts に実装済み・design.md/tasks.md への追随分)
 
-- Task 8: 情報源内の重複抑制(仕様: requirements.md#重複掲載の抑制-13、design.md「情報源内の重複を抑制する処理」)
+- Task 8: 情報源内の重複抑制(仕様: requirements.md#情報源内の重複掲載の抑制-13、design.md「情報源内の重複を抑制する処理」)
   - 🔴 `duplicateSuppressionSourceTypes`に含まれる種別で同一`sourceId`の候補が複数あるとき最新1件だけ残ること、含まれない種別・異なる`sourceId`は絞られないこと、`selectDailyTopics`に統合され採用基準判定より前に適用されることをテストする
   - 🟢 `app/ai-dev-digest/lib/selection.ts`に`deduplicateSameSourceCandidates(candidates, criteria)`を実装し、`selectDailyTopics`の先頭付近で適用する
   - `Criteria`型に`duplicateSuppressionSourceTypes: SourceType[]`、`criteria.json`に`["individual-blog"]`を追加する(TDD対象外)
 
-## 情報源の追加・採用基準の調整(2026-08。requirements.md [1][5][6][7][14][健全性監視-2])
+## 情報源の追加・採用基準の調整(requirements.md [1][5][6][7][14]・情報源の健全性監視[2])
 
 - Task 9: ウォッチリストの更新(仕様: requirements.md#情報源(ウォッチリスト)-1)
   - TDD対象外(データ変更)。`content/ai-dev-digest/watchlist.json`を更新する:
-    - LangChainの`feedUrl`を`https://blog.langchain.dev/rss.xml`に修正
+    - LangChainの`feedUrl`を有効なフィード(`https://blog.langchain.dev/rss.xml`)に修正
     - DeepLearning.AIから`rss`チャンネルを削除(YouTube専用に)
     - `github`(github.blog)・`google-developers`(blog.google 開発者向け)・`vscode`(code.visualstudio.com)を`official`で追加
     - `interconnects`(interconnects.ai)・`martin-fowler`(martinfowler.com)を`individual-blog`で追加
@@ -66,7 +66,7 @@
   - 🔴 公開後`qiitaMaxAgeDays`日以内の記事のみが候補になること、期間外の記事は除外されること、いいね数判定は従来どおり`qiitaMinLikes`であることをテストする
   - 🟢 `fetchQiitaCandidates`を公開日時で絞り込むよう変更する(新しい順にページを辿り、期間外に達したら打ち切る)。`Criteria`型に`qiitaMaxAgeDays: number`、`criteria.json`に`60`を追加する
 
-- Task 13: 掲載済み記事の除外(仕様: requirements.md#重複掲載の抑制-14、design.md「掲載済み記事を除外する処理」)
+- Task 13: 掲載済み記事の除外(仕様: requirements.md#掲載済み記事の再掲抑制-14、design.md「掲載済み記事を除外する処理」)
   - 🔴 掲載済みURL集合に含まれる`url`の候補が`selectDailyTopics`の結果から除外されること、含まれない候補は残ること、全候補が除外されるとスキップ結果になることをテストする
   - 🟢 `selection.ts`に掲載済みURLを除外する純粋関数を実装し`selectDailyTopics`の先頭で適用する(掲載済みURL集合を引数で受け取る)。`scripts/ai-dev-digest/collect-and-select.ts`が`content/ai-dev-digest/articles/*.json`を読んでURL集合を渡す
 

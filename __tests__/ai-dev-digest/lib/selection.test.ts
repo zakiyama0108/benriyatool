@@ -240,7 +240,7 @@ describe('話題の関連性フィルタ - 他の採用基準を満たしてい�
   })
 })
 
-// 仕様: specs/ai-dev-digest/content-selection/requirements.md#情報源内の重複掲載の抑制(種別を問わない横断フィルター)-13、specs/ai-dev-digest/content-selection/design.md#情報源内の重複を抑制する処理(決定的なコード。2026-08第3次改定)
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#情報源内の重複掲載の抑制(種別を問わない横断フィルター)-13、specs/ai-dev-digest/content-selection/design.md#情報源内の重複を抑制する処理(決定的なコード)
 describe('情報源内の重複抑制 - duplicateSuppressionSourceTypesに含まれる種別は、同じ情報源から同日に複数候補があれば最新の1件だけを残す', () => {
   it('個人ブログで同じ情報源から2件の候補があるとき、公開日時が新しい方だけが残ること', () => {
     const older = baseCandidate({
