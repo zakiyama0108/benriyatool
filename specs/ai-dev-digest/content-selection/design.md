@@ -14,8 +14,8 @@
 
 ウォッチリスト・採用基準は本specの`requirements.md`(人間が読む正の仕様)と、実行時にコードが読み込む機械可読データの二重管理とする。[watchlist-review](../watchlist-review/requirements.md)の月次見直しPRは、**同じ変更を`requirements.md`とこの機械可読データの両方に加える**(片方だけの変更はレビューで差し戻す)。
 
-- `content/ai-dev-digest/watchlist.json` — requirements.md#情報源(ウォッチリスト)-1の13件をそのまま構造化したもの
-- `content/ai-dev-digest/criteria.json` — requirements.md#採用基準(種別ごとの定量判定)の数値基準
+- `content/ai-dev-digest/watchlist.json` — requirements.md#情報源(ウォッチリスト)-1の18件をそのまま構造化したもの
+- `content/ai-dev-digest/criteria.json` — requirements.md#採用基準(種別ごとの定量判定)・#重複掲載の抑制・#話題の関連性の数値・設定
 
 ```ts
 // app/ai-dev-digest/lib/watchlistTypes.ts
@@ -36,36 +36,47 @@ export type WatchlistEntry = {
 export type Criteria = {
   dailyTopicCount: { min: number; max: number } // requirements.md#1日の掲載件数-9
   youtubeRecentVideoWindow: number // 平均再生回数の算出対象本数
+  youtubeCandidateVideoCount: number // 各チャンネルで採用候補として評価する直近動画の本数(requirements.md#採用基準-5)
   youtubeAboveAverageRatio: number // 平均の何倍を上回れば採用候補にするか
   qiitaMinLikes: number // requirements.md#採用基準-7
+  qiitaMaxAgeDays: number // Qiita記事を採用候補にする公開後の経過日数の上限(requirements.md#採用基準-7)
   zennMinLikes: number // requirements.md#採用基準-8
+  minIndividualBlogBodyChars: number // 個人ブログ投稿を採用候補にする本文の最小文字数(requirements.md#採用基準-6)
+  topicExcludeKeywords: string[] // 原文タイトルに含まれると候補から除外するキーワード(requirements.md#話題の関連性-12)
+  duplicateSuppressionSourceTypes: SourceType[] // 同一情報源・同日の重複を1件に絞る対象種別(requirements.md#重複掲載の抑制-13)
 }
 ```
 
-`criteria.json`の初期値(要件は「明確に上回る」としか定めていないため設計時の暫定値。妥当性は運用実績を見て[watchlist-review](../watchlist-review/requirements.md)で見直す):
+`criteria.json`の初期値(要件が数値を定めていない項目は設計時の暫定値。妥当性は運用実績を見て[watchlist-review](../watchlist-review/requirements.md)で見直す):
 ```json
 {
   "dailyTopicCount": { "min": 3, "max": 5 },
   "youtubeRecentVideoWindow": 10,
+  "youtubeCandidateVideoCount": 5,
   "youtubeAboveAverageRatio": 1.2,
   "qiitaMinLikes": 30,
-  "zennMinLikes": 30
+  "qiitaMaxAgeDays": 60,
+  "zennMinLikes": 30,
+  "minIndividualBlogBodyChars": 150,
+  "topicExcludeKeywords": ["医療", "..."],
+  "duplicateSuppressionSourceTypes": ["individual-blog"]
 }
 ```
 
 ## 処理フロー
 
 ### 情報源から候補を収集する処理
-- 対象: `watchlist.json`に登録された13件の情報源
+- 対象: `watchlist.json`に登録された18件の情報源
 - 手順:
   1. 種別ごとに公式API・公式RSSフィード・公開ページの閲覧の範囲でデータを取得する(requirements.md#データ取得方法-1)
-     - 公式組織・個人YouTube: YouTube Data API(公式)で対象チャンネルの新着動画と再生回数を取得する
-     - 公式組織のブログ・Simon Willisonの個人ブログ: 公式RSSフィードを取得する
-     - Qiita: 公式APIで新着記事といいね数を取得する
+     - 公式組織・個人YouTube: YouTube Data API(公式)で対象チャンネルの動画と再生回数を取得する。個人YouTubeは直近`youtubeCandidateVideoCount`本を採用候補として、それに続く`youtubeRecentVideoWindow`本を平均再生回数の算出対象として取得する(requirements.md#採用基準-5)。公式組織のYouTubeは最新1本のみ
+     - 公式組織のブログ・個人ブログ(Simon Willison・Interconnects・Martin Fowler): 公式RSS/Atomフィードを取得する。個人ブログ(種別`individual-blog`)は、フィードが返す本文(`content:encoded`/`summary`/`description`/atomの`content`)からHTMLタグを除いた文字数が`minIndividualBlogBodyChars`未満の投稿を、この時点で候補から除外する(requirements.md#採用基準-6。Zennのいいね数を読めない記事を収集時点で除外するのと同じ扱い)
+     - Qiita: 公式APIで記事といいね数・公開日時を取得する。公開が新しい順に、`qiitaMaxAgeDays`日より古い記事に到達するまでページを辿る(requirements.md#採用基準-7)
      - Zenn: 公式RSSフィードで新着記事を検知し、各記事の公開ページ(HTML)を開いていいね数の表示値を読み取る(requirements.md#採用基準-8)
   2. 取得できなかった情報源(一時的な障害・レート制限等)は、その情報源だけを候補から除外して処理を続ける(1件の取得失敗で日次実行全体を止めない)
   3. 取得した各候補について、発信者名・見出し(原文タイトル)・元URL・公開日時・種別ごとの判定用の数値(再生回数/いいね数、YouTubeは併せて直近動画群の平均再生回数)を記録する
-- 関連するビジネスルール: requirements.md#データ取得方法-1
+  4. 情報源ごとの収集件数(取得失敗・0件はその旨)を標準エラー出力に記録する(requirements.md#情報源の健全性監視-2)
+- 関連するビジネスルール: requirements.md#データ取得方法-1、requirements.md#情報源の健全性監視-2
 
 ### 話題の関連性フィルタを適用する処理(決定的なコード。2026-08第2次改定)
 - 対象: 収集した候補すべて(採用基準の判定より前に適用する)
@@ -81,16 +92,39 @@ export type Criteria = {
 - 対象: 話題の関連性フィルタを通過した候補1件ずつ
 - 手順:
   1. 公式組織の新着投稿は無条件で基準を満たすと判定する(requirements.md#採用基準-4)
-  2. 個人YouTubeの動画は、そのチャンネルの直近`youtubeRecentVideoWindow`本の平均再生回数に`youtubeAboveAverageRatio`を掛けた値を上回れば基準を満たすと判定する(requirements.md#採用基準-5)
-  3. Simon Willisonのブログ新着は無条件で基準を満たすと判定する(requirements.md#採用基準-6)
-  4. Qiitaの新着記事はいいね数が`qiitaMinLikes`以上なら基準を満たすと判定する(requirements.md#採用基準-7)
+  2. 個人YouTubeの動画は、そのチャンネルの直近`youtubeRecentVideoWindow`本の平均再生回数に`youtubeAboveAverageRatio`を掛けた値を上回れば基準を満たすと判定する(requirements.md#採用基準-5)。直近`youtubeCandidateVideoCount`本の候補それぞれを、同じ平均値(候補群より後の`youtubeRecentVideoWindow`本の平均)と比較する。投稿直後の動画は再生数が伸びる前で不利になるが、これは既存の相対評価が元々持つ性質であり、複数本を評価対象にすることで少し前に伸びた動画を拾えるようにする趣旨
+  3. 個人ブログ(`individual-blog`)の新着は無条件で基準を満たすと判定する(requirements.md#採用基準-6。本文が短い投稿は収集時点で既に除外済み)
+  4. Qiitaの記事はいいね数が`qiitaMinLikes`以上なら基準を満たすと判定する(requirements.md#採用基準-7。公開後`qiitaMaxAgeDays`日以内という期間の絞り込みは収集時点で済んでいる)
   5. Zennの新着記事はいいね数が`zennMinLikes`以上なら基準を満たすと判定する(requirements.md#採用基準-8)
   6. 判定結果(基準を満たすか)と、満たさない場合はどれだけ乖離しているか(例: 「いいね数18件(基準30件に12件不足)」)を候補に記録する
 - 関連するビジネスルール: requirements.md#採用基準-4〜8
 
-### 1日分のトピックを選び出す処理
-- 対象: 判定済みの候補一覧
+### 掲載済み記事を除外する処理(決定的なコード)
+- 対象: 収集した候補すべて(話題の関連性フィルタ・重複抑制・採用基準の判定より前に適用する)
 - 手順:
+  1. `content/ai-dev-digest/articles/*.json`の全記事の全トピックから元URL(`sourceUrl`)を集めた集合を作る
+  2. 候補の元URL(`url`)がこの集合に含まれる場合、その候補を除外する(完全一致。requirements.md#重複掲載の抑制-14)
+  3. すべての候補が除外され実在する候補が残らなかった場合は「候補不足によりスキップ」として扱う(下記「1日分のトピックを選び出す処理」の候補不足時の扱いと同じ)
+- 実行主体: 掲載済みURLの読み込みは`scripts/ai-dev-digest/collect-and-select.ts`が担い、除外そのものは`selection.ts`の純粋関数として実装しテスト可能にする(引数で掲載済みURL集合を受け取る)
+- 関連するビジネスルール: requirements.md#重複掲載の抑制-14
+
+### 情報源内の重複を抑制する処理(決定的なコード。2026-08第3次改定)
+- 対象: 掲載済み記事の除外を通過した候補すべて(話題の関連性フィルタ・採用基準の判定より前に適用する)
+- 手順:
+  1. `criteria.json`の`duplicateSuppressionSourceTypes`に含まれる種別の候補について、同一情報源(`sourceId`)で複数の候補があれば、公開日時(`publishedAt`)が最も新しい1件だけを残し、他は除外する(requirements.md#重複掲載の抑制-13)
+  2. `duplicateSuppressionSourceTypes`に含まれない種別・異なる情報源同士は互いに影響しない
+- 実装が「決定的なコード」である理由: 話題の関連性フィルタと同じく、意味的な類似判定ではなく「同一情報源・同日」という決定的な条件に落とし込むことで、追加のLLM呼び出しなしに実現する。見出しの意味的な重複(異なる情報源が同じニュースを扱う等)までは判定しない
+- 関連するビジネスルール: requirements.md#重複掲載の抑制-13
+
+### 1日分のトピックを選び出す処理
+- 対象: 収集した候補一覧
+- フィルタの適用順(`selectDailyTopics`が先頭から順に適用する。いずれも「実在する候補が0件になったらスキップ」の扱いは共通):
+  1. 掲載済み記事を除外する(上記「掲載済み記事を除外する処理」)
+  2. 情報源内の重複を抑制する(上記「情報源内の重複を抑制する処理」)
+  3. 話題の関連性フィルタを適用する(上記「話題の関連性フィルタを適用する処理」)
+  4. 残った候補を採用基準で判定する(上記「採用基準を判定する処理」)
+  5. 以下の件数調整を行う
+- 件数調整の手順:
   1. 基準を満たす候補が`dailyTopicCount.max`(5件)を超える場合は、公式組織/個人YouTube/個人ブログ/Qiita/Zennの種別ができるだけ偏らないように分散させながら、公開日時が新しいものから`dailyTopicCount.max`件を選ぶ(要件は基準超過時の絞り込み方法を定めていないため設計判断)
   2. 基準を満たす候補が`dailyTopicCount.min`(3件)以上`dailyTopicCount.max`(5件)以下の場合は、それらをそのまま採用する
   3. 基準を満たす候補が`dailyTopicCount.min`(3件)未満の場合、不足分は基準を満たさない候補の中から、基準からの乖離が小さい順に補って`dailyTopicCount.min`件に達するようにする(requirements.md#1日の掲載件数-10)。補った各トピックには基準未達である旨と乖離内容を記録する
@@ -107,8 +141,9 @@ export type Criteria = {
 ## エラーハンドリング
 
 - 個々の情報源の取得失敗は「その情報源を除外して続行」とし、収集処理全体を失敗させない(処理フロー参照)
-- 実在する候補(基準未達の候補を含む)が1件もない場合のみ記事生成をスキップする(処理フロー参照)。これは[daily-publish](../daily-publish/requirements.md)側の実行が失敗したことにはせず、「その日は正常に0件と判断した」結果として扱う(CI失敗やPR作成失敗とは区別する。daily-publish/design.md#エラーハンドリング参照)。話題の関連性フィルタで除外された候補は「実在する候補」に含めない(除外は正常な判定結果であり、収集失敗とは異なる)
+- 実在する候補(基準未達の候補を含む)が1件もない場合のみ記事生成をスキップする(処理フロー参照)。これは[daily-publish](../daily-publish/requirements.md)側の実行が失敗したことにはせず、「その日は正常に0件と判断した」結果として扱う(CI失敗やPR作成失敗とは区別する。daily-publish/design.md#エラーハンドリング参照)。話題の関連性フィルタ・掲載済み記事の除外・情報源内の重複抑制・個人ブログの本文量による除外で外れた候補は「実在する候補」に含めない(いずれも正常な判定結果であり、収集失敗とは異なる)
 - Zennのいいね数取得元である公開ページのHTML構造が変わり、いいね数を読み取れない場合はその記事を候補から除外する(誤った数値で誤判定するより、除外の方が安全なため)
+- LangChain公式ブログのフィードURLはGhost時代の`/rss/`(HTMLを返す壊れURL)からWebflow移行後の`/rss.xml`に修正した(2026-08。`fetchAllCandidates`はフィードがHTMLでも例外にならず空配列を返すため、無言で候補ゼロが続いていた。requirements.md#情報源の健全性監視-2のログ出力はこの再発を早く気づくための対策)
 
 ## 関連するファイル(抜粋)
 
@@ -119,7 +154,7 @@ app/ai-dev-digest/lib/watchlistTypes.ts (新規: 型定義)
 app/ai-dev-digest/lib/candidateTypes.ts (新規: Candidate/SelectionResultの型定義)
 app/ai-dev-digest/lib/selection.ts (新規: 採用基準判定・1日分の選定ロジック。純粋関数でテスト可能)
 app/ai-dev-digest/lib/fetchCandidates.ts (新規: 各情報源への問い合わせ処理。YouTube Data API/RSS/Qiita API呼び出し)
-scripts/ai-dev-digest/collect-and-select.ts (新規: fetchCandidates+selectionを実行しJSONを標準出力するCLI。GitHub Actionsのワークフローから呼び出される)
+scripts/ai-dev-digest/collect-and-select.ts (fetchCandidates+selectionを実行しJSONを標準出力するCLI。掲載済み記事URLの読み込み(content/ai-dev-digest/articles/*.json)もここで行う。GitHub Actionsのワークフローから呼び出される)
 ```
 
 `selection.ts`は入出力が純粋なデータ(候補配列→選定結果)のみで、Supabaseやファイル入出力を持たないため、通常のvitestで完全にテストできる。`fetchCandidates.ts`は外部APIへのHTTP呼び出しを伴うため、レスポンス形状のパース・エラー処理のみをモックしたテストの対象とし、実際の外部通信を伴う疎通確認は日次実行結果(daily-publish)で代替する。
@@ -133,4 +168,5 @@ scripts/ai-dev-digest/collect-and-select.ts (新規: fetchCandidates+selection�
 
 - 標準出力(stdout)は[daily-publish](../daily-publish/design.md)がそのままパースする選定結果JSON専用とし、ログ用途には使わない
 - 収集・選定の実行結果として、情報源ごとの取得件数・基準を満たした件数・基準未達で補った件数・スキップした情報源(取得失敗)を標準エラー出力(stderr)に記録する(GitHub Actionsのワークフロー実行ログとして残る)
+- 上記の情報源ごとの取得件数のうち、0件だった情報源は警告(`WARN`)と分かる形で出力する(requirements.md#情報源の健全性監視-2。フィード廃止・URL変更で無言停止した情報源を月次見直しで拾えるようにする)
 - 候補不足によるスキップが発生した場合はその旨を明確に標準エラー出力(stderr)へ記録する。daily-publish側は標準出力のJSONの`status`フィールドを見てPRを作成しない判断に使う
