@@ -12,7 +12,7 @@
   - 🟢 `app/ai-dev-digest/lib/candidateTypes.ts`に`Candidate`/`SelectionResult`を定義する
 
 - Task 3: 採用基準の判定(仕様: requirements.md#採用基準-4〜8)
-  - 🔴 公式組織・Simon Willisonブログは常に基準を満たすこと、YouTube動画は直近平均×倍率を上回る場合のみ満たすこと、Qiita/Zennはいいね数の閾値で判定されることを、種別ごとにテストで確認する
+  - 🔴 公式組織・個人ブログ(`individual-blog`)は常に基準を満たすこと、YouTube動画は直近平均×倍率を上回る場合のみ満たすこと、Qiita/Zennはいいね数の閾値で判定されることを、種別ごとにテストで確認する
   - 🟢 `app/ai-dev-digest/lib/selection.ts`に`meetsCriteria(candidate, criteria): boolean`を実装する
   - 🔵 乖離内容の文言生成(`describeShortfall`)を切り出す
 
@@ -61,6 +61,7 @@
 - Task 11: 個人YouTubeの直近複数本評価(仕様: requirements.md#採用基準-5、design.md「情報源から候補を収集する処理」「採用基準を判定する処理」)
   - 🔴 個人YouTubeチャンネルで直近`youtubeCandidateVideoCount`本が候補になること、各候補が候補群より後の`youtubeRecentVideoWindow`本の平均×`youtubeAboveAverageRatio`と比較されること、公式組織YouTubeは従来どおり最新1本のみであることをテストする
   - 🟢 `fetchYoutubeCandidates`を直近`youtubeCandidateVideoCount`本を候補にするよう変更する。`Criteria`型に`youtubeCandidateVideoCount: number`、`criteria.json`に`5`を追加する
+  - `app/ai-dev-digest/lib/candidateTypes.ts`の`recentAverageViews`のコメントを「候補群を除いた直後の`youtubeRecentVideoWindow`本の平均」に同期する
 
 - Task 12: Qiitaの対象期間の変更(仕様: requirements.md#採用基準-7、design.md「情報源から候補を収集する処理」)
   - 🔴 公開後`qiitaMaxAgeDays`日以内の記事のみが候補になること、期間外の記事は除外されること、いいね数判定は従来どおり`qiitaMinLikes`であることをテストする
