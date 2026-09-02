@@ -45,6 +45,19 @@ const CLAUDE_BIN = process.env.BGR_CLAUDE_BIN || 'claude'
 const ALLOWED_TOOLS = 'Read,Glob,Grep'
 const CLAUDE_TIMEOUT_MS = 1000 * 60 * 10
 
+// 運営者が管理画面(DraftReviewCard の「生成に失敗しました: {error_message}」)で読むための日本語要約を持つエラー。
+// 生のエラー詳細(スタック・Supabase/claude の英文)は console(ログファイル)にのみ出し、
+// DB の error_message には operatorMessage(運営者が読んで対処できる日本語)を入れる(design.md「エラーハンドリング」「ログ」)。
+class RegistrationError extends Error {
+  constructor(
+    readonly operatorMessage: string,
+    readonly technicalDetail?: unknown
+  ) {
+    super(operatorMessage)
+    this.name = 'RegistrationError'
+  }
+}
+
 type GameRequestRow = {
   id: string
   photo_paths: string[]
@@ -124,14 +137,17 @@ async function downloadPhotos(
   for (const [index, remotePath] of photoPaths.entries()) {
     const { data, error } = await supabase.storage.from(PHOTOS_BUCKET).download(remotePath)
     if (error || !data) {
-      throw new Error(`写真の取得に失敗しました(${remotePath}): ${error?.message ?? '該当なし'}`)
+      throw new RegistrationError(
+        '依頼の写真を取得できませんでした(写真が削除された可能性があります)',
+        `写真の取得に失敗しました(${remotePath}): ${error?.message ?? '該当なし'}`
+      )
     }
     const ext = path.extname(remotePath) || '.jpg'
     const localName = `photo-${index}${ext}`
     fs.writeFileSync(path.join(workDir, localName), Buffer.from(await data.arrayBuffer()))
     localNames.push(localName)
   }
-  if (localNames.length === 0) throw new Error('依頼に写真が添付されていません')
+  if (localNames.length === 0) throw new RegistrationError('依頼に写真が添付されていません')
   return localNames
 }
 
@@ -247,10 +263,21 @@ async function main() {
     ).catch((error: unknown) => {
       const withStdout = error as { stdout?: string }
       if (withStdout.stdout) return { stdout: withStdout.stdout }
-      throw new Error(`claude -p の起動に失敗しました: ${(error as Error).message}`)
+      throw new RegistrationError(
+        'ローカルのClaude Code(claude -p)を起動できませんでした',
+        `claude -p の起動に失敗しました: ${(error as Error).message}`
+      )
     })
 
-    const draft = parseDraft(stdout)
+    let draft: Record<string, unknown>
+    try {
+      draft = parseDraft(stdout)
+    } catch (error) {
+      throw new RegistrationError(
+        'Claude Codeの出力からゲーム情報を読み取れませんでした(写真が不鮮明な可能性があります)',
+        error
+      )
+    }
 
     // 初回かつ紹介画像0枚なら自動補完し、依頼行の intro_photo_paths を書き戻す(design.md 手順5)
     if (!isRevision && (req.intro_photo_paths?.length ?? 0) === 0) {
@@ -284,15 +311,28 @@ async function main() {
         status: 'draft',
       })
       .eq('id', req.id)
-    if (updateError) throw new Error(`下書きの保存に失敗しました: ${updateError.message}`)
+    if (updateError) {
+      throw new RegistrationError(
+        '生成した下書きの保存に失敗しました',
+        `下書きの保存に失敗しました: ${updateError.message}`
+      )
+    }
 
     console.log(`依頼 ${req.id} の下書きを生成しました(status=draft, round=${round})`)
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    console.error(`依頼 ${req.id} の処理に失敗しました: ${message}`)
+    // 運営者向け(DBの error_message → DraftReviewCard で表示): 日本語の要約のみ。
+    // 技術詳細(生エラー・スタック)は console(ログファイル)にのみ残す(design.md「エラーハンドリング」「ログ」)
+    const operatorMessage =
+      error instanceof RegistrationError
+        ? error.operatorMessage
+        : '写真の解析中に予期しないエラーが発生しました'
+    const technicalDetail =
+      error instanceof RegistrationError ? error.technicalDetail : error
+    console.error(`依頼 ${req.id} の処理に失敗しました: ${operatorMessage}`)
+    if (technicalDetail !== undefined) console.error('原因の詳細:', technicalDetail)
     await supabase
       .from('board_game_rules_game_requests')
-      .update({ status: 'failed', error_message: message })
+      .update({ status: 'failed', error_message: operatorMessage })
       .eq('id', req.id)
   } finally {
     fs.rmSync(workDir, { recursive: true, force: true })

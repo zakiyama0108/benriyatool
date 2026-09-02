@@ -18,7 +18,9 @@ export async function fetchReports(): Promise<Report[]> {
     .select('id, game_id, reason, created_at')
     .order('created_at', { ascending: false })
   if (error) {
-    throw new Error(`通報一覧の取得に失敗しました: ${error.message}`)
+    // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+    console.error('通報一覧の取得に失敗しました', error)
+    throw new Error('通報一覧の取得に失敗しました。時間をおいて再読み込みしてください。')
   }
   return ((data ?? []) as ReportRow[]).map((row) => ({
     id: row.id,

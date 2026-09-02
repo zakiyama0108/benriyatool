@@ -243,13 +243,14 @@ describe('【管理画面】「登録実行」でローカル処理の起動を�
     expect(updateMock).not.toHaveBeenCalled()
   })
 
-  it('UPDATEに失敗した場合、失敗が分かる結果を返すこと', async () => {
+  it('UPDATEに失敗した場合、生の英文ではなく日本語の定型文を返すこと(生詳細はログへ)', async () => {
     updateEqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
 
     const result = await triggerRegistration('req-1', 'pending')
 
     expect(result.ok).toBe(false)
-    expect(result.error).toContain('permission denied')
+    expect(result.error).toContain('登録実行に失敗しました')
+    expect(result.error).not.toContain('permission denied')
   })
 })
 
@@ -276,12 +277,14 @@ describe('【管理画面】「再調整を依頼」で要望を残してロー�
     expect(updateMock).not.toHaveBeenCalled()
   })
 
-  it('UPDATEに失敗した場合、失敗が分かる結果を返すこと', async () => {
+  it('UPDATEに失敗した場合、生の英文ではなく日本語の定型文を返すこと(生詳細はログへ)', async () => {
     updateEqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
 
     const result = await requestRevision('req-1', 'なおして', 'draft')
 
     expect(result.ok).toBe(false)
+    expect(result.error).toContain('再調整の依頼に失敗しました')
+    expect(result.error).not.toContain('permission denied')
   })
 })
 
@@ -314,13 +317,15 @@ describe('【管理画面】「公開する」で下書き内容をゲームと�
     expect(updateEqMock).toHaveBeenCalledWith('id', 'req-1')
   })
 
-  it('ゲームのINSERTに失敗した場合、依頼のUPDATEを行わず失敗を返すこと', async () => {
+  it('ゲームのINSERTに失敗した場合、依頼のUPDATEを行わず、生の英文ではなく日本語の定型文を返すこと', async () => {
     insertSingleMock.mockResolvedValue({ data: null, error: { message: 'insert failed' } })
 
     const result = await publishDraft(makeGameRequest())
 
     expect(result.ok).toBe(false)
     expect(updateMock).not.toHaveBeenCalled()
+    expect(result.error).toContain('公開に失敗しました')
+    expect(result.error).not.toContain('insert failed')
   })
 
   it('簡単版ルールの文字数上限CHECK違反のときは、どの項目が長すぎるかが分かる文言を返すこと', async () => {
@@ -347,12 +352,14 @@ describe('【管理画面】「公開する」で下書き内容をゲームと�
     expect(updateArg.status).toBe('published')
   })
 
-  it('後段の依頼UPDATEに失敗した場合、失敗を返すこと(次回押下時に冪等再実行できる)', async () => {
+  it('後段の依頼UPDATEに失敗した場合、生の英文ではなく日本語の定型文を返すこと(次回押下時に冪等再実行できる)', async () => {
     updateEqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
 
     const result = await publishDraft(makeGameRequest())
 
     expect(result.ok).toBe(false)
+    expect(result.error).toContain('依頼の状態更新に失敗しました')
+    expect(result.error).not.toContain('permission denied')
   })
 
   it('INSERT成功 → published_game_id永続化成功 → 後段UPDATE失敗 のあと、再押下では再INSERTせず後段UPDATEのみ実行して公開済みにできること', async () => {

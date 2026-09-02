@@ -124,7 +124,8 @@ function mapRow(row: GameRequestRow): GameRequest {
   }
 }
 
-// Web側の操作結果。失敗時は運営者に見せるエラー文言を持つ(design.md「エラーハンドリング」)
+// Web側の操作結果。失敗時は運営者に見せる日本語の定型文を持つ(design.md「エラーハンドリング」。
+// 生のSupabase/JSエラー詳細は画面に出さず console.error に残す)
 export type RequestMutationResult = { ok: boolean; error?: string }
 
 // 登録依頼を未処理優先・次いで新しい順に取得する(仕様: admin/design.md「登録依頼を確認する処理」)。
@@ -136,7 +137,9 @@ export async function fetchGameRequests(): Promise<GameRequest[]> {
     .order('processed_at', { ascending: true, nullsFirst: true })
     .order('created_at', { ascending: false })
   if (error) {
-    throw new Error(`登録依頼一覧の取得に失敗しました: ${error.message}`)
+    // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+    console.error('登録依頼一覧の取得に失敗しました', error)
+    throw new Error('登録依頼一覧の取得に失敗しました。時間をおいて再読み込みしてください。')
   }
   return ((data ?? []) as GameRequestRow[]).map(mapRow)
 }
@@ -168,10 +171,16 @@ export async function triggerRegistration(
       .from('board_game_rules_game_requests')
       .update({ status: 'queued' })
       .eq('id', id)
-    if (error) return { ok: false, error: error.message }
+    if (error) {
+      // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+      console.error('登録実行(status=queued への更新)に失敗しました', error)
+      return { ok: false, error: '登録実行に失敗しました。時間をおいて再度お試しください。' }
+    }
     return { ok: true }
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) }
+    // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+    console.error('登録実行に失敗しました', e)
+    return { ok: false, error: '登録実行に失敗しました。時間をおいて再度お試しください。' }
   }
 }
 
@@ -192,14 +201,21 @@ export async function requestRevision(
       .from('board_game_rules_game_requests')
       .update({ revision_note: note, status: 'queued' })
       .eq('id', id)
-    if (error) return { ok: false, error: error.message }
+    if (error) {
+      // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+      console.error('再調整の依頼(revision_note の保存)に失敗しました', error)
+      return { ok: false, error: '再調整の依頼に失敗しました。時間をおいて再度お試しください。' }
+    }
     return { ok: true }
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) }
+    // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+    console.error('再調整の依頼に失敗しました', e)
+    return { ok: false, error: '再調整の依頼に失敗しました。時間をおいて再度お試しください。' }
   }
 }
 
-// 文字数上限CHECK違反時に、どの項目が長すぎるかが分かる文言へ変換する
+// 公開時のエラーを運営者向けの日本語文言へ変換する。文字数上限CHECK違反はどの項目が長すぎるかを示し、
+// それ以外は生の英文を出さず日本語の定型文にする
 // (仕様: admin/design.md「エラーハンドリング」。下書き側には上限CHECKがなく公開時に初めて顕在化する)
 function describePublishError(message: string): string {
   if (message.includes('rules_simple')) {
@@ -208,7 +224,7 @@ function describePublishError(message: string): string {
   if (message.includes('rules_detailed')) {
     return '詳しい版ルールが文字数上限(40000字)を超えています。「再調整を依頼」で短くするよう伝えてください。'
   }
-  return `ゲームの登録に失敗しました: ${message}`
+  return 'ゲームの公開に失敗しました。時間をおいて再度お試しください。'
 }
 
 // 「公開する」で下書きの内容を board_game_rules_games へINSERTし、対応する依頼を公開済みにする
@@ -250,7 +266,9 @@ export async function publishDraft(
         .select('id')
         .single()
       if (error || !data) {
-        return { ok: false, error: describePublishError(error?.message ?? 'ゲームの登録に失敗しました') }
+        // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+        console.error('ゲームの公開(board_game_rules_games へのINSERT)に失敗しました', error)
+        return { ok: false, error: describePublishError(error?.message ?? '') }
       }
       const inserted: { id: string } = data
       gameId = inserted.id
@@ -261,7 +279,12 @@ export async function publishDraft(
         .update({ published_game_id: gameId })
         .eq('id', request.id)
       if (linkError) {
-        return { ok: false, error: `依頼の更新に失敗しました: ${linkError.message}` }
+        // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+        console.error('公開後の published_game_id の永続化に失敗しました', linkError)
+        return {
+          ok: false,
+          error: 'ゲームは登録されましたが依頼の状態更新に失敗しました。もう一度「公開する」を押してください。',
+        }
       }
     }
     // 依頼を公開済みにする後段UPDATE。再押下時(published_game_id 検出でINSERTをスキップした場合)は
@@ -275,10 +298,17 @@ export async function publishDraft(
       })
       .eq('id', request.id)
     if (updateError) {
-      return { ok: false, error: `依頼の更新に失敗しました: ${updateError.message}` }
+      // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+      console.error('公開後の依頼の状態更新(processed_at・status=published)に失敗しました', updateError)
+      return {
+        ok: false,
+        error: 'ゲームは登録されましたが依頼の状態更新に失敗しました。もう一度「公開する」を押してください。',
+      }
     }
     return { ok: true, gameId }
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) }
+    // eslint-disable-next-line no-console -- 原因究明用(design.md#ログ)
+    console.error('ゲームの公開に失敗しました', e)
+    return { ok: false, error: 'ゲームの公開に失敗しました。時間をおいて再度お試しください。' }
   }
 }
