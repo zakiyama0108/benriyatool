@@ -90,7 +90,7 @@ export default function GameRequestsView({
                     key={path}
                     href={getGamePhotoUrl(path)}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="block cursor-pointer transition hover:opacity-80"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- 公開Storageの外部URLをそのまま表示する(next/image最適化は不要) */}
@@ -137,7 +137,7 @@ export default function GameRequestsView({
                       key={photo.path}
                       href={photo.url}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="block cursor-pointer transition hover:opacity-80"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element -- 非公開Storageの署名付きURLをそのまま表示する */}
