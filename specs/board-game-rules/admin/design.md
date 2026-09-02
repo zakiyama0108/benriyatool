@@ -74,13 +74,13 @@
   4. 取得に失敗した場合は、一覧を表示せずエラー表示にする(後述エラーハンドリング)
 - 関連するビジネスルール: requirements.md#登録依頼の確認-8、requirements.md#登録依頼の確認-9、requirements.md#ゲーム紹介画像の確認・自動補完-11
 
-### 登録依頼を処理済みにする処理 / 削除する処理
+### 登録依頼を削除する処理
 - 対象: `board_game_rules_game_requests`のレコード
 - 手順:
-  1. **処理済みにする**: 「公開する」を経由せず外部の手動フォールバック(`scripts/board-game-rules/registerGame.ts`)でゲームを登録した依頼について、運営者が「処理済みにする」を押すと`processed_at`に現在時刻をセットするUPDATEを行う(`markGameRequestProcessed`。requirements.md#登録依頼の確認-22)。通常の下書きレビュー経由の公開では「登録実行・下書きレビューの処理」手順4が`processed_at`を自動でセットするため、この操作は手動フォールバック運用のための補助導線
-  2. **削除する**: 不要な依頼(スパム・重複・情報不足など)は依頼そのものをDELETEする(`deleteGameRequest`。requirements.md#登録依頼の確認-10)。下書きの有無にかかわらず削除操作は共通(「登録実行・下書きレビューの処理」手順8「破棄」と同じ操作)
-  3. いずれも運営者が明示的に行う操作のため、処理中は該当操作を無効化し、成功したら一覧を更新、失敗したら失敗表示にする
-- 関連するビジネスルール: requirements.md#登録依頼の確認-10、requirements.md#登録依頼の確認-22
+  1. **削除する**: 不要な依頼(スパム・重複・情報不足など)は依頼そのものをDELETEする(`deleteGameRequest`。requirements.md#登録依頼の確認-10)。下書きの有無にかかわらず削除操作は共通(「登録実行・下書きレビューの処理」手順8「破棄」と同じ操作)。登録も公開もしない依頼(重複など、キューから外したいだけのもの)もこの削除で対応する
+  2. 運営者が明示的に行う操作のため、処理中は該当操作を無効化し、成功したら一覧を更新、失敗したら失敗表示にする
+- 補足: 依頼の`processed_at`(処理済み)は、下書きレビュー経由の「公開する」(「登録実行・下書きレビューの処理」手順4)と、手動フォールバックの`scripts/board-game-rules/registerGame.ts`(`requestId`指定時)がそれぞれ自動でセットするため、管理画面から手動で処理済みにする操作・関数は持たない。一覧の「処理済み/未処理」バッジはこの`processed_at`をそのまま表示する
+- 関連するビジネスルール: requirements.md#登録依頼の確認-10
 
 ### 登録実行・下書きレビューの処理
 - 対象: 運営者が選んだ1件の登録依頼(`board_game_rules_game_requests`)
@@ -148,18 +148,18 @@ stateDiagram-v2
 ## エラーハンドリング
 - 画面の状態は「未ログイン」「ログイン済みだが権限なし」「権限あり」「取得エラー」に切り分ける(`ikukyu/admin`と同一方針)
 - 一般利用者向けの保存(お気に入り等)は失敗を握りつぶす方針だが、管理画面は運営者がモデレーションする画面のため、データ取得の失敗は握りつぶさず画面に伝える(空一覧では取得失敗と0件の区別ができないため)
-- 登録依頼の処理済みマーク/削除、登録実行/公開する/再調整を依頼は運営者が明示的に行う操作のため、失敗時は失敗が分かる表示をする。処理中は該当操作を無効化し二重実行を防ぐ(ゲームの編集・削除・コメント削除の失敗処理は詳細画面側。[game-detail/design.md](../game-detail/design.md))。ローカル環境の定期処理自体の失敗は上記「登録実行・下書きレビューの処理」手順7の`error_message`表示で扱う(Web側の操作失敗とは別系統)
+- 登録依頼の削除、登録実行/公開する/再調整を依頼は運営者が明示的に行う操作のため、失敗時は失敗が分かる表示をする。処理中は該当操作を無効化し二重実行を防ぐ(ゲームの編集・削除・コメント削除の失敗処理は詳細画面側。[game-detail/design.md](../game-detail/design.md))。ローカル環境の定期処理自体の失敗は上記「登録実行・下書きレビューの処理」手順7の`error_message`表示で扱う(Web側の操作失敗とは別系統)
 - 「公開する」のINSERTが`board_game_rules_games`の文字数上限CHECK(`rules_simple`・`rules_detailed`)違反で失敗した場合は、どの項目が長すぎるかが分かる表示をし、「再調整を依頼」で短縮を依頼できるよう促す(下書きは`board_game_rules_game_requests`側に上限CHECKを持たないため、超過は公開時に初めて顕在化する。[adr/0002](../adr/0002-operator-publish-insert.md)影響欄)
 
 ## 関連するファイル(抜粋)
 ```
 app/board-game-rules/admin/page.tsx (管理画面本体。共通レイアウト(BoardGameNav active="admin" + パンくず)の枠内で、ログイン・権限で出し分け、通報一覧・登録依頼一覧を表示するクライアント画面。配色・カード・ボタンは他画面と同じ bgr-* トークンに揃える)
 app/board-game-rules/admin/lib/fetchReports.ts (通報一覧の取得)
-app/board-game-rules/admin/lib/gameRequests.ts (登録依頼の一覧取得・processed_at更新・削除・登録実行/再調整のstatus更新・公開時のgames INSERT)
+app/board-game-rules/admin/lib/gameRequests.ts (登録依頼の一覧取得・削除・登録実行/再調整のstatus更新・公開時のgames INSERTと依頼のprocessed_at/status更新)
 app/board-game-rules/admin/lib/photos.ts (登録依頼の非公開Storageの元写真を運営者本人として署名付きURLで取得。「写真を確認」操作から呼ばれる)
 app/board-game-rules/admin/components/LoginScreen.tsx (ログイン/権限なしの案内。共通デザインのカード・ボタン体裁に揃える)
 app/board-game-rules/admin/components/ReportsView.tsx (通報一覧。各通報に対象ゲームの詳細画面への遷移リンクを出す)
-app/board-game-rules/admin/components/GameRequestsView.tsx (登録依頼一覧+写真プレビュー+ゲーム紹介画像プレビュー+処理済みマーク/削除の導線)
+app/board-game-rules/admin/components/GameRequestsView.tsx (登録依頼一覧+写真プレビュー+ゲーム紹介画像プレビュー+処理済み/未処理バッジ+削除の導線)
 app/board-game-rules/admin/components/DraftReviewCard.tsx (依頼1件の状況表示+下書き内容+公開する/再調整を依頼/破棄の導線+再調整履歴)
 app/board-game-rules/components/AdminNavLink.tsx (共通ナビ内の運営者専用の管理画面導線。useSession + isAuthorizedAdmin で出し分けるクライアント島。BoardGameNav から渡る active を受け取り、管理画面表示中は現在地(aria-current="page")として描画する)
 app/board-game-rules/components/BoardGameNav.tsx (nav末尾に AdminNavLink を差し込み、active が admin かどうかを AdminNavLink へ渡す。BoardGameNavKey に admin を追加。サーバーコンポーネントのまま。実装は [game-list/design.md](../game-list/design.md) が真実の源)
@@ -266,7 +266,7 @@ T0(ゲーム紹介画像バケット設定適用)の実機確認:
 
 本文の中身は、権限ありの状態では1画面に縦に並べる(PC中心・スマホでも破綻しない範囲。requirements.md#非機能要件-1)。ゲーム個別の編集・削除・元写真照合・紹介画像差し替え・コメント削除は詳細画面(game-detail)の管理者導線で行うため、本画面には持たない:
 - 上部: ログイン中のアカウント表示とログアウト操作
-- 登録依頼一覧(`GameRequestsView`): 未処理を優先・次いで新しい順。写真プレビュー・ゲーム紹介画像プレビュー(0枚なら「紹介画像なし(登録時に自動補完されます)」の案内)・入力済み分類情報を表示。処理済みマーク・削除の導線。各依頼は`status`(未着手/処理中/下書きあり/公開済み/失敗)のバッジと、状態に応じた操作(`DraftReviewCard`)を持つ:
+- 登録依頼一覧(`GameRequestsView`): 未処理を優先・次いで新しい順。写真プレビュー・ゲーム紹介画像プレビュー(0枚なら「紹介画像なし(登録時に自動補完されます)」の案内)・入力済み分類情報を表示。処理済み/未処理バッジ(`processed_at`をそのまま表示)と削除の導線。各依頼は`status`(未着手/処理中/下書きあり/公開済み/失敗)のバッジと、状態に応じた操作(`DraftReviewCard`)を持つ:
   - 未着手・失敗: 「登録実行」ボタン(失敗時はあわせて`error_message`を表示)
   - 処理中(queued/running): 進行中の表示のみ(操作は無効化)
   - 下書きあり: 下書きの内容(ゲーム名・対応人数・プレイ時間・ジャンル・簡単版ルールの抜粋)、「公開する」「再調整を依頼」ボタン、再調整の要望入力欄、再調整履歴(新しい順)
@@ -291,7 +291,7 @@ flowchart LR
 
 ## 状態管理
 - 管理画面(`page.tsx`)は「ログインセッション」「閲覧権限の判定結果」「取得した通報一覧・登録依頼一覧」「取得/操作状態」をローカル状態として持つ(`ikukyu/admin`と同一方針)。複数画面をまたがないためグローバルな状態管理は使わない
-- 画面の4状態(未ログイン/権限なし/権限あり/取得エラー)の遷移は`ikukyu/admin/design.md#状態管理`の状態遷移図と同一構造(対象データが本アプリのテーブルに変わり、操作に登録依頼の処理済みマーク/削除が加わる)
+- 画面の4状態(未ログイン/権限なし/権限あり/取得エラー)の遷移は`ikukyu/admin/design.md#状態管理`の状態遷移図と同一構造(対象データが本アプリのテーブルに変わり、操作に登録依頼の削除が加わる)
 
 ```mermaid
 stateDiagram-v2
@@ -300,7 +300,7 @@ stateDiagram-v2
     未ログイン --> 権限なし: ログイン成功・許可リストに登録なし
     権限あり --> 取得エラー: データ取得に失敗
     取得エラー --> 権限あり: 再試行して取得に成功
-    権限あり --> 権限あり: 登録依頼の処理済みマーク/削除で再取得
+    権限あり --> 権限あり: 登録依頼の削除で再取得
     権限あり --> 未ログイン: ログアウト
     権限なし --> 未ログイン: ログアウト
 ```

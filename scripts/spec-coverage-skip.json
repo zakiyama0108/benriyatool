@@ -2922,7 +2922,7 @@
   {
     "specFile": "board-game-rules/admin/requirements.md",
     "item": "アクセス制御・権限 [3]",
-    "reason": "本管理画面・詳細画面の管理者導線が書き込み操作を認める例外である旨の根拠記述で、実際の書き込み操作(ゲーム編集・削除・コメント削除・紹介画像差し替え)はgame-detail specの管理者導線側のテストで、登録依頼の処理済みマーク/削除はgameRequests.test.ts・page.test.tsxでテスト済みのため、本項目自体に対応する単体テストは持たない"
+    "reason": "本管理画面・詳細画面の管理者導線が書き込み操作を認める例外である旨の根拠記述で、実際の書き込み操作(ゲーム編集・削除・コメント削除・紹介画像差し替え)はgame-detail specの管理者導線側のテストで、登録依頼の削除・登録実行/公開/再調整のstatus更新はgameRequests.test.ts・page.test.tsxでテスト済みのため、本項目自体に対応する単体テストは持たない"
   },
   {
     "specFile": "board-game-rules/admin/requirements.md",

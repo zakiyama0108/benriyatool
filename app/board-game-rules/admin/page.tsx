@@ -7,7 +7,6 @@ import { fetchPublishedGames } from '../lib/games'
 import { fetchReports, type Report } from './lib/fetchReports'
 import {
   fetchGameRequests,
-  markGameRequestProcessed,
   deleteGameRequest,
   triggerRegistration,
   requestRevision,
@@ -67,7 +66,7 @@ export default function AdminPage() {
   const [gameNames, setGameNames] = useState<Record<string, string>>({})
   const [dataError, setDataError] = useState(false)
   const [loading, setLoading] = useState(false)
-  // 処理済みマーク・削除など各操作の成功後にインクリメントし、下のeffectを再実行して最新化する
+  // 削除・登録実行・公開など各操作の成功後にインクリメントし、下のeffectを再実行して最新化する
   const [reloadCount, setReloadCount] = useState(0)
 
   useEffect(() => {
@@ -130,11 +129,6 @@ export default function AdminPage() {
 
   function reload() {
     setReloadCount((n) => n + 1)
-  }
-
-  async function handleMarkProcessed(id: string) {
-    const ok = await markGameRequestProcessed(id)
-    if (ok) reload()
   }
 
   async function handleDeleteRequest(id: string) {
@@ -239,7 +233,6 @@ export default function AdminPage() {
             <h2 className="font-heading text-lg font-bold text-bgr-heading">登録依頼</h2>
             <GameRequestsView
               requests={requests}
-              onMarkProcessed={handleMarkProcessed}
               onDelete={handleDeleteRequest}
               onViewPhotos={fetchOriginalPhotos}
               onTrigger={handleTrigger}

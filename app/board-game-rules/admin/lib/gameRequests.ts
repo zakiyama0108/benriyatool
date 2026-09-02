@@ -141,20 +141,7 @@ export async function fetchGameRequests(): Promise<GameRequest[]> {
   return ((data ?? []) as GameRequestRow[]).map(mapRow)
 }
 
-// 外部ツールでの登録が完了した依頼を処理済みにする(仕様: admin/design.md「登録依頼を処理済みにする処理」)
-export async function markGameRequestProcessed(id: string): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('board_game_rules_game_requests')
-      .update({ processed_at: new Date().toISOString() })
-      .eq('id', id)
-    return !error
-  } catch {
-    return false
-  }
-}
-
-// 不要な登録依頼(スパム・重複・情報不足など)を削除する(仕様: admin/design.md「削除する処理」)
+// 不要な登録依頼(スパム・重複・情報不足など)を削除する(仕様: admin/design.md「登録依頼を削除する処理」)
 export async function deleteGameRequest(id: string): Promise<boolean> {
   try {
     const { error } = await supabase.from('board_game_rules_game_requests').delete().eq('id', id)

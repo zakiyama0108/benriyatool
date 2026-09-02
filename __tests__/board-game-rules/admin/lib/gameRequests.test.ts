@@ -47,7 +47,6 @@ vi.mock('../../../../app/lib/supabaseClient', () => ({ supabase: { from: fromMoc
 
 import {
   fetchGameRequests,
-  markGameRequestProcessed,
   deleteGameRequest,
   triggerRegistration,
   requestRevision,
@@ -208,27 +207,6 @@ describe('【管理画面】登録依頼一覧を取得する - 未処理を優�
     const requests = await fetchGameRequests()
 
     expect(requests[0].introPhotoPaths).toEqual(['req-1/0.jpg', 'req-1/1.jpg'])
-  })
-})
-
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-22、specs/board-game-rules/admin/design.md#登録依頼を処理済みにする処理 / 削除する処理
-describe('【管理画面】登録依頼を処理済みにする', () => {
-  it('processed_atに現在時刻をセットするUPDATEが実行されtrueが返ること', async () => {
-    const result = await markGameRequestProcessed('req-1')
-
-    expect(result).toBe(true)
-    expect(fromMock).toHaveBeenCalledWith('board_game_rules_game_requests')
-    const arg = updateMock.mock.calls[0][0] as { processed_at: string }
-    expect(typeof arg.processed_at).toBe('string')
-    expect(updateEqMock).toHaveBeenCalledWith('id', 'req-1')
-  })
-
-  it('UPDATEに失敗した場合、falseが返ること', async () => {
-    updateEqMock.mockResolvedValue({ data: null, error: { message: 'permission denied' } })
-
-    const result = await markGameRequestProcessed('req-1')
-
-    expect(result).toBe(false)
   })
 })
 
@@ -404,7 +382,7 @@ describe('【管理画面】「公開する」で下書き内容をゲームと�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-10
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-10、specs/board-game-rules/admin/design.md#登録依頼を削除する処理
 describe('【管理画面】不要な登録依頼を削除する', () => {
   it('対象依頼のDELETEが実行されtrueが返ること', async () => {
     const result = await deleteGameRequest('req-1')
