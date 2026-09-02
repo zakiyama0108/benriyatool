@@ -215,7 +215,7 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 - `is_official`列を撤廃する(全ゲームが運営者経由でのみ登録される前提になり、区別の意味がなくなったため)
 - `release_year int`列を追加する(発売年、任意)
 - `genre text`(単一)を`genres text[]`(複数)に変更し、CHECK制約で固定リストの値のみで構成されることを担保する
-- `board_game_rules_games`へのINSERTを許可するのは、運営者のローカル登録ツール(service_role相当の権限)と、運営者本人のログインセッション(「公開する」操作。ポリシーは下記「追加マイグレーション(登録実行・下書きレビュー)」、根拠は[adr/0002](../adr/0002-operator-publish-insert.md))のみ。anon・運営者以外のauthenticatedからの直接INSERT経路は持たない(このマイグレーションで従来のanon向けINSERTポリシーをDROPする)
+- `board_game_rules_games`へのINSERTを許可するのは、運営者のローカル登録ツール(service_role相当の権限)と、運営者本人のログインセッション(「公開する」操作。ポリシーは下記「追加マイグレーション(登録実行・下書きレビュー)」、根拠は[adr/0002](../adr/0002-operator-publish-insert.md))のみ。anon・運営者以外のauthenticatedからの直接INSERT経路は持たない(`board_game_rules_games`にはanon・運営者以外へINSERTを許可するポリシーを設けない)
 - `intro_photo_paths text[] not null default '{}'`列を追加する(ゲーム紹介画像、公開Storageバケットのパス。順序付きで先頭がメイン画像。requirements.md#ゲーム紹介画像の取り扱い-10)。`photo_paths`(元写真、非公開)とは異なり、この列は**公開列**としてanonのSELECT許可対象に含める(下記GRANT参照)。運営者は編集画面から差し替え・削除できる([admin/design.md](../admin/design.md))
 
 ### マイグレーション(実装より先に単独PRで適用)
@@ -320,7 +320,7 @@ grant insert on board_game_rules_game_requests to anon, authenticated;
 create policy "anyone can insert game request" on board_game_rules_game_requests
   for insert to anon, authenticated with check (true);
 
--- 確認・処理済みマーク・削除: 運営者本人のみ
+-- 確認・status等の更新(登録実行/下書きレビュー/公開時のprocessed_at)・削除: 運営者本人のみ
 grant select, update, delete on board_game_rules_game_requests to authenticated;
 create policy "admin can select game requests" on board_game_rules_game_requests
   for select to authenticated

@@ -16,10 +16,11 @@
 - design.md「追加マイグレーション」T0の実機確認(anonが`intro_photo_paths`を含めてSELECTできること・`photo_paths`は引き続き拒否されること、依頼INSERTで`intro_photo_paths`を渡せること)を行う
 - (TDD対象外: マイグレーションの適用と手動確認)
 
-## T0c. 追加マイグレーション適用(登録実行・下書きレビュー、実装より先に単独PRで適用)
+## T0c. 追加マイグレーション適用(登録実行・下書きレビュー)
 - `board_game_rules_game_requests`へ`status`/`draft_content`/`revision_note`/`revision_round`/`revision_history`/`error_message`/`published_game_id`を追加する`ALTER TABLE`マイグレーションを追加しCI適用する(design.md「追加マイグレーション(登録実行・下書きレビュー)」)
 - `board_game_rules_games`へ運営者本人限定のINSERTポリシー(`admin can insert games`)を追加する
-- design.md「追加マイグレーション(登録実行・下書きレビュー)」T0の実機確認(`status`のデフォルト・CHECK制約、運営者本人のgames INSERT可・anon/authenticatedのINSERT不可、運営者本人による新カラムのUPDATE可)を行う
+- マイグレーションは`deploy.yml`のmigrateジョブがデプロイに先行して適用するため、実装(T2b・T4b)と同じPRに含めてよい
+- マージ後、design.md「追加マイグレーション(登録実行・下書きレビュー)」T0の実機確認(`status`のデフォルト・CHECK制約、運営者本人のgames INSERT可・anon/authenticatedのINSERT不可、運営者本人による新カラムのUPDATE可)を行う
 - (TDD対象外: マイグレーションの適用と手動確認)
 
 ## T1. ジャンルの固定選択肢(`lib/genres.ts`)
@@ -82,5 +83,5 @@
 
 ## 補足
 - 運営者側の「まとめて登録する処理」(ローカルツール・Skill)は本specのスコープ外。[admin/tasks.md](../admin/tasks.md)を参照
-- 依頼テーブルの一覧表示・処理済みマーク・削除操作(管理画面での確認)も[admin/tasks.md](../admin/tasks.md)側のタスク
+- 依頼テーブルの一覧表示・削除操作、および登録実行・下書きレビューに伴う`status`等の更新(管理画面での確認)も[admin/tasks.md](../admin/tasks.md)側のタスク
 - ゲーム紹介画像の公開URL変換(`lib/gamePhotos.ts`の`getGamePhotoUrl`)は[game-list/tasks.md](../game-list/tasks.md)で実装したものを、一覧・詳細・管理画面の各specが共有する(本specでは実装しない。登録依頼画面はアップロード前のプレビューのみのため不要)
