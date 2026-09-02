@@ -41,12 +41,11 @@ flowchart LR
     admin --> reviewDraft[生成された下書きを確認して公開する]
     admin --> requestRevision[下書きの再調整を依頼する]
     admin --> retryFailed[失敗した処理を再試行する]
-    admin --> markProcessed[登録依頼を処理済みにする]
     admin --> deleteRequest[不要な登録依頼を削除する]
     admin --> notified[新着登録依頼の通知を受け取る]
     admin --> navigate[共通ナビ・パンくずで他画面と回遊する]
 ```
-- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-6・requirements.md#通報の確認-7、登録依頼の一覧確認・削除はrequirements.md#登録依頼の確認-8・requirements.md#登録依頼の確認-10、手動フォールバック分の処理済みマークはrequirements.md#登録依頼の確認-22、登録実行の起動・下書き確認・公開・再調整・再試行はrequirements.md#登録実行・下書きレビュー-16〜21、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-11、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログイン・アクセス制御-5・requirements.md#画面レイアウト・回遊導線-13〜14に対応する
+- 利用できるのは運営者本人のみ(requirements.md#アクセス制御・権限-1)。通報の確認・遷移はrequirements.md#通報の確認-6・requirements.md#通報の確認-7、登録依頼の一覧確認・削除はrequirements.md#登録依頼の確認-8・requirements.md#登録依頼の確認-10、登録実行の起動・下書き確認・公開・再調整・再試行はrequirements.md#登録実行・下書きレビュー-16〜21、紹介画像の確認はrequirements.md#ゲーム紹介画像の確認・自動補完-11、通知はrequirements.md#通知-7、共通ナビ・パンくずでの回遊はrequirements.md#ログイン・アクセス制御-5・requirements.md#画面レイアウト・回遊導線-13〜14に対応する
 
 ## 機能要件
 
@@ -64,8 +63,7 @@ flowchart LR
 ### 登録依頼の確認
 - [8] 利用者から送信された登録依頼(写真+分類情報。[game-registration/requirements.md](../game-registration/requirements.md))を一覧で確認できる。未処理/処理済みを区別して表示する
 - [9] 依頼ごとに、投稿された写真・入力済み分類情報・添付のゲーム紹介画像を確認できる。この確認画面が下記「登録実行・下書きレビュー」[16]〜[21]の各操作の起点になる
-- [10] 不要な依頼(スパム・重複・情報不足など)を削除できる
-- [22] 外部の手動フォールバック(`registerGame.ts`。自動フローが止まった場合に使う)でゲームを登録した依頼を、管理画面から処理済みとして記録できる(下書きレビュー経由で「公開する」を押した場合は処理済みが自動で記録されるため、この操作は手動フォールバック運用のための補助)
+- [10] 不要な依頼(スパム・重複・情報不足など)や、登録も公開もしない依頼(重複など、キューから外したいだけのもの)を削除できる
 
 ### 登録実行・下書きレビュー
 - [16] 未処理の登録依頼に対して「登録実行」を押すと、ローカル環境での解析処理(写真解析・分類情報とルール本文の生成)が起動する。押した時点で処理が完了するわけではないため、進行中であることが分かる表示をする
@@ -131,6 +129,7 @@ flowchart LR
 - 管理画面の見た目・共通ナビ(BoardGameNav)・パンくずの体裁(UI/UX要件[1][2]・機能要件[13][14])は、他画面と同じboard-game-rules共通デザインに従う。共通デザインのトークンと共通chrome(ナビ・パンくず等の枠)の定義は[design-system/requirements.md](../design-system/requirements.md)および[DESIGN.md](../DESIGN.md)に従う
 
 ## スコープ外
+- 登録依頼を手動で「処理済み」にする操作。`processed_at`は下書きレビュー経由の「公開する」([19])と手動フォールバックの`registerGame.ts`(`requestId`指定時)がそれぞれ自動で記録する。登録も公開もしない依頼(重複など)はキューから外すために[10]の削除で対応する
 - 複数の管理者アカウント・権限ロールの管理(利用者は運営者本人のみ)
 - 管理画面ドメイン自身をパスキー(WebAuthn)の登録先とする実装(根拠: [docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)と同じ)
 - 通報者・コメント投稿者へのペナルティ管理(アカウントBAN等)

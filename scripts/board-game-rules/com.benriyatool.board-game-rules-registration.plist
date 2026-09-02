@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd 定期起動設定の雛形(仕様: specs/board-game-rules/admin/design.md「ローカル環境の定期処理」
+  「セキュリティ」、admin/tasks.md T9)。
+
+  使い方:
+    1. このファイルを ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist へコピーする。
+    2. 下記プレースホルダを実値に置き換える:
+       - __NODE_BIN__            : `which node` の絶対パス(例 /Users/you/.nvm/versions/node/v22.x/bin/node)
+       - __REPO_DIR__            : このリポジトリの絶対パス
+       - __CLAUDE_BIN__          : `which claude` の絶対パス
+       - __SUPABASE_URL__        : NEXT_PUBLIC_SUPABASE_URL の値
+       - __SERVICE_ROLE_KEY__    : SUPABASE_SERVICE_ROLE_KEY の値(RLS全バイパスの全権キー)
+       - __GEMINI_API_KEY__      : ゲーム紹介画像の自動補完に使う Gemini API キー
+       - __CLAUDE_OAUTH_TOKEN__  : `claude` のヘッドレス実行に使う OAuth トークン(Pro/Max サブスクリプション)
+    3. launchctl load ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist
+
+  重要(design.md「セキュリティ」):
+    - 資格情報の実値を書き込んだ稼働用 plist はリポジトリに置かない。このファイルは
+      プレースホルダ雛形であり、コミットしてよいのはこの雛形のみ。
+    - launchd は対話シェルの PATH・環境変数を引き継がないため、node / claude は絶対パスで指定する
+      (BGR_CLAUDE_BIN で claude の絶対パスを processRegistrationQueue.ts へ渡す)。
+    - StartInterval=60 で60秒ごとに起動する(常駐プロセスは持たない)。処理対象がなければ即終了する。
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.benriyatool.board-game-rules-registration</string>
+
+  <!--
+    scripts/board-game-rules/ は本体 package.json から隔離した独自の package.json を持つ
+    (初回のみ `cd scripts/board-game-rules && npm install` が必要)。node の --import で
+    ローカル node_modules の tsx をローダーとして読み込む。WorkingDirectory をこのディレクトリに
+    することで node が tsx を解決できる(スクリプト内の .env.local / SKILL.md の参照は
+    import.meta.url 基準の相対パスなので cwd に依存しない)。
+  -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE_BIN__</string>
+    <string>--import</string>
+    <string>tsx</string>
+    <string>__REPO_DIR__/scripts/board-game-rules/processRegistrationQueue.ts</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>__REPO_DIR__/scripts/board-game-rules</string>
+
+  <key>StartInterval</key>
+  <integer>60</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!--
+    ジョブ本体(processRegistrationQueue.ts)の終了時、同じプロセスグループに残った子プロセス
+    (タイムアウト等で残存した claude -p など)も launchd がまとめて終了させる。孤児プロセスを
+    残さないための既定動作を明示している(true にすると残存プロセスを放置する)。
+    なお StartInterval のジョブは前回の実行が終わるまで再起動されないため、多重起動はこの設定とは
+    無関係に起きない。
+  -->
+  <key>AbandonProcessGroup</key>
+  <false/>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NEXT_PUBLIC_SUPABASE_URL</key>
+    <string>__SUPABASE_URL__</string>
+    <key>SUPABASE_SERVICE_ROLE_KEY</key>
+    <string>__SERVICE_ROLE_KEY__</string>
+    <key>GEMINI_API_KEY</key>
+    <string>__GEMINI_API_KEY__</string>
+    <key>CLAUDE_CODE_OAUTH_TOKEN</key>
+    <string>__CLAUDE_OAUTH_TOKEN__</string>
+    <key>BGR_CLAUDE_BIN</key>
+    <string>__CLAUDE_BIN__</string>
+    <key>PATH</key>
+    <string>/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>__REPO_DIR__/scripts/board-game-rules/processRegistrationQueue.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>__REPO_DIR__/scripts/board-game-rules/processRegistrationQueue.err.log</string>
+</dict>
+</plist>

@@ -6,8 +6,9 @@ import { fetchPublishedGames } from '../../../app/board-game-rules/lib/games'
 import { fetchReports } from '../../../app/board-game-rules/admin/lib/fetchReports'
 import {
   fetchGameRequests,
-  markGameRequestProcessed,
   deleteGameRequest,
+  triggerRegistration,
+  publishDraft,
 } from '../../../app/board-game-rules/admin/lib/gameRequests'
 import { fetchOriginalPhotos } from '../../../app/board-game-rules/admin/lib/photos'
 import type { Session } from '@supabase/supabase-js'
@@ -23,8 +24,10 @@ vi.mock('../../../app/board-game-rules/lib/games', () => ({ fetchPublishedGames:
 vi.mock('../../../app/board-game-rules/admin/lib/fetchReports', () => ({ fetchReports: vi.fn() }))
 vi.mock('../../../app/board-game-rules/admin/lib/gameRequests', () => ({
   fetchGameRequests: vi.fn(),
-  markGameRequestProcessed: vi.fn(),
   deleteGameRequest: vi.fn(),
+  triggerRegistration: vi.fn(),
+  requestRevision: vi.fn(),
+  publishDraft: vi.fn(),
 }))
 vi.mock('../../../app/board-game-rules/admin/lib/photos', () => ({ fetchOriginalPhotos: vi.fn() }))
 // GameRequestsViewが紹介画像プレビューに使う公開URL変換(gamePhotos.ts)は別spec(game-list T8)で検証済みのためモックする
@@ -69,8 +72,9 @@ beforeEach(() => {
   vi.mocked(fetchPublishedGames).mockReset().mockResolvedValue([])
   vi.mocked(fetchReports).mockReset().mockResolvedValue([])
   vi.mocked(fetchGameRequests).mockReset().mockResolvedValue([])
-  vi.mocked(markGameRequestProcessed).mockReset().mockResolvedValue(true)
   vi.mocked(deleteGameRequest).mockReset().mockResolvedValue(true)
+  vi.mocked(triggerRegistration).mockReset().mockResolvedValue({ ok: true })
+  vi.mocked(publishDraft).mockReset().mockResolvedValue({ ok: true })
   vi.mocked(fetchOriginalPhotos).mockReset().mockResolvedValue([])
 })
 
@@ -133,9 +137,9 @@ describe('【管理画面】権限ありで通報一覧・登録依頼一覧を�
   })
 })
 
-// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-9、specs/board-game-rules/admin/requirements.md#登録依頼の確認-10
-describe('【管理画面】登録依頼の処理済みマーク・削除の操作が一覧に反映される', () => {
-  it('処理済みにするを押すと、markGameRequestProcessedが呼ばれ一覧が再取得されること', async () => {
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-10
+describe('【管理画面】登録依頼の削除の操作が一覧に反映される', () => {
+  it('削除を押すと、deleteGameRequestが呼ばれ一覧が再取得されること', async () => {
     vi.mocked(getSession).mockResolvedValue(makeSession('admin@example.com'))
     vi.mocked(isAuthorizedAdmin).mockResolvedValue(true)
     vi.mocked(fetchGameRequests).mockResolvedValue([
@@ -158,14 +162,21 @@ describe('【管理画面】登録依頼の処理済みマーク・削除の操�
         releaseYear: null,
         createdAt: '2026-08-01T00:00:00.000Z',
         processedAt: null,
+        status: 'pending',
+        draftContent: null,
+        revisionNote: null,
+        revisionRound: 0,
+        revisionHistory: [],
+        errorMessage: null,
+        publishedGameId: null,
       },
     ])
 
     render(<AdminPage />)
-    await waitFor(() => expect(screen.getByRole('button', { name: '処理済みにする' })).toBeTruthy())
-    fireEvent.click(screen.getByRole('button', { name: '処理済みにする' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '削除' })).toBeTruthy())
+    fireEvent.click(screen.getByRole('button', { name: '削除' }))
 
-    await waitFor(() => expect(markGameRequestProcessed).toHaveBeenCalledWith('req-1'))
+    await waitFor(() => expect(deleteGameRequest).toHaveBeenCalledWith('req-1'))
     await waitFor(() => expect(fetchGameRequests).toHaveBeenCalledTimes(2))
   })
 })
