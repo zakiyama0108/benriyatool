@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { meetsCriteria, describeShortfall, selectDailyTopics, isTopicExcluded } from '../../../app/ai-dev-digest/lib/selection'
+import { meetsCriteria, describeShortfall, selectDailyTopics, isTopicExcluded, deduplicateSameSourceCandidates } from '../../../app/ai-dev-digest/lib/selection'
 import type { Candidate } from '../../../app/ai-dev-digest/lib/candidateTypes'
 import type { Criteria } from '../../../app/ai-dev-digest/lib/watchlistTypes'
 
@@ -10,6 +10,7 @@ const criteria: Criteria = {
   qiitaMinLikes: 30,
   zennMinLikes: 30,
   topicExcludeKeywords: [],
+  duplicateSuppressionSourceTypes: ['individual-blog'],
 }
 
 function baseCandidate(overrides: Partial<Candidate>): Candidate {
@@ -236,6 +237,64 @@ describe('話題の関連性フィルタ - 他の採用基準を満たしてい�
     const excluded = baseCandidate({ sourceId: 'medical', heading: 'AIによる医療診断支援の最新動向', sourceType: 'official' })
     const result = selectDailyTopics([excluded], criteriaWithExcludeKeywords)
     expect(result.status).toBe('skipped')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#情報源内の重複掲載の抑制(種別を問わない横断フィルター)-13、specs/ai-dev-digest/content-selection/design.md#情報源内の重複を抑制する処理(決定的なコード)
+describe('情報源内の重複抑制 - duplicateSuppressionSourceTypesに含まれる種別は、同じ情報源から同日に複数候補があれば最新の1件だけを残す', () => {
+  it('個人ブログで同じ情報源から2件の候補があるとき、公開日時が新しい方だけが残ること', () => {
+    const older = baseCandidate({
+      sourceId: 'simon-willison',
+      sourceType: 'individual-blog',
+      heading: '古い方の投稿',
+      publishedAt: '2026-08-15T03:00:00.000Z',
+    })
+    const newer = baseCandidate({
+      sourceId: 'simon-willison',
+      sourceType: 'individual-blog',
+      heading: '新しい方の投稿',
+      publishedAt: '2026-08-15T20:00:00.000Z',
+    })
+    const result = deduplicateSameSourceCandidates([older, newer], criteria)
+    expect(result).toHaveLength(1)
+    expect(result[0].heading).toBe('新しい方の投稿')
+  })
+
+  it('duplicateSuppressionSourceTypesに含まれない種別(公式組織)は、同じ情報源から同日に複数候補があっても除外されないこと', () => {
+    const first = baseCandidate({ sourceId: 'openai', sourceType: 'official', heading: '1件目' })
+    const second = baseCandidate({ sourceId: 'openai', sourceType: 'official', heading: '2件目' })
+    const result = deduplicateSameSourceCandidates([first, second], criteria)
+    expect(result).toHaveLength(2)
+  })
+
+  it('異なる情報源(sourceId)の候補は、同じ種別でも互いに除外し合わないこと', () => {
+    const a = baseCandidate({ sourceId: 'simon-willison', sourceType: 'individual-blog', heading: 'a' })
+    const b = baseCandidate({ sourceId: 'another-blog', sourceType: 'individual-blog', heading: 'b' })
+    const result = deduplicateSameSourceCandidates([a, b], criteria)
+    expect(result).toHaveLength(2)
+  })
+
+  it('1日分のトピック選定に統合されたとき、同一情報源の重複候補は基準判定・件数選定より前に1件へ絞られること', () => {
+    const olderBlog = baseCandidate({
+      sourceId: 'simon-willison',
+      sourceType: 'individual-blog',
+      heading: '古い方の投稿',
+      publishedAt: '2026-08-15T03:00:00.000Z',
+    })
+    const newerBlog = baseCandidate({
+      sourceId: 'simon-willison',
+      sourceType: 'individual-blog',
+      heading: '新しい方の投稿',
+      publishedAt: '2026-08-15T20:00:00.000Z',
+    })
+    const others = ['a', 'b'].map((label) => baseCandidate({ sourceId: label, heading: `見出し${label}`, sourceType: 'official' }))
+    const result = selectDailyTopics([olderBlog, newerBlog, ...others], criteria)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics).toHaveLength(3)
+      expect(result.topics.some((t) => t.heading === '古い方の投稿')).toBe(false)
+      expect(result.topics.some((t) => t.heading === '新しい方の投稿')).toBe(true)
+    }
   })
 })
 

@@ -2,6 +2,8 @@
 // 実データはcontent/ai-dev-digest/watchlist.json・criteria.jsonに置く(requirements.mdとの二重管理。
 // 変更はwatchlist-reviewの月次見直しのみで行う)
 
+import type { SourceType } from './types'
+
 export type WatchlistCategory = 'official' | 'individual-youtube' | 'individual-blog' | 'platform'
 
 export type WatchlistChannel =
@@ -27,4 +29,7 @@ export type Criteria = {
   // 満たしていても採用候補から除外する。原文タイトルは情報源により日英いずれもありうるため
   // 日英両方のキーワードを登録する運用とする(requirements.md#話題の関連性-12)
   topicExcludeKeywords: string[]
+  // この配列に含まれる種別は、同じ情報源(sourceId)から同日に複数候補が挙がった場合、
+  // 公開日時が最も新しい1件のみを採用候補に残す(requirements.md#情報源内の重複掲載の抑制-13)
+  duplicateSuppressionSourceTypes: SourceType[]
 }

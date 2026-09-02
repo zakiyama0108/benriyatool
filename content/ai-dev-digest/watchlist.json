@@ -79,7 +79,8 @@
     "id": "simon-willison",
     "category": "individual-blog",
     "name": "Simon Willison",
-    "channels": [{ "type": "rss", "feedUrl": "https://simonwillison.net/atom/everything/" }]
+    "channels": [{ "type": "rss", "feedUrl": "https://simonwillison.net/atom/everything/" }],
+    "topicScopeNote": "同日に複数の短い投稿をすることがある(2026-08運営者フィードバックの契機。criteria.jsonのduplicateSuppressionSourceTypesで同日重複を1件に絞る)"
   },
   {
     "id": "qiita",

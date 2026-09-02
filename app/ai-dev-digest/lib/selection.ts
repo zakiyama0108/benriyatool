@@ -5,6 +5,25 @@ import type { Criteria } from './watchlistTypes'
 // requirements.md#1日の掲載件数、design.md「採用基準を判定する処理」「1日分のトピックを
 // 選び出す処理」)。入出力が純粋なデータのみのため通常のvitestで完全にテストできる
 
+// 情報源内の重複を抑制する(決定的なコード。design.md「情報源内の重複を抑制する処理」)。
+// criteria.duplicateSuppressionSourceTypesに含まれる種別(初期値: individual-blog)は、
+// 同じ情報源(sourceId)から同日に複数候補が挙がった場合、公開日時が最も新しい1件だけを残す
+// (個人ブログは公式組織の告知と異なり同日に複数の短い投稿をすることがあるため。
+// requirements.md#情報源内の重複掲載の抑制-13)
+export function deduplicateSameSourceCandidates(candidates: Candidate[], criteria: Criteria): Candidate[] {
+  const latestBySourceId = new Map<string, Candidate>()
+  for (const candidate of candidates) {
+    if (!criteria.duplicateSuppressionSourceTypes.includes(candidate.sourceType)) continue
+    const current = latestBySourceId.get(candidate.sourceId)
+    if (!current || candidate.publishedAt > current.publishedAt) {
+      latestBySourceId.set(candidate.sourceId, candidate)
+    }
+  }
+  return candidates.filter(
+    (candidate) => !criteria.duplicateSuppressionSourceTypes.includes(candidate.sourceType) || latestBySourceId.get(candidate.sourceId) === candidate
+  )
+}
+
 // 話題の関連性フィルタ(決定的なコード。design.md「話題の関連性フィルタを適用する処理」)。
 // 原文タイトルにcriteria.topicExcludeKeywordsのいずれかが含まれる場合、大文字小文字を
 // 区別せず除外する。他の採用基準(meetsCriteria)を満たしていても対象になる
@@ -123,9 +142,13 @@ export function selectDailyTopics(candidates: Candidate[], criteria: Criteria): 
     return { status: 'skipped', reason: '収集した候補が1件もありませんでした' }
   }
 
+  // 情報源内の重複抑制は話題の関連性フィルタ・採用基準の判定より前に適用する
+  // (requirements.md#情報源内の重複掲載の抑制-13)
+  const deduplicated = deduplicateSameSourceCandidates(candidates, criteria)
+
   // 話題の関連性フィルタは採用基準の判定より前に適用する(除外された候補は、他の基準を
   // 満たしていても採用候補にも基準未達候補にもならない。requirements.md#話題の関連性-12)
-  const eligible = candidates.filter((candidate) => !isTopicExcluded(candidate, criteria))
+  const eligible = deduplicated.filter((candidate) => !isTopicExcluded(candidate, criteria))
   if (eligible.length === 0) {
     return { status: 'skipped', reason: '収集した候補はすべて話題の関連性フィルタにより除外されました' }
   }
