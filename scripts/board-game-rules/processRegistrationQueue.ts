@@ -112,7 +112,7 @@ async function claimQueuedRequest(
     .eq('status', 'queued')
     .order('created_at', { ascending: true })
     .limit(1)
-  if (error) throw new Error(`キュー取得に失敗しました: ${error.message}`)
+  if (error) throw new RegistrationError('キューの取得に失敗しました', error)
   const candidate = (candidates as GameRequestRow[] | null)?.[0]
   if (!candidate) return null
 
@@ -122,7 +122,7 @@ async function claimQueuedRequest(
     .eq('id', candidate.id)
     .eq('status', 'queued')
     .select('*')
-  if (claimError) throw new Error(`排他取得に失敗しました: ${claimError.message}`)
+  if (claimError) throw new RegistrationError('キューの排他取得に失敗しました', claimError)
   const row = (claimed as GameRequestRow[] | null)?.[0]
   return row ?? null
 }
@@ -325,7 +325,7 @@ async function main() {
     const operatorMessage =
       error instanceof RegistrationError
         ? error.operatorMessage
-        : '写真の解析中に予期しないエラーが発生しました'
+        : '登録処理中に予期しないエラーが発生しました'
     const technicalDetail =
       error instanceof RegistrationError ? error.technicalDetail : error
     console.error(`依頼 ${req.id} の処理に失敗しました: ${operatorMessage}`)
@@ -339,7 +339,14 @@ async function main() {
   }
 }
 
+// 依頼を1件も取得する前の失敗(キュー取得・排他取得など)はここへ抜ける。
+// 日本語の要約に加え、RegistrationError が持つ生エラー(technicalDetail)も必ず出す。
 main().catch((error: unknown) => {
-  console.error(error)
+  if (error instanceof RegistrationError) {
+    console.error(error.operatorMessage)
+    if (error.technicalDetail !== undefined) console.error('原因の詳細:', error.technicalDetail)
+  } else {
+    console.error(error)
+  }
   process.exit(1)
 })
