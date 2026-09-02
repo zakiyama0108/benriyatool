@@ -108,6 +108,14 @@
 - launchdの定期起動設定の雛形(`scripts/board-game-rules/com.benriyatool.board-game-rules-registration.plist`)を用意する。`StartInterval`を60秒とし、`ProgramArguments`に`node`・スクリプトの絶対パスを指定、`EnvironmentVariables`または外部`.env`で`SUPABASE_SERVICE_ROLE_KEY`等を注入する(design.md「セキュリティ」。対話シェルのPATHを引き継がないため、`claude`・`node`は絶対パスで指定する)。`StandardOutPath`/`StandardErrorPath`でログファイルへ出力する
 - 動作確認: 実際に登録依頼を1件作成し、「登録実行」を押してから最大60秒待ち、`draft_content`が生成され`status`が`draft`になることを確認する。あわせて「再調整を依頼」→再度`draft`になること、写真解析に失敗するケース(壊れた画像など)で`status`が`failed`になり`error_message`が記録されることを確認する。launchd経由での起動(手動の`launchctl load`)でも同様に動作することを確認する(対話シェルのPATHに依存していないことの実機確認)
 
+## T4c. 下書きの全文表示と写真の原寸表示(`admin/components/DraftReviewCard.tsx`, `GameRequestsView.tsx`)
+- 対象: requirements.md#登録実行・下書きレビュー-18、requirements.md#登録依頼の確認-9(design.md「登録実行・下書きレビューの処理」手順3、design.md「画面設計」)
+- 🔴 次をテストする:
+  - `DraftReviewCard`: 簡単版ルールが200字を超えても省略されず全文表示されること、詳しい版ルールの全章が共通章立て(`rulesChapters.ts`)の日本語見出し付きで表示され本文が空の章は「(記載なし)」と示されること、共通章立てにないキーでも壊れないこと、分類情報(対象年齢・難易度・出版社・作者・日本語ルール有無・受賞歴・発売年)のうち値があるものが表示されること
+  - `GameRequestsView`: 元写真・ゲーム紹介画像のサムネイルが原寸URL(元写真=署名付きURL、紹介画像=公開URL)を開く別タブリンク(`target="_blank"`)で囲まれていること、取得失敗の元写真はリンクではなく案内表示になること
+- 🟢 `DraftReviewCard`の`draft`表示に簡単版全文・詳しい版全章(折りたたみ)・分類情報を追加する。`GameRequestsView`の写真プレビューをリンク化する
+- 🔵 表示の詰まりを整える(章見出しの体裁、折りたたみの既定状態、サムネイルサイズ)
+
 ## 補足(リリース前チェック)
 - Supabase AuthのRedirect URLs許可リストに管理画面の戻り先を登録する(requirements.md#認証手段とパスキー-5)。利用者ログインの戻り先`https://benriyatool.com/board-game-rules/**`は[user-auth](../user-auth/tasks.md)の責務で登録し、これは`/board-game-rules/admin/**`を包含するため、広い方の1エントリで管理画面の戻り先も兼ねられる(user-authと重複せず整理する)
 - 運営者Googleアカウントのパスキー登録・2段階認証の維持を初回公開前に確認する(ADR-0006)

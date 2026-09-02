@@ -167,6 +167,61 @@ describe('【管理画面】登録依頼一覧 - ゲーム紹介画像のプレ�
   })
 })
 
+// 仕様: specs/board-game-rules/admin/requirements.md#登録依頼の確認-9
+describe('【管理画面】登録依頼一覧 - 写真・紹介画像を原寸(別タブ)で開いて確認する', () => {
+  it('ゲーム紹介画像のサムネイルが、原寸URLを開く別タブリンクで囲まれていること', () => {
+    render(
+      <GameRequestsView
+        requests={[makeRequest({ introPhotoPaths: ['req-1/0.jpg'] })]}
+        onDelete={vi.fn()}
+        onViewPhotos={vi.fn()}
+        {...draftHandlers}
+      />
+    )
+    const link = screen.getByAltText('依頼されたゲーム紹介画像 1枚目').closest('a')
+    expect(link).not.toBeNull()
+    expect(link?.getAttribute('href')).toBe('https://example.com/game-photos/req-1/0.jpg')
+    expect(link?.getAttribute('target')).toBe('_blank')
+    expect(link?.getAttribute('rel')).toContain('noreferrer')
+  })
+
+  it('「写真を確認」で取得した元写真のサムネイルが、署名付きURLを開く別タブリンクで囲まれていること', async () => {
+    const onViewPhotos = vi
+      .fn()
+      .mockResolvedValue([{ path: 'req-1/0.jpg', url: 'https://example.com/signed-0.jpg' }])
+    render(
+      <GameRequestsView
+        requests={[makeRequest()]}
+        onDelete={vi.fn()}
+        onViewPhotos={onViewPhotos}
+        {...draftHandlers}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: '写真を確認' }))
+    const img = await screen.findByAltText('依頼された元写真')
+    const link = img.closest('a')
+    expect(link).not.toBeNull()
+    expect(link?.getAttribute('href')).toBe('https://example.com/signed-0.jpg')
+    expect(link?.getAttribute('target')).toBe('_blank')
+    expect(link?.getAttribute('rel')).toContain('noreferrer')
+  })
+
+  it('元写真の取得に失敗したものは、リンクではなく取得失敗の案内が表示されること', async () => {
+    const onViewPhotos = vi.fn().mockResolvedValue([{ path: 'req-1/0.jpg', url: null }])
+    render(
+      <GameRequestsView
+        requests={[makeRequest()]}
+        onDelete={vi.fn()}
+        onViewPhotos={onViewPhotos}
+        {...draftHandlers}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: '写真を確認' }))
+    await waitFor(() => expect(screen.getByText(/取得失敗: req-1\/0\.jpg/)).toBeTruthy())
+    expect(screen.queryByAltText('依頼された元写真')).toBeNull()
+  })
+})
+
 // 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-16、specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-18、specs/board-game-rules/admin/design.md#登録実行・下書きレビューの処理
 describe('【管理画面】登録依頼一覧 - 各依頼行に登録実行・下書きレビューの操作(DraftReviewCard)を組み込む', () => {
   it('未着手の依頼行に「登録実行」ボタンが出て、押すとその依頼のstatusとともにonTriggerが呼ばれること', () => {
