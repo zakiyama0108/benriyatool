@@ -82,5 +82,5 @@
 
 ## 補足
 - 運営者側の「まとめて登録する処理」(ローカルツール・Skill)は本specのスコープ外。[admin/tasks.md](../admin/tasks.md)を参照
-- 依頼テーブルの一覧表示・処理済みマーク・削除操作(管理画面での確認)も[admin/tasks.md](../admin/tasks.md)側のタスク
+- 依頼テーブルの一覧表示・削除操作、および登録実行・下書きレビューに伴う`status`等の更新(管理画面での確認)も[admin/tasks.md](../admin/tasks.md)側のタスク
 - ゲーム紹介画像の公開URL変換(`lib/gamePhotos.ts`の`getGamePhotoUrl`)は[game-list/tasks.md](../game-list/tasks.md)で実装したものを、一覧・詳細・管理画面の各specが共有する(本specでは実装しない。登録依頼画面はアップロード前のプレビューのみのため不要)

@@ -320,7 +320,7 @@ grant insert on board_game_rules_game_requests to anon, authenticated;
 create policy "anyone can insert game request" on board_game_rules_game_requests
   for insert to anon, authenticated with check (true);
 
--- 確認・処理済みマーク・削除: 運営者本人のみ
+-- 確認・status等の更新(登録実行/下書きレビュー/公開時のprocessed_at)・削除: 運営者本人のみ
 grant select, update, delete on board_game_rules_game_requests to authenticated;
 create policy "admin can select game requests" on board_game_rules_game_requests
   for select to authenticated
