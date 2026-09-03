@@ -82,16 +82,27 @@ export default function GameRequestsView({
           </p>
 
           {request.introPhotoPaths.length > 0 ? (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {request.introPhotoPaths.map((path, index) => (
-                // eslint-disable-next-line @next/next/no-img-element -- 公開Storageの外部URLをそのまま表示する(next/image最適化は不要)
-                <img
-                  key={path}
-                  src={getGamePhotoUrl(path)}
-                  alt={`依頼されたゲーム紹介画像 ${index + 1}枚目`}
-                  className="h-20 w-20 rounded border border-bgr-line object-cover"
-                />
-              ))}
+            <div className="mt-2">
+              <div className="flex flex-wrap gap-2">
+                {request.introPhotoPaths.map((path, index) => (
+                  // クリックで公開Storageの原寸画像を別タブ表示する(モーダルは作らず依存を増やさない)
+                  <a
+                    key={path}
+                    href={getGamePhotoUrl(path)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block cursor-pointer transition hover:opacity-80"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- 公開Storageの外部URLをそのまま表示する(next/image最適化は不要) */}
+                    <img
+                      src={getGamePhotoUrl(path)}
+                      alt={`依頼されたゲーム紹介画像 ${index + 1}枚目`}
+                      className="h-28 w-28 rounded border border-bgr-line object-cover"
+                    />
+                  </a>
+                ))}
+              </div>
+              <p className="mt-1 text-xs text-bgr-subtext">クリックで原寸表示(別タブ)</p>
             </div>
           ) : (
             <p className="mt-2 text-xs text-bgr-subtext">紹介画像なし(登録時に自動補完されます)</p>
@@ -117,21 +128,34 @@ export default function GameRequestsView({
           </div>
 
           {photosByRequestId[request.id] && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {photosByRequestId[request.id].map((photo) =>
-                photo.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- 非公開Storageの署名付きURLをそのまま表示する
-                  <img
-                    key={photo.path}
-                    src={photo.url}
-                    alt="依頼された元写真"
-                    className="h-20 w-20 rounded border border-bgr-line object-cover"
-                  />
-                ) : (
-                  <span key={photo.path} className="text-xs text-bgr-subtext">
-                    (取得失敗: {photo.path})
-                  </span>
-                )
+            <div className="mt-2">
+              <div className="flex flex-wrap gap-2">
+                {photosByRequestId[request.id].map((photo) =>
+                  photo.url ? (
+                    // クリックで署名付きURLの原寸写真を別タブ表示する(モーダルは作らず依存を増やさない)
+                    <a
+                      key={photo.path}
+                      href={photo.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block cursor-pointer transition hover:opacity-80"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- 非公開Storageの署名付きURLをそのまま表示する */}
+                      <img
+                        src={photo.url}
+                        alt="依頼された元写真"
+                        className="h-28 w-28 rounded border border-bgr-line object-cover"
+                      />
+                    </a>
+                  ) : (
+                    <span key={photo.path} className="text-xs text-bgr-subtext">
+                      (取得失敗: {photo.path})
+                    </span>
+                  )
+                )}
+              </div>
+              {photosByRequestId[request.id].some((photo) => photo.url) && (
+                <p className="mt-1 text-xs text-bgr-subtext">クリックで原寸表示(別タブ)</p>
               )}
             </div>
           )}
