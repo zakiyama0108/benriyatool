@@ -34,7 +34,7 @@ function makeRequest(overrides: Partial<GameRequest> = {}): GameRequest {
   }
 }
 
-function makeDraftContent() {
+function makeDraftContent(overrides: Record<string, unknown> = {}) {
   return {
     name: 'カタンの開拓者たち',
     minPlayers: 3,
@@ -44,6 +44,7 @@ function makeDraftContent() {
     genres: ['戦略'],
     rulesSimple: '資源を集めて開拓地を広げ、10点を先取したプレイヤーの勝ち。',
     rulesDetailed: [{ key: 'overview', body: '概要' }],
+    ...overrides,
   }
 }
 
@@ -108,6 +109,117 @@ describe('【管理画面】登録依頼の状況表示 - statusごとに操作�
     expect(screen.getByText('公開済み')).toBeTruthy()
     expect(screen.queryByRole('button', { name: '登録実行' })).toBeNull()
     expect(screen.queryByRole('button', { name: '公開する' })).toBeNull()
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-18
+describe('【管理画面】下書きレビューで生成物を全文・分類情報つきで確認する', () => {
+  it('簡単版ルールが200字を超えても省略されず全文表示されること', () => {
+    // 公開前に生成物の質を判断できるよう、抜粋ではなく全文を見せる
+    const longRules = 'このゲームでは' + 'あ'.repeat(300) + '勝利する。'
+    render(
+      <DraftReviewCard
+        request={makeRequest({
+          status: 'draft',
+          draftContent: makeDraftContent({ rulesSimple: longRules }),
+        })}
+        onTrigger={vi.fn()}
+        onPublish={vi.fn().mockResolvedValue(okResult)}
+        onRequestRevision={vi.fn().mockResolvedValue(okResult)}
+      />
+    )
+    expect(screen.getByText(longRules)).toBeTruthy()
+    // 省略記号(…)で切られていないこと
+    expect(screen.queryByText((content) => content.includes('…'))).toBeNull()
+  })
+
+  it('詳しい版ルールの全章が共通章立ての日本語見出し付きで表示され、本文が空の章は「(記載なし)」と示されること', () => {
+    render(
+      <DraftReviewCard
+        request={makeRequest({
+          status: 'draft',
+          draftContent: makeDraftContent({
+            rulesDetailed: [
+              { key: 'overview', body: '2〜4人で資源を奪い合うゲーム。' },
+              { key: 'setup', body: '' },
+              { key: 'victory', body: '10点に最初に到達した人の勝ち。' },
+            ],
+          }),
+        })}
+        onTrigger={vi.fn()}
+        onPublish={vi.fn().mockResolvedValue(okResult)}
+        onRequestRevision={vi.fn().mockResolvedValue(okResult)}
+      />
+    )
+    for (const heading of ['概要', '準備', '手番の流れ', '勝利条件', '得点計算', '特殊ルール・例外']) {
+      expect(screen.getByText(heading)).toBeTruthy()
+    }
+    expect(screen.getByText('2〜4人で資源を奪い合うゲーム。')).toBeTruthy()
+    expect(screen.getByText('10点に最初に到達した人の勝ち。')).toBeTruthy()
+    // 本文が空・未生成の章は存在だけ示す
+    expect(screen.getAllByText('(記載なし)').length).toBeGreaterThan(0)
+  })
+
+  it('共通章立てにないキーの章が来ても壊れず、キーをそのまま見出しにして表示されること', () => {
+    render(
+      <DraftReviewCard
+        request={makeRequest({
+          status: 'draft',
+          draftContent: makeDraftContent({
+            rulesDetailed: [{ key: 'house_rule', body: '公式外の追加ルール。' }],
+          }),
+        })}
+        onTrigger={vi.fn()}
+        onPublish={vi.fn().mockResolvedValue(okResult)}
+        onRequestRevision={vi.fn().mockResolvedValue(okResult)}
+      />
+    )
+    expect(screen.getByText('house_rule')).toBeTruthy()
+    expect(screen.getByText('公式外の追加ルール。')).toBeTruthy()
+  })
+
+  it('分類情報(対象年齢・難易度・出版社・作者・日本語ルール有無・受賞歴・発売年)のうち値があるものが表示されること', () => {
+    render(
+      <DraftReviewCard
+        request={makeRequest({
+          status: 'draft',
+          draftContent: makeDraftContent({
+            minAge: 10,
+            difficulty: '中級',
+            publisher: 'コスモス',
+            author: 'クラウス・トイバー',
+            hasJapaneseRules: true,
+            awards: 'ドイツ年間ゲーム大賞 1995',
+            releaseYear: 1995,
+          }),
+        })}
+        onTrigger={vi.fn()}
+        onPublish={vi.fn().mockResolvedValue(okResult)}
+        onRequestRevision={vi.fn().mockResolvedValue(okResult)}
+      />
+    )
+    expect(screen.getByText('対象年齢: 10歳以上')).toBeTruthy()
+    expect(screen.getByText('難易度: 中級')).toBeTruthy()
+    expect(screen.getByText('出版社: コスモス')).toBeTruthy()
+    expect(screen.getByText('作者: クラウス・トイバー')).toBeTruthy()
+    expect(screen.getByText('日本語ルール: あり')).toBeTruthy()
+    expect(screen.getByText('受賞歴: ドイツ年間ゲーム大賞 1995')).toBeTruthy()
+    expect(screen.getByText('発売年: 1995年')).toBeTruthy()
+  })
+
+  it('日本語ルールがない場合は「日本語ルール: なし」と表示されること', () => {
+    render(
+      <DraftReviewCard
+        request={makeRequest({
+          status: 'draft',
+          draftContent: makeDraftContent({ hasJapaneseRules: false }),
+        })}
+        onTrigger={vi.fn()}
+        onPublish={vi.fn().mockResolvedValue(okResult)}
+        onRequestRevision={vi.fn().mockResolvedValue(okResult)}
+      />
+    )
+    expect(screen.getByText('日本語ルール: なし')).toBeTruthy()
   })
 })
 
