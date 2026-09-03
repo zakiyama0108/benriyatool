@@ -16,6 +16,9 @@ const ALLOWED_GENRE_VALUES = new Set<string>(GENRES.map((g) => g.value))
 // (仕様: admin/requirements.md#登録実行・下書きレビュー-19、admin/design.md「エラーハンドリング」)。
 export function validateDraftForPublish(draft: GameDraftContent): string[] {
   const problems: string[] = []
+  // claude -p が genres キーごと省略することがある(parseDraft は name/rulesSimple/rulesDetailed のみ
+  // 存在チェックする)。undefined のまま .length/.filter すると描画・公開処理が例外化するため空配列に倒す
+  const genres = Array.isArray(draft.genres) ? draft.genres : []
 
   if (!draft.name || draft.name.trim() === '') {
     problems.push('ゲーム名が入力されていません')
@@ -51,16 +54,19 @@ export function validateDraftForPublish(draft: GameDraftContent): string[] {
     problems.push('プレイ時間の下限が上限を上回っています')
   }
 
-  if (draft.genres.length === 0) {
+  if (genres.length === 0) {
     problems.push('ジャンルが1つも選ばれていません')
   }
-  const invalidGenres = draft.genres.filter((g) => !ALLOWED_GENRE_VALUES.has(g))
+  const invalidGenres = genres.filter((g) => !ALLOWED_GENRE_VALUES.has(g))
   if (invalidGenres.length > 0) {
     problems.push(`ジャンルに選べない値が含まれています: ${invalidGenres.join('、')}`)
   }
 
   // games テーブルの CHECK(char_length(rules_simple) <= 4000 / rules_detailed::text <= 40000)。
-  // 下書き側には上限CHECKがないため公開時に初めて顕在化する
+  // 下書き側には上限CHECKがないため公開時に初めて顕在化する。
+  // JSON.stringify は Postgres の rules_detailed::text より空白ぶん短く出る(実DBより軽めの見積り)ため、
+  // 上限ぎりぎりの下書きはここを通過して INSERT で落ちうるが、その場合も describePublishError が
+  // 文字数超過の日本語を返す
   if (draft.rulesSimple.length > 4000) {
     problems.push(`簡単版ルールが文字数上限(4000字)を超えています(現在${draft.rulesSimple.length}字)`)
   }
@@ -82,7 +88,9 @@ export function draftToPreviewGame(draft: GameDraftContent, request: GameRequest
     maxPlayers: draft.maxPlayers,
     minMinutes: draft.minMinutes,
     maxMinutes: draft.maxMinutes,
-    genres: draft.genres as Genre[],
+    // 検証前の値のため固定リスト外が混じりうるが、GameInfo は join するだけ・RuleTabs は RULE_CHAPTERS で
+    // 絞り込むため描画は壊れない(問題は警告表示・補助表示で運営者に伝える)。undefined は空配列に倒す
+    genres: (Array.isArray(draft.genres) ? draft.genres : []) as Genre[],
     minAge: draft.minAge ?? null,
     difficulty: draft.difficulty ?? null,
     publisher: draft.publisher ?? null,

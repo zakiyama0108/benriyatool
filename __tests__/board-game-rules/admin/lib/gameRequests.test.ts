@@ -445,6 +445,14 @@ describe('【管理画面】下書きを公開する前に、必須項目・ジ�
     )
   })
 
+  it('genres キーごと欠落した下書きでも例外にせず「1つも選ばれていない」として扱うこと', () => {
+    // claude -p が genres を丸ごと省略するケース(parseDraft は genres を検証しない)
+    expect(() => validateDraftForPublish(makeDraftContent({ genres: undefined }))).not.toThrow()
+    expect(validateDraftForPublish(makeDraftContent({ genres: undefined }))).toContain(
+      'ジャンルが1つも選ばれていません'
+    )
+  })
+
   it('ジャンルに固定リスト外の値(例: パーティ・運要素)が含まれるとき、該当値を挙げて返すこと', () => {
     // claude -p が生成しがちな表記ゆれ("パーティー"の誤り)・存在しないジャンルを公開前に弾く
     expect(validateDraftForPublish(makeDraftContent({ genres: ['パーティ', '運要素'] }))).toContain(
