@@ -24,7 +24,7 @@
     "name": "LangChain",
     "channels": [
       { "type": "youtube", "channelId": "@LangChain" },
-      { "type": "rss", "feedUrl": "https://blog.langchain.dev/rss/" }
+      { "type": "rss", "feedUrl": "https://blog.langchain.dev/rss.xml" }
     ]
   },
   {
@@ -40,10 +40,25 @@
     "id": "deeplearning-ai",
     "category": "official",
     "name": "DeepLearning.AI",
-    "channels": [
-      { "type": "youtube", "channelId": "@Deeplearningai" },
-      { "type": "rss", "feedUrl": "https://www.deeplearning.ai/the-batch/feed/" }
-    ]
+    "channels": [{ "type": "youtube", "channelId": "@Deeplearningai" }]
+  },
+  {
+    "id": "github",
+    "category": "official",
+    "name": "GitHub",
+    "channels": [{ "type": "rss", "feedUrl": "https://github.blog/feed/" }]
+  },
+  {
+    "id": "google-developers",
+    "category": "official",
+    "name": "Google Developers",
+    "channels": [{ "type": "rss", "feedUrl": "https://blog.google/technology/developers/rss/" }]
+  },
+  {
+    "id": "vscode",
+    "category": "official",
+    "name": "VS Code",
+    "channels": [{ "type": "rss", "feedUrl": "https://code.visualstudio.com/feed.xml" }]
   },
   {
     "id": "karpathy",
@@ -81,6 +96,18 @@
     "name": "Simon Willison",
     "channels": [{ "type": "rss", "feedUrl": "https://simonwillison.net/atom/everything/" }],
     "topicScopeNote": "同日に複数の短い投稿をすることがある(2026-08運営者フィードバックの契機。criteria.jsonのduplicateSuppressionSourceTypesで同日重複を1件に絞る)"
+  },
+  {
+    "id": "interconnects",
+    "category": "individual-blog",
+    "name": "Interconnects (Nathan Lambert)",
+    "channels": [{ "type": "rss", "feedUrl": "https://www.interconnects.ai/feed" }]
+  },
+  {
+    "id": "martin-fowler",
+    "category": "individual-blog",
+    "name": "Martin Fowler / Thoughtworks",
+    "channels": [{ "type": "rss", "feedUrl": "https://martinfowler.com/feed.atom" }]
   },
   {
     "id": "qiita",

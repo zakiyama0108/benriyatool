@@ -1,9 +1,12 @@
 {
   "dailyTopicCount": { "min": 3, "max": 5 },
   "youtubeRecentVideoWindow": 10,
+  "youtubeCandidateVideoCount": 5,
   "youtubeAboveAverageRatio": 1.2,
   "qiitaMinLikes": 30,
+  "qiitaMaxAgeDays": 60,
   "zennMinLikes": 30,
+  "minIndividualBlogBodyChars": 150,
   "topicExcludeKeywords": [
     "医療",
     "ヘルスケア",
