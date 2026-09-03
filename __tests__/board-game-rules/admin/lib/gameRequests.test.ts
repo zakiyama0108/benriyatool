@@ -51,7 +51,10 @@ import {
   triggerRegistration,
   requestRevision,
   publishDraft,
+  validateDraftForPublish,
+  draftToPreviewGame,
   type GameRequest,
+  type GameDraftContent,
 } from '../../../../app/board-game-rules/admin/lib/gameRequests'
 
 function makeRow(overrides: Record<string, unknown> = {}) {
@@ -93,6 +96,22 @@ function makeDraft(overrides: Record<string, unknown> = {}) {
     maxPlayers: 4,
     minMinutes: 60,
     maxMinutes: 90,
+    genres: ['対戦'],
+    rulesSimple: 'かんたんなルール',
+    rulesDetailed: [{ key: 'overview', body: '概要' }],
+    ...overrides,
+  }
+}
+
+// validateDraftForPublish / draftToPreviewGame に渡す下書き(GameDraftContent)の最小データ。
+// null・小数など不正値も渡せるよう overrides は緩く受ける
+function makeDraftContent(overrides: Record<string, unknown> = {}): GameDraftContent {
+  return {
+    name: 'カタン',
+    minPlayers: 2,
+    maxPlayers: 4,
+    minMinutes: 30,
+    maxMinutes: 60,
     genres: ['対戦'],
     rulesSimple: 'かんたんなルール',
     rulesDetailed: [{ key: 'overview', body: '概要' }],
@@ -386,6 +405,132 @@ describe('【管理画面】「公開する」で下書き内容をゲームと�
     expect(updateMock).toHaveBeenCalledTimes(1)
     const finalArg = updateMock.mock.calls[0][0] as Record<string, unknown>
     expect(finalArg.status).toBe('published')
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-19、specs/board-game-rules/admin/design.md#エラーハンドリング
+describe('【管理画面】下書きを公開する前に、必須項目・ジャンル・文字数を検証して運営者に問題点を伝える', () => {
+  it('すべて妥当な下書きなら問題点は空配列で返ること', () => {
+    expect(validateDraftForPublish(makeDraftContent())).toEqual([])
+  })
+
+  it('ゲーム名が空白のみのとき、名前が未入力である旨を返すこと', () => {
+    expect(validateDraftForPublish(makeDraftContent({ name: '   ' }))).toContain(
+      'ゲーム名が入力されていません'
+    )
+  })
+
+  it('対応人数・プレイ時間が0・小数・nullのとき、4項目それぞれに1以上の整数を求める問題を返すこと', () => {
+    // games テーブルは4つとも NOT NULL。claude -p が null を返すケースを公開前に弾く
+    const problems = validateDraftForPublish(
+      makeDraftContent({ minPlayers: 0, maxPlayers: 2.5, minMinutes: null, maxMinutes: -3 })
+    )
+    expect(problems).toContain('対応人数(下限)は1以上の整数で指定してください')
+    expect(problems).toContain('対応人数(上限)は1以上の整数で指定してください')
+    expect(problems).toContain('プレイ時間(下限)は1以上の整数で指定してください')
+    expect(problems).toContain('プレイ時間(上限)は1以上の整数で指定してください')
+  })
+
+  it('対応人数・プレイ時間の下限が上限を上回るとき、その旨を返すこと', () => {
+    const problems = validateDraftForPublish(
+      makeDraftContent({ minPlayers: 5, maxPlayers: 2, minMinutes: 90, maxMinutes: 30 })
+    )
+    expect(problems).toContain('対応人数の下限が上限を上回っています')
+    expect(problems).toContain('プレイ時間の下限が上限を上回っています')
+  })
+
+  it('ジャンルが1つも選ばれていないとき、その旨を返すこと', () => {
+    expect(validateDraftForPublish(makeDraftContent({ genres: [] }))).toContain(
+      'ジャンルが1つも選ばれていません'
+    )
+  })
+
+  it('ジャンルに固定リスト外の値(例: パーティ・運要素)が含まれるとき、該当値を挙げて返すこと', () => {
+    // claude -p が生成しがちな表記ゆれ("パーティー"の誤り)・存在しないジャンルを公開前に弾く
+    expect(validateDraftForPublish(makeDraftContent({ genres: ['パーティ', '運要素'] }))).toContain(
+      'ジャンルに選べない値が含まれています: パーティ、運要素'
+    )
+  })
+
+  it('簡単版ルールが4000字を超えるとき、現在の文字数を添えて返すこと', () => {
+    const problems = validateDraftForPublish(makeDraftContent({ rulesSimple: 'あ'.repeat(4001) }))
+    expect(
+      problems.some(
+        (p) => p.includes('簡単版ルールが文字数上限(4000字)を超えています') && p.includes('4001')
+      )
+    ).toBe(true)
+  })
+
+  it('詳しい版ルール全体が40000字を超えるとき、その旨を返すこと', () => {
+    const problems = validateDraftForPublish(
+      makeDraftContent({ rulesDetailed: [{ key: 'overview', body: 'あ'.repeat(40001) }] })
+    )
+    expect(problems).toContain('詳しい版ルールが文字数上限(40000字)を超えています')
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-19、specs/board-game-rules/admin/design.md#エラーハンドリング
+describe('【管理画面】公開できない下書きはINSERTせず、失敗の原因を運営者向け日本語で返す', () => {
+  it('ジャンルが固定リスト外の下書きは board_game_rules_games へINSERTせず、問題点をまとめて返すこと', async () => {
+    const result = await publishDraft(
+      makeGameRequest({ draftContent: makeDraftContent({ genres: ['パーティ'] }) })
+    )
+
+    expect(result.ok).toBe(false)
+    expect(insertMock).not.toHaveBeenCalled()
+    expect(result.error).toContain('下書きに公開できない項目があります')
+  })
+
+  it('ジャンルの固定リスト外CHECK違反でINSERTが失敗したとき、固定リスト外である旨の日本語を返すこと', async () => {
+    insertSingleMock.mockResolvedValue({
+      data: null,
+      error: {
+        message:
+          'new row for relation "board_game_rules_games" violates check constraint "board_game_rules_games_genres_check"',
+      },
+    })
+
+    const result = await publishDraft(makeGameRequest())
+
+    expect(result.ok).toBe(false)
+    expect(result.error).toContain('ジャンル')
+    expect(result.error).not.toContain('check constraint')
+  })
+
+  it('必須項目のNOT NULL違反でINSERTが失敗したとき、必須項目が空である旨の日本語を返すこと', async () => {
+    insertSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: 'null value in column "min_players" violates not-null constraint' },
+    })
+
+    const result = await publishDraft(makeGameRequest())
+
+    expect(result.ok).toBe(false)
+    expect(result.error).toContain('必須項目')
+    expect(result.error).not.toContain('null value')
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-18、specs/board-game-rules/admin/design.md#登録実行・下書きレビューの処理
+describe('【管理画面】下書きを公開後の詳細画面と同じ形(Game)へ変換してプレビューする', () => {
+  it('下書きの分類情報・ルールに、依頼行のID・作成日時・紹介画像を合わせたGameを返すこと', () => {
+    const request = makeGameRequest({
+      introPhotoPaths: ['intro-uuid/0.jpg'],
+      createdAt: '2026-08-05T00:00:00.000Z',
+    })
+    const game = draftToPreviewGame(
+      makeDraftContent({ minAge: 10, difficulty: '中級', publisher: null }),
+      request
+    )
+
+    expect(game.id).toBe(request.id)
+    expect(game.createdAt).toBe('2026-08-05T00:00:00.000Z')
+    expect(game.introPhotoPaths).toEqual(['intro-uuid/0.jpg'])
+    expect(game.name).toBe('カタン')
+    expect(game.minAge).toBe(10)
+    expect(game.difficulty).toBe('中級')
+    // 下書きで未設定の任意項目は Game 型に合わせて null 埋めされること
+    expect(game.publisher).toBeNull()
   })
 })
 
