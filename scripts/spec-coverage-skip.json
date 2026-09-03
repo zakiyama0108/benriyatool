@@ -4448,45 +4448,5 @@
     "specFile": "board-game-rules/report/requirements.md",
     "item": "スコープ外",
     "reason": "対象外を明示する見出しで、実装・テストの対象ではないため"
-  },
-  {
-    "specFile": "ai-dev-digest/content-selection/design.md",
-    "item": "掲載済み記事を除外する処理(決定的なコード)",
-    "reason": "fix/ai-dev-digest-source-review の実装PR(tasks.md Task 9〜14)でテスト追加とともにこのスキップ登録を削除する。今回は仕様承認PRのため判定ロジック未実装"
-  },
-  {
-    "specFile": "ai-dev-digest/content-selection/requirements.md",
-    "item": "情報源(ウォッチリスト) > GitHub",
-    "reason": "fix/ai-dev-digest-source-review の実装PR(tasks.md Task 9〜14)でテスト追加とともにこのスキップ登録を削除する。今回は仕様承認PRのため判定ロジック未実装"
-  },
-  {
-    "specFile": "ai-dev-digest/content-selection/requirements.md",
-    "item": "情報源(ウォッチリスト) > Google Developers",
-    "reason": "fix/ai-dev-digest-source-review の実装PR(tasks.md Task 9〜14)でテスト追加とともにこのスキップ登録を削除する。今回は仕様承認PRのため判定ロジック未実装"
-  },
-  {
-    "specFile": "ai-dev-digest/content-selection/requirements.md",
-    "item": "情報源(ウォッチリスト) > VS Code",
-    "reason": "fix/ai-dev-digest-source-review の実装PR(tasks.md Task 9〜14)でテスト追加とともにこのスキップ登録を削除する。今回は仕様承認PRのため判定ロジック未実装"
-  },
-  {
-    "specFile": "ai-dev-digest/content-selection/requirements.md",
-    "item": "情報源(ウォッチリスト) > Interconnects (Nathan Lambert)",
-    "reason": "fix/ai-dev-digest-source-review の実装PR(tasks.md Task 9〜14)でテスト追加とともにこのスキップ登録を削除する。今回は仕様承認PRのため判定ロジック未実装"
-  },
-  {
-    "specFile": "ai-dev-digest/content-selection/requirements.md",
-    "item": "情報源(ウォッチリスト) > Martin Fowler / Thoughtworks",
-    "reason": "fix/ai-dev-digest-source-review の実装PR(tasks.md Task 9〜14)でテスト追加とともにこのスキップ登録を削除する。今回は仕様承認PRのため判定ロジック未実装"
-  },
-  {
-    "specFile": "ai-dev-digest/content-selection/requirements.md",
-    "item": "掲載済み記事の再掲抑制(種別を問わない横断フィルター) [14]",
-    "reason": "fix/ai-dev-digest-source-review の実装PR(tasks.md Task 9〜14)でテスト追加とともにこのスキップ登録を削除する。今回は仕様承認PRのため判定ロジック未実装"
-  },
-  {
-    "specFile": "ai-dev-digest/content-selection/requirements.md",
-    "item": "情報源の健全性監視 [2]",
-    "reason": "fix/ai-dev-digest-source-review の実装PR(tasks.md Task 9〜14)でテスト追加とともにこのスキップ登録を削除する。今回は仕様承認PRのため判定ロジック未実装"
   }
 ]

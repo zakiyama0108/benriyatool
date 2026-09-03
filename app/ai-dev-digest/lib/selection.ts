@@ -5,6 +5,32 @@ import type { Criteria } from './watchlistTypes'
 // requirements.md#1日の掲載件数、design.md「採用基準を判定する処理」「1日分のトピックを
 // 選び出す処理」)。入出力が純粋なデータのみのため通常のvitestで完全にテストできる
 
+// 掲載済み記事の除外用にURLを正規化する(design.md「掲載済み記事を除外する処理」手順2)。
+// ホスト名の小文字化・クエリ文字列とフラグメントの除去・末尾スラッシュの統一を行う
+// (RSSフィードの移行やCMS差し替えで追跡パラメータ等が変わっても再掲を検知できるようにする)。
+// URLとして解釈できない文字列は素の文字列のまま返す(誤って除外しないため)
+export function normalizeUrl(raw: string): string {
+  try {
+    const u = new URL(raw.trim())
+    u.hostname = u.hostname.toLowerCase()
+    u.search = ''
+    u.hash = ''
+    // 末尾スラッシュの統一: パス末尾のスラッシュを除去する(ルート"/"は残す)
+    u.pathname = u.pathname.replace(/\/+$/, '') || '/'
+    return u.toString()
+  } catch {
+    return raw.trim()
+  }
+}
+
+// 過去に公開したダイジェスト記事で既に取り上げた記事・動画(元URLが一致するもの)を、
+// 採用条件を満たしていても当日の採用候補から除外する(全種別が対象。requirements.md#掲載済み記事の再掲抑制-14)。
+// 掲載済みURL集合は引数で受け取り(実行主体はcollect-and-select.ts)、正規化したうえで完全一致で突き合わせる
+export function excludeAlreadyPublished(candidates: Candidate[], publishedUrls: Set<string>): Candidate[] {
+  const normalizedPublished = new Set([...publishedUrls].map(normalizeUrl))
+  return candidates.filter((candidate) => !normalizedPublished.has(normalizeUrl(candidate.url)))
+}
+
 // 情報源内の重複を抑制する(決定的なコード。design.md「情報源内の重複を抑制する処理」)。
 // criteria.duplicateSuppressionSourceTypesに含まれる種別(初期値: individual-blog)は、
 // 同じ情報源(sourceId)から同日に複数候補が挙がった場合、公開日時が最も新しい1件だけを残す
@@ -137,14 +163,27 @@ function pickDiversified(candidates: JudgedCandidate[], count: number): JudgedCa
 
 // 1日分のトピックを選び出す(仕様: requirements.md#1日の掲載件数-9〜10、
 // design.md「1日分のトピックを選び出す処理」)
-export function selectDailyTopics(candidates: Candidate[], criteria: Criteria): SelectionResult {
+export function selectDailyTopics(
+  candidates: Candidate[],
+  criteria: Criteria,
+  publishedUrls: Set<string> = new Set()
+): SelectionResult {
   if (candidates.length === 0) {
     return { status: 'skipped', reason: '収集した候補が1件もありませんでした' }
   }
 
-  // 情報源内の重複抑制は話題の関連性フィルタ・採用基準の判定より前に適用する
+  // フィルタの適用順(design.md「1日分のトピックを選び出す処理」):
+  // 1. 掲載済み記事の除外 → 2. 情報源内の重複抑制 → 3. 話題の関連性フィルタ → 4. 採用基準 → 5. 件数調整
+
+  // 1. 掲載済み記事を除外する(requirements.md#掲載済み記事の再掲抑制-14)
+  const unpublished = excludeAlreadyPublished(candidates, publishedUrls)
+  if (unpublished.length === 0) {
+    return { status: 'skipped', reason: '収集した候補はすべて過去に掲載済みでした' }
+  }
+
+  // 2. 情報源内の重複抑制は話題の関連性フィルタ・採用基準の判定より前に適用する
   // (requirements.md#情報源内の重複掲載の抑制-13)
-  const deduplicated = deduplicateSameSourceCandidates(candidates, criteria)
+  const deduplicated = deduplicateSameSourceCandidates(unpublished, criteria)
 
   // 話題の関連性フィルタは採用基準の判定より前に適用する(除外された候補は、他の基準を
   // 満たしていても採用候補にも基準未達候補にもならない。requirements.md#話題の関連性-12)

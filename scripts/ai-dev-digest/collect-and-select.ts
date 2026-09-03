@@ -7,9 +7,12 @@
 // 実行状況のログはstderrに出す(design.md「ログ」)
 //
 // 実行方法: YOUTUBE_API_KEY=xxx npx tsx scripts/ai-dev-digest/collect-and-select.ts 2026-08-01
-import { fetchAllCandidates, fetchHttpClient } from '../../app/ai-dev-digest/lib/fetchCandidates'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fetchAllCandidates, fetchHttpClient, buildSourceHealthLogLines } from '../../app/ai-dev-digest/lib/fetchCandidates'
 import { selectDailyTopics } from '../../app/ai-dev-digest/lib/selection'
 import type { WatchlistEntry, Criteria } from '../../app/ai-dev-digest/lib/watchlistTypes'
+import type { Article } from '../../app/ai-dev-digest/lib/types'
 import watchlistData from '../../content/ai-dev-digest/watchlist.json'
 import criteriaData from '../../content/ai-dev-digest/criteria.json'
 
@@ -17,6 +20,22 @@ const watchlist = watchlistData as WatchlistEntry[]
 // criteria.jsonのimportはduplicateSuppressionSourceTypesがstring[]と推論されるため、
 // SourceType[]を要求するCriteria型へ明示的にアサートする(watchlist行と同じ扱い)
 const criteria = criteriaData as Criteria
+
+const ARTICLES_DIR = path.join(process.cwd(), 'content/ai-dev-digest/articles')
+
+// 掲載済み記事の元URLを全記事から集める(期間で絞らず全件。design.md「掲載済み記事を除外する処理」手順1)
+function collectPublishedSourceUrls(): Set<string> {
+  const urls = new Set<string>()
+  if (!fs.existsSync(ARTICLES_DIR)) return urls
+  for (const file of fs.readdirSync(ARTICLES_DIR)) {
+    if (!file.endsWith('.json')) continue
+    const article = JSON.parse(fs.readFileSync(path.join(ARTICLES_DIR, file), 'utf8')) as Article
+    for (const topic of article.topics) {
+      if (topic.sourceUrl) urls.add(topic.sourceUrl)
+    }
+  }
+  return urls
+}
 
 async function main() {
   const date = process.argv[2]
@@ -31,11 +50,24 @@ async function main() {
     process.exit(1)
   }
 
-  const candidates = await fetchAllCandidates(watchlist, criteria, apiKey, fetchHttpClient)
-  // 収集・選定の実行結果をstderrに記録する(design.md「ログ」。GitHub Actionsの実行ログとして残る)
+  const { candidates, stats, shortBodyExclusions } = await fetchAllCandidates(watchlist, criteria, apiKey, fetchHttpClient)
+  // 情報源ごとの取得件数をstderrに記録する(0件・取得失敗はWARN付き。requirements.md#情報源の健全性監視-2、design.md「ログ」)
+  console.error('情報源ごとの取得件数:')
+  for (const line of buildSourceHealthLogLines(stats)) console.error(`  ${line}`)
   console.error(`情報源からの取得候補数: ${candidates.length}件`)
 
-  const result = selectDailyTopics(candidates, criteria)
+  // 個人ブログの本文量による除外を件数・元URL付きでstderrに記録する(design.md「ログ」)
+  if (shortBodyExclusions.length > 0) {
+    console.error(`本文量により除外した個人ブログ投稿: ${shortBodyExclusions.length}件`)
+    for (const e of shortBodyExclusions) {
+      console.error(`  - ${e.sourceName}: ${e.url}(本文${e.bodyChars}字 < 基準${criteria.minIndividualBlogBodyChars}字)`)
+    }
+  }
+
+  const publishedUrls = collectPublishedSourceUrls()
+  console.error(`掲載済み記事の元URL: ${publishedUrls.size}件(当日の候補から除外対象)`)
+
+  const result = selectDailyTopics(candidates, criteria, publishedUrls)
   if (result.status === 'skipped') {
     console.error(`候補不足によりスキップします: ${result.reason}`)
   } else {
