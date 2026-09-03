@@ -277,27 +277,32 @@ describe('Qiitaからの候補収集 - 公開日時が対象期間内の記事�
     })
   })
 
-  it('新しい順に辿り、対象期間より古い記事に達した時点でそれ以降のページを辿らないこと', async () => {
-    const fetchJson = vi.fn().mockResolvedValue([
-      {
-        title: '期間内の記事',
-        url: 'https://qiita.com/example/items/recent',
+  it('1ページが満杯(100件)でも、その途中で対象期間より古い記事に達したら次のページを辿らないこと', async () => {
+    // 先頭99件は期間内・末尾1件だけ期間外。ページ件数は満杯(100)なので、
+    // 「満杯未満なら打ち切り」ではなく「期間外に達したら打ち切り」が効いていることを分離して確認する
+    const fullPage = [
+      ...Array.from({ length: 99 }, (_, i) => ({
+        title: `期間内の記事${i}`,
+        url: `https://qiita.com/example/items/recent${i}`,
         likes_count: 10,
         created_at: '2026-08-25T00:00:00+09:00',
         user: { name: 'u' },
-      },
+      })),
       {
         title: '期間外の記事',
         url: 'https://qiita.com/example/items/stale',
-        likes_count: 10,
+        likes_count: 500,
         created_at: '2026-01-01T00:00:00+09:00',
         user: { name: 'u' },
       },
-    ])
+    ]
+    const fetchJson = vi.fn().mockResolvedValue(fullPage)
     const http = makeHttp({ fetchJson })
-    await fetchQiitaCandidates(http, criteria, now)
-    // 1ページ目で期間外に到達したため、2ページ目以降のリクエストは発生しない
+    const candidates = await fetchQiitaCandidates(http, criteria, now)
     expect(fetchJson).toHaveBeenCalledTimes(1)
+    // 期間外の記事(いいね500)は打ち切りにより候補に含まれない
+    expect(candidates.map((c) => c.heading)).not.toContain('期間外の記事')
+    expect(candidates).toHaveLength(99)
   })
 })
 
