@@ -5,6 +5,7 @@ import {
   fetchQiitaCandidates,
   fetchZennCandidates,
   fetchAllCandidates,
+  buildSourceHealthLogLines,
 } from '../../../app/ai-dev-digest/lib/fetchCandidates'
 import type { HttpClient } from '../../../app/ai-dev-digest/lib/fetchCandidates'
 import type { WatchlistEntry, Criteria } from '../../../app/ai-dev-digest/lib/watchlistTypes'
@@ -12,9 +13,12 @@ import type { WatchlistEntry, Criteria } from '../../../app/ai-dev-digest/lib/wa
 const criteria: Criteria = {
   dailyTopicCount: { min: 3, max: 5 },
   youtubeRecentVideoWindow: 2,
+  youtubeCandidateVideoCount: 3,
   youtubeAboveAverageRatio: 1.2,
   qiitaMinLikes: 30,
+  qiitaMaxAgeDays: 60,
   zennMinLikes: 30,
+  minIndividualBlogBodyChars: 150,
   topicExcludeKeywords: [],
   duplicateSuppressionSourceTypes: ['individual-blog'],
 }
@@ -34,40 +38,79 @@ const karpathy: WatchlistEntry = {
   channels: [{ type: 'youtube', channelId: '@AndrejKarpathy' }],
 }
 
-// 仕様: specs/ai-dev-digest/content-selection/requirements.md#データ取得方法-1
-describe('YouTube情報源からの候補収集 - YouTube Data APIのレスポンスをCandidate型に変換する', () => {
-  it('直近の動画群から、最新1本を候補・残りを平均再生回数の算出対象としてCandidateに変換すること', async () => {
+const anthropicYoutube: WatchlistEntry = {
+  id: 'anthropic',
+  category: 'official',
+  name: 'Anthropic',
+  channels: [{ type: 'youtube', channelId: '@anthropic-ai' }],
+}
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#データ取得方法-1、specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-5
+describe('YouTube情報源からの候補収集 - 個人チャンネルは直近数本を候補にし、公式組織は最新1本のみを候補にする', () => {
+  it('個人YouTubeチャンネルは直近3本すべてが候補になり、各候補が「候補群の直後2本の平均再生回数」を採用基準として持つこと', async () => {
     const fetchJson = vi
       .fn()
       .mockResolvedValueOnce({ items: [{ id: 'UC_karpathy' }] }) // channels.list
       .mockResolvedValueOnce({
         items: [
-          { id: { videoId: 'newVideo' }, snippet: { title: '最新の動画', publishedAt: '2026-08-01T00:00:00Z' } },
-          { id: { videoId: 'old1' }, snippet: { title: '過去の動画1', publishedAt: '2026-07-20T00:00:00Z' } },
-          { id: { videoId: 'old2' }, snippet: { title: '過去の動画2', publishedAt: '2026-07-10T00:00:00Z' } },
+          { id: { videoId: 'c1' }, snippet: { title: '候補1(最新)', publishedAt: '2026-08-05T00:00:00Z' } },
+          { id: { videoId: 'c2' }, snippet: { title: '候補2', publishedAt: '2026-08-03T00:00:00Z' } },
+          { id: { videoId: 'c3' }, snippet: { title: '候補3', publishedAt: '2026-08-01T00:00:00Z' } },
+          { id: { videoId: 'p1' }, snippet: { title: '平均算出対象1', publishedAt: '2026-07-25T00:00:00Z' } },
+          { id: { videoId: 'p2' }, snippet: { title: '平均算出対象2', publishedAt: '2026-07-20T00:00:00Z' } },
         ],
       }) // search.list
       .mockResolvedValueOnce({
         items: [
-          { id: 'newVideo', statistics: { viewCount: '5000' } },
-          { id: 'old1', statistics: { viewCount: '1000' } },
-          { id: 'old2', statistics: { viewCount: '2000' } },
+          { id: 'c1', statistics: { viewCount: '9000' } },
+          { id: 'c2', statistics: { viewCount: '800' } },
+          { id: 'c3', statistics: { viewCount: '1500' } },
+          { id: 'p1', statistics: { viewCount: '1000' } },
+          { id: 'p2', statistics: { viewCount: '2000' } },
         ],
       }) // videos.list
 
     const http = makeHttp({ fetchJson })
     const candidates = await fetchYoutubeCandidates(karpathy, 'dummy-api-key', criteria, http)
 
+    expect(candidates.map((c) => c.heading)).toEqual(['候補1(最新)', '候補2', '候補3'])
+    // 平均算出対象は候補群(3本)を除いた直後の2本: (1000 + 2000) / 2 = 1500
+    expect(candidates.every((c) => c.recentAverageViews === 1500)).toBe(true)
+    expect(candidates[0]).toMatchObject({ sourceType: 'individual-youtube', metricValue: 9000, url: 'https://www.youtube.com/watch?v=c1' })
+  })
+
+  it('平均算出対象の動画がチャンネルに存在しない(取得0本)とき、平均再生回数は0として扱われること', async () => {
+    const fetchJson = vi
+      .fn()
+      .mockResolvedValueOnce({ items: [{ id: 'UC_karpathy' }] })
+      .mockResolvedValueOnce({
+        items: [{ id: { videoId: 'only1' }, snippet: { title: '唯一の動画', publishedAt: '2026-08-05T00:00:00Z' } }],
+      })
+      .mockResolvedValueOnce({ items: [{ id: 'only1', statistics: { viewCount: '10' } }] })
+
+    const http = makeHttp({ fetchJson })
+    const candidates = await fetchYoutubeCandidates(karpathy, 'dummy-api-key', criteria, http)
     expect(candidates).toHaveLength(1)
-    expect(candidates[0]).toMatchObject({
-      sourceId: 'karpathy',
-      sourceName: 'Andrej Karpathy',
-      sourceType: 'individual-youtube',
-      heading: '最新の動画',
-      url: 'https://www.youtube.com/watch?v=newVideo',
-      metricValue: 5000,
-      recentAverageViews: 1500, // (1000 + 2000) / 2
-    })
+    expect(candidates[0].recentAverageViews).toBe(0)
+  })
+
+  it('公式組織のYouTubeは、直近複数本評価の対象外で最新1本のみが候補になること(平均再生回数は持たない)', async () => {
+    const fetchJson = vi
+      .fn()
+      .mockResolvedValueOnce({ items: [{ id: 'UC_anthropic' }] })
+      .mockResolvedValueOnce({
+        items: [
+          { id: { videoId: 'a1' }, snippet: { title: '公式の最新動画', publishedAt: '2026-08-05T00:00:00Z' } },
+          { id: { videoId: 'a2' }, snippet: { title: '公式の過去動画', publishedAt: '2026-08-01T00:00:00Z' } },
+        ],
+      })
+      .mockResolvedValueOnce({ items: [{ id: 'a1', statistics: { viewCount: '3000' } }] })
+
+    const http = makeHttp({ fetchJson })
+    const candidates = await fetchYoutubeCandidates(anthropicYoutube, 'dummy-api-key', criteria, http)
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]).toMatchObject({ sourceType: 'official', heading: '公式の最新動画' })
+    expect(candidates[0].recentAverageViews).toBeUndefined()
   })
 
   it('チャンネルの動画取得(search.list)が失敗した場合、例外が呼び出し元に伝播すること(fetchAllCandidatesが個別に握りつぶす)', async () => {
@@ -88,6 +131,13 @@ const anthropicBlog: WatchlistEntry = {
   channels: [{ type: 'rss', feedUrl: 'https://www.anthropic.com/rss.xml' }],
 }
 
+const simonBlog: WatchlistEntry = {
+  id: 'simon-willison',
+  category: 'individual-blog',
+  name: 'Simon Willison',
+  channels: [{ type: 'rss', feedUrl: 'https://simonwillison.net/atom/everything/' }],
+}
+
 // 仕様: specs/ai-dev-digest/content-selection/requirements.md#データ取得方法-1
 describe('公式ブログ・個人ブログのRSS/Atomフィードからの候補収集 - フィードの新着記事をCandidate型に変換する', () => {
   it('RSS 2.0形式のフィードから新着記事をCandidateに変換すること', async () => {
@@ -101,7 +151,7 @@ describe('公式ブログ・個人ブログのRSS/Atomフィードからの候�
       </channel></rss>`
     const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(rss) })
 
-    const candidates = await fetchRssCandidates(anthropicBlog, http)
+    const { candidates } = await fetchRssCandidates(anthropicBlog, criteria, http)
     expect(candidates).toHaveLength(1)
     expect(candidates[0]).toMatchObject({
       sourceId: 'anthropic',
@@ -113,23 +163,19 @@ describe('公式ブログ・個人ブログのRSS/Atomフィードからの候�
   })
 
   it('Atom形式のフィード(individual-blog)から新着記事をCandidateに変換すること', async () => {
-    const simon: WatchlistEntry = {
-      id: 'simon-willison',
-      category: 'individual-blog',
-      name: 'Simon Willison',
-      channels: [{ type: 'rss', feedUrl: 'https://simonwillison.net/atom/everything/' }],
-    }
+    const longBody = 'この記事ではLLMツールの新機能について詳しく解説する。'.repeat(8)
     const atom = `<?xml version="1.0"?>
       <feed>
         <entry>
           <title>LLMツールの新機能について</title>
           <link href="https://simonwillison.net/2026/Aug/1/example/" />
           <updated>2026-08-01T00:00:00Z</updated>
+          <content type="html"><![CDATA[<p>${longBody}</p>]]></content>
         </entry>
       </feed>`
     const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(atom) })
 
-    const candidates = await fetchRssCandidates(simon, http)
+    const { candidates } = await fetchRssCandidates(simonBlog, criteria, http)
     expect(candidates).toHaveLength(1)
     expect(candidates[0]).toMatchObject({
       sourceType: 'individual-blog',
@@ -139,22 +185,89 @@ describe('公式ブログ・個人ブログのRSS/Atomフィードからの候�
   })
 })
 
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-6
+describe('個人ブログの本文量による除外 - 公式RSSの本文が短すぎる投稿は要約に足る情報がないため候補にしない', () => {
+  const shortBody = '新しいポッドキャスト回を公開しました。'
+  const longBody = 'この投稿では新しいツールの設計方針と使い方を具体例つきで詳しく解説している。'.repeat(6)
+
+  function atomWithTwoPosts(): string {
+    return `<?xml version="1.0"?>
+      <feed>
+        <entry>
+          <title>ポッドキャスト回の告知</title>
+          <link href="https://simonwillison.net/2026/Aug/2/podcast/" />
+          <updated>2026-08-02T00:00:00Z</updated>
+          <content type="html"><![CDATA[<p>${shortBody}</p>]]></content>
+        </entry>
+        <entry>
+          <title>新しいツールの設計方針</title>
+          <link href="https://simonwillison.net/2026/Aug/1/tool/" />
+          <updated>2026-08-01T00:00:00Z</updated>
+          <content type="html"><![CDATA[<p>${longBody}</p>]]></content>
+        </entry>
+      </feed>`
+  }
+
+  it('本文が閾値(150字)未満の個人ブログ投稿は候補に含まれず、閾値以上の投稿だけが候補になること', async () => {
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(atomWithTwoPosts()) })
+    const { candidates } = await fetchRssCandidates(simonBlog, criteria, http)
+    expect(candidates.map((c) => c.heading)).toEqual(['新しいツールの設計方針'])
+  })
+
+  it('本文量で除外した投稿は、件数と元URLを記録として持ち帰り、実行ログ(stderr)に残せること(月次見直しで閾値の妥当性を検証するため)', async () => {
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(atomWithTwoPosts()) })
+    const { shortBodyExclusions } = await fetchRssCandidates(simonBlog, criteria, http)
+    expect(shortBodyExclusions).toHaveLength(1)
+    expect(shortBodyExclusions[0]).toMatchObject({
+      sourceId: 'simon-willison',
+      url: 'https://simonwillison.net/2026/Aug/2/podcast/',
+    })
+    expect(shortBodyExclusions[0].bodyChars).toBeLessThan(criteria.minIndividualBlogBodyChars)
+  })
+
+  it('公式組織のブログは、本文が短くても本文量では除外されないこと(発信量が少なく信頼性が高いため)', async () => {
+    const rss = `<?xml version="1.0"?>
+      <rss><channel>
+        <item>
+          <title>短い告知記事</title>
+          <link>https://www.anthropic.com/news/short</link>
+          <pubDate>Sat, 01 Aug 2026 00:00:00 GMT</pubDate>
+          <description>ごく短いお知らせ。</description>
+        </item>
+      </channel></rss>`
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(rss) })
+    const { candidates, shortBodyExclusions } = await fetchRssCandidates(anthropicBlog, criteria, http)
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0].heading).toBe('短い告知記事')
+    expect(shortBodyExclusions).toHaveLength(0)
+  })
+})
+
 // 仕様: specs/ai-dev-digest/content-selection/requirements.md#データ取得方法-1、specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-7
-describe('Qiitaからの候補収集 - Qiita公式APIのレスポンスをCandidate型に変換する', () => {
-  it('新着記事のいいね数(likes_count)がmetricValueに変換されること', async () => {
+describe('Qiitaからの候補収集 - 公開日時が対象期間内の記事だけをCandidate型に変換する', () => {
+  const now = new Date('2026-08-30T00:00:00Z')
+
+  it('直近60日以内に公開された記事のいいね数がmetricValueに変換され、期間外の古い記事は候補にならないこと', async () => {
     const http = makeHttp({
       fetchJson: vi.fn().mockResolvedValue([
         {
           title: 'Reactの新機能まとめ',
           url: 'https://qiita.com/example/items/abc123',
           likes_count: 42,
-          created_at: '2026-08-01T00:00:00+09:00',
+          created_at: '2026-08-20T00:00:00+09:00',
+          user: { name: 'example-user' },
+        },
+        {
+          title: '半年前の記事',
+          url: 'https://qiita.com/example/items/old999',
+          likes_count: 500,
+          created_at: '2026-05-01T00:00:00+09:00',
           user: { name: 'example-user' },
         },
       ]),
     })
 
-    const candidates = await fetchQiitaCandidates(http)
+    const candidates = await fetchQiitaCandidates(http, criteria, now)
     expect(candidates).toHaveLength(1)
     expect(candidates[0]).toMatchObject({
       sourceType: 'qiita',
@@ -162,6 +275,34 @@ describe('Qiitaからの候補収集 - Qiita公式APIのレスポンスをCandid
       url: 'https://qiita.com/example/items/abc123',
       metricValue: 42,
     })
+  })
+
+  it('1ページが満杯(100件)でも、その途中で対象期間より古い記事に達したら次のページを辿らないこと', async () => {
+    // 先頭99件は期間内・末尾1件だけ期間外。ページ件数は満杯(100)なので、
+    // 「満杯未満なら打ち切り」ではなく「期間外に達したら打ち切り」が効いていることを分離して確認する
+    const fullPage = [
+      ...Array.from({ length: 99 }, (_, i) => ({
+        title: `期間内の記事${i}`,
+        url: `https://qiita.com/example/items/recent${i}`,
+        likes_count: 10,
+        created_at: '2026-08-25T00:00:00+09:00',
+        user: { name: 'u' },
+      })),
+      {
+        title: '期間外の記事',
+        url: 'https://qiita.com/example/items/stale',
+        likes_count: 500,
+        created_at: '2026-01-01T00:00:00+09:00',
+        user: { name: 'u' },
+      },
+    ]
+    const fetchJson = vi.fn().mockResolvedValue(fullPage)
+    const http = makeHttp({ fetchJson })
+    const candidates = await fetchQiitaCandidates(http, criteria, now)
+    expect(fetchJson).toHaveBeenCalledTimes(1)
+    // 期間外の記事(いいね500)は打ち切りにより候補に含まれない
+    expect(candidates.map((c) => c.heading)).not.toContain('期間外の記事')
+    expect(candidates).toHaveLength(99)
   })
 })
 
@@ -217,8 +358,52 @@ describe('ウォッチリスト全体からの候補収集 - 1つの情報源が
     const fetchJson = vi.fn().mockRejectedValue(new Error('Qiita API障害'))
     const http = makeHttp({ fetchText, fetchJson })
 
-    const candidates = await fetchAllCandidates(watchlist, criteria, 'dummy-api-key', http)
+    const { candidates } = await fetchAllCandidates(watchlist, criteria, 'dummy-api-key', http)
     expect(candidates).toHaveLength(1)
     expect(candidates[0].sourceId).toBe('anthropic')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#情報源の健全性監視-2
+describe('情報源ごとの取得件数のログ - フィード廃止・URL変更で無言停止した情報源に気づけるようにする', () => {
+  const emptyRss = `<?xml version="1.0"?><rss><channel></channel></rss>`
+  const oneItemRss = `<?xml version="1.0"?>
+    <rss><channel>
+      <item>
+        <title>新しいモデルを発表</title>
+        <link>https://www.anthropic.com/news/example</link>
+        <pubDate>Sat, 01 Aug 2026 00:00:00 GMT</pubDate>
+      </item>
+    </channel></rss>`
+
+  it('情報源ごとに「取得できた候補件数」と「取得失敗の有無」が集計されて返ること', async () => {
+    const watchlist: WatchlistEntry[] = [
+      anthropicBlog,
+      { id: 'google-developers', category: 'official', name: 'Google Developers', channels: [{ type: 'rss', feedUrl: 'https://blog.google/technology/developers/rss/' }] },
+      { id: 'qiita', category: 'platform', name: 'Qiita', channels: [{ type: 'platform-qiita' }] },
+    ]
+    const fetchText = vi.fn((url: string) => Promise.resolve(url.includes('anthropic') ? oneItemRss : emptyRss))
+    const fetchJson = vi.fn().mockRejectedValue(new Error('Qiita API障害'))
+    const http = makeHttp({ fetchText, fetchJson })
+
+    const { stats } = await fetchAllCandidates(watchlist, criteria, 'dummy-api-key', http)
+    expect(stats).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ sourceId: 'anthropic', channel: 'rss', ok: true, count: 1 }),
+        expect.objectContaining({ sourceId: 'google-developers', channel: 'rss', ok: true, count: 0 }),
+        expect.objectContaining({ sourceId: 'qiita', channel: 'qiita', ok: false, count: 0 }),
+      ])
+    )
+  })
+
+  it('候補0件・取得失敗の情報源だけが警告(WARN)付きのログ行になること', () => {
+    const lines = buildSourceHealthLogLines([
+      { sourceId: 'anthropic', sourceName: 'Anthropic', channel: 'rss', ok: true, count: 3 },
+      { sourceId: 'google-developers', sourceName: 'Google Developers', channel: 'rss', ok: true, count: 0 },
+      { sourceId: 'qiita', sourceName: 'Qiita', channel: 'qiita', ok: false, count: 0 },
+    ])
+    expect(lines[0]).not.toContain('WARN')
+    expect(lines[1]).toContain('WARN')
+    expect(lines[2]).toContain('WARN')
   })
 })
