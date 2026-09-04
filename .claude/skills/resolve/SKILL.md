@@ -43,4 +43,6 @@ description: /spec-reviewや/implementation-review、またはPR上で受けた�
 
 # 完了時の次ステップ案内
 
+仕様ドキュメント(requirements.md/design.md/tasks.md/architecture.md/ADR)を修正した場合は、[spec-artifact](../spec-artifact/SKILL.md)の手順で閲覧用Artifactを同じURLへ再発行し、`open`で外部ブラウザに表示したうえでURLを提示する(Artifactだけが古い状態で残るのを防ぐため)。
+
 全件対応したら、指摘元のレビュー([/spec-review](../spec-review/SKILL.md)または[/implementation-review](../implementation-review/SKILL.md))を再実行して🔴/🟡が解消したことを確認し、[/pr](../pr/SKILL.md)へ進むことを案内する。

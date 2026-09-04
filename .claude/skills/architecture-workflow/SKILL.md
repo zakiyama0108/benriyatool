@@ -27,6 +27,8 @@ architecture.mdは**参照のハブ**であり、他ドキュメントの内容�
 - 新規specフォルダの作成・廃止、既存specの依存関係の変化があったときは、[/fix](../fix/SKILL.md)の「仕様(3点セット)への影響を洗い出す」の一環として、機能マップを更新する
 - アプリ固有の採用技術・外部サービス・ディレクトリ構成が変わったときも同様に更新する
 
+**仕様ドキュメントのArtifact発行(必須):** architecture.mdを新規作成・更新したとき、およびADR(`docs/adr/`・`specs/<アプリ名>/adr/`)を追加したときは、コミット・pushまで済んだ時点で[spec-artifact](../spec-artifact/SKILL.md)の手順でHTMLのArtifactを発行し、`open`で外部ブラウザに表示したうえでURLを提示する(既に同じページを発行済みなら新しいURLを作らず同じURLへ更新する)。実施の可否はユーザーに聞かない(既定動作)。この項は requirement/design/fix/architecture-workflow の4Skillに同趣旨で記載する(変更時は揃って更新する)。
+
 # 図の運用方針(AI駆動開発向け)
 
 設計図は「人が理解するため」だけでなく「AIが理解・保守しやすいこと」を最優先する。
@@ -141,6 +143,7 @@ architecture.mdに書く方針(アーキテクチャの目的・設計方針・�
 - [/spec-review](../spec-review/SKILL.md)チェックリスト: 図が本文・コードと矛盾していないかを確認する
 - [/retrospective](../retrospective/SKILL.md): 直近のPRで触ったアプリの図と実態の乖離をスポットチェックする(`docs/architecture/`含む)
 - インフラ・デプロイ構成を変えるPR(ホスティング変更・CI変更・外部サービス追加)では、`docs/architecture/`の該当図を同じPRで更新する
+- [spec-artifact](../spec-artifact/SKILL.md): 仕様書・architecture.md・ADRを更新したら、閲覧用Artifactも同じURLへ再発行して最新化する(Artifactだけが古くなることの禁止)
 
 ルートREADME.mdのアプリ一覧表(architecture.mdへのリンク)は現行維持し、`docs/architecture/`のインフラ構成図・デプロイメント図へのリンクを追加する。
 
