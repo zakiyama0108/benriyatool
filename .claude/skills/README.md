@@ -158,6 +158,7 @@ flowchart TD
 | [architecture-workflow](architecture-workflow/SKILL.md) | `specs/<アプリ名>/architecture.md`(アプリ全体像・サマリ章・機能一覧表)の作成・更新。設計図(Mermaid)の種類(コンテキスト/システム構成/コンポーネント/ER、および要件・設計側のユースケース/シーケンス/画面遷移/状態遷移)・必須相当の作成条件・書き方ルールと、`docs/architecture/`(プロジェクト共通のインフラ系図)の運用もここに集約 | /requirement、/design、/fix、/spec-review、/retrospective |
 | [parallel-work](parallel-work/SKILL.md) | git worktreeで作業ディレクトリを分けて複数機能を並行開発する手順と注意事項 | /requirement、/fix、/implementation、/pr、/release-check |
 | [run-benriyatool](run-benriyatool/SKILL.md) | devサーバーを起動しheadless Chrome(driver.mjs)で実機操作・スクリーンショット確認する手順。単発の動作確認はui-checkerエージェントに委譲する | /implementation-review、「実機で確認して」等の依頼全般 |
+| [spec-artifact](spec-artifact/SKILL.md) | 仕様ドキュメント(requirements.md/design.md/tasks.md/architecture.md/ADR)を書き終えたときに、閲覧用のHTML Artifactを発行し外部ブラウザで開くまでの共通手順。ページ単位・タイトル・再発行(同じURLへの更新)のルールを扱う | /requirement、/design、/fix、architecture-workflow(/spec-review・/resolveでの仕様修正後も再発行) |
 
 ### ユーティリティSkill(開発フローから独立)
 
