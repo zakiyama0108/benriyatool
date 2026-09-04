@@ -116,6 +116,8 @@ design.mdに入れる図(シーケンス図・画面遷移図・状態遷移図)
 
 # 完了時の次ステップ案内
 
+**仕様ドキュメントのArtifact発行(必須):** 追加コミット・pushまで済んだら、[spec-artifact](../spec-artifact/SKILL.md)の手順で機能specページのArtifactを**同じURLへ更新**し(/requirementが発行済みのため`list`→`read`→`url`指定で追記更新する)、`open`で外部ブラウザに表示したうえでURLを提示する。実施の可否はユーザーに聞かない(既定動作)。この項は requirement/design/fix/architecture-workflow の4Skillに同趣旨で記載する(変更時は揃って更新する)。
+
 design.md/tasks.mdが書けたら、[/requirement](../requirement/SKILL.md)が作った早期仕様PRの同じブランチに追加コミット・push する(新しいPRは作らない。手順は[/pr](../pr/SKILL.md)の「早期仕様PR」参照)。3点セット(requirements.md/design.md/tasks.md)が揃ったら、[/spec-review](../spec-review/SKILL.md)(仕様レビュー)へ進むことを案内する。この時点ではまだコード(テストを含む)を書かない。
 
 この時点の成果物(design.md/tasks.md)はコミット・pushして早期仕様PRに乗っているため、ここでcompactや新しいセッションへの切り替えを行っても支障はない。新しいセッションの名称と次のセッションにそのまま貼り付けられるプロンプトを、1行目=名称・2行目=プロンプトの単一のコードブロックとして毎回提示してから終える(名称とプロンプトを分けて提示しない。「セッションを閉じても大丈夫」とだけ述べて済ませない。名称は前のセッションと同じ<機能名>に次工程名を()で添えた形。1行目の例: `<機能名>(仕様レビュー)` / 2行目の例: `/spec-review を実行してください。対象は specs/<アプリ名>/<機能名>/、ブランチ feature/<機能名>(PR #<番号>)です。`)。
