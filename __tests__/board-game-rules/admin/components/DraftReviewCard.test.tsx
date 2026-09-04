@@ -133,7 +133,9 @@ describe('【管理画面】下書きレビューで生成物を全文・分類�
     expect(screen.queryByText((content) => content.includes('…'))).toBeNull()
   })
 
-  it('詳しい版ルールの全章が共通章立ての日本語見出し付きで表示され、本文が空の章は「(記載なし)」と示されること', () => {
+  it('詳しい版タブでは本文のある章だけが見出し付きで表示され、本文が空の章は「未生成の章」として運営者に示されること', () => {
+    // 公開後の詳細画面と同じ表示(RuleTabsは本文が空の章を出さない)をプレビューしつつ、
+    // 運営者が未生成の章に気づけるよう補助表示を出す
     render(
       <DraftReviewCard
         request={makeRequest({
@@ -151,22 +153,29 @@ describe('【管理画面】下書きレビューで生成物を全文・分類�
         onRequestRevision={vi.fn().mockResolvedValue(okResult)}
       />
     )
-    for (const heading of ['概要', '準備', '手番の流れ', '勝利条件', '得点計算', '特殊ルール・例外']) {
-      expect(screen.getByText(heading)).toBeTruthy()
-    }
+    // 本文が空の章(準備・手番の流れ・得点計算・特殊ルール・例外)は「未生成の章」として列挙される
+    const ungenerated = screen.getByText(/未生成の章:/)
+    expect(ungenerated.textContent).toContain('準備')
+    expect(ungenerated.textContent).toContain('特殊ルール・例外')
+
+    // 詳しい版タブへ切り替えると、本文のある章だけが見出し付きで表示される
+    fireEvent.click(screen.getByRole('button', { name: '詳しい版' }))
+    expect(screen.getByText('概要')).toBeTruthy()
     expect(screen.getByText('2〜4人で資源を奪い合うゲーム。')).toBeTruthy()
+    expect(screen.getByText('勝利条件')).toBeTruthy()
     expect(screen.getByText('10点に最初に到達した人の勝ち。')).toBeTruthy()
-    // 本文が空・未生成の章は存在だけ示す
-    expect(screen.getAllByText('(記載なし)').length).toBeGreaterThan(0)
   })
 
-  it('共通章立てにないキーの章が来ても壊れず、キーをそのまま見出しにして表示されること', () => {
+  it('共通章立てにないキーは公開後の表示に出ないが「公開時に表示されない章キー」として運営者に示されること', () => {
     render(
       <DraftReviewCard
         request={makeRequest({
           status: 'draft',
           draftContent: makeDraftContent({
-            rulesDetailed: [{ key: 'house_rule', body: '公式外の追加ルール。' }],
+            rulesDetailed: [
+              { key: 'overview', body: '概要の本文。' },
+              { key: 'house_rule', body: '公式外の追加ルール。' },
+            ],
           }),
         })}
         onTrigger={vi.fn()}
@@ -174,11 +183,15 @@ describe('【管理画面】下書きレビューで生成物を全文・分類�
         onRequestRevision={vi.fn().mockResolvedValue(okResult)}
       />
     )
-    expect(screen.getByText('house_rule')).toBeTruthy()
-    expect(screen.getByText('公式外の追加ルール。')).toBeTruthy()
+    const unknownKeys = screen.getByText(/公開時に表示されない章キー:/)
+    expect(unknownKeys.textContent).toContain('house_rule')
+
+    // 詳しい版タブに切り替えても、共通章立てにないキーの本文は表示されない
+    fireEvent.click(screen.getByRole('button', { name: '詳しい版' }))
+    expect(screen.queryByText('公式外の追加ルール。')).toBeNull()
   })
 
-  it('分類情報(対象年齢・難易度・出版社・作者・日本語ルール有無・受賞歴・発売年)のうち値があるものが表示されること', () => {
+  it('分類情報(対象年齢・難易度・出版社・作者・日本語ルール有無・受賞歴・発売年)のうち値があるものがチップ表示されること', () => {
     render(
       <DraftReviewCard
         request={makeRequest({
@@ -198,16 +211,17 @@ describe('【管理画面】下書きレビューで生成物を全文・分類�
         onRequestRevision={vi.fn().mockResolvedValue(okResult)}
       />
     )
-    expect(screen.getByText('対象年齢: 10歳以上')).toBeTruthy()
-    expect(screen.getByText('難易度: 中級')).toBeTruthy()
-    expect(screen.getByText('出版社: コスモス')).toBeTruthy()
-    expect(screen.getByText('作者: クラウス・トイバー')).toBeTruthy()
-    expect(screen.getByText('日本語ルール: あり')).toBeTruthy()
-    expect(screen.getByText('受賞歴: ドイツ年間ゲーム大賞 1995')).toBeTruthy()
-    expect(screen.getByText('発売年: 1995年')).toBeTruthy()
+    expect(screen.getByText('対象年齢')).toBeTruthy()
+    expect(screen.getByText('10歳以上')).toBeTruthy()
+    expect(screen.getByText('中級')).toBeTruthy()
+    expect(screen.getByText('コスモス')).toBeTruthy()
+    expect(screen.getByText('クラウス・トイバー')).toBeTruthy()
+    expect(screen.getByText('あり')).toBeTruthy()
+    expect(screen.getByText('ドイツ年間ゲーム大賞 1995')).toBeTruthy()
+    expect(screen.getByText('1995年')).toBeTruthy()
   })
 
-  it('日本語ルールがない場合は「日本語ルール: なし」と表示されること', () => {
+  it('日本語ルールがない場合は「日本語ルール」チップに「なし」と表示されること', () => {
     render(
       <DraftReviewCard
         request={makeRequest({
@@ -219,7 +233,42 @@ describe('【管理画面】下書きレビューで生成物を全文・分類�
         onRequestRevision={vi.fn().mockResolvedValue(okResult)}
       />
     )
-    expect(screen.getByText('日本語ルール: なし')).toBeTruthy()
+    expect(screen.getByText('日本語ルール')).toBeTruthy()
+    expect(screen.getByText('なし')).toBeTruthy()
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行・下書きレビュー-19、specs/board-game-rules/admin/design.md#エラーハンドリング
+describe('【管理画面】このまま公開すると失敗する下書きを、公開前に警告する', () => {
+  it('ジャンルが固定リスト外・対応人数が未設定などの下書きは「このまま公開すると失敗します」と問題点が警告表示されること', () => {
+    render(
+      <DraftReviewCard
+        request={makeRequest({
+          status: 'draft',
+          draftContent: makeDraftContent({ genres: ['パーティ'], minPlayers: 0 }),
+        })}
+        onTrigger={vi.fn()}
+        onPublish={vi.fn().mockResolvedValue(okResult)}
+        onRequestRevision={vi.fn().mockResolvedValue(okResult)}
+      />
+    )
+    expect(screen.getByText('このまま公開すると失敗します')).toBeTruthy()
+    expect(screen.getByText(/ジャンルに選べない値が含まれています/)).toBeTruthy()
+    expect(screen.getByText(/対応人数\(下限\)は1以上の整数/)).toBeTruthy()
+    // 警告は出しても「公開する」ボタンは無効化しない(押すとpublishDraftが具体的な失敗を返す)
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: '公開する' }).disabled).toBe(false)
+  })
+
+  it('妥当な下書きでは警告ボックスを出さないこと', () => {
+    render(
+      <DraftReviewCard
+        request={makeRequest({ status: 'draft', draftContent: makeDraftContent() })}
+        onTrigger={vi.fn()}
+        onPublish={vi.fn().mockResolvedValue(okResult)}
+        onRequestRevision={vi.fn().mockResolvedValue(okResult)}
+      />
+    )
+    expect(screen.queryByText('このまま公開すると失敗します')).toBeNull()
   })
 })
 

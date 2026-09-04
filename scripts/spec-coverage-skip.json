@@ -2185,6 +2185,16 @@
     "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },
   {
+    "specFile": "ai-dev-digest/content-selection/requirements.md",
+    "item": "話題の重複掲載の抑制(日をまたぐ横断フィルター) [15]",
+    "reason": "見直し案として提案中で判定方法の設計・実装が未確定のため"
+  },
+  {
+    "specFile": "ai-dev-digest/content-selection/requirements.md",
+    "item": "話題の専門性・対象読者との合致度(種別を問わない横断フィルター) [16]",
+    "reason": "見直し案として提案中で判定方法の設計・実装が未確定のため"
+  },
+  {
     "specFile": "ai-dev-digest/daily-publish/design.md",
     "item": "実行環境の前提(初導入のため明記する設計判断)",
     "reason": "GitHub Actionsの認証情報(PAT・APIキー)の管理方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため"

@@ -116,6 +116,17 @@
 - 🟢 `DraftReviewCard`の`draft`表示に簡単版全文・詳しい版全章(折りたたみ)・分類情報を追加する。`GameRequestsView`の写真プレビューをリンク化する
 - 🔵 表示の詰まりを整える(章見出しの体裁、折りたたみの既定状態、サムネイルサイズ)
 
+## T4d. 下書きの公開前検証と公開後プレビュー(`admin/lib/draftPreview.ts`, `admin/lib/gameRequests.ts`, `admin/components/DraftReviewCard.tsx`)
+- 対象: requirements.md#登録実行・下書きレビュー-18、requirements.md#登録実行・下書きレビュー-19(design.md「登録実行・下書きレビューの処理」手順3、design.md「エラーハンドリング」)。claude -p の生成物が `board_game_rules_games` の制約(対応人数・プレイ時間の NOT NULL、ジャンルの固定リストCHECK、文字数上限CHECK)に反したまま公開されて失敗し、原因が画面から分からなかった不具合への対応
+- 🔴 次をテストする:
+  - `validateDraftForPublish(draft)`(`admin/lib/draftPreview.ts`): 妥当な下書きは空配列。ゲーム名空・対応人数/プレイ時間が null/0/小数・下限>上限・ジャンル0個・ジャンルが `GENRES` の value 以外(例: 「パーティ」「運要素」)・簡単版4000字超・詳しい版40000字超のそれぞれで、運営者向けの日本語の問題点が返ること
+  - `draftToPreviewGame(draft, request)`(`admin/lib/draftPreview.ts`): 下書きの分類情報・ルールに、依頼行の id・作成日時・紹介画像を合わせた `Game` 型を返すこと。下書きで未設定の任意項目は `Game` 型に合わせて null 埋めされること
+  - `publishDraft`(`admin/lib/gameRequests.ts`): 公開できない下書き(ジャンル固定リスト外など)は `board_game_rules_games` へ INSERT せず問題点をまとめて返すこと。検証をすり抜けて DB 側の CHECK/NOT NULL 違反で INSERT が失敗した場合も、生の英文でなく種類の分かる日本語(固定リスト外ジャンル/必須項目が空/文字数超過)を返すこと
+  - `DraftReviewCard`: 下書きが公開後の詳細画面と同じ表示コンポーネント(`GameInfo`・`RuleTabs`)でプレビューされること、`RuleTabs` が出さない未生成の章・共通章立てにないキーが補助表示で運営者に示されること、公開前検証で問題がある下書きは「このまま公開すると失敗します」と問題点が警告表示され「公開する」ボタンは無効化されないこと
+- 🟢 `admin/lib/draftPreview.ts` に `validateDraftForPublish`・`draftToPreviewGame` を実装(Supabaseに触れない純粋関数として `gameRequests.ts` から分離)。`publishDraft` は INSERT 前に検証を通し、`describePublishError` をジャンル固定リスト外CHECK・NOT NULL違反にも対応させる。`DraftReviewCard` の `draft` 表示を `GameInfo`・`RuleTabs` 流用のプレビュー+補助表示+公開前警告に載せ替える
+- 🔵 プレビュー枠・警告表示の体裁を整える。T4c の「(記載なし)」全章表示・折りたたみは本タスクのプレビュー化で置き換わる
+- (TDD対象外)生成プロンプトの制約強化: `.claude/skills/board-game-rules-batch-register/SKILL.md` Step2 と `scripts/board-game-rules/processRegistrationQueue.ts` の `buildPrompt()` に、対応人数・プレイ時間は必須の正整数・ジャンルは `GENRES` の value のみ・文字数上限、を明示する
+
 ## 補足(リリース前チェック)
 - Supabase AuthのRedirect URLs許可リストに管理画面の戻り先を登録する(requirements.md#認証手段とパスキー-5)。利用者ログインの戻り先`https://benriyatool.com/board-game-rules/**`は[user-auth](../user-auth/tasks.md)の責務で登録し、これは`/board-game-rules/admin/**`を包含するため、広い方の1エントリで管理画面の戻り先も兼ねられる(user-authと重複せず整理する)
 - 運営者Googleアカウントのパスキー登録・2段階認証の維持を初回公開前に確認する(ADR-0006)

@@ -41,9 +41,11 @@ disable-model-invocation: true
 - 対象フォルダ内の写真、または依頼に添付された写真(手動フローで登録依頼由来の場合は運営者に元写真を管理画面からダウンロードしてローカルに用意してもらう。このSkill自身はService Roleでの写真ダウンロードを行わない。自動フローでは `processRegistrationQueue.ts` が非公開Storageから service_role で取得し、隔離した作業ディレクトリへ置く)をReadツールで読み込み、内容を解析する
 - 再調整(自動フローで `draft_content` あり)の場合は、写真ではなく「直前の下書きJSON + 運営者の要望テキスト」を入力とし、要望を反映した下書きに作り直す
 - 次を判断・生成する(ジャンルは[game-registration/design.md](../../../specs/board-game-rules/game-registration/design.md)「ジャンルの選択肢」、詳しい版の章立ては[admin/design.md](../../../specs/board-game-rules/admin/design.md)「詳しい版の共通章立て(生成時の構造)」に従う):
-  - 分類情報: ゲーム名、対応人数(下限・上限)、プレイ時間(下限・上限)、ジャンル(`app/board-game-rules/lib/genres.ts`の固定リストから、依頼側の選択を鵜呑みにせず写真の内容から当てはまるものを判断)、対象年齢、難易度、メーカー/出版社、作者、言語依存度、受賞歴、発売年(不明な項目はnull/省略でよい)
-  - ルール本文・簡単版(`rulesSimple`): 4000字以内
-  - ルール本文・詳しい版(`rulesDetailed`): `app/board-game-rules/lib/rulesChapters.ts`の共通章立て(overview/setup/turn_flow/victory/scoring/special)ごとに本文を作る(該当ルールがない章は空文字でよい)。合計40000字以内(jsonb化した全体の文字数)
+  - 分類情報: ゲーム名、対応人数(下限・上限)、プレイ時間(下限・上限)、ジャンル、対象年齢、難易度、メーカー/出版社、作者、言語依存度、受賞歴、発売年(対応人数・プレイ時間・ジャンル以外の不明な項目はnull/省略でよい)
+  - **対応人数(下限・上限)・プレイ時間(下限・上限)は必須の正の整数**。公開時にINSERTされる`board_game_rules_games`で4つとも`not null`のため、写真・ルールから読み取れない場合も一般的なプレイ人数・所要時間から妥当な値を推定して必ず埋める(nullにしない)
+  - **ジャンルは`app/board-game-rules/lib/genres.ts`の`GENRES`の`value`からのみ選ぶ**。依頼側の選択・表記を鵜呑みにせず(例:「パーティ」は誤り、正しくは「パーティー」。「運要素」は固定リストに存在しない)、写真の内容から当てはまるものを1つ以上選ぶ。当てはまりが薄い場合は「その他」を入れる(0個は不可。固定リスト外の値も`board_game_rules_games`のCHECK制約でINSERTが拒否される)
+  - ルール本文・簡単版(`rulesSimple`): 4000字以内(`board_game_rules_games`のCHECK)
+  - ルール本文・詳しい版(`rulesDetailed`): `app/board-game-rules/lib/rulesChapters.ts`の共通章立て(overview/setup/turn_flow/victory/scoring/special)ごとに本文を作る(該当ルールがない章は空文字でよい)。合計40000字以内(jsonb化した全体の文字数。`board_game_rules_games`のCHECK)
 - 対応人数・プレイ時間は下限≤上限で判断する(下限>上限はDBのCHECK制約で拒否される)
 - 投稿者が申告した分類情報と写真の内容が食い違う場合は、写真の内容を優先する
 
