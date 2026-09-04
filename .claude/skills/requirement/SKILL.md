@@ -113,6 +113,8 @@ requirements.mdに書く方針は、サマリ・任意項目(非機能要件・U
 
 # 完了時の次ステップ案内
 
+**仕様ドキュメントのArtifact発行(必須):** requirements.mdのコミット・pushまで済んだら、[spec-artifact](../spec-artifact/SKILL.md)の手順でHTMLのArtifactを発行し、`open`で外部ブラウザに表示したうえでURLを提示する(既に同じページを発行済みなら新しいURLを作らず同じURLへ更新する)。実施の可否はユーザーに聞かない(既定動作)。この項は requirement/design/fix/architecture-workflow の4Skillに同趣旨で記載する(変更時は揃って更新する)。
+
 requirements.mdが書けたら、3点セットが揃うのを待たずに[/pr](../pr/SKILL.md)の「早期仕様PR」の手順でブランチ作成・push・PR作成まで行う(要件定義の時点からレビューしてもらえるようにするため)。PRのURLを報告し、[/design](../design/SKILL.md)(設計・タスク分解)へ進むことを案内する。仕様が承認されるまでコード(テストを含む)は書き始めない。
 
 既存アプリに新規specを追加した場合(アプリ立ち上げ時の一括作成ではない)も、そのアプリが`specs/<アプリ名>/architecture.md`を持っていれば、機能マップに新しいspec行を状態「仕様のみ(未実装)」で追加し([architecture-workflow](../architecture-workflow/SKILL.md)の「更新タイミング」参照)、更新後の機能マップをこの完了報告に貼って提示する。
