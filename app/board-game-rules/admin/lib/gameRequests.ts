@@ -1,5 +1,10 @@
 import { supabase } from '../../../lib/supabaseClient'
 import type { Genre } from '../../lib/genres'
+import { validateDraftForPublish } from './draftPreview'
+
+// 公開前検証・プレビュー変換の純粋関数は draftPreview.ts に置き、表示コンポーネントからも
+// DBクライアントを読み込まずに使えるようにする。ここでは publishDraft が使うため再エクスポートする
+export { validateDraftForPublish, draftToPreviewGame } from './draftPreview'
 
 // 登録依頼1件ごとの進行状態(仕様: game-registration/design.md「データベース設計」status列、
 // admin/design.md「登録実行・下書きレビューの処理」の状態遷移図)
@@ -215,6 +220,7 @@ export async function requestRevision(
 }
 
 // 公開時のエラーを運営者向けの日本語文言へ変換する。文字数上限CHECK違反はどの項目が長すぎるかを示し、
+// 必須項目のNOT NULL違反・ジャンルの固定リスト外CHECK違反はどの種類の問題かを示し、
 // それ以外は生の英文を出さず日本語の定型文にする
 // (仕様: admin/design.md「エラーハンドリング」。下書き側には上限CHECKがなく公開時に初めて顕在化する)
 function describePublishError(message: string): string {
@@ -223,6 +229,12 @@ function describePublishError(message: string): string {
   }
   if (message.includes('rules_detailed')) {
     return '詳しい版ルールが文字数上限(40000字)を超えています。「再調整を依頼」で短くするよう伝えてください。'
+  }
+  if (message.includes('genres')) {
+    return 'ジャンルに固定リスト外の値が含まれています。「再調整を依頼」で修正を伝えてください。'
+  }
+  if (message.includes('null value') || message.includes('not-null')) {
+    return '必須項目(対応人数・プレイ時間など)が空です。「再調整を依頼」で埋めるよう伝えてください。'
   }
   return 'ゲームの公開に失敗しました。時間をおいて再度お試しください。'
 }
@@ -239,6 +251,12 @@ export async function publishDraft(
 ): Promise<RequestMutationResult & { gameId?: string }> {
   const draft = request.draftContent
   if (!draft) return { ok: false, error: '下書きがありません' }
+  // INSERT前に必須項目・ジャンル・文字数を検証する。制約違反でINSERTが失敗すると原因が画面から
+  // 分からないため、公開できない下書きはINSERTせず問題点をまとめて返す(design.md「エラーハンドリング」)
+  const problems = validateDraftForPublish(draft)
+  if (problems.length > 0) {
+    return { ok: false, error: '下書きに公開できない項目があります: ' + problems.join(' / ') }
+  }
   try {
     let gameId = request.publishedGameId
     if (!gameId) {

@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import type { GameRequest, GameRequestStatus, RequestMutationResult } from '../lib/gameRequests'
-import { CHAPTER_KEYS, chapterHeading, type ChapterKey } from '../../lib/rulesChapters'
+import { validateDraftForPublish, draftToPreviewGame } from '../lib/draftPreview'
+import { RULE_CHAPTERS, CHAPTER_KEYS, type ChapterKey } from '../../lib/rulesChapters'
+import GameInfo from '../../components/GameInfo'
+import RuleTabs from '../../components/RuleTabs'
 
 type Props = {
   request: GameRequest
@@ -27,32 +30,17 @@ const STATUS_LABEL: Record<GameRequestStatus, string> = {
   failed: '失敗',
 }
 
-// 詳しい版ルールを共通章立て(CHAPTER_KEYS)の順に整列する。共通章立てにあるキーは本文が空でも
-// 6章すべてを出し(運営者が「未生成の章」を把握できるように)、共通章立てにないキーは後ろに補う。
-// 見出しは共通章立ての日本語見出し、対応が無ければキーをそのまま見出しにする(想定外のキーでも壊さない)
-function orderDetailedChapters(
-  rulesDetailed: { key: string; body: string }[]
-): { key: string; heading: string; body: string }[] {
-  const known = CHAPTER_KEYS.map((key) => ({
-    key,
-    heading: chapterHeading(key) ?? key,
-    body: rulesDetailed.find((c) => c.key === key)?.body ?? '',
-  }))
-  const extra = rulesDetailed
-    .filter((c) => !CHAPTER_KEYS.includes(c.key as ChapterKey))
-    .map((c) => ({ key: c.key, heading: chapterHeading(c.key) ?? c.key, body: c.body }))
-  return [...known, ...extra]
-}
-
 // 依頼1件の状況表示と、状態に応じた操作(登録実行・公開する・再調整を依頼)・再調整履歴
 // (仕様: admin/design.md「登録実行・下書きレビューの処理」、admin/design.md「画面設計」の状態別操作)。
+// 下書き(draft)は公開後の詳細画面(game-detail)と同じ表示コンポーネント(GameInfo・RuleTabs)を流用した
+// 「公開後のプレビュー」として見せ、RuleTabs が隠す未生成の章・共通章立てにないキーは補助表示で運営者に示す。
 // 実際の写真解析・ルール生成はローカル環境で行われ、この画面はSupabase上の状態を更新するのみ
 // (admin/requirements.md#登録実行のローカル処理起動-9)
 export default function DraftReviewCard({ request, onTrigger, onPublish, onRequestRevision }: Props) {
   const { status } = request
   // 各操作の処理中はボタンを無効化し二重実行を防ぐ(design.md「エラーハンドリング」)
   const [busy, setBusy] = useState(false)
-  // 公開時の文字数上限CHECK違反など、Web側の操作失敗を運営者に伝える(design.md「エラーハンドリング」)
+  // 公開時の検証・INSERT失敗など、Web側の操作失敗を運営者に伝える(design.md「エラーハンドリング」)
   const [opError, setOpError] = useState<string | null>(null)
   const [note, setNote] = useState('')
 
@@ -71,24 +59,20 @@ export default function DraftReviewCard({ request, onTrigger, onPublish, onReque
   const history = [...request.revisionHistory].sort((a, b) => b.round - a.round)
 
   const draft = request.draftContent
-  // 分類情報のうち値があるものだけをラベル付きで並べる。運営者が「公開する」前に生成物の質
-  // (対象年齢・難易度・出版社・作者・日本語ルール有無・受賞歴・発売年)を判断できるようにする
-  // (仕様: admin/requirements.md#登録実行・下書きレビュー-18)
-  const classificationItems = draft
-    ? [
-        draft.minAge != null ? `対象年齢: ${draft.minAge}歳以上` : null,
-        draft.difficulty ? `難易度: ${draft.difficulty}` : null,
-        draft.publisher ? `出版社: ${draft.publisher}` : null,
-        draft.author ? `作者: ${draft.author}` : null,
-        draft.hasJapaneseRules != null
-          ? `日本語ルール: ${draft.hasJapaneseRules ? 'あり' : 'なし'}`
-          : null,
-        draft.awards ? `受賞歴: ${draft.awards}` : null,
-        draft.releaseYear != null ? `発売年: ${draft.releaseYear}年` : null,
-      ].filter((v): v is string => v !== null)
-    : []
-  // 詳しい版ルールの全章(共通章立て順)。カードが縦に伸びすぎないよう<details>で折りたたむ
-  const detailedChapters = draft ? orderDetailedChapters(draft.rulesDetailed) : []
+  // 公開後の詳細画面と同じ形へ変換したプレビュー用データ
+  const previewGame = draft ? draftToPreviewGame(draft, request) : null
+  // 「このまま公開すると失敗する」下書きの問題点(必須項目・ジャンル・文字数)。空なら警告を出さない
+  const publishProblems = draft ? validateDraftForPublish(draft) : []
+
+  // 共通章立て(RULE_CHAPTERS)のうち本文が空の章 = 公開後の詳しい版タブに出ない「未生成の章」
+  const bodyByKey = new Map((draft?.rulesDetailed ?? []).map((c) => [c.key, c.body] as [string, string]))
+  const ungeneratedChapters = RULE_CHAPTERS.filter(
+    (chapter) => (bodyByKey.get(chapter.key) ?? '').trim() === ''
+  ).map((chapter) => chapter.heading)
+  // 共通章立てにないキー = 公開後は一切表示されない章。運営者が気づけるようキーを列挙する
+  const unknownChapterKeys = (draft?.rulesDetailed ?? [])
+    .map((c) => c.key)
+    .filter((key) => !CHAPTER_KEYS.includes(key as ChapterKey))
 
   return (
     <div className="mt-3 border-t border-bgr-line pt-3">
@@ -124,49 +108,42 @@ export default function DraftReviewCard({ request, onTrigger, onPublish, onReque
         <p className="mt-2 text-xs text-bgr-subtext">このゲームは公開済みです。</p>
       )}
 
-      {status === 'draft' && request.draftContent && (
+      {status === 'draft' && draft && previewGame && (
         <div className="mt-2 space-y-3">
-          <div className="space-y-2 rounded border border-bgr-line bg-bgr-bg p-3 text-xs text-bgr-heading">
-            <div>
-              <p className="font-bold">{request.draftContent.name}</p>
-              <p className="mt-1 text-bgr-subtext">
-                {request.draftContent.minPlayers}〜{request.draftContent.maxPlayers}人 /{' '}
-                {request.draftContent.minMinutes}〜{request.draftContent.maxMinutes}分 /{' '}
-                {request.draftContent.genres.join('、') || 'ジャンルなし'}
-              </p>
-            </div>
-
-            {classificationItems.length > 0 && (
-              <ul className="space-y-0.5 text-bgr-subtext">
-                {classificationItems.map((item) => (
-                  <li key={item}>{item}</li>
+          {publishProblems.length > 0 && (
+            <div className="rounded border border-bgr-accent bg-bgr-bg p-3 text-xs text-bgr-accent">
+              <p className="font-bold">このまま公開すると失敗します</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                {publishProblems.map((problem) => (
+                  <li key={problem}>{problem}</li>
                 ))}
               </ul>
-            )}
-
-            <div>
-              <p className="font-bold text-bgr-subtext">簡単版ルール</p>
-              <p className="mt-1 whitespace-pre-wrap text-bgr-subtext">
-                {request.draftContent.rulesSimple}
-              </p>
             </div>
+          )}
 
-            <details>
-              <summary className="cursor-pointer font-bold text-bgr-subtext">
-                詳しい版ルール(全{detailedChapters.length}章)
-              </summary>
-              <div className="mt-1 space-y-2">
-                {detailedChapters.map((chapter) => (
-                  <div key={chapter.key}>
-                    <p className="font-bold text-bgr-subtext">{chapter.heading}</p>
-                    <p className="mt-0.5 whitespace-pre-wrap text-bgr-subtext">
-                      {chapter.body.trim() === '' ? '(記載なし)' : chapter.body}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </details>
+          <div className="rounded border border-bgr-line bg-bgr-bg p-3">
+            <p className="text-xs font-bold text-bgr-subtext">
+              公開後のプレビュー(訪問者にはこのように表示されます)
+            </p>
+            <div className="mt-2">
+              <GameInfo game={previewGame} />
+              <RuleTabs
+                rulesSimple={previewGame.rulesSimple}
+                rulesDetailed={previewGame.rulesDetailed}
+              />
+            </div>
           </div>
+
+          {(ungeneratedChapters.length > 0 || unknownChapterKeys.length > 0) && (
+            <div className="space-y-0.5 text-xs text-bgr-subtext">
+              {ungeneratedChapters.length > 0 && (
+                <p>未生成の章: {ungeneratedChapters.join(' / ')}</p>
+              )}
+              {unknownChapterKeys.length > 0 && (
+                <p>公開時に表示されない章キー: {unknownChapterKeys.join(' / ')}</p>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-2">
             <button
