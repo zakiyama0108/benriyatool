@@ -49,7 +49,7 @@ ${GUARDRAIL}
 
 WebFetchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、確認できた情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`summary\`を\`null\`にしたJSON(\`{"heading": "...", "importance": 1, "summary": null}\`)を返してください(いずれの場合も聞き返さない):
 
-{"heading": "原文タイトルを日本語で簡潔に言い換えた見出し", "importance": 4, "summary": {"benefit": {"heading": "結論・メリットを含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文"}, "whatsNew": {"heading": "...", "teaser": "...", "detail": "..."}, "how": {"heading": "...", "teaser": "...", "detail": "..."}, "howToUse": {"heading": "...", "teaser": "...", "detail": "..."}}}`
+{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"benefit": {"heading": "結論・メリットを含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文"}, "whatsNew": {"heading": "...", "teaser": "...", "detail": "..."}, "how": {"heading": "...", "teaser": "...", "detail": "..."}, "howToUse": {"heading": "...", "teaser": "...", "detail": "..."}}}`
 }
 
 // Claude Code CLIを非対話モード(-p)で1回呼び出し、--output-format jsonで返る応答オブジェクトを返す。
