@@ -21,11 +21,15 @@ flowchart LR
     search["曲名をまとめて入力し検索する"]
     select["検索結果を確認し候補を選ぶ"]
     create["プレイリストを作成する"]
+    logout["ログアウトする"]
+    recreate["作成後に再作成する"]
 
     user --> login
     user --> search
     user --> select
     user --> create
+    user --> logout
+    user --> recreate
 ```
 アクター「利用者」ができることの詳細は[機能要件](#機能要件)を参照。
 
@@ -53,6 +57,9 @@ flowchart LR
 ### 未ヒット曲の扱い
 - [1] 検索してヒットしなかった曲があっても、他の曲(採用候補が確定している曲)だけでプレイリスト作成に進める。未ヒットの曲のために作成をブロックしない
 
+### 曲名の入力
+- [1] 曲名入力欄がすべて空行(検索対象の曲名が1件もない)の場合、「検索する」操作を無効化する
+
 ### プレイリスト名
 - [1] プレイリスト名は利用者が必ず入力する。未入力の場合は作成できない
 
@@ -61,8 +68,9 @@ flowchart LR
 
 ## 非機能要件・依存関係・制約条件
 - 本サイトはCloudflare Workers上の静的配信で、ランタイムのサーバー機能(APIルート等)を持たない([board-game-rules/architecture.md](../../board-game-rules/architecture.md)と同じ方針)。Spotify連携もこの制約の範囲内(ブラウザ内で完結する認可方式)で実現する
-- 実装の前提として、Spotify Developer Dashboardでのアプリ登録(Client IDの発行、`benriyatool.com`のredirect URIとしての登録)が必要。2026-09-05時点で未登録のため、実装フェーズまでに運営者が用意する
+- 実装の前提として、Spotify Developer Dashboardでのアプリ登録(Client IDの発行、`benriyatool.com`のredirect URIとしての登録)が必要。実装フェーズまでに運営者が用意する
 - 利用者はSpotifyアカウントを持っている前提とする。アカウントを持たない利用者への案内は本specのスコープ外とする
+- 本機能はSpotifyログイン(認可)により表示名・プロフィール画像等の新たな個人情報を取得するため、[legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
 
 ## スコープ外
 - 既存プレイリストへの曲の追加(本specは新規プレイリストの作成のみを対象とする)
