@@ -59,6 +59,22 @@ describe('【一覧カード】表示項目 - ゲーム名・対応人数・プ�
   })
 })
 
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行のローカル処理起動-13、specs/board-game-rules/game-list/requirements.md#一覧表示-1
+describe('【一覧カード】対応人数・プレイ時間が未登録(NULL)の場合の表示 - 「不明」と表示する', () => {
+  it('対応人数・プレイ時間がともにNULLのとき、それぞれ「不明」と表示されること', () => {
+    vi.mocked(useSession).mockReturnValue({ session: null, loading: false })
+    render(
+      <GameCard
+        game={makeGame({ minPlayers: null, maxPlayers: null, minMinutes: null, maxMinutes: null })}
+        favorited={false}
+      />
+    )
+
+    expect(screen.getByText('不明人')).toBeTruthy()
+    expect(screen.getByText('不明分')).toBeTruthy()
+  })
+})
+
 // 仕様: specs/board-game-rules/game-list/requirements.md#一覧表示-2
 describe('【一覧カード】詳細画面への遷移 - ゲーム名から詳細画面のURLへリンクする', () => {
   it('ゲーム名のリンク先が、そのゲームのIDを含む詳細画面URLであること', () => {
