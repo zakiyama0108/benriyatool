@@ -70,9 +70,14 @@ CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。
 
 DBは使用しないため、ER図はなし。
 
-## 11. セキュリティ
+## 11. 関連ADR
+
+全アプリ横断のADR(`docs/adr/`):
+- [0007-runtime-llm-server-and-writable-admin.md](../../docs/adr/0007-runtime-llm-server-and-writable-admin.md) — ランタイムLLMサーバー機能を持たない方針の背景(本アプリもこの方針を踏襲し、Spotify連携をブラウザ内で完結させる)
+
+## 12. セキュリティ
 アクセストークンはSpotifyから直接ブラウザへ発行され、サーバーを経由しない。トークンをDBやサーバーに保存せず、ブラウザ内のみで扱う(具体的な保持方法は[playlist-create/design.md](playlist-create/design.md)で決定する)。
 
-## 12. 技術的制約
+## 13. 技術的制約
 - 実装前提として、Spotify Developer Dashboardでのアプリ登録(Client ID発行、`benriyatool.com`のredirect URI登録)が必要([playlist-create/requirements.md#非機能要件依存関係制約条件](playlist-create/requirements.md#非機能要件依存関係制約条件))
 - 本サイトはランタイムのサーバー機能を持たないため、クライアントシークレットが必須の認可方式は採用できない

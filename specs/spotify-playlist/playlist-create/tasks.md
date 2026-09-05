@@ -78,7 +78,8 @@
 ## 13. ログイン導線・ログアウト導線(ヘッダー表示)
 - `app/spotify-playlist/page.tsx`
 - 未ログイン時はゲート画面(説明文+「Spotifyでログイン」ボタンのみ)を表示し、他の要素を一切表示しないことをテストする
-- ログイン時はヘッダーに表示名・プロフィール画像・「ログアウト」を表示し、押下でログアウト処理が呼ばれ未ログイン表示に戻ることをテストする
+- ログイン時はヘッダーに表示名・プロフィール画像・「ログアウト」・共有端末向け注記を表示し、押下でログアウト処理が呼ばれ未ログイン表示に戻ることをテストする(design.md#セキュリティ)
+- アクセストークンのリフレッシュに失敗した場合、一時的な通知を表示してから未ログイン表示に切り替わることをテストする(design.md#アクセストークンを自動更新する処理)
 - 参照: design.md#画面設計、design.md#ログアウトする処理
 
 ## 14. styleguideページ
@@ -92,3 +93,4 @@
 ## 補足(実装前に確認)
 - Spotify Developer Dashboardでのアプリ登録(Client ID発行)と、redirect URIとして本番`https://benriyatool.com/spotify-playlist/`・ローカル開発用URL(例: `http://127.0.0.1:3000/spotify-playlist/`)の両方の登録が完了していることを確認する(requirements.md#非機能要件依存関係制約条件)
 - 発行されたClient IDを`NEXT_PUBLIC_SPOTIFY_CLIENT_ID`としてビルド環境の環境変数に設定する(design.md#セキュリティ)
+- Spotifyログインにより表示名・プロフィール画像等の新たな個人情報を取得するため、[legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する(requirements.md#非機能要件依存関係制約条件)
