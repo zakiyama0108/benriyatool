@@ -414,6 +414,21 @@ T0(追加マイグレーション適用)の実機確認:
 - 運営者本人が`board_game_rules_game_requests`の`status`・`draft_content`・`revision_note`・`revision_history`をUPDATEできること(既存の運営者向けUPDATEポリシーが新カラムにも及ぶこと)
 - `published_game_id`が指すゲームを運営者本人が物理削除([game-detail/design.md#物理削除のDB設計](../game-detail/design.md))してもFK違反にならず成功し、対応する依頼行の`published_game_id`がNULLに戻ること
 
+### 追加マイグレーション(対応人数・プレイ時間のNULL許容化)
+[admin/design.md#ローカル環境の定期処理](../admin/design.md)の生成方針変更(写真・Web検索で根拠が取れた値のみを埋め、根拠がなければ推定で埋めない)に伴い、`board_game_rules_games`の`min_players`・`max_players`・`min_minutes`・`max_minutes`のNOT NULL制約を外す(根拠: [admin/requirements.md#登録実行のローカル処理起動-14](../admin/requirements.md))。`min_players <= max_players`・`min_minutes <= max_minutes`のCHECK制約はPostgresの三値論理によりNULLを含む比較がUNKNOWN(真でも偽でもない)扱いとなりCHECK自体は通過するため、変更不要。
+
+```sql
+alter table board_game_rules_games
+  alter column min_players drop not null,
+  alter column max_players drop not null,
+  alter column min_minutes drop not null,
+  alter column max_minutes drop not null;
+```
+
+T0(追加マイグレーション適用)の実機確認:
+- 対応人数・プレイ時間がNULLのままの内容で運営者本人が`board_game_rules_games`へINSERTでき、公開ゲームとしてanonからSELECTできること
+- 対応人数・プレイ時間の一方がNULLで一方が値を持つ場合もINSERTが拒否されないこと(下限>上限の逆転がある場合のみCHECKで拒否されること)
+
 ### 運営者への通知(Supabase Database Webhooks + ntfy Message Templating)
 `board_game_rules_game_requests`へのINSERTをSupabase Database Webhooks機能(ダッシュボードから設定、pg_net拡張ベース)で購読し、ntfyへHTTP POSTする。送信先URLに、ntfy公式の**インラインMessage Templating**(`?tpl=yes`、Goテンプレート構文)を組み込むことで、中継サーバーを新設せずに次を実現する:
 - **タイトル**: 「新しい登録依頼」

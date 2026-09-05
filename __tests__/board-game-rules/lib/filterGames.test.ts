@@ -48,6 +48,11 @@ describe('【絞り込み】対応人数 - 指定した人数が対応人数の�
     expect(filterGames(games, { ...EMPTY_FILTERS, playerCount: 2 })).toHaveLength(0)
     expect(filterGames(games, { ...EMPTY_FILTERS, playerCount: 5 })).toHaveLength(0)
   })
+
+  it('対応人数が未登録(null)のゲームは、この分類で絞り込みを指定すると除外されること(requirements.md#未入力項目の扱い-3)', () => {
+    const games = [makeGame({ id: 'g1', minPlayers: null, maxPlayers: null })]
+    expect(filterGames(games, { ...EMPTY_FILTERS, playerCount: 3 })).toHaveLength(0)
+  })
 })
 
 // 仕様: specs/board-game-rules/game-list/requirements.md#絞り込み-6
@@ -72,6 +77,12 @@ describe('【絞り込み】プレイ時間 - 希望する時間帯とプレイ�
     const band = { label: '15分以内', minMinutes: 0, maxMinutes: 15 }
     const result = filterGames(games, { ...EMPTY_FILTERS, playtimeBand: band })
     expect(result.map((g) => g.id)).toEqual(['g1'])
+  })
+
+  it('プレイ時間が未登録(null)のゲームは、この分類で絞り込みを指定すると除外されること(requirements.md#未入力項目の扱い-3)', () => {
+    const games = [makeGame({ id: 'g1', minMinutes: null, maxMinutes: null })]
+    const band = { label: '30分以内', minMinutes: 0, maxMinutes: 30 }
+    expect(filterGames(games, { ...EMPTY_FILTERS, playtimeBand: band })).toHaveLength(0)
   })
 })
 

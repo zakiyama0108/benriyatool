@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSession } from '../lib/useSession'
 import { signInWithGoogle } from '../../lib/adminAuth'
 import { fetchMyFavoriteGames, type FavoriteGame } from '../lib/favorites'
+import { formatRange } from '../lib/gameDisplay'
 import FavoriteButton from '../components/FavoriteButton'
 import BoardGameNav from '../components/BoardGameNav'
 
@@ -158,12 +159,10 @@ export default function FavoritesPage() {
                         {favorite.game.name}
                       </Link>
                       <div className="mt-2 space-y-1 text-xs text-bgr-subtext">
-                        <p>
-                          {favorite.game.minPlayers}〜{favorite.game.maxPlayers}人
-                        </p>
-                        <p>
-                          {favorite.game.minMinutes}〜{favorite.game.maxMinutes}分
-                        </p>
+                        {/* 対応人数・プレイ時間は根拠が得られた場合のみ埋まるため未登録(NULL)のことがある。
+                            未登録は「不明」と表示する(admin/requirements.md#登録実行のローカル処理起動-13) */}
+                        <p>{formatRange(favorite.game.minPlayers, favorite.game.maxPlayers) ?? '不明'}人</p>
+                        <p>{formatRange(favorite.game.minMinutes, favorite.game.maxMinutes) ?? '不明'}分</p>
                       </div>
                       {favorite.game.genres.length > 0 && (
                         <div className="mt-auto flex flex-wrap gap-2 pt-4">

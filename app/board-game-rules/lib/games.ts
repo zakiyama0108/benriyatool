@@ -13,10 +13,12 @@ export type RuleChapter = { key: ChapterKey; body: string }
 export type Game = {
   id: string
   name: string
-  minPlayers: number
-  maxPlayers: number
-  minMinutes: number
-  maxMinutes: number
+  // 対応人数・プレイ時間はローカル生成(admin)が写真・Web検索で根拠が取れた場合のみ埋める方針のため、
+  // 根拠が得られなければNULLのまま公開されうる(仕様: admin/requirements.md#登録実行のローカル処理起動-13)
+  minPlayers: number | null
+  maxPlayers: number | null
+  minMinutes: number | null
+  maxMinutes: number | null
   genres: Genre[]
   minAge: number | null
   difficulty: string | null
@@ -39,10 +41,10 @@ export type Game = {
 export type GameRow = {
   id: string
   name: string
-  min_players: number
-  max_players: number
-  min_minutes: number
-  max_minutes: number
+  min_players: number | null
+  max_players: number | null
+  min_minutes: number | null
+  max_minutes: number | null
   genres: string[]
   min_age: number | null
   difficulty: string | null

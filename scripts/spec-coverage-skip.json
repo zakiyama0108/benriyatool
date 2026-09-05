@@ -3025,6 +3025,11 @@
     "reason": "WebアプリのコードではないNode.jsスクリプト(processRegistrationQueue.ts)への claude -p の許可ツール追加とプロンプト調整の記述で、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T9a参照。design.md「ローカル環境の定期処理」「セキュリティ」も同じ理由でスキップ済み)"
   },
   {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "登録実行のローカル処理起動 [14]",
+    "reason": "board_game_rules_games のNOT NULL制約撤廃(マイグレーション)の記述で、DBスキーマ自体には単体テストを書かない方針(他のスキーマ変更と同様)。NULL値を受け付けるアプリ側の振る舞いは admin/lib/gameRequests.test.ts(validateDraftForPublish)・lib/games.test.ts(formatRange)・lib/filterGames.test.ts・lib/gameModeration.test.ts・components/GameInfo.test.tsx・components/GameCard.test.tsx・favorites/page.test.tsxの各NULLケースのテストで担保する"
+  },
+  {
     "specFile": "board-game-rules/game-registration/design.md",
     "item": "処理フロー",
     "reason": "依頼送信のシーケンス図全体の記述で、各手順はrequirements.md#写真のアップロード・#依頼の送信の各テストで個別に担保済みのため"
@@ -3983,6 +3988,11 @@
     "specFile": "board-game-rules/game-registration/design.md",
     "item": "追加マイグレーション(登録実行・下書きレビュー、実装より先に単独PRで適用)",
     "reason": "マイグレーションSQL・T0の実機確認手順の記述で、TDD対象外(tasks.md T0c参照。マイグレーション適用時に実機確認する)"
+  },
+  {
+    "specFile": "board-game-rules/game-registration/design.md",
+    "item": "追加マイグレーション(対応人数・プレイ時間のNULL許容化)",
+    "reason": "マイグレーションSQL・T0の実機確認手順の記述で、TDD対象外(tasks.md T0d参照。マイグレーション適用時に実機確認する)"
   },
   {
     "specFile": "board-game-rules/admin/design.md",
