@@ -1,0 +1,88 @@
+> TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
+
+## 1. PKCE補助関数
+- `app/spotify-playlist/lib/pkce.ts`
+- code_verifierのランダム生成、code_verifierからcode_challenge(SHA-256 + base64url)を導出する関数、CSRF対策用stateのランダム生成関数をテストする
+- 参照: design.md#spotifyでログインする処理
+
+## 2. 認可URLの構築
+- `app/spotify-playlist/lib/spotifyAuth.ts`
+- client_id・redirect_uri・code_challenge・state・scope(`playlist-modify-private`)を含む認可URL(`https://accounts.spotify.com/authorize`)を組み立てる関数をテストする
+- 参照: design.md#spotifyでログインする処理
+
+## 3. 認可コードからのトークン交換
+- `app/spotify-playlist/lib/spotifyAuth.ts`
+- URLの`code`・`state`パラメータを読み取り、保存済みstateと一致するかを確認する関数(不一致時はエラーを返す)
+- 一致した場合に認可コード+code_verifierでトークン発行エンドポイント(`https://accounts.spotify.com/api/token`)へリクエストし、アクセストークン・リフレッシュトークン・有効期限を得る関数(fetchはモック)
+- 参照: design.md#spotifyでログインする処理
+
+## 4. トークンの保存・復元・破棄
+- `app/spotify-playlist/lib/spotifyAuth.ts`
+- 取得したトークン一式をlocalStorageに保存する関数、保存済みトークンを読み出す関数、破棄(ログアウト)する関数をテストする
+- 参照: design.md#ログアウトする処理
+
+## 5. アクセストークンの自動リフレッシュ
+- `app/spotify-playlist/lib/spotifyAuth.ts`
+- 保存済みアクセストークンの有効期限が切れている(または近い)場合にリフレッシュトークンで再発行する関数。リフレッシュ失敗時は保存内容を破棄しエラーを返すことをテストする
+- 参照: design.md#アクセストークンを自動更新する処理、design.md#ログイン状態を復元する処理次回訪問時
+
+## 6. ログイン状態の初期化(マウント時の分岐)
+- `app/spotify-playlist/lib/spotifyAuth.ts`(初期化関数)
+- 「URLに認可コードがある場合」「保存済みリフレッシュトークンがある場合」「どちらもない場合」の3分岐で、それぞれ正しい状態(ログイン中/未ログイン)になることをテストする
+- 参照: design.md#ログイン状態を復元する処理次回訪問時
+
+## 7. 曲検索API
+- `app/spotify-playlist/lib/spotifyApi.ts`
+- 曲名で検索し(`limit=5`)、0件/1件/複数件それぞれの場合に呼び出し元が判定しやすい形(未ヒット/自動採用/候補一覧)で結果を返す関数をテストする(fetchはモック)
+- 「もっと見る」用に`offset`を指定して追加の5件を取得する関数もテストする
+- 通信エラー時にエラーを返すことをテストする
+- 参照: design.md#曲名を一括検索する処理
+
+## 8. 自ユーザー情報取得・プレイリスト作成・曲追加API
+- `app/spotify-playlist/lib/spotifyApi.ts`
+- `GET /v1/me`でユーザーIDを取得する関数
+- 非公開(`public: false`)でプレイリストを新規作成する関数
+- 作成したプレイリストに曲(トラックURI配列)を追加する関数
+- いずれも通信エラー時にエラーを返すことをテストする
+- 参照: design.md#プレイリストを作成する処理
+
+## 9. 曲名入力・一括検索の状態管理
+- `app/spotify-playlist/page.tsx`
+- テキストエリアの内容を改行で分割し空行を除いた曲名一覧を作る処理、「検索する」押下で曲ごとの検索状態(検索中→結果に応じた状態)に遷移する処理をテストする
+- 再度「検索する」を押した場合に前回の結果・採用候補が破棄され、新しい曲名一覧で検索し直されることをテストする
+- 参照: design.md#曲名を一括検索する処理、design.md#状態管理
+
+## 10. 候補選択・もっと見る
+- `app/spotify-playlist/components/SongResultCard.tsx`
+- 複数候補のうち1件を選ぶと採用確定になること、「もっと見る」を押すと追加の5件がその曲の候補一覧に追加されることをテストする
+- 参照: design.md#候補を選択する処理
+
+## 11. 作成ボタンの有効・無効化とプレイリスト作成
+- `app/spotify-playlist/components/CreateBar.tsx` / `app/spotify-playlist/page.tsx`
+- 採用候補0件、またはプレイリスト名未入力のとき「プレイリストを作成」が無効であることをテストする
+- 押下時に「対象曲(採用確定のみ)を入力順にまとめる→ユーザーID取得→プレイリスト作成→曲追加」の順に呼び出され、いずれかが失敗したら完了状態にならずエラー表示になることをテストする
+- 参照: design.md#プレイリストを作成する処理
+
+## 12. 作成完了表示・もう一度作る
+- `app/spotify-playlist/page.tsx`
+- 作成成功時に、作成したプレイリストへのリンクを含む完了状態になることをテストする
+- 「もう一度作る」を押すと曲名入力・検索結果・採用候補・プレイリスト名が初期状態に戻り、ログイン状態は維持されることをテストする
+- 参照: design.md#作成後にもう一度作る処理
+
+## 13. ログイン導線・ログアウト導線(ヘッダー表示)
+- `app/spotify-playlist/page.tsx`
+- 未ログイン時はゲート画面(説明文+「Spotifyでログイン」ボタンのみ)を表示し、他の要素を一切表示しないことをテストする
+- ログイン時はヘッダーに表示名・「ログアウト」を表示し、押下でログアウト処理が呼ばれ未ログイン表示に戻ることをテストする
+- 参照: design.md#画面設計、design.md#ログアウトする処理
+
+## 14. styleguideページ
+- `app/spotify-playlist/styleguide/page.tsx`(新規アプリ初回UIの共通部品一覧。ヘッダー・フッター・主要ボタン・カード・中立バッジ等を並べる)
+- `app/spotify-playlist/styleguide/styleguide.png`(上記のキャプチャ)
+- 参照: [design](../../../.claude/skills/design/SKILL.md)「共通chromeとトークンの一貫性」
+
+## 15. トップページへのツールカード追加
+- `app/page.tsx`に`/spotify-playlist`へのツールカードを1件追加する(新規アプリの初回公開画面のため)
+
+## 補足(実装前に確認)
+- Spotify Developer Dashboardでのアプリ登録(Client ID発行)と、redirect URIとして本番`https://benriyatool.com/spotify-playlist/`・ローカル開発用URL(例: `http://127.0.0.1:3000/spotify-playlist/`)の両方の登録が完了していることを確認する(requirements.md#非機能要件依存関係制約条件)
+- 発行されたClient IDを`NEXT_PUBLIC_SPOTIFY_CLIENT_ID`としてビルド環境の環境変数に設定する(design.md#セキュリティ)
