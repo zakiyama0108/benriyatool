@@ -149,6 +149,19 @@ SUPABASE_SERVICE_ROLE_KEY=xxx GEMINI_API_KEY=xxx npx tsx scripts/board-game-rule
 4. 壊れた画像など写真解析に失敗するケースで `status='failed'`・`error_message` が記録されること
 5. `launchctl load ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist` 経由でも同様に動くこと(対話シェルのPATHに依存していないことの確認)
 
+## 稼働用 plist のセットアップ(このMac)
+
+雛形は `scripts/board-game-rules/com.benriyatool.board-game-rules-registration.plist`(プレースホルダのみ。資格情報は書かない)。稼働用は次の手順で用意し、`~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist` にのみ置く(リポジトリには戻さない。design.md「セキュリティ」):
+
+1. 雛形を `~/Library/LaunchAgents/` へコピーし、プレースホルダ3つを実パスに置換する:
+   - `__NODE_BIN__` = `which node` の出力(このMacでは `/opt/homebrew/bin/node`)
+   - `__REPO_DIR__` = リポジトリの絶対パス(`/Users/ryosukeyamazaki/repo/benriyatool`)
+   - `__CLAUDE_BIN__` = `which claude` の出力(このMacでは `/opt/homebrew/bin/claude`)
+2. 資格情報(`NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` / `GEMINI_API_KEY` / `CLAUDE_CODE_OAUTH_TOKEN`)は `__REPO_DIR__/.env.local` にあれば足りる(`processRegistrationQueue.ts` が dotenv で読み込む)。plist へのコピーは不要
+3. `launchctl load ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist`
+4. `launchctl list | grep board-game` で登録を確認。`scripts/board-game-rules/processRegistrationQueue.out.log` / `.err.log`(gitignore 済み)で 60 秒間隔の起動を確認する
+5. 設定変更後は `launchctl unload` → `launchctl load` で入れ直す。Mac がスリープ/オフの間は処理が進まないのは設計どおりの許容事項(design.md)
+
 # 完了時の次ステップ案内
 
 登録結果(成功/失敗、ゲームID、紹介画像の有無)をユーザーに報告して完了。後続の工程Skillには接続しない(単発のデータ登録操作のため)。複数件まとめて処理する場合は、Step1〜Step5を依頼ごとに繰り返す。
