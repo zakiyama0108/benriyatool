@@ -3020,6 +3020,11 @@
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   },
   {
+    "specFile": "board-game-rules/admin/requirements.md",
+    "item": "登録実行のローカル処理起動 [13]",
+    "reason": "WebアプリのコードではないNode.jsスクリプト(processRegistrationQueue.ts)への claude -p の許可ツール追加とプロンプト調整の記述で、通常のTDDサイクル・spec-coverageの対象外とする(admin/tasks.md T9a参照。design.md「ローカル環境の定期処理」「セキュリティ」も同じ理由でスキップ済み)"
+  },
+  {
     "specFile": "board-game-rules/game-registration/design.md",
     "item": "処理フロー",
     "reason": "依頼送信のシーケンス図全体の記述で、各手順はrequirements.md#写真のアップロード・#依頼の送信の各テストで個別に担保済みのため"
