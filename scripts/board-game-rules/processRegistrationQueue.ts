@@ -49,7 +49,10 @@ const CLAUDE_BIN = process.env.BGR_CLAUDE_BIN || 'claude'
 // (requirements.md#登録実行のローカル処理起動-13)。任意URLを取得できる WebFetch は含めない
 // (検索エンジンの検索結果に限定し、攻撃者が用意した任意ページへの誘導余地を増やさないため)。
 const ALLOWED_TOOLS = 'Read,Glob,Grep,WebSearch'
-const CLAUDE_TIMEOUT_MS = 1000 * 60 * 10
+// 初回生成は写真解析、再調整は詳しい版6章の作り直しで、いずれも WebSearch を挟むと数分かかる。
+// 再調整が10分を超えて SIGTERM される事例が実機であったため15分に広げる(運営者のMac上で走る処理で
+// サーバーレスのコスト制約がないため長めに取れる。超過時は failed → 再度「登録実行」で再試行できる)。
+const CLAUDE_TIMEOUT_MS = 1000 * 60 * 15
 
 // 運営者が管理画面(DraftReviewCard の「生成に失敗しました: {error_message}」)で読むための日本語要約を持つエラー。
 // 生のエラー詳細(スタック・Supabase/claude の英文)は console(ログファイル)にのみ出し、
@@ -281,12 +284,26 @@ async function main() {
       ['-p', prompt, '--output-format', 'json', '--allowedTools', ALLOWED_TOOLS],
       { cwd: workDir, env: scrubbedEnv(), maxBuffer: 1024 * 1024 * 64, timeout: CLAUDE_TIMEOUT_MS }
     ).catch((error: unknown) => {
-      const withStdout = error as { stdout?: string }
-      if (withStdout.stdout) return { stdout: withStdout.stdout }
-      throw new RegistrationError(
-        'ローカルのClaude Code(claude -p)を起動できませんでした',
-        `claude -p の起動に失敗しました: ${(error as Error).message}`
-      )
+      const e = error as { stdout?: string; stderr?: string; code?: number | string; signal?: string; killed?: boolean; message?: string }
+      // 技術詳細(ログファイル行き): 終了コード・シグナル・claude の stderr / stdout 末尾まで残す。
+      // "Command failed: <巨大なプロンプト全文>" だけだと原因(タイムアウトか起動失敗か)が判別できないため。
+      const detail =
+        `claude -p が異常終了しました (code=${e.code ?? 'なし'}, signal=${e.signal ?? 'なし'}, killed=${e.killed ?? false})\n` +
+        `stderr: ${(e.stderr ?? '').slice(0, 4000) || 'なし'}\n` +
+        `stdout(末尾): ${(e.stdout ?? '').slice(-1000) || 'なし'}`
+      // timeout オプションで SIGTERM されたケースは「起動失敗」ではなく「時間切れ」。運営者の対処が異なる
+      // (前者=node/claude のパス確認、後者=時間をおいて再試行)ため文言を分ける。タイムアウトで殺された
+      // プロセスの stdout は途中までしか出ておらず parseDraft では必ず失敗する(「写真が不鮮明」と誤誘導される)
+      // ため、部分出力があっても stdout フォールバックより先に時間切れとして扱う。
+      if (e.killed && (e.signal === 'SIGTERM' || e.signal === 'SIGKILL')) {
+        throw new RegistrationError(
+          `Claude Codeの生成が制限時間(${CLAUDE_TIMEOUT_MS / 60000}分)内に終わりませんでした。時間をおいて再度「登録実行」を押してください`,
+          detail
+        )
+      }
+      // 非ゼロ終了でも stdout があれば claude が JSON を返しきっている可能性があるので parseDraft に委ねる
+      if (e.stdout) return { stdout: e.stdout }
+      throw new RegistrationError('ローカルのClaude Code(claude -p)を起動できませんでした', detail)
     })
 
     let draft: Record<string, unknown>

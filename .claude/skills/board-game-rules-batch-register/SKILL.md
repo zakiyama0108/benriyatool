@@ -147,7 +147,24 @@ SUPABASE_SERVICE_ROLE_KEY=xxx GEMINI_API_KEY=xxx npx tsx scripts/board-game-rule
 2. 最大60秒待ち、`draft_content` が生成され `status='draft'` になることを確認する
 3. 「再調整を依頼」→再度 `status='draft'` に戻ること
 4. 壊れた画像など写真解析に失敗するケースで `status='failed'`・`error_message` が記録されること
-5. `launchctl load ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist` 経由でも同様に動くこと(対話シェルのPATHに依存していないことの確認)
+5. launchd 経由(`launchctl kickstart` での強制起動でも、Terminal.app から bootstrap した後の自動ポーリングでも)同様に動くこと。対話シェルの PATH に依存せず、`node` / `claude` が絶対パスで解決されること
+
+## 稼働用 plist のセットアップ(このMac)
+
+雛形は `scripts/board-game-rules/com.benriyatool.board-game-rules-registration.plist`(プレースホルダのみ。資格情報は書かない)。稼働用は次の手順で用意し、`~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist` にのみ置く(リポジトリには戻さない。design.md「セキュリティ」):
+
+1. 雛形を `~/Library/LaunchAgents/` へコピーし、プレースホルダ3つを実パスに置換する:
+   - `__NODE_BIN__` = `which node` の出力(このMacでは `/opt/homebrew/bin/node`)
+   - `__REPO_DIR__` = リポジトリの絶対パス(`/Users/ryosukeyamazaki/repo/benriyatool`)
+   - `__CLAUDE_BIN__` = `which claude` の出力(このMacでは `/opt/homebrew/bin/claude`)
+2. 資格情報(`NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` / `GEMINI_API_KEY` / `CLAUDE_CODE_OAUTH_TOKEN`)は `__REPO_DIR__/.env.local` にあれば足りる(`processRegistrationQueue.ts` が dotenv で読み込む)。plist へのコピーは不要
+3. **Terminal.app(通常のログインシェル)から** `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist`
+   - **旧来の `launchctl load` は使わない**。実機では HOME を欠いた劣化コンテキストで起動し、`claude -p` が `~/.claude` を読めず「起動に失敗しました」で落ちた
+   - **VSCode/エディタ埋め込みのシェルからは bootstrap/load しない**。実機で、そのセッションから登録したとき launchd がスケジュール(`RunAtLoad`/`StartInterval`)を回さず `launchctl kickstart` の手動起動しか効かない状態になった。Terminal.app からやり直すと解消する
+4. `launchctl print gui/$(id -u)/com.benriyatool.board-game-rules-registration | grep -E 'state|runs'` で、**放置しても `runs` が60秒ごとに増える**ことを確認する。`processRegistrationQueue.out.log` / `.err.log`(gitignore 済み)にエラーが出ていないことも見る
+   - `runs` が増えない場合: Terminal.app から `launchctl bootout gui/$(id -u)/com.benriyatool.board-game-rules-registration` → 再度 `bootstrap`。それでもダメなら再ログイン/再起動後にもう一度 `bootstrap`
+5. 即時に1回走らせたいときは `launchctl kickstart -p gui/$(id -u)/com.benriyatool.board-game-rules-registration`
+6. Mac がスリープ/オフの間は処理が進まない(次に起きてポーリングが走った時点で再開)のは設計どおりの許容事項(design.md)
 
 # 完了時の次ステップ案内
 
