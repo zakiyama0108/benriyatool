@@ -160,7 +160,7 @@ SUPABASE_SERVICE_ROLE_KEY=xxx GEMINI_API_KEY=xxx npx tsx scripts/board-game-rule
 2. 資格情報(`NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` / `GEMINI_API_KEY` / `CLAUDE_CODE_OAUTH_TOKEN`)は `__REPO_DIR__/.env.local` にあれば足りる(`processRegistrationQueue.ts` が dotenv で読み込む)。plist へのコピーは不要
 3. **Terminal.app(通常のログインシェル)から** `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist`
    - **旧来の `launchctl load` は使わない**。実機では HOME を欠いた劣化コンテキストで起動し、`claude -p` が `~/.claude` を読めず「起動に失敗しました」で落ちた
-   - **VSCode/エディタ埋め込みのシェルから bootstrap/load しない**。そのセッションから登録すると launchd がスケジュール(`RunAtLoad`/`StartInterval`)を回さず、`launchctl kickstart` での手動起動しか効かなくなる(実機で確認済み)
+   - **VSCode/エディタ埋め込みのシェルからは bootstrap/load しない**。実機で、そのセッションから登録したとき launchd がスケジュール(`RunAtLoad`/`StartInterval`)を回さず `launchctl kickstart` の手動起動しか効かない状態になった。Terminal.app からやり直すと解消する
 4. `launchctl print gui/$(id -u)/com.benriyatool.board-game-rules-registration | grep -E 'state|runs'` で、**放置しても `runs` が60秒ごとに増える**ことを確認する。`processRegistrationQueue.out.log` / `.err.log`(gitignore 済み)にエラーが出ていないことも見る
    - `runs` が増えない場合: Terminal.app から `launchctl bootout gui/$(id -u)/com.benriyatool.board-game-rules-registration` → 再度 `bootstrap`。それでもダメなら再ログイン/再起動後にもう一度 `bootstrap`
 5. 即時に1回走らせたいときは `launchctl kickstart -p gui/$(id -u)/com.benriyatool.board-game-rules-registration`
