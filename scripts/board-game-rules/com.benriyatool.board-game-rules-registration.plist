@@ -10,7 +10,10 @@
                           /Users/you/.nvm/versions/node/v22.x/bin/node)
        - __REPO_DIR__   : このリポジトリの絶対パス
        - __CLAUDE_BIN__ : `which claude` の絶対パス
-    3. launchctl load ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist
+    3. launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist
+       (旧来の `launchctl load` は非推奨。実機では HOME を欠いた劣化コンテキストで起動し、
+        claude -p が ~/.claude を読めず失敗した。必ず bootstrap gui/<uid> を使う。
+        入れ直しは `launchctl bootout gui/$(id -u)/com.benriyatool.board-game-rules-registration` してから再 bootstrap)
     4. launchctl list | grep board-game で常駐(=定期起動が登録されている)ことを確認する。
        StandardOutPath / StandardErrorPath のログに 60 秒間隔でエラーなく起動していること
        (処理対象がなければ「処理対象の依頼(status=queued)はありません」で即終了する)を確認する。
