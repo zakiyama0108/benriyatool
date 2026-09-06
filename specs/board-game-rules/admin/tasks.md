@@ -106,7 +106,7 @@
 - ヘッドレス`claude -p`は最小権限で起動する(危険なツールを付与しない・作業ディレクトリを隔離しリポジトリへの書き込みを許さない)。入力画像は匿名アップロードで攻撃者が内容を制御できる前提とし、画像内の埋め込みテキストによるプロンプトインジェクションを想定した制約を置く(design.md「セキュリティ」)
 - `SUPABASE_SERVICE_ROLE_KEY`等の特権クレデンシャルで認証する(`registerGame.ts`と同様)。稼働用の`.plist`に資格情報の実値を書かない(リポジトリにはプレースホルダ雛形のみ置き、実キーは`~/Library/LaunchAgents/`側の`.plist`または`.env`で注入する。design.md「セキュリティ」)
 - launchdの定期起動設定の雛形(`scripts/board-game-rules/com.benriyatool.board-game-rules-registration.plist`)を用意する。`StartInterval`を60秒とし、`ProgramArguments`に`node`・スクリプトの絶対パスを指定、`EnvironmentVariables`または外部`.env`で`SUPABASE_SERVICE_ROLE_KEY`等を注入する(design.md「セキュリティ」。対話シェルのPATHを引き継がないため、`claude`・`node`は絶対パスで指定する)。`StandardOutPath`/`StandardErrorPath`でログファイルへ出力する
-- 動作確認: 実際に登録依頼を1件作成し、「登録実行」を押してから最大60秒待ち、`draft_content`が生成され`status`が`draft`になることを確認する。あわせて「再調整を依頼」→再度`draft`になること、写真解析に失敗するケース(壊れた画像など)で`status`が`failed`になり`error_message`が記録されることを確認する。launchd経由での起動(手動の`launchctl load`)でも同様に動作することを確認する(対話シェルのPATHに依存していないことの実機確認)
+- 動作確認: 実際に登録依頼を1件作成し、「登録実行」を押してから最大60秒待ち、`draft_content`が生成され`status`が`draft`になることを確認する。あわせて「再調整を依頼」→再度`draft`になること、写真解析に失敗するケース(壊れた画像など)で`status`が`failed`になり`error_message`が記録されることを確認する。launchd経由での起動(`launchctl kickstart`での強制起動、および Terminal.app から `launchctl bootstrap gui/<uid>` した後の自動ポーリング)でも同様に動作することを確認する(対話シェルのPATHに依存していないことの実機確認。起動方式の詳細は`.claude/skills/board-game-rules-batch-register/SKILL.md`「稼働用 plist のセットアップ」)
 
 ## T9a. 生成品質のWeb検索補完(`scripts/board-game-rules/processRegistrationQueue.ts`)
 - 対象: T9と同じくTDD対象外(Node.jsスクリプト・`claude -p`のプロンプト調整のため)。requirements.md#登録実行のローカル処理起動-13〜14、design.md「ローカル環境の定期処理」手順4b、design.md「セキュリティ」
