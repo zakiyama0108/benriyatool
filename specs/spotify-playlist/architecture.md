@@ -73,7 +73,7 @@ DBは使用しないため、ER図はなし。
 ## 11. 関連ADR
 
 全アプリ横断のADR(`docs/adr/`):
-- [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 全アプリ共通の静的配信・サーバー機能を持たない方針そのものの決定(本アプリもこの構成を維持し、Spotify連携をブラウザ内で完結させる)
+- [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 全アプリ共通のDB/BaaS選定の前提として、静的配信・サーバー機能を持たない構成を維持することを明記している(本アプリもこの構成を維持し、Spotify連携をブラウザ内で完結させる)
 
 ## 12. セキュリティ
 アクセストークンはSpotifyから直接ブラウザへ発行され、サーバーを経由しない。トークンをDBやサーバーに保存せず、ブラウザ内のみで扱う(具体的な保持方法は[playlist-create/design.md](playlist-create/design.md)で決定する)。
