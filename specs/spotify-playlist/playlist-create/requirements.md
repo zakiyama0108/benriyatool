@@ -70,7 +70,7 @@ flowchart LR
 - [1] 作成するプレイリストは非公開で作成する。公開に変更したい場合は、利用者がSpotify側の操作で行う(本アプリの機能としては提供しない)
 
 ## 非機能要件・依存関係・制約条件
-- 本サイトはCloudflare Workers上の静的配信で、ランタイムのサーバー機能(APIルート等)を持たない([board-game-rules/architecture.md](../../board-game-rules/architecture.md)と同じ方針)。Spotify連携もこの制約の範囲内(ブラウザ内で完結する認可方式)で実現する
+- 本サイトはCloudflare Workers上の静的配信で、ランタイムのサーバー機能(APIルート等)を持たない([../architecture.md#3-設計方針](../architecture.md#3-設計方針))。Spotify連携もこの制約の範囲内(ブラウザ内で完結する認可方式)で実現する
 - 実装の前提として、Spotify Developer Dashboardでのアプリ登録(Client IDの発行、`benriyatool.com`のredirect URIとしての登録)が必要。実装フェーズまでに運営者が用意する
 - 利用者はSpotifyアカウントを持っている前提とする。アカウントを持たない利用者への案内は本specのスコープ外とする
 - 本機能はSpotifyログイン(認可)により表示名・プロフィール画像等の新たな個人情報を取得するため、[legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
