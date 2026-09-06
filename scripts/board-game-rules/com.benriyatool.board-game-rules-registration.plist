@@ -10,13 +10,19 @@
                           /Users/you/.nvm/versions/node/v22.x/bin/node)
        - __REPO_DIR__   : このリポジトリの絶対パス
        - __CLAUDE_BIN__ : `which claude` の絶対パス
-    3. launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist
-       (旧来の `launchctl load` は非推奨。実機では HOME を欠いた劣化コンテキストで起動し、
-        claude -p が ~/.claude を読めず失敗した。必ず bootstrap gui/<uid> を使う。
-        入れ直しは `launchctl bootout gui/$(id -u)/com.benriyatool.board-game-rules-registration` してから再 bootstrap)
-    4. launchctl list | grep board-game で常駐(=定期起動が登録されている)ことを確認する。
-       StandardOutPath / StandardErrorPath のログに 60 秒間隔でエラーなく起動していること
-       (処理対象がなければ「処理対象の依頼(status=queued)はありません」で即終了する)を確認する。
+    3. ★ Terminal.app(通常のログインシェル)から次を実行する。VSCode/エディタ埋め込みの
+       シェルから実行すると launchd がスケジュール(RunAtLoad/StartInterval)を回さず、
+       `launchctl kickstart` での手動起動しか効かなくなる:
+         launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.benriyatool.board-game-rules-registration.plist
+       (旧来の `launchctl load` は非推奨。実機では HOME を欠いた劣化コンテキストで起動し
+        claude -p が ~/.claude を読めず失敗した。入れ直しは
+        `launchctl bootout gui/$(id -u)/com.benriyatool.board-game-rules-registration` してから再 bootstrap)
+    4. `launchctl print gui/$(id -u)/com.benriyatool.board-game-rules-registration | grep -E 'state|runs'` で
+       `runs` が放置しても60秒ごとに増えることを確認する(増えなければ Terminal.app から bootout→bootstrap
+       し直す。それでもダメなら再ログイン/再起動後にもう一度 bootstrap する)。
+       StandardOutPath / StandardErrorPath のログにエラーなく起動していること(処理対象がなければ
+       「処理対象の依頼(status=queued)はありません」で即終了する)も確認する。
+       即時に1回試すには `launchctl kickstart -p gui/$(id -u)/com.benriyatool.board-game-rules-registration`。
 
   資格情報の扱い(design.md「セキュリティ」):
     - このplistには資格情報の実値を一切書かない。processRegistrationQueue.ts が
