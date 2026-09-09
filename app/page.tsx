@@ -63,6 +63,21 @@ export default function HubPage() {
             </div>
           </div>
         </Link>
+        {/* 仕様: specs/hub-site/requirements.md#機能要件-2 */}
+        <Link
+          href="/spotify-playlist"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">🎵</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">曲名からプレイリスト作成</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                曲名を入力するだけでSpotifyにプレイリストを一括登録
+              </p>
+            </div>
+          </div>
+        </Link>
         {/* 仕様: specs/board-game-rules/game-list/requirements.md#メタ情報-11 */}
         <Link
           href="/board-game-rules"

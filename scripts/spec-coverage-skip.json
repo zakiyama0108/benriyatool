@@ -4473,5 +4473,175 @@
     "specFile": "board-game-rules/report/requirements.md",
     "item": "スコープ外",
     "reason": "対象外を明示する見出しで、実装・テストの対象ではないため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/requirements.md",
+    "item": "サマリ",
+    "reason": "機能の全体像を述べた要約の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・URLを示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/requirements.md",
+    "item": "ユースケース図",
+    "reason": "アクターの操作一覧を示す図で、個々の操作の振る舞いは機能要件[1]〜[11]でテストするため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/requirements.md",
+    "item": "曲名の入力 [5]",
+    "reason": "文字数上限を設けないという設計判断(何もしない)の記述で、対応するテスト(存在しないことの検証)を持たない。parseSongInput・検索処理が文字数チェックのロジックを持たないこと自体がこの要件を満たす"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/requirements.md",
+    "item": "非機能要件・依存関係・制約条件",
+    "reason": "静的配信の制約・Spotify Dashboard登録・利用者の前提などの前提条件の記述で、テスト対象の振る舞いを持たないため(プライバシーポリシーの追記は legal/page.tsx で実施)"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "サマリ",
+    "reason": "設計の要約で、個々の振る舞いは requirements.md の各項目でテスト済みのため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フロー見出し自体はテストから参照しない設計方針のため(docs/spec-workflow.md参照)"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "Spotifyでログインする処理",
+    "reason": "処理フローはテストから参照しない設計方針のため。対応する振る舞いは requirements.md#機能要件-1 で pkce.test.ts / spotifyAuth.test.ts(認可URL・state検証・トークン交換・初期化)によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "ログイン状態を復元する処理(次回訪問時)",
+    "reason": "処理フローはテストから参照しない設計方針のため。対応する振る舞いは requirements.md#機能要件-1 で spotifyAuth.test.ts の initializeSession(保存トークンからの復元分岐)によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "アクセストークンを自動更新する処理",
+    "reason": "処理フローはテストから参照しない設計方針のため。対応する振る舞いは requirements.md#機能要件-1 で spotifyAuth.test.ts の getFreshAccessToken(期限判定・単一フライト・失敗時の破棄)によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "ログアウトする処理",
+    "reason": "処理フローはテストから参照しない設計方針のため。対応する振る舞いは requirements.md#機能要件-10 で spotifyAuth.test.ts(clearTokens)・page.test.tsx によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "曲名を一括検索する処理",
+    "reason": "処理フローはテストから参照しない設計方針のため。対応する振る舞いは requirements.md#機能要件-3・4・6 で spotifyApi.test.ts / searchSongs.test.ts / page.test.tsx によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "候補を選択する処理",
+    "reason": "処理フローはテストから参照しない設計方針のため。対応する振る舞いは requirements.md#候補の確定方法-2・5 で SongResultCard.test.tsx / page.test.tsx によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "プレイリストを作成する処理",
+    "reason": "処理フローはテストから参照しない設計方針のため。対応する振る舞いは requirements.md#機能要件-7・8 で spotifyApi.test.ts / page.test.tsx(呼び出し順・再実行時の空プレイリスト残留防止)によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "作成後にもう一度作る処理",
+    "reason": "処理フローはテストから参照しない設計方針のため。対応する振る舞いは requirements.md#機能要件-11 で page.test.tsx によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "バリデーション",
+    "reason": "「検索する」「プレイリストを作成」の有効化条件の記述で、requirements.md#曲名の入力-1・候補の確定方法-4・プレイリスト名-1 で songNames.test.ts / CreateBar.test.tsx / page.test.tsx によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "エラーハンドリング",
+    "reason": "失敗時の定型メッセージ・429の扱い・部分失敗の分離の記述で、spotifyApi.test.ts / searchSongs.test.ts / CreateBar.test.tsx / page.test.tsx によりテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "画面設計",
+    "reason": "画面レイアウトの記述で、表示・操作の振る舞いは page.test.tsx / SongResultCard.test.tsx / CreateBar.test.tsx でテスト済みのため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "初期化中(判定中)",
+    "reason": "レイアウトの記述。判定中に全画面ローディングを出す振る舞いは page.test.tsx でテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "未ログイン(ゲート)",
+    "reason": "レイアウトの記述。ゲート画面の表示(説明文+ログインボタンのみ)は page.test.tsx でテスト済み(requirements.md#機能要件-1)"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "曲名入力・検索結果表示(ログイン中)",
+    "reason": "レイアウトの記述。ヘッダー表示・曲名入力・検索結果セクション・下部固定バーの振る舞いは page.test.tsx / SongResultCard.test.tsx / CreateBar.test.tsx でテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "作成完了",
+    "reason": "レイアウトの記述。完了表示・閲覧のみ化・もう一度作る・完了状態でのログアウトは page.test.tsx でテスト済み(requirements.md#機能要件-9・10・11)"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "画面遷移図",
+    "reason": "状態遷移の図で、各遷移(ゲート↔入力↔完了、セッション失効→ゲート)は page.test.tsx でテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネントのProps・役割を束ねるメタ見出しで、振る舞いは各コンポーネントのテストで検証するため"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "コンポーネント設計 > SongResultCard",
+    "reason": "Props・役割の記述。状態ごとの出し分け・候補選択・もっと見るの振る舞いは SongResultCard.test.tsx でテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "コンポーネント設計 > CreateBar",
+    "reason": "Props・役割の記述。採用曲数表示・作成ボタンの有効/無効・作成中・完了表示の振る舞いは CreateBar.test.tsx でテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "状態管理",
+    "reason": "画面のローカル状態の持ち方・状態遷移図の記述で、個別の振る舞いは page.test.tsx / SongResultCard.test.tsx でテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "セキュリティ",
+    "reason": "PKCE・state・トークン保存先・スコープ最小化・XSS対策などの設計方針の記述。検証可能な項目(暗号論的乱数・S256・state検証・トークンの非永続化・スコープ1つ)は pkce.test.ts / spotifyAuth.test.ts でテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "パフォーマンス",
+    "reason": "曲名検索の同時実行数を絞る方針の記述で、mapWithConcurrency.test.ts / searchSongs.test.ts でテスト済み"
+  },
+  {
+    "specFile": "spotify-playlist/playlist-create/design.md",
+    "item": "ログ",
+    "reason": "console出力(件数・ステータス・手順名のみ、PIIを含めない)の方針の記述で、テスト対象の振る舞いを持たないため"
   }
 ]

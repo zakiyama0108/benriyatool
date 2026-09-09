@@ -97,8 +97,16 @@ describe('ログイン導線 - ログイン状態の判定中・未ログイン�
   })
 })
 
-// 仕様: specs/spotify-playlist/playlist-create/requirements.md#機能要件-3、specs/spotify-playlist/playlist-create/requirements.md#機能要件-4、specs/spotify-playlist/playlist-create/requirements.md#候補の確定方法-1
+// 仕様: specs/spotify-playlist/playlist-create/requirements.md#機能要件-2、specs/spotify-playlist/playlist-create/requirements.md#機能要件-3、specs/spotify-playlist/playlist-create/requirements.md#機能要件-4、specs/spotify-playlist/playlist-create/requirements.md#候補の確定方法-1
 describe('曲名の一括検索 - 入力を分割し、結果に応じて曲ごとの状態へ遷移する', () => {
+  it('曲名は複数行のテキストエリアに1行1曲で入力できること', async () => {
+    await renderLoggedIn()
+    const textarea = screen.getByLabelText('曲名(1行に1曲)')
+    expect(textarea.tagName).toBe('TEXTAREA')
+    fireEvent.change(textarea, { target: { value: 'Lemon\nPretender' } })
+    expect(textarea.value).toBe('Lemon\nPretender')
+  })
+
   it('「検索する」で各曲が検索され、1件ヒットは自動採用・複数ヒットは未選択・0件は未ヒット表示になること', async () => {
     await renderLoggedIn()
     stubSearch((name) => {

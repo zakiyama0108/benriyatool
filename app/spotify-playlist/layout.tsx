@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-// 仕様: specs/hub-site/requirements.md#機能要件-3(spotify-playlistの暫定定義。オーナーspec実装にあわせて本ファイルへ移設)
+// 仕様: specs/spotify-playlist/playlist-create/requirements.md#メタ情報-1
 const TITLE = '曲名からプレイリスト作成｜Spotifyに一括登録できる無料ツール'
 const DESCRIPTION =
   '聴きたい曲の曲名をまとめて入力するだけで、自分のSpotifyアカウントに新しいプレイリストを自動作成。1曲ずつSpotifyアプリ内で検索して追加する手間がかかりません。'
