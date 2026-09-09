@@ -2,7 +2,7 @@
 
 ## 1. PKCE補助関数
 - `app/spotify-playlist/lib/pkce.ts`
-- code_verifierのランダム生成、code_verifierからcode_challenge(SHA-256 + base64url)を導出する関数、CSRF対策用stateのランダム生成関数をテストする
+- Web Crypto API(`crypto.getRandomValues`)を用いたcode_verifierのランダム生成、code_verifierからcode_challenge(SHA-256 + base64url)を導出する関数、同じくWeb Crypto APIを用いたCSRF対策用stateのランダム生成関数をテストする
 - 参照: design.md#spotifyでログインする処理
 
 ## 2. 認可URLの構築

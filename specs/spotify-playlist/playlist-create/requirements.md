@@ -77,7 +77,7 @@ flowchart LR
 - 実装の前提として、Spotify Developer Dashboardでのアプリ登録(Client IDの発行、`benriyatool.com`のredirect URIとしての登録)が必要。実装フェーズまでに運営者が用意する
 - 利用者はSpotifyアカウントを持っている前提とする。アカウントを持たない利用者への案内は本specのスコープ外とする
 - 本機能はSpotifyログイン(認可)により表示名・プロフィール画像等の新たな個人情報を取得するため、[legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーを更新する(具体的な追記内容は本specのtasks.mdで定義する)
-- `styleguide`は利用者向けの公開画面ではなく開発者向けの確認用ページのため、[hub-site](../../hub-site/requirements.md)のトップページカード追加やmetadata定義・sitemapの対象外とする
+- `styleguide`は利用者向けの公開画面ではなく開発者向けの確認用ページのため、[hub-site/requirements.md#機能要件-5](../../hub-site/requirements.md#機能要件-5)のsitemap除外リストに含め、トップページカード追加・metadata定義の対象からも外す
 
 ## スコープ外
 - 既存プレイリストへの曲の追加(本specは新規プレイリストの作成のみを対象とする)

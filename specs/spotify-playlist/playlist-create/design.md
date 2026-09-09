@@ -6,7 +6,7 @@
 ### Spotifyでログインする処理
 - 対象: 「Spotifyでログイン」操作
 - 手順:
-  1. PKCE用のcode_verifier(ランダム文字列)と、そこから導出したcode_challengeを生成する。あわせてCSRF対策用のランダムなstate値を生成する
+  1. PKCE用のcode_verifier(Web Crypto API `crypto.getRandomValues`による暗号学的に安全なランダム文字列)と、そこから導出したcode_challenge(SHA-256でハッシュ化しbase64urlエンコードする`S256`方式)を生成する。あわせてCSRF対策用のstate値も同じくWeb Crypto APIでランダムに生成する
   2. code_verifierとstateをsessionStorageに一時保存する(認可の往復でしか使わずタブを閉じれば消えてよいため、リフレッシュトークンの保存先であるlocalStorageとは分ける)
   3. Spotifyの認可画面へ遷移させる。要求スコープは「非公開プレイリストの作成」権限のみとする(requirements.md#プレイリストの公開範囲)
   4. 利用者がSpotify側で許可すると、認可コードとstateを付けて元の画面(`/spotify-playlist/`)に戻ってくる
@@ -185,7 +185,7 @@ stateDiagram-v2
 
 ## セキュリティ
 - クライアントシークレットを使わないAuthorization Code with PKCEを採用し、静的サイト(サーバー機能なし)の制約内で安全にトークンを取得する。Client ID自体は公開情報(`NEXT_PUBLIC_SPOTIFY_CLIENT_ID`としてビルドに埋め込む)であり秘匿しない
-- 認可の往復にはstateパラメータを用いてCSRFを防ぐ(「Spotifyでログインする処理」手順5)
+- 認可の往復にはstateパラメータを用いてCSRFを防ぐ(「Spotifyでログインする処理」手順5)。code_verifier・stateはいずれもWeb Crypto API(`crypto.getRandomValues`)で生成し、`Math.random()`等の非暗号論的な乱数は使わない(推測可能な値だとCSRF・PKCE迂回のリスクにつながるため)
 - 要求スコープは`playlist-modify-private`1つに絞り、利用者のライブラリ閲覧・アカウント設定変更など不要な権限は要求しない。ただしこのスコープは、本アプリが新規作成するプレイリストに限らず、利用者が既に持っている非公開プレイリスト全般への書き込み(曲の追加・削除・並べ替え・詳細変更等)も許可する、Spotify側の粒度が粗いスコープである(より狭いスコープはSpotify側に用意されていないため、プラットフォームの制約として許容する)
 - リフレッシュトークン・アクセストークンをブラウザのlocalStorageに保存する(サーバーを持たないためhttpOnly Cookie等のより安全な保存先が使えない、静的配信という本アプリの制約上の許容リスクとする。アクセストークンは有効期限が短いため相対的にリスクは低い)。影響範囲はスコープを`playlist-modify-private`に絞ることで、漏洩時も他人のアカウント設定の変更・ライブラリの閲覧はできないようにする。ただし上記の通りこのスコープは利用者の既存の非公開プレイリスト全般への書き込みも含むため、漏洩時は本アプリが作成したプレイリストに限らず、利用者の他の非公開プレイリストの中身も改ざん・削除されうる残存リスクがある
 - サイト全体で読み込んでいるGoogle Tag Manager(`app/layout.tsx`)は同一オリジンで動作するため、理論上はこのスクリプトの侵害・誤設定によりlocalStorage上のトークンが読み取られる経路が存在する。現状はGoogle提供の計測タグのみで独自のDOM操作は行っておらず実害は低いと判断するが、広告タグ等の追加時はこの残存リスクを再評価する
@@ -200,6 +200,6 @@ stateDiagram-v2
 - 曲名の一括検索は、曲数が多い場合にSpotify APIのレート制限(429)を招きやすいため、同時実行数を絞って(小さなバッチ単位で)呼び出す
 
 ## ログ
-- ログイン成功・失敗、トークンリフレッシュ成功・失敗、ログアウトをconsole.logに出力する(サーバーを持たないためブラウザconsoleのみ)
+- ログイン成功・トークンリフレッシュ成功・ログアウトはconsole.logに、ログイン失敗・トークンリフレッシュ失敗はconsole.errorに出力する(サーバーを持たないためブラウザconsoleのみ)
 - 検索の開始(曲数)・各曲の結果件数・検索失敗をconsole.log/console.errorに出力する
 - プレイリスト作成の開始・成功(作成したプレイリストID)・失敗(失敗した手順・ステータスコード)をconsole.log/console.errorに出力する
