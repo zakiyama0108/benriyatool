@@ -13,7 +13,7 @@
 
 ## 3. 認可コードからのトークン交換
 - `app/spotify-playlist/lib/spotifyAuth.ts`
-- URLの`code`・`state`パラメータを読み取り、sessionStorageの保存済みstateと一致するかを確認する関数(不一致時はエラーを返す)
+- URLの`code`・`state`パラメータを読み取り、sessionStorageの保存済みstateと一致するかを確認する関数(不一致時はエラーを返し、sessionStorageのcode_verifier・stateも削除することをテストする)
 - URLに`error`パラメータが付いている場合(利用者が認可を拒否した場合)、ログインを中断する結果を返し、sessionStorageのcode_verifier・stateも削除することをテストする(requirements.md#機能要件-1)
 - 一致した場合に認可コード+code_verifierでトークン発行エンドポイント(`https://accounts.spotify.com/api/token`)へリクエストし、アクセストークン・リフレッシュトークン・有効期限を得る関数(fetchはモック)。成功時・通信エラー等で失敗した時のいずれもsessionStorageのcode_verifier・stateを削除することをテストする
 - 参照: design.md#spotifyでログインする処理
