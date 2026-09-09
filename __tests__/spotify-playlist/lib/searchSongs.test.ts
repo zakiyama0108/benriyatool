@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { searchSongs, SEARCH_CONCURRENCY, type SongSearchResult } from '@/app/spotify-playlist/lib/searchSongs'
 import { SpotifyApiError } from '@/app/spotify-playlist/lib/spotifyApi'
 import { SpotifyAuthError } from '@/app/spotify-playlist/lib/spotifyAuth'
-import type { TrackCandidate } from '@/app/spotify-playlist/lib/spotifyApi'
+import type { TrackCandidate, SearchOutcome } from '@/app/spotify-playlist/lib/spotifyApi'
 
 function candidate(id: string): TrackCandidate {
   return { id, uri: `spotify:track:${id}`, title: id, artist: 'a', album: 'b', albumArtUrl: null, durationMs: 1000 }
@@ -28,10 +28,10 @@ describe('曲名の一括検索 - 同時実行数を絞りつつ、1曲の失敗
   })
 
   it('各曲の結果(未ヒット/自動採用/候補一覧)がインデックス付きで通知されること', async () => {
-    const search = vi.fn((name: string) => {
-      if (name === '無い曲') return Promise.resolve({ kind: 'notFound' } as const)
-      if (name === '一意な曲') return Promise.resolve({ kind: 'auto', candidate: candidate('x') } as const)
-      return Promise.resolve({ kind: 'multiple', candidates: [candidate('a'), candidate('b')], total: 9 } as const)
+    const search = vi.fn((name: string): Promise<SearchOutcome> => {
+      if (name === '無い曲') return Promise.resolve({ kind: 'notFound' })
+      if (name === '一意な曲') return Promise.resolve({ kind: 'auto', candidate: candidate('x') })
+      return Promise.resolve({ kind: 'multiple', candidates: [candidate('a'), candidate('b')], total: 9 })
     })
     const results: Record<number, SongSearchResult> = {}
     await searchSongs(['無い曲', '一意な曲', '人気曲'], (i, r) => (results[i] = r), { search })
