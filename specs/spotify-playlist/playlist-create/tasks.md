@@ -103,9 +103,11 @@
 - `app/spotify-playlist/styleguide/styleguide.png`(上記のキャプチャ)
 - 参照: [design](../../../.claude/skills/design/SKILL.md)「共通chromeとトークンの一貫性」
 
-## 15. トップページへのツールカード追加・ファビコン設定
+## 15. トップページへのツールカード追加・ファビコン設定・sitemap・メタ情報
 - `app/page.tsx`に`/spotify-playlist`(曲名からプレイリスト作成)へのツールカードが表示されることをテストする(`__tests__/page.test.tsx`に追加)。それに合わせて`app/page.tsx`にツールカードを1件追加する(新規アプリの初回公開画面のため)
 - `app/spotify-playlist/icon.*`にファビコンを追加する(ダーク背景+緑の音符モチーフ、[hub-site/requirements.md#機能要件-4](../../hub-site/requirements.md#機能要件-4)で確定済みのデザイン)。静的アセットの追加のみでロジックを持たないため、TDD対象外(`specs/hub-site/tasks.md`「ファビコンの追加」と同じ扱い)
+- `app/sitemap.ts`に`/spotify-playlist/`を追加し、`__tests__/sitemap.test.ts`で含まれること・`/spotify-playlist/styleguide/`は含まれないことをテストする([hub-site/requirements.md#機能要件-5](../../hub-site/requirements.md#機能要件-5))
+- `app/spotify-playlist/layout.tsx`にtitle/descriptionを実装し(requirements.md#メタ情報-1)、`__tests__/spotify-playlist/layout.test.ts`でテストする。あわせて[hub-site/requirements.md#機能要件](../../hub-site/requirements.md#機能要件)の`/spotify-playlist`のメタ情報を暫定直接定義から本spec参照へ移設する
 
 ## 16. プライバシーポリシーの更新
 - `app/legal/page.tsx`(仕様: requirements.md#非機能要件依存関係制約条件、[specs/legal/requirements.md](../../legal/requirements.md))

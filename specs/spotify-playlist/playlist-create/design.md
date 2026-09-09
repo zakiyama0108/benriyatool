@@ -102,7 +102,11 @@ sequenceDiagram
 
 ## 関連するファイル(抜粋)
 ```
+app/spotify-playlist/layout.tsx (新規: ページのtitle/description。page.tsxが'use client'のため親のlayoutで持つ)
 app/spotify-playlist/page.tsx (新規: 画面本体。ログイン状態・曲リスト・作成状態を保持する)
+app/spotify-playlist/lib/useSpotifyAuth.ts (新規: ログイン状態のフック。spotifyAuth.tsのinitializeSession/prepareAuthorization/clearTokensをラップ)
+app/spotify-playlist/lib/songNames.ts (新規: テキストエリア→曲名一覧の変換。空行除去・100件上限)
+app/spotify-playlist/lib/searchSongs.ts (新規: 曲名の一括検索。mapWithConcurrencyでバッチ実行)
 app/spotify-playlist/lib/pkce.ts (新規: code_verifier/code_challenge/stateの生成)
 app/spotify-playlist/lib/spotifyAuth.ts (新規: 認可開始・コールバック処理・トークン保存/復元/リフレッシュ・ログアウト。pkce.tsを利用)
 app/spotify-playlist/lib/spotifyApi.ts (新規: 曲検索・自ユーザー情報取得・プレイリスト作成・曲追加のAPIラッパー)
