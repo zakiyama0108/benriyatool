@@ -11,7 +11,7 @@
 - 他アプリと同じくランタイムのサーバー機能を持たない静的配信のみで完結させ、追加のインフラコストを発生させない
 
 ## 3. 設計方針
-- 本サイトの共通方針(Cloudflare Workersでの静的配信、ランタイムのサーバー機能を持たない)を踏襲し、Spotify連携もクライアントシークレットを必要としない認可方式でブラウザ内のみで完結させる(具体的な認可フローは[playlist-create/design.md](playlist-create/design.md)で決定する)
+- 本サイトの共通方針(Cloudflare Workersでの静的配信、ランタイムのサーバー機能を持たない)を踏襲し、Spotify連携もクライアントシークレットを必要としない認可方式(Authorization Code with PKCE)でブラウザ内のみで完結させる。具体的な手順は[playlist-create/design.md#spotifyでログインする処理](playlist-create/design.md#spotifyでログインする処理)を参照
 - 他アプリで使っているSupabase Auth(Google OIDC)は使わず、Spotify自身の認可機能でログインする(プレイリストの作成先が利用者本人のSpotifyアカウントであるため)
 - 作成履歴や検索結果をDBに保存せず、ブラウザ内の一時的な状態のみで完結させる(スコープ外: 作成履歴の保存・一覧表示)
 
@@ -76,7 +76,7 @@ DBは使用しないため、ER図はなし。
 - [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — 全アプリ共通のDB/BaaS選定の前提として、静的配信・サーバー機能を持たない構成を維持することを明記している(本アプリもこの構成を維持し、Spotify連携をブラウザ内で完結させる)
 
 ## 12. セキュリティ
-アクセストークンはSpotifyから直接ブラウザへ発行され、サーバーを経由しない。トークンをDBやサーバーに保存せず、ブラウザ内のみで扱う(具体的な保持方法は[playlist-create/design.md](playlist-create/design.md)で決定する)。
+アクセストークンはSpotifyから直接ブラウザへ発行され、サーバーを経由しない。トークンをDBやサーバーに保存せず、ブラウザのlocalStorageに保持する。具体的な残存リスク・緩和策は[playlist-create/design.md#セキュリティ](playlist-create/design.md#セキュリティ)を参照。
 
 ## 13. 技術的制約
 - 実装前提として、Spotify Developer Dashboardでのアプリ登録(Client ID発行、`benriyatool.com`のredirect URI登録)が必要([playlist-create/requirements.md#非機能要件依存関係制約条件](playlist-create/requirements.md#非機能要件依存関係制約条件))

@@ -143,7 +143,7 @@ flowchart TD
     done[作成完了]
 
     init -->|保存済みトークンで復元成功、または認可コード付き帰還が成功| input
-    init -->|保存済みトークンなし、復元・トークン交換に失敗、または認可を拒否| gate
+    init -->|保存済みトークンなし、state不一致、復元・トークン交換に失敗、または認可を拒否| gate
     gate -->|Spotifyでログインが成功| input
     input -->|ログアウト| gate
     input -->|セッション失効(トークンリフレッシュ失敗)| gate
@@ -152,6 +152,13 @@ flowchart TD
     done -->|ログアウト| gate
 ```
 正となる文章は上記の各処理フロー・画面設計の箇条書き。
+
+## コンポーネント設計
+
+| コンポーネント | Props | 役割 |
+|---|---|---|
+| SongResultCard | `songName: string`, `state: '検索中' \| '見つからなかった' \| '検索失敗' \| '未選択' \| '採用確定'`, `candidates: { id: string; albumArtUrl: string; title: string; artist: string; album: string; durationMs: number }[]`, `selectedId: string \| null`, `hasMore: boolean`, `onSelect: (id: string) => void`, `onLoadMore: () => void` | 曲名ごとの検索結果カード。状態に応じてスケルトン・未ヒット・検索失敗・候補一覧(単一/複数)を出し分け、候補選択・「もっと見る」を扱う(design.md#曲名を一括検索する処理、design.md#候補を選択する処理) |
+| CreateBar | `adoptedCount: number`, `playlistName: string`, `onPlaylistNameChange: (name: string) => void`, `disabled: boolean`, `isCreating: boolean`, `onCreate: () => void` | 画面下部固定バー。採用候補の曲数表示・プレイリスト名入力・「プレイリストを作成」ボタン(作成完了後は完了表示・「もう一度作る」ボタンに切り替える、design.md#プレイリストを作成する処理) |
 
 ## 状態管理
 - ログイン状態(判定中/未ログイン/ログイン中)・保存トークンは`app/spotify-playlist/lib/spotifyAuth.ts`が提供し、`page.tsx`がフック経由で参照する(画面をまたぐ共有はこの1画面のみのため、グローバルな状態管理ライブラリは使わない)。マウント直後は「判定中」で始まり、初期化処理(design.md#ログイン状態を復元する処理次回訪問時)の完了後に「未ログイン」または「ログイン中」へ切り替わる
