@@ -66,6 +66,30 @@ describe('管理者メニュー - ゲームを編集して上書き保存する'
     await waitFor(() => expect(editGame).toHaveBeenCalledWith(expect.objectContaining({ id: 'game-1', name: 'カタン(改訂)' })))
     await waitFor(() => expect(onChanged).toHaveBeenCalled())
   })
+
+  it('対応人数・プレイ時間が未登録(null)のゲームは、編集フォームの入力欄が空欄で始まり、未入力のままでも保存できること(仕様: admin/requirements.md#登録実行のローカル処理起動-13)', async () => {
+    const onChanged = vi.fn()
+    render(
+      <AdminControls
+        game={makeGame({ minPlayers: null, maxPlayers: null, minMinutes: null, maxMinutes: null })}
+        onChanged={onChanged}
+        onDeleted={vi.fn()}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '編集' }))
+
+    expect(screen.getByLabelText<HTMLInputElement>('対応人数(下限)').value).toBe('')
+    expect(screen.getByLabelText<HTMLInputElement>('対応人数(上限)').value).toBe('')
+
+    fireEvent.click(screen.getByRole('button', { name: '保存する' }))
+
+    await waitFor(() =>
+      expect(editGame).toHaveBeenCalledWith(
+        expect.objectContaining({ minPlayers: undefined, maxPlayers: undefined, minMinutes: undefined, maxMinutes: undefined })
+      )
+    )
+  })
 })
 
 // 仕様: specs/board-game-rules/game-detail/requirements.md#運営者向けの操作(管理者ログイン時)-11

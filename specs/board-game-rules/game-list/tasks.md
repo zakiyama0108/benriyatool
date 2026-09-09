@@ -54,6 +54,12 @@
 - 🟢 画像/プレースホルダーをカード上部(お気に入りアイコンより下のレイヤー)に表示する。画像の`onError`でプレースホルダー表示に切り替える状態を持たせる
 - 🔵 縦横比・プレースホルダーの見た目を整える
 
+## T11. 対応人数・プレイ時間が未登録(NULL)の場合の絞り込み・表示(`lib/filterGames.ts`, `components/GameCard.tsx`)
+- 対象: [admin/tasks.md](../admin/tasks.md) T4e(`Game`型を`number | null`に変更)に伴う追随。design.md「絞り込みを適用する処理」手順1・2、design.md「画面設計」
+- 🔴 `filterGames`: 対応人数・プレイ時間が未登録(NULL)のゲームは、その分類で絞り込みを指定すると除外されることをテストする(他の任意項目(対象年齢等)と同じ原則。requirements.md#未入力項目の扱い-3)。`GameCard`: 対応人数・プレイ時間が両方NULLのとき、それぞれ「不明」と表示されることをテストする
+- 🟢 `filterGames`のplayerCount/playtimeBand判定にNULLガードを追加する。`GameCard`は`lib/gameDisplay.ts`の`formatRange`を使い、`null`のとき「不明」を表示する
+- 🔵 整理する
+
 ## 補足
 - お気に入り操作(`FavoriteButton`)は[favorite](../favorite/tasks.md)で実装したものを各カードに組み込む。並行開発時はfavoriteのボタン完成を待つか、仮のプレースホルダで先行する
 - T6・T7は本画面(game-list)自体の実装ではなく、トップページ追加に伴う既存画面(register/favorites/hub-site/layout)側の更新。T5(一覧画面)と同じPRでまとめて実装する

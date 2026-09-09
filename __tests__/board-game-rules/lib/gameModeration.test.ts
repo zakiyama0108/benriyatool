@@ -75,6 +75,19 @@ describe('運営者によるゲーム編集 - 登録時と同じ検証を通し�
     expect(result).toBe(false)
   })
 
+  it('対応人数・プレイ時間が未入力(undefined)でも、根拠のない値として許容しUPDATEされること(仕様: admin/requirements.md#登録実行のローカル処理起動-13)', async () => {
+    const { updateMock } = setupUpdate()
+
+    const result = await editGame(
+      validInput({ minPlayers: undefined, maxPlayers: undefined, minMinutes: undefined, maxMinutes: undefined })
+    )
+
+    expect(updateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ min_players: null, max_players: null, min_minutes: null, max_minutes: null })
+    )
+    expect(result).toBe(true)
+  })
+
   it('Supabaseが{error}を返した場合、falseが返ること', async () => {
     setupUpdate({ data: null, error: { message: 'permission denied' } })
 

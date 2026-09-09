@@ -39,10 +39,12 @@ export default function AdminControls({ game, onChanged, onDeleted }: Props) {
 
   // 編集フォームの入力状態
   const [name, setName] = useState(game.name)
-  const [minPlayers, setMinPlayers] = useState(String(game.minPlayers))
-  const [maxPlayers, setMaxPlayers] = useState(String(game.maxPlayers))
-  const [minMinutes, setMinMinutes] = useState(String(game.minMinutes))
-  const [maxMinutes, setMaxMinutes] = useState(String(game.maxMinutes))
+  // 根拠がなければ未登録(NULL)のままにする方針のため、他の任意項目(対象年齢等)と同じく
+  // 空文字を「未入力」として扱う(仕様: admin/requirements.md#登録実行のローカル処理起動-13)
+  const [minPlayers, setMinPlayers] = useState(game.minPlayers != null ? String(game.minPlayers) : '')
+  const [maxPlayers, setMaxPlayers] = useState(game.maxPlayers != null ? String(game.maxPlayers) : '')
+  const [minMinutes, setMinMinutes] = useState(game.minMinutes != null ? String(game.minMinutes) : '')
+  const [maxMinutes, setMaxMinutes] = useState(game.maxMinutes != null ? String(game.maxMinutes) : '')
   const [genres, setGenres] = useState<Genre[]>(game.genres)
   const [minAge, setMinAge] = useState(game.minAge != null ? String(game.minAge) : '')
   const [difficulty, setDifficulty] = useState(game.difficulty ?? '')
@@ -71,10 +73,10 @@ export default function AdminControls({ game, onChanged, onDeleted }: Props) {
     const input: GameEditInput = {
       id: game.id,
       name,
-      minPlayers: Number(minPlayers),
-      maxPlayers: Number(maxPlayers),
-      minMinutes: Number(minMinutes),
-      maxMinutes: Number(maxMinutes),
+      minPlayers: minPlayers === '' ? undefined : Number(minPlayers),
+      maxPlayers: maxPlayers === '' ? undefined : Number(maxPlayers),
+      minMinutes: minMinutes === '' ? undefined : Number(minMinutes),
+      maxMinutes: maxMinutes === '' ? undefined : Number(maxMinutes),
       genres,
       minAge: minAge === '' ? undefined : Number(minAge),
       difficulty: difficulty || undefined,

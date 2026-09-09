@@ -28,13 +28,31 @@ function makeGame(overrides: Partial<Game> = {}): Game {
 }
 
 // 仕様: specs/board-game-rules/game-detail/requirements.md#基本情報の表示-1
-describe('分類情報の表示 - 必須項目(ゲーム名・対応人数・プレイ時間)は常に表示する', () => {
+describe('分類情報の表示 - 必須項目(ゲーム名)は常に表示する', () => {
   it('任意項目がすべて未登録でも、ゲーム名・対応人数・プレイ時間は表示されること', () => {
     render(<GameInfo game={makeGame()} />)
 
     expect(screen.getByText('カタン')).toBeTruthy()
     expect(screen.getByText(/3.*4.*人/)).toBeTruthy()
     expect(screen.getByText(/60.*90.*分/)).toBeTruthy()
+  })
+})
+
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行のローカル処理起動-13、specs/board-game-rules/game-detail/requirements.md#基本情報の表示-1
+describe('分類情報の表示 - 対応人数・プレイ時間は根拠がなければ未登録(NULL)のことがある', () => {
+  it('対応人数・プレイ時間が両方NULLのとき、その項目自体を表示しないこと', () => {
+    render(<GameInfo game={makeGame({ minPlayers: null, maxPlayers: null, minMinutes: null, maxMinutes: null })} />)
+
+    expect(screen.getByText('カタン')).toBeTruthy()
+    expect(screen.queryByText(/対応人数/)).toBeNull()
+    expect(screen.queryByText(/プレイ時間/)).toBeNull()
+  })
+
+  it('対応人数のみ登録されている場合、対応人数だけ表示されること', () => {
+    render(<GameInfo game={makeGame({ minMinutes: null, maxMinutes: null })} />)
+
+    expect(screen.getByText(/3.*4.*人/)).toBeTruthy()
+    expect(screen.queryByText(/プレイ時間/)).toBeNull()
   })
 })
 

@@ -24,6 +24,12 @@
 - 🟢 セッション確認・一覧取得・カード表示・その場解除を組み立てる
 - 🔵 状態遷移・ローディング表示を整理する
 
+## T4. 対応人数・プレイ時間が未登録(NULL)の場合の表示(`favorites/page.tsx`)
+- 対象: [admin/tasks.md](../admin/tasks.md) T4e(`Game`型を`number | null`に変更)に伴う追随。design.md「画面設計」
+- 🔴 対応人数・プレイ時間が両方NULLのとき、それぞれ「不明」と表示されることをテストする
+- 🟢 `lib/gameDisplay.ts`の`formatRange`を使い、`null`のとき「不明」を表示する([game-list](../game-list/tasks.md)の`GameCard`と同じ実装)
+- 🔵 整理する
+
 ## 補足
 - `FavoriteButton`は[game-list](../game-list/tasks.md)のカード・[game-detail](../game-detail/tasks.md)へ組み込む
 - プライバシーポリシー更新要否は[user-auth](../user-auth/tasks.md)・[comment](../comment/tasks.md)と合わせて確認する

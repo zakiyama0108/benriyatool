@@ -420,15 +420,23 @@ describe('【管理画面】下書きを公開する前に、必須項目・ジ�
     )
   })
 
-  it('対応人数・プレイ時間が0・小数・nullのとき、4項目それぞれに1以上の整数を求める問題を返すこと', () => {
-    // games テーブルは4つとも NOT NULL。claude -p が null を返すケースを公開前に弾く
+  it('対応人数・プレイ時間がnull(根拠が得られず未登録)のときは問題として扱わないこと', () => {
+    // games テーブルのNOT NULL制約は撤廃済み。根拠がなければ未登録のままでよい
+    // (仕様: admin/requirements.md#登録実行のローカル処理起動-13)
     const problems = validateDraftForPublish(
-      makeDraftContent({ minPlayers: 0, maxPlayers: 2.5, minMinutes: null, maxMinutes: -3 })
+      makeDraftContent({ minPlayers: null, maxPlayers: null, minMinutes: null, maxMinutes: null })
+    )
+    expect(problems).toEqual([])
+  })
+
+  it('対応人数・プレイ時間が0・小数・負数など、値はあるが壊れているときは1以上の整数を求める問題を返すこと', () => {
+    const problems = validateDraftForPublish(
+      makeDraftContent({ minPlayers: 0, maxPlayers: 2.5, minMinutes: 30, maxMinutes: -3 })
     )
     expect(problems).toContain('対応人数(下限)は1以上の整数で指定してください')
     expect(problems).toContain('対応人数(上限)は1以上の整数で指定してください')
-    expect(problems).toContain('プレイ時間(下限)は1以上の整数で指定してください')
     expect(problems).toContain('プレイ時間(上限)は1以上の整数で指定してください')
+    expect(problems).not.toContain('プレイ時間(下限)は1以上の整数で指定してください')
   })
 
   it('対応人数・プレイ時間の下限が上限を上回るとき、その旨を返すこと', () => {
@@ -439,18 +447,14 @@ describe('【管理画面】下書きを公開する前に、必須項目・ジ�
     expect(problems).toContain('プレイ時間の下限が上限を上回っています')
   })
 
-  it('ジャンルが1つも選ばれていないとき、その旨を返すこと', () => {
-    expect(validateDraftForPublish(makeDraftContent({ genres: [] }))).toContain(
-      'ジャンルが1つも選ばれていません'
-    )
+  it('ジャンルが0個でも問題として扱わないこと(DBもジャンル非空を求めない)', () => {
+    expect(validateDraftForPublish(makeDraftContent({ genres: [] }))).toEqual([])
   })
 
-  it('genres キーごと欠落した下書きでも例外にせず「1つも選ばれていない」として扱うこと', () => {
+  it('genres キーごと欠落した下書きでも例外にせず0個として扱うこと', () => {
     // claude -p が genres を丸ごと省略するケース(parseDraft は genres を検証しない)
     expect(() => validateDraftForPublish(makeDraftContent({ genres: undefined }))).not.toThrow()
-    expect(validateDraftForPublish(makeDraftContent({ genres: undefined }))).toContain(
-      'ジャンルが1つも選ばれていません'
-    )
+    expect(validateDraftForPublish(makeDraftContent({ genres: undefined }))).toEqual([])
   })
 
   it('ジャンルに固定リスト外の値(例: パーティ・運要素)が含まれるとき、該当値を挙げて返すこと', () => {
