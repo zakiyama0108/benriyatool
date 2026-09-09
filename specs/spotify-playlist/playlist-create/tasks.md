@@ -79,7 +79,8 @@
 - 押下時に「対象曲(採用確定のみ)を入力順にまとめる→(ログイン時取得済みのユーザーIDで)プレイリスト未作成なら新規作成→曲追加」の順に呼び出され、いずれかが失敗したら完了状態にならずエラー表示になることをテストする
 - 曲追加が失敗した後に再度「プレイリストを作成」を押すと、新規プレイリストを作成せず保持済みのプレイリストIDへの曲追加からやり直すことをテストする(design.md#プレイリストを作成する処理、空プレイリストの残留防止)
 - 作成中は「プレイリストを作成」ボタンがローディング表示になりさらに無効化されることをテストする(design.md#画面設計)
-- 参照: design.md#プレイリストを作成する処理、design.md#画面設計
+- プレイリスト作成APIがプレイリスト名の文字数超過等のバリデーションエラー(400系)で失敗した場合、汎用の通信エラーメッセージではなく入力の見直しを促す専用メッセージになることをテストする(design.md#エラーハンドリング)
+- 参照: design.md#プレイリストを作成する処理、design.md#画面設計、design.md#エラーハンドリング
 
 ## 12. 作成完了表示・もう一度作る
 - `app/spotify-playlist/page.tsx`
@@ -105,7 +106,11 @@
 ## 15. トップページへのツールカード追加
 - `app/page.tsx`に`/spotify-playlist`へのツールカードを1件追加する(新規アプリの初回公開画面のため)
 
+## 16. プライバシーポリシーの更新
+- `app/legal/page.tsx`(仕様: requirements.md#非機能要件依存関係制約条件、[specs/legal/requirements.md](../../legal/requirements.md))
+- プライバシーポリシーに、曲名からプレイリスト作成でログインした利用者のSpotifyの表示名・プロフィール画像・ユーザーIDを取得すること、これらは画面表示のためブラウザ上でのみ一時的に保持し運営者のサーバー・データベースには送信・保存しないこと(design.md#セキュリティ)、利用者ご自身のSpotifyアカウントへの新規プレイリスト作成にのみ使用することを追記する(life-money-sim・ai-dev-digest・board-game-rulesの既存記載パターンを踏襲)
+- コンテンツ変更のみのためテスト対象外
+
 ## 補足(実装前に確認)
 - Spotify Developer Dashboardでのアプリ登録(Client ID発行)と、redirect URIとして本番`https://benriyatool.com/spotify-playlist/`・ローカル開発用URL(例: `http://127.0.0.1:3000/spotify-playlist/`)の両方の登録が完了していることを確認する(requirements.md#非機能要件依存関係制約条件)
 - 発行されたClient IDを`NEXT_PUBLIC_SPOTIFY_CLIENT_ID`としてビルド環境の環境変数に設定する(design.md#セキュリティ)
-- Spotifyログインにより表示名・プロフィール画像等の新たな個人情報を取得するため、[legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する(requirements.md#非機能要件依存関係制約条件)

@@ -76,7 +76,7 @@ flowchart LR
 - 本サイトはCloudflare Workers上の静的配信で、ランタイムのサーバー機能(APIルート等)を持たない([../architecture.md#3-設計方針](../architecture.md#3-設計方針))。Spotify連携もこの制約の範囲内(ブラウザ内で完結する認可方式)で実現する
 - 実装の前提として、Spotify Developer Dashboardでのアプリ登録(Client IDの発行、`benriyatool.com`のredirect URIとしての登録)が必要。実装フェーズまでに運営者が用意する
 - 利用者はSpotifyアカウントを持っている前提とする。アカウントを持たない利用者への案内は本specのスコープ外とする
-- 本機能はSpotifyログイン(認可)により表示名・プロフィール画像等の新たな個人情報を取得するため、[legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーの更新要否を確認する
+- 本機能はSpotifyログイン(認可)により表示名・プロフィール画像等の新たな個人情報を取得するため、[legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーを更新する(具体的な追記内容は本specのtasks.mdで定義する)
 - `styleguide`は利用者向けの公開画面ではなく開発者向けの確認用ページのため、[hub-site](../../hub-site/requirements.md)のトップページカード追加やmetadata定義・sitemapの対象外とする
 
 ## スコープ外
