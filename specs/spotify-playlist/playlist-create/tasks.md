@@ -14,7 +14,7 @@
 ## 3. 認可コードからのトークン交換
 - `app/spotify-playlist/lib/spotifyAuth.ts`
 - URLの`code`・`state`パラメータを読み取り、sessionStorageの保存済みstateと一致するかを確認する関数(不一致時はエラーを返す)
-- URLに`error`パラメータが付いている場合(利用者が認可を拒否した場合)、ログインを中断する結果を返すことをテストする(requirements.md#機能要件-1)
+- URLに`error`パラメータが付いている場合(利用者が認可を拒否した場合)、ログインを中断する結果を返し、sessionStorageのcode_verifier・stateも削除することをテストする(requirements.md#機能要件-1)
 - 一致した場合に認可コード+code_verifierでトークン発行エンドポイント(`https://accounts.spotify.com/api/token`)へリクエストし、アクセストークン・リフレッシュトークン・有効期限を得る関数(fetchはモック)。成功時・通信エラー等で失敗した時のいずれもsessionStorageのcode_verifier・stateを削除することをテストする
 - 参照: design.md#spotifyでログインする処理
 
@@ -33,7 +33,8 @@
 - `app/spotify-playlist/lib/spotifyAuth.ts`(初期化関数)
 - 「URLに認可コードがある場合」「保存済みリフレッシュトークンがある場合」「どちらもない場合」の3分岐で、それぞれ正しい状態(ログイン中/未ログイン)になることをテストする。判定が完了するまでの間は「判定中」の状態を返すことをテストする(design.md#画面設計、初期化中)
 - ログイン中になる場合は、GET /v1/meで取得したユーザーID・表示名・プロフィール画像を状態に含むことをテストする(design.md#セキュリティ、トークンとは別にメモリ内のみで保持する)
-- URLに認可コードがある場合、トークン交換の成功時・失敗時のいずれもURLから認可コード・stateのクエリパラメータが取り除かれることをテストする(design.md#spotifyでログインする処理)
+- トークン交換は成功したがGET /v1/meが失敗した場合、トークンを保存せずログイン失敗(未ログイン)として扱うことをテストする(design.md#spotifyでログインする処理)
+- URLに認可コード・またはerrorパラメータがある場合、成功・失敗のいずれの結果でもURLからそれらのクエリパラメータが取り除かれることをテストする(design.md#spotifyでログインする処理)
 - 参照: design.md#ログイン状態を復元する処理次回訪問時
 
 ## 7. 曲検索API
