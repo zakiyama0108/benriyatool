@@ -103,12 +103,15 @@
 - `app/spotify-playlist/styleguide/styleguide.png`(上記のキャプチャ)
 - 参照: [design](../../../.claude/skills/design/SKILL.md)「共通chromeとトークンの一貫性」
 
-## 15. トップページへのツールカード追加
+## 15. トップページへのツールカード追加・ファビコン設定
 - `app/page.tsx`に`/spotify-playlist`へのツールカードを1件追加する(新規アプリの初回公開画面のため)
+- `app/spotify-playlist/icon.*`にファビコンを追加する(ダーク背景+緑の音符モチーフ、[hub-site/requirements.md#機能要件-4](../../hub-site/requirements.md#機能要件-4)で確定済みのデザイン)
 
 ## 16. プライバシーポリシーの更新
 - `app/legal/page.tsx`(仕様: requirements.md#非機能要件依存関係制約条件、[specs/legal/requirements.md](../../legal/requirements.md))
-- プライバシーポリシーに、曲名からプレイリスト作成でログインした利用者のSpotifyの表示名・プロフィール画像・ユーザーIDを取得すること、これらは画面表示のためブラウザ上でのみ一時的に保持し運営者のサーバー・データベースには送信・保存しないこと(design.md#セキュリティ)、利用者ご自身のSpotifyアカウントへの新規プレイリスト作成にのみ使用することを追記する(life-money-sim・ai-dev-digest・board-game-rulesの既存記載パターンを踏襲)
+- 「1. 収集する情報」に、曲名からプレイリスト作成でログインした利用者のSpotifyの表示名・プロフィール画像・ユーザーIDを取得すること、これらは画面表示のためブラウザ上でのみ一時的に保持し運営者のサーバー・データベースには送信・保存しないこと(design.md#セキュリティ)を追記する
+- 「2. 情報の利用目的」に、取得した情報は利用者ご自身のSpotifyアカウントへの新規プレイリスト作成にのみ使用する旨を追記する
+- いずれもlife-money-sim・ai-dev-digest・board-game-rulesの既存記載パターンを踏襲する
 - コンテンツ変更のみのためテスト対象外
 
 ## 補足(実装前に確認)
