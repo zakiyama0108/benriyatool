@@ -27,6 +27,7 @@ function freshTokens(overrides: Partial<StoredTokens> = {}): StoredTokens {
 }
 
 let fetchMock: MockInstance<typeof fetch>
+let errorSpy: MockInstance<typeof console.error>
 
 beforeEach(() => {
   localStorage.clear()
@@ -35,11 +36,12 @@ beforeEach(() => {
   fetchMock = vi.fn<typeof fetch>()
   vi.stubGlobal('fetch', fetchMock)
   vi.spyOn(console, 'log').mockImplementation(() => {})
-  vi.spyOn(console, 'error').mockImplementation(() => {})
+  errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.unstubAllEnvs()
   vi.restoreAllMocks()
   clearTokens()
 })
@@ -64,6 +66,20 @@ describe('Spotifyログインの認可URL - 非公開プレイリスト作成の
     expect(SPOTIFY_SCOPE.split(' ')).toHaveLength(1)
   })
 
+  it('NEXT_PUBLIC_SPOTIFY_CLIENT_IDが未設定のまま開発環境で認可URLを組み立てると、設定忘れに気づけるようコンソール警告を出すこと', () => {
+    vi.stubEnv('NODE_ENV', 'development')
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    buildAuthorizeUrl({ redirectUri: 'https://benriyatool.com/spotify-playlist/', codeChallenge: 'CH', state: 'ST' })
+    expect(warnSpy).toHaveBeenCalled()
+  })
+
+  it('本番相当の環境ではNEXT_PUBLIC_SPOTIFY_CLIENT_IDが未設定でも警告を出さないこと', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    buildAuthorizeUrl({ redirectUri: 'https://benriyatool.com/spotify-playlist/', codeChallenge: 'CH', state: 'ST' })
+    expect(warnSpy).not.toHaveBeenCalled()
+  })
+
   it('認可を開始すると、往復用のcode_verifierとstateがsessionStorageに一時保存されること', async () => {
     const url = await prepareAuthorization()
     const verifier = sessionStorage.getItem(VERIFIER_KEY)
@@ -84,6 +100,16 @@ describe('認可コード帰還時のstate検証 - 不正なリダイレクト�
     expect(result).toEqual({ kind: 'denied' })
     expect(sessionStorage.getItem(VERIFIER_KEY)).toBeNull()
     expect(sessionStorage.getItem(STATE_KEY)).toBeNull()
+    // 利用者の拒否は通常のキャンセル扱いのため、ログには残さない
+    expect(errorSpy).not.toHaveBeenCalled()
+  })
+
+  it('access_denied以外の認可エラー値が返った場合も中断結果(denied)にするが、値をconsole.errorに記録すること', () => {
+    sessionStorage.setItem(VERIFIER_KEY, 'v')
+    sessionStorage.setItem(STATE_KEY, 's')
+    const result = readCallback(new URLSearchParams('error=server_error&state=s'))
+    expect(result).toEqual({ kind: 'denied' })
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('[spotify-playlist]'), 'server_error')
   })
 
   it('戻ってきたstateが保存済みのものと一致しない場合、不正リダイレクト扱いにしてcode_verifier・stateを削除すること', () => {

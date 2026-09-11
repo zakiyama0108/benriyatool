@@ -153,12 +153,17 @@ export default function SpotifyPlaylistPage() {
     setPhase('creating')
     setCreateError(null)
     const trackUris = adoptedCandidates.map((candidate) => candidate.uri)
+    let playlistId = createdPlaylistId
+    // 今回の呼び出しでプレイリスト作成ステップを実行中かどうか(400の原因切り分けに使う。
+    // createdPlaylistIdは再レンダー前は更新されないため、useCallbackクロージャ内のローカル変数で判定する)
+    let creatingPlaylistStep = false
 
     try {
-      let playlistId = createdPlaylistId
       if (!playlistId) {
+        creatingPlaylistStep = true
         const userId = await getCurrentUserId()
         const created = await createPrivatePlaylist(userId, playlistName.trim())
+        creatingPlaylistStep = false
         playlistId = created.id
         setCreatedPlaylistId(created.id)
         setDoneUrl(created.url)
@@ -171,8 +176,9 @@ export default function SpotifyPlaylistPage() {
         expireSession()
         return
       }
-      // プレイリスト作成(まだIDが無い段階)が400で失敗 → プレイリスト名の見直しを促す(design.md#エラーハンドリング)
-      if (error instanceof SpotifyApiError && error.status === 400 && !createdPlaylistId) {
+      // プレイリスト作成ステップ自体が400で失敗した場合のみ、プレイリスト名の見直しを促す(design.md#エラーハンドリング)。
+      // 曲追加ステップの400はここに含めない(仕様上はプレイリスト作成APIのバリデーションエラーに限定するため)
+      if (error instanceof SpotifyApiError && error.status === 400 && creatingPlaylistStep) {
         setCreateError(PLAYLIST_NAME_ERROR)
       } else {
         setCreateError(GENERIC_ERROR)

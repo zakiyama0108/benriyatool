@@ -266,6 +266,23 @@ describe('プレイリスト名のバリデーションエラー - 400系の失�
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('プレイリスト名を短くするか変更'))
     expect(screen.getByRole('alert').textContent).not.toContain('通信エラー')
   })
+
+  it('プレイリスト作成は成功し曲追加が400で失敗した場合は、プレイリスト名の専用メッセージではなく汎用の通信エラーを表示すること', async () => {
+    await renderLoggedIn()
+    stubSearch(() => ({ kind: 'auto', candidate: track('a1', '候補トラック') }))
+    fireEvent.change(screen.getByLabelText('曲名(1行に1曲)'), { target: { value: '検索ワード' } })
+    fireEvent.click(screen.getByRole('button', { name: '検索する' }))
+    await waitFor(() => expect(screen.getByText('候補トラック')).toBeTruthy())
+
+    getUserIdMock.mockResolvedValue('u1')
+    createPlaylistMock.mockResolvedValue({ id: 'pl1', url: 'https://open.spotify.com/playlist/pl1' })
+    addTracksMock.mockRejectedValue(new SpotifyApiError('bad request', { status: 400 }))
+    fireEvent.change(screen.getByLabelText('プレイリスト名'), { target: { value: '通常の名前' } })
+    fireEvent.click(screen.getByRole('button', { name: 'プレイリストを作成' }))
+
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('通信エラー'))
+    expect(screen.getByRole('alert').textContent).not.toContain('プレイリスト名を短くするか変更')
+  })
 })
 
 // 仕様: specs/spotify-playlist/playlist-create/requirements.md#機能要件-9、specs/spotify-playlist/playlist-create/requirements.md#機能要件-10、specs/spotify-playlist/playlist-create/requirements.md#機能要件-11

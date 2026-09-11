@@ -11,6 +11,7 @@ const TOKEN_ENDPOINT = 'https://accounts.spotify.com/api/token'
 export const SPOTIFY_SCOPE = 'playlist-modify-private'
 
 // Client IDは公開情報のためビルドに埋め込む(design.md#セキュリティ)。
+// 未設定時の気づきやすさのため、実際に認可URLを組み立てる際(buildAuthorizeUrl)に開発環境限定で警告する。
 export const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID ?? ''
 
 // リフレッシュトークンの保存先。次回訪問時の自動ログインに使うため永続化する(design.md#セキュリティ)。
@@ -70,6 +71,10 @@ export function buildAuthorizeUrl(params: {
   codeChallenge: string
   state: string
 }): string {
+  if (!SPOTIFY_CLIENT_ID && process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console -- 開発中にNEXT_PUBLIC_SPOTIFY_CLIENT_IDの設定忘れへ気づけるようにする
+    console.warn('[spotify-playlist] NEXT_PUBLIC_SPOTIFY_CLIENT_IDが未設定です')
+  }
   const query = new URLSearchParams({
     client_id: SPOTIFY_CLIENT_ID,
     response_type: 'code',
@@ -111,6 +116,12 @@ export function readCallback(searchParams: URLSearchParams): CallbackResult {
 
   if (error) {
     clearPkceParams()
+    // 想定内の拒否(access_denied)は通常のキャンセル扱いのためログに残さない。
+    // それ以外の値は原因調査のため記録しておく(design.md#ログ「ログイン失敗はconsole.error」、PIIは含まない)
+    if (error !== 'access_denied') {
+      // eslint-disable-next-line no-console -- 想定外の認可エラー値の記録
+      console.error('[spotify-playlist] 想定外の認可エラーを受け取りました', error)
+    }
     return { kind: 'denied' }
   }
   if (!code) {
@@ -311,6 +322,9 @@ export async function initializeSession(): Promise<AuthState> {
   if (callback.kind !== 'none') {
     try {
       if (callback.kind === 'denied' || callback.kind === 'invalid_state') {
+        // ここでは表示をゲート画面に戻すだけで、保存済みのリフレッシュトークンは意図的に破棄しない
+        // (design.md上はゲート表示への切り替えのみが要求で、有効なセッションを持つ利用者はリロードすれば
+        // 「ログイン状態を復元する処理」で再ログインされる。異常なstateだけを理由に強制ログアウトはしない)
         return { status: 'loggedOut' }
       }
       const tokens = await exchangeCodeForTokens(callback.code, getRedirectUri())
