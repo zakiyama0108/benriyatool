@@ -41,6 +41,22 @@
   --font-body: var(--font-work-sans, "Hiragino Maru Gothic ProN", "BIZ UDGothic", "Yu Gothic", sans-serif);
 }
 
+/* spotify-playlist(曲名からプレイリスト作成)の配色トークン。design.md#画面設計の
+   「Spotify公式ライクなダーク基調+緑アクセント」に合わせ、Spotifyアプリの標準的な
+   ダークパレット(#121212系の背景・#1DB954の緑)を写している。この画面だけダーク基調のため
+   sp-*として他アプリのトークンと分離する。 */
+@theme {
+  --color-sp-bg: #121212;
+  --color-sp-surface: #181818;
+  --color-sp-surface-hover: #282828;
+  --color-sp-line: #2a2a2a;
+  --color-sp-text: #ffffff;
+  --color-sp-subtext: #b3b3b3;
+  --color-sp-green: #1db954;
+  --color-sp-green-hover: #1ed760;
+  --color-sp-on-green: #000000;
+}
+
 @layer components {
   .section-heading {
     @apply text-base font-bold text-gray-900 mb-2.5 pl-3 border-l-[3px] border-blue-500;

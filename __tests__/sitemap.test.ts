@@ -16,6 +16,7 @@ describe('サイトマップの動的生成 - ビルド時に公開中の全ペ�
     expect(urls).toContain(`${SITE_URL}/life-money-sim/`)
     expect(urls).toContain(`${SITE_URL}/ai-dev-digest/`)
     expect(urls).toContain(`${SITE_URL}/board-game-rules/`)
+    expect(urls).toContain(`${SITE_URL}/spotify-playlist/`)
   })
 
   it('board-game-rulesの公開画面(register・favorites)が含まれること', () => {
@@ -50,6 +51,7 @@ describe('サイトマップの動的生成 - ビルド時に公開中の全ペ�
   it('管理画面・styleguide・bookmarksは検索対象外のため含まれないこと', () => {
     expect(urls.some((url) => url.includes('/admin'))).toBe(false)
     expect(urls).not.toContain(`${SITE_URL}/board-game-rules/styleguide/`)
+    expect(urls).not.toContain(`${SITE_URL}/spotify-playlist/styleguide/`)
     expect(urls).not.toContain(`${SITE_URL}/ai-dev-digest/bookmarks/`)
   })
 })
