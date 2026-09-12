@@ -4803,5 +4803,100 @@
     "specFile": "news-digest/article-detail/design.md",
     "item": "ログ",
     "reason": "フィードバックの保存成功・失敗はログ出力を行わないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "news-digest/article-list/requirements.md",
+    "item": "サマリ",
+    "reason": "この章だけで概略をつかむためのメタ要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "news-digest/article-list/requirements.md",
+    "item": "ユースケース図",
+    "reason": "アクターとできることの俯瞰図(Mermaid)で、ユーザーストーリー・機能要件が正であり、図見出し自体はテスト対象外"
+  },
+  {
+    "specFile": "news-digest/article-list/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/requirements.md",
+    "item": "メタ情報 [1]",
+    "reason": "Next.jsのmetadata exportによる静的なtitle/description定義であり、ユニットテストではなくビルド・目視確認で担保するため"
+  },
+  {
+    "specFile": "news-digest/article-list/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "記事一覧をページ分割する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#ビジネスルール・制約-2、requirements.md#一覧表示-3でテスト済みのため(pagination.test.ts)"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "カードに表示するトピック見出し・導入文を選ぶ処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#一覧表示-2・4・5、requirements.md#ビジネスルール・制約-1でテスト済みのため(selectCardTopics.test.ts)"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "エラーハンドリング",
+    "reason": "存在しないページ番号へのアクセス・記事データのスキーマ違反時の扱いをまとめた見出しで、いずれもNext.jsのルーティング・ビルド処理に関する記述でありユニットテスト対象を持たないため(article-detail/design.md#エラーハンドリングと同じ方針)"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "コンポーネント設計 > ArticleCard",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはArticleCard.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "コンポーネント設計 > Pagination",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはPagination.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "セキュリティ",
+    "reason": "記事データは開発者・エージェントが作成するコンテンツで訪問者入力ではなく追加のリスクがないという記述で、対応するテスト(存在しないことの検証)を持たないため"
+  },
+  {
+    "specFile": "news-digest/article-list/design.md",
+    "item": "ログ",
+    "reason": "静的生成された結果を返すだけで実行時に出力すべきログはないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
   }
 ]
