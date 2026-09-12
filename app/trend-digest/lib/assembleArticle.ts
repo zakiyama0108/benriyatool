@@ -8,7 +8,7 @@
 import type { Article, Edition, Genre, Topic } from './types'
 import { GENRE_ORDER } from './types'
 
-// generate-content.tsの出力(GeneratedTopicOutput)と同じ形。titleはCandidate.titleを
+// generate-content.tsの出力(generateTopicsの返り値)と同じ形。titleはCandidate.titleを
 // 引き継いだもので、Topic.sourceTitleに変換される
 export type GeneratedTopicInput = {
   genre: Genre

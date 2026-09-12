@@ -74,6 +74,7 @@ async function main() {
 
   const genreEntries: GenreCandidateEntry[] = []
   const stats: SourceCollectionStat[] = []
+  let excludedAsAlreadyPublished = 0
 
   for (const entry of orderedEntries) {
     const genreCriteria = criteria.genreCriteria[entry.genre]
@@ -98,6 +99,7 @@ async function main() {
     }
 
     const unpublished = excludeAlreadyPublishedTopics(candidates, allPublishedTitles)
+    excludedAsAlreadyPublished += candidates.length - unpublished.length
     const narrowed = narrowGenreCandidates(unpublished, criteria.perGenreMax)
     genreEntries.push({ genre: entry.genre, method: entry.method, candidates: narrowed })
   }
@@ -107,8 +109,11 @@ async function main() {
   console.error('ジャンル・情報源ごとの取得件数:')
   for (const line of buildHealthLogLines(stats)) console.error(`  ${line}`)
 
-  const totalExcluded = genreEntries.reduce((sum, e) => sum + e.candidates.length, 0)
-  console.error(`掲載済み話題除外・ジャンル内絞り込み後の候補数: ${totalExcluded}件`)
+  // 絞り込みの過程が追えるよう、掲載済み話題として除外した件数を記録する(design.md「ログ」)
+  console.error(`掲載済み話題として除外した候補数: ${excludedAsAlreadyPublished}件`)
+
+  const totalRemaining = genreEntries.reduce((sum, e) => sum + e.candidates.length, 0)
+  console.error(`絞り込み後の候補数: ${totalRemaining}件`)
 
   const result = selectEditionTopics(genreEntries, criteria, edition)
   if (result.status === 'skipped') {
