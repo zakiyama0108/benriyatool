@@ -6,7 +6,6 @@ import { parseSongInput, hasSearchableSong } from './lib/songNames'
 import { searchSongs, type SongSearchResult } from './lib/searchSongs'
 import {
   fetchMoreCandidates,
-  getCurrentUserId,
   createPrivatePlaylist,
   addTracksToPlaylist,
   SpotifyApiError,
@@ -161,8 +160,7 @@ export default function SpotifyPlaylistPage() {
     try {
       if (!playlistId) {
         creatingPlaylistStep = true
-        const userId = await getCurrentUserId()
-        const created = await createPrivatePlaylist(userId, playlistName.trim())
+        const created = await createPrivatePlaylist(playlistName.trim())
         creatingPlaylistStep = false
         playlistId = created.id
         setCreatedPlaylistId(created.id)

@@ -79,6 +79,7 @@ flowchart LR
 ## 非機能要件・依存関係・制約条件
 - 本サイトはCloudflare Workers上の静的配信で、ランタイムのサーバー機能(APIルート等)を持たない([../architecture.md#3-設計方針](../architecture.md#3-設計方針))。Spotify連携もこの制約の範囲内(ブラウザ内で完結する認可方式)で実現する
 - 実装の前提として、Spotify Developer Dashboardでのアプリ登録(Client IDの発行、`benriyatool.com`のredirect URIとしての登録)が必要。実装フェーズまでに運営者が用意する
+- Spotifyの開発者向けAPI利用区分「Development Mode」で登録しており、次の制約がある: (1) 登録者(運営者)本人のSpotifyアカウントがPremium契約であることが必須(2) 実際にログインして利用できるのは、Spotify Dashboard上で許可リストに登録した利用者のみ・最大5人まで(この5人自身はPremium不要・無料アカウントでよい)。5人を超える利用者に公開するには、Spotifyへの審査(Extended quota mode)への申請・通過が別途必要で、本specのスコープ外とする
 - 利用者はSpotifyアカウントを持っている前提とする。アカウントを持たない利用者への案内は本specのスコープ外とする
 - 本機能はSpotifyログイン(認可)により表示名・プロフィール画像等の新たな個人情報を取得するため、[legal/requirements.md](../../legal/requirements.md)のプライバシーポリシーを更新する(具体的な追記内容は本specのtasks.mdで定義する)
 - `styleguide`は利用者向けの公開画面ではなく開発者向けの確認用ページのため、[hub-site/requirements.md#機能要件-5](../../hub-site/requirements.md#機能要件-5)のsitemap除外リストに含め、トップページカード追加・metadata定義の対象からも外す

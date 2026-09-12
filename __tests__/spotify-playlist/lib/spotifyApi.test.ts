@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } fr
 import {
   searchTracks,
   fetchMoreCandidates,
-  getCurrentUserId,
   createPrivatePlaylist,
   addTracksToPlaylist,
   SpotifyApiError,
@@ -118,26 +117,22 @@ describe('曲検索の失敗時の扱い - 通信エラーとレート制限を�
 })
 
 // 仕様: specs/spotify-playlist/playlist-create/requirements.md#機能要件-8
-describe('自ユーザー情報の取得・プレイリスト作成・曲追加 - 利用者本人のアカウントに非公開で作る', () => {
-  it('GET /v1/me からユーザーIDを取得すること', async () => {
-    fetchMock.mockResolvedValue(jsonResponse({ id: 'me-123', display_name: 'a' }))
-    await expect(getCurrentUserId()).resolves.toBe('me-123')
-    expect((fetchMock.mock.calls[0][0] as string)).toContain('/me')
-  })
-
-  it('プレイリストは public: false(非公開)で作成し、作成されたIDとリンクを返すこと', async () => {
+describe('プレイリスト作成・曲追加 - 利用者本人のアカウントに非公開で作る(2026年2月のSpotify Web API移行後のエンドポイント)', () => {
+  it('POST /me/playlists で public: false(非公開)で作成し、作成されたIDとリンクを返すこと', async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({ id: 'pl-1', external_urls: { spotify: 'https://open.spotify.com/playlist/pl-1' } })
     )
-    const created = await createPrivatePlaylist('me-123', 'ドライブ用')
+    const created = await createPrivatePlaylist('ドライブ用')
     expect(created).toEqual({ id: 'pl-1', url: 'https://open.spotify.com/playlist/pl-1' })
+    expect((fetchMock.mock.calls[0][0] as string)).toContain('/me/playlists')
     const sentBody = JSON.parse((fetchMock.mock.calls[0][1]?.body as string) ?? '{}') as Record<string, unknown>
     expect(sentBody).toMatchObject({ name: 'ドライブ用', public: false })
   })
 
-  it('作成したプレイリストへトラックURIの配列を追加できること', async () => {
+  it('POST /playlists/{id}/items でトラックURIの配列を追加できること', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ snapshot_id: 's1' }))
     await addTracksToPlaylist('pl-1', ['spotify:track:a', 'spotify:track:b'])
+    expect((fetchMock.mock.calls[0][0] as string)).toContain('/playlists/pl-1/items')
     const sentBody = JSON.parse((fetchMock.mock.calls[0][1]?.body as string) ?? '{}') as Record<string, unknown>
     expect(sentBody).toEqual({ uris: ['spotify:track:a', 'spotify:track:b'] })
   })
@@ -147,22 +142,20 @@ describe('自ユーザー情報の取得・プレイリスト作成・曲追加 
     fetchMock.mockImplementation(() =>
       Promise.resolve(jsonResponse({ id: 'x', external_urls: { spotify: 'u' } }))
     )
-    await getCurrentUserId()
-    await createPrivatePlaylist('u', 'n')
+    await createPrivatePlaylist('n')
     await addTracksToPlaylist('p', ['spotify:track:a'])
-    expect(getTokenMock).toHaveBeenCalledTimes(3)
+    expect(getTokenMock).toHaveBeenCalledTimes(2)
   })
 
   it('通信エラー時はいずれもSpotifyApiErrorを投げること', async () => {
     fetchMock.mockRejectedValue(new TypeError('network'))
-    await expect(getCurrentUserId()).rejects.toBeInstanceOf(SpotifyApiError)
-    await expect(createPrivatePlaylist('u', 'n')).rejects.toBeInstanceOf(SpotifyApiError)
+    await expect(createPrivatePlaylist('n')).rejects.toBeInstanceOf(SpotifyApiError)
     await expect(addTracksToPlaylist('p', ['spotify:track:a'])).rejects.toBeInstanceOf(SpotifyApiError)
   })
 
   it('プレイリスト作成が400系で失敗した場合、ステータスコードをエラー情報として保持すること(プレイリスト名の見直し案内に使う)', async () => {
     fetchMock.mockResolvedValue(new Response('{"error":{"status":400}}', { status: 400 }))
-    await expect(createPrivatePlaylist('u', '長すぎる名前')).rejects.toMatchObject({ status: 400 })
+    await expect(createPrivatePlaylist('長すぎる名前')).rejects.toMatchObject({ status: 400 })
   })
 
   it('曲追加がレート制限(429)を受けた場合、Retry-Afterをエラー情報として保持すること', async () => {
