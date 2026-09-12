@@ -126,7 +126,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [weekly-publish](weekly-publish/requirements.md) | 収集・要約・記事公開を週1回(毎週水曜)自動実行し、完全自動マージする | 仕様のみ(未実装) | content-selection・content-generationの結果を公開する |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの週次記事PRがmainへ自動マージされた直後に、新着記事をLINE公式アカウント(ai-dev-digest・trend-digestと共通)の友だち全員へ自動配信する | 仕様のみ(未実装) | weekly-publishのマージタイミング、article-detailの記事データ構造に従う |
 | [monthly-review](monthly-review/requirements.md) | 月次で情報源・採用基準・専用枠の運用(選定領域)と要約・記事執筆ルール(生成領域)の見直し案を作成し、人間承認を経て反映する | 仕様のみ(未実装) | article-detailのフィードバック、content-selectionの掲載実績を参照 |
-| [article-list](article-list/requirements.md) | 週ごとのダイジェスト記事をカード一覧で表示する | 実装中 | article-detailの記事構造を参照 |
+| [article-list](article-list/requirements.md) | 週ごとのダイジェスト記事をカード一覧で表示する | リリース済み | article-detailの記事構造を参照 |
 | [article-detail](article-detail/requirements.md) | 記事本文(トピックごとの見出し・要約・出典)と、運営者本人向けフィードバック入力欄を表示する | リリース済み | content-selectionの選定結果、content-generationの生成ルールに従う |
 | [bookmark](bookmark/requirements.md) | ログイン中の読者がトピックへ自由記述メモ付きの付箋を貼り、一覧から振り返れるようにする | 仕様のみ(未実装) | article-detailのトピック識別子・記事データ構造に従う |
 
