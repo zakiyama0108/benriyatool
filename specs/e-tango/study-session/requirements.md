@@ -86,7 +86,7 @@ flowchart LR
 - [2] オフラインでの学習は行わない(オンライン前提。オフライン対応は今後の拡張候補)
 
 ## 依存関係
-- 出題するキュー・出題結果の判定・セッション内リピートのルールは `srs-scheduling/requirements.md`
+- 出題するキュー・出題結果の判定・セッション内リピートのルールは `srs-scheduling/requirements.md#1日のキュー構成`
 - 単語データ(見出し・訳・発音・音声・例文・コアイメージ・イラスト・ディストラクター)は `word-content/requirements.md#単語データの項目`
 - 学習の進捗(カード状態・セッションの未消化分・学習日・出題ログ)の保存は `progress-store/requirements.md#保存する内容`
 - セッション開始の導線・完了後の戻り先は `home/requirements.md#表示`
