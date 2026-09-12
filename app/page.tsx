@@ -93,6 +93,21 @@ export default function HubPage() {
             </div>
           </div>
         </Link>
+        {/* 仕様: specs/hub-site/requirements.md#機能要件-2 */}
+        <Link
+          href="/news-digest"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">📰</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">重要ニュースダイジェスト</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                総合・経済・神奈川・育児の重要ニュースを毎週自動収集してお届け
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* 関連記事(ツールではないためカードとは表示を区別する) */}
