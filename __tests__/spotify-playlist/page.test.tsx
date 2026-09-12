@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import SpotifyPlaylistPage from '@/app/spotify-playlist/page'
 import { initializeSession, clearTokens, SpotifyAuthError } from '@/app/spotify-playlist/lib/spotifyAuth'
 import {
-  getCurrentUserId,
   createPrivatePlaylist,
   addTracksToPlaylist,
   fetchMoreCandidates,
@@ -20,7 +19,6 @@ vi.mock('@/app/spotify-playlist/lib/spotifyApi', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/app/spotify-playlist/lib/spotifyApi')>()
   return {
     ...actual,
-    getCurrentUserId: vi.fn(),
     createPrivatePlaylist: vi.fn(),
     addTracksToPlaylist: vi.fn(),
     fetchMoreCandidates: vi.fn(),
@@ -34,7 +32,6 @@ vi.mock('@/app/spotify-playlist/lib/searchSongs', async (importOriginal) => {
 const initSessionMock = vi.mocked(initializeSession)
 const clearTokensMock = vi.mocked(clearTokens)
 const searchSongsMock = vi.mocked(searchSongs)
-const getUserIdMock = vi.mocked(getCurrentUserId)
 const createPlaylistMock = vi.mocked(createPrivatePlaylist)
 const addTracksMock = vi.mocked(addTracksToPlaylist)
 const fetchMoreMock = vi.mocked(fetchMoreCandidates)
@@ -199,7 +196,6 @@ describe('プレイリストの作成 - 採用確定の曲だけを利用者本�
   it('採用確定の曲だけを入力順に、非公開プレイリストを新規作成してから追加すること(未ヒット・未選択の曲は含めない)', async () => {
     await renderLoggedIn()
     await searchThreeSongs()
-    getUserIdMock.mockResolvedValue('u1')
     createPlaylistMock.mockResolvedValue({ id: 'pl1', url: 'https://open.spotify.com/playlist/pl1' })
     addTracksMock.mockResolvedValue(undefined)
 
@@ -207,9 +203,8 @@ describe('プレイリストの作成 - 採用確定の曲だけを利用者本�
     fireEvent.click(screen.getByRole('button', { name: 'プレイリストを作成' }))
 
     await waitFor(() => expect(addTracksMock).toHaveBeenCalled())
-    // 呼び出し順: ユーザーID取得 → 非公開作成 → 曲追加
-    expect(getUserIdMock).toHaveBeenCalled()
-    expect(createPlaylistMock).toHaveBeenCalledWith('u1', '夜ドライブ')
+    // 呼び出し順: 非公開作成 → 曲追加
+    expect(createPlaylistMock).toHaveBeenCalledWith('夜ドライブ')
     // 採用確定(auto1)のみが追加対象。未ヒット・未選択は除外
     expect(addTracksMock).toHaveBeenCalledWith('pl1', ['spotify:track:auto1'])
   })
@@ -217,7 +212,6 @@ describe('プレイリストの作成 - 採用確定の曲だけを利用者本�
   it('曲追加が失敗した後に再度作成すると、新規プレイリストは作らず保持済みIDへの追加からやり直すこと', async () => {
     await renderLoggedIn()
     await searchThreeSongs()
-    getUserIdMock.mockResolvedValue('u1')
     createPlaylistMock.mockResolvedValue({ id: 'pl1', url: 'https://open.spotify.com/playlist/pl1' })
     addTracksMock.mockRejectedValueOnce(new SpotifyApiError('通信エラー'))
     addTracksMock.mockResolvedValueOnce(undefined)
@@ -236,7 +230,6 @@ describe('プレイリストの作成 - 採用確定の曲だけを利用者本�
   it('作成中は「プレイリストを作成」ボタンがローディング表示になりさらに無効化されること', async () => {
     await renderLoggedIn()
     await searchThreeSongs()
-    getUserIdMock.mockResolvedValue('u1')
     createPlaylistMock.mockResolvedValue({ id: 'pl1', url: 'u' })
     let resolveAdd: () => void = () => {}
     addTracksMock.mockImplementation(() => new Promise<void>((resolve) => (resolveAdd = resolve)))
@@ -258,7 +251,6 @@ describe('プレイリスト名のバリデーションエラー - 400系の失�
     fireEvent.click(screen.getByRole('button', { name: '検索する' }))
     await waitFor(() => expect(screen.getByText('候補トラック')).toBeTruthy())
 
-    getUserIdMock.mockResolvedValue('u1')
     createPlaylistMock.mockRejectedValue(new SpotifyApiError('bad request', { status: 400 }))
     fireEvent.change(screen.getByLabelText('プレイリスト名'), { target: { value: 'とても長い名前' } })
     fireEvent.click(screen.getByRole('button', { name: 'プレイリストを作成' }))
@@ -274,7 +266,6 @@ describe('プレイリスト名のバリデーションエラー - 400系の失�
     fireEvent.click(screen.getByRole('button', { name: '検索する' }))
     await waitFor(() => expect(screen.getByText('候補トラック')).toBeTruthy())
 
-    getUserIdMock.mockResolvedValue('u1')
     createPlaylistMock.mockResolvedValue({ id: 'pl1', url: 'https://open.spotify.com/playlist/pl1' })
     addTracksMock.mockRejectedValue(new SpotifyApiError('bad request', { status: 400 }))
     fireEvent.change(screen.getByLabelText('プレイリスト名'), { target: { value: '通常の名前' } })
@@ -293,7 +284,6 @@ describe('作成完了表示・もう一度作る・ログアウト', () => {
     fireEvent.change(screen.getByLabelText('曲名(1行に1曲)'), { target: { value: '確定曲' } })
     fireEvent.click(screen.getByRole('button', { name: '検索する' }))
     await waitFor(() => expect(screen.getByText('ドライブトラック')).toBeTruthy())
-    getUserIdMock.mockResolvedValue('u1')
     createPlaylistMock.mockResolvedValue({ id: 'pl1', url: 'https://open.spotify.com/playlist/pl1' })
     addTracksMock.mockResolvedValue(undefined)
     fireEvent.change(screen.getByLabelText('プレイリスト名'), { target: { value: '完成' } })

@@ -122,20 +122,17 @@ export async function fetchMoreCandidates(
   return { candidates: items.map(toCandidate), total }
 }
 
-// -------------------- 自ユーザー情報・プレイリスト作成・曲追加 --------------------
-
-// GET /v1/me からユーザーIDを取得する(design.md#プレイリストを作成する処理 手順3で使う)。
-export async function getCurrentUserId(): Promise<string> {
-  const response = await apiFetch('/me')
-  const data = (await response.json()) as { id: string }
-  return data.id
-}
+// -------------------- プレイリスト作成・曲追加 --------------------
+// 2026年2月のSpotify Web API移行(february-2026-migration-guide)により、
+// プレイリスト作成は/users/{user_id}/playlistsから/me/playlistsへ、
+// 曲追加は/playlists/{id}/tracksから/playlists/{id}/itemsへエンドポイントが変更された。
+// /me/playlistsはアクセストークンの持ち主に対して作成するためユーザーIDの指定が不要になった。
 
 export type CreatedPlaylist = { id: string; url: string }
 
 // 非公開(public: false)でプレイリストを新規作成する(requirements.md#プレイリストの公開範囲-1)。
-export async function createPrivatePlaylist(userId: string, name: string): Promise<CreatedPlaylist> {
-  const response = await apiFetch(`/users/${encodeURIComponent(userId)}/playlists`, {
+export async function createPrivatePlaylist(name: string): Promise<CreatedPlaylist> {
+  const response = await apiFetch('/me/playlists', {
     method: 'POST',
     body: JSON.stringify({ name, public: false }),
   })
@@ -143,10 +140,10 @@ export async function createPrivatePlaylist(userId: string, name: string): Promi
   return { id: data.id, url: data.external_urls.spotify }
 }
 
-// 作成したプレイリストへトラックURIを入力順に追加する(design.md#プレイリストを作成する処理 手順5)。
+// 作成したプレイリストへトラックURIを入力順に追加する(design.md#プレイリストを作成する処理 手順4)。
 // 対象は最大100件のためSpotifyの1リクエスト上限内に収まり、分割呼び出しはしない(requirements.md#曲名の入力-2)。
 export async function addTracksToPlaylist(playlistId: string, trackUris: string[]): Promise<void> {
-  await apiFetch(`/playlists/${encodeURIComponent(playlistId)}/tracks`, {
+  await apiFetch(`/playlists/${encodeURIComponent(playlistId)}/items`, {
     method: 'POST',
     body: JSON.stringify({ uris: trackUris }),
   })

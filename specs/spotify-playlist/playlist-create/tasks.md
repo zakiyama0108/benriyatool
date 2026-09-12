@@ -119,3 +119,7 @@
 ## 補足(実装前に確認)
 - Spotify Developer Dashboardでのアプリ登録(Client ID発行)と、redirect URIとして本番`https://benriyatool.com/spotify-playlist/`・ローカル開発用URL(例: `http://127.0.0.1:3000/spotify-playlist/`)の両方の登録が完了していることを確認する(requirements.md#非機能要件依存関係制約条件)
 - 発行されたClient IDを`NEXT_PUBLIC_SPOTIFY_CLIENT_ID`としてビルド環境の環境変数に設定する(design.md#セキュリティ)
+
+## 17. 本番ログイン不具合の修正(GitHub Secrets配線漏れ・エンドポイント移行対応)
+- `NEXT_PUBLIC_SPOTIFY_CLIENT_ID`をGitHub Secretsに登録し、`.github/workflows/ci.yml`・`.github/workflows/deploy.yml`の`npm run build`ステップに環境変数として渡す(初回実装時に補足のみで実際の配線を書き漏らしていた)
+- 2026年2月のSpotify Web API移行に伴い、プレイリスト作成エンドポイントを`/users/{user_id}/playlists`から`/me/playlists`へ、曲追加エンドポイントを`/playlists/{id}/tracks`から`/playlists/{id}/items`へ変更する(`app/spotify-playlist/lib/spotifyApi.ts`)。`/me/playlists`はユーザーID指定が不要になるため、`getCurrentUserId`の呼び出し・関数自体を削除し、design.md#プレイリストを作成する処理の手順番号も追随して整理する(`__tests__/spotify-playlist/lib/spotifyApi.test.ts`・`__tests__/spotify-playlist/page.test.tsx`)
