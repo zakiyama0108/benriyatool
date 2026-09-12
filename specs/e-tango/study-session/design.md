@@ -122,7 +122,7 @@ flowchart TD
     answer -->|次へ、キューに残りあり| quiz
     answer -->|次へ、キューが空| complete
     complete -->|homeへ戻る| home
-    quiz -->|閉じる(中断)| home
+    quiz -->|閉じる（中断）| home
 ```
 正となる文章は上記の各処理フロー・画面設計の箇条書き。
 
