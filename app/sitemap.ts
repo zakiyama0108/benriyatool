@@ -26,6 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/board-game-rules/`, lastModified: now, priority: 0.8 },
     { url: `${SITE_URL}/board-game-rules/register/`, lastModified: now, priority: 0.5 },
     { url: `${SITE_URL}/board-game-rules/favorites/`, lastModified: now, priority: 0.5 },
+    { url: `${SITE_URL}/spotify-playlist/`, lastModified: now, priority: 0.8 },
   ]
 
   const guidePages: MetadataRoute.Sitemap = GUIDE_ARTICLES.map((article) => ({

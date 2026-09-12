@@ -58,7 +58,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信しており、�
 ## 8. 機能一覧表(機能マップ)
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
-| [playlist-create](playlist-create/requirements.md) | 曲名を入力してSpotifyにプレイリストを作成する | Spotifyへのログイン・曲検索・プレイリスト作成を行う | - | 仕様のみ(未実装) |
+| [playlist-create](playlist-create/requirements.md) | 曲名を入力してSpotifyにプレイリストを作成する | Spotifyへのログイン・曲検索・プレイリスト作成を行う | - | リリース済み |
 
 ## 9. ディレクトリ構成
 CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。

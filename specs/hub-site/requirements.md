@@ -24,7 +24,7 @@
   - `/ai-dev-digest`: specs/ai-dev-digest/article-list/requirements.md#メタ情報-1 で定義する
   - `/life-money-sim`: specs/life-money-sim/monthly-balance/requirements.md#メタ情報-1 で定義する
   - `/board-game-rules`: specs/board-game-rules/game-list/requirements.md#メタ情報-10 で定義する
-  - `/spotify-playlist`: title「曲名からプレイリスト作成｜Spotifyに一括登録できる無料ツール」、description「聴きたい曲の曲名をまとめて入力するだけで、自分のSpotifyアカウントに新しいプレイリストを自動作成。1曲ずつSpotifyアプリ内で検索して追加する手間がかかりません。」(オーナーとなる[spotify-playlist/playlist-create](../spotify-playlist/playlist-create/requirements.md)が未実装のため本specに暫定直接定義。実装着手にあわせて移設する)
+  - `/spotify-playlist`: specs/spotify-playlist/playlist-create/requirements.md#メタ情報-1 で定義する
   - `/e-tango`: specs/e-tango/home/requirements.md#メタ情報-9 で定義する
 - [4] ファビコンを設定する。Next.jsのファイルベースアイコン規約(`app/icon.*`)により、ルートセグメント(`app/`)に置いたアイコンはドメイン全体のデフォルトになり、各アプリのセグメント(`app/<アプリ名>/`)に置いたアイコンはそのアプリ配下のページにだけ上書き適用される。デザインはGoogle Stitch(プロジェクト`2502647761156519613`)で作成し、各アプリの既存配色トークン(life-money-simの「オーシャンミント」、board-game-rulesの「Analog Hearth」等)またはハブページのツールカードで使っている絵文字のモチーフに合わせている
   - サイト全体(`/`): オレンジ背景+道具箱モチーフ
