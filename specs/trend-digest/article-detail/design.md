@@ -213,13 +213,13 @@ Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の
 
 | コンポーネント | Props | 役割 |
 |---|---|---|
-| GenreSection | `genre: Genre`, `topics: Topic[]`, `session: Session \| null`, `isAdmin: boolean`, `articleId: string` | 1ジャンル分の見出し+配下トピックカードの表示 |
+| GenreSection | `genre: Genre`, `topics: Topic[]`, `isAdmin: boolean`, `articleId: string` | 1ジャンル分の見出し+配下トピックカードの表示 |
 | TopicCard | `topic: Topic`, `isAdmin: boolean`, `articleId: string` | 1トピック分の表示+配下にFeedbackFormを`isAdmin`で条件付き表示 |
 | FeedbackForm | `articleId: string`, `topicId: string` | 自由記述の入力欄・送信・送信結果表示 |
 
 ## 状態管理
 
-- ログインセッション(`Session \| null`): ページのトップレベルコンポーネントで`useState`保持し、`GenreSection`にpropsで渡す
+- ログインセッション(`Session \| null`): ページのトップレベルコンポーネントで`useState`保持し、運営者判定(`isAdmin`)の算出にのみ使う。`isAdmin`(boolean)だけを`GenreSection`にpropsで渡す
 - 各`FeedbackForm`の送信状態(`idle`/`sending`/`sent`/`failed`)はコンポーネント内の`useState`で完結させる(トピックをまたいで共有しない)
 
 ## セキュリティ
