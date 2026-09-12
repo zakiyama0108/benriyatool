@@ -7,7 +7,7 @@
 
 記事本文はDBではなく、ビルド時に取り込む静的コンテンツファイルとして管理する(architecture.md#3-設計方針)。この記事データの型・置き場所は本specで定義し、[article-list](../article-list/requirements.md)・[content-selection](../content-selection/requirements.md)・[content-generation](../content-generation/requirements.md)・[weekly-publish](../weekly-publish/requirements.md)・[line-broadcast](../line-broadcast/requirements.md)・[source-review](../source-review/requirements.md)は共通してこの形式に従う。
 
-- 格納場所: `content/trend-digest/articles/<id>.json`(`<id>`は`<date>-<edition>`。例: `2026-09-15-entertainment`、`2026-09-18-culture-lifestyle`。`<date>`は発行日`YYYY-MM-DD`。URLの`[id]`と一致させる)【推測】
+- 格納場所: `content/trend-digest/articles/<id>.json`(`<id>`は`<date>-<edition>`。例: `2026-09-15-entertainment`、`2026-09-18-culture-lifestyle`。`<date>`は発行日`YYYY-MM-DD`。URLの`[id]`と一致させる)
 - 1ファイル=1回分の記事(エンタメ編・カルチャー編それぞれ週1ファイル、合計週2ファイル)。週次のGitHub Actionsワークフロー([weekly-publish](../weekly-publish/requirements.md))がこのファイルを新規追加する
 - なぜMarkdownでなくJSONか: ジャンルごとのトピック(見出し・本文・出典・原題)を構造化フィールドとして持つ必要があり、本文全体が地の文であるMarkdownより、フィールド単位で機械検証(バリデーション)しやすいJSONの方が、エージェントが生成する入力形式として事故が少ないと判断した(要件に形式指定はないため設計判断。ai-dev-digestと同じ考え方)
 
@@ -201,7 +201,7 @@ create policy "benriyatool_readonly can select" on trend_digest_feedback
 
 ## 画面設計
 
-Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の配色・レイアウトパターンを踏襲し、最終的な見た目の確定はautopilotの画面レビュー(実装後のlocalhost確認)で行う)。ジャンル見出しで区切るレイアウトはrequirements.mdで確定済み([article-list/requirements.md](../article-list/requirements.md)と対になる方針)。既存画面からの見分けが付くよう、アクセントカラーのみトレンド系トピックらしい配色(暖色系。例: アンバー/オレンジ系のアクセント)に変更する。具体的な色コードは実装時にTailwindの既存パレットから選ぶ【推測】。
+Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の配色・レイアウトパターンを踏襲し、最終的な見た目の確定はautopilotの画面レビュー(実装後のlocalhost確認)で行う)。ジャンル見出しで区切るレイアウトはrequirements.mdで確定済み([article-list/requirements.md](../article-list/requirements.md)と対になる方針)。既存画面からの見分けが付くよう、アクセントカラーのみトレンド系トピックらしい配色(暖色系。例: アンバー/オレンジ系のアクセント)に変更する。具体的な色コードは実装時にTailwindの既存パレットから選ぶ。
 
 - パンくず(べんりやつーる › 週刊トレンド › 記事タイトル)
 - 記事タイトル(`buildArticleTitle(edition, date)`)・公開日

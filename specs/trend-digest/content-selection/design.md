@@ -54,7 +54,7 @@ export type Criteria = {
 }
 ```
 
-`watchlist.json`の初期値(全18ジャンル。sourcesはrequirements.mdの各ジャンル節の情報源をそのまま構造化したもの。すべて【推測】=requirements.md側で既に推測マーカー付きの内容をそのまま構造化):
+`watchlist.json`の初期値(全18ジャンル。sourcesはrequirements.mdの各ジャンル節の情報源をそのまま構造化したもの):
 
 ```json
 {
@@ -102,7 +102,7 @@ export type Criteria = {
 }
 ```
 
-`criteria.json`の初期値(すべて【推測】。妥当性は運用実績を見て[source-review](../source-review/requirements.md)で見直す):
+`criteria.json`の初期値(妥当性は運用実績を見て[source-review](../source-review/requirements.md)で見直す):
 ```json
 {
   "perGenreMax": 2,
@@ -160,10 +160,10 @@ export type SelectionResult =
   1. ジャンルごとに登録された各情報源へHTTPリクエストし、情報源の種類に応じた一覧を取得する。取得・パースに失敗した場合はその情報源だけを除外して処理を続ける(1件の取得失敗で編全体の収集を止めない)。情報源には2種類あり、種類ごとに取得する一覧の形が異なる
      - 順位付きランキング型(上記以外すべて): 公式ランキング・チャートの公開ページから、順位付きの一覧(作品名・現在の順位)を取得する
      - 新着記事一覧型(WWD JAPAN新着記事・Engadget日本版): 順位を持たないため、直近の新着記事一覧(記事タイトル・掲載日時)を取得する
-  2. `newEntryOrRisingRank: true`のジャンル(music/foreign-drama/anime/streaming-video/books-comics)は、情報源のページ自体が前週比の順位変動(前週順位・NEW表記)を提供している場合はそれをそのまま使う。提供していない情報源は、直近`newEntryLookbackWeeks`週間分の過去記事(`content/trend-digest/articles/*.json`)の同ジャンルのトピックに同じ`title`(正規化後)が含まれていなければ「新規」とみなす。順位上昇の判定はページが変動値を提供する場合のみ行い、提供しない情報源では新規ランクインのみを候補条件にする(順位上昇の判定は諦める。要件の判定方法詳細を設計で補うための判断)【推測】
+  2. `newEntryOrRisingRank: true`のジャンル(music/foreign-drama/anime/streaming-video/books-comics)は、情報源のページ自体が前週比の順位変動(前週順位・NEW表記)を提供している場合はそれをそのまま使う。提供していない情報源は、直近`newEntryLookbackWeeks`週間分の過去記事(`content/trend-digest/articles/*.json`)の同ジャンルのトピックに同じ`title`(正規化後)が含まれていなければ「新規」とみなす。順位上昇の判定はページが変動値を提供する場合のみ行い、提供しない情報源では新規ランクインのみを候補条件にする(順位上昇の判定は諦める。要件の判定方法詳細を設計で補うための判断)
   3. `rankThreshold`のみのジャンル(japanese-movie/foreign-movie/buzzwords/fashion/gadgets/games/travel)は、現在の順位が`rankThreshold`以内の項目をすべて候補にする。buzzwords(流行りの言葉)・games(ゲーム)の情報源(Googleトレンド急上昇ワード・Yahoo!検索急上昇ワードランキング、Steam売上ランキング・ファミ通.com売上ランキング)は、掲載されている項目自体が既に「一過性の話題性がある語」「新作・話題作」に該当するものだけであるため、順位判定に加えた定性的な絞り込みは行わない(requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-5・-8)。fashion(ファッション)・gadgets(ガジェット・家電)は情報源の一方が新着記事一覧型(WWD JAPAN新着記事・Engadget日本版)のため、`rankThreshold`判定はもう一方の順位付きランキング型の情報源(ZOZOTOWN人気ランキング・価格.com売れ筋ランキング)にのみ適用する。新着記事一覧型の情報源は順位を持たないため`rankThreshold`判定を行わず、直近の新着記事をそのまま候補にする(requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-6〜7「新着のトレンド企画記事」「新着記事で紹介された注目製品」を反映するための判断)
   4. `rankThreshold`と`newEntryOrRisingRank`の両方を持つジャンル(books-comics)は、手順2の新規ランクイン・順位上昇の判定に加えて、現在の順位が`rankThreshold`(5位)以内であることも満たす項目だけを候補にする(いずれか一方だけでは候補にしない。requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-4「上位5位以内で新規にランクインした作品」の両条件を反映するための判断)
-  5. 候補ごとに`strength = 100 - 現在の順位`を設定する(順位が高いほど大きい値。musicのような上昇幅判定ジャンルは、上昇幅が大きいほど`strength`を加点する)。新着記事一覧型の情報源から抽出した候補は順位を持たないため、掲載日時が新しいものほど大きくなる値(例: 新着順の掲載順位を仮の順位とみなす)を`strength`に設定する【推測】
+  5. 候補ごとに`strength = 100 - 現在の順位`を設定する(順位が高いほど大きい値。musicのような上昇幅判定ジャンルは、上昇幅が大きいほど`strength`を加点する)。新着記事一覧型の情報源から抽出した候補は順位を持たないため、掲載日時が新しいものほど大きくなる値(例: 新着順の掲載順位を仮の順位とみなす)を`strength`に設定する
   6. 情報源ごとの取得件数(取得失敗・0件はその旨)を記録する(requirements.md#情報源の健全性監視-1)
 - 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜9、requirements.md#データ取得方法-1、requirements.md#情報源の健全性監視-1
 
@@ -172,7 +172,7 @@ export type SelectionResult =
 - 手順:
   1. ジャンルごとの`searchHints`を手がかりに、Claude Code CLIのヘッドレス実行(WebSearchツール)で話題を検索する
   2. 複数の独立した情報源(ニュースメディア・公式発表等)が同じ話題を報じている場合のみ「動きがあった」候補にする。独立情報源数が`minIndependentSources`未満の話題(単一情報源のみ、噂・未確認情報の域を出ないもの)は候補にしない(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1)
-  3. 候補ごとに、話題の名称(`title`)・代表的な出典1件(`sourceName`/`sourceUrl`。最初に見つかった情報源、または最も権威のあるメディアを1件選ぶ【推測】)・独立情報源の言及数(`strength`として使う)をJSONで返す
+  3. 候補ごとに、話題の名称(`title`)・代表的な出典1件(`sourceName`/`sourceUrl`。最初に見つかった情報源、または最も権威のあるメディアを1件選ぶ)・独立情報源の言及数(`strength`として使う)をJSONで返す
   4. 応答は指定のJSON配列単体とし、聞き返し・説明文のみの応答を返さない(ヘッドレス実行のため質問に応答する相手がいない。ai-dev-digest content-generationの応答形式ガードレールと同じ考え方)
   5. ジャンルごとの候補件数(0件はその旨)を記録する(requirements.md#情報源の健全性監視-1)
 - 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1〜6、requirements.md#情報源の健全性監視-1

@@ -7,11 +7,11 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
 
 実行主体はGitHub Actionsとする(ai-dev-digestのdaily-publishと同じ構成をそのまま踏襲する):
 
-- ワークフロー本体は`.github/workflows/trend-digest-weekly.yml`として、火曜(エンタメ編)・金曜(カルチャー編)それぞれ独立したcronで起動する。GitHub Actionsのscheduled workflowには起動時刻のSLAがなく、特に毎時0分は起動が遅延しやすいため、`cron`の分は0を避けて設定する(ai-dev-digestの実測知見を踏襲。requirements.mdに配信時刻の厳密な固定要件はなく、朝の時間帯に届けば足りるため)。JST 07:43頃の配信を狙い、次の2つの独立したcronエントリを`schedule:`に登録する【推測】(具体的な時刻はai-dev-digestの日次実行(06:43 JST)に合わせつつ、週次であることが分かるよう+1時間ずらした):
+- ワークフロー本体は`.github/workflows/trend-digest-weekly.yml`として、火曜(エンタメ編)・金曜(カルチャー編)それぞれ独立したcronで起動する。GitHub Actionsのscheduled workflowには起動時刻のSLAがなく、特に毎時0分は起動が遅延しやすいため、`cron`の分は0を避けて設定する(ai-dev-digestの実測知見を踏襲。requirements.mdに配信時刻の厳密な固定要件はなく、朝の時間帯に届けば足りるため)。JST 07:43頃の配信を狙い、次の2つの独立したcronエントリを`schedule:`に登録する(具体的な時刻はai-dev-digestの日次実行(06:43 JST)に合わせつつ、週次であることが分かるよう+1時間ずらした):
   - `43 22 * * 1` — 火曜07:43 JST(月曜22:43 UTC)にエンタメ編を実行
   - `43 22 * * 4` — 金曜07:43 JST(木曜22:43 UTC)にカルチャー編を実行
   - ジョブ内では`github.event.schedule`(起動の元になったcron式)を見て`edition`を`entertainment`/`culture-lifestyle`のどちらにするか分岐する。`workflow_dispatch`による手動実行時は`edition`を入力パラメータとして受け取る(Secrets設定後の動作確認用)
-- GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を発行し、`TREND_DIGEST_GH_PAT`としてリポジトリのActions Secretsに保存する【推測】。ワークフロー既定の`GITHUB_TOKEN`は使わない(既定の`GITHUB_TOKEN`で作成したPR・pushでは、無限ループ防止のGitHub側の仕様により既存の`ci.yml`を含む後続ワークフローが自動起動されず、CIが走らないまま自動マージ判定に進めなくなるため。ai-dev-digestと同じ理由)
+- GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を発行し、`TREND_DIGEST_GH_PAT`としてリポジトリのActions Secretsに保存する。ワークフロー既定の`GITHUB_TOKEN`は使わない(既定の`GITHUB_TOKEN`で作成したPR・pushでは、無限ループ防止のGitHub側の仕様により既存の`ci.yml`を含む後続ワークフローが自動起動されず、CIが走らないまま自動マージ判定に進めなくなるため。ai-dev-digestと同じ理由)
 - [content-generation](../content-generation/design.md)の見出し・本文生成は、Anthropic APIの従量課金呼び出しではなくClaude Code CLIのヘッドレス実行(運営者個人のClaude Code Pro/Maxサブスクリプション認証)で行う。GitHub Actionsランナーには`npm install -g @anthropic-ai/claude-code`でClaude Code CLIをインストールし、既にai-dev-digestで発行済みの長期(1年)OAuthトークンを`CLAUDE_CODE_OAUTH_TOKEN`としてこのリポジトリのActions Secretsに保存済みのものをそのまま再利用する(同じ運営者個人のサブスクリプションのため、アプリごとに新しいトークンを発行し直す必要はない。この利用枠(5時間ごと・週次の上限)はai-dev-digestの日次実行・運営者本人のClaude Code対話利用と共有される)
 - [content-selection](../content-selection/design.md)のWebSearchジャンル収集も同じClaude Code CLI・同じOAuthトークンで行う(追加のAPIキーは不要)
 - ワークフローへの実行指示は、この`weekly-publish`のrequirements.md/design.mdと、参照先の`content-selection`/`content-generation`/`article-detail`のrequirements.md/design.mdをスクリプト・プロンプトの根拠としてそのまま参照する形にする(専用のプロンプトファイルを別途複製しない)

@@ -27,10 +27,10 @@
 - 対象: 新規追加された記事データ(`content/trend-digest/articles/<id>.json`)
 - 手順:
   1. 記事データを読み込み、[article-detail/design.md](../article-detail/design.md)が定めるスキーマ(`parseArticle`)でパースする(不正なデータの場合は後述エラーハンドリングに従う)
-  2. `edition`に応じて、LINEメッセージ専用の見出し(`buildBroadcastTitle`)を組み立てる: `【週刊トレンド エンタメ編】<date整形>` または `【週刊トレンド カルチャー編】<date整形>`(requirements.md#配信内容-2)。これは記事詳細ページの見出し(`buildArticleTitle`。content-generation/design.md参照)とは別の文字列であり、`buildArticleTitle`をそのまま流用すると「週刊トレンド エンタメ編」という語句が重複表示されてしまうため、LINE配信専用に接頭辞+日付のみの形式にする(要件はLINEメッセージの見出し文字列の厳密な組み立て方までは指定していないため設計判断)【推測】
+  2. `edition`に応じて、LINEメッセージ専用の見出し(`buildBroadcastTitle`)を組み立てる: `【週刊トレンド エンタメ編】<date整形>` または `【週刊トレンド カルチャー編】<date整形>`(requirements.md#配信内容-2)。これは記事詳細ページの見出し(`buildArticleTitle`。content-generation/design.md参照)とは別の文字列であり、`buildArticleTitle`をそのまま流用すると「週刊トレンド エンタメ編」という語句が重複表示されてしまうため、LINE配信専用に接頭辞+日付のみの形式にする(要件はLINEメッセージの見出し文字列の厳密な組み立て方までは指定していないため設計判断)
   3. `topics`配列の順(GENRE_ORDER順)に、各トピックの`heading`をジャンル名付きの箇条書きとして全件並べる(requirements.md#配信内容-3)。ジャンル名は`Genre`から日本語ラベル(`GENRE_LABELS`)を引いて使う
   4. 記事詳細ページのURL(`https://benriyatool.com/trend-digest/<id>`)を1本だけ末尾に付与する。トピックごとの出典URLは含めない(requirements.md#配信内容-4)
-  5. 上記(見出し・トピック見出し一覧・リンク)を改行区切りの1本のテキストメッセージとして組み立てる。具体的な書式は以下とする【推測】:
+  5. 上記(見出し・トピック見出し一覧・リンク)を改行区切りの1本のテキストメッセージとして組み立てる。具体的な書式は以下とする:
      ```
      【週刊トレンド エンタメ編】2026年9月15日号
 
