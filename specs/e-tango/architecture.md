@@ -107,7 +107,6 @@ flowchart LR
 
     sessionScreen -->|出題順・判定に利用| srsLib
     homeScreen -->|今日の語数を取得| srsLib
-    settingsScreen -->|設定値を渡す| srsLib
     sessionScreen -->|単語を読み込む| words
     sessionScreen -->|状態を保存・取得| store
     homeScreen -->|学習日・進捗を取得| store

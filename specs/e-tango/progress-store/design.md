@@ -7,7 +7,7 @@
 - 対象: ログイン確立後(`user-auth/design.md#ログインする処理google-oidc`手順3)
 - 手順:
   1. ログイン中のアカウントの`e_tango_cards`(全件)・`e_tango_study_days`(連続日数計算用に必要な範囲)・`e_tango_settings`(1行)・`e_tango_sessions`(その日の分、あれば1行)をそれぞれ取得する
-  2. `e_tango_settings`に行がない場合(初回ログイン)は、既定値(新規10語・目標保持率90%)を画面表示用に使う(DBへの初期行作成は初回の設定変更時に行う。要件[study-settings 5]と整合)
+  2. `e_tango_settings`に行がない場合(初回ログイン)は、既定値(新規10語・目標保持率90%)を画面表示用に使う(DBへの初期行作成は初回の設定変更時に行う。`study-settings/requirements.md#機能要件-5`と整合)
   3. 取得した内容をもとに、`home`は今日のキュー・進捗を計算し(`srs-scheduling/design.md`)、`study-session`は中断中のセッションがあれば復元する(`study-session/design.md#セッションを再開する処理`)
 
 ### カード状態を保存する処理
@@ -107,7 +107,7 @@ supabase/migrations/<timestamp>_create_e_tango_progress_tables.sql (新規: 5テ
 | カラム | 型 | 補足 |
 |---|---|---|
 | user_id | uuid, not null, references auth.users(id) | |
-| study_date | date, not null | 学習日(要件[home 連続学習日数-1]の「1問以上回答した日」) |
+| study_date | date, not null | 学習日(`home/requirements.md#連続学習日数-1`の「1問以上回答した日」) |
 | new_count | integer, not null, default 0 | その日回答した新規語の出題数 |
 | review_count | integer, not null, default 0 | その日回答した復習語の出題数 |
 
@@ -132,8 +132,8 @@ supabase/migrations/<timestamp>_create_e_tango_progress_tables.sql (新規: 5テ
 | カラム | 型 | 補足 |
 |---|---|---|
 | user_id | uuid, primary key, references auth.users(id) | |
-| new_per_day | integer, not null, default 10 | 5〜30の範囲(`study-settings/requirements.md#設定値の範囲`) |
-| target_retention | integer, not null, default 90 | 80〜95の範囲(パーセント) |
+| new_per_day | integer, not null, default 10 | 5〜30の範囲(`study-settings/requirements.md#設定値の範囲`)。`check (new_per_day between 5 and 30)`をDBレベルでも設定する(UI側の制約に加えた多層防御) |
+| target_retention | integer, not null, default 90 | 80/85/90/95のいずれか(パーセント)。`check (target_retention in (80, 85, 90, 95))`をDBレベルでも設定する(UI側の制約に加えた多層防御) |
 
 ### RLS・権限方針(5テーブル共通)
 ```sql

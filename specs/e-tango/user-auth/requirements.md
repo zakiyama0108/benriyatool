@@ -46,7 +46,7 @@ flowchart LR
 ## ビジネスルール・制約
 
 ### 認証方式
-- [1] 認証は Supabase Auth 経由の Google OIDC とする。技術方針は `docs/adr/0006-admin-screen-oidc-rls.md` を踏襲する。ただし管理画面と異なり、許可リスト(`admin_emails`)によるアクセス制御は適用せず、Google アカウントを持つ人であれば誰でもログインできる
+- [1] 認証は Supabase Auth 経由の Google OIDC とする。ログインが必要なアプリで Supabase Auth を使うという一般方針は `docs/adr/0001-user-input-database.md` に基づき、Google OIDC の技術方針は `docs/adr/0006-admin-screen-oidc-rls.md` を踏襲する。ただし管理画面と異なり、許可リスト(`admin_emails`)によるアクセス制御は適用せず、Google アカウントを持つ人であれば誰でもログインできる
 - [2] 本アプリはログインを必須とする(根拠: 学習の進捗を長期にわたり本人のアカウントに紐づけて保存・同期する必要があり、匿名のレコード単位 ID では端末変更・再訪時に進捗を引き継げないため。`/consult` で合意)
 
 ### アカウントと学習データ
@@ -58,7 +58,7 @@ flowchart LR
 
 ## 依存関係
 - ログイン状態は `home` / `study-session` / `study-settings` / `progress-store` の各機能の前提となる
-- 認証基盤(Supabase Auth・Google OIDC)の技術方針は `docs/adr/0006-admin-screen-oidc-rls.md` を踏襲する(許可リストによるアクセス制御は本機能には適用しない)
+- 認証基盤(Supabase Auth・Google OIDC)は `docs/adr/0001-user-input-database.md`(Supabase Auth 採用の一般方針)・`docs/adr/0006-admin-screen-oidc-rls.md`(Google OIDC の技術方針)を踏襲する(許可リストによるアクセス制御は本機能には適用しない)
 - Google アカウントによるログイン(氏名・メールアドレス等の個人情報の取得)を新設するため、`specs/legal/requirements.md` のプライバシーポリシーの更新要否を確認する
 
 ## スコープ外
