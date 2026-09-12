@@ -1,6 +1,12 @@
 # 設計: 付箋(記事トピックの個人メモ・ブックマーク)
 
-ログイン状態の判定・認証基盤は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)のGoogle OIDCをそのまま使うが、許可リスト(`admin_emails`)による権限確認は行わない(読者全員が対象のため)。ログイン中の本人に紐づくデータの保存・一覧・編集・削除は[life-money-sim/saved-scenario/design.md](../../life-money-sim/saved-scenario/design.md)・[ai-dev-digest/bookmark/design.md](../../ai-dev-digest/bookmark/design.md)と同じRLSパターン(`auth.uid() = user_id`)を踏襲する。**Step0は実施しない**(/consultの決定によりai-dev-digestの実装済みビジュアルデザインをそのまま流用する)。
+## サマリ
+記事詳細ページの各トピックに、ログイン中の読者本人だけが見える「付箋」(200文字までの自由記述メモ)を貼る・編集する・削除する機能と、自分の付箋をまとめて見る付箋一覧ページ(`/news-digest/bookmarks`)を追加する。保存先は新規テーブル`news_digest_bookmarks`で、`auth.uid() = user_id`のRLSにより本人の行のみ操作可能にする。全体の流れは下記「処理フロー」のシーケンス図、コンポーネントの状態遷移は「状態管理」の2つのstateDiagramを参照。
+
+主要な設計判断:
+- ログイン状態の判定・認証基盤は[docs/adr/0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)のGoogle OIDCをそのまま使うが、許可リスト(`admin_emails`)による権限確認は行わない(読者全員が対象のため)
+- ログイン中の本人に紐づくデータの保存・一覧・編集・削除は[life-money-sim/saved-scenario/design.md](../../life-money-sim/saved-scenario/design.md)・[ai-dev-digest/bookmark/design.md](../../ai-dev-digest/bookmark/design.md)と同じRLSパターン(`auth.uid() = user_id`)を踏襲する
+- **Step0は実施しない**(/consultの決定によりai-dev-digestの実装済みビジュアルデザインをそのまま流用する)
 
 ## 処理フロー
 

@@ -1,14 +1,14 @@
 # 設計: LINE公式アカウントでの新着記事自動配信
 
 ## サマリ
-記事マージ(mainへのpush、`content/news-digest/articles/*.json`の新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクをai-dev-digestと共通のLINE公式アカウントからブロードキャスト配信する。ai-dev-digestのline-broadcastと同一の設計・配信フォーマットを踏襲し、配信元アカウント・チャネルアクセストークンも共有する。
+記事マージ(mainへのpush、`content/news-digest/articles/*.json`の新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクをai-dev-digest・trend-digestと共通のLINE公式アカウントからブロードキャスト配信する。ai-dev-digestのline-broadcastと同一の設計・配信フォーマットを踏襲し、配信元アカウント・チャネルアクセストークンも共有する。
 
 ## 実行環境の前提
 
 ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新規ワークフロー`.github/workflows/news-digest-line-broadcast.yml`とする(`push`イベント(`branches: main`、`paths: content/news-digest/articles/*.json`)をトリガーにする理由もai-dev-digestと同じ。マージ完了を別途ポーリングする複雑さを避けられる)。
 
 - 配信スクリプトは`scripts/news-digest/`配下に置く
-- **配信元のLINE公式アカウント・チャネルアクセストークンはai-dev-digestと共通のものを利用する**(requirements.mdビジネスルール[1]。新規アカウントは開設しない)。既にActions Secretsに保存済みの`LINE_CHANNEL_ACCESS_TOKEN`をそのまま参照する(news-digest専用の新しいSecretは追加しない)
+- **配信元のLINE公式アカウント・チャネルアクセストークンはai-dev-digest・trend-digestと共通のものを利用する**(requirements.mdビジネスルール[1]。新規アカウントは開設しない)。既にActions Secretsに保存済みの`LINE_CHANNEL_ACCESS_TOKEN`をそのまま参照する(news-digest専用の新しいSecretは追加しない)
 - このワークフローはGitHubへの書き込み(コミット・PR作成等)を一切行わないため、[weekly-publish](../weekly-publish/design.md)が使う書き込み用PAT(`NEWS_DIGEST_GH_PAT`)は使わない。リポジトリのチェックアウトのみが必要なため、ワークフロー既定の`GITHUB_TOKEN`で足りる
 
 ## 処理フロー
@@ -71,7 +71,7 @@ content/news-digest/articles/<date>.json (既存: 配信内容の元データ)
 
 ## セキュリティ
 
-- チャネルアクセストークン(`LINE_CHANNEL_ACCESS_TOKEN`)はai-dev-digestが既に保存済みのActions Secretsをそのまま参照する。news-digest専用の新しいトークンは発行しない(requirements.mdビジネスルール[1]〜[2])
+- チャネルアクセストークン(`LINE_CHANNEL_ACCESS_TOKEN`)はai-dev-digestが既に保存済みのActions Secretsをそのまま参照する(trend-digestの配信とも共有している)。news-digest専用の新しいトークンは発行しない(requirements.mdビジネスルール[1]〜[2])
 - このワークフローはGitHubへの書き込みを一切行わないため、書き込み用PAT(`NEWS_DIGEST_GH_PAT`)は使わない。リポジトリのチェックアウトにはワークフロー既定の読み取り専用`GITHUB_TOKEN`を使う
 - 配信メッセージの本文は記事データ(開発者・エージェントが作成しリポジトリにコミットされるコンテンツ)のみから組み立てられ、訪問者からの入力を一切含まない
 - 配信は友だち全員への一斉配信(ブロードキャスト)のみを行い、個々の友だちを識別・追跡する情報を扱わない

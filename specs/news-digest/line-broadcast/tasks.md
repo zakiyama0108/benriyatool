@@ -17,4 +17,4 @@
 
 - Task 4: Secretsの確認(運用タスク、design.md「実行環境の前提」「セキュリティ」)
   - TDD対象外(コード変更を伴わない運用手順)
-  - ai-dev-digestが保存済みの`LINE_CHANNEL_ACCESS_TOKEN`がこのワークフローからも参照できることを確認する(新規発行は不要)
+  - ai-dev-digestが保存済みの`LINE_CHANNEL_ACCESS_TOKEN`(trend-digestの配信とも共有)がこのワークフローからも参照できることを確認する(新規発行は不要)
