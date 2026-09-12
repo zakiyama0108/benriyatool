@@ -4803,5 +4803,120 @@
     "specFile": "trend-digest/article-detail/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "機能要件 [2]",
+    "reason": "エンタメ編・カルチャー編の実行タイミング(火曜・金曜)の説明で、実際のスケジュール実行はweekly-publish(仕様確認中)側の責務であり、本specのコードとして検証可能な振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "選定方式 [1]",
+    "reason": "固定リストジャンル・WebSearchジャンルの2方式に分かれることの理由・根拠を説明する記述で、実際の方式の割り当てはwatchlistData.test.tsの選定方式[2][3]でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "設計の前提(エージェントの推論とコードの役割分担)",
+    "reason": "エージェントとコードの役割分担の方針説明で、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "データ設計(ウォッチリスト・採用基準)",
+    "reason": "型定義・JSON初期値の宣言で、実際の値・構造の妥当性はwatchlistData.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "候補の型(前提)",
+    "reason": "型定義の宣言のみで、Candidate/SelectionResultの実際の振る舞いはselection.ts・fetchFixedListCandidates.ts・collectWebSearchCandidates.tsの各テストで検証されるため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "固定リストジャンルの候補を収集・判定する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜9等でfetchFixedListCandidates.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1等でcollectWebSearchCandidates.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "掲載済み話題を除外する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#掲載済み話題の再掲抑制-1でselection.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "ジャンル内の絞り込みを行う処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-4、requirements.md#ジャンル内の絞り込み(1ジャンル最大2件)-1〜2でselection.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "編全体の絞り込みを行う処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-5、requirements.md#配信全体の絞り込み(1回最大10件)-1でselection.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "エラーハンドリング",
+    "reason": "情報源取得失敗時の継続方針・WebSearch失敗時の候補0件扱い・全ジャンル0件時のスキップ方針の記述で、個別の振る舞いはfetchFixedListCandidates.test.ts・collectWebSearchCandidates.test.ts・selection.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "セキュリティ",
+    "reason": "情報源取得の範囲・非公式API不使用の方針の記述で、運用上の対応でありこのリポジトリのコードとして直接テストする性質のものではないため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "ログ",
+    "reason": "収集・選定結果をstderrに記録するCLI(scripts/trend-digest/collect-and-select.ts)の説明で、TDD対象外の薄いラッパー(tasks.md Task8)のため。集計ロジック自体はrequirements.md#情報源の健全性監視-1でsourceHealthLog.test.tsによりテスト済み"
   }
 ]
