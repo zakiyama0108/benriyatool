@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js'
 import ArticleDetailView from '../../../app/news-digest/components/ArticleDetailView'
 import type { Article } from '../../../app/news-digest/lib/types'
 import { getSession, onAuthChange, isAuthorizedAdmin } from '../../../app/lib/adminAuth'
+import { fetchBookmarksByArticleDate } from '../../../app/news-digest/lib/bookmarks'
 
 vi.mock('../../../app/lib/adminAuth', () => ({
   getSession: vi.fn(),
@@ -15,10 +16,17 @@ vi.mock('../../../app/lib/adminAuth', () => ({
 // FeedbackForm経由でsaveFeedback(→supabaseClient)が読み込まれるが、本テストは
 // isAdmin判定によるフィードバック欄の表示切り替えのみを検証するためモックする
 vi.mock('../../../app/news-digest/lib/saveFeedback', () => ({ saveFeedback: vi.fn() }))
+vi.mock('../../../app/news-digest/lib/bookmarks', () => ({
+  fetchBookmarksByArticleDate: vi.fn(),
+  createBookmark: vi.fn(),
+  updateBookmark: vi.fn(),
+  deleteBookmark: vi.fn(),
+}))
 
 const getSessionMock = vi.mocked(getSession)
 const onAuthChangeMock = vi.mocked(onAuthChange)
 const isAuthorizedAdminMock = vi.mocked(isAuthorizedAdmin)
+const fetchBookmarksByArticleDateMock = vi.mocked(fetchBookmarksByArticleDate)
 
 function makeSession(email: string): Session {
   return { user: { email } } as Session
@@ -51,6 +59,7 @@ beforeEach(() => {
   getSessionMock.mockReset().mockResolvedValue(null)
   onAuthChangeMock.mockReset().mockReturnValue(() => {})
   isAuthorizedAdminMock.mockReset()
+  fetchBookmarksByArticleDateMock.mockReset().mockResolvedValue(new Map())
   consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -85,6 +94,55 @@ describe('記事詳細ページでの運営者判定 - セッション確立後�
     render(<ArticleDetailView article={article} />)
     await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled())
     expect(screen.queryByRole('textbox')).toBeNull()
+  })
+})
+
+// 仕様: specs/news-digest/bookmark/requirements.md#トピックへの付箋-5、specs/news-digest/bookmark/requirements.md#トピックへの付箋-1
+describe('記事詳細ページでの付箋取得 - セッション確立後にfetchBookmarksByArticleDate()を呼び出し、結果をbookmarkとしてTopicSectionへ渡す', () => {
+  it('セッションがない場合、fetchBookmarksByArticleDate()自体が呼び出されず、付箋を貼る操作も表示されないこと', async () => {
+    getSessionMock.mockResolvedValue(null)
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(getSessionMock).toHaveBeenCalled())
+    expect(fetchBookmarksByArticleDateMock).not.toHaveBeenCalled()
+    expect(screen.queryByRole('button', { name: '付箋を貼る' })).toBeNull()
+  })
+
+  it('セッションがある場合、記事の日付でfetchBookmarksByArticleDate()が呼ばれ、未付箋のトピックには「付箋を貼る」操作が表示されること', async () => {
+    getSessionMock.mockResolvedValue(makeSession('reader@example.com'))
+    isAuthorizedAdminMock.mockResolvedValue(false)
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(fetchBookmarksByArticleDateMock).toHaveBeenCalledWith('2026-09-09'))
+    expect(screen.getByRole('button', { name: '付箋を貼る' })).toBeTruthy()
+  })
+})
+
+// 仕様: specs/news-digest/bookmark/design.md#エラーハンドリング
+describe('記事詳細ページでの付箋取得失敗時のフォールバック - コンソールに出力し全トピックを未付箋のまま扱う', () => {
+  it('fetchBookmarksByArticleDate()が例外を投げた場合、コンソールにエラーを出力し、全トピックが未付箋(空のMap)のまま扱われること', async () => {
+    getSessionMock.mockResolvedValue(makeSession('reader@example.com'))
+    isAuthorizedAdminMock.mockResolvedValue(false)
+    fetchBookmarksByArticleDateMock.mockRejectedValue(new Error('network error'))
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled())
+    // 未付箋のトピックはBookmarkPanelが「付箋を貼る」ボタンを表示する(取得失敗時のフォールバック確認)
+    expect(screen.getByRole('button', { name: '付箋を貼る' })).toBeTruthy()
+  })
+})
+
+// 仕様: specs/news-digest/bookmark/requirements.md#画面共通のログイン導線-16
+describe('記事詳細ページ下部のログイン導線 - LoginStatusを表示し、未ログイン時は読者一般向けの文言にする', () => {
+  it('未ログイン時、運営者限定を示さない「ログイン」ボタンが表示されること', async () => {
+    getSessionMock.mockResolvedValue(null)
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ログイン' })).toBeTruthy())
+  })
+
+  it('ログイン中は、メールアドレスと「付箋一覧」リンクが表示されること', async () => {
+    getSessionMock.mockResolvedValue(makeSession('reader@example.com'))
+    isAuthorizedAdminMock.mockResolvedValue(false)
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(screen.getByText('reader@example.com')).toBeTruthy())
+    expect(screen.getByRole('link', { name: '付箋一覧' })).toBeTruthy()
   })
 })
 

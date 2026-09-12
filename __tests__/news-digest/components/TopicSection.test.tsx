@@ -1,11 +1,25 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
+import type { Session } from '@supabase/supabase-js'
 import TopicSection from '../../../app/news-digest/components/TopicSection'
 import type { Topic } from '../../../app/news-digest/lib/types'
+import { isAuthorizedAdmin } from '../../../app/lib/adminAuth'
 
 // FeedbackForm経由でsaveFeedback(→supabaseClient)が読み込まれるが、本テストは表示切り替えのみを
 // 検証するため、実際のSupabase接続情報を必要としないようモックする
 vi.mock('../../../app/news-digest/lib/saveFeedback', () => ({ saveFeedback: vi.fn() }))
+vi.mock('../../../app/lib/adminAuth', () => ({ isAuthorizedAdmin: vi.fn() }))
+// BookmarkPanel経由でbookmarks.ts(→supabaseClient)が読み込まれるが、本テストは表示切り替えのみを
+// 検証するため、実際のSupabase接続情報を必要としないようモックする(仕様: bookmark/design.md)
+vi.mock('../../../app/news-digest/lib/bookmarks', () => ({
+  createBookmark: vi.fn(),
+  updateBookmark: vi.fn(),
+  deleteBookmark: vi.fn(),
+}))
+
+function makeSession(email: string): Session {
+  return { user: { email } } as Session
+}
 
 function makeTopic(overrides: Partial<Topic> = {}): Topic {
   return {
@@ -27,9 +41,9 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
   }
 }
 
-// テスト対象外の描画確認(見出し・出典等)ではisAdmin/articleDateの値は結果に影響しないため、
-// 常に固定値を渡す既定値としてまとめる
-const noop = { articleDate: '2026-09-09', isAdmin: false } as const
+// テスト対象外の描画確認(見出し・出典等)ではisAdmin/articleDate/session/bookmarkの値は
+// 結果に影響しないため、常に固定値を渡す既定値としてまとめる
+const noop = { articleDate: '2026-09-09', isAdmin: false, session: null, bookmark: null } as const
 
 // 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-2、specs/news-digest/article-detail/requirements.md#表示分量・著作権配慮-2
 describe('トピック表示 - 見出し・出典(発信者名・元URLへのリンク)をセットで表示する', () => {
@@ -129,12 +143,80 @@ describe('トピック表示 - belowCriteriaがtrueの場合のみ「専用枠(�
 // 仕様: specs/news-digest/article-detail/requirements.md#運営者向けフィードバック-9、specs/news-digest/article-detail/requirements.md#フィードバックの保存・権限-4
 describe('フィードバック入力欄の表示切り替え - 運営者本人(isAdmin)の場合のみ表示する', () => {
   it('isAdminがtrueの場合、フィードバック入力欄(テキストエリア)が表示されること', () => {
-    render(<TopicSection topic={makeTopic()} articleDate="2026-09-09" isAdmin />)
+    render(<TopicSection topic={makeTopic()} articleDate="2026-09-09" isAdmin session={null} bookmark={null} />)
     expect(screen.getByRole('textbox')).toBeTruthy()
   })
 
-  it('isAdminがfalseの場合、フィードバック入力欄は表示されないこと', () => {
-    render(<TopicSection topic={makeTopic()} articleDate="2026-09-09" isAdmin={false} />)
+  it('isAdminがfalseの場合、セッションの有無に関わらずフィードバック入力欄は表示されないこと', () => {
+    render(
+      <TopicSection
+        topic={makeTopic()}
+        articleDate="2026-09-09"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        bookmark={null}
+      />
+    )
     expect(screen.queryByRole('textbox')).toBeNull()
+  })
+
+  it('TopicSection自体はDBの読み取り(SELECT)を伴うisAuthorizedAdminを呼び出さないこと(運営者判定の呼び出しはArticleDetailView側の責務)', () => {
+    render(
+      <TopicSection
+        topic={makeTopic()}
+        articleDate="2026-09-09"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        bookmark={null}
+      />
+    )
+    expect(isAuthorizedAdmin).not.toHaveBeenCalled()
+  })
+})
+
+// 仕様: specs/news-digest/bookmark/requirements.md#トピックへの付箋-1、specs/news-digest/bookmark/requirements.md#トピックへの付箋-5、specs/news-digest/bookmark/requirements.md#表示範囲・権限-2
+describe('付箋操作の表示切り替え - ログイン中(セッションあり)の場合のみBookmarkPanelを表示する', () => {
+  it('セッションがある場合、BookmarkPanel(未付箋なら「付箋を貼る」操作)が表示されること', () => {
+    render(
+      <TopicSection
+        topic={makeTopic()}
+        articleDate="2026-09-09"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        bookmark={null}
+      />
+    )
+    expect(screen.getByRole('button', { name: '付箋を貼る' })).toBeTruthy()
+  })
+
+  it('セッションがnull(未ログイン)の場合、付箋を貼る操作自体が表示されないこと', () => {
+    render(<TopicSection topic={makeTopic()} articleDate="2026-09-09" isAdmin={false} session={null} bookmark={null} />)
+    expect(screen.queryByRole('button', { name: '付箋を貼る' })).toBeNull()
+  })
+
+  it('bookmarkの内容がBookmarkPanelのinitialBookmarkにそのまま渡り、保存済みメモが表示されること', () => {
+    render(
+      <TopicSection
+        topic={makeTopic()}
+        articleDate="2026-09-09"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        bookmark={{ id: 'bookmark-1', memo: '気になるので後で読む' }}
+      />
+    )
+    expect(screen.getByText('気になるので後で読む')).toBeTruthy()
+  })
+
+  it('BookmarkPanelの表示にDBの読み取り(SELECT)を伴うisAuthorizedAdminは使わないこと(付箋機能は運営者判定を利用しない)', () => {
+    render(
+      <TopicSection
+        topic={makeTopic()}
+        articleDate="2026-09-09"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        bookmark={null}
+      />
+    )
+    expect(isAuthorizedAdmin).not.toHaveBeenCalled()
   })
 })
