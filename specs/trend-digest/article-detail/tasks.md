@@ -14,7 +14,7 @@
   - 🟢 `app/trend-digest/lib/types.ts`に`Edition`/`Genre`/`GENRE_ORDER`/`Topic`/`Article`を定義する
 
 - Task 3: 記事データのバリデーション(仕様: design.md「バリデーション」)
-  - 🔴 正常な記事データ(1件のみのケースを含む)が検証を通ること、`topics`が0件/11件で失敗すること、同一ジャンルのトピックが3件以上で失敗すること、`genre`が未定義値で失敗すること、`id`とファイル名不一致で失敗すること、`edition`が不正値で失敗すること、`sourceUrl`が`http`/`https`で始まらない場合に失敗すること、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字で失敗することを確認するテストを書く
+  - 🔴 正常な記事データ(1件のみのケースを含む)が検証を通ること、`topics`が0件/11件で失敗すること、同一ジャンルのトピックが3件以上で失敗すること、`genre`が未定義値で失敗すること、`genre`は定義済みジャンルだが`article.edition`に対応する9ジャンル(`GENRE_ORDER[edition]`)に属さない場合(例: `edition: 'entertainment'`に`genre: 'gourmet'`)に失敗すること、`id`とファイル名不一致で失敗すること、`edition`が不正値で失敗すること、`sourceUrl`が`http`/`https`で始まらない場合に失敗すること、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字で失敗することを確認するテストを書く
   - 🟢 `app/trend-digest/lib/articleSchema.ts`に`parseArticle(raw: unknown, filename: string): Article`を実装する(違反時は例外を投げる)
   - 🔵 エラーメッセージに違反内容(どのフィールドか)を含めて分かりやすくする
 

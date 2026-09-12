@@ -35,4 +35,7 @@
 
 - Task 8: トップページへのツールカード追加・sitemap(仕様: `specs/hub-site/requirements.md#機能要件-2`)
   - `app/page.tsx`に`/trend-digest`(週刊トレンド)へのツールカードが表示されることをテストする(`__tests__/page.test.tsx`に追加)。それに合わせて`app/page.tsx`にツールカードを1件追加する(新規アプリの初回公開画面のため)
-  - `app/sitemap.ts`に`/trend-digest/`を追加し、`__tests__/sitemap.test.ts`で含まれること・`/trend-digest/styleguide/`は含まれないことをテストする([hub-site/requirements.md#機能要件-5](../../hub-site/requirements.md#機能要件-5))
+  - `app/sitemap.ts`に`/trend-digest/`を追加し、`__tests__/sitemap.test.ts`で含まれること・`/trend-digest/styleguide/`は含まれないことをテストする([hub-site/requirements.md#機能要件-5](../../hub-site/requirements.md#機能要件-5)。除外リストのエントリは追加済み)
+
+- Task 9: ファビコン追加(仕様: `specs/hub-site/requirements.md#機能要件-4`)
+  - `app/trend-digest/icon.svg`を追加する(hub-site/requirements.mdの機能要件[4]で定義済みの暖色系(アンバー/オレンジ)+上昇トレンドモチーフに従う。具体的な色コードはStitchで作成する)

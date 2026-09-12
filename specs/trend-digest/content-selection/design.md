@@ -15,17 +15,11 @@ architecture.mdが定める2つの選定方式を、実装形態として次の�
 
 ウォッチリスト・採用基準は`requirements.md`(人間が読む正の仕様)と、実行時にコードが読み込む機械可読データの二重管理とする。[source-review](../source-review/requirements.md)の月次見直しPRは、同じ変更を`requirements.md`とこの機械可読データの両方に加える(片方だけの変更はレビューで差し戻す。ai-dev-digestのwatchlist-reviewと同じ運用)。
 
+`Edition`/`Genre`は[article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」が定義する`app/trend-digest/lib/types.ts`のものをそのまま再利用する(同spec冒頭のとおり、記事データの型は本specを含む他specが共通して従う。ここで型を再定義しない)。
+
 ```ts
 // app/trend-digest/lib/watchlistTypes.ts
-export type Edition = 'entertainment' | 'culture-lifestyle'
-
-export type Genre =
-  // エンタメ編(9): requirements.md#グループとジャンル-1
-  | 'music' | 'japanese-movie' | 'foreign-movie' | 'japanese-drama' | 'foreign-drama'
-  | 'anime' | 'variety' | 'streaming-video' | 'books-comics'
-  // カルチャー・ライフスタイル編(9): requirements.md#グループとジャンル-2
-  | 'sns-buzz' | 'buzzwords' | 'gourmet' | 'hobby' | 'fashion'
-  | 'gadgets' | 'games' | 'travel' | 'economy-money'
+import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
 
 export type SelectionMethod = 'fixed-list' | 'websearch'
 
@@ -142,6 +136,8 @@ export type Criteria = {
 ### 候補の型(前提)
 ```ts
 // app/trend-digest/lib/candidateTypes.ts
+import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
+
 export type Candidate = {
   genre: Genre
   title: string // 対象作品・話題そのものの原題(検索・重複判定の主キーとして扱う)
@@ -163,8 +159,9 @@ export type SelectionResult =
   1. ジャンルごとに登録された各情報源(公式ランキング・チャートの公開ページ)へHTTPリクエストし、順位付きの一覧(作品名・現在の順位)を取得する。取得・パースに失敗した場合はその情報源だけを除外して処理を続ける(1件の取得失敗で編全体の収集を止めない)
   2. `newEntryOrRisingRank: true`のジャンル(music/foreign-drama/anime/streaming-video/books-comics)は、情報源のページ自体が前週比の順位変動(前週順位・NEW表記)を提供している場合はそれをそのまま使う。提供していない情報源は、直近`newEntryLookbackWeeks`週間分の過去記事(`content/trend-digest/articles/*.json`)の同ジャンルのトピックに同じ`title`(正規化後)が含まれていなければ「新規」とみなす。順位上昇の判定はページが変動値を提供する場合のみ行い、提供しない情報源では新規ランクインのみを候補条件にする(順位上昇の判定は諦める。要件の判定方法詳細を設計で補うための判断)【推測】
   3. `rankThreshold`のみのジャンル(japanese-movie/foreign-movie/buzzwords/fashion/gadgets/games/travel)は、現在の順位が`rankThreshold`以内の項目をすべて候補にする
-  4. 候補ごとに`strength = 100 - 現在の順位`を設定する(順位が高いほど大きい値。musicのような上昇幅判定ジャンルは、上昇幅が大きいほど`strength`を加点する)【推測】
-  5. 情報源ごとの取得件数(取得失敗・0件はその旨)を記録する(requirements.md#情報源の健全性監視-2)
+  4. `rankThreshold`と`newEntryOrRisingRank`の両方を持つジャンル(books-comics)は、手順2の新規ランクイン・順位上昇の判定に加えて、現在の順位が`rankThreshold`(5位)以内であることも満たす項目だけを候補にする(いずれか一方だけでは候補にしない。requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-4「上位5位以内で新規にランクインした作品」の両条件を反映するための判断)
+  5. 候補ごとに`strength = 100 - 現在の順位`を設定する(順位が高いほど大きい値。musicのような上昇幅判定ジャンルは、上昇幅が大きいほど`strength`を加点する)【推測】
+  6. 情報源ごとの取得件数(取得失敗・0件はその旨)を記録する(requirements.md#情報源の健全性監視-2)
 - 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜9、requirements.md#データ取得方法-1、requirements.md#情報源の健全性監視-2
 
 ### WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)
@@ -180,7 +177,7 @@ export type SelectionResult =
 ### 掲載済み話題を除外する処理(決定的なコード)
 - 対象: 収集した候補すべて(ジャンル内絞り込み・編全体の絞り込みより前に適用する)
 - 手順:
-  1. `content/trend-digest/articles/*.json`の全記事の全トピックから`sourceTitle`(後述「前提: 記事データの形式」参照)を集めた集合を作る。期間で絞らず全記事を対象にする
+  1. `content/trend-digest/articles/*.json`の全記事の全トピックから`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を集めた集合を作る。期間で絞らず全記事を対象にする
   2. 候補の`title`と集合内の`sourceTitle`を、比較前に正規化(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)してから突き合わせる。正規化後に一致した候補を除外する(requirements.md#掲載済み話題の再掲抑制-1)
   3. すべての候補が除外され、そのジャンルで実在する候補が残らなかった場合は、そのジャンルは掲載しない(要件どおり。requirements.md#機能要件-3)
 - 関連するビジネスルール: requirements.md#掲載済み話題の再掲抑制-1
@@ -212,7 +209,8 @@ export type SelectionResult =
 ```
 content/trend-digest/watchlist.json (新規: ジャンル別情報源)
 content/trend-digest/criteria.json (新規: 採用基準の数値)
-app/trend-digest/lib/watchlistTypes.ts (新規: 型定義)
+app/trend-digest/lib/types.ts (既存: article-detail/design.mdが定義するEdition/Genreを利用。本specでは再定義しない)
+app/trend-digest/lib/watchlistTypes.ts (新規: SelectionMethod/WatchlistEntry/Criteria等の型定義)
 app/trend-digest/lib/candidateTypes.ts (新規: Candidate/SelectionResultの型定義)
 app/trend-digest/lib/selection.ts (新規: 掲載済み除外・ジャンル内絞り込み・編全体の絞り込みの純粋関数。テスト可能)
 app/trend-digest/lib/fetchFixedListCandidates.ts (新規: 固定リストジャンルの情報源取得・パース・順位判定)
