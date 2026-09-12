@@ -29,7 +29,7 @@ function makeArticle(overrides: Partial<Record<string, unknown>> = {}) {
   }
 }
 
-// 仕様: specs/trend-digest/article-detail/design.md#バリデーション、specs/trend-digest/article-detail/requirements.md#記事本文表示-4、specs/trend-digest/article-detail/requirements.md#表示分量・著作権配慮-2
+// 仕様: specs/trend-digest/article-detail/design.md#バリデーション、specs/trend-digest/article-detail/requirements.md#記事本文表示-4、specs/trend-digest/article-detail/requirements.md#表示分量・著作権配慮-2、specs/trend-digest/content-generation/requirements.md#要約-1、specs/trend-digest/content-generation/requirements.md#要約-2、specs/trend-digest/content-generation/requirements.md#要約-4、specs/trend-digest/content-generation/requirements.md#記事の構成-5、specs/trend-digest/content-generation/design.md#本文の分量を検証する処理(決定的なコード)
 describe('記事データのバリデーション - JSONのスキーマを検証し、違反時は例外を投げる', () => {
   it('正常な記事データ(トピック1件のみ)は検証を通り、そのままArticleとして返ること', () => {
     const article = parseArticle(makeArticle(), '2026-09-15-entertainment.json')

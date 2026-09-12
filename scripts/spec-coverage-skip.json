@@ -4918,5 +4918,115 @@
     "specFile": "trend-digest/content-selection/design.md",
     "item": "ログ",
     "reason": "収集・選定結果をstderrに記録するCLI(scripts/trend-digest/collect-and-select.ts)の説明で、TDD対象外の薄いラッパー(tasks.md Task8)のため。集計ロジック自体はrequirements.md#情報源の健全性監視-1でsourceHealthLog.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機の説明とユースケース図省略の理由(weekly-publishが自動実行する要約ルールのみを定め、実行主体自体を持たないため)を示す見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "要約 [3]",
+    "reason": "本文は原文の構成・表現をなぞらず独自の視点で再構成し、原文の詳細な数値・全文を網羅的に転記しないという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。分量の上下限のみコードで強制する)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [1]",
+    "reason": "著作権法上のリスクの法的根拠・ai-dev-digestとの方針踏襲を説明する記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [2]",
+    "reason": "機能要件#要約-3と同一の制約を根拠とともに明記した記述で、要約-3と同じ理由によりコードで自動検証できないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [3]",
+    "reason": "出典明記の要件は機能要件#要約-4と同一の内容で、具体的な検証はarticleSchema.test.ts(該当要約-4の参照)で担保するため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "利用規約への反映 [4]",
+    "reason": "TDD対象外の静的な文言追加のみのため(tasks.md Task4)。反映内容はspecs/legal/requirements.md・app/legal/page.tsxへの追記で担保する"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "エージェントの逸脱防止 [5]",
+    "reason": "エージェントに適用するガードレール文言の記述で、コードとして実装・テストしないため(weekly-publishの実行指示に含める運用上の対応。scripts/trend-digest/generate-content.tsにガードレール文言をそのまま転記している)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "設計の前提(エージェントの推論とコードの役割分担)",
+    "reason": "エージェントとコードの役割分担の方針説明で、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "見出し・本文を書く処理(エージェントの推論)",
+    "reason": "エージェント(GitHub Actionsから呼び出すClaude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "エラーハンドリング",
+    "reason": "本文の分量超過・過少の検知(ビルド時バリデーション)はarticleSchema.test.tsで、応答からJSON抽出できない場合の失敗扱いはgenerateContent.test.tsでテスト済みで、見出し・本文の内容の質はコードで保証できない限界の明記であり対応するテストを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "セキュリティ",
+    "reason": "見出し・本文の表示はReactの標準エスケープに委ね、著作権リスク対応(分量上下限・出典明記・ガードレール・利用規約)は個別にテスト済みのため、この見出し自体は追加のテスト対象を持たない"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "ログ",
+    "reason": "見出し・本文の生成過程はアプリのログ設計対象外という方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "trend-digest/content-generation/design.md",
+    "item": "利用規約への反映",
+    "reason": "requirements.mdの条項文言をそのまま転記した見出しで、実際の反映はapp/legal/page.tsx・specs/legal/requirements.mdへの追記(TDD対象外、tasks.md Task4)で担保するため"
   }
 ]

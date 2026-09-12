@@ -1,17 +1,17 @@
 import type { Article, Edition, Genre, Topic } from './types'
 import { GENRE_ORDER } from './types'
+import { BODY_MIN_LENGTH, BODY_MAX_LENGTH, isValidTopicBodyLength } from './bodyValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
 // エージェントが生成する入力の事故を早期に検知するため、ビルド時にここで例外を投げて
-// next buildを失敗させる(article-detail/design.md#エラーハンドリング)
+// next buildを失敗させる(article-detail/design.md#エラーハンドリング)。
+// 本文の分量検証はcontent-generationがオーナーのbodyValidation.tsに委ねる(重複実装しない)
 
 const EDITIONS: Edition[] = ['entertainment', 'culture-lifestyle']
 const ALL_GENRES: Genre[] = [...GENRE_ORDER.entertainment, ...GENRE_ORDER['culture-lifestyle']]
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const MAX_TOPICS = 10
 const MAX_TOPICS_PER_GENRE = 2
-const BODY_MIN_LENGTH = 160
-const BODY_MAX_LENGTH = 480
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -50,10 +50,9 @@ function parseTopic(raw: unknown, index: number, edition: Edition): Topic {
   if (!isNonEmptyString(topic.heading)) throw new Error(`topics[${index}].headingが空文字です`)
 
   if (!isNonEmptyString(topic.body)) throw new Error(`topics[${index}].bodyが空文字です`)
-  const bodyLength = topic.body.length
-  if (bodyLength < BODY_MIN_LENGTH || bodyLength > BODY_MAX_LENGTH) {
+  if (!isValidTopicBodyLength(topic.body)) {
     throw new Error(
-      `topics[${index}].bodyの文字数が不正です(${BODY_MIN_LENGTH}〜${BODY_MAX_LENGTH}字である必要があります): ${bodyLength}字`
+      `topics[${index}].bodyの文字数が不正です(${BODY_MIN_LENGTH}〜${BODY_MAX_LENGTH}字である必要があります): ${topic.body.length}字`
     )
   }
 

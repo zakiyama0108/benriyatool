@@ -112,7 +112,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | spec | 役割 | 依存 | 状態 |
 |---|---|---|---|
 | [content-selection](content-selection/requirements.md) | 18ジャンルを2グループ(エンタメ編・カルチャー編)に分け、ジャンルごとの情報源・採用基準に沿って各回「動きがあった」トピックを選び出す | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md)) | 実装中 |
-| [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルール(著作権配慮を含む)を定める | content-selectionの選定結果を受け取る([content-selection/requirements.md](content-selection/requirements.md)) | 仕様のみ(未実装) |
+| [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルール(著作権配慮を含む)を定める | content-selectionの選定結果を受け取る([content-selection/requirements.md](content-selection/requirements.md)) | 実装中 |
 | [weekly-publish](weekly-publish/requirements.md) | 週2回(火・金)の収集・選定・要約・記事公開を自動実行し、完全自動マージする | content-selection・content-generationの結果を公開する | 仕様のみ(未実装) |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの記事PRがmainへ自動マージされた直後に、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング([weekly-publish/requirements.md](weekly-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))に従う | 仕様のみ(未実装) |
 | [article-list](article-list/requirements.md) | エンタメ編・カルチャー編の記事を時系列1本のフィードでバッジ表示する | article-detailの記事構造を参照([article-detail/requirements.md](article-detail/requirements.md)) | 仕様のみ(未実装) |
