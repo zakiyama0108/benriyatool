@@ -17,6 +17,7 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { Candidate, SelectionResult } from '../../app/trend-digest/lib/candidateTypes'
 import { generateTopics, type ClaudeCliResponse } from '../../app/trend-digest/lib/generateContent'
+import type { GeneratedTopicInput } from '../../app/trend-digest/lib/assembleArticle'
 
 const execFileAsync = promisify(execFile)
 
@@ -76,17 +77,6 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
   }
 }
 
-// 生成結果の出力形式。記事データ組み立て(assembleArticle)はweekly-publish側の責務のため、
-// ここでは候補情報+生成済み見出し・本文をそのまま並べたJSONを標準出力に流すのみにとどめる
-type GeneratedTopicOutput = {
-  genre: Candidate['genre']
-  title: string
-  sourceName: string
-  sourceUrl: string
-  heading: string
-  body: string
-}
-
 async function main() {
   const selectionPath = process.argv[2]
   if (!selectionPath) {
@@ -122,7 +112,7 @@ async function main() {
     },
   )
 
-  const topics: GeneratedTopicOutput[] = generated.map(({ candidate, content }) => ({
+  const topics: GeneratedTopicInput[] = generated.map(({ candidate, content }) => ({
     genre: candidate.genre,
     title: candidate.title,
     sourceName: candidate.sourceName,

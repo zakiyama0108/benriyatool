@@ -5028,5 +5028,135 @@
     "specFile": "trend-digest/content-generation/design.md",
     "item": "利用規約への反映",
     "reason": "requirements.mdの条項文言をそのまま転記した見出しで、実際の反映はapp/legal/page.tsx・specs/legal/requirements.mdへの追記(TDD対象外、tasks.md Task4)で担保するため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "サマリ",
+    "reason": "機能の概要を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "実行 [1]",
+    "reason": "エンタメ編のバッチを毎週火曜に1回実行するという運用スケジュールの要件で、.github/workflows/trend-digest-weekly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task3)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "実行 [2]",
+    "reason": "カルチャー・ライフスタイル編のバッチを毎週金曜に1回実行するという運用スケジュールの要件で、.github/workflows/trend-digest-weekly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task3)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "実行 [3]",
+    "reason": "実行主体がGitHub Actionsであり、候補収集・判定・要約・記事執筆をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "公開フロー [5]",
+    "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、`gh pr create`/`gh pr merge --auto`の呼び出し自体はユニットテスト対象を持たないため(tasks.md Task3のワークフロー本体に該当。実際の疎通確認はTask4のSecrets設定後の初回実行で行う)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "公開フロー [6]",
+    "reason": "CI失敗時にマージせず原因を記録するという運用フローの要件で、GitHub標準の仕組み(PRコメント)に委ねるためこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "掲載件数の保証 [1]",
+    "reason": "候補不足時にブランチ・PRを作成しないというワークフローの実行判断の要件で、候補が0件かどうかの判定ロジック自体はcontent-selection/selection.test.tsでテスト済みのため(weekly-publish側はオーケストレーションのみを担当)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "自動マージの範囲 [3]",
+    "reason": "完全自動マージの対象をtrend-digest/articles/**ブランチに限定するという要件で、GitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる設計(weekly-publish/design.md「PRを自動マージする処理」参照)であり、ユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "実行環境の前提",
+    "reason": "GitHub Actionsの認証情報(PAT・OAuthトークン)の管理方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "1回分の記事を生成する処理",
+    "reason": "ブランチ作成・collect-and-select.ts/generate-content.tsの呼び出し順序というワークフロー本体の手順の記述で、記事データの組み立てロジック自体はassembleArticle.test.tsで、生成失敗の分類・リトライ・除外・打ち切りロジック自体はgenerateContent.test.tsでテスト済みのため(weekly-publish側の手順記述自体はGitHub Actionsのワークフロー定義でありユニットテスト対象を持たない)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "PRを作成しCIの結果を待つ処理",
+    "reason": "GitHub上のPR作成・auto-merge設定に関する運用手順の記述で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "PRを自動マージする処理(完全自動マージの例外運用)",
+    "reason": "自動マージ範囲の限定はGitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる旨の設計判断の記述で、コードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "CI失敗時に記録する処理",
+    "reason": "PRへのコメント自動追記等の運用手順の記述で、GitHub Actionsのワークフロー側の振る舞いでありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "記事生成をスキップする処理",
+    "reason": "候補不足時にブランチ・PRを作成しないというワークフローの実行判断の記述で、判定ロジック自体はcontent-selection/selection.test.tsでテスト済みのため(weekly-publish側はオーケストレーションのみを担当)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "エラーハンドリング",
+    "reason": "CI失敗時の扱い・記事生成処理自体の中断時の扱いの記述で、ワークフローの実行制御に関する運用上の対応でありユニットテスト対象を持たないため(生成失敗の分類・リトライ・除外・打ち切りロジック自体はgenerateContent.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "セキュリティ",
+    "reason": "GitHub Actions Secretsで保持するPAT・OAuthトークンの管理方針、自動マージ範囲の限定方針の記述で、運用設定に関する事項でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/design.md",
+    "item": "ログ",
+    "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
   }
 ]

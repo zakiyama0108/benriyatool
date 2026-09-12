@@ -1,0 +1,170 @@
+# トレンドダイジェストの週次記事生成・公開ワークフロー
+# (仕様: specs/trend-digest/weekly-publish/design.md「実行環境の前提」「1回分の記事を生成する処理」
+# 「PRを作成しCIの結果を待つ処理」「PRを自動マージする処理」「CI失敗時に記録する処理」)
+#
+# publishジョブ: 火曜(エンタメ編)・金曜(カルチャー・ライフスタイル編)それぞれ独立したcronで起動し、
+# 候補収集・選定(content-selection)→見出し・本文生成(content-generation)→記事データ組み立て→
+# PR作成→auto-merge有効化までを行う。trend-digest/articles/**ブランチからのPRに限り、CIが成功すると
+# 人間の承認なしに自動マージされる(通常のfeatureブランチのレビュー必須運用の例外。
+# 根拠はrequirements.md#公開フロー-5参照)
+#
+# record-ci-failureジョブ: 上記PRのCI(ci.yml)が失敗した場合、マージせず原因をPRコメントに記録する
+name: トレンドダイジェスト 週次記事公開
+
+on:
+  schedule:
+    # 毎時0分は世界中のscheduled workflowが集中し起動遅延が大きくなるため、
+    # 0分を避けた43分に設定する(ai-dev-digestの日次実行(06:43 JST)の実測知見を踏襲し、
+    # 週次であることが分かるよう+1時間ずらした。design.md「実行環境の前提」参照)
+    - cron: '43 22 * * 1' # 月曜22:43 UTC = 火曜07:43 JST(エンタメ編)
+    - cron: '43 22 * * 4' # 木曜22:43 UTC = 金曜07:43 JST(カルチャー・ライフスタイル編)
+  workflow_dispatch: # Secrets設定後の動作確認用に手動実行できるようにする(editionを指定する)
+    inputs:
+      edition:
+        description: '実行するedition'
+        required: true
+        type: choice
+        options:
+          - entertainment
+          - culture-lifestyle
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+
+jobs:
+  publish:
+    if: github.event_name != 'workflow_run'
+    runs-on: ubuntu-latest
+    steps:
+      # GitHub書き込みは既定のGITHUB_TOKENではなく専用PATを使う(既定トークンで作成したPR・pushは
+      # 無限ループ防止のGitHub側の仕様により後続ワークフロー(ci.yml)が自動起動されないため)
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TREND_DIGEST_GH_PAT }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # ci.yml・deploy.ymlと同じバージョンに揃える
+          cache: 'npm'
+
+      - run: npm ci
+
+      # 候補収集(WebSearchジャンル)・見出し・本文生成(下記)がヘッドレス起動するために必要
+      # (design.md「実行環境の前提」)
+      - name: Claude Code CLIをインストール
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: 実行日(JST)を算出
+        id: date
+        run: echo "value=$(TZ='Asia/Tokyo' date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      # schedule起動時はgithub.event.schedule(起動元のcron式)からeditionを判定し、
+      # workflow_dispatch起動時は入力パラメータをそのまま使う(design.md「実行環境の前提」)
+      - name: edition(entertainment/culture-lifestyle)を算出
+        id: edition
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ github.event.inputs.edition }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "43 22 * * 1" ]; then
+            echo "value=entertainment" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=culture-lifestyle" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 作業用ブランチを作成
+        id: branch
+        run: |
+          id="${{ steps.date.outputs.value }}-${{ steps.edition.outputs.value }}"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          git checkout -b "trend-digest/articles/$id"
+
+      - name: 候補収集・採用基準判定(content-selection)
+        run: npx tsx scripts/trend-digest/collect-and-select.ts "${{ steps.edition.outputs.value }}" > /tmp/selection.json
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      # 対象9ジャンルすべてで候補が0件の場合はブランチ・PRを作成せずスキップする
+      # (requirements.md#掲載件数の保証-1)
+      - name: 候補不足によるスキップ判定
+        id: selection
+        run: |
+          status=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).status)")
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" = "skipped" ]; then
+            reason=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).reason)")
+            echo "候補不足によりスキップします: $reason"
+          else
+            topicsCount=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).topics.length)")
+            echo "topicsCount=$topicsCount" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Anthropic APIの従量課金ではなく、運営者個人のClaude Code Pro/Maxサブスクリプション認証
+      # (CLAUDE_CODE_OAUTH_TOKEN)でヘッドレス実行する。全候補失敗・利用枠枯渇時はこのステップが
+      # 非ゼロ終了し、後続ステップ(記事書き出し・commit・push・PR作成)は実行されない
+      # (requirements.md#掲載件数の保証-2、design.md「エラーハンドリング」)
+      - name: 見出し・本文の生成(content-generation)
+        if: steps.selection.outputs.status == 'ok'
+        run: npx tsx scripts/trend-digest/generate-content.ts /tmp/selection.json > /tmp/topics.json
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      - name: 記事データの組み立て・書き出し
+        if: steps.selection.outputs.status == 'ok'
+        run: npx tsx scripts/trend-digest/write-article.ts "${{ steps.edition.outputs.value }}" "${{ steps.date.outputs.value }}" /tmp/topics.json
+
+      - name: コミット・push・PR作成・自動マージ有効化
+        if: steps.selection.outputs.status == 'ok'
+        env:
+          GH_TOKEN: ${{ secrets.TREND_DIGEST_GH_PAT }}
+        run: |
+          id="${{ steps.branch.outputs.id }}"
+          git config user.name "trend-digest-bot"
+          git config user.email "trend-digest-bot@users.noreply.github.com"
+          git add "content/trend-digest/articles/$id.json"
+          git commit -m "content(trend-digest): ${id}を公開"
+          git push origin "trend-digest/articles/$id"
+          gh pr create --base main \
+            --title "[trend-digest] ${id}を公開" \
+            --body "週次自動生成PRです(edition: ${{ steps.edition.outputs.value }})。選定件数: ${{ steps.selection.outputs.topicsCount }}件。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/trend-digest/weekly-publish/design.md参照)。"
+          gh pr merge --auto --squash "trend-digest/articles/$id"
+
+  # publishが作成したPRのCI(ci.yml)が失敗した場合、マージせず原因をPRコメントに記録する
+  # (design.md「CI失敗時に記録する処理」)。trend-digest/articles/**ブランチ由来のPR以外は対象外
+  # (source-reviewが作成するtrend-digest/source-review/**ブランチのPRは通常どおりレビュー必須のまま残す。
+  # design.md「PRを自動マージする処理」参照)
+  record-ci-failure:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && startsWith(github.event.workflow_run.head_branch, 'trend-digest/articles/')
+    runs-on: ubuntu-latest
+    # リポジトリ既定のworkflow permissions(現状read)が将来変わっても、失敗ジョブ・ステップ特定
+    # (gh run view --json jobs)に必要な読み取り権限を確実に持てるよう明示する
+    permissions:
+      actions: read
+    steps:
+      # どのチェックが失敗したかを特定する(design.md「CI失敗時に記録する処理」手順2)。
+      # actions:readで足りる読み取り専用の問い合わせのため、書き込み専用のTREND_DIGEST_GH_PATではなく
+      # 既定のGITHUB_TOKEN(同一リポジトリのActions実行結果を読む既定権限を持つ)を使う
+      - name: 失敗したジョブ・ステップを特定
+        id: failure-detail
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          detail=$(gh run view "${{ github.event.workflow_run.id }}" --repo "${{ github.repository }}" --json jobs \
+            --jq '[.jobs[] | select(.conclusion=="failure") as $job | $job.steps[] | select(.conclusion=="failure") | "\($job.name) > \(.name)"] | join(", ")')
+          if [ -z "$detail" ]; then
+            detail="(失敗ステップの詳細は取得できませんでした)"
+          fi
+          echo "detail=$detail" >> "$GITHUB_OUTPUT"
+
+      - name: 失敗したPRにコメントを追記
+        env:
+          GH_TOKEN: ${{ secrets.TREND_DIGEST_GH_PAT }}
+        run: |
+          PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" \
+            --head "${{ github.event.workflow_run.head_branch }}" \
+            --state open --json number --jq '.[0].number')
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" \
+              --body "CI(${{ github.event.workflow_run.name }})が失敗しました。失敗したチェック: ${{ steps.failure-detail.outputs.detail }}。マージは行われません。詳細: ${{ github.event.workflow_run.html_url }}"
+          else
+            echo "対象のPRが見つかりませんでした(既にクローズ済みの可能性があります): ${{ github.event.workflow_run.head_branch }}"
+          fi
