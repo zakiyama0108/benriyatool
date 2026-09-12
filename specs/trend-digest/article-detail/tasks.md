@@ -10,8 +10,8 @@
   - 以降のタスク(フィードバック保存の実装・動作確認)より前に適用が完了していることを確認する
 
 - Task 2: 記事データの型定義(仕様: design.md「前提: 記事データの形式」)
-  - 🔴 型自体はTask 3のバリデーションテストから間接的に検証する
-  - 🟢 `app/trend-digest/lib/types.ts`に`Edition`/`Genre`/`GENRE_ORDER`/`Topic`/`Article`を定義する
+  - 🔴 `GENRE_LABELS`が`GENRE_ORDER`の全ジャンル(18件、entertainment 9件+culture-lifestyle 9件)を過不足なくカバーしていることを確認するテストを書く。他の型自体はTask 3のバリデーションテストから間接的に検証する
+  - 🟢 `app/trend-digest/lib/types.ts`に`Edition`/`Genre`/`GENRE_ORDER`/`GENRE_LABELS`/`Topic`/`Article`を定義する
 
 - Task 3: 記事データのバリデーション(仕様: design.md「バリデーション」)
   - 🔴 正常な記事データ(1件のみのケースを含む)が検証を通ること、`topics`が0件/11件で失敗すること、同一ジャンルのトピックが3件以上で失敗すること、`genre`が未定義値で失敗すること、`genre`は定義済みジャンルだが`article.edition`に対応する9ジャンル(`GENRE_ORDER[edition]`)に属さない場合(例: `edition: 'entertainment'`に`genre: 'gourmet'`)に失敗すること、`id`とファイル名不一致で失敗すること、`edition`が不正値で失敗すること、`sourceUrl`が`http`/`https`で始まらない場合に失敗すること、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字で失敗することを確認するテストを書く
@@ -25,7 +25,7 @@
 ## 記事表示
 
 - Task 5: ジャンル見出し+トピックカードの表示(仕様: requirements.md#記事本文表示-2〜4)
-  - 🔴 `topics`に含まれるジャンルだけが`GENRE_ORDER`の順で見出し表示されること、含まれないジャンルは表示されないこと、各トピックの見出し・本文・出典(発信者名・元URLリンク、新規タブで開く`target="_blank"`)が表示されることを確認するテストを書く
+  - 🔴 `topics`に含まれるジャンルだけが`GENRE_ORDER`の順で見出し表示されること、含まれないジャンルは表示されないこと、ジャンル見出しの文言が`GENRE_LABELS`の日本語ラベルと一致すること、各トピックの見出し・本文・出典(発信者名・元URLリンク、新規タブで開く`target="_blank"`)が表示されることを確認するテストを書く
   - 🟢 `app/trend-digest/components/GenreSection.tsx`・`app/trend-digest/components/TopicCard.tsx`を実装する
 
 ## フィードバック機能

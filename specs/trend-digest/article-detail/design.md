@@ -21,10 +21,32 @@ export type Genre =
   | 'sns-buzz' | 'buzzwords' | 'gourmet' | 'hobby' | 'fashion'
   | 'gadgets' | 'games' | 'travel' | 'economy-money'
 
-// ジャンルの表示順・日本語ラベル(edition内の見出し表示順として使う。requirements.md#グループとジャンル)
+// ジャンルの表示順(edition内の見出し表示順として使う。requirements.md#グループとジャンル)
 export const GENRE_ORDER: Record<Edition, Genre[]> = {
   entertainment: ['music', 'japanese-movie', 'foreign-movie', 'japanese-drama', 'foreign-drama', 'anime', 'variety', 'streaming-video', 'books-comics'],
   'culture-lifestyle': ['sns-buzz', 'buzzwords', 'gourmet', 'hobby', 'fashion', 'gadgets', 'games', 'travel', 'economy-money'],
+}
+
+// ジャンル見出しに表示する日本語ラベル(GenreSectionが使う。requirements.md#グループとジャンルの表記をそのまま使う)
+export const GENRE_LABELS: Record<Genre, string> = {
+  music: '音楽',
+  'japanese-movie': '日本映画',
+  'foreign-movie': '海外映画',
+  'japanese-drama': '日本ドラマ',
+  'foreign-drama': '海外ドラマ',
+  anime: 'アニメ',
+  variety: 'バラエティ',
+  'streaming-video': 'サブスク動画',
+  'books-comics': '書籍・漫画',
+  'sns-buzz': 'SNSバズり',
+  buzzwords: '流行りの言葉',
+  gourmet: 'グルメ',
+  hobby: '流行りの趣味',
+  fashion: 'ファッション',
+  gadgets: 'ガジェット・家電',
+  games: 'ゲーム',
+  travel: '旅行・観光',
+  'economy-money': '経済・お金',
 }
 
 export type Topic = {
@@ -61,7 +83,7 @@ export type Article = {
 - 対象: 読み込んだ記事データ
 - 手順:
   1. `buildArticleTitle(edition, date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
-  2. `GENRE_ORDER[edition]`の順に、`topics`に該当ジャンルのトピックが1件以上あるジャンルだけを見出しとして表示する(動きがなかったジャンルは見出し自体を表示しない。requirements.md#記事本文表示-2)
+  2. `GENRE_ORDER[edition]`の順に、`topics`に該当ジャンルのトピックが1件以上あるジャンルだけを見出しとして表示する(動きがなかったジャンルは見出し自体を表示しない。requirements.md#記事本文表示-2)。見出しの文言は`Genre`から`GENRE_LABELS`を引いた日本語ラベルを使う
   3. 各ジャンル見出しの下に、そのジャンルの`topics`(最大2件)を、見出し・本文・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
   4. 全ジャンル合計で最大10件のトピックを表示する(content-selectionの絞り込みにより`topics`配列自体が既に10件以内のため、追加の絞り込みは行わない。requirements.md#記事本文表示-4)
 - 関連するビジネスルール: requirements.md#記事本文表示-1〜4
@@ -123,7 +145,7 @@ sequenceDiagram
 ## 関連するファイル(抜粋)
 
 ```
-app/trend-digest/lib/types.ts (新規: Edition/Genre/GENRE_ORDER/Topic/Articleの型定義)
+app/trend-digest/lib/types.ts (新規: Edition/Genre/GENRE_ORDER/GENRE_LABELS/Topic/Articleの型定義)
 app/trend-digest/lib/articleTitle.ts (content-generationで新規作成: buildArticleTitleを利用)
 app/trend-digest/lib/articleSchema.ts (新規: JSONのバリデーション・パース処理。article-listのページネーションからも参照される)
 app/trend-digest/lib/articles.ts (新規: content/trend-digest/articles/ を読み込むgetAllArticles/getArticleById。article-listと共有)

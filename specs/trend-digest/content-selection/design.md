@@ -158,7 +158,7 @@ export type SelectionResult =
 - 手順:
   1. ジャンルごとに登録された各情報源(公式ランキング・チャートの公開ページ)へHTTPリクエストし、順位付きの一覧(作品名・現在の順位)を取得する。取得・パースに失敗した場合はその情報源だけを除外して処理を続ける(1件の取得失敗で編全体の収集を止めない)
   2. `newEntryOrRisingRank: true`のジャンル(music/foreign-drama/anime/streaming-video/books-comics)は、情報源のページ自体が前週比の順位変動(前週順位・NEW表記)を提供している場合はそれをそのまま使う。提供していない情報源は、直近`newEntryLookbackWeeks`週間分の過去記事(`content/trend-digest/articles/*.json`)の同ジャンルのトピックに同じ`title`(正規化後)が含まれていなければ「新規」とみなす。順位上昇の判定はページが変動値を提供する場合のみ行い、提供しない情報源では新規ランクインのみを候補条件にする(順位上昇の判定は諦める。要件の判定方法詳細を設計で補うための判断)【推測】
-  3. `rankThreshold`のみのジャンル(japanese-movie/foreign-movie/buzzwords/fashion/gadgets/games/travel)は、現在の順位が`rankThreshold`以内の項目をすべて候補にする
+  3. `rankThreshold`のみのジャンル(japanese-movie/foreign-movie/buzzwords/fashion/gadgets/games/travel)は、現在の順位が`rankThreshold`以内の項目をすべて候補にする。buzzwords(流行りの言葉)・games(ゲーム)の情報源(Googleトレンド急上昇ワード・Yahoo!検索急上昇ワードランキング、Steam売上ランキング・ファミ通.com売上ランキング)は、掲載されている項目自体が既に「一過性の話題性がある語」「新作・話題作」に該当するものだけであるため、順位判定に加えた定性的な絞り込みは行わない(requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-5・-8)
   4. `rankThreshold`と`newEntryOrRisingRank`の両方を持つジャンル(books-comics)は、手順2の新規ランクイン・順位上昇の判定に加えて、現在の順位が`rankThreshold`(5位)以内であることも満たす項目だけを候補にする(いずれか一方だけでは候補にしない。requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-4「上位5位以内で新規にランクインした作品」の両条件を反映するための判断)
   5. 候補ごとに`strength = 100 - 現在の順位`を設定する(順位が高いほど大きい値。musicのような上昇幅判定ジャンルは、上昇幅が大きいほど`strength`を加点する)【推測】
   6. 情報源ごとの取得件数(取得失敗・0件はその旨)を記録する(requirements.md#情報源の健全性監視-2)

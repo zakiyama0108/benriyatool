@@ -65,7 +65,7 @@
 .github/workflows/trend-digest-line-broadcast.yml (新規: mainへのpush(content/trend-digest/articles/*.jsonの新規追加)をトリガーに配信を実行するワークフロー)
 app/trend-digest/lib/buildBroadcastMessage.ts (新規: 記事データからLINE配信用のテキスト本文を組み立てる純粋関数。buildBroadcastTitleを含む)
 scripts/trend-digest/broadcast-line.ts (新規: 記事データを読み込みbuildBroadcastMessageで組み立て、LINE Messaging APIへ送信するCLI)
-app/trend-digest/lib/types.ts (既存: GENRE_ORDER・Genreの日本語ラベルを利用)
+app/trend-digest/lib/types.ts (既存: GENRE_ORDER・GENRE_LABELSを利用)
 app/trend-digest/lib/articleSchema.ts (既存: parseArticleを利用)
 content/trend-digest/articles/<id>.json (既存: 配信内容の元データ)
 ```
