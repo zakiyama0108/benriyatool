@@ -11,12 +11,12 @@
 - 🔵 タップ領域のサイズ(44px以上)を確認する
 
 ## T3: QuizCardコンポーネント(3パターンのレイアウト出し分け)
-- 🔴 `__tests__/e-tango/components/QuizCard.test.tsx`: 3パターンそれぞれでお題・選択肢が正しいレイアウトで表示されること、回答時に`onAnswer`へ正誤・回答時間・ヒント使用が渡ることを検証するテストを書く
+- 🔴 `__tests__/e-tango/components/QuizCard.test.tsx`: 3パターンそれぞれでお題・選択肢が正しいレイアウトで表示されること、回答時に`onAnswer`へ正誤・回答時間・ヒント使用が渡ることを検証するテストを書く。加えて、「ヒント」操作で語の頭文字・日本語訳の一部が表示されること(design.md#ヒントを表示する処理)を検証するテストケースを追加する
 - 🟢 `app/e-tango/components/QuizCard.tsx`を実装する(design.md#画面設計の出題画面レイアウト)
 - 🔵 回答時間計測のロジック(表示開始〜選択までの経過時間)を切り出す
 
 ## T4: AnswerCardコンポーネント
-- 🔴 `__tests__/e-tango/components/AnswerCard.test.tsx`: 見出し語・発音記号・訳・イラスト・例文・コアイメージが表示されること、習得済みトグルで`onToggleMastered`が呼ばれること、「次へ」で`onNext`が呼ばれることを検証するテストを書く
+- 🔴 `__tests__/e-tango/components/AnswerCard.test.tsx`: 見出し語・発音記号・訳・イラスト・例文・コアイメージが表示されること、習得済みトグルで`onToggleMastered`が呼ばれること、「次へ」で`onNext`が呼ばれることを検証するテストを書く。加えて、音声再生中に別の音声操作をした場合は前の再生を止めて新しい音声を再生すること(design.md#音声を再生する処理、多重再生防止)を検証するテストケースを追加する
 - 🟢 `app/e-tango/components/AnswerCard.tsx`を実装する(design.md#画面設計の答え合わせカード)
 - 🔵 音声再生ボタンの多重再生防止(前の再生を止める)を確認する
 

@@ -84,7 +84,7 @@ Next.js の静的エクスポートを Cloudflare Workers で配信し、サー�
 ## 8. 機能一覧表(機能マップ)
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
-| [user-auth](user-auth/requirements.md) | Google アカウントでログイン／ログアウトする | ログイン必須の認証基盤を提供し、学習状態をアカウントに紐づける | `docs/adr/0006` を踏襲 | 仕様のみ(未実装) |
+| [user-auth](user-auth/requirements.md) | Google アカウントでログイン／ログアウトする | ログイン必須の認証基盤を提供し、学習状態をアカウントに紐づける | `docs/adr/0001・0006` を踏襲 | 仕様のみ(未実装) |
 | [word-content](word-content/requirements.md) | 学べる TOEIC 単語データがそろっている | 単語データ項目の定義と、TOEIC 全語彙分のオフライン一括生成 | `specs/legal`(出典・商標表示)、R2 | 仕様のみ(未実装) |
 | [srs-scheduling](srs-scheduling/requirements.md) | 忘れる直前に復習が届き、新規・間違えた語はその場で繰り返す | 復習日の計算・4 段階判定・セッション内リピート・1 日のキュー構成 | word-content の単語、study-settings の設定値、progress-store のカード状態 | 仕様のみ(未実装) |
 | [study-session](study-session/requirements.md) | 画像・例文の 4択で単語を学習し、答え合わせカードで確認する | 学習セッションの画面と操作(出題 3 パターン・4択・答え合わせ) | srs-scheduling のキュー／判定、word-content の単語、progress-store の保存、home の導線 | 仕様のみ(未実装) |
@@ -141,7 +141,7 @@ erDiagram
     e_tango_sessions {
         uuid user_id
         date session_date
-        json remaining
+        jsonb remaining
     }
     e_tango_study_days {
         uuid user_id
@@ -154,7 +154,7 @@ erDiagram
         text word_id
         text pattern
         boolean correct
-        integer grade
+        text grade
     }
     e_tango_settings {
         uuid user_id PK
