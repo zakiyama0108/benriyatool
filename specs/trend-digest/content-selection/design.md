@@ -164,8 +164,8 @@ export type SelectionResult =
   3. `rankThreshold`のみのジャンル(japanese-movie/foreign-movie/buzzwords/fashion/gadgets/games/travel)は、現在の順位が`rankThreshold`以内の項目をすべて候補にする。buzzwords(流行りの言葉)・games(ゲーム)の情報源(Googleトレンド急上昇ワード・Yahoo!検索急上昇ワードランキング、Steam売上ランキング・ファミ通.com売上ランキング)は、掲載されている項目自体が既に「一過性の話題性がある語」「新作・話題作」に該当するものだけであるため、順位判定に加えた定性的な絞り込みは行わない(requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-5・-8)。fashion(ファッション)・gadgets(ガジェット・家電)は情報源の一方が新着記事一覧型(WWD JAPAN新着記事・Engadget日本版)のため、`rankThreshold`判定はもう一方の順位付きランキング型の情報源(ZOZOTOWN人気ランキング・価格.com売れ筋ランキング)にのみ適用する。新着記事一覧型の情報源は順位を持たないため`rankThreshold`判定を行わず、直近の新着記事をそのまま候補にする(requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-6〜7「新着のトレンド企画記事」「新着記事で紹介された注目製品」を反映するための判断)
   4. `rankThreshold`と`newEntryOrRisingRank`の両方を持つジャンル(books-comics)は、手順2の新規ランクイン・順位上昇の判定に加えて、現在の順位が`rankThreshold`(5位)以内であることも満たす項目だけを候補にする(いずれか一方だけでは候補にしない。requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-4「上位5位以内で新規にランクインした作品」の両条件を反映するための判断)
   5. 候補ごとに`strength = 100 - 現在の順位`を設定する(順位が高いほど大きい値。musicのような上昇幅判定ジャンルは、上昇幅が大きいほど`strength`を加点する)。新着記事一覧型の情報源から抽出した候補は順位を持たないため、掲載日時が新しいものほど大きくなる値(例: 新着順の掲載順位を仮の順位とみなす)を`strength`に設定する【推測】
-  6. 情報源ごとの取得件数(取得失敗・0件はその旨)を記録する(requirements.md#情報源の健全性監視-2)
-- 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜9、requirements.md#データ取得方法-1、requirements.md#情報源の健全性監視-2
+  6. 情報源ごとの取得件数(取得失敗・0件はその旨)を記録する(requirements.md#情報源の健全性監視-1)
+- 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜9、requirements.md#データ取得方法-1、requirements.md#情報源の健全性監視-1
 
 ### WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)
 - 対象: `watchlist.json`の`method: 'websearch'`の6ジャンル(実行対象のeditionの9ジャンルのうち該当するもの)
@@ -174,8 +174,8 @@ export type SelectionResult =
   2. 複数の独立した情報源(ニュースメディア・公式発表等)が同じ話題を報じている場合のみ「動きがあった」候補にする。独立情報源数が`minIndependentSources`未満の話題(単一情報源のみ、噂・未確認情報の域を出ないもの)は候補にしない(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1)
   3. 候補ごとに、話題の名称(`title`)・代表的な出典1件(`sourceName`/`sourceUrl`。最初に見つかった情報源、または最も権威のあるメディアを1件選ぶ【推測】)・独立情報源の言及数(`strength`として使う)をJSONで返す
   4. 応答は指定のJSON配列単体とし、聞き返し・説明文のみの応答を返さない(ヘッドレス実行のため質問に応答する相手がいない。ai-dev-digest content-generationの応答形式ガードレールと同じ考え方)
-  5. ジャンルごとの候補件数(0件はその旨)を記録する(requirements.md#情報源の健全性監視-2)
-- 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1〜6、requirements.md#情報源の健全性監視-2
+  5. ジャンルごとの候補件数(0件はその旨)を記録する(requirements.md#情報源の健全性監視-1)
+- 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1〜6、requirements.md#情報源の健全性監視-1
 
 ### 掲載済み話題を除外する処理(決定的なコード)
 - 対象: 収集した候補すべて(ジャンル内絞り込み・編全体の絞り込みより前に適用する)
