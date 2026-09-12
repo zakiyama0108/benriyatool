@@ -29,7 +29,7 @@ flowchart LR
     line["LINE公式アカウント<br>(ai-dev-digestと共通・友だちへ配信)"]
 
     readers -->|閲覧・付箋・フィードバック| webapp
-    webapp -->|ログイン・本人データの読み書き(RLS)| supabase
+    webapp -->|ログイン・本人データの読み書き（RLS）| supabase
     github -->|記事JSONをビルド・配信| webapp
     sources -->|情報取得| github
     github -->|新着記事を配信| line
