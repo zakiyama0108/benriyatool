@@ -4643,5 +4643,165 @@
     "specFile": "spotify-playlist/playlist-create/design.md",
     "item": "ログ",
     "reason": "console出力(件数・ステータス・手順名のみ、PIIを含めない)の方針の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "記事データを読み込む処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事本文表示-1〜2でテスト済みのため(tasks.md Task4)"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "その回の記事本文を表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#記事本文表示-1〜4でGenreSection.test.tsx/articleSchema.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "エラーハンドリング",
+    "reason": "記事データのビルド時バリデーション失敗・フィードバック送信失敗時の方針をまとめた見出しで、個別の振る舞いはarticleSchema.test.ts・FeedbackForm.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "trend_digest_feedback(新規テーブル)",
+    "reason": "テーブル定義の参照情報で、保存の振る舞いはsaveFeedback.test.ts(requirements.md#運営者向けフィードバック-7等)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "trend_digest_feedback(新規テーブル) > id",
+    "reason": "DB側で自動採番される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "trend_digest_feedback(新規テーブル) > created_at",
+    "reason": "DB側で自動設定される共通カラムの定義情報で、アプリコードの振る舞いではないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "trend_digest_feedback(新規テーブル) > is_test",
+    "reason": "カラム定義の参照情報。保存の振る舞いはsaveFeedback.test.ts(requirements.md#フィードバックの保存・権限-3)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "trend_digest_feedback(新規テーブル) > article_id",
+    "reason": "カラム定義の参照情報。保存の振る舞いはsaveFeedback.test.ts(requirements.md#運営者向けフィードバック-7)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "trend_digest_feedback(新規テーブル) > topic_id",
+    "reason": "カラム定義の参照情報。保存の振る舞いはsaveFeedback.test.ts(requirements.md#運営者向けフィードバック-7)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "trend_digest_feedback(新規テーブル) > comment",
+    "reason": "カラム定義の参照情報。保存の振る舞いはsaveFeedback.test.ts(requirements.md#運営者向けフィードバック-7)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "画面設計",
+    "reason": "UIレイアウトの説明見出しで、個別の表示要件はrequirements.md#記事本文表示-1〜3等の各テストで担保済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > GenreSection",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはGenreSection.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > TopicCard",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはTopicCard.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > FeedbackForm",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはFeedbackForm.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "状態管理",
+    "reason": "ページの状態設計(useStateの持ち方)の説明で、tasks.md Task9の判断によりpage.tsx/ArticleDetailView.tsx自体はユニットテスト対象外とし、配下のGenreSection/TopicCard/FeedbackFormの各テストで担保するため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "セキュリティ",
+    "reason": "フィードバック保存・記事データ表示のセキュリティ方針をまとめた見出しで、個別の振る舞いはarticleSchema.test.ts・saveFeedback.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "ログ",
+    "reason": "フィードバックの保存成功・失敗はログ出力を行わないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "表示分量・著作権配慮 [1]",
+    "reason": "本文の分量(160〜480字、目安200〜400字)の数値境界はdesign.md#バリデーションとしてarticleSchema.test.tsでテスト済み。「原文の全文転記は行わない」という執筆時の質的な基準は自動テストで検証できないため、content-generationのエージェント執筆ガードレールに委ねる(content-generation/design.md#エラーハンドリング参照)"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "フィードバックの保存・権限 [5]",
+    "reason": "保存したフィードバックを一切表示・一覧化しないという不作為の要件で、対応するテスト(存在しないことの検証)を持たない。公開画面のコンポーネント(GenreSection/TopicCard等)がフィードバック一覧表示を実装していないことはコードレビューで担保する"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]
