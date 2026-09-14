@@ -3,6 +3,8 @@ import { SITE_URL } from './lib/site'
 import { GUIDE_ARTICLES, LAST_UPDATED_ISO } from './ikukyu/guide/lib/articleMeta'
 import { getAllArticles } from './ai-dev-digest/lib/articles'
 import { paginate } from './ai-dev-digest/lib/pagination'
+import { getAllArticles as getAllTrendDigestArticles } from './trend-digest/lib/articles'
+import { paginate as paginateTrendDigest } from './trend-digest/lib/pagination'
 
 // Next.js固有の挙動差分: output: 'export'構成では、sitemap.tsのような特殊なRoute Handlerに
 // dynamic = 'force-static'を明示しないとビルドが失敗する(nextjs-notes.md参照)
@@ -27,6 +29,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/board-game-rules/register/`, lastModified: now, priority: 0.5 },
     { url: `${SITE_URL}/board-game-rules/favorites/`, lastModified: now, priority: 0.5 },
     { url: `${SITE_URL}/spotify-playlist/`, lastModified: now, priority: 0.8 },
+    { url: `${SITE_URL}/trend-digest/`, lastModified: now, priority: 0.8 },
   ]
 
   const guidePages: MetadataRoute.Sitemap = GUIDE_ARTICLES.map((article) => ({
@@ -52,5 +55,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   )
 
-  return [...staticPages, ...guidePages, ...articlePages, ...paginationPages]
+  const trendDigestArticles = getAllTrendDigestArticles()
+  const trendDigestArticlePages: MetadataRoute.Sitemap = trendDigestArticles.map((article) => ({
+    url: `${SITE_URL}/trend-digest/${article.id}/`,
+    lastModified: article.date,
+    priority: 0.6,
+  }))
+
+  const { totalPages: trendDigestTotalPages } = paginateTrendDigest(trendDigestArticles, 1)
+  const trendDigestPaginationPages: MetadataRoute.Sitemap = Array.from(
+    { length: Math.max(0, trendDigestTotalPages - 1) },
+    (_, i) => ({
+      url: `${SITE_URL}/trend-digest/page/${i + 2}/`,
+      lastModified: now,
+      priority: 0.4,
+    })
+  )
+
+  return [
+    ...staticPages,
+    ...guidePages,
+    ...articlePages,
+    ...paginationPages,
+    ...trendDigestArticlePages,
+    ...trendDigestPaginationPages,
+  ]
 }

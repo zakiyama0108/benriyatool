@@ -6,7 +6,7 @@ const VALID_DIR = path.join(__dirname, '../fixtures/articles-valid')
 const INVALID_DIR = path.join(__dirname, '../fixtures/articles-invalid')
 const MISSING_DIR = path.join(__dirname, '../fixtures/articles-does-not-exist')
 
-// 仕様: specs/trend-digest/article-detail/requirements.md#記事本文表示-1、specs/trend-digest/article-detail/requirements.md#記事本文表示-2
+// 仕様: specs/trend-digest/article-detail/requirements.md#記事本文表示-1、specs/trend-digest/article-detail/requirements.md#記事本文表示-2、specs/trend-digest/article-list/requirements.md#一覧表示-1
 describe('記事データの読み込み - content/trend-digest/articles/配下のJSONファイルを取得する', () => {
   it('getArticleByIdが指定したIDの記事を返すこと', () => {
     const article = getArticleById('2026-09-15-entertainment', VALID_DIR)
