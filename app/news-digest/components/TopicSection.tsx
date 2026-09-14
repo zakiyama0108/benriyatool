@@ -1,29 +1,35 @@
+import type { Session } from '@supabase/supabase-js'
 import type { Topic } from '../lib/types'
 import { formatSourcePublishedAt } from '../lib/formatSourcePublishedAt'
 import CategoryBadge from './CategoryBadge'
 import ImportanceStars from './ImportanceStars'
 import FeedbackForm from './FeedbackForm'
+import BookmarkPanel, { type BookmarkSummary } from './BookmarkPanel'
 
 // 固定4観点(summary)の描画順。この順序で固定(content-generation/requirements.md#要約-4)
 const SUMMARY_ORDER = ['whatHappened', 'whyItMatters', 'background', 'outlook'] as const
 
 type Props = {
   topic: Topic
+  session: Session | null
   isAdmin: boolean
   articleDate: string
+  bookmark: BookmarkSummary | null
 }
 
 // 1トピック分の表示(見出し・カテゴリ・重要度・固定4観点の要約・出典・専用枠(基準未達)表示)と、
-// 配下に運営者向けフィードバック入力欄を条件付きで表示する(仕様: requirements.md#記事本文表示-1〜7、
+// 配下に付箋操作・運営者向けフィードバック入力欄を条件付きで表示する(仕様: requirements.md#記事本文表示-1〜7、
 // requirements.md#運営者向けフィードバック-9、design.md「その週の記事本文を表示する処理」
-// 「ログイン状態に応じてフィードバック入力欄の表示を切り替える処理」)。
-// 画面設計はai-dev-digestのTopicSection.tsxを踏襲する(SourceBadge相当をCategoryBadgeに置き換え、
-// YoutubeEmbedは持たない)。固定4観点はこの順序(whatHappened→whyItMatters→background→outlook)で
-// 常時、見出し(h3)+導入文(teaser)を表示し、<details><summary>詳細を見る</summary>詳細文(detail)
-// </details>で展開表示する。
+// 「ログイン状態に応じてフィードバック入力欄の表示を切り替える処理」、bookmark/design.md
+// 「コンポーネント設計」)。画面設計はai-dev-digestのTopicSection.tsxを踏襲する
+// (SourceBadge相当をCategoryBadgeに置き換え、YoutubeEmbedは持たない)。固定4観点はこの順序
+// (whatHappened→whyItMatters→background→outlook)で常時、見出し(h3)+導入文(teaser)を表示し、
+// <details><summary>詳細を見る</summary>詳細文(detail)</details>で展開表示する。
 // **DBの読み取り(SELECT)は一切行わない**。isAuthorizedAdmin(admin_emailsのSELECT)の呼び出しは
-// ArticleDetailView側の責務とし、ここでは渡されたisAdminの値だけでフィードバック欄の表示を切り替える
-export default function TopicSection({ topic, isAdmin, articleDate }: Props) {
+// ArticleDetailView側の責務とし、ここでは渡されたisAdminの値だけでフィードバック欄の表示を切り替える。
+// 付箋操作(BookmarkPanel)はセッションの有無だけで表示を切り替える
+// (bookmark/requirements.md#トピックへの付箋-5。運営者判定は不要)
+export default function TopicSection({ topic, session, isAdmin, articleDate, bookmark }: Props) {
   return (
     <section id={topic.id} className="scroll-mt-6 rounded-2xl bg-white p-4 shadow-sm sm:p-5">
       <div className="mb-2 flex items-center gap-2">
@@ -67,6 +73,8 @@ export default function TopicSection({ topic, isAdmin, articleDate }: Props) {
           {topic.belowCriteriaReason && <span className="text-xs text-orange-600">{topic.belowCriteriaReason}</span>}
         </div>
       )}
+
+      {session && <BookmarkPanel articleDate={articleDate} topicId={topic.id} initialBookmark={bookmark} />}
 
       {isAdmin && <FeedbackForm articleDate={articleDate} topicId={topic.id} />}
     </section>

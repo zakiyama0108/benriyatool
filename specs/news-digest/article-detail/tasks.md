@@ -6,7 +6,7 @@
 
 - Task 1: `news_digest_feedback`テーブルのマイグレーション(design.md「データベース設計」のSQL、適用基盤: docs/adr/0003)
   - `supabase/migrations/<timestamp>_create_news_digest_feedback.sql`を作成する(テーブル作成+authenticated INSERT専用ポリシー+benriyatool_readonly SELECT専用ポリシー。ai-dev-digestが2026-08-05に修正した最終形を最初から適用する)
-  - マイグレーションファイル単独のPRとしてマージし、`deploy.yml`のmigrateジョブが成功したことを確認する
+  - アプリコードと同じPRでレビュー・マージする(docs/adr/0003の方針)。`deploy.yml`のmigrateジョブが成功したことを確認する
   - 以降のタスク(フィードバック保存の実装・動作確認)より前に適用が完了していることを確認する
 
 - Task 2: 記事データの型定義(仕様: design.md「前提: 記事データの形式」)

@@ -6,28 +6,27 @@ import Link from 'next/link'
 import { List } from 'lucide-react'
 import type { Article } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
-import { getSession, onAuthChange, isAuthorizedAdmin } from '../../lib/adminAuth'
+import { getSession, onAuthChange, signInWithGoogle, signOut, isAuthorizedAdmin } from '../../lib/adminAuth'
+import { fetchBookmarksByArticleDate, type BookmarkSummary } from '../lib/bookmarks'
 import TopicSection from './TopicSection'
+import LoginStatus from './LoginStatus'
 
 type Props = {
   article: Article
 }
 
-// 記事詳細ページの組み立て(仕様: requirements.md#記事本文表示-1、design.md「関連するファイル」)。
-// generateStaticParams・記事データの読み込み(fsアクセス)はサーバーコンポーネント側の
-// app/news-digest/[date]/page.tsxで行い、ここではpropsで受け取った記事データを表示するのみ。
-// ログインセッションの取得・購読はクライアント側でのみ可能なため、このコンポーネントは
-// 'use client'にする(ai-dev-digest/ArticleDetailView.tsxと同じ方式)。
+// 記事詳細ページの組み立て(仕様: requirements.md#記事本文表示-1、design.md「関連するファイル」、
+// bookmark/design.md「関連するファイル」)。generateStaticParams・記事データの読み込み(fsアクセス)は
+// サーバーコンポーネント側のapp/news-digest/[date]/page.tsxで行い、ここではpropsで受け取った
+// 記事データを表示するのみ。ログインセッションの取得・購読はクライアント側でのみ可能なため、
+// このコンポーネントは'use client'にする(ai-dev-digest/ArticleDetailView.tsxと同じ方式)。
 // 記事の組み立て自体はTDD対象外(個々の表示ロジックはTopicSection等のテストで担保済み。
-// tasks.md Task11参照)だが、isAdmin判定の条件分岐はArticleDetailView.test.tsxで検証する
-// (article-detail/tasks.md Task10)。
-//
-// 実装範囲についての注記: bookmark spec(本ブランチ作成時点で未実装)が提供する予定の
-// ログイン状態表示(LoginStatus)・付箋操作(BookmarkPanel)はこのコンポーネントに含めない
-// (article-detail/tasks.md Task10・Task11参照。bookmark実装時に配線が追加される中間状態)
+// tasks.md Task11参照)だが、isAdmin判定・付箋取得の条件分岐はArticleDetailView.test.tsxで検証する
+// (article-detail/tasks.md Task10、bookmark/tasks.md Task5)
 export default function ArticleDetailView({ article }: Props) {
   const [session, setSession] = useState<Session | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [bookmarks, setBookmarks] = useState<Map<string, BookmarkSummary>>(new Map())
 
   useEffect(() => {
     let active = true
@@ -71,6 +70,30 @@ export default function ArticleDetailView({ article }: Props) {
     }
   }, [session])
 
+  // 記事内の自分の付箋の有無をまとめて取得する処理(仕様: bookmark/design.md「記事内の自分の
+  // 付箋の有無をまとめて取得する処理」)。未ログイン、または取得失敗時はすべて「未付箋」として扱う
+  useEffect(() => {
+    if (!session) {
+      // ログアウト時に付箋表示を即座に引っ込める(session変化に同期する意図的なリセット)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setBookmarks(new Map())
+      return
+    }
+    let active = true
+    fetchBookmarksByArticleDate(article.date)
+      .then((map) => {
+        if (active) setBookmarks(map)
+      })
+      .catch((e) => {
+        if (active) setBookmarks(new Map())
+        // eslint-disable-next-line no-console -- 原因究明用。画面にはエラーを出さず「未付箋」として扱う
+        console.error('記事詳細: 付箋の取得に失敗しました', e)
+      })
+    return () => {
+      active = false
+    }
+  }, [session, article.date])
+
   const hasBelowCriteriaTopic = article.topics.some((topic) => topic.belowCriteria)
 
   const title = buildArticleTitle(article.date)
@@ -104,9 +127,24 @@ export default function ArticleDetailView({ article }: Props) {
 
           <div className="space-y-4">
             {article.topics.map((topic) => (
-              <TopicSection key={topic.id} topic={topic} isAdmin={isAdmin} articleDate={article.date} />
+              <TopicSection
+                key={topic.id}
+                topic={topic}
+                session={session}
+                isAdmin={isAdmin}
+                articleDate={article.date}
+                bookmark={bookmarks.get(topic.id) ?? null}
+              />
             ))}
           </div>
+
+          <footer className="border-t border-gray-100 pt-4">
+            <LoginStatus
+              session={session}
+              onLoginClick={() => void signInWithGoogle(window.location.href)}
+              onLogoutClick={() => void signOut()}
+            />
+          </footer>
         </article>
 
         {/* デスクトップ幅(md以上)のみ表示する目次。各トピック見出しへのアンカーリンク
