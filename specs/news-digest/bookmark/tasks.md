@@ -4,10 +4,10 @@
 
 ## データ基盤
 
-- Task 1: `news_digest_bookmarks`テーブルのマイグレーション(design.md「データベース設計」のSQL)
+- Task 1: `news_digest_bookmarks`テーブルのマイグレーション(design.md「データベース設計」のSQL、適用基盤: docs/adr/0003)
   - `supabase/migrations/<timestamp>_create_news_digest_bookmarks.sql`を作成する(テーブル作成+本人行のみRLS(select/insert/update/delete)+一意制約+CHECK制約+benriyatool_readonly SELECT専用ポリシー)
-  - マイグレーションファイル単独のPRとしてマージし、`deploy.yml`のmigrateジョブが成功したことを確認する
-  - design.md「T0(マイグレーション適用)の実機確認」の5項目を実機で確認する
+  - アプリコードと同じPRでレビュー・マージする(docs/adr/0003の方針)。`deploy.yml`のmigrateジョブが成功したことを確認する
+  - design.md「T0(マイグレーション適用)の実機確認」の5項目は、自動テストでは実際のOAuthログインを伴うマルチアカウント確認ができないため、マージ後に運営者が実際にSupabase(2つの別アカウントでのGoogleログイン)またはSupabase Studioで確認する手動QAとする。実装PRの「動作確認」欄には、この手動確認が未実施であることを明記する
 
 ## 付箋のCRUD
 
