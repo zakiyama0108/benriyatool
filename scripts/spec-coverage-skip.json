@@ -5098,5 +5098,80 @@
     "specFile": "news-digest/bookmark/design.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/requirements.md",
+    "item": "サマリ",
+    "reason": "機能全体の要約で、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/requirements.md",
+    "item": "データ取得方法 [2]",
+    "reason": "WebSearchによる補完を従量課金APIなしで行う運用方針の記述で、コードで自動検証できないため(design.md「セキュリティ」も同旨で参照)"
+  },
+  {
+    "specFile": "news-digest/content-selection/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "news-digest/content-selection/design.md",
+    "item": "サマリ",
+    "reason": "設計全体の要約で、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/design.md",
+    "item": "設計の前提(エージェントの推論とコードの役割分担)",
+    "reason": "エージェントとコードの役割分担の方針説明で、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/design.md",
+    "item": "エラーハンドリング",
+    "reason": "情報源取得失敗時の継続方針・候補0件時のスキップ方針・エージェント判定失敗時の継続方針の記述で、個別の振る舞いはfetchCandidates.test.ts・selection.test.ts・judgeCandidates.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "news-digest/content-selection/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/design.md",
+    "item": "セキュリティ",
+    "reason": "公開エンドポイントのみを使う方針・従量課金APIキーを発行しない方針の記述で、運用上の対応でありこのリポジトリのコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "news-digest/content-selection/design.md",
+    "item": "ログ",
+    "reason": "収集・選定結果を標準出力・標準エラー出力に記録するCLI(scripts/news-digest/collect-and-select.ts)の説明で、TDD対象外の薄いラッパー(tasks.md Task7)のため。個別のログ内容はfetchCandidates.test.tsのbuildSourceHealthLogLinesでテスト済み"
   }
 ]
