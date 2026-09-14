@@ -5158,5 +5158,110 @@
     "specFile": "trend-digest/weekly-publish/design.md",
     "item": "ログ",
     "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "実行環境の前提",
+    "reason": "ワークフローファイルを分割する設計判断・チャネルアクセストークンのActions Secrets管理方針の記述で、コードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "配信タイミングをトリガーする処理",
+    "reason": "GitHub Actionsのpushトリガー・パスフィルタ・git diffによる新規追加ファイル判定というワークフロー自身の実行制御の記述で、コードとして実装しないため(tasks.md Task3のTDD対象外宣言に基づく。対応するビジネスルールはrequirements.md#配信タイミング・方式-5〜6)"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "配信メッセージ本文を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#配信内容-1〜4でテスト済み(__tests__/trend-digest/lib/buildBroadcastMessage.test.ts)"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "LINEブロードキャストメッセージを送信する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-3〜4でテスト済み(__tests__/trend-digest/scripts/broadcast-line.test.ts)"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "セキュリティ",
+    "reason": "GitHub Actions Secretsで保持するチャネルアクセストークンの管理方針の記述で、運用設定に関する事項でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/design.md",
+    "item": "ログ",
+    "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "配信タイミング・方式 [5]",
+    "reason": "weekly-publishの週次記事PRがmainへ自動マージされた直後にワークフローを起動するというGitHub Actionsのpushトリガー設定の要件で、宣言的なワークフロー定義でありユニットテスト対象を持たないため(tasks.md Task3・Task5。実際の疎通確認は運用開始後の初回実行で行う)"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "配信タイミング・方式 [6]",
+    "reason": "過去記事の再配信・複数回配信を行わないという要件で、ワークフロー内のgit diffによる新規追加ファイル判定(tasks.md Task3、TDD対象外)で実現するためユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "アカウント・配信主体 [1]",
+    "reason": "配信元を新規開設せず既存のLINE公式アカウントに相乗りするという運用上の意思決定で、新しいSecretを発行しない構成(design.md「実行環境の前提」)であり実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [2]",
+    "reason": "LINE公式アカウントの無料プラン(月200通)を日次配信と共有する前提の運用上の確認事項で、source-reviewの月次見直しで配信量を確認する運用手順でありコードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [5]",
+    "reason": "配信失敗時に原因を記録し運営者が把握できるようにするという要件で、broadcast-line.tsの標準エラー出力によるログ記録・GitHub Actionsの実行結果表示で実現するためユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/line-broadcast/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]
