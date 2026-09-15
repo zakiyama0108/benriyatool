@@ -1,24 +1,23 @@
 import type { Article, Category, SummaryPerspective, Topic, TopicSummary } from './types'
+import {
+  TEASER_MIN_LENGTH,
+  TEASER_MAX_LENGTH,
+  DETAIL_TOTAL_MIN_LENGTH,
+  DETAIL_TOTAL_MAX_LENGTH,
+  isValidTeaserLength,
+  isValidImportance,
+} from './summaryValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
 // エージェントが生成する入力の事故を早期に検知するため、ビルド時にここで例外を投げて
-// next buildを失敗させる(article-detail/design.md#エラーハンドリング)
+// next buildを失敗させる(article-detail/design.md#エラーハンドリング)。
+// 要約(固定4観点)・重要度の分量検証そのものはcontent-generation/summaryValidation.tsに
+// 一本化し、ここではフィールドごとの詳細なエラーメッセージ生成に専念する(表記ゆれ防止)
 
 const CATEGORIES: Category[] = ['general', 'business', 'kanagawa', 'childcare']
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const MIN_TOPICS = 1
 const MAX_TOPICS = 7
-
-// 導入文(teaser)の分量検証の範囲。「60〜120字程度」の「程度」を、ai-dev-digestの
-// 要約分量チェック(目安100〜150字に対し±20字の許容幅)と同じ絶対値の許容幅として解釈し、
-// 40〜140字を有効範囲とする(要件は許容幅の数値までは定めていないため設計判断)
-const TEASER_MIN_LENGTH = 40
-const TEASER_MAX_LENGTH = 140
-
-// 詳細文(detail)合計の分量検証の範囲。「1000〜1500字程度」の「程度」を、ai-dev-digestの
-// 要約分量チェックと同じ比率の許容幅(約±20%)として解釈し、800〜1700字を有効範囲とする
-const DETAIL_TOTAL_MIN_LENGTH = 800
-const DETAIL_TOTAL_MAX_LENGTH = 1700
 
 // 固定4観点。この4キー・この順序で固定(content-generation/requirements.md#要約-4)
 const SUMMARY_KEYS = ['whatHappened', 'whyItMatters', 'background', 'outlook'] as const
@@ -41,10 +40,6 @@ function isIsoDateTime(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0 && !Number.isNaN(Date.parse(value))
 }
 
-function isValidImportance(value: unknown): value is Topic['importance'] {
-  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 5
-}
-
 // topics[index].summary.<key>(固定4観点1つ分)を検証・パースする(仕様: design.md「バリデーション」)。
 // heading/teaser/detailが空文字でないこと、teaserがTEASER_MIN_LENGTH〜TEASER_MAX_LENGTHの
 // 範囲内であることを確認する
@@ -56,9 +51,9 @@ function parsePerspective(raw: unknown, index: number, key: string): SummaryPers
   if (!isNonEmptyString(record.heading)) throw new Error(`topics[${index}].summary.${key}.headingが空文字です`)
   if (!isNonEmptyString(record.teaser)) throw new Error(`topics[${index}].summary.${key}.teaserが空文字です`)
   if (!isNonEmptyString(record.detail)) throw new Error(`topics[${index}].summary.${key}.detailが空文字です`)
-  if (record.teaser.length < TEASER_MIN_LENGTH || record.teaser.length > TEASER_MAX_LENGTH) {
+  if (!isValidTeaserLength(record.teaser)) {
     throw new Error(
-      `topics[${index}].summary.${key}.teaserが不正です(40〜140字である必要があります): ${record.teaser.length}字`
+      `topics[${index}].summary.${key}.teaserが不正です(${TEASER_MIN_LENGTH}〜${TEASER_MAX_LENGTH}字である必要があります): ${record.teaser.length}字`
     )
   }
   return { heading: record.heading, teaser: record.teaser, detail: record.detail }
@@ -81,7 +76,7 @@ function parseSummary(raw: unknown, index: number): TopicSummary {
   const totalLength = SUMMARY_KEYS.reduce((sum, key) => sum + summary[key].detail.length, 0)
   if (totalLength < DETAIL_TOTAL_MIN_LENGTH || totalLength > DETAIL_TOTAL_MAX_LENGTH) {
     throw new Error(
-      `topics[${index}].summaryのdetail合計文字数が不正です(800〜1700字である必要があります): ${totalLength}字`
+      `topics[${index}].summaryのdetail合計文字数が不正です(${DETAIL_TOTAL_MIN_LENGTH}〜${DETAIL_TOTAL_MAX_LENGTH}字である必要があります): ${totalLength}字`
     )
   }
   return summary
