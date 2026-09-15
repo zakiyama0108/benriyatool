@@ -7,49 +7,14 @@
 // 実行方法: cd scripts/trend-digest/collect-review-data && npm install && \
 //   SUPABASE_READONLY_DB_URL=xxx npx tsx collectReviewData.ts <YYYY-MM-DD>
 import { config } from 'dotenv'
-import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import pg from 'pg'
-import type { Edition, Genre } from '../../../app/trend-digest/lib/types'
-import { GENRE_ORDER } from '../../../app/trend-digest/lib/types'
-import { parseArticle } from '../../../app/trend-digest/lib/articleSchema'
+import { collectSkippedGenres } from '../../../app/trend-digest/lib/reviewRecords'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // 対話セッション向けの.env.local(docs/adr/0004。CIには含めない)を読み込む
 config({ path: path.join(__dirname, '../../../.env.local') })
-
-// 掲載見送り記録: ある回(記事)でGENRE_ORDER上のジャンルが1つもtopicsに含まれなかったもの
-// (design.md「見直しの材料を集める処理」手順1、content-selection/requirements.md#情報源の健全性監視-1)
-type SkippedGenreRecord = {
-  date: string
-  edition: Edition
-  genre: Genre
-}
-
-// articlesDir配下の記事データのうち、sinceDate以降の日付を対象に、GENRE_ORDER上のジャンルで
-// topicsに現れなかったものを列挙する。記事データがまだ1件もない運用開始直後は空配列を返す
-function collectSkippedGenres(articlesDir: string, sinceDate: string): SkippedGenreRecord[] {
-  if (!fs.existsSync(articlesDir)) return []
-
-  const filenames = fs.readdirSync(articlesDir).filter((name) => name.endsWith('.json'))
-  const records: SkippedGenreRecord[] = []
-
-  for (const filename of filenames) {
-    const raw: unknown = JSON.parse(fs.readFileSync(path.join(articlesDir, filename), 'utf8'))
-    const article = parseArticle(raw, filename)
-    if (article.date < sinceDate) continue
-
-    const coveredGenres = new Set(article.topics.map((topic) => topic.genre))
-    for (const genre of GENRE_ORDER[article.edition]) {
-      if (!coveredGenres.has(genre)) {
-        records.push({ date: article.date, edition: article.edition, genre })
-      }
-    }
-  }
-
-  return records.sort((a, b) => (a.date < b.date ? 1 : -1))
-}
 
 type FeedbackRecord = {
   articleId: string
