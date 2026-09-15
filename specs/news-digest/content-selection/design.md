@@ -51,12 +51,19 @@ export type Criteria = {
 }
 ```
 
-`watchlist.json`はrequirements.md#情報源(固定リスト)-2の11件(総合3・経済/ビジネス3・神奈川ローカル2・育児3)をそのまま構造化する。各情報源の実際のRSSフィードURL・公開ページURLは、tasks.mdの実装タスクで運営者と確認しながら確定する(設計時点では未確認のURLを推測で埋めない)。
+`watchlist.json`はrequirements.md#情報源(固定リスト)-2の10件(総合3・経済/ビジネス2・神奈川ローカル2・育児3)をそのまま構造化する。各情報源の実際のRSSフィードURL・公開ページURLは、tasks.mdの実装タスクで運営者と確認しながら確定する(設計時点では未確認のURLを推測で埋めない)。
+
+情報源ごとの取得経路(`channels`)は、各サイトのrobots.txtの実機確認結果に基づき次のとおりとする(requirements.md#情報源(固定リスト)-2の注記):
+- NHK NEWS WEB・時事通信・日本経済新聞(電子版)・神奈川県公式サイト・こども家庭庁・厚生労働省・NHK生活情報は、各社の公式RSSまたは公開ページを直接取得する(`type: 'rss'`または`type: 'official-page'`)
+- 共同通信・東洋経済オンライン・神奈川新聞(カナロコ)は、各社サイト自体がrobots.txtで直接アクセスを禁止している(または生成AIクローラーを名指しでブロックしている)ため、直接サイトへの`official-page`取得はせず、Yahoo!ニュースが公式配信する媒体別RSSフィード(`type: 'rss'`)から取得する
+  - 共同通信: `https://news.yahoo.co.jp/rss/media/kyodonews/all.xml`
+  - 東洋経済オンライン: `https://news.yahoo.co.jp/rss/media/toyo/all.xml`
+  - 神奈川新聞(カナロコ): `https://news.yahoo.co.jp/rss/media/kana/all.xml`
 
 ## 処理フロー
 
 ### 情報源から候補を収集する処理(決定的なコード)
-- 対象: `watchlist.json`に登録された11件の情報源
+- 対象: `watchlist.json`に登録された10件の情報源
 - 手順:
   1. 公式RSSフィードを持つ情報源はフィードを取得し、直近1週間以内に公開された記事を候補として抽出する(requirements.md#データ取得方法-1)
   2. 公式RSSがない情報源(神奈川県公式サイトのお知らせ等)は、公開ページを取得し、直近1週間以内の新着項目を候補として抽出する

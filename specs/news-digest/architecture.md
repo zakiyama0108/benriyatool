@@ -121,7 +121,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 8. 機能マップ
 | spec | 役割 | 状態 | 依存 |
 |---|---|---|---|
-| [content-selection](content-selection/requirements.md) | カテゴリ・情報源(固定リスト)を定義し、週次のトピックを選び出す。神奈川ローカル・育児は専用枠として基準未達でも拾う | 仕様のみ(未実装) | 週次の実行タイミングは[weekly-publish/requirements.md](weekly-publish/requirements.md)に従う |
+| [content-selection](content-selection/requirements.md) | カテゴリ・情報源(固定リスト)を定義し、週次のトピックを選び出す。神奈川ローカル・育児は専用枠として基準未達でも拾う | リリース済み | 週次の実行タイミングは[weekly-publish/requirements.md](weekly-publish/requirements.md)に従う |
 | [content-generation](content-generation/requirements.md) | 選定されたトピックの要約・記事執筆のルールを定める | 仕様のみ(未実装) | content-selectionの選定結果を受け取る |
 | [weekly-publish](weekly-publish/requirements.md) | 収集・要約・記事公開を週1回(毎週水曜)自動実行し、完全自動マージする | 仕様のみ(未実装) | content-selection・content-generationの結果を公開する |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの週次記事PRがmainへ自動マージされた直後に、新着記事をLINE公式アカウント(ai-dev-digest・trend-digestと共通)の友だち全員へ自動配信する | 仕様のみ(未実装) | weekly-publishのマージタイミング、article-detailの記事データ構造に従う |
@@ -177,7 +177,8 @@ content/news-digest/criteria.json         # 採用基準の数値(monthly-review
 | Supabase(`news_digest_feedback`テーブル) | 運営者フィードバックの保存 |
 | Supabase(`news_digest_bookmarks`テーブル) | ログイン中の読者本人の付箋(自由記述メモ)の保存 |
 | Supabase Auth(Google OIDC) | 記事詳細ページ・付箋一覧ページのログイン(読者全員が対象)。フィードバック入力欄の表示切り替え(運営者判定)にも利用 |
-| NHK NEWS WEB・共同通信・時事通信・日本経済新聞・Reuters Japan・東洋経済オンライン・神奈川県公式サイト・神奈川新聞・こども家庭庁・厚生労働省 | 各カテゴリの固定情報源データの取得([content-selection/requirements.md#情報源(固定リスト)](content-selection/requirements.md)) |
+| NHK NEWS WEB・共同通信・時事通信・日本経済新聞・東洋経済オンライン・神奈川県公式サイト・神奈川新聞・こども家庭庁・厚生労働省 | 各カテゴリの固定情報源データの取得([content-selection/requirements.md#情報源(固定リスト)](content-selection/requirements.md)) |
+| Yahoo!ニュース(媒体別RSS) | 共同通信・東洋経済オンライン・神奈川新聞(カナロコ)の記事取得(各社サイトのrobots.txtが直接アクセスを禁止しているため、Yahoo!ニュースが公式配信するRSS経由で取得する。[content-selection/design.md](content-selection/design.md)) |
 | WebSearch(Claude Code CLI) | 重要度判定・見落とし補完のための探索的収集(基本無料方針のため、有料の検索APIは利用しない) |
 | GitHub Actions | 記事生成([weekly-publish](weekly-publish/requirements.md))・見直し提案([monthly-review](monthly-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む) |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | weekly-publishの要約生成、monthly-reviewの見直し案検討に、いずれもヘッドレス起動で使用 |

@@ -4,7 +4,7 @@
 
 - Task 1: 情報源・採用基準データの作成(仕様: requirements.md#情報源(固定リスト)-2、requirements.md#採用基準)
   - `app/news-digest/lib/watchlistTypes.ts`に型を定義する(TDD対象外。型定義のみのため)
-  - `content/news-digest/watchlist.json`にrequirements.md#情報源(固定リスト)-2の表と完全一致する11件を作成する(各情報源の実際のRSSフィードURル・公開ページURLは実装時に公式サイトで確認して設定する)
+  - `content/news-digest/watchlist.json`にrequirements.md#情報源(固定リスト)-2の表と完全一致する10件を作成する(各情報源の実際のRSSフィードURル・公開ページURLは実装時に公式サイトで確認して設定する。共同通信・東洋経済オンライン・神奈川新聞はrobots.txtの実機確認結果に基づきYahoo!ニュース公式RSS経由とする。design.md参照)
   - `content/news-digest/criteria.json`にdesign.mdの初期値(`weeklyTopicCountMax`・`minCorroboratingSources`)を設定する
 
 - Task 2: 候補・選定結果の型定義(仕様: design.md「データ設計」)
