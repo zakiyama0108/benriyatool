@@ -4,7 +4,7 @@ import HubPage from '../app/page'
 
 // 仕様: specs/hub-site/requirements.md#機能要件-2、specs/board-game-rules/game-list/requirements.md#メタ情報-11、specs/board-game-rules/game-list/design.md#トップページ掲載(hub-site)
 describe('【トップページ】ツールカード一覧 - 本番公開済みの全アプリへのリンクを掲載する', () => {
-  it('育休給付金シミュレーター(/ikukyu)・資産推移シミュレーター(/life-money-sim)・AI駆動開発ダイジェスト(/ai-dev-digest)・ボドゲのトリセツ(/board-game-rules)・曲名からプレイリスト作成(/spotify-playlist)、すべてのカードが表示されること', () => {
+  it('育休給付金シミュレーター(/ikukyu)・資産推移シミュレーター(/life-money-sim)・AI駆動開発ダイジェスト(/ai-dev-digest)・ボドゲのトリセツ(/board-game-rules)・曲名からプレイリスト作成(/spotify-playlist)・重要ニュースダイジェスト(/news-digest)、すべてのカードが表示されること', () => {
     render(<HubPage />)
 
     const ikukyuLink = screen.getByRole('link', { name: /育休給付金シミュレーター/ })
@@ -21,6 +21,9 @@ describe('【トップページ】ツールカード一覧 - 本番公開済み�
 
     const spotifyPlaylistLink = screen.getByRole('link', { name: /曲名からプレイリスト作成/ })
     expect(spotifyPlaylistLink.getAttribute('href')).toBe('/spotify-playlist')
+
+    const newsDigestLink = screen.getByRole('link', { name: /重要ニュースダイジェスト/ })
+    expect(newsDigestLink.getAttribute('href')).toBe('/news-digest')
   })
 })
 
