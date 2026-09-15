@@ -85,7 +85,7 @@ describe('トピック表示 - 重要度(★1〜★5)を見出しの近くに表
   })
 })
 
-// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-3
+// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-3、specs/news-digest/content-generation/requirements.md#要約-1
 describe('トピック表示 - 固定4観点(何が起きたか→なぜ重要か→背景→今後の見通し)の見出しと導入文をこの順序で常時表示する', () => {
   it('4観点の見出し・導入文がこの順序で常時表示されること', () => {
     const { container } = render(<TopicSection topic={makeTopic()} {...noop} />)
@@ -98,7 +98,7 @@ describe('トピック表示 - 固定4観点(何が起きたか→なぜ重要�
   })
 })
 
-// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-4
+// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-4、specs/news-digest/content-generation/requirements.md#要約-1
 describe('トピック表示 - 各観点の詳細文はHTML標準の<details>要素で展開表示する', () => {
   it('4観点分の<details>要素が初期状態で閉じており、各観点の詳細文を含んでいること', () => {
     const { container } = render(<TopicSection topic={makeTopic()} {...noop} />)

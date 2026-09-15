@@ -39,7 +39,7 @@ function validArticle(overrides: Record<string, unknown> = {}) {
   }
 }
 
-// 仕様: specs/news-digest/article-detail/design.md#バリデーション
+// 仕様: specs/news-digest/article-detail/design.md#バリデーション、specs/news-digest/content-generation/requirements.md#記事の構成-10
 describe('記事データのスキーマ検証 - ビルド時にJSONの構造・内容を検証し、不正なデータでビルドを失敗させる', () => {
   it('1件のみのトピックを含む正常な記事データは検証を通ること', () => {
     const article = parseArticle(validArticle(), '2026-09-09.json')

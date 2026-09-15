@@ -6038,5 +6038,135 @@
     "specFile": "news-digest/content-selection/design.md",
     "item": "ログ",
     "reason": "収集・選定結果を標準出力・標準エラー出力に記録するCLI(scripts/news-digest/collect-and-select.ts)の説明で、TDD対象外の薄いラッパー(tasks.md Task7)のため。個別のログ内容はfetchCandidates.test.tsのbuildSourceHealthLogLinesでテスト済み"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機とユースケース図省略の理由(アクターが運営者ひとり・単一の自動処理フローのため)を示す見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "要約 [5]",
+    "reason": "原文の構成・段落分けをなぞらず独自の視点で再構成し、原文の詳細な展開・結論・数値を網羅的に転記しないという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。分量の上下限のみコードで強制する)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "要約 [6]",
+    "reason": "各観点・トピック全体の見出しをテーマ名でなく結論・要点を含む一文にするという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "要約 [7]",
+    "reason": "固定4観点それぞれの内容(何を書くか)を定義する執筆内容の要件で、コードで自動検証できないため(4キーの存在・分量はisValidSummaryDetailLengthでテスト済み。design.mdのエラーハンドリング参照)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "重要度 [9]",
+    "reason": "★1〜★5それぞれの判断基準を定義する執筆内容の要件で、コードで自動検証できないため(1〜5の整数であることはisValidImportanceでテスト済み)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [1]",
+    "reason": "著作権法上のリスクの法的根拠を説明する記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [2]",
+    "reason": "機能要件#要約-2〜5と同一の制約を根拠とともに明記した記述で、要約-2〜5と同じ理由により具体的な検証はsummaryValidation.test.tsで担保するため、この項目自体は追加のテスト対象を持たない"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [3]",
+    "reason": "出典明記の要件で、具体的な検証はarticleSchema.test.ts(sourceName/sourceUrlの必須化)で担保するため、この項目自体は追加のテスト対象を持たない"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "著作権への配慮(根拠) [4]",
+    "reason": "一般ニュースへの配慮の重要性を説明する記述で、緩和策そのものは著作権への配慮[2][3]と同一のため、この項目自体は追加のテスト対象を持たない"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "利用規約への反映 [5]",
+    "reason": "TDD対象外の静的な文言追加のみのため(tasks.md Task6)。反映内容はspecs/legal/requirements.md・app/legal/page.tsxへの追記で担保する"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "エージェントの逸脱防止 [6]",
+    "reason": "エージェントに適用するガードレール文言の記述で、コードとして実装・テストしないため(weekly-publishの実行指示に含める運用上の対応。scripts/news-digest/generate-content.tsにガードレール文言をそのまま転記している)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "エージェントの逸脱防止 [7]",
+    "reason": "記事内に明記されている情報を根拠とし推測で断定しない(whyItMatters/outlookの推測は許容する)という執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "news-digest/content-generation/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/design.md",
+    "item": "設計の前提(エージェントの推論とコードの役割分担)",
+    "reason": "エージェントとコードの役割分担の方針説明で、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/design.md",
+    "item": "要約を書く処理(エージェントの推論)",
+    "reason": "エージェント(GitHub Actionsから呼び出すClaude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証以外はコードとして実装・テストしないため(分量検証はsummaryValidation.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "news-digest/content-generation/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/design.md",
+    "item": "セキュリティ",
+    "reason": "要約・見出しの表示はReactの標準エスケープに委ね、著作権リスク対応(文字数上限・出典明記・利用規約)は個別にテスト済みのため、この見出し自体は追加のテスト対象を持たない"
+  },
+  {
+    "specFile": "news-digest/content-generation/design.md",
+    "item": "ログ",
+    "reason": "要約の生成過程はアプリのログ設計対象外という方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "news-digest/content-generation/design.md",
+    "item": "利用規約への反映",
+    "reason": "requirements.mdの条項文言をそのまま転記した見出しで、実際の反映はapp/legal/page.tsx・specs/legal/requirements.mdへの追記(TDD対象外、tasks.md Task6)で担保するため"
   }
 ]
