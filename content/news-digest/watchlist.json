@@ -12,7 +12,7 @@
     "id": "kyodo-news",
     "category": "general",
     "name": "共同通信",
-    "channels": [{ "type": "official-page", "url": "https://www.47news.jp/" }]
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/kyodonews/all.xml" }]
   },
   {
     "id": "jiji-press",
@@ -27,16 +27,10 @@
     "channels": [{ "type": "official-page", "url": "https://www.nikkei.com/" }]
   },
   {
-    "id": "reuters-japan-business",
-    "category": "business",
-    "name": "Reuters Japan(ビジネス)",
-    "channels": [{ "type": "official-page", "url": "https://jp.reuters.com/business/" }]
-  },
-  {
     "id": "toyokeizai",
     "category": "business",
     "name": "東洋経済オンライン",
-    "channels": [{ "type": "official-page", "url": "https://toyokeizai.net/" }]
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/toyo/all.xml" }]
   },
   {
     "id": "kanagawa-pref",
@@ -48,7 +42,7 @@
     "id": "kanaloco",
     "category": "kanagawa",
     "name": "神奈川新聞(カナロコ)",
-    "channels": [{ "type": "official-page", "url": "https://www.kanaloco.jp/" }]
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/kana/all.xml" }]
   },
   {
     "id": "cfa",

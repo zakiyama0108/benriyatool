@@ -177,7 +177,8 @@ content/news-digest/criteria.json         # 採用基準の数値(monthly-review
 | Supabase(`news_digest_feedback`テーブル) | 運営者フィードバックの保存 |
 | Supabase(`news_digest_bookmarks`テーブル) | ログイン中の読者本人の付箋(自由記述メモ)の保存 |
 | Supabase Auth(Google OIDC) | 記事詳細ページ・付箋一覧ページのログイン(読者全員が対象)。フィードバック入力欄の表示切り替え(運営者判定)にも利用 |
-| NHK NEWS WEB・共同通信・時事通信・日本経済新聞・Reuters Japan・東洋経済オンライン・神奈川県公式サイト・神奈川新聞・こども家庭庁・厚生労働省 | 各カテゴリの固定情報源データの取得([content-selection/requirements.md#情報源(固定リスト)](content-selection/requirements.md)) |
+| NHK NEWS WEB・共同通信・時事通信・日本経済新聞・東洋経済オンライン・神奈川県公式サイト・神奈川新聞・こども家庭庁・厚生労働省 | 各カテゴリの固定情報源データの取得([content-selection/requirements.md#情報源(固定リスト)](content-selection/requirements.md)) |
+| Yahoo!ニュース(媒体別RSS) | 共同通信・東洋経済オンライン・神奈川新聞(カナロコ)の記事取得(各社サイトのrobots.txtが直接アクセスを禁止しているため、Yahoo!ニュースが公式配信するRSS経由で取得する。[content-selection/design.md](content-selection/design.md)) |
 | WebSearch(Claude Code CLI) | 重要度判定・見落とし補完のための探索的収集(基本無料方針のため、有料の検索APIは利用しない) |
 | GitHub Actions | 記事生成([weekly-publish](weekly-publish/requirements.md))・見直し提案([monthly-review](monthly-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む) |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | weekly-publishの要約生成、monthly-reviewの見直し案検討に、いずれもヘッドレス起動で使用 |
