@@ -13,6 +13,7 @@
 | Spotifyプレイリスト作成 | `/spotify-playlist` | 曲名を入力するだけで、自分のSpotifyアカウントにプレイリストを作成する | [architecture.md](specs/spotify-playlist/architecture.md) |
 | 重要ニュースダイジェスト | `/news-digest` | 総合・経済/ビジネス・神奈川ローカル・育児の重要ニュースを毎週自動収集・要約し、ダイジェスト記事として公開する | [architecture.md](specs/news-digest/architecture.md) |
 | 週刊トレンド | `/trend-digest` | 音楽・映画・グルメなど様々なジャンルの流行を週2回自動収集・要約し、ダイジェスト記事として公開する | [architecture.md](specs/trend-digest/architecture.md) |
+| 画像で覚えるTOEIC英単語 e-tango | `/e-tango` | イラストと例文でTOEIC頻出単語を4択学習し、間隔反復(SRS)で記憶に定着させる | [architecture.md](specs/e-tango/architecture.md) |
 
 アプリごとの詳細(設計方針・システム構成・機能マップ)は各 `specs/<アプリ名>/architecture.md` を参照。新規アプリを追加したらこの表に1行追加する。
 
