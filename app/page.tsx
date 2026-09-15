@@ -95,6 +95,21 @@ export default function HubPage() {
         </Link>
         {/* 仕様: specs/hub-site/requirements.md#機能要件-2 */}
         <Link
+          href="/trend-digest"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">📈</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">週刊トレンド</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                様々なジャンルの『最近の流行』を週2回自動収集してお届け
+              </p>
+            </div>
+          </div>
+        </Link>
+        {/* 仕様: specs/hub-site/requirements.md#機能要件-2 */}
+        <Link
           href="/news-digest"
           className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
         >

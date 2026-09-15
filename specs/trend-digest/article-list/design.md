@@ -32,7 +32,7 @@ app/trend-digest/components/EditionBadge.tsx (新規: 「エンタメ」/「カ�
 app/trend-digest/components/Pagination.tsx (新規)
 app/trend-digest/page.tsx (新規: 一覧ページ1ページ目)
 app/trend-digest/page/[page]/page.tsx (新規: 2ページ目以降。generateStaticParamsで総ページ数分を列挙)
-app/trend-digest/layout.tsx (新規: title/description。page.tsxが'use client'のため親のlayoutで持つ)
+app/trend-digest/layout.tsx (新規: title/description。page.tsxはgetAllArticles()のfsアクセスを行うサーバーコンポーネントのままにする必要があり、metadata exportと役割を分けるため親のlayoutで持つ)
 ```
 
 ## エラーハンドリング
