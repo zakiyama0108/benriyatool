@@ -1,0 +1,84 @@
+# 週刊トレンドダイジェストのLINE公式アカウント新着記事自動配信ワークフロー
+# (仕様: specs/trend-digest/line-broadcast/design.md「実行環境の前提」「配信タイミングを
+# トリガーする処理」「LINEブロードキャストメッセージを送信する処理」)
+#
+# weekly-publish(trend-digest-weekly.yml)のPRがmainへ自動マージされた結果として発生する
+# pushをそのまま起動条件にする(auto-mergeのタイミングはpublishジョブの実行中には確定しない
+# ため、publishジョブの内部からは待ち受けられない。design.md「実行環境の前提」参照)。
+# 新規追加(Added)された記事ファイルのみを配信対象とし、既存記事の内容変更では配信しない
+# (過去記事の再配信防止。requirements.md#配信タイミング・方式-6)。
+#
+# ai-dev-digest-line-broadcast.ymlと同じ実装パターンで、同じLINE公式アカウント・
+# チャネルアクセストークン(LINE_CHANNEL_ACCESS_TOKEN)に相乗りする(新規Secretは作らない。
+# design.md「実行環境の前提」)
+name: 週刊トレンドダイジェスト LINE配信
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/trend-digest/articles/*.json'
+  workflow_dispatch: # Secrets設定後・トラブル時の動作確認用に手動実行できるようにする
+    inputs:
+      id:
+        description: '配信対象の記事ID(<date>-<edition>形式。例: 2026-09-15-entertainment)'
+        required: true
+
+jobs:
+  broadcast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # push直前のコミット(github.event.before)との差分を取るため、履歴全体を取得する
+          # (浅いcloneだとevent.beforeのコミットがローカルに存在せずdiffが失敗するため)
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # 他ワークフローと同じバージョンに揃える
+          cache: 'npm'
+
+      - run: npm ci
+
+      # 配信対象IDを判定する(design.md「配信タイミングをトリガーする処理」手順2〜4)。
+      # workflow_dispatchは入力されたIDをそのまま使い、pushイベントはgit diffで新規追加
+      # (Added)された記事ファイルのみを対象にする(既存ファイルの変更(Modified)は対象外)
+      - name: 配信対象IDを判定
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ids="${{ inputs.id }}"
+          else
+            added=$(git diff --name-status "${{ github.event.before }}" "${{ github.sha }}" -- 'content/trend-digest/articles/*.json' | awk '$1 == "A" {print $2}')
+            if [ -z "$added" ]; then
+              echo "新規追加された記事ファイルがないため、配信をスキップします"
+              ids=""
+            else
+              ids=$(echo "$added" | xargs -n1 basename | sed 's/\.json$//' | tr '\n' ' ')
+            fi
+          fi
+          echo "ids=$ids" >> "$GITHUB_OUTPUT"
+
+      # design.md「配信タイミングをトリガーする処理」手順4は「複数件見つかった場合も同様に
+      # それぞれのIDに対して以降の処理を順に行う」と定めており、1件の失敗が他のIDの処理を
+      # 止めてはならない。`run:`はデフォルトで`bash -eo pipefail`実行のため、`if !`で
+      # 各コマンドの終了コードを個別に受け止めて-eによる即終了を避け、ループ完了後にまとめて
+      # ステップを失敗させる(エラーハンドリング「LINE配信APIがエラーを返した場合…ステップを
+      # 失敗として終了する」は満たしつつ、他のIDへの配信は継続する)
+      - name: LINEへ配信
+        if: steps.target.outputs.ids != ''
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+        run: |
+          failed=0
+          for id in ${{ steps.target.outputs.ids }}; do
+            echo "配信します: $id"
+            if ! npx tsx scripts/trend-digest/broadcast-line.ts "content/trend-digest/articles/${id}.json"; then
+              echo "::error::${id}の配信に失敗しました"
+              failed=1
+            fi
+          done
+          if [ "$failed" -eq 1 ]; then
+            exit 1
+          fi

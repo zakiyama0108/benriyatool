@@ -30,9 +30,9 @@ const eslintConfig = defineConfig([
   },
   {
     // scripts/配下はCLI実行が前提のNodeスクリプトのため、console出力を許可する
-    // (ai-dev-digest・news-digestの収集・公開スクリプトは実行ログとして
+    // (ai-dev-digest・news-digest・trend-digestの収集・公開スクリプトは実行ログとして
     // console出力を使う設計のため、.tsも対象に含める。design.md「ログ」参照)
-    files: ["scripts/**/*.mjs", "scripts/ai-dev-digest/**/*.ts", "scripts/news-digest/**/*.ts"],
+    files: ["scripts/**/*.mjs", "scripts/ai-dev-digest/**/*.ts", "scripts/news-digest/**/*.ts", "scripts/trend-digest/**/*.ts"],
     rules: {
       "no-console": "off",
     },
@@ -49,9 +49,11 @@ const eslintConfig = defineConfig([
     // Skill用のエージェントツール(run-benriyatoolのドライバ等)。アプリのコード規約(no-console等)の対象外
     ".claude/**",
     // 独立した依存関係(pg/dotenv/@supabase/supabase-js)を持つ隔離パッケージのため、本体のtsconfigプロジェクトに含めない
-    // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」、specs/board-game-rules/admin/tasks.md T8)
+    // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」、specs/board-game-rules/admin/tasks.md T8、
+    // specs/trend-digest/source-review/design.md「関連するファイル」)
     "scripts/ai-dev-digest/collect-review-data/**",
     "scripts/board-game-rules/**",
+    "scripts/trend-digest/collect-review-data/**",
   ]),
 ]);
 

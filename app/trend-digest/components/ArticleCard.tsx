@@ -1,0 +1,41 @@
+import Link from 'next/link'
+import type { Edition } from '../lib/types'
+import { buildArticleTitle } from '../lib/articleTitle'
+import EditionBadge from './EditionBadge'
+
+type Props = {
+  id: string
+  edition: Edition
+  date: string
+  topicHeadings: string[] // 最大3件(design.md「カードに表示するトピック見出しを選ぶ処理」)
+  totalTopicCount: number
+}
+
+const MAX_HEADINGS = 3
+
+// 1記事分のカード表示(仕様: requirements.md#一覧表示-1〜2、requirements.md#ビジネスルール・
+// 制約-1、design.md「カードに表示するトピック見出しを選ぶ処理」)。
+// 一覧専用の別要約は作らず、詳細ページと同じ見出し文字列をそのまま最大3件まで見せる
+export default function ArticleCard({ id, edition, date, topicHeadings, totalTopicCount }: Props) {
+  const shownHeadings = topicHeadings.slice(0, MAX_HEADINGS)
+  const remainingCount = totalTopicCount - shownHeadings.length
+
+  return (
+    <Link
+      href={`/trend-digest/${id}`}
+      className="block rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5"
+    >
+      <div className="flex items-center gap-2">
+        <EditionBadge edition={edition} />
+        <p className="text-xs text-gray-400">{date}</p>
+      </div>
+      <h2 className="mt-1 text-base font-bold leading-relaxed text-amber-700">{buildArticleTitle(edition, date)}</h2>
+      <ul className="mt-2 space-y-1 text-sm leading-relaxed text-gray-700">
+        {shownHeadings.map((heading) => (
+          <li key={heading}>{`・${heading}`}</li>
+        ))}
+      </ul>
+      {remainingCount > 0 && <p className="mt-2 text-xs text-gray-400">{`他${remainingCount}件`}</p>}
+    </Link>
+  )
+}

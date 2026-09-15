@@ -1,7 +1,5 @@
 # 要件定義: 月次見直し(情報源・採用基準・生成ルール)
 
-> ステータス: 仕様確認中(未実装)
-
 ## サマリ
 蓄積された運営者フィードバックと収集ログ・掲載実績をもとに、ジャンル別の情報源・採用基準([content-selection](../content-selection/requirements.md))と要約ルール([content-generation](../content-generation/requirements.md))を、人の承認を得た上で月1回更新する。ai-dev-digestのwatchlist-reviewと同じ運用パターンを踏襲する。
 
