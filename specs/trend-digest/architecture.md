@@ -117,7 +117,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの記事PRがmainへ自動マージされた直後に、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング([weekly-publish/requirements.md](weekly-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))に従う | 実装中 |
 | [article-list](article-list/requirements.md) | エンタメ編・カルチャー編の記事を時系列1本のフィードでバッジ表示する | article-detailの記事構造を参照([article-detail/requirements.md](article-detail/requirements.md)) | 実装中 |
 | [article-detail](article-detail/requirements.md) | 記事本文(ジャンル見出しごとのトピック・要約・出典)と、運営者本人向けフィードバック入力欄を表示する | content-selectionの選定結果、content-generationの生成ルールに従う | 実装中 |
-| [source-review](source-review/requirements.md) | 月次で情報源・採用基準の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック、content-selectionの掲載実績・収集ログを参照する | 仕様のみ(未実装) |
+| [source-review](source-review/requirements.md) | 月次で情報源・採用基準の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック、content-selectionの掲載実績・収集ログを参照する | 実装中 |
 
 ## 8. コンポーネント図
 ```mermaid
