@@ -15,7 +15,7 @@
 
 - Task 4: 生成結果の利用可否判定(仕様: design.md「エラーハンドリング」)
   - 🔴 `summary`が`null`、または分量検証(Task 2)に失敗する場合は利用不可と判定すること、すべて満たす場合は利用可と判定することを確認するテストを書く
-  - 🟢 `app/news-digest/lib/generateContent.ts`に`isUsableContent(response, criteria)`を実装する
+  - 🟢 `app/news-digest/lib/generateContent.ts`に`isUsableContent(response: unknown)`を実装する
 
 - Task 5: 要約生成CLI(仕様: design.md「処理フロー」応答JSON形式、design.md「関連するファイル」)
   - TDD対象外(Claude Code CLIのヘッドレス起動・プロンプト組み立てのオーケストレーションのため。ロジック自体はTask 2・4でテスト済み)
