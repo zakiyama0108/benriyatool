@@ -24,7 +24,7 @@ afterEach(() => {
 })
 
 // 仕様: specs/news-digest/weekly-publish/design.md#エラーハンドリング、specs/news-digest/weekly-publish/requirements.md#掲載件数の保証-2
-describe('Claude Code CLI呼び出し(callClaudeCode) - CLIプロセスの起動失敗とstdoutのJSON.parse失敗を区別すること', () => {
+describe('Claude Code CLI呼び出し - CLIプロセスの起動失敗とstdoutのJSON.parse失敗を区別すること', () => {
   it('CLIプロセスが正常終了しstdoutが有効なJSONのとき、resultを返すこと', async () => {
     execFileMock.mockImplementation((..._args: unknown[]) => {
       const callback = _args[_args.length - 1] as ExecFileCallback
