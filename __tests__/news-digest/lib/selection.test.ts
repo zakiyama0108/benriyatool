@@ -135,6 +135,7 @@ describe('神奈川ローカル・育児の専用枠 - エージェントが選�
   })
 })
 
+// 仕様: specs/news-digest/weekly-publish/requirements.md#掲載件数の保証-1
 describe('全カテゴリが掲載なしの週の扱い - 候補不足によりスキップされること', () => {
   it('全カテゴリで採用できる候補が1件もない場合、status: skippedが返ること', () => {
     const result = selectWeeklyTopics([], criteria)
