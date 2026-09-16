@@ -1,6 +1,8 @@
 // 要約生成CLI(仕様: content-generation/design.md「要約を書く処理」、weekly-publish/design.md
-// 「1週分の記事を生成する処理」手順4)。TDD対象外(Claude Code CLIのヘッドレス起動を伴い、
-// プロンプト組み立て自体に検証可能な決定的ロジックがないため。生成結果の利用可否判定は
+// 「1週分の記事を生成する処理」手順4)。プロンプト組み立て自体は検証可能な決定的ロジックがないためTDD
+// 対象外だが、Claude Code CLI起動の成否(execFileAsync)と応答stdoutのJSON.parse成否を区別する
+// callClaudeCodeのエラー分類は決定的ロジックのため__tests__/news-digest/scripts/generate-content.test.ts
+// でexecFileをモックして検証する(implementation-reviewの指摘対応)。生成結果の利用可否判定は
 // app/news-digest/lib/generateContent.tsに切り出し、__tests__/news-digest/lib/generateContent.test.ts
 // で検証済み。content-generation/tasks.md Task5)。
 //
@@ -20,6 +22,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
+import { pathToFileURL } from 'node:url'
 import { isUsableContent, isQuotaExhaustionError, type GeneratedContent } from '../../app/news-digest/lib/generateContent'
 import type { SelectedTopic, SelectionResult } from '../../app/news-digest/lib/candidateTypes'
 
@@ -67,16 +70,22 @@ WebFetch/WebSearchツールで元URLの内容を把握したうえで、次のJS
 // Claude Code CLIを非対話モード(-p)で1回呼び出し、応答テキスト(result)を返す。
 // 起動自体に失敗した場合も例外を投げず空文字を返し、呼び出し元がリトライ判断に回す。
 // ただし利用枠枯渇を示すエラー(rate_limit/session limit/usage limit/429のいずれか)を検知した場合は、
-// リトライしても回復しないためQuotaExhaustedErrorを投げて即座に打ち切る(design.md「エラーハンドリング」)
-async function callClaudeCode(prompt: string): Promise<string> {
+// リトライしても回復しないためQuotaExhaustedErrorを投げて即座に打ち切る(design.md「エラーハンドリング」)。
+//
+// execFileAsync(CLIプロセス起動自体)の失敗と、起動には成功したstdoutのJSON.parse失敗は別のtry/catchで
+// 扱う。後者(JSON.parse失敗)はCLIプロセスが正常終了しているため利用枠枯渇ではあり得ず、単純な応答不正
+// (SyntaxError)として起動失敗と同じフォールバックに倒す。両者を同じcatchにまとめてしまうと、
+// SyntaxErrorのメッセージに含まれる位置番号(例:「position 429」)がisQuotaExhaustionErrorの
+// 「429」パターンと部分一致し、1候補だけの単純な失敗(exit 1)を利用枠枯渇(exit 2、週全体を打ち切り)と
+// 誤判定してしまう
+export async function callClaudeCode(prompt: string): Promise<string> {
+  let stdout: string
   try {
-    const { stdout } = await execFileAsync(
+    ;({ stdout } = await execFileAsync(
       'claude',
       ['-p', prompt, '--output-format', 'json', '--dangerously-skip-permissions'],
       { maxBuffer: 1024 * 1024 * 32 }
-    )
-    const parsed = JSON.parse(stdout) as { result?: string }
-    return parsed.result ?? ''
+    ))
   } catch (error) {
     const execError = error as { stdout?: string; stderr?: string; message?: string }
     const combinedText = [execError.stdout, execError.stderr, execError.message].filter(Boolean).join('\n')
@@ -88,9 +97,18 @@ async function callClaudeCode(prompt: string): Promise<string> {
         const parsed = JSON.parse(execError.stdout) as { result?: string }
         return parsed.result ?? ''
       } catch {
-        // stdoutがJSONでない場合は下のフォールバックに回す
+        // stdoutがJSONでない場合は下のフォールバックに回す(利用枠枯渇判定は上ですでに済んでいる)
       }
     }
+    console.error(`Claude Code CLIの起動に失敗しました: ${(error as Error).message}`)
+    return ''
+  }
+
+  try {
+    const parsed = JSON.parse(stdout) as { result?: string }
+    return parsed.result ?? ''
+  } catch (error) {
+    // execFileAsync自体は成功している(CLIプロセスは正常終了している)ため、利用枠枯渇の判定対象にはしない
     console.error(`Claude Code CLIの起動に失敗しました: ${(error as Error).message}`)
     return ''
   }
@@ -182,7 +200,12 @@ async function main() {
   process.stdout.write(JSON.stringify(content, null, 2) + '\n')
 }
 
-main().catch((error: unknown) => {
-  console.error(error)
-  process.exit(1)
-})
+// CLIとして直接実行された場合のみmain()を起動する(テストからcallClaudeCodeをimportした際に
+// CLI(process.exit等)が動いてしまわないようにするガード)
+const isMainModule = process.argv[1] != null && import.meta.url === pathToFileURL(process.argv[1]).href
+if (isMainModule) {
+  main().catch((error: unknown) => {
+    console.error(error)
+    process.exit(1)
+  })
+}
