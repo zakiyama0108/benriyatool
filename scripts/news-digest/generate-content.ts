@@ -7,8 +7,11 @@
 // collect-and-select.tsが出力した選定結果(selection.json)から候補を1件(candidateIndex)だけ取り出し、
 // content-generation/requirements.md・design.mdのルールをそのままプロンプトに含めてClaude Code CLI
 // (`claude -p`)をヘッドレス起動し、日本語の見出し・固定4観点の要約・重要度を生成する。
-// weekly-publish(TDD対象外、本specの管轄外)が候補ごとにこのスクリプトを繰り返し起動し、1候補の
-// 失敗は除外して残りの候補で記事を組み立てる想定(weekly-publish/design.md「エラーハンドリング」)。
+// weekly-publish(TDD対象外、本specの管轄外)が候補ごとにこのスクリプトを繰り返し起動する。終了コードで
+// 失敗理由を区別する: 1候補だけの単純な失敗(JSON不正等、リトライしても回復しうる)はexit 1で返し、
+// 呼び出し元はその候補を除外して次の候補に進む。利用枠の枯渇(リトライしても回復しない)はexit 2で返し、
+// 呼び出し元はその週の実行全体を打ち切る(weekly-publish/design.md「エラーハンドリング」、
+// requirements.md#掲載件数の保証-2)。
 // 認証はAnthropic APIの従量課金ではなく運営者個人のClaude Code Pro/Maxサブスクリプション
 // (CLAUDE_CODE_OAUTH_TOKEN)を使う(weekly-publish/design.md「実行環境の前提」)。
 //
@@ -17,10 +20,14 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { isUsableContent, type GeneratedContent } from '../../app/news-digest/lib/generateContent'
+import { isUsableContent, isQuotaExhaustionError, type GeneratedContent } from '../../app/news-digest/lib/generateContent'
 import type { SelectedTopic, SelectionResult } from '../../app/news-digest/lib/candidateTypes'
 
 const execFileAsync = promisify(execFile)
+
+// 利用枠の枯渇を検知したことを表す例外(1候補だけの単純な失敗(exit 1)とは区別し、
+// mainがexit 2で即座に打ち切る。weekly-publish/design.md「エラーハンドリング」参照)
+class QuotaExhaustedError extends Error {}
 
 const REQUIREMENTS_PATH = path.join(process.cwd(), 'specs/news-digest/content-generation/requirements.md')
 const DESIGN_PATH = path.join(process.cwd(), 'specs/news-digest/content-generation/design.md')
@@ -58,7 +65,9 @@ WebFetch/WebSearchツールで元URLの内容を把握したうえで、次のJS
 }
 
 // Claude Code CLIを非対話モード(-p)で1回呼び出し、応答テキスト(result)を返す。
-// 起動自体に失敗した場合も例外を投げず空文字を返し、呼び出し元がリトライ判断に回す
+// 起動自体に失敗した場合も例外を投げず空文字を返し、呼び出し元がリトライ判断に回す。
+// ただし利用枠枯渇を示すエラー(rate_limit/session limit/usage limit/429のいずれか)を検知した場合は、
+// リトライしても回復しないためQuotaExhaustedErrorを投げて即座に打ち切る(design.md「エラーハンドリング」)
 async function callClaudeCode(prompt: string): Promise<string> {
   try {
     const { stdout } = await execFileAsync(
@@ -69,10 +78,14 @@ async function callClaudeCode(prompt: string): Promise<string> {
     const parsed = JSON.parse(stdout) as { result?: string }
     return parsed.result ?? ''
   } catch (error) {
-    const withStdout = error as { stdout?: string }
-    if (withStdout.stdout) {
+    const execError = error as { stdout?: string; stderr?: string; message?: string }
+    const combinedText = [execError.stdout, execError.stderr, execError.message].filter(Boolean).join('\n')
+    if (isQuotaExhaustionError(combinedText)) {
+      throw new QuotaExhaustedError(`利用枠の枯渇を検知したため生成を打ち切ります: ${combinedText.slice(0, 300)}`)
+    }
+    if (execError.stdout) {
       try {
-        const parsed = JSON.parse(withStdout.stdout) as { result?: string }
+        const parsed = JSON.parse(execError.stdout) as { result?: string }
         return parsed.result ?? ''
       } catch {
         // stdoutがJSONでない場合は下のフォールバックに回す
@@ -149,7 +162,18 @@ async function main() {
   const requirements = fs.readFileSync(REQUIREMENTS_PATH, 'utf8')
   const design = fs.readFileSync(DESIGN_PATH, 'utf8')
 
-  const content = await generateWithRetry(candidate, requirements, design)
+  let content: GeneratedContent | null
+  try {
+    content = await generateWithRetry(candidate, requirements, design)
+  } catch (error) {
+    if (error instanceof QuotaExhaustedError) {
+      // 1候補だけの単純な失敗(exit 1)とは異なる専用の終了コードで区別する。
+      // 呼び出し元(news-digest-weekly.yml)はexit 2をその週全体の打ち切りとして扱う
+      console.error(error.message)
+      process.exit(2)
+    }
+    throw error
+  }
   if (!content) {
     console.error(`候補の生成に${MAX_ATTEMPTS}回失敗したため、この候補を除外してください: ${candidate.sourceName} - ${candidate.heading}`)
     process.exit(1)

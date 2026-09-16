@@ -76,8 +76,13 @@ jobs:
 
       # 選定された候補ごとにgenerate-content.tsをヘッドレス起動する(design.md「1週分の記事を生成する処理」
       # 手順4)。1候補あたり最大2回(初回+リトライ1回)の試行はgenerate-content.ts自身が行うため、
-      # ここでは候補ごとに1回呼ぶだけでよい。リトライしても失敗した候補はcontent: nullとして記録し、
-      # assembleArticle(write-article.ts経由)がtopicsから除外する(requirements.md#掲載件数の保証-2)。
+      # ここでは候補ごとに1回呼ぶだけでよい。終了コードで失敗理由を区別する:
+      # - exit 1(1候補だけの単純な失敗): content: nullとして記録し、assembleArticle(write-article.ts経由)が
+      #   topicsから除外する(requirements.md#掲載件数の保証-2)
+      # - exit 2(利用枠の枯渇。generate-content.tsのisQuotaExhaustionErrorが検知): リトライしても回復しないため、
+      #   ループを打ち切りジョブ全体を失敗させる。以降の記事データ組み立て・PR作成ステップは
+      #   `if: steps.selection.outputs.status == 'ok'`の暗黙のsuccess()判定によりスキップされ、
+      #   記事は公開されない(requirements.md#掲載件数の保証-2、design.md「エラーハンドリング」)
       # Anthropic APIの従量課金ではなく、運営者個人のClaude Code Pro/Maxサブスクリプション認証
       # (CLAUDE_CODE_OAUTH_TOKEN)でヘッドレス実行する(design.md「実行環境の前提」)
       - name: 候補ごとの要約生成(content-generation)・記事データ入力への集約
@@ -88,7 +93,13 @@ jobs:
           echo "[]" > /tmp/inputs.json
           count=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).topics.length)")
           for i in $(seq 0 $((count - 1))); do
-            if ! npx tsx scripts/news-digest/generate-content.ts /tmp/selection.json "$i" > "/tmp/generated-$i.json"; then
+            exit_code=0
+            npx tsx scripts/news-digest/generate-content.ts /tmp/selection.json "$i" > "/tmp/generated-$i.json" || exit_code=$?
+            if [ "$exit_code" -eq 2 ]; then
+              echo "候補${i}で利用枠の枯渇を検知したため、この週の実行を打ち切ります(記事は公開しません)"
+              exit 1
+            fi
+            if [ "$exit_code" -ne 0 ]; then
               echo "候補${i}の生成に失敗したため、この候補は除外します"
               echo "null" > "/tmp/generated-$i.json"
             fi
