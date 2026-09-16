@@ -21,8 +21,8 @@
   1. 作業用ブランチ`news-digest/articles/<date>`を作成する(`<date>`は実行日のYYYY-MM-DD)
   2. [content-selection](../content-selection/design.md)の`scripts/news-digest/collect-and-select.ts`を実行し、その週の候補収集・グループ化・採用基準判定・1週分のトピック選定を行う
   3. 選定結果が「候補不足によりスキップ」だった場合は、記事を作成せず後述「記事生成をスキップする処理」に進む
-  4. 選定された各候補について、`scripts/news-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでClaude Code CLI(`claude -p`)を1件ずつヘッドレス起動し、見出し・要約(日本語)を生成する。1候補の生成が一時的な失敗(応答からJSONを抽出できない等)に終わった場合は、同じ候補を最大2回まで(初回+リトライ1回)起動し直す(ai-dev-digestと同じ既定値)。リトライしても失敗する候補は、その候補だけを除外して次の候補に進む
-  5. 生成に成功した候補が1件以上あれば、`assembleArticle(date, topics)`でその候補のみから記事データ(`date`・`topics`。article-detail/design.mdのスキーマに従う)を組み立て、`content/news-digest/articles/<date>.json`として書き出す。選定された全候補の生成が失敗した場合、または利用枠の枯渇でその週の生成を続行できない場合は、`generate-content.ts`が明示的なエラーメッセージとともに非ゼロ終了し、後続のステップを実行しない(候補不足による正常なスキップ(緑)と区別する)
+  4. 選定された各候補について、`scripts/news-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでClaude Code CLI(`claude -p`)を1件ずつヘッドレス起動し、見出し・要約(日本語)を生成する。1候補の生成が一時的な失敗(応答からJSONを抽出できない等)に終わった場合は、同じ候補を最大2回まで(初回+リトライ1回)起動し直す(ai-dev-digestと同じ既定値)。リトライしても失敗する候補は、その候補だけを除外して次の候補に進む。`generate-content.ts`は失敗理由を終了コードで区別する: 1候補だけの単純な失敗(上記のリトライしても回復しうる失敗)は`exit 1`で返し、利用枠の枯渇(`rate_limit`/`session limit`/`usage limit`/`429`のいずれかを応答中に検知。リトライしても回復しない)は`exit 2`で返す。ワークフローは`exit 2`を検知した時点でループを打ち切り、記事PRを作成せずその週の実行を失敗として終える(候補不足による正常なスキップ(緑)と区別する。後述「エラーハンドリング」)
+  5. 生成に成功した候補が1件以上あれば、`assembleArticle(date, topics)`でその候補のみから記事データ(`date`・`topics`。article-detail/design.mdのスキーマに従う)を組み立て、`content/news-digest/articles/<date>.json`として書き出す。選定された全候補の生成が失敗(すべて`exit 1`)した場合は、`write-article.ts`が呼ぶ`parseArticle`がtopics 0件を検知して例外を投げ、プロセスが異常終了する(後述「エラーハンドリング」)
   6. 変更をコミットし、ブランチをリモートにpushする
 - 関連するビジネスルール: requirements.md#実行-1〜3、requirements.md#掲載件数の保証-1〜2
 
@@ -61,8 +61,11 @@
 ## エラーハンドリング
 
 - CIの失敗(lint/test/check:spec-coverage/buildのいずれか)は上記「CI失敗時に記録する処理」に従い、マージせずPRを残す
-- **個々の候補の生成失敗(一時的な失敗)**: 1候補の生成が応答からのJSON抽出失敗等に終わった場合は、その候補を最大2回まで起動し直す。リトライしても失敗する候補は、その候補だけを除外し、生成に成功した残りの候補でその週の記事を公開する(requirements.md#掲載件数の保証-2)
-- **全候補の生成失敗・利用枠の枯渇(恒久的な失敗)**: 選定された全候補がリトライしても生成に失敗した場合、または利用枠の上限到達を示す場合は、`generate-content.ts`が非ゼロ終了する。非ゼロ終了により後続ステップは実行されず、ブランチ・PRは作られないまま、GitHub Actionsの実行が失敗(赤)として残る
+失敗理由は次の3ケースに区別して扱う(いずれもrequirements.md#掲載件数の保証-2):
+
+- **個々の候補の生成失敗(一時的な失敗、`exit 1`)**: 1候補の生成が応答からのJSON抽出失敗等に終わった場合は、その候補を最大2回まで起動し直す。リトライしても失敗する候補は`generate-content.ts`が`exit 1`で返す。ワークフローはその候補だけを除外し、生成に成功した残りの候補で処理を続行する
+- **利用枠の枯渇(恒久的な失敗、`exit 2`)**: `generate-content.ts`の`callClaudeCode`が、CLI起動失敗時のエラーテキスト(stdout/stderr/エラーメッセージ)から利用枠枯渇を示すパターン(大文字小文字を区別せず`rate_limit`/`session limit`/`usage limit`/`429`のいずれかを含む)を検知した場合、リトライせず`exit 2`で即座に返す(利用枠枯渇はリトライしても解消しないため)。ワークフローは`exit 2`を検知した時点で候補生成ループを打ち切り、記事データの組み立て・PR作成に進まずジョブを失敗(赤)として終える
+- **全候補の生成失敗(恒久的な失敗、プロセスの異常終了)**: 選定された全候補が`exit 1`で終わった場合、`write-article.ts`が呼ぶ`assembleArticle`の結果はtopics 0件になる。書き出し前に呼ぶ`parseArticle`がtopics最小件数(1件)の検証に失敗して例外を投げ、`write-article.ts`のプロセスが異常終了する。これにより後続のコミット・push・PR作成ステップは実行されず、ブランチ・PRは作られないまま、GitHub Actionsの実行が失敗(赤)として残る
 - 1週の実行が失敗・スキップしても、他の週([article-list](../article-list/requirements.md)・[article-detail](../article-detail/requirements.md))の表示には影響しない
 
 ## 関連するファイル(抜粋)

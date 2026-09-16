@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isUsableContent } from '../../../app/news-digest/lib/generateContent'
+import { isUsableContent, isQuotaExhaustionError } from '../../../app/news-digest/lib/generateContent'
 import type { GeneratedContent } from '../../../app/news-digest/lib/generateContent'
 import type { TopicSummary } from '../../../app/news-digest/lib/types'
 
@@ -62,5 +62,26 @@ describe('生成結果の利用可否判定 - summaryがnull、または分量�
 
   it('見出し・重要度・固定4観点(分量範囲内)がすべて揃っているとき利用可と判定されること', () => {
     expect(isUsableContent(validContent())).toBe(true)
+  })
+})
+
+// 仕様: specs/news-digest/weekly-publish/design.md#エラーハンドリング、specs/news-digest/weekly-publish/requirements.md#掲載件数の保証-2
+describe('利用枠枯渇の判定 - rate_limit/session limit/usage limit/429のいずれかを含む場合に検知すること', () => {
+  it.each([
+    ['rate_limit を含むエラーメッセージ', 'Error: rate_limit_error occurred'],
+    ['大文字小文字が異なるRATE_LIMIT', 'RATE_LIMIT exceeded'],
+    ['session limitを含むメッセージ', "You've hit your session limit"],
+    ['usage limitを含むメッセージ', 'usage limit reached for this account'],
+    ['429を含むメッセージ', 'Request failed with status code 429'],
+  ])('%s のとき利用枠枯渇と判定されること', (_label, text) => {
+    expect(isQuotaExhaustionError(text)).toBe(true)
+  })
+
+  it('単純なJSON不正等、利用枠枯渇を示すパターンを含まない場合はfalseになること', () => {
+    expect(isQuotaExhaustionError('Unexpected token < in JSON at position 0')).toBe(false)
+  })
+
+  it('空文字のとき利用枠枯渇と判定されないこと', () => {
+    expect(isQuotaExhaustionError('')).toBe(false)
   })
 })

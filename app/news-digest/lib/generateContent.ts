@@ -23,3 +23,12 @@ export function isUsableContent(response: unknown): response is GeneratedContent
   if (!isValidImportance(value.importance)) return false
   return isValidSummaryDetailLength(value.summary)
 }
+
+// Claude Code CLI起動失敗時のエラーテキスト(stdout/stderr/エラーメッセージを結合したもの)が
+// 利用枠の枯渇を示すかどうかの判定(design.md「エラーハンドリング」、requirements.md#掲載件数の保証-2)。
+// 大文字小文字を区別せず、rate_limit/session limit/usage limit/429のいずれかを含めば枯渇とみなす。
+// 1候補だけの単純な生成失敗(JSON不正など)とは区別し、呼び出し元(generate-content.ts)が
+// 専用の終了コード(exit 2)で即座に打ち切れるようにする
+export function isQuotaExhaustionError(text: string): boolean {
+  return /rate_limit|session limit|usage limit|429/i.test(text)
+}
