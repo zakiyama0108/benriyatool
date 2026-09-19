@@ -111,7 +111,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 7. 機能マップ
 | spec | 役割 | 依存 | 状態 |
 |---|---|---|---|
-| [content-selection](content-selection/requirements.md) | 18ジャンルを2グループ(エンタメ編・カルチャー編)に分け、ジャンルごとの情報源・採用基準に沿って各回「動きがあった」トピックを選び出す | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md)) | リリース済み |
+| [content-selection](content-selection/requirements.md) | 18ジャンルを2グループ(エンタメ編・カルチャー編)に分け、ジャンルごとの情報源・採用基準に沿って各回の候補を収集する | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md))。掲載可否の判定はtrend-historyのステータスに従う([trend-history/requirements.md](trend-history/requirements.md)) | リリース済み(中長期トレンド対応で改訂予定) |
+| [trend-history](trend-history/requirements.md) | content-selectionが収集した全候補を横断的に履歴として蓄積し、継続日数・強度の推移からNEW/SHORT_TERM/EMERGING/GROWING/ESTABLISHED/STABLE/DECLININGのステータスを機械的に判定する | content-selectionの収集結果を参照する([content-selection/requirements.md](content-selection/requirements.md)) | 仕様のみ(未実装) |
 | [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルール(著作権配慮を含む)を定める | content-selectionの選定結果を受け取る([content-selection/requirements.md](content-selection/requirements.md)) | リリース済み |
 | [weekly-publish](weekly-publish/requirements.md) | 週2回(火・金)の収集・選定・要約・記事公開を自動実行し、完全自動マージする | content-selection・content-generationの結果を公開する | リリース済み |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの記事PRがmainへ自動マージされた直後に、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング([weekly-publish/requirements.md](weekly-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))に従う | リリース済み |
