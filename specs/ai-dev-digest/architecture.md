@@ -76,6 +76,7 @@ flowchart LR
     dailyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
     repo -->|記事追加のpushで起動| broadcastRoutine
+    broadcastRoutine -->|記事ページの公開をGETで確認| cf
     broadcastRoutine -->|タイトル・見出し・リンクを一斉配信| lineApi
     lineApi -->|メッセージ配信| lineFriends
 ```
@@ -137,6 +138,7 @@ flowchart LR
     broadcast["LINE新着記事配信<br>(line-broadcast)"]
     review["月次見直し<br>(watchlist-review)"]
     client["共通のSupabase接続<br>(app/lib)"]
+    pageWait["ページ公開待ち<br>(app/lib waitForPageAvailable)"]
 
     publish -->|選定を実行| selection
     publish -->|翻訳・要約を実行| generation
@@ -144,6 +146,7 @@ flowchart LR
     publish -->|記事を生成しmainへ反映| detailScreen
     publish -->|記事JSON新規追加のpushをトリガーに起動| broadcast
     broadcast -->|タイトル導出・記事データ構造を参照| detailScreen
+    broadcast -->|記事ページの公開確認に利用| pageWait
     detailScreen -->|フィードバック保存・運営者判定に利用| client
     detailScreen -->|付箋の保存・編集・削除に利用| client
     bookmarkScreen -->|自分の付箋の取得・編集・削除に利用| client

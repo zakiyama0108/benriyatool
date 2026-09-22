@@ -1,6 +1,7 @@
 # 要件定義: LINE公式アカウントでの新着記事自動配信
 
 > ステータス: 仕様確認中(未実装)
+> この行がある間はこのspecフォルダ全体が`check:spec-coverage`の対象外になる(`scripts/check-spec-coverage.mjs`のWIP_MARKER)。承認後、実装の最初の🔴Redで削除する
 
 ## 概要
 - 機能名: LINE公式アカウントでの新着記事自動配信

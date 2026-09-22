@@ -81,6 +81,7 @@ flowchart LR
     weeklyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
     repo -->|記事追加のpushで起動| broadcastRoutine
+    broadcastRoutine -->|記事ページの公開をGETで確認| cf
     broadcastRoutine -->|タイトル・見出し・リンクを一斉配信| lineApi
     lineApi -->|メッセージ配信| lineFriends
 ```

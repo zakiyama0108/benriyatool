@@ -41,9 +41,11 @@
 ## 2026-09-22 追加(デプロイ完了前に配信されてしまう不具合の修正)
 
 - Task A: ページ公開待ちの共通処理(仕様: requirements.md#配信タイミング・方式-8〜9、design.md「記事ページの公開を待つ処理」)
-  - 🔴 `fetch`とタイマーを差し替えたテストで、(1) 最初から200なら1回で待機を終えること、(2) 404が続いたあと200になったら待機を終えること、(3) `timeoutMs`を超えても200にならなければ失敗を返すこと、(4) `fetch`が例外を投げても打ち切らず次のポーリングへ進むことを確認するテストを書く
-  - 🟢 `app/lib/waitForPageAvailable.ts`に`waitForPageAvailable(url, options)`を実装する(`pollIntervalMs`既定15秒・`timeoutMs`既定10分、`fetch`・`sleep`を注入可能にする)
+  - 着手時: ai-dev-digest/news-digest/trend-digestの3つのrequirements.md先頭にある`> ステータス: 仕様確認中(未実装)`をすべて削除する(この行がある間は`check:spec-coverage`の対象外になり、既にリリース済みの[1]〜[7]分の網も一時的に外れてしまうため。承認後、実装の最初の🔴Redで削除する運用)
+  - 🔴 テストは`__tests__/lib/waitForPageAvailable.test.ts`(新設)に書く。`app/lib/`↔`__tests__/lib/`は、既存の`app/components/`↔`__tests__/components/`と同じ並べ方で、CLAUDE.md「フォルダ構成」のサイト全体に関わるものを直下に置く規約に沿う。`fetch`とタイマーを差し替えたテストで、(1) 最初から200なら1回で待機を終えること、(2) 404が続いたあと200になったら待機を終えること、(3) `timeoutMs`を超えても200にならなければ失敗を返すこと、(4) `fetch`が例外を投げても打ち切らず次のポーリングへ進むこと、(5) 時間切れ時の戻り値に最後に観測したHTTPステータスと経過時間(ミリ秒)が含まれることを確認するテストを書く
+  - 🟢 `app/lib/waitForPageAvailable.ts`に`waitForPageAvailable(url, options)`を実装する(`pollIntervalMs`既定15秒・`timeoutMs`既定10分、`fetch`・`sleep`を注入可能にする)。この1ファイルはai-dev-digest/news-digest/trend-digestの3配信CLIで共有するため、`// 仕様:`コメントに3スペック分のアンカーを列挙する: `specs/ai-dev-digest/line-broadcast/requirements.md#配信タイミング・方式-8`・`-9`、`specs/news-digest/line-broadcast/requirements.md#配信タイミング・方式-8`・`-9`、`specs/trend-digest/line-broadcast/requirements.md#配信タイミング・方式-8`・`-9`、および3スペックのdesign.md見出し「記事ページの公開を待つ処理」
   - 🔵 リファクタ
+  - `scripts/spec-coverage-skip.json`への新規登録は行わない(今回の[8][9]と新design見出し「記事ページの公開を待つ処理」は、このTask AとTask Bの実テストで実際にカバーされるため)
 
 - Task B: 記事URL導出の切り出し(仕様: design.md「記事ページの公開を待つ処理」手順1)
   - 🔴 記事データから記事詳細ページURLが導出されること、`buildBroadcastMessage`の本文末尾のURLが同じ関数の戻り値と一致することを確認するテストを書く
