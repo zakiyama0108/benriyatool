@@ -45,7 +45,7 @@
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
 ### 記事ページの公開を待つ処理
-ai-dev-digestのline-broadcast/design.mdと同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/trend-digest/<id>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ(`pollIntervalMs`・`timeoutMs`とその根拠)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避(`cache: 'no-store'`相当)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
+[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)と同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/trend-digest/<id>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ(`pollIntervalMs`・`timeoutMs`とその根拠)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避(`cache: 'no-store'`相当)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-8〜9
 
 ### LINEブロードキャストメッセージを送信する処理

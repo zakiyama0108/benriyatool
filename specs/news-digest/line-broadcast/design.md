@@ -44,7 +44,7 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
 ### 記事ページの公開を待つ処理
-ai-dev-digestのline-broadcast/design.mdと同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/news-digest/<date>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ(`pollIntervalMs`・`timeoutMs`とその根拠)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避(`cache: 'no-store'`相当)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
+[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)と同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/news-digest/<date>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ(`pollIntervalMs`・`timeoutMs`とその根拠)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避(`cache: 'no-store'`相当)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-8〜9
 
 ### LINEブロードキャストメッセージを送信する処理
@@ -54,13 +54,13 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、記事詳細ペ�
   2. リクエストボディは`{"messages": [{"type": "text", "text": "<組み立てたメッセージ>"}]}`とする
   3. レスポンスが成功(HTTPステータス200)の場合、配信成功として実行ログに記録する
   4. レスポンスが失敗の場合、リトライはせず、下記エラーハンドリングに従う
-- 関連するビジネスルール: requirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-3〜4
+- 関連するビジネスルール: requirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-3〜5
 
 ## エラーハンドリング
 
 - 既定の待機時間(`timeoutMs`)内に記事ページの公開を確認できなかった場合、配信を行わずワークフローのステップを異常終了させる(requirements.md#配信タイミング・方式-9)。「開けないリンクを送ってしまう」ことの方が「その回の配信が飛ぶ」ことより読者への影響が大きいと判断したため、公開が確認できない限り送らない側に倒す。この場合もリトライは行わず、`waitForPageAvailable`の戻り値に含まれる「最後に観測したHTTPステータス」と「経過時間(ミリ秒)」を実行ログに記録する(戻り値の形はai-dev-digestのline-broadcast/design.md「記事ページの公開を待つ処理」参照)
 - 記事データのパースに失敗した場合、配信を行わずワークフローのステップを異常終了させる
-- LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-3〜4)。このワークフローは記事公開(weekly-publishのPRマージ)が完了した後に起動する独立ワークフローのため、配信の失敗が記事公開自体に影響を及ぼす経路は存在しない
+- LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-4〜5)。このワークフローは記事公開(weekly-publishのPRマージ)が完了した後に起動する独立ワークフローのため、配信の失敗が記事公開自体に影響を及ぼす経路は存在しない
 - 配信失敗時の記録方法: 専用のGitHub Issue作成等の追加の通知手段は設けず、GitHub Actionsのワークフロー実行結果(失敗)と実行ログの内容で運営者が把握する(ai-dev-digestと同じ方針。日次・週次いずれも無料枠が少なく配信失敗の発生頻度は低いと見込まれ、追加の通知基盤を持つコストに見合わないと判断した)
 
 ## 関連するファイル(抜粋)

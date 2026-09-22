@@ -102,7 +102,7 @@ flowchart LR
 これらの図の正となる文章は下記「[6. アーキテクチャ概要](#6-アーキテクチャ概要)」と各specの設計書。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。
 
 ## 6. アーキテクチャ概要
-Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/news-digest/`)に置き、ビルド時に取り込む。週次(毎週水曜)のGitHub Actionsワークフローが情報源(総合・経済/ビジネスは固定リストの複数情報源による同時報道判定、神奈川ローカル・育児は固定リストの専用枠+WebSearchによる見落とし補完)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。このマージ(記事JSONの新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクを、ai-dev-digest・trend-digestと共通のLINE公式アカウントのブロードキャスト機能で友だち全員へ配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。
+Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/news-digest/`)に置き、ビルド時に取り込む。週次(毎週水曜)のGitHub Actionsワークフローが情報源(総合・経済/ビジネスは固定リストの複数情報源による同時報道判定、神奈川ローカル・育児は固定リストの専用枠+WebSearchによる見落とし補完)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。このマージ(記事JSONの新規追加)をトリガーに、独立したGitHub Actionsワークフローが起動する。デプロイ([deploy.yml](../../docs/architecture/deployment.md))とは同じpushで並列に起動するため、本番の記事ページが閲覧可能になったことをGETで確認してから、記事タイトル・トピック見出し一覧・記事リンクを、ai-dev-digest・trend-digestと共通のLINE公式アカウントのブロードキャスト機能で友だち全員へ配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。
 
 記事詳細ページはGoogle OIDCログインを読者全員に開放しており、ログイン中の読者はトピックに自由記述メモ付きの付箋を貼り([bookmark](bookmark/requirements.md))、専用の一覧画面(`/news-digest/bookmarks`)から自分の付箋を振り返れる(付箋データは本人の行のみRLSで操作可能な`news_digest_bookmarks`テーブルに保存)。運営者向けフィードバック欄は、運営者本人がログイン中の場合のみ記事詳細ページの各トピック下に表示される。月次のGitHub Actionsワークフローがフィードバックと掲載実績を読み、ヘッドレス起動したClaude Code経由で、各フィードバックを選定領域(情報源・採用基準・専用枠の運用)・生成領域(要約・記事執筆ルール)・対象外に振り分けたうえで見直し案をPRとして提案し、運営者の承認を経てからマージされる([monthly-review](monthly-review/requirements.md))。
 
@@ -143,6 +143,7 @@ flowchart LR
     broadcast["LINE新着記事配信<br>(line-broadcast)"]
     review["月次見直し<br>(monthly-review)"]
     client["共通のSupabase接続<br>(app/lib)"]
+    pageWait["ページ公開待ち<br>(app/lib)"]
 
     publish -->|選定を実行| selection
     publish -->|要約を実行| generation
@@ -150,6 +151,7 @@ flowchart LR
     publish -->|記事を生成しmainへ反映| detailScreen
     publish -->|記事JSON新規追加のpushをトリガーに起動| broadcast
     broadcast -->|タイトル導出・記事データ構造を参照| detailScreen
+    broadcast -->|記事ページの公開確認に利用| pageWait
     detailScreen -->|フィードバック保存・運営者判定に利用| client
     detailScreen -->|付箋の保存・編集・削除に利用| client
     bookmarkScreen -->|自分の付箋の取得・編集・削除に利用| client
