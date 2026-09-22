@@ -137,18 +137,11 @@ export type Criteria = {
     "economy-money": { "method": "websearch", "minIndependentSources": 2 },
     "dev-trends": { "method": "websearch", "minIndependentSources": 3 }
   },
-  "history": {
-    "shortTermMaxDays": 13,
-    "growingMinDays": 14,
-    "establishedMinDays": 30,
-    "stableMinDays": 90,
-    "minSamplesForTrend": 3,
-    "risingRatio": 1.2,
-    "decliningRatio": 0.6,
-    "stableBandRatio": 0.2
-  }
+  "history": { "...": "中長期ステータス判定の閾値。キーと初期値・その根拠は trend-history/design.md「履歴データの形式」が定義する" }
 }
 ```
+
+`history`の中身(キー・初期値・根拠)は[trend-history/design.md](../trend-history/design.md)「履歴データの形式」を唯一の情報源とし、本specでは全文を再掲しない(片方だけが更新される事故を避けるため)。本specは`criteria.json`の中に`history`という区画があることだけを示す。
 
 `dev-trends`(開発手法・開発サービス)だけ`minIndependentSources`を3にしている。ai-dev-digestと扱う領域が重なるジャンルであり、「個々のリリースではなく複数の情報源が論じている潮流」だけを拾うという要件(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-7)を、他のWebSearchジャンルより厳しい情報源数で担保するため。
 
@@ -225,7 +218,7 @@ export type SelectionResult =
 - 対象: 収集した候補すべて(履歴への記録を終えた後、他のどの絞り込みよりも先に適用する)
 - 手順:
   1. [trend-history/design.md](../trend-history/design.md)「継続日数と強度の推移からステータスを判定する処理」から、候補ごとのステータス・継続日数・初回検知日を受け取る
-  2. ステータスが掲載可能(EMERGING/GROWING/ESTABLISHED/STABLE)でない候補を除外する(requirements.md#中長期トレンドの絞り込み-1)
+  2. ステータスが`LONG_TERM_TREND_STATUSES`([trend-history/design.md](../trend-history/design.md)が公開するGROWING/ESTABLISHED/STABLEの集合)に含まれない候補を除外する(requirements.md#中長期トレンドの絞り込み-1)。掲載できるステータスの一覧を本specに書き写さず、trend-history側の定義を参照する
   3. 除外した候補の件数をステータスごとに記録する(requirements.md#情報源の健全性監視-2)
   4. 掲載可能な候補が1件も残らなかった場合も、この時点では失敗とせず、後続の編全体の絞り込みでスキップとして扱う(運用開始直後は履歴が浅く全候補がNEWになるため、異常として扱わない。requirements.md#中長期トレンドの絞り込み-3)
 - 関連するビジネスルール: requirements.md#機能要件-4、requirements.md#中長期トレンドの絞り込み-1〜3、requirements.md#情報源の健全性監視-2
@@ -236,7 +229,7 @@ export type SelectionResult =
   1. [trend-history/design.md](../trend-history/design.md)「掲載実績(報告回数・前回掲載時のステータス)を求める処理」から、候補ごとの過去の掲載回数と前回掲載時のステータスを受け取る
   2. 過去に掲載されたことがない候補は、そのまま残し報告回数を1とする
   3. 過去に掲載されたことがある候補は、前回掲載時のステータスと今回のステータスを比べる。同じ場合は除外し、異なる場合は続報として残す(requirements.md#掲載済み話題の再掲抑制-1〜2)
-  4. 前回掲載時のステータスが不明な候補(この機能の導入より前に生成された記事にのみ掲載されている候補)は、除外する。ステータスの変化を確かめられない以上、同じ内容の再掲になりうるため、載せない側に倒す(要件が明示していない範囲を、同じ内容を繰り返さないという趣旨に沿って設計で補った判断)
+  4. 前回掲載時のステータスが不明な候補(この機能の導入より前に生成された記事にのみ掲載されている候補)は、除外する(requirements.md#掲載済み話題の再掲抑制-3)
   5. 残した候補の報告回数を「過去の掲載回数 + 1」として設定する(requirements.md#掲載済み話題の再掲抑制-3)
   6. 同一話題かどうかの突き合わせは、候補の`title`と過去記事の`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を、trend-historyと同じ正規化関数(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)にかけてから行う。正規化ルールを二重に持たず、`selection.ts`の`normalizeTitle`を両specで共用する(requirements.md#掲載済み話題の再掲抑制-4)
   7. すべての候補が除外され、そのジャンルで残る候補がなくなった場合は、そのジャンルは掲載しない(requirements.md#機能要件-4)
@@ -293,6 +286,6 @@ scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出し�
 
 - 週次実行のログに、ジャンルごとに「収集した候補件数(取得失敗・検索失敗はその旨)」を標準エラー出力へ記録する(requirements.md#情報源の健全性監視-1)
 - 候補件数が0件だった情報源・ジャンルは警告(`WARN`)と分かる形で出力する(慢性的な0件を月次見直しで拾えるようにするため)
-- 中長期トレンドの絞り込みで除外した候補の件数を、ステータスごと(NEW/SHORT_TERM/DECLINING)に記録する(requirements.md#情報源の健全性監視-2)
+- 中長期トレンドの絞り込みで除外した候補の件数を、ステータスごと(NEW/EMERGING/DECLINING)に記録する(requirements.md#情報源の健全性監視-2)。絞り込みの対象はその回に収集された候補=必ず同じ編の直近の実行で検知されている候補であり、「途絶えた」ことを条件とするSHORT_TERMはここには現れないため内訳に含めない。SHORT_TERMを含む全ステータスの分布は、[trend-history/design.md](../trend-history/design.md)のログ(全候補のステータスごとの件数)で確認する
 - 前回掲載時からステータスが変わらないために再掲を見送った候補の件数と、続報として再掲する候補の件数(報告回数付き)を記録する
 - 対象editionで掲載可能な候補が0件の場合は、その旨を「収集自体が0件」「絞り込みで全件除外」のどちらなのかが分かる形で標準エラー出力へ記録する。[weekly-publish](../weekly-publish/design.md)側は標準出力のJSONの`status`フィールドを見てPRを作成しない判断に使う

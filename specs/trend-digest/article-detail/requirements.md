@@ -52,7 +52,7 @@ flowchart LR
 - [9] フィードバック入力欄が空文字、または空白文字のみの場合は送信できない(送信ボタンを無効化する、または送信時にエラーを示す)
 
 ### 中長期トレンドの表示
-- [10] 各トピックに、[trend-history/requirements.md#ステータス判定基準](../trend-history/requirements.md)が判定した中長期ステータス(EMERGING/GROWING/ESTABLISHED/STABLEのいずれか)を、段階が一目で分かるバッジとして表示する。記事に掲載されるのは掲載可能なステータスの話題だけのため、NEW・SHORT_TERM・DECLININGが表示されることはない
+- [10] 各トピックに、[trend-history/requirements.md#ステータス判定基準](../trend-history/requirements.md)が判定した中長期ステータス(GROWING/ESTABLISHED/STABLEのいずれか)を、段階が一目で分かるバッジとして表示する。記事に掲載されるのは掲載可能なステータスの話題だけのため、NEW・SHORT_TERM・EMERGING・DECLININGが表示されることはない
 - [11] ステータスのバッジには、その段階が何を意味するかが日本語で分かる表記を添える(英語の識別子だけを出さない。訪問者は運営者と違ってステータスの定義を知らないため)
 - [12] 各トピックに、その話題が続いている期間(初回検知日からの継続日数)を表示する
 - [13] 同じ話題が過去にも掲載されている場合、今回が通算何回目の報告かを表示する([content-selection/requirements.md#掲載済み話題の再掲抑制-3](../content-selection/requirements.md))。初めて掲載する話題には表示しない

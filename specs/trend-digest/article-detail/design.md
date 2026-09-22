@@ -67,8 +67,8 @@ export const TREND_STATUS_LABELS: Record<TrendStatus, string> = {
 // トピックに添える中長期トレンドの情報(trend-historyの判定結果を公開時点の値として保存したもの)。
 // 画面側で再計算はしない(requirements.md#中長期トレンド表示の扱い-6)
 export type TopicTrend = {
-  status: TrendStatus // 掲載されるのはEMERGING/GROWING/ESTABLISHED/STABLEのみ
-  continuationDays: number // 初回検知日から公開時点までの継続日数
+  status: TrendStatus // 掲載されるのはGROWING/ESTABLISHED/STABLEのみ([content-selection/requirements.md#中長期トレンドの絞り込み](../content-selection/requirements.md)-1)
+  continuationDays: number // 初回検知日から直近検知日までの日数([trend-history/requirements.md#ステータス判定基準](../trend-history/requirements.md)の前文の定義をそのまま持つ。公開時点までの日数ではない)
   firstDetectedDate: string // YYYY-MM-DD。初回検知日
   reportCount: number // 通算何回目の報告か。初掲載は1
   originRegion: string | null // 発祥地域。不明はnull(表示しない)
@@ -163,7 +163,7 @@ sequenceDiagram
 - `date`: `YYYY-MM-DD`形式であること
 - `topics`: 配列長が1件以上10件以下であること(content-selection/requirements.md#機能要件-6)
 - 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが3件以上存在しないこと(content-selection/requirements.md#機能要件-5)
-- 各`topic`の`trend`は省略可。ある場合は、`status`が`EMERGING`/`GROWING`/`ESTABLISHED`/`STABLE`のいずれかであること(掲載できないステータスが記事に混入していないかをビルド時に検知するため。[content-selection/requirements.md#中長期トレンドの絞り込み-1](../content-selection/requirements.md))、`continuationDays`が0以上の整数であること、`firstDetectedDate`が`YYYY-MM-DD`形式で記事の`date`以前であること、`reportCount`が1以上の整数であること、`currentRegions`が文字列の配列であること
+- 各`topic`の`trend`は省略可。ある場合は、`status`が`GROWING`/`ESTABLISHED`/`STABLE`のいずれかであること(掲載できないステータスが記事に混入していないかをビルド時に検知するため。[content-selection/requirements.md#中長期トレンドの絞り込み-1](../content-selection/requirements.md))、`continuationDays`が0以上の整数であること、`firstDetectedDate`が`YYYY-MM-DD`形式で記事の`date`以前であること、`reportCount`が1以上の整数であること、`originRegion`が文字列(空文字でなく50文字以内・制御文字を含まない)またはnullであること、`currentRegions`が文字列の配列(各要素は空文字でなく50文字以内・制御文字を含まない、10件以内)であること。地域情報は収集エージェントが生成した自由文字列のため、記事データに取り込む時点でも外部入力として検証する([trend-history/design.md](../trend-history/design.md)のバリデーションと同じ上限)
 - `body`の文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2、content-generation/design.md「本文の分量を検証する処理」)
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(requirements.md#運営者向けフィードバック-9)
 

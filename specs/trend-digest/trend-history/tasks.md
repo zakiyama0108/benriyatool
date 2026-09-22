@@ -6,7 +6,8 @@
 
 - Task 1: 履歴の型定義と閾値データの追加(仕様: design.md「履歴データの形式」)
   - `app/trend-digest/lib/historyTypes.ts`に`TrendStatus`/`Observation`/`ObservationLog`/`CandidateHistory`/`StatusJudgement`/`HistoryCriteria`を定義する(TDD対象外。型定義のみのため)。`Edition`/`Genre`は`app/trend-digest/lib/types.ts`からimportして再利用し、本specでは再定義しない
-  - `app/trend-digest/lib/watchlistTypes.ts`の`Criteria`に`history: HistoryCriteria`を追加する
+  - `historyTypes.ts`に`LONG_TERM_TREND_STATUSES`(GROWING/ESTABLISHED/STABLE)も定義し、content-selectionはこれを参照して掲載可否を判定する(掲載できるステータスの一覧を二重に持たないため)
+  - `app/trend-digest/lib/watchlistTypes.ts`の`Criteria`に`history: HistoryCriteria`を追加する(型は`historyTypes.ts`からimportする。型定義の置き場所は本specが持つ)
   - `content/trend-digest/criteria.json`にdesign.mdの`history`初期値を追加する
 
 - Task 2: 観測ログのスキーマ検証・パース(仕様: design.md「バリデーション」)
@@ -14,21 +15,24 @@
   - 🟢 `app/trend-digest/lib/historySchema.ts`に`parseObservationLog(raw, filename)`を実装する
 
 - Task 3: 観測ログの書き出し(仕様: design.md「その回の観測を履歴に記録する処理」)
-  - 🔴 一時ディレクトリを使い、候補一覧から`<date>-<edition>.json`が作られること、同じ回に同じ正規化タイトルの候補が複数あるとき`strength`が最大の1件だけが残ること、候補0件でも`observations`が空のファイルが作られること、同名ファイルが既にある場合は上書きせず例外になることを確認するテストを書く
+  - 🔴 一時ディレクトリを使い、候補一覧から`<date>-<edition>.json`が作られること、同じ回に同じ正規化タイトルの候補が複数あるとき**選定方式ごとに**`strength`が最大の1件だけが残ること(固定リストとWebSearchの双方で取れた候補は方式ごとに1件ずつ、計2件が残ること)、候補0件でも`observations`が空のファイルが作られること、同名ファイルが既にある場合は上書きせず例外になることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/writeObservationLog.ts`に`writeObservationLog(historyDir, date, edition, candidates)`を実装する
 
 - Task 4: 履歴の集約(仕様: design.md「履歴を候補ごとの系列に集約する処理」)
-  - 🔴 一時ディレクトリに複数回分の観測ログを置き、正規化タイトルごとに1本の系列へまとまること、**ジャンルが違っても同じ正規化タイトルなら同じ系列にまとまること**、初回検知日・直近検知日・検知回数・強度の推移(日付昇順)が正しく求まること、ジャンル・原題・主な流行地域は直近の観測の値が採られること、発祥地域は最も古い観測で判定できた値が優先されること、観測ログが1件もないときは空の結果になることを確認するテストを書く
+  - 🔴 一時ディレクトリに複数回分の観測ログを置き、正規化タイトルごとに1本の系列へまとまること、**ジャンルが違っても同じ正規化タイトルなら同じ系列にまとまること**、初回検知日・直近検知日・検知回数・強度の推移(日付昇順、選定方式付き)が正しく求まること、同じ回に両方式で観測された候補の検知回数が1回と数えられること、**「直近の実行」が同じ編の直近の実行として判定されること**(エンタメ編の候補が、より新しいカルチャー編の実行によって『途絶えた』と判定されないこと)、両方の編で観測されている候補はいずれかの編の直近の実行で検知されていれば継続中になること、ジャンル・原題・主な流行地域は直近の観測の値が採られること、発祥地域は最も古い観測で判定できた値が優先されること、観測ログが1件もないときは空の結果になることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/aggregateHistory.ts`に`aggregateHistory(logs): CandidateHistory[]`を実装する。正規化は`selection.ts`の`normalizeTitle`を再利用し、正規化ルールを二重に持たない
 
 - Task 5: 継続日数の算出とステータス判定(仕様: requirements.md#ステータス判定基準-1〜7、design.md「継続日数と強度の推移からステータスを判定する処理」)
-  - 🔴 判定順序を網羅するテストを書く: 継続日数0→NEW / 途絶え+継続13日以内→SHORT_TERM / 途絶え+継続14日以上→DECLINING / 直近強度がピークの`decliningRatio`以下→DECLINING(他の条件より優先されること) / 直近がピーク自身なら減少と判定しないこと / 観測が`minSamplesForTrend`未満なら増減を判定しないこと / 継続90日以上+強度が平均の±`stableBandRatio`内→STABLE / 継続90日以上でも強度がばらつけばESTABLISHED / 継続30日以上→ESTABLISHED / 継続14〜29日+後半平均÷前半平均が`risingRatio`以上→GROWING / 継続14〜29日で増加傾向がなければEMERGING / 継続1〜13日で継続中→EMERGING
+  - 🔴 判定順序を網羅するテストを書く(**途絶えの判定が継続日数より先に当たること**を含む): 途絶え+継続13日以内→SHORT_TERM / **1回だけ検知されて途絶えた候補(継続日数0)がNEWではなくSHORT_TERMになること** / 途絶え+継続14日以上→DECLINING / 今回初めて検知され直近の実行でも検知されている→NEW / 直近強度がピークの`decliningRatio`以下→DECLINING(他の条件より優先されること) / 直近がピーク自身なら減少と判定しないこと / 観測が`minSamplesForTrend`未満なら増減を判定しないこと / 継続90日以上+強度が平均の±`stableBandRatio`内→STABLE / 継続90日以上でも強度がばらつけばESTABLISHED / 継続30日以上→ESTABLISHED / 継続14〜29日+後半平均÷前半平均が`risingRatio`以上→GROWING / 継続14〜29日で増加傾向がなければEMERGING / 継続1〜13日で継続中→EMERGING
   - 🔴 強度の尺度が異なる系列(固定リスト由来の80〜99と、WebSearch由来の2〜5)で同じ比率の増減なら同じ判定になることを確認するテストを書く(絶対値ではなく比で判定していることの確認)
+  - 🔴 **選定方式が混在する系列のテストを書く**: 固定リストで99・WebSearchで3を観測した候補が、比0.03でDECLININGと判定されないこと(方式をまたいで強度を比べないこと) / 増減の判定に観測件数が最も多い方式の推移が使われること / 件数が同じ場合は直近の観測が属する方式が使われること
+  - 🔴 境界値・特殊ケースのテストを書く(design.md「境界値・特殊ケースの扱い」の表): ピーク強度が0なら減少と判定しないこと / 前半の平均が0なら増加傾向と判定しないこと / 直近`minSamplesForTrend`回分がすべて0なら横ばいとみなすこと・1件でも0でなければ横ばいとみなさないこと / 観測回数が奇数のとき前半が`floor(件数÷2)`件・後半が残りに分かれること
   - 🟢 `app/trend-digest/lib/judgeStatus.ts`に`judgeStatus(history, criteria, latestRunDate): StatusJudgement`を実装する
 
-- Task 6: 掲載可否の判定(仕様: requirements.md#ステータス判定基準-8、design.md「継続日数と強度の推移からステータスを判定する処理」手順3)
-  - 🔴 EMERGING/GROWING/ESTABLISHED/STABLEは`isPublishable`が真、NEW/SHORT_TERM/DECLININGは偽になることを確認するテストを書く
-  - 🟢 `judgeStatus.ts`に掲載可否の判定を実装する
+- Task 6: 「中長期トレンドとみなせるステータス」の公開(仕様: requirements.md#ステータス判定基準-8、design.md「継続日数と強度の推移からステータスを判定する処理」手順3)
+  - 🔴 `LONG_TERM_TREND_STATUSES`がGROWING/ESTABLISHED/STABLEの3つだけを含み、NEW/SHORT_TERM/EMERGING/DECLININGを含まないことを確認するテストを書く
+  - 🔴 `judgeStatus`の戻り値が掲載可否そのもの(`isPublishable`)を持たないこと、ステータス・継続日数・初回検知日・検知回数を返すことを確認するテストを書く(掲載可否の判断はcontent-selectionの責務のため)
+  - 🟢 `historyTypes.ts`に`LONG_TERM_TREND_STATUSES`を定義し、content-selection側の絞り込みがこれを参照するようにする
 
 - Task 7: 掲載実績(報告回数・前回掲載時のステータス)の算出(仕様: requirements.md#掲載実績の追跡-1〜2、design.md「掲載実績(報告回数・前回掲載時のステータス)を求める処理」)
   - 🔴 一時ディレクトリに過去記事JSONを置き、同じ正規化タイトルの掲載回数が数えられること、今回の報告回数が「過去の掲載回数+1」になること、前回掲載時のステータスが最も新しい掲載トピックのものになること、`trend`を持たない過去記事しかない場合は「前回掲載時のステータスは不明」になること、一度も掲載されていない候補は掲載回数0・報告回数1になることを確認するテストを書く
@@ -46,11 +50,18 @@
   - `scripts/trend-digest/collect-and-select.ts`に、候補収集の直後に観測ログを書き出す処理と、履歴の集約・ステータス判定・掲載実績の算出を呼び出す処理を追加する
   - 観測ログの書き出しに失敗した場合は非ゼロ終了し、記事生成に進まないようにする(design.md「エラーハンドリング」)
   - 記事を作らない回でも観測ログだけをコミット・PR作成するよう、週次実行のワークフローを更新する([weekly-publish/design.md](../weekly-publish/design.md)「記事生成をスキップする処理」)
+  - **全候補の生成失敗・利用枠の枯渇で非ゼロ終了する場合も、その前に観測ログだけをコミット・push・PR作成する**([weekly-publish/design.md](../weekly-publish/design.md)「エラーハンドリング」)。観測ログを捨てて終了すると欠測週となり、以後の継続日数・報告回数が実態とずれるため
 
 - Task 11: ログ出力(仕様: design.md「ログ」)
   - 🔴 観測件数・ステータスごとの件数・掲載可能でなかったために除外した件数・地域が不明だった件数が標準エラー出力に出ること、掲載可能な候補が0件の編は`WARN`と分かる形で出ることを確認するテストを書く
   - 🟢 ログ出力を実装する
 
-- Task 12: 運用開始直後の挙動の確認(仕様: design.md「エラーハンドリング」最終項、[content-selection/requirements.md#中長期トレンドの絞り込み-3](../content-selection/requirements.md))
+- Task 12: 運用開始直後・欠測週の挙動の確認(仕様: design.md「エラーハンドリング」、[content-selection/requirements.md#中長期トレンドの絞り込み-3](../content-selection/requirements.md))
   - 🔴 履歴ディレクトリが存在しない場合・観測ログが0件の場合に例外にならず、すべての候補が継続日数0のNEWとして扱われることを確認するテストを書く
+  - 🔴 **欠測週(ある週の観測ログが存在しない)のテストを書く**: 欠測週が検知回数にも強度の推移にも現れないこと、「同じ編の直近の実行」が欠測週ではなく実際にログが残っている最も新しい実行を指すこと、欠測があっても継続日数(日付の差)が変わらないこと、欠測によって継続中の候補がSHORT_TERM・DECLININGに落ちないこと
   - 🟢 該当の分岐を実装する
+
+- Task 13: 改訂した既存specの`> ステータス: 仕様確認中`行の削除(仕様: [.claude/skills/pr/references/spec-pr.md](../../../.claude/skills/pr/references/spec-pr.md))(TDD対象外)
+  - 本specの実装が完了し、改訂分に対応するテストが揃った時点で、`content-selection`・`article-detail`・`content-generation`・`weekly-publish`の各`requirements.md`3行目の`> ステータス: 仕様確認中(中長期トレンド対応は未実装)`を削除する
+  - この行がある間、4specの`requirements.md`/`design.md`は`check:spec-coverage`の対象から丸ごと外れ、**既に実装・テスト済みのルールまで検証が止まる**。改訂の実装が済んだら必ず外し、除外が残り続けないようにする
+  - あわせて`scripts/spec-coverage-skip.json`に追加したtrend-history関連のエントリも見直す

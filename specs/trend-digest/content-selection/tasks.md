@@ -13,7 +13,7 @@
   - 🟢 `app/trend-digest/lib/candidateTypes.ts`に`Candidate`(地域情報の4項目を含む)・`PublishableCandidate`・`SelectionResult`を定義する
 
 - Task 3: 中長期トレンドの絞り込み(仕様: requirements.md#中長期トレンドの絞り込み-1〜3、design.md「中長期トレンドの絞り込みを行う処理」)
-  - 🔴 ステータスがEMERGING/GROWING/ESTABLISHED/STABLEの候補だけが残ること、NEW/SHORT_TERM/DECLININGの候補が除外されること、除外した件数がステータスごとに数えられること、全候補が除外されても例外にならず空の結果を返すことを確認するテストを書く
+  - 🔴 ステータスがGROWING/ESTABLISHED/STABLEの候補だけが残ること、NEW/SHORT_TERM/EMERGING/DECLININGの候補が除外されること、除外した件数がステータスごとに数えられること、全候補が除外されても例外にならず空の結果を返すことを確認するテストを書く
   - 🟢 `app/trend-digest/lib/selection.ts`に`filterPublishableCandidates(candidates, judgements)`を実装する。ステータス判定は[trend-history](../trend-history/tasks.md)のTask 5〜6の結果を受け取るだけで、ここでは再判定しない
 
 - Task 4: 掲載済み話題の再掲抑制(仕様: requirements.md#掲載済み話題の再掲抑制-1〜4、design.md「掲載済み話題を除外する処理」)
