@@ -53,7 +53,7 @@
   - 🟢 `app/ai-dev-digest/lib/articleUrl.ts`に`buildArticleUrl(article)`を実装し、`buildBroadcastMessage`をこの関数を使う形に変更する(本文に載るURLと疎通確認するURLが必ず一致するようにする)
   - 🔵 リファクタ
 
-- Task C: 配信CLIへの組み込み(仕様: design.md「記事ページの公開を待つ処理」手順4、design.md「エラーハンドリング」)
+- Task C: 配信CLIへの組み込み(仕様: design.md「記事ページの公開を待つ処理」手順4〜5、design.md「エラーハンドリング」)
   - TDD対象外(待機ロジックはTask A、URL導出はTask Bでテスト済み。CLIはそれらを順に呼ぶだけの薄いラッパーのため。Task 2と同じ理由)
   - `scripts/ai-dev-digest/broadcast-line.ts`で、LINE Messaging APIへのPOSTの前に`waitForPageAvailable(buildArticleUrl(article), { onAttempt })`を呼ぶ。`onAttempt`には試行ごとの経過秒数とHTTPステータスを`console.error`で実行ログに記録するコールバックを渡す(design.md「記事ページの公開を待つ処理」手順5・「ログ」参照。このファイルは`no-console`の例外対象のため`console.error`を直接呼べる)
   - 公開が確認できないまま時間切れになった場合は、LINE APIを呼ばずに最後のHTTPステータス・経過時間(戻り値のミリ秒。`onAttempt`が渡す経過秒数とは単位が異なる)を標準エラー出力へ記録し、非ゼロで終了する
