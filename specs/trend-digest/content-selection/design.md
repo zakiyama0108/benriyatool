@@ -168,7 +168,7 @@ export type Candidate = {
   sourceUrl: string
   method: SelectionMethod
   strength: number // 絞り込みの優先順位付けに使う数値。固定リスト: 100-順位(順位が高い=強い)。WebSearch: 独立情報源の言及数
-  originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。trend-history/requirements.md#地域情報-9)
+  originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。trend-history/requirements.md#地域情報-1)
   currentRegions: string[] // 現在の主な流行地域。判定できない場合は空配列(=不明)
   strengthJapan: number | null // 日本の情報源での言及数。判定できない場合はnull
   strengthOverseas: number | null // 海外の情報源での言及数。判定できない場合はnull

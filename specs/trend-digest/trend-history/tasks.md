@@ -30,15 +30,15 @@
   - 🔴 EMERGING/GROWING/ESTABLISHED/STABLEは`isPublishable`が真、NEW/SHORT_TERM/DECLININGは偽になることを確認するテストを書く
   - 🟢 `judgeStatus.ts`に掲載可否の判定を実装する
 
-- Task 7: 掲載実績(報告回数・前回掲載時のステータス)の算出(仕様: requirements.md#掲載実績の追跡-12〜13、design.md「掲載実績(報告回数・前回掲載時のステータス)を求める処理」)
+- Task 7: 掲載実績(報告回数・前回掲載時のステータス)の算出(仕様: requirements.md#掲載実績の追跡-1〜2、design.md「掲載実績(報告回数・前回掲載時のステータス)を求める処理」)
   - 🔴 一時ディレクトリに過去記事JSONを置き、同じ正規化タイトルの掲載回数が数えられること、今回の報告回数が「過去の掲載回数+1」になること、前回掲載時のステータスが最も新しい掲載トピックのものになること、`trend`を持たない過去記事しかない場合は「前回掲載時のステータスは不明」になること、一度も掲載されていない候補は掲載回数0・報告回数1になることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/publishRecords.ts`に`collectPublishRecords(articlesDir)`を実装する(既存の`reviewRecords.ts`と同じく、ディレクトリを引数で受け取る形にする)
 
-- Task 8: 地域情報の収集(固定リストジャンル側)(仕様: requirements.md#地域情報-9〜11、[content-selection/design.md](../content-selection/design.md)「固定リストジャンルの候補を収集・判定する処理」手順6)
+- Task 8: 地域情報の収集(固定リストジャンル側)(仕様: requirements.md#地域情報-1〜3、[content-selection/design.md](../content-selection/design.md)「固定リストジャンルの候補を収集・判定する処理」手順6)
   - 🔴 情報源に`region`を持たせたウォッチリストをモックし、日本の情報源だけで検出された候補は日本での強度に件数が入り海外での強度が0になること、両方の区分で検出された候補は両方に件数が入ること、そのジャンルに一方の区分の情報源が登録されていない場合はその区分が「不明」(null)になること、発祥地域・主な流行地域は「不明」のままになることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/fetchFixedListCandidates.ts`に地域情報の集計を追加する
 
-- Task 9: 地域情報の収集(WebSearchジャンル側)(仕様: requirements.md#地域情報-9〜11、[content-selection/design.md](../content-selection/design.md)「WebSearchジャンルの候補を収集・判定する処理」手順5)(TDD対象外。Claude Code CLIのヘッドレス起動を伴うため)
+- Task 9: 地域情報の収集(WebSearchジャンル側)(仕様: requirements.md#地域情報-1〜3、[content-selection/design.md](../content-selection/design.md)「WebSearchジャンルの候補を収集・判定する処理」手順5)(TDD対象外。Claude Code CLIのヘッドレス起動を伴うため)
   - `scripts/trend-digest/collect-websearch-candidates.ts`のプロンプトに、日本のメディア数・海外のメディア数・発祥地域・主な流行地域を返す指示と、判定できない項目は推測で埋めず「不明」で返す指示を追加する
   - 応答JSONの形式にこれらの項目を追加し、応答形式の分類ロジック(パース部)のみをテスト対象にする
 
