@@ -32,7 +32,7 @@
 - Task C: 配信CLIへの組み込み(仕様: design.md「記事ページの公開を待つ処理」、design.md「エラーハンドリング」、手順は[../../ai-dev-digest/line-broadcast/design.md](../../ai-dev-digest/line-broadcast/design.md)「記事ページの公開を待つ処理」手順4を参照)
   - TDD対象外(待機ロジックはTask A、URL導出はTask Bでテスト済み。CLIはそれらを順に呼ぶだけの薄いラッパーのため。Task 2と同じ理由)
   - `scripts/news-digest/broadcast-line.ts`で、LINE Messaging APIへのPOSTの前に`waitForPageAvailable(buildArticleUrl(article), { onAttempt })`を呼ぶ。`onAttempt`には試行ごとの経過秒数とHTTPステータスを`console.error`で実行ログに記録するコールバックを渡す([ai-dev-digest/line-broadcast/design.md#ログ](../../ai-dev-digest/line-broadcast/design.md)参照。このファイルは`no-console`の例外対象のため`console.error`を直接呼べる)
-  - 公開が確認できないまま時間切れになった場合は、LINE APIを呼ばずに最後のHTTPステータス・待機秒数を標準エラー出力へ記録し、非ゼロで終了する
+  - 公開が確認できないまま時間切れになった場合は、LINE APIを呼ばずに最後のHTTPステータス・経過時間(戻り値のミリ秒。`onAttempt`が渡す経過秒数とは単位が異なる)を標準エラー出力へ記録し、非ゼロで終了する
 
 - Task D: 本番での通し動作確認(仕様: requirements.md#配信タイミング・方式-8〜9)
   - Task A〜Cが揃った状態で、実際の週次記事マージ(またはworkflow_dispatch)により配信ワークフローを実行し、実行ログに公開待ちのポーリングログ(試行ごとの経過秒数とHTTPステータス)が記録されることを確認する(デプロイ完了まで約2分・その間404というタイミング差はユニットテストで再現できないため、本番環境での確認が必要)
