@@ -1,7 +1,7 @@
 # 設計: 記事詳細ページ
 
 ## サマリ
-その回の記事本文を、対象9ジャンルのうち動きがあったジャンルだけを見出しとして、トピック(最大2件/ジャンル)・本文・出典をジャンル見出しの下に表示する。運営者本人がログイン中の場合のみ、各トピック下にフィードバック入力欄を表示し、`trend_digest_feedback`テーブルへINSERT専用で保存する(ai-dev-digestと同じ`authenticated`ロールのINSERT専用パターン)。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。UI方針は「画面設計」参照(Step0は簡易実施)。
+その回の記事本文を、対象ジャンル(エンタメ編9ジャンル・カルチャー編10ジャンル)のうち掲載対象となったジャンルだけを見出しとして、トピック(最大2件/ジャンル)・本文・出典・中長期トレンドの情報(ステータスバッジ・継続期間・報告回数・地域)をジャンル見出しの下に表示する。運営者本人がログイン中の場合のみ、各トピック下にフィードバック入力欄を表示し、`trend_digest_feedback`テーブルへINSERT専用で保存する(ai-dev-digestと同じ`authenticated`ロールのINSERT専用パターン)。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。UI方針は「画面設計」参照(Step0は簡易実施)。
 
 ## 前提: 記事データの形式(この機能が定義する共有スキーマ)
 
@@ -13,18 +13,20 @@
 
 ```ts
 // app/trend-digest/lib/types.ts
+import type { TrendStatus } from './historyTypes' // trend-history/design.mdが定義する中長期ステータス
+
 export type Edition = 'entertainment' | 'culture-lifestyle'
 
 export type Genre =
   | 'music' | 'japanese-movie' | 'foreign-movie' | 'japanese-drama' | 'foreign-drama'
   | 'anime' | 'variety' | 'streaming-video' | 'books-comics'
   | 'sns-buzz' | 'buzzwords' | 'gourmet' | 'hobby' | 'fashion'
-  | 'gadgets' | 'games' | 'travel' | 'economy-money'
+  | 'gadgets' | 'games' | 'travel' | 'economy-money' | 'dev-trends'
 
 // ジャンルの表示順(edition内の見出し表示順として使う。requirements.md#グループとジャンル)
 export const GENRE_ORDER: Record<Edition, Genre[]> = {
   entertainment: ['music', 'japanese-movie', 'foreign-movie', 'japanese-drama', 'foreign-drama', 'anime', 'variety', 'streaming-video', 'books-comics'],
-  'culture-lifestyle': ['sns-buzz', 'buzzwords', 'gourmet', 'hobby', 'fashion', 'gadgets', 'games', 'travel', 'economy-money'],
+  'culture-lifestyle': ['sns-buzz', 'buzzwords', 'gourmet', 'hobby', 'fashion', 'gadgets', 'games', 'travel', 'economy-money', 'dev-trends'],
 }
 
 // ジャンル見出しに表示する日本語ラベル(GenreSectionが使う。requirements.md#グループとジャンルの表記をそのまま使う)
@@ -47,6 +49,30 @@ export const GENRE_LABELS: Record<Genre, string> = {
   games: 'ゲーム',
   travel: '旅行・観光',
   'economy-money': '経済・お金',
+  'dev-trends': '開発手法・開発サービス',
+}
+
+// ステータスバッジに表示する日本語ラベル(requirements.md#中長期トレンドの表示-11。
+// 訪問者は英語の識別子の意味を知らないため、画面には必ずこのラベルを出す)
+export const TREND_STATUS_LABELS: Record<TrendStatus, string> = {
+  NEW: '新規',
+  SHORT_TERM: '一過性',
+  EMERGING: '浮上中',
+  GROWING: '伸長中',
+  ESTABLISHED: '定着',
+  STABLE: '安定',
+  DECLINING: '減速',
+}
+
+// トピックに添える中長期トレンドの情報(trend-historyの判定結果を公開時点の値として保存したもの)。
+// 画面側で再計算はしない(requirements.md#中長期トレンド表示の扱い-6)
+export type TopicTrend = {
+  status: TrendStatus // 掲載されるのはEMERGING/GROWING/ESTABLISHED/STABLEのみ
+  continuationDays: number // 初回検知日から公開時点までの継続日数
+  firstDetectedDate: string // YYYY-MM-DD。初回検知日
+  reportCount: number // 通算何回目の報告か。初掲載は1
+  originRegion: string | null // 発祥地域。不明はnull(表示しない)
+  currentRegions: string[] // 現在の主な流行地域。不明は空配列(表示しない)
 }
 
 export type Topic = {
@@ -57,6 +83,7 @@ export type Topic = {
   sourceTitle: string // 対象作品・話題の原題(content-selectionのCandidate.titleをそのまま引き継ぐ。掲載済み話題の再掲抑制の突合キーとして使う。表示はしない)
   sourceName: string // 出典の情報源名
   sourceUrl: string // 出典の元URL
+  trend?: TopicTrend // 中長期トレンドの情報。この機能より前に公開した記事は持たないため任意(requirements.md#中長期トレンドの表示-15)
 }
 
 export type Article = {
@@ -85,8 +112,10 @@ export type Article = {
   1. `buildArticleTitle(edition, date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
   2. `GENRE_ORDER[edition]`の順に、`topics`に該当ジャンルのトピックが1件以上あるジャンルだけを見出しとして表示する(動きがなかったジャンルは見出し自体を表示しない。requirements.md#記事本文表示-2)。見出しの文言は`Genre`から`GENRE_LABELS`を引いた日本語ラベルを使う
   3. 各ジャンル見出しの下に、そのジャンルの`topics`(最大2件)を、見出し・本文・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
-  4. 全ジャンル合計で最大10件のトピックを表示する(content-selectionの絞り込みにより`topics`配列自体が既に10件以内のため、追加の絞り込みは行わない。requirements.md#記事本文表示-4)
-- 関連するビジネスルール: requirements.md#記事本文表示-1〜4
+  4. 各トピックに`trend`がある場合は、見出しの隣にステータスバッジ(日本語ラベル付き)を、本文の上にトレンド情報の行を表示する。トレンド情報の行に出すのは、継続期間(初回検知日と継続日数を組み合わせた読みやすい表記)・報告回数(2回目以降のみ)・発祥地域(判定できている場合のみ)・現在の主な流行地域(判定できている場合のみ)で、値が不明な項目は項目ごと表示しない(requirements.md#中長期トレンドの表示-10〜14)
+  5. `trend`を持たないトピックは、バッジ・トレンド情報の行をいずれも表示しない(requirements.md#中長期トレンドの表示-15)
+  6. 全ジャンル合計で最大10件のトピックを表示する(content-selectionの絞り込みにより`topics`配列自体が既に10件以内のため、追加の絞り込みは行わない。requirements.md#記事本文表示-4)
+- 関連するビジネスルール: requirements.md#記事本文表示-1〜4、requirements.md#中長期トレンドの表示-10〜15、requirements.md#中長期トレンド表示の扱い-6〜7
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
@@ -132,8 +161,9 @@ sequenceDiagram
 - `id`: ファイル名と一致すること。`<date>-<edition>`の形式であること
 - `edition`: `entertainment`または`culture-lifestyle`であること
 - `date`: `YYYY-MM-DD`形式であること
-- `topics`: 配列長が1件以上10件以下であること(content-selection/requirements.md#機能要件-5)
-- 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応する9ジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが3件以上存在しないこと(content-selection/requirements.md#機能要件-4)
+- `topics`: 配列長が1件以上10件以下であること(content-selection/requirements.md#機能要件-6)
+- 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが3件以上存在しないこと(content-selection/requirements.md#機能要件-5)
+- 各`topic`の`trend`は省略可。ある場合は、`status`が`EMERGING`/`GROWING`/`ESTABLISHED`/`STABLE`のいずれかであること(掲載できないステータスが記事に混入していないかをビルド時に検知するため。[content-selection/requirements.md#中長期トレンドの絞り込み-1](../content-selection/requirements.md))、`continuationDays`が0以上の整数であること、`firstDetectedDate`が`YYYY-MM-DD`形式で記事の`date`以前であること、`reportCount`が1以上の整数であること、`currentRegions`が文字列の配列であること
 - `body`の文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2、content-generation/design.md「本文の分量を検証する処理」)
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(requirements.md#運営者向けフィードバック-9)
 
@@ -152,7 +182,9 @@ app/trend-digest/lib/articles.ts (新規: content/trend-digest/articles/ を読�
 app/trend-digest/lib/saveFeedback.ts (新規: フィードバック保存処理)
 app/trend-digest/[id]/page.tsx (新規: 記事詳細ページ、generateStaticParamsで全IDを列挙)
 app/trend-digest/components/GenreSection.tsx (新規: ジャンル見出し+配下トピックの表示)
-app/trend-digest/components/TopicCard.tsx (新規: 1トピック分の表示+FeedbackFormの条件付き表示)
+app/trend-digest/components/TopicCard.tsx (既存: ステータスバッジ・トレンド情報の行の表示を追加)
+app/trend-digest/components/TrendStatusBadge.tsx (新規: ステータスの日本語ラベル付きバッジ)
+app/trend-digest/components/TrendMeta.tsx (新規: 継続期間・報告回数・地域の1行表示)
 app/trend-digest/components/FeedbackForm.tsx (新規)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
@@ -205,7 +237,9 @@ Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の
 
 - パンくず(べんりやつーる › 週刊トレンド › 記事タイトル)
 - 記事タイトル(`buildArticleTitle(edition, date)`)・公開日
-- ジャンル見出し(動きがあったジャンルのみ、GENRE_ORDER順)+配下にそのジャンルのトピックカード(最大2件): 見出し、本文、出典(情報源名・元URLへのリンク、新規タブで開く)
+- ジャンル見出し(掲載対象のジャンルのみ、GENRE_ORDER順)+配下にそのジャンルのトピックカード(最大2件): 見出し、ステータスバッジ、トレンド情報の行、本文、出典(情報源名・元URLへのリンク、新規タブで開く)
+- ステータスバッジ: 見出しの隣に置き、日本語ラベル(浮上中/伸長中/定着/安定)を必ず表示する。段階が進むほど濃くなる暖色系(浮上中=最も淡い、安定=最も濃い)で塗り分け、色だけに意味を持たせない(requirements.md#中長期トレンド表示の扱い-7)。具体的な色コードは実装時にTailwindの既存パレットから選ぶ
+- トレンド情報の行: 本文の上に1行で「◯月◯日から継続(◯日)」「◯回目の報告」「発祥: ◯◯」「主な流行地域: ◯◯」を並べる。報告回数は2回目以降のみ、地域は判定できている場合のみ出し、不明な項目は項目ごと省く(requirements.md#中長期トレンドの表示-12〜14)
 - 各トピックの下: 運営者本人がログイン中の場合のみフィードバック入力欄(テキストエリア+送信ボタン)を表示する。送信後は「送信しました」、失敗時は「送信に失敗しました。もう一度お試しください」を表示
 - ページ下部: ログイン状態表示(未ログイン時は「ログイン」ボタン。ログイン中はメールアドレス+ログアウトボタン、`ai-dev-digest`の表示パターンと同じ)
 
@@ -214,7 +248,9 @@ Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の
 | コンポーネント | Props | 役割 |
 |---|---|---|
 | GenreSection | `genre: Genre`, `topics: Topic[]`, `isAdmin: boolean`, `articleId: string` | 1ジャンル分の見出し+配下トピックカードの表示 |
-| TopicCard | `topic: Topic`, `isAdmin: boolean`, `articleId: string` | 1トピック分の表示+配下にFeedbackFormを`isAdmin`で条件付き表示 |
+| TopicCard | `topic: Topic`, `isAdmin: boolean`, `articleId: string` | 1トピック分の表示+配下にFeedbackFormを`isAdmin`で条件付き表示。`topic.trend`がある場合のみTrendStatusBadge・TrendMetaを表示 |
+| TrendStatusBadge | `status: TrendStatus` | ステータスの日本語ラベル付きバッジ表示 |
+| TrendMeta | `trend: TopicTrend` | 継続期間・報告回数・地域の1行表示(不明な項目は省く) |
 | FeedbackForm | `articleId: string`, `topicId: string` | 自由記述の入力欄・送信・送信結果表示 |
 
 ## 状態管理
@@ -226,6 +262,7 @@ Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の
 
 - フィードバックの`comment`はエスケープせずそのままDBに保存する(表示・一覧化を一切行わないため、XSS等の表示起因のリスクは発生しない。requirements.md#スコープ外を参照)
 - `article_id`・`topic_id`はブラウザから送信される値をそのまま信頼する。存在しない記事ID・トピックIDが送られても、フィードバックとして意味を持たないだけで実害はない(authenticatedロールでもINSERTのみで他データへの影響がないため、厳密なサーバー側検証は行わない)
+- `trend`の地域(`originRegion`・`currentRegions`)はエージェントが情報源から判定した文字列をそのまま表示するため、他のトピック本文と同じくReactのエスケープに委ねる。判定できなかった項目は表示自体を行わないため、推測で作られた地域名が画面に出ることはない([trend-history/requirements.md#地域情報-9](../trend-history/requirements.md))
 - 記事データ(JSONファイル)は開発者・エージェントが作成しリポジトリにコミットされるコンテンツであり、訪問者からの入力ではないため、XSS対策としてのサニタイズは不要(通常のReactレンダリングでエスケープされる)。ただし`sourceUrl`は`http`/`https`のみを許可し(バリデーション参照)、`javascript:`等のスキームを含むリンクが生成されないようにする
 - `isAuthorizedAdmin()`(`admin_emails`のSELECT)は同テーブルのRLS(「自分のメール行だけ見える」設計、ADR-0006)により、読者全員が呼び出しても他人のメールアドレス一覧が漏れることはない
 

@@ -5431,6 +5431,16 @@
   },
   {
     "specFile": "trend-digest/source-review/requirements.md",
+    "item": "選定領域の見直し案の粒度・提示方法 [10]",
+    "reason": "候補は取れているのに中長期ステータスの絞り込みで全件除外される状態が続くジャンルについて、閾値の妥当性を検証する見直し案を含めるというヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため(除外件数の出力自体はcontent-selection側でテストする)"
+  },
+  {
+    "specFile": "trend-digest/source-review/requirements.md",
+    "item": "選定領域の見直し案の粒度・提示方法 [11]",
+    "reason": "地域情報が不明のまま記録された候補の割合が高い場合に情報源・収集指示の見直し案を含めるというヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため(不明件数の出力自体はtrend-history側でテストする)"
+  },
+  {
+    "specFile": "trend-digest/source-review/requirements.md",
     "item": "ビジネスルール・制約 [1]",
     "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、.github/workflows/trend-digest-monthly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task3)"
   },
