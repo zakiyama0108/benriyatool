@@ -22,11 +22,7 @@
 ## 2026-09-22 追加(デプロイ完了前に配信されてしまう不具合の修正)
 
 - Task A: ページ公開待ちの共通処理(仕様: requirements.md#配信タイミング・方式-8〜9、design.md「記事ページの公開を待つ処理」)
-  - 着手時: ai-dev-digest/news-digest/trend-digestの3つのrequirements.md先頭にある`> ステータス: 仕様確認中(未実装)`をすべて削除する(この行がある間は`check:spec-coverage`の対象外になり、既にリリース済みの分の網も一時的に外れてしまうため。承認後、実装の最初の🔴Redで削除する運用)
-  - 🔴 テストは`__tests__/lib/waitForPageAvailable.test.ts`(新設)に書く。`app/lib/`↔`__tests__/lib/`は、既存の`app/components/`↔`__tests__/components/`と同じ並べ方で、CLAUDE.md「フォルダ構成」のサイト全体に関わるものを直下に置く規約に沿う。`fetch`とタイマーを差し替えたテストで、(1) 最初から200なら1回で待機を終えること、(2) 404が続いたあと200になったら待機を終えること、(3) 308リダイレクトを経て最終的に200になった場合も公開済みと判定すること(`fetch`既定の`redirect: 'follow'`のまま`manual`にしないことの確認。design.md「記事ページの公開を待つ処理」参照)、(4) `timeoutMs`を超えても200にならなければ失敗を返すこと、(5) `fetch`が例外を投げても打ち切らず次のポーリングへ進むこと、(6) 時間切れ時の戻り値に最後に観測したHTTPステータスと経過時間(ミリ秒)が含まれることを確認するテストを書く。この`describe`の直前に`// 仕様:`コメントを置き、3スペック分・計9件のアンカーをフルパス・「、」区切りで列挙する(`scripts/check-spec-coverage.mjs`は`__tests__/`配下のコメントしか走査せず、区切りも「、specs/」のみ対応のため、実装ファイル`app/lib/waitForPageAvailable.ts`側への記載やハイフン併記`-8`・`-9`ではdangling refになりカバレッジに反映されない): `specs/ai-dev-digest/line-broadcast/requirements.md#配信タイミング・方式-8`、`specs/ai-dev-digest/line-broadcast/requirements.md#配信タイミング・方式-9`、`specs/ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理`、`specs/news-digest/line-broadcast/requirements.md#配信タイミング・方式-8`、`specs/news-digest/line-broadcast/requirements.md#配信タイミング・方式-9`、`specs/news-digest/line-broadcast/design.md#記事ページの公開を待つ処理`、`specs/trend-digest/line-broadcast/requirements.md#配信タイミング・方式-8`、`specs/trend-digest/line-broadcast/requirements.md#配信タイミング・方式-9`、`specs/trend-digest/line-broadcast/design.md#記事ページの公開を待つ処理`
-  - 🟢 `app/lib/waitForPageAvailable.ts`に`waitForPageAvailable(url, options)`を実装する(`pollIntervalMs`既定15秒・`timeoutMs`既定10分、`fetch`・`sleep`を注入可能にする。`fetch`呼び出しはデフォルトの`redirect: 'follow'`のままとし`manual`は使わない)。この1ファイルはai-dev-digest/news-digest/trend-digestの3配信CLIで共有する
-  - 🔵 リファクタ
-  - 上記9件のアンカーが揃うことで、[8][9]と新design見出し「記事ページの公開を待つ処理」はこのTask A自身の実テストで実際にカバーされるため、`scripts/spec-coverage-skip.json`への新規登録は不要になる
+  - 3アプリ共通。内容は[ai-dev-digest/line-broadcast/tasks.md](../../ai-dev-digest/line-broadcast/tasks.md)のTask Aを参照(`app/lib/waitForPageAvailable.ts`・`__tests__/lib/waitForPageAvailable.test.ts`は3アプリの配信CLIで共有する1つの実装であり、着手はいずれか1アプリで1回のみでよい)
 
 - Task B: 記事URL導出の切り出し(仕様: design.md「記事ページの公開を待つ処理」、手順は[../../ai-dev-digest/line-broadcast/design.md](../../ai-dev-digest/line-broadcast/design.md)「記事ページの公開を待つ処理」手順1を参照)
   - 🔴 記事データから記事詳細ページURLが導出されること、`buildBroadcastMessage`の本文末尾のURLが同じ関数の戻り値と一致することを確認するテストを書く
@@ -35,9 +31,10 @@
 
 - Task C: 配信CLIへの組み込み(仕様: design.md「記事ページの公開を待つ処理」、design.md「エラーハンドリング」、手順は[../../ai-dev-digest/line-broadcast/design.md](../../ai-dev-digest/line-broadcast/design.md)「記事ページの公開を待つ処理」手順4を参照)
   - TDD対象外(待機ロジックはTask A、URL導出はTask Bでテスト済み。CLIはそれらを順に呼ぶだけの薄いラッパーのため。Task 2と同じ理由)
-  - `scripts/news-digest/broadcast-line.ts`で、LINE Messaging APIへのPOSTの前に`waitForPageAvailable(buildArticleUrl(article))`を呼ぶ
+  - `scripts/news-digest/broadcast-line.ts`で、LINE Messaging APIへのPOSTの前に`waitForPageAvailable(buildArticleUrl(article), { onAttempt })`を呼ぶ。`onAttempt`には試行ごとの経過秒数とHTTPステータスを`console.error`で実行ログに記録するコールバックを渡す([ai-dev-digest/line-broadcast/design.md#ログ](../../ai-dev-digest/line-broadcast/design.md)参照。このファイルは`no-console`の例外対象のため`console.error`を直接呼べる)
   - 公開が確認できないまま時間切れになった場合は、LINE APIを呼ばずに最後のHTTPステータス・待機秒数を標準エラー出力へ記録し、非ゼロで終了する
 
 - Task D: 本番での通し動作確認(仕様: requirements.md#配信タイミング・方式-8〜9)
   - Task A〜Cが揃った状態で、実際の週次記事マージ(またはworkflow_dispatch)により配信ワークフローを実行し、実行ログに公開待ちのポーリングログ(試行ごとの経過秒数とHTTPステータス)が記録されることを確認する(デプロイ完了まで約2分・その間404というタイミング差はユニットテストで再現できないため、本番環境での確認が必要)
   - LINE通知の到達が本番デプロイ完了より後になり、通知に載ったリンクを開いた時点で記事ページが閲覧できることを確認する
+  - 実行ログから、記事ページへのGETで実際に観測したリダイレクトのHTTPステータスコードを確認する(design.md「記事ページの公開を待つ処理」の「3xx」という記述の実際の値を裏取りする)

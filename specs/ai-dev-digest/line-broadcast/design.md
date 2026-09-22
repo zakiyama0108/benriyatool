@@ -1,5 +1,8 @@
 # 設計: LINE公式アカウントでの新着記事自動配信
 
+## サマリ
+日次記事のマージ(mainへのpush、`content/ai-dev-digest/articles/*.json`の新規追加)をトリガーに、独立したGitHub Actionsワークフロー(`ai-dev-digest-line-broadcast.yml`)が起動する。記事詳細ページが本番サイトで実際に閲覧可能になったことを確認してから、運営者が屋号名義で開設するLINE公式アカウントへブロードキャストメッセージ(記事タイトル・トピック見出し一覧・記事リンク)を配信する。待機処理(`app/lib/waitForPageAvailable.ts`)はnews-digest・trend-digestの配信とも共通のため、本specの設計が3アプリの「正」となる。
+
 ## 実行環境の前提(初導入のため明記する設計判断)
 
 配信は[daily-publish](../daily-publish/design.md)の`ai-dev-digest-daily.yml`にジョブを追加するのではなく、独立した新規ワークフロー`.github/workflows/ai-dev-digest-line-broadcast.yml`とする。
@@ -47,10 +50,10 @@
 - 背景: このワークフローと本番デプロイ([deploy.yml](../../../.github/workflows/deploy.yml))は、mainへの**同じpushで並列に起動する**。デプロイ側は全テスト実行とビルドを挟むため必ず後から完了し、配信の方が先に終わる。確認せずに配信すると、記事ページがまだ配信網に載っていない時間帯にリンクを通知してしまう(requirements.md#配信タイミング・方式-8)
 - 手順:
   1. 配信本文に載せるURLと**同一の文字列**に対してHTTP GETを行う(本文の組み立てとURL導出処理を共有し、「疎通確認したURL」と「通知に載るURL」が食い違わないようにする)
-  2. **リダイレクト(3xx)は追う**。追った先が最終的に200ならただちに次の送信処理へ進む(`fetch`既定の`redirect: 'follow'`を使い、`manual`にはしない。根拠: `next.config.ts`の`trailingSlash: true`により本番の正準URLは末尾スラッシュあり(`/<app>/<date>/`)だが、配信本文のURL(`buildArticleUrl`)は末尾スラッシュなしのため、本番では常に308リダイレクト経由で解決される。`redirect: 'manual'`や単純な`status === 200`判定で実装すると、公開済みでも200を観測できず必ず時間切れになり配信されなくなる)
+  2. **リダイレクト(3xx)は追う**。追った先が最終的に200ならただちに次の送信処理へ進む(`fetch`既定の`redirect: 'follow'`を使い、`manual`にはしない。根拠: `next.config.ts`の`trailingSlash: true`により本番の正準URLは末尾スラッシュあり(`/<app>/<date>/`)だが、配信本文のURL(`buildArticleUrl`)は末尾スラッシュなしのため、本番では常に3xxリダイレクト経由で解決される(`wrangler.toml`の`[assets]`は`directory`のみを指定し`html_handling`を明示していないため、末尾スラッシュ正規化の具体的なステータスコードはCloudflare Workersランタイムの既定に委ねられ、308とは限らない。いずれにせよ2xx以外である以上、手順の「3xxは追う」という設計判断自体は変わらない)。`redirect: 'manual'`や単純な`status === 200`判定で実装すると、公開済みでも200を観測できず必ず時間切れになり配信されなくなる)
   3. 200以外(デプロイ未完了時は404)・ネットワークエラーの場合は`pollIntervalMs`待って手順1へ戻る
   4. 合計の経過時間が`timeoutMs`を超えたら公開待ちを打ち切り、**LINE配信APIを呼ばずに**異常終了する(requirements.md#配信タイミング・方式-9)。この時点の戻り値には、最後に観測したHTTPステータス(ネットワークエラーだった場合はその旨)と経過時間(ミリ秒)を含める(呼び出し元がこれを実行ログに記録できるようにするため)
-  5. 試行ごとに経過秒数とHTTPステータスを実行ログに記録する(何分待って何が返っていたかが後から分かるようにするため)
+  5. 試行ごとの結果(経過秒数・HTTPステータス)は、待機関数自身がログ出力するのではなく、呼び出し元へ結果を渡すコールバック引数(`onAttempt`)を通じて伝える。`app/lib/waitForPageAvailable.ts`自体は`console`出力を一切持たない。実際の実行ログへの記録(`console.error`)は、呼び出し元である配信CLI(`scripts/<app>/broadcast-line.ts`)側が`onAttempt`を受け取って行う(根拠: `eslint.config.mjs`は`no-console: "warn"`をリポジトリ全体に適用し、`no-console: "off"`の例外は`scripts/**/*.mjs`と`scripts/{ai-dev-digest,news-digest,trend-digest}/**/*.ts`のみで、`app/`配下に置く`waitForPageAvailable.ts`が素朴に`console.*`を呼ぶと`npm run lint`(`--max-warnings=0`)が失敗するため。同じ形の先例として`app/ai-dev-digest/lib/generateContent.ts`の`generateTopics`が持つ`onExcluded`コールバック(除外した候補を呼び出し元へ通知し、scripts側が`console.error`でActionsログに残す)がある)
 - 待機パラメータと根拠:
   - `pollIntervalMs = 15000`(15秒) … デプロイ完了からリンク通知までの遅れをこの粒度に抑える。これ以上短くしても本番サイトへのリクエストが増えるだけで得られる精度に見合わない
   - `timeoutMs = 600000`(10分) … 2026-09-22時点の実測でmainへのpushからデプロイ完了まで約2分7秒(うち全テスト実行が約66秒)。今後テストが増えても収まるよう実測の5倍弱(2分7秒×5≒10分35秒であり、10分はこれよりやや短い)を上限とする。GitHub Actionsのジョブ既定タイムアウト(6時間)に対しては十分小さい
@@ -101,5 +104,6 @@ content/ai-dev-digest/articles/<date>.json (既存: 配信内容の元データ)
 ## ログ
 
 - ワークフロー実行ごとに、対象日付・配信対象トピック数・LINE APIへのリクエスト結果(成功/失敗)をGitHub Actionsのワークフロー実行ログに記録する(標準出力への記録で足り、追加のログ基盤は持たない。daily-publishと同じ方針)
+- 記事ページ公開待ちの試行ごとのログ(経過秒数・HTTPステータス)は、配信CLI(`scripts/ai-dev-digest/broadcast-line.ts`)が`waitForPageAvailable`に渡す`onAttempt`コールバックの中で`console.error`により出力する。`app/lib/waitForPageAvailable.ts`自体は`console`を使わない(上記「記事ページの公開を待つ処理」手順5参照)
 - 配信に失敗した場合は、HTTPステータス・エラーレスポンス概要も合わせて記録する(上記エラーハンドリング「配信失敗時の記録方法」参照)
 - リクエストヘッダー(`Authorization: Bearer <チャネルアクセストークン>`)はいかなる場合もログに出力しない(将来の実装変更でトークンが誤ってログに残ることを防ぐための明記)

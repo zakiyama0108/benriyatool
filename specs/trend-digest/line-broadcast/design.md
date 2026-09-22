@@ -45,7 +45,7 @@
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
 ### 記事ページの公開を待つ処理
-[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)と同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/trend-digest/<id>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ(`pollIntervalMs`・`timeoutMs`とその根拠)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避(`cache: 'no-store'`相当)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
+[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)と同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/trend-digest/<id>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ(`pollIntervalMs`・`timeoutMs`とその根拠)・リダイレクトの扱い(3xxは追う)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避(`cache: 'no-store'`相当)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-8〜9
 
 ### LINEブロードキャストメッセージを送信する処理
@@ -59,7 +59,7 @@
 
 ## エラーハンドリング
 
-- 既定の待機時間(`timeoutMs`)内に記事ページの公開を確認できなかった場合、配信を行わずワークフローのステップを異常終了させる(requirements.md#配信タイミング・方式-9)。「開けないリンクを送ってしまう」ことの方が「その回の配信が飛ぶ」ことより読者への影響が大きいと判断したため、公開が確認できない限り送らない側に倒す。この場合もリトライは行わず、`waitForPageAvailable`の戻り値に含まれる「最後に観測したHTTPステータス」と「経過時間(ミリ秒)」を実行ログに記録する(戻り値の形はai-dev-digestのline-broadcast/design.md「記事ページの公開を待つ処理」参照)
+- 既定の待機時間(`timeoutMs`)内に記事ページの公開を確認できなかった場合、配信を行わずワークフローのステップを異常終了させる(requirements.md#配信タイミング・方式-9)。「開けないリンクを送ってしまう」ことの方が「その回の配信が飛ぶ」ことより読者への影響が大きいと判断したため、公開が確認できない限り送らない側に倒す。この場合もリトライは行わず、`waitForPageAvailable`の戻り値に含まれる「最後に観測したHTTPステータス」と「経過時間(ミリ秒)」を実行ログに記録する(戻り値の形は[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)参照)
 - 記事データのパースに失敗した場合(通常は発生しない想定。article-detailのビルド時バリデーションを既に通過したデータのはずだが、念のため防御的に検証する)、配信を行わずワークフローのステップを異常終了させる
 - LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-3〜4)。このワークフローは記事公開(weekly-publishのPRマージ)が完了した**後**に、ファイルが分離された独立のワークフローとして起動するため、配信の失敗がweekly-publishの処理(記事公開)自体に影響を及ぼす経路はそもそも存在しない(requirements.mdビジネスルール[3]相当。ai-dev-digest/line-broadcastの考え方をそのまま踏襲)
 - 配信失敗時の記録方法: このワークフローはPRマージ後(PRが既にクローズ済み)に実行されるためコメント先のPRが存在しない。専用のGitHub Issue作成等の追加の通知手段は設けず、GitHub Actionsのワークフロー実行結果(失敗)と実行ログの内容で運営者が把握する方式とする(ai-dev-digest/line-broadcastと同じ考え方。無料枠と共有される点も同じで、配信失敗の発生頻度は低いと見込まれ、追加の通知基盤を持つコストに見合わないと判断した。要件[5]が定める「原因を記録し、運営者が把握できるようにする」は、失敗したステップ名・HTTPステータス・エラーレスポンス概要を実行ログに出力することで満たす)
