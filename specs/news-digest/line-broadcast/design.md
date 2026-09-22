@@ -43,6 +43,22 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
   6. LINE Messaging APIのテキストメッセージ上限(公式ドキュメント上5000文字)への特別な切り詰め処理は設けない(トピック件数は最大7件・各見出しも短文のため超過の可能性は低い。万一超過した場合は下記エラーハンドリングに従う)
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
+### 記事ページの公開を待つ処理
+- 対象: 組み立てたメッセージ本文に含まれる記事詳細ページのURL(`https://benriyatool.com/news-digest/<date>`)
+- 背景: このワークフローと本番デプロイ([deploy.yml](../../../.github/workflows/deploy.yml))は、mainへの**同じpushで並列に起動する**。デプロイ側は全テスト実行とビルドを挟むため必ず後から完了し、配信の方が先に終わる。確認せずに配信すると、記事ページがまだ配信網に載っていない時間帯にリンクを通知してしまう(requirements.md#配信タイミング・方式-8)
+- 手順:
+  1. 配信本文に載せるURLと**同一の文字列**に対してHTTP GETを行う(本文の組み立てとURL導出処理を共有し、「疎通確認したURL」と「通知に載るURL」が食い違わないようにする)
+  2. HTTPステータスが200なら公開済みとみなし、ただちに次の送信処理へ進む
+  3. 200以外(デプロイ未完了時は404)・ネットワークエラーの場合は`pollIntervalMs`待って手順1へ戻る
+  4. 合計の経過時間が`timeoutMs`を超えたら公開待ちを打ち切り、**LINE配信APIを呼ばずに**異常終了する(requirements.md#配信タイミング・方式-9)
+  5. 試行ごとに経過秒数とHTTPステータスを実行ログに記録する(何分待って何が返っていたかが後から分かるようにするため)
+- 待機パラメータと根拠:
+  - `pollIntervalMs = 15000`(15秒) … デプロイ完了からリンク通知までの遅れをこの粒度に抑える。これ以上短くしても本番サイトへのリクエストが増えるだけで得られる精度に見合わない
+  - `timeoutMs = 600000`(10分) … 2026-09-22時点の実測でmainへのpushからデプロイ完了まで約2分7秒(うち全テスト実行が約66秒)。今後テストが増えても収まるよう実測の約5倍を上限とする。GitHub Actionsのジョブ既定タイムアウト(6時間)に対しては十分小さい
+- 実装場所の判断: 待機をワークフローYAMLのシェルループではなく配信CLI(`broadcast-line.ts`)側に置く。YAMLのシェルループはこのリポジトリのvitestでテストできないのに対し、TypeScript側なら`fetch`を差し替えて「404が続いたあと200になったら送る」「時間切れなら送らない」を決定的にテストできるため(`scripts/trend-digest/fetchSourcePage.ts`と同じ置き方の考え方)
+- 待機処理自体は3アプリ(ai-dev-digest / news-digest / trend-digest)で共通のため、サイト全体で共有する`app/lib/waitForPageAvailable.ts`に置く(CLAUDE.md「フォルダ構成」のサイト全体に関わるものは`app/`直下に置く規約に従う)
+- 関連するビジネスルール: requirements.md#配信タイミング・方式-8〜9
+
 ### LINEブロードキャストメッセージを送信する処理
 - 対象: 組み立てたメッセージ本文
 - 手順:
@@ -54,6 +70,7 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
 
 ## エラーハンドリング
 
+- 既定の待機時間(`timeoutMs`)内に記事ページの公開を確認できなかった場合、配信を行わずワークフローのステップを異常終了させる(requirements.md#配信タイミング・方式-9)。「開けないリンクを送ってしまう」ことの方が「その回の配信が飛ぶ」ことより読者への影響が大きいと判断したため、公開が確認できない限り送らない側に倒す。この場合もリトライは行わず、最後に観測したHTTPステータスと待機した秒数を実行ログに記録する
 - 記事データのパースに失敗した場合、配信を行わずワークフローのステップを異常終了させる
 - LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-3〜4)。このワークフローは記事公開(weekly-publishのPRマージ)が完了した後に起動する独立ワークフローのため、配信の失敗が記事公開自体に影響を及ぼす経路は存在しない
 - 配信失敗時の記録方法: 専用のGitHub Issue作成等の追加の通知手段は設けず、GitHub Actionsのワークフロー実行結果(失敗)と実行ログの内容で運営者が把握する(ai-dev-digestと同じ方針。日次・週次いずれも無料枠が少なく配信失敗の発生頻度は低いと見込まれ、追加の通知基盤を持つコストに見合わないと判断した)
@@ -62,7 +79,9 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
 
 ```
 .github/workflows/news-digest-line-broadcast.yml (新規: mainへのpush(content/news-digest/articles/*.jsonの新規追加)をトリガーに配信を実行するワークフロー)
-app/news-digest/lib/buildBroadcastMessage.ts (新規: 記事データからLINE配信用のテキスト本文を組み立てる純粋関数)
+app/news-digest/lib/buildBroadcastMessage.ts (既存: 記事データからLINE配信用のテキスト本文を組み立てる純粋関数。記事URLの導出をbuildArticleUrlへ切り出して共有する)
+app/news-digest/lib/articleUrl.ts (新規: 記事データから記事詳細ページのURL(`${SITE_URL}/news-digest/${article.date}`)を導出する純粋関数。配信本文と公開待ちで同じURLを使うために共有する)
+app/lib/waitForPageAvailable.ts (新規: 指定URLが200を返すまでポーリングして待つ。3アプリの配信CLIで共有する)
 scripts/news-digest/broadcast-line.ts (新規: 記事データを読み込みbuildBroadcastMessageで組み立て、LINE Messaging APIへ送信するCLI)
 app/news-digest/lib/articleTitle.ts (既存: buildArticleTitleを利用)
 app/news-digest/lib/articleSchema.ts (既存: parseArticleを利用)

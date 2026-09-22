@@ -37,3 +37,20 @@
   - メッセージの内容(記事タイトル・トピック見出し一覧・記事リンク)が実際の記事データと一致することを確認する
   - チャネルアクセストークンを意図的に不正な値にする等でLINE APIをエラーにさせ、ワークフローのステップが失敗として終了し、実行ログにエラー概要が記録されることを確認する(リトライが行われないことも合わせて確認する)
   - 既存記事ファイルを内容変更のみ(新規追加ではない)でpushしても、このワークフローが配信を行わないことを確認する(過去記事の再配信防止の安全策の確認)
+
+## 2026-09-22 追加(デプロイ完了前に配信されてしまう不具合の修正)
+
+- Task A: ページ公開待ちの共通処理(仕様: requirements.md#配信タイミング・方式-8〜9、design.md「記事ページの公開を待つ処理」)
+  - 🔴 `fetch`とタイマーを差し替えたテストで、(1) 最初から200なら1回で待機を終えること、(2) 404が続いたあと200になったら待機を終えること、(3) `timeoutMs`を超えても200にならなければ失敗を返すこと、(4) `fetch`が例外を投げても打ち切らず次のポーリングへ進むことを確認するテストを書く
+  - 🟢 `app/lib/waitForPageAvailable.ts`に`waitForPageAvailable(url, options)`を実装する(`pollIntervalMs`既定15秒・`timeoutMs`既定10分、`fetch`・`sleep`を注入可能にする)
+  - 🔵 リファクタ
+
+- Task B: 記事URL導出の切り出し(仕様: design.md「記事ページの公開を待つ処理」手順1)
+  - 🔴 記事データから記事詳細ページURLが導出されること、`buildBroadcastMessage`の本文末尾のURLが同じ関数の戻り値と一致することを確認するテストを書く
+  - 🟢 `app/ai-dev-digest/lib/articleUrl.ts`に`buildArticleUrl(article)`を実装し、`buildBroadcastMessage`をこの関数を使う形に変更する(本文に載るURLと疎通確認するURLが必ず一致するようにする)
+  - 🔵 リファクタ
+
+- Task C: 配信CLIへの組み込み(仕様: design.md「記事ページの公開を待つ処理」手順4、design.md「エラーハンドリング」)
+  - TDD対象外(待機ロジックはTask A、URL導出はTask Bでテスト済み。CLIはそれらを順に呼ぶだけの薄いラッパーのため。Task 2と同じ理由)
+  - `scripts/ai-dev-digest/broadcast-line.ts`で、LINE Messaging APIへのPOSTの前に`waitForPageAvailable(buildArticleUrl(article))`を呼ぶ
+  - 公開が確認できないまま時間切れになった場合は、LINE APIを呼ばずに最後のHTTPステータス・待機秒数を標準エラー出力へ記録し、非ゼロで終了する
