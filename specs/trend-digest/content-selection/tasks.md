@@ -16,7 +16,7 @@
   - 🔴 ステータスがGROWING/ESTABLISHED/STABLEの候補だけが残ること、NEW/SHORT_TERM/EMERGING/DECLININGの候補が除外されること、除外した件数がステータスごとに数えられること、全候補が除外されても例外にならず空の結果を返すことを確認するテストを書く
   - 🟢 `app/trend-digest/lib/selection.ts`に`filterPublishableCandidates(candidates, judgements)`を実装する。ステータス判定は[trend-history](../trend-history/tasks.md)のTask 5〜6の結果を受け取るだけで、ここでは再判定しない
 
-- Task 4: 掲載済み話題の再掲抑制(仕様: requirements.md#掲載済み話題の再掲抑制-1〜4、design.md「掲載済み話題を除外する処理」)
+- Task 4: 掲載済み話題の再掲抑制(仕様: requirements.md#掲載済み話題の再掲抑制-1〜5、design.md「掲載済み話題を除外する処理」)
   - 🔴 過去に掲載がない候補はそのまま残り報告回数が1になること、前回掲載時と今回のステータスが同じ候補が除外されること、ステータスが変わった候補は続報として残り報告回数が「過去の掲載回数+1」になること、前回掲載時のステータスが不明な候補は除外されること、前後の空白・全角半角・大文字小文字の違いを吸収して同一話題と判定することを確認するテストを書く
   - 🟢 `app/trend-digest/lib/selection.ts`に`excludeUnchangedTopics(candidates, judgements, publishRecords)`を実装する。`normalizeTitle`は[trend-history](../trend-history/tasks.md)と共用し、正規化ルールを二重に持たない
 

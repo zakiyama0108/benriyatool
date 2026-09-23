@@ -25,6 +25,8 @@ export type Observation = {
   genre: Genre
   title: string // 原題(content-selectionのCandidate.titleをそのまま引き継ぐ)
   strength: number // その回のcontent-selectionが算出したstrength(requirements.md#ステータス判定基準の前文)
+  rank: number | null // 固定リストジャンルの候補のその回の順位(1が最上位)。順位を持たない情報源(新着記事一覧型)とWebSearchジャンルはnull。
+                      // strengthから逆算せず順位そのものを持つ(musicのような上昇幅加点があるジャンルでは`100 - strength`が実際の順位と一致しないため)
   method: SelectionMethod
   originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。requirements.md#地域情報-1)
   currentRegions: string[] // 現在の主な流行地域。判定できない場合は空配列(=不明)
@@ -47,7 +49,10 @@ export type CandidateHistory = {
   firstDetectedDate: string // 初回検知日
   lastDetectedDate: string // 直近検知日
   detectionCount: number // 検知した実行回数
-  strengthSeries: Array<{ date: string; strength: number; method: SelectionMethod }> // 日付昇順の強度の推移。強度のものさしは選定方式ごとに異なるため、増減・ピークとの比較は同じmethodの要素どうしでのみ行う(requirements.md#ステータス判定基準-9)
+  strengthSeries: Array<{ date: string; strength: number; rank: number | null; method: SelectionMethod }> // 日付昇順の強度の推移。ものさしが選定方式ごとに異なるため、増減の判定は同じmethodの要素どうしでのみ、方式ごとの測り方(固定リスト=順位の差、WebSearch=言及元数の比)で行う(requirements.md#ステータス判定基準-9)
+  observedEditions: Edition[] // この候補が観測された編(両編のジャンルで観測される候補は2件になる)
+  isActive: boolean // 観測されたいずれかの編の直近の実行で検知されているか。falseなら「言及が途絶えた」状態(requirements.md#ステータス判定基準の前文・同-2)
+  isFirstRun: boolean // この候補が過去に一度も観測されておらず、今回の実行が初検知か(requirements.md#ステータス判定基準-1)
   originRegion: string | null
   currentRegions: string[]
   strengthJapan: number | null
@@ -80,8 +85,10 @@ export type HistoryCriteria = {
   establishedMinDays: number // ESTABLISHED判定の継続日数の下限(同-5 = 30。1ヶ月)
   stableMinDays: number // STABLE判定の継続日数の下限(同-6 = 90。3ヶ月)
   minSamplesForTrend: number // 増加傾向・横ばいを判定するために最低限必要な観測回数
-  risingRatio: number // 「明確に増加傾向」とみなす倍率(後半平均÷前半平均がこの値以上)
-  decliningRatio: number // 「明確に減少」とみなす倍率(直近強度÷ピーク強度がこの値以下)
+  risingRatio: number // WebSearchジャンル用。「明確に増加傾向」とみなす倍率(後半平均÷前半平均がこの値以上)
+  decliningRatio: number // WebSearchジャンル用。「明確に減少」とみなす倍率(直近強度÷ピーク強度がこの値以下)
+  risingRankImprovement: number // 固定リストジャンル用。「明確に増加傾向」とみなす順位の改善幅(前半平均順位 - 後半平均順位がこの値以上)
+  decliningRankDrop: number // 固定リストジャンル用。「明確に減少」とみなす順位の悪化幅(直近順位 - 最良順位がこの値以上)
   stableBandRatio: number // 「大きく増減せず一定」とみなす、平均からのぶれ幅の割合
 }
 ```
@@ -97,19 +104,32 @@ export type HistoryCriteria = {
     "minSamplesForTrend": 3,
     "risingRatio": 1.2,
     "decliningRatio": 0.6,
+    "risingRankImprovement": 2,
+    "decliningRankDrop": 3,
     "stableBandRatio": 0.2
   }
 }
 ```
 
-日数の閾値(13/14/30/90)の根拠はrequirements.md#ステータス判定基準の前文のとおり半月・1ヶ月・3ヶ月の暦の区切り。倍率・観測回数の4つ(`minSamplesForTrend`・`risingRatio`・`decliningRatio`・`stableBandRatio`)は運用実績がまだないため、下記の考え方で置いた初期値であり、[source-review](../source-review/requirements.md)の月次見直しで実績に合わせて調整する:
+日数の閾値(13/14/30/90)の根拠はrequirements.md#ステータス判定基準の前文のとおり半月・1ヶ月・3ヶ月の暦の区切り。増減の判定に使う値は運用実績がまだないため、下記の考え方で置いた初期値であり、[source-review](../source-review/requirements.md)の月次見直しで実績に合わせて調整する:
 
 - `minSamplesForTrend: 3` — 増加・減少・横ばいはいずれも「向き」の判断であり、2点では直線しか引けずぶれと傾向を区別できない。3点を最小とする
-- `risingRatio: 1.2` — 前半から後半で2割増を「明確に増加」とみなす。固定リストジャンルの強度(おおむね80〜99)では20位前後の順位上昇、WebSearchジャンル(2〜5)では言及元が1つ増える動きに相当し、どちらの方式でも「偶然のぶれ」とは言いにくい水準
-- `decliningRatio: 0.6` — ピークの4割減を「明確に減少」とみなす。増加側(2割)より大きく取るのは、掲載を止める判断(DECLINING)を掲載を始める判断(GROWING)より慎重にするため
+- `risingRatio: 1.2`(WebSearchジャンル) — 言及元が2割増えたら「明確に増加」とみなす。言及元数は2〜5件の範囲で動くため、2件→3件・3件→4件といった1件の増加が判定に乗る水準
+- `decliningRatio: 0.6`(WebSearchジャンル) — ピークの4割減を「明確に減少」とみなす。増加側(2割)より大きく取るのは、掲載を止める判断(DECLINING)を掲載を始める判断(GROWING)より慎重にするため
+- `risingRankImprovement: 2`(固定リストジャンル) — 平均順位が2位以上良くなったら「明確に増加」とみなす。候補になる順位の幅が最も狭いジャンル(5位以内)でも判定が成立する最小の幅であり、1位差はランキングの通常のゆらぎと区別できないため下限を2位とする
+- `decliningRankDrop: 3`(固定リストジャンル) — 直近の順位が最良順位より3位以上悪化したら「明確に減少」とみなす。増加側(2位)より大きく取る理由は`decliningRatio`と同じ
 - `stableBandRatio: 0.2` — 平均の上下2割に収まっていれば横ばいとみなす。`risingRatio`の2割と同じ幅にし、「増加とみなす動きがない」ことと「横ばい」が重ならないようにする
 
-倍率(比)で判定し、強度の差の絶対値では判定しない。強度の尺度が選定方式によって桁違い(固定リストジャンルは`100 - 順位`でおおむね80〜99、WebSearchジャンルは独立情報源数で2〜5)であり、絶対値の閾値を1つに決めると一方の方式でしか機能しないため。ただし比は**同じものさしで測った値どうし**でしか意味を持たない。1本の推移に両方式の値が混ざると、方式が入れ替わっただけで比が桁で変わり(例: 99→3で0.03)、実態と無関係に急減・急増と判定されてしまう。そのため強度の推移は選定方式を添えて保持し、増減・ピークとの比較は同じ方式の観測どうしでのみ行う(requirements.md#ステータス判定基準-9)。
+**増減の測り方を選定方式で変える理由**(requirements.md#ステータス判定基準-9)。強度は選定方式によって別のものさしで測られる:
+
+| 選定方式 | 強度 | 取りうる値 |
+|---|---|---|
+| 固定リストジャンル | `100 - 順位` | 候補になるのは`rankThreshold`(5または10)以内のみのため、**おおむね90〜99(5位以内のジャンルは95〜99)** |
+| WebSearchジャンル | 独立した言及元の数 | おおむね2〜5 |
+
+固定リストジャンルの強度を**比で判定することはできない**。候補になる順位の幅が狭く、最も大きな上昇である「10位→1位」でも`99 ÷ 90 = 1.10`、5位以内のジャンルなら`99 ÷ 95 = 1.04`にしかならないため、比の閾値をどう置いても「伸びている」を意味のある形で切り出せない(1.2はそもそも到達不能、1.05まで下げると`rankThreshold`を変えるたびに再計算が必要になる)。原因は`100 - 順位`の「100」が意味のない下駄であり、順位が1位でも10位でも90以上が常に乗っているため、実際の差(9)が埋もれること。比で語れるのは0が本当の起点である値だけで、`100 - 順位`はそうではない。
+
+そこで固定リストジャンルは**順位の差**(何位上がったか・下がったか)で増減を判定する。ランキングの動きを語る自然な単位であり、`rankThreshold`を変えても意味が変わらない。既存の`watchlist.json`が持つ`risingRankMinImprovement`(music。候補にする条件としての順位上昇幅)と同じ考え方で、こちらは候補化後の継続判定に使う点が異なる。WebSearchジャンルの言及元数は0が本当の起点であり倍率に意味があるため、従来どおり比で判定する。
 
 ### 週次実行の中での位置づけ(シーケンス図)
 俯瞰用の図。正となる文章は下記「[処理フロー](#処理フロー)」の各手順。
@@ -160,24 +180,33 @@ sequenceDiagram
   2. 観測を正規化タイトル(既存の[掲載済み話題の再掲抑制](../content-selection/requirements.md#掲載済み話題の再掲抑制)と同じ正規化ルール。前後の空白除去・全角/半角の統一・英字の大文字小文字統一)ごとにまとめる。**ジャンルはキーに含めない**ため、同じ話題が複数ジャンルで検知された場合も1本の系列に集約される(requirements.md#機能要件-1)
   3. 系列ごとに、初回検知日(最も古い観測の実行日)・直近検知日(最も新しい観測の実行日)・検知した実行回数(観測が存在する実行の数)・強度の推移(実行日昇順に、強度と選定方式を組にした並び)を求める。検知した実行回数は選定方式をまたいで通算する(同じ回に両方式で観測された場合は1回と数える)
   4. 地域情報・ジャンル・原題は、直近の観測のものを採る(最新の状況を表すため)。ただし発祥地域は最も古い観測で判定できたものを優先して残す(「最初に流行が確認された地域」という定義上、後の回で不明になっても失いたくないため。requirements.md#地域情報-1)
-  5. その候補が属する編の直近の実行(同じ編の観測ログのうち最も実行日が新しいもの)に候補が含まれていない場合は「言及が途絶えた」状態として扱う(requirements.md#機能要件-3)。編の判定は候補が観測されたジャンルが属する編で行い、全観測ログ横断の最新ログでは判定しない。編は火曜(エンタメ9ジャンル)・金曜(カルチャー10ジャンル)で対象ジャンルが完全に分かれており、横断の最新ログを基準にすると金曜の実行のたびにエンタメ編の全候補が「途絶えた」と判定されてしまうため(requirements.md#ステータス判定基準の前文)
-  6. 同じ候補が両方の編のジャンルで観測されている場合は、いずれかの編の直近の実行で検知されていれば「継続中」として扱う(片方の編で扱いが終わっただけで途絶えたとみなさないため)
+  5. 系列ごとに、その候補が観測された編の一覧(`observedEditions`)を求める。編は候補が観測されたジャンルから決まり、両方の編のジャンルで観測された候補は2件になる
+  6. 系列ごとに「言及が途絶えていないか」(`isActive`)を求める。`observedEditions`の各編について「その編の観測ログのうち最も実行日が新しいもの」を取り、**そのいずれかにこの候補が含まれていれば`isActive`は真**、どの編の直近の実行にも含まれていなければ偽とする(requirements.md#機能要件-3)。全観測ログ横断の最新ログでは判定しない。編は火曜(エンタメ9ジャンル)・金曜(カルチャー10ジャンル)で対象ジャンルが完全に分かれており、横断の最新ログを基準にすると金曜の実行のたびにエンタメ編の全候補が「途絶えた」と判定されてしまうため。両編で観測される候補を「いずれかで検知されていれば継続中」とするのは、片方の編で扱いが終わっただけで途絶えたとみなさないため(requirements.md#ステータス判定基準の前文)
+  7. 系列ごとに「今回が初検知か」(`isFirstRun`)を求める。観測が存在する実行が1つだけで、その実行が`observedEditions`のいずれかの編の直近の実行であれば真。どの編であれ過去に観測があれば偽とする(requirements.md#ステータス判定基準-1)
 - 関連するビジネスルール: requirements.md#機能要件-1〜3、requirements.md#機能要件-5
 
 ### 継続日数と強度の推移からステータスを判定する処理
 - 対象: 集約した候補ごとの系列1本
 - 増減の判定に使う推移の選び方(requirements.md#ステータス判定基準-9): 系列の強度の推移を選定方式ごとに分け、観測件数が最も多い方式の推移を増減・横ばい・ピークの判定に使う。件数が同じ場合は直近の観測が属する方式を使う。方式をまたいで値を混ぜて比べることはしない
+- 増減の測り方は、判定に使う推移の選定方式で決まる(requirements.md#ステータス判定基準-9):
+
+| 選定方式 | 増加傾向(手順2-7) | 減少(手順2-4) |
+|---|---|---|
+| 固定リスト(`rank`あり) | 前半の平均順位 − 後半の平均順位 ≧ `risingRankImprovement`(順位が良くなった幅) | 直近の順位 − 最良順位 ≧ `decliningRankDrop`(順位が悪くなった幅) |
+| WebSearch(`rank`がnull) | 後半の平均強度 ÷ 前半の平均強度 ≧ `risingRatio` | 直近の強度 ÷ ピーク強度 ≦ `decliningRatio` |
+
+固定リストの推移でも`rank`がnullの観測(新着記事一覧型の情報源から取れた候補)が混ざる場合は、その観測を増減の判定から除外する(順位を持たないため順位差で測れない)。除外した結果、判定に使える観測が`minSamplesForTrend`回未満になった系列では増減を判定しない
 - 手順:
   1. 継続日数を「初回検知日から直近検知日までの日数」として求める(requirements.md#ステータス判定基準の前文)
   2. 下記の順に条件を当てはめ、最初に当てはまったものをその候補のステータスとする。上から順に当てはめるのは、要件の各条件が重なる範囲を持つため(例: 継続日数が20日で増加傾向のある候補はEMERGINGの条件とGROWINGの条件を同時に満たす)。**途絶えの判定を継続日数より先に置く**のは、1回だけ検知されて消えた候補が継続日数0のままNEWに留まり、一過性の話題を除外するSHORT_TERMがその最頻ケースを拾えなくなるのを避けるため(requirements.md#ステータス判定基準-1〜2)
-     1. 同じ編の直近の実行で検知されなかった(言及が途絶えた)場合で、継続日数が`shortTermMaxDays`以下ならSHORT_TERM(同-2)。1回だけ検知されて途絶えた候補(継続日数0)もここに入る
-     2. 同じ編の直近の実行で検知されなかった場合で、継続日数が`shortTermMaxDays`を超えているならDECLINING(同-7(b))
-     3. その候補を初めて検知した実行が同じ編の直近の実行である場合はNEW(同-1)。ここに到達する時点で直近の実行では検知されているため、観測が1回だけなら必ずNEWになる
-     4. 直近の強度がピーク強度から明確に減少している場合はDECLINING(同-7(a))。「明確に減少」は、直近の強度をこの系列のピーク強度で割った値が`decliningRatio`以下で、かつピークが直近の観測ではないこと(直近がピーク自身であれば減少していないため)。観測が`minSamplesForTrend`回未満の系列では判定しない(数回の観測ではぶれと減少を区別できないため)。**ピーク強度が0の場合は判定しない**(0で割れず、比では減少を測れないため。下記「境界値・特殊ケースの扱い」参照)
+     1. `isActive`が偽(言及が途絶えた)で、継続日数が`shortTermMaxDays`以下ならSHORT_TERM(同-2)。1回だけ検知されて途絶えた候補(継続日数0)もここに入る
+     2. `isActive`が偽で、継続日数が`shortTermMaxDays`を超えているならDECLINING(同-7(b))
+     3. `isFirstRun`が真の場合はNEW(同-1)。ここに到達する時点で`isActive`は真であり、どの編でも過去に観測がない候補だけが当たる
+     4. 直近の強度がピークから明確に減少している場合はDECLINING(同-7(a))。「明確に減少」は上記の表のとおり選定方式ごとに測り、かつピーク(固定リストでは最良順位)が直近の観測ではないこと(直近がピーク自身であれば減少していないため)。観測が`minSamplesForTrend`回未満の系列では判定しない(数回の観測ではぶれと減少を区別できないため)。WebSearchの推移で**ピーク強度が0の場合は判定しない**(0で割れず、比では減少を測れないため。下記「境界値・特殊ケースの扱い」参照)
      5. 継続日数が`stableMinDays`以上で、強度が大きく増減せず一定を保っている場合はSTABLE(同-6)。「一定を保っている」は、直近`minSamplesForTrend`回分の強度がいずれもその平均の上下`stableBandRatio`の幅に収まっていること
      6. 継続日数が`establishedMinDays`以上の場合はESTABLISHED(同-5)
-     7. 継続日数が`growingMinDays`以上で、強度が明確に増加傾向にある場合はGROWING(同-4)。「明確に増加傾向」は、強度の推移を前半と後半に二分し、後半の平均を前半の平均で割った値が`risingRatio`以上であること。観測が`minSamplesForTrend`回未満の系列では判定しない
-     8. 上記のいずれにも当てはまらず、同じ編の直近の実行でも検知されている場合はEMERGING(同-3)
+     7. 継続日数が`growingMinDays`以上で、強度が明確に増加傾向にある場合はGROWING(同-4)。「明確に増加傾向」は、推移を前半と後半に二分したうえで上記の表のとおり選定方式ごとに測ること。観測が`minSamplesForTrend`回未満の系列では判定しない
+     8. 上記のいずれにも当てはまらない場合はEMERGING(同-3)。ここに到達する時点で`isActive`は真であり、継続中の候補だけが当たる
   3. 判定したステータス・継続日数・初回検知日・検知した実行回数を、content-selectionへ渡す。掲載できるステータスかどうかの判断は持たない(履歴側は事実の提供にとどめる。requirements.md#ステータス判定基準-8)
 - 境界値・特殊ケースの扱い(いずれも「判定できないものは判定しない」=その条件には当てはまらないものとして次の条件へ進む):
 
@@ -188,6 +217,8 @@ sequenceDiagram
 | 直近`minSamplesForTrend`回分の平均が0 | すべての観測が0なら横ばい(手順2-5)とみなす。1件でも0でない値があれば横ばいとみなさない | 全て0は「増減していない」という事実そのもの。混在は平均比で測れない |
 | 観測回数が奇数のときの前半・後半の二分 | 先頭から`floor(件数÷2)`件を前半、残りを後半とする(中央の1件は後半に入る) | 直近側の変化を拾うため。件数が奇数でも両方が必ず1件以上になる |
 | 強度が負の値 | バリデーションで弾く(下記「バリデーション」) | 順位由来の値も言及元数も負にならず、負値は書き出し側の不具合 |
+| 固定リストの推移に`rank`がnullの観測が混ざる | その観測を増減の判定から除外する。残りが`minSamplesForTrend`回未満なら増減を判定しない | 新着記事一覧型の情報源は順位を持たず、順位差で測れないため |
+| 順位が同値のまま動かない | 増加とも減少とも判定しない(差が0のため閾値に届かない) | 横ばいはSTABLEの条件(手順2-5)で扱う |
 
 - 状態遷移図(俯瞰用。正は上記の手順の文章。判定は毎回すべての観測ログから再計算するため、この図は「前の状態から遷移する」のではなく「継続日数と強度の推移が変わった結果どのステータスに移りうるか」を表す。継続日数は減ることがないため、日数を戻す向きの遷移は起こらない):
 
@@ -209,8 +240,10 @@ stateDiagram-v2
     STABLE --> DECLINING: 途絶えた または 強度がピークから明確に減少
     DECLINING --> ESTABLISHED: 強度が持ち直した（30日以上）
     DECLINING --> EMERGING: 強度が持ち直した（30日未満）
-    SHORT_TERM --> [*]
+    SHORT_TERM --> EMERGING: 後日また検知された（継続30日未満）
+    SHORT_TERM --> ESTABLISHED: 後日また検知された（継続30日以上）
 ```
+SHORT_TERMは終端ではない。判定は毎回すべての観測ログから再計算し、系列は削除しないため(requirements.md#ステータス判定基準-2「参考データとして履歴には残す」・#履歴データの保持期間-1)、途絶えた候補が後日また検知されれば`isActive`が真に戻り、初回検知日からの継続日数で判定し直される。
 
 - 関連するビジネスルール: requirements.md#機能要件-4、requirements.md#ステータス判定基準-1〜9
 
@@ -229,7 +262,7 @@ stateDiagram-v2
 - `date`: `YYYY-MM-DD`形式であること
 - `edition`: `entertainment`または`culture-lifestyle`であること
 - `observations`: 配列であること(0件を許容する)
-- 各`observation`: `genre`が定義済みジャンルのいずれかであること、`title`が空文字でなく200文字以内であること、`strength`が0以上の有限の数値であること、`method`が`fixed-list`または`websearch`であること、`strengthJapan`・`strengthOverseas`が0以上の数値またはnullであること
+- 各`observation`: `genre`が定義済みジャンルのいずれかであること、`title`が空文字でなく200文字以内であること、`strength`が0以上の有限の数値であること、`rank`が1以上の整数またはnullであること、`method`が`fixed-list`または`websearch`であること、`strengthJapan`・`strengthOverseas`が0以上の数値またはnullであること
 - 地域情報は収集エージェント(Claude Code CLIのWebSearch)が生成した自由文字列であり、**外部入力として検証する**(想定外の長さ・制御文字がそのまま記事データに転記され、画面表示や`check:spec-coverage`・`next build`の想定外の失敗につながることを防ぐため):
   - `originRegion`: 文字列またはnullであること。文字列の場合は空文字でなく**50文字以内**であること
   - `currentRegions`: 文字列の配列であること。各要素は空文字でなく**50文字以内**であること。要素数は10件以内であること
@@ -255,6 +288,9 @@ content/trend-digest/criteria.json (既存: historyの閾値を追加)
 app/trend-digest/lib/types.ts (既存: Edition/Genreを利用。本specでは再定義しない)
 app/trend-digest/lib/watchlistTypes.ts (既存: CriteriaがhistoryTypes.tsのHistoryCriteriaを読み込んで持つ)
 app/trend-digest/lib/historyTypes.ts (新規: TrendStatus/Observation/ObservationLog/CandidateHistory/StatusJudgement/HistoryCriteriaの型定義とLONG_TERM_TREND_STATUSES)
+  ※ historyTypes.ts と types.ts・watchlistTypes.ts は型を相互に参照する(historyTypes→Edition/Genre・SelectionMethod、types→TrendStatus、watchlistTypes→HistoryCriteria)。
+    すべて`import type`のため実行時には循環が残らず、このリポジトリのeslint設定にも`import/no-cycle`はないため許容する。値(LONG_TERM_TREND_STATUSES)は
+    historyTypes.tsからの一方向参照にとどめ、循環に値を持ち込まない
 app/trend-digest/lib/historySchema.ts (新規: 観測ログJSONのバリデーション・パース)
 app/trend-digest/lib/writeObservationLog.ts (新規: その回の観測を1ファイルとして書き出す処理)
 app/trend-digest/lib/aggregateHistory.ts (新規: 全観測ログを候補ごとの系列に集約する純粋関数)
@@ -281,7 +317,5 @@ scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出し�
 ## ログ
 
 - 観測ログを書き出した際に、実行日・編・記録した観測件数を標準エラー出力へ記録する
-- ステータス判定の結果を、ステータスごとの件数(NEWが何件・EMERGINGが何件…)として標準エラー出力へ記録する(掲載可能な候補が慢性的に枯渇していないかを月次見直しで拾えるようにするため)
-- 掲載可能ステータスでなかったために候補から外した件数と、前回掲載時からステータスが変わらないために再掲を見送った件数を、それぞれ標準エラー出力へ記録する(絞り込みの過程が追えるようにするため)
-- 掲載可能な候補が0件になった編は、警告(`WARN`)と分かる形で出力する
+- ステータス判定の結果を、全候補のステータスごとの件数(NEWが何件・SHORT_TERMが何件・EMERGINGが何件…)として標準エラー出力へ記録する(掲載可能な候補が慢性的に枯渇していないかを月次見直しで拾えるようにするため)。掲載可否にもとづく除外件数・再掲見送り件数・掲載可能0件の警告は本specでは出さず、[content-selection/design.md](../content-selection/design.md)のログが担う(掲載可否の判断がcontent-selectionの責務のため。requirements.md#ステータス判定基準-8)
 - 地域情報が「不明」のまま記録された候補の件数を記録する(慢性的に判定できていない状態を[source-review](../source-review/requirements.md)の月次見直しで拾えるようにするため)

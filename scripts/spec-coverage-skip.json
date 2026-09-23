@@ -5066,12 +5066,12 @@
   },
   {
     "specFile": "trend-digest/weekly-publish/requirements.md",
-    "item": "公開フロー [5]",
+    "item": "公開フロー [6]",
     "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、`gh pr create`/`gh pr merge --auto`の呼び出し自体はユニットテスト対象を持たないため(tasks.md Task3のワークフロー本体に該当。実際の疎通確認はTask4のSecrets設定後の初回実行で行う)"
   },
   {
     "specFile": "trend-digest/weekly-publish/requirements.md",
-    "item": "公開フロー [6]",
+    "item": "公開フロー [7]",
     "reason": "CI失敗時にマージせず原因を記録するという運用フローの要件で、GitHub標準の仕組み(PRコメント)に委ねるためこのリポジトリのコードとして実装しないため"
   },
   {
@@ -5082,7 +5082,7 @@
   {
     "specFile": "trend-digest/weekly-publish/requirements.md",
     "item": "掲載件数の保証 [1]",
-    "reason": "候補不足時にブランチ・PRを作成しないというワークフローの実行判断の要件で、候補が0件かどうかの判定ロジック自体はcontent-selection/selection.test.tsでテスト済みのため(weekly-publish側はオーケストレーションのみを担当)"
+    "reason": "掲載可能な候補が1件もない回は記事を公開せず、観測ログのみのPRを作成して自動マージするというワークフローの実行判断の要件で、GitHub Actionsのステップ条件(記事ファイルの有無による分岐)という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task3)"
   },
   {
     "specFile": "trend-digest/weekly-publish/requirements.md",

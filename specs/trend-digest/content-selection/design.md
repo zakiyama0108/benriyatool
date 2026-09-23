@@ -161,6 +161,8 @@ export type Candidate = {
   sourceUrl: string
   method: SelectionMethod
   strength: number // 絞り込みの優先順位付けに使う数値。固定リスト: 100-順位(順位が高い=強い)。WebSearch: 独立情報源の言及数
+  rank: number | null // 固定リストジャンルの順位付きランキング型の情報源から取れた候補のその回の順位(1が最上位)。
+                      // 新着記事一覧型の候補とWebSearchジャンルの候補はnull。trend-historyの増減判定に渡す(trend-history/requirements.md#ステータス判定基準-9)
   originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。trend-history/requirements.md#地域情報-1)
   currentRegions: string[] // 現在の主な流行地域。判定できない場合は空配列(=不明)
   strengthJapan: number | null // 日本の情報源での言及数。判定できない場合はnull
@@ -173,7 +175,7 @@ export type PublishableCandidate = Candidate & {
   status: TrendStatus
   continuationDays: number
   firstDetectedDate: string
-  reportCount: number // 今回掲載した場合に通算何回目の報告になるか(requirements.md#掲載済み話題の再掲抑制-3)
+  reportCount: number // 今回掲載した場合に通算何回目の報告になるか(requirements.md#掲載済み話題の再掲抑制-5)
 }
 
 export type SelectionResult =
@@ -202,7 +204,7 @@ export type SelectionResult =
   2. 複数の独立した情報源(ニュースメディア・公式発表等)が同じ話題を報じている場合のみ「動きがあった」候補にする。独立情報源数が`minIndependentSources`未満の話題(単一情報源のみ、噂・未確認情報の域を出ないもの)は候補にしない(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1)
   3. `dev-trends`(開発手法・開発サービス)は、個々の製品リリース・バージョンアップを報じる記事だけを根拠にした話題を候補にしない。複数の情報源が開発の進め方・道具立ての変化として論じている話題だけを候補にする(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-7)
   4. 候補ごとに、話題の名称(`title`)・代表的な出典1件(`sourceName`/`sourceUrl`。最初に見つかった情報源、または最も権威のあるメディアを1件選ぶ)・独立情報源の言及数(`strength`として使う)をJSONで返す
-  5. あわせて、言及していた独立情報源のうち日本のメディアの数・海外のメディアの数、および記事の記述から判定できた場合のみ発祥地域・現在の主な流行地域を返す。判定できない項目は「不明」(値なし・空)として返し、推測で埋めない(requirements.md#情報源の地域区分-2、[trend-history/requirements.md#地域情報](../trend-history/requirements.md)-9)
+  5. あわせて、言及していた独立情報源のうち日本のメディアの数・海外のメディアの数、および記事の記述から判定できた場合のみ発祥地域・現在の主な流行地域を返す。判定できない項目は「不明」(値なし・空)として返し、推測で埋めない(requirements.md#情報源の地域区分-2、[trend-history/requirements.md#地域情報](../trend-history/requirements.md)-1)
   6. 応答は指定のJSON配列単体とし、聞き返し・説明文のみの応答を返さない(ヘッドレス実行のため質問に応答する相手がいない。ai-dev-digest content-generationの応答形式ガードレールと同じ考え方)
   7. ジャンルごとの候補件数(0件はその旨)を記録する(requirements.md#情報源の健全性監視-1)
 - 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1〜7、requirements.md#情報源の地域区分-2、requirements.md#情報源の健全性監視-1
@@ -210,7 +212,7 @@ export type SelectionResult =
 ### 全候補を履歴へ記録する処理(決定的なコード)
 - 対象: 固定リストジャンル・WebSearchジャンルから収集した候補すべて(絞り込みを一切適用する前の全件)
 - 手順:
-  1. 収集した全候補を[trend-history/design.md](../trend-history/design.md)「その回の観測を履歴に記録する処理」へ引き渡し、その回の観測ログを書き出させる(requirements.md#機能要件-3)
+  1. 収集した全候補を[trend-history/design.md](../trend-history/design.md)「その回の観測を履歴に記録する処理」へ引き渡し、その回の観測ログを書き出させる(requirements.md#機能要件-3)。引き渡す値には`strength`だけでなく**その回の順位**も含める(固定リストジャンルの候補のみ。順位を持たない新着記事一覧型の候補とWebSearchジャンルの候補は順位なしとして渡す)。trend-historyは固定リストジャンルの増減を順位の差で判定するため、`strength`からの逆算ではなく順位そのものを必要とする([trend-history/requirements.md#ステータス判定基準](../trend-history/requirements.md)-9)
   2. 観測ログの書き出しが失敗した場合は、以降の絞り込み・記事生成を行わずに実行を失敗させる([trend-history/design.md](../trend-history/design.md)のエラーハンドリング参照)
 - 関連するビジネスルール: requirements.md#機能要件-3
 
@@ -229,11 +231,11 @@ export type SelectionResult =
   1. [trend-history/design.md](../trend-history/design.md)「掲載実績(報告回数・前回掲載時のステータス)を求める処理」から、候補ごとの過去の掲載回数と前回掲載時のステータスを受け取る
   2. 過去に掲載されたことがない候補は、そのまま残し報告回数を1とする
   3. 過去に掲載されたことがある候補は、前回掲載時のステータスと今回のステータスを比べる。同じ場合は除外し、異なる場合は続報として残す(requirements.md#掲載済み話題の再掲抑制-1〜2)
-  4. 前回掲載時のステータスが不明な候補(この機能の導入より前に生成された記事にのみ掲載されている候補)は、除外する(requirements.md#掲載済み話題の再掲抑制-3)
-  5. 残した候補の報告回数を「過去の掲載回数 + 1」として設定する(requirements.md#掲載済み話題の再掲抑制-3)
-  6. 同一話題かどうかの突き合わせは、候補の`title`と過去記事の`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を、trend-historyと同じ正規化関数(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)にかけてから行う。正規化ルールを二重に持たず、`selection.ts`の`normalizeTitle`を両specで共用する(requirements.md#掲載済み話題の再掲抑制-4)
+  4. 前回掲載時のステータスが不明な候補(この機能の導入より前に生成された記事にのみ掲載されている候補)は、除外する(requirements.md#掲載済み話題の再掲抑制-5)
+  5. 残した候補の報告回数を「過去の掲載回数 + 1」として設定する(requirements.md#掲載済み話題の再掲抑制-5)
+  6. 同一話題かどうかの突き合わせは、候補の`title`と過去記事の`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を、trend-historyと同じ正規化関数(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)にかけてから行う。正規化ルールを二重に持たず、`selection.ts`の`normalizeTitle`を両specで共用する(requirements.md#掲載済み話題の再掲抑制-5)
   7. すべての候補が除外され、そのジャンルで残る候補がなくなった場合は、そのジャンルは掲載しない(requirements.md#機能要件-4)
-- 関連するビジネスルール: requirements.md#掲載済み話題の再掲抑制-1〜4
+- 関連するビジネスルール: requirements.md#掲載済み話題の再掲抑制-1〜5
 
 ### ジャンル内の絞り込みを行う処理(決定的なコード)
 - 対象: 掲載済み話題の除外を通過した、1ジャンル分の候補

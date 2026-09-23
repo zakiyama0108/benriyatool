@@ -21,8 +21,12 @@
 - 手順:
   1. `content/trend-digest/articles/*.json`のうち、実行日から過去1ヶ月分のファイルを読み込み、[content-selection](../content-selection/design.md)のログが記録した「候補0件のジャンル・情報源」の傾向を把握する材料として、各回の`topics`に含まれなかったジャンル(そのジャンルの掲載が見送られた回)を集計する(content-selection/requirements.md#情報源の健全性監視-1)
   2. `trend_digest_feedback`テーブルから、直近1ヶ月分・`is_test = false`のレコードを`benriyatool_readonly`ロールで読み取る(ADR-0004の接続方式。`is_test`除外はADR-0001の集計時の共通ルール)。フィードバックは領域で絞り込まず全件取得する(領域の振り分けは次の「見直し案を作成する処理」でエージェントが内容から判断する。requirements.md#見直しの実行-3)
-  3. 上記2種類のデータをまとめ、見直し案の根拠として使えるようにする
-- 関連するビジネスルール: requirements.md#見直しの実行-1、requirements.md#見直しの実行-3
+  3. `content/trend-digest/history/`配下の直近1ヶ月分の観測ログ([trend-history/design.md](../trend-history/design.md))を読み込み、全観測ログから候補ごとのステータスを再計算したうえで、ジャンルごとに次の2つを集計する(requirements.md#選定領域の見直し案の粒度・提示方法-9・-10の判断材料):
+     - そのジャンルで候補は収集できているのに、中長期トレンドとみなせるステータス([trend-history/design.md](../trend-history/design.md)の`LONG_TERM_TREND_STATUSES`)の候補が0件だった回の数
+     - そのジャンルの候補のうち、発祥地域・主な流行地域が「不明」のまま記録された候補の割合
+     標準エラー出力のログではなく観測ログから集計し直す。ログは実行時にしか残らず、月次の時点で過去1ヶ月分を取得できないため
+  4. 上記3種類のデータをまとめ、見直し案の根拠として使えるようにする
+- 関連するビジネスルール: requirements.md#見直しの実行-1、requirements.md#見直しの実行-3、requirements.md#選定領域の見直し案の粒度・提示方法-9〜10
 
 ### 見直し案を作成する処理(エージェントの推論)
 - 対象: 収集した掲載見送り記録・フィードバック
@@ -32,23 +36,26 @@
      - 生成領域: 「載せた話題をどう書くか」への指摘(分かりやすさ、本文の分量、独自性の弱さなど)
      - いずれにも該当しない: 画面表示の不具合、他機能への要望
   2. 選定領域(掲載見送り記録 + 選定領域に振り分けたフィードバック)の見直し案を検討する:
-     - 特定のジャンルで候補0件・掲載見送りが直近1ヶ月継続している場合、そのジャンルの情報源の除外・追加、または採用基準(閾値)の緩和を検討する(requirements.md#選定領域の見直し案の粒度・提示方法-8)
+     - 特定のジャンルで候補0件・掲載見送りが直近1ヶ月継続している場合、そのジャンルの情報源の除外・追加、または採用基準(閾値)の緩和を検討する(requirements.md#選定領域の見直し案の粒度・提示方法-6「新しい採用基準・情報源の追加提案も対象に含む」を実装まで完了させるための、設計側の補足)
      - フィードバックの内容を踏まえ、ウォッチリストからの除外や基準の見直しを検討する
      - フィードバックが既存の採用基準(情報源単位の可否・数値閾値)では表現できない観点を指摘している場合、新しい採用基準・フィルター観点の追加を具体的な変更案として検討する(requirements.md#選定領域の見直し案の粒度・提示方法-6)
   3. 生成領域(生成領域に振り分けたフィードバック)の見直し案を検討する:
-     - フィードバックが指摘する分かりやすさ・分量の問題に対し、`content-generation/requirements.md`の機能要件・ビジネスルール(要約の分量[2]、記事の構成[5]など)と`content-generation/design.md`の該当処理の文言を、具体的な変更案(実際のファイル差分)として検討する(requirements.md#生成領域の見直し案の粒度・提示方法-9)
+     - フィードバックが指摘する分かりやすさ・分量の問題に対し、`content-generation/requirements.md`の機能要件・ビジネスルール(要約の分量[2]、記事の構成[5]など)と`content-generation/design.md`の該当処理の文言を、具体的な変更案(実際のファイル差分)として検討する(requirements.md#生成領域の見直し案の粒度・提示方法-11)
      - 変更は既存ルールの調整にとどめ、著作権リスク低減の前提(独自の再構成・数値結論の網羅転記回避・出典明記。content-generation/requirements.md#著作権への配慮(根拠))を弱める変更は提案しない(requirements.md#ビジネスルール・制約-3)
-     - 著作権ガードに抵触するため採用できない要望は、見直し案に反映せず、却下した旨と理由をPR本文の判断材料の表の行として残す(requirements.md#生成領域の見直し案の粒度・提示方法-9)
-  4. 見直し案には、どのフィードバック・どの実績データに基づく変更かを明記する(requirements.md#ビジネスルール・制約-2)
-  5. 選定領域・生成領域それぞれについて、振り分けた材料が1件でもある場合は、必ず具体的な変更案(実際のファイル差分)を作成してPRとして提示する。両領域とも材料が0件の月のみ、実在する材料がないためPRを作成しない(requirements.md#選定領域の見直し案の粒度・提示方法-7、requirements.md#生成領域の見直し案の粒度・提示方法-9)
-  6. 選定領域で、`specs/trend-digest/content-selection/requirements.md`に既存の選定ロジック(`app/trend-digest/lib/selection.ts`・`fetchFixedListCandidates.ts`等)ではまだ判定できない新しい種類の採用基準・フィルター観点を追加する場合、その判定ロジックの実装(TDDのテストを含む)も同じPRに含める。実装後は`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`を実行し、いずれも成功することを確認してからコミットする(requirements.md#選定領域の見直し案の粒度・提示方法-8)
-  7. 手順6の実装がどうしても完了できない場合のみ、`npm run check:spec-coverage`が失敗しないよう`scripts/spec-coverage-skip.json`に理由を添えて登録した上で、PR本文の判断材料の表に実装が未完了である旨を明記する(例外的な扱い)
-  8. 生成領域では、`content-generation/requirements.md`・`design.md`の変更は`scripts/trend-digest/generate-content.ts`が実行時に両ファイルを読み込むため次回の週次生成に自動で反映される。ただし変更が同CLI内に転記されているルール文(ガードレール文言・出力JSONスキーマ例に埋め込まれた字数指定など)に及ぶ場合は、その転記箇所の更新も同じPRに含める。生成領域の変更でも`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`を実行し成功を確認してからコミットする
+     - 著作権ガードに抵触するため採用できない要望は、見直し案に反映せず、却下した旨と理由をPR本文の判断材料の表の行として残す(requirements.md#生成領域の見直し案の粒度・提示方法-11)
+  4. 手順2で集計したジャンルごとの結果を見て、次の2つを見直し案に必ず含める:
+     - 候補は収集できているのに中長期ステータスの絞り込みで全件除外される状態が直近1ヶ月継続しているジャンルがある場合、`criteria.json`の`history`(ステータス判定の閾値。[trend-history/design.md](../trend-history/design.md)「履歴データの形式」)の妥当性を検証する見直し案(requirements.md#選定領域の見直し案の粒度・提示方法-9)
+     - 地域情報が「不明」のまま記録された候補の割合が高い状態が続く場合、地域を判定するための情報源・収集指示(`watchlist.json`の情報源の地域区分、WebSearch収集プロンプト)の見直し案(requirements.md#選定領域の見直し案の粒度・提示方法-10)
+  5. 見直し案には、どのフィードバック・どの実績データに基づく変更かを明記する(requirements.md#ビジネスルール・制約-2)
+  6. 選定領域・生成領域それぞれについて、振り分けた材料が1件でもある場合は、必ず具体的な変更案(実際のファイル差分)を作成してPRとして提示する。両領域とも材料が0件の月のみ、実在する材料がないためPRを作成しない(requirements.md#選定領域の見直し案の粒度・提示方法-7、requirements.md#生成領域の見直し案の粒度・提示方法-11)
+  7. 選定領域で、`specs/trend-digest/content-selection/requirements.md`に既存の選定ロジック(`app/trend-digest/lib/selection.ts`・`fetchFixedListCandidates.ts`等)ではまだ判定できない新しい種類の採用基準・フィルター観点を追加する場合、その判定ロジックの実装(TDDのテストを含む)も同じPRに含める。実装後は`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`を実行し、いずれも成功することを確認してからコミットする(requirements.md#選定領域の見直し案の粒度・提示方法-6「新しい採用基準・情報源の追加提案も対象に含む」を実装まで完了させるための、設計側の補足)
+  8. 手順7の実装がどうしても完了できない場合のみ、`npm run check:spec-coverage`が失敗しないよう`scripts/spec-coverage-skip.json`に理由を添えて登録した上で、PR本文の判断材料の表に実装が未完了である旨を明記する(例外的な扱い)
+  9. 生成領域では、`content-generation/requirements.md`・`design.md`の変更は`scripts/trend-digest/generate-content.ts`が実行時に両ファイルを読み込むため次回の週次生成に自動で反映される。ただし変更が同CLI内に転記されているルール文(ガードレール文言・出力JSONスキーマ例に埋め込まれた字数指定など)に及ぶ場合は、その転記箇所の更新も同じPRに含める。生成領域の変更でも`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`を実行し成功を確認してからコミットする
 - 変更対象ファイル(1つのPRでまとめて更新する。仕様と機械可読データ・転記箇所の片方だけの更新はしない):
   - 選定領域: `specs/trend-digest/content-selection/requirements.md`(ウォッチリストの表・採用基準の記述)と`content/trend-digest/watchlist.json`・`content/trend-digest/criteria.json`(機械可読データ)。新しい判定ロジックが必要な場合は`app/trend-digest/lib/`配下の関連ファイル・`__tests__/trend-digest/lib/`配下の対応テスト
   - 生成領域: `specs/trend-digest/content-generation/requirements.md`・`specs/trend-digest/content-generation/design.md`。変更が転記箇所に及ぶ場合は`scripts/trend-digest/generate-content.ts`
   - `scripts/spec-coverage-skip.json`(選定領域の実装まで完了できなかった場合のみ)
-- 関連するビジネスルール: requirements.md#見直しの実行-1〜4、requirements.md#ビジネスルール・制約-2〜3、requirements.md#選定領域の見直し案の粒度・提示方法-6〜8、requirements.md#生成領域の見直し案の粒度・提示方法-9
+- 関連するビジネスルール: requirements.md#見直しの実行-1〜4、requirements.md#ビジネスルール・制約-2〜3、requirements.md#選定領域の見直し案の粒度・提示方法-6〜10、requirements.md#生成領域の見直し案の粒度・提示方法-11
 
 ### 見直し案をPRとして提案する処理
 - 対象: 上記で作成した変更内容

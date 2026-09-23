@@ -28,7 +28,7 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
   4. 選定された各候補について、`scripts/trend-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでClaude Code CLI(`claude -p`)を1件ずつヘッドレス起動し、見出し・本文(日本語)を生成する。1候補の生成が一時的な失敗に終わった場合は、同じ候補を最大2回まで(初回+リトライ1回)起動し直す(ai-dev-digestと同じリトライ回数の考え方)。リトライしても失敗する候補は、その候補だけを除外して次の候補に進む(後述「エラーハンドリング」)
   5. 生成に成功した候補が1件以上あれば、`assembleArticle(edition, date, topics)`でその候補のみから記事データ(`id`・`edition`・`date`・`topics`。article-detail/design.mdのスキーマに従う。`topics`はGENRE_ORDER順に並べ替える)を組み立て、`writeArticleFile`で`content/trend-digest/articles/<id>.json`として書き出す。選定された全候補の生成が失敗した場合、または利用枠の枯渇でその回の生成を続行できない場合は、記事は作らないが**手順2で書き出した観測ログだけは先にコミット・push・PR作成して自動マージし、そのうえで**明示的なエラーメッセージとともに非ゼロ終了する。GitHub Actionsの実行は失敗(赤)として残る(requirements.md#掲載件数の保証-2。候補不足による正常なスキップ(緑)と区別する)。観測ログを残さずに終了すると、requirements.md#実行-5が求める「記事を公開しない回でも観測ログだけは必ず追加する」を満たせず、以後の継続日数・ステータス判定が実態とずれるため(後述「エラーハンドリング」)
   6. 記事ファイルと手順2で書き出した観測ログをまとめてコミットし、ブランチをリモートにpushする(requirements.md#実行-5)
-- 関連するビジネスルール: requirements.md#実行-1〜4、requirements.md#掲載件数の保証-1〜2
+- 関連するビジネスルール: requirements.md#実行-1〜5、requirements.md#掲載件数の保証-1〜2
 
 ### PRを作成しCIの結果を待つ処理
 - 対象: 上記で作成したブランチ
@@ -36,7 +36,7 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
   1. `main`向けにPRを作成する(タイトル例: `[trend-digest] <id>を公開`。本文に選定件数の概要を記載する)
   2. 既存の`ci.yml`(lint・test・check:spec-coverage・build)がこのPRに対しても通常どおり実行される(このPRだけの特別なCI設定は追加しない。article-detail/design.mdのビルド時バリデーションが記事データの妥当性をここで検証する)
   3. GitHub標準のauto-merge機能(`gh pr merge --auto --squash`)を有効にし、CIの成功を待って自動マージされるようにする
-- 関連するビジネスルール: requirements.md#公開フロー-5
+- 関連するビジネスルール: requirements.md#公開フロー-6
 
 ### PRを自動マージする処理(完全自動マージの例外運用)
 - 対象: `trend-digest/articles/**`ブランチからのPRのみ
@@ -52,7 +52,7 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
   1. マージは行わず、PRをオープンのまま残す(GitHub上でCI失敗のPRとして可視化される)
   2. 失敗の概要(どのチェックが失敗したか)をPRへのコメントとして自動追記する(ai-dev-digestと同じ方法。追加の通知チャネルは設けない)
   3. 次回分の実行はこのPRの状態に関わらず独立して行う
-- 関連するビジネスルール: requirements.md#実行-6
+- 関連するビジネスルール: requirements.md#公開フロー-7
 
 ### 記事生成をスキップする処理
 - 対象: content-selectionが「候補不足」と判定した回(対象editionのすべてのジャンルで掲載可能な候補が0件。正常なスキップ。GitHub Actionsの実行は成功(緑)のまま終わる)

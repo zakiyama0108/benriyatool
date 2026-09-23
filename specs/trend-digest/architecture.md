@@ -195,7 +195,7 @@ content/trend-digest/criteria.json         # 採用基準・ステータス判�
 |---|---|
 | エンタメ編 | 火曜配信の9ジャンル(音楽・日本映画・海外映画・日本ドラマ・海外ドラマ・アニメ・バラエティ・サブスク動画・書籍/漫画)をまとめた回。[content-selection](content-selection/requirements.md)で定義 |
 | カルチャー・ライフスタイル編 | 金曜配信の10ジャンル(SNSバズり・流行語・グルメ・趣味・ファッション・ガジェット/家電・ゲーム・旅行/観光・経済/お金・開発手法/開発サービス)をまとめた回。[content-selection](content-selection/requirements.md)で定義 |
-| 中長期ステータス | 候補の継続日数と強度の推移から機械的に判定する段階(NEW/SHORT_TERM/EMERGING/GROWING/ESTABLISHED/STABLE/DECLINING)。記事に載るのはGROWING/ESTABLISHED/STABLEのみ(EMERGINGは継続が半月に満たないため載せない)。[trend-history](trend-history/requirements.md)で定義 |
+| 中長期ステータス | 候補の継続日数と強度の推移から機械的に判定する段階(NEW/SHORT_TERM/EMERGING/GROWING/ESTABLISHED/STABLE/DECLINING)。記事に載るのはGROWING/ESTABLISHED/STABLEのみ(EMERGINGを載せないのは、半月〜1ヶ月の段階では「伸びていること」を中長期トレンドの条件とし、1ヶ月以上定着したもの(ESTABLISHED)は増加傾向を問わない、という段階の分け方によるもの)。[trend-history](trend-history/requirements.md)で定義 |
 | 観測ログ | 1回の実行で収集した全候補(採用・不採用を問わず)を記録した`content/trend-digest/history/<id>.json`。後から書き換えない追記専用のデータで、ステータスは毎回すべての観測ログから再計算する。[trend-history](trend-history/design.md)で定義 |
 | 継続日数 | 候補の初回検知日から直近検知日までの日数。中長期ステータスの判定軸。[trend-history](trend-history/requirements.md)で定義 |
 | 報告回数 | 同じ話題が通算で何回目の掲載かを表す数。続報として再掲するときに記事へ表示する。[trend-history](trend-history/requirements.md)で定義 |
