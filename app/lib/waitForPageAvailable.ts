@@ -13,6 +13,11 @@
 const DEFAULT_POLL_INTERVAL_MS = 15_000
 // 実測(2026-09-22時点、mainへのpushからデプロイ完了まで約2分7秒)の5倍弱を上限とする
 const DEFAULT_TIMEOUT_MS = 600_000
+// 1回のGETがブロックしてよい上限。静的ページの応答としては十分余裕があり、
+// pollIntervalMs(15秒)より短いため1試行が次のポーリングを追い越さない。Node標準のfetch
+// (undici)はリクエスト全体のタイムアウトを持たないため、これを指定しないと応答しない相手に
+// 当たった場合に1試行が数分〜数時間ブロックしうる(timeoutMsによる打ち切りが効かなくなる)
+const DEFAULT_REQUEST_TIMEOUT_MS = 10_000
 
 // fetchが例外(ネットワークエラー)を投げた場合のステータス表現。数値のHTTPステータスと
 // 混同しないよう専用のリテラル型にする
@@ -27,6 +32,8 @@ export type WaitForPageAvailableAttempt = {
 export type WaitForPageAvailableOptions = {
   pollIntervalMs?: number
   timeoutMs?: number
+  // 1回のGETに許す上限時間(ミリ秒)。既定はDEFAULT_REQUEST_TIMEOUT_MS
+  requestTimeoutMs?: number
   // テストからの差し替え用(design.md「テストからの注入」)。既定は本番用のグローバルfetch/実際に待つsleep
   fetch?: typeof fetch
   sleep?: (ms: number) => Promise<void>
@@ -50,29 +57,45 @@ async function defaultSleep(ms: number): Promise<void> {
 // 指定URLへGETし、200が返るまでポーリングする。リダイレクト(3xx)はfetch既定の
 // redirect: 'follow'のまま追わせ、manualにはしない(design.md手順2。trailingSlash: trueにより
 // 本番の正準URLは末尾スラッシュありで3xx経由になるため、manualや厳密なstatus===200判定では
-// 公開済みでも200を観測できず必ず時間切れになる)。CDN/HTTPキャッシュを避けるためcache:
-// 'no-store'を指定する
+// 公開済みでも200を観測できず必ず時間切れになる)。CDN/HTTPキャッシュを避けるため
+// cache: 'no-store'に加えCache-Control: no-cacheヘッダーを付ける(design.md「記事ページの
+// 公開を待つ処理」。Nodeのfetch(undici)はcache: 'no-store'だけではHTTPキャッシュ実装を
+// 持たずヘッダーも追加しないため、CDN/中間キャッシュを避ける効果が実質的に得られない)
 export async function waitForPageAvailable(
   url: string,
   options: WaitForPageAvailableOptions = {}
 ): Promise<WaitForPageAvailableResult> {
   const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const requestTimeoutMs = options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
   const fetchImpl = options.fetch ?? fetch
   const sleep = options.sleep ?? defaultSleep
 
-  // 経過時間はDate.now()等の実時計ではなく、待ったpollIntervalMsの累計で数える
-  // (テストがsleepを差し替えて実時間0秒で時間切れケースを再現できるようにするため)
+  // 合計の経過時間(design.md手順4)。fetch自体の所要時間(Date.now()の差分)と、
+  // 待ったsleep分(注入されたpollIntervalMsの累計)の両方を加算する。sleep分を実時計ではなく
+  // 注入値の累計で数えるのは変えない(フェイクsleepを使うテストが実時間0秒のまま決定的に
+  // 動くようにするため)。fetch分だけDate.now()で実測するのは、フェイクsleepを使うテストでは
+  // fetchモックも即座に返るため実時間がほぼ0のままで決定性を壊さない一方、本番では応答に
+  // 時間がかかる状況を正しく合計へ反映できるため
   let elapsedMs = 0
 
   for (;;) {
+    const attemptStartedAt = Date.now()
     let status: HttpStatusOrNetworkError
     try {
-      const response = await fetchImpl(url, { cache: 'no-store' })
+      const response = await fetchImpl(url, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+        // 1試行あたりの上限(requestTimeoutMs)。undiciはリクエスト全体のタイムアウトを
+        // 持たないため、これがないと応答しない相手に当たった場合1試行が無期限にブロックし、
+        // timeoutMsによる打ち切りが効かなくなる。中断時はcatch節で'network-error'扱いになる
+        signal: AbortSignal.timeout(requestTimeoutMs),
+      })
       status = response.status
     } catch {
       status = 'network-error'
     }
+    elapsedMs += Date.now() - attemptStartedAt
 
     options.onAttempt?.({ elapsedSeconds: Math.floor(elapsedMs / 1000), status })
 

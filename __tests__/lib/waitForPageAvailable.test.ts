@@ -159,4 +159,71 @@ describe('記事ページの公開待ち - 記事詳細ページへのHTTP GET�
 
     expect(result.available).toBe(true)
   })
+
+  it('公開確認のGETにCache-Control: no-cacheヘッダーを付けること(cache: \'no-store\'だけではNodeのfetchにCDN/HTTPキャッシュ回避効果がないため)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(buildResponse(200))
+    const sleep = vi.fn().mockResolvedValue(undefined)
+
+    await waitForPageAvailable('https://benriyatool.com/ai-dev-digest/2026-09-23', {
+      fetch: fetchMock,
+      sleep,
+    })
+
+    const init = fetchMock.mock.calls[0][1] as RequestInit
+    expect(init.cache).toBe('no-store')
+    expect((init.headers as Record<string, string>)['Cache-Control']).toBe('no-cache')
+  })
+
+  it('fetch自体の所要時間も合計の経過時間に算入されること(pollIntervalMsの累計だけでは実時間より過小評価になるため)', async () => {
+    vi.useFakeTimers()
+    try {
+      // 1回のfetchが6秒かかる状況を模す。fakeTimersの時計をfetchモック内で直接進めることで、
+      // 実際に6秒待たずに「fetchが実時間を消費する」状況を決定的に再現する
+      const fetchMock = vi.fn().mockImplementation(() => {
+        vi.advanceTimersByTime(6000)
+        return Promise.resolve(buildResponse(404))
+      })
+      const sleep = vi.fn().mockResolvedValue(undefined)
+
+      const result = await waitForPageAvailable('https://benriyatool.com/ai-dev-digest/2026-09-23', {
+        fetch: fetchMock,
+        sleep,
+        pollIntervalMs: 1000,
+        timeoutMs: 10000,
+      })
+
+      expect(result.available).toBe(false)
+      // pollIntervalMs(1000ms)の累計だけなら10回超の試行が必要だが、fetchの所要時間(6秒/回)が
+      // 算入されるため2回の試行で合計経過時間が10秒を超えて打ち切られること
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      if (result.available) throw new Error('unreachable')
+      expect(result.elapsedMs).toBeGreaterThanOrEqual(10000)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('GETがrequestTimeoutMsを超えて応答しない場合、タイムアウトしてネットワークエラー扱いになること(応答しない相手への張り付きを防ぐ)', async () => {
+    // fetchのinitに渡されたAbortSignalが実際にabortされたらrejectする、fetch本来のタイムアウト
+    // 挙動を模したモック。requestTimeoutMsを小さい値にすることで実時間をほぼ使わずに検証する
+    const fetchMock = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        const signal = init.signal as AbortSignal
+        signal.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')))
+      })
+    })
+    const sleep = vi.fn().mockResolvedValue(undefined)
+
+    const result = await waitForPageAvailable('https://benriyatool.com/ai-dev-digest/2026-09-23', {
+      fetch: fetchMock,
+      sleep,
+      pollIntervalMs: 1000,
+      timeoutMs: 2000,
+      requestTimeoutMs: 10,
+    })
+
+    expect(result.available).toBe(false)
+    if (result.available) throw new Error('unreachable')
+    expect(result.lastStatus).toBe('network-error')
+  })
 })

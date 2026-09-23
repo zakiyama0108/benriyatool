@@ -2,10 +2,22 @@ import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } fr
 import fs from 'node:fs'
 import path from 'node:path'
 import { broadcastArticle } from '../../../scripts/trend-digest/broadcast-line'
+import { parseArticle } from '../../../app/trend-digest/lib/articleSchema'
+import { buildArticleUrl } from '../../../app/trend-digest/lib/articleUrl'
 
 const FIXTURE_PATH = path.join(
   process.cwd(),
   '__tests__/trend-digest/fixtures/articles-valid/2026-09-15-entertainment.json'
+)
+
+// 公開確認のGET先URLが配信本文のURLと同一文字列であることを検証するための期待値
+// (design.md「記事ページの公開を待つ処理」手順1)。broadcastArticleと同じ導出関数
+// (buildArticleUrl)から求めることで、実装と食い違わない期待値にする
+const EXPECTED_ARTICLE_URL = buildArticleUrl(
+  parseArticle(
+    JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8')) as unknown,
+    path.basename(FIXTURE_PATH)
+  )
 )
 
 let fetchMock: MockInstance<typeof fetch>
@@ -32,6 +44,13 @@ describe('LINEブロードキャスト送信 - LINE Messaging APIの一斉配信
 
     expect(result).toBe(true)
     expect(fetchMock).toHaveBeenCalledTimes(2) // 公開確認1回 + LINE配信1回
+
+    // 公開確認のGET(1回目の呼び出し)が配信本文のURLと同一文字列であり、認証情報を
+    // 付けないこと(design.md手順1・design.md「セキュリティ」)
+    const [publishCheckUrl, publishCheckInit] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(publishCheckUrl).toBe(EXPECTED_ARTICLE_URL)
+    expect((publishCheckInit.headers as Record<string, string> | undefined)?.Authorization).toBeUndefined()
+
     const [url, init] = fetchMock.mock.calls[1] as [string, RequestInit]
     expect(url).toBe('https://api.line.me/v2/bot/message/broadcast')
     expect(init.method).toBe('POST')
@@ -52,6 +71,10 @@ describe('LINEブロードキャスト送信 - LINE Messaging APIの一斉配信
 
     expect(result).toBe(false)
     expect(fetchMock).toHaveBeenCalledTimes(2) // 公開確認1回 + LINE配信1回(リトライしないこと)
+
+    const [publishCheckUrl, publishCheckInit] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(publishCheckUrl).toBe(EXPECTED_ARTICLE_URL)
+    expect((publishCheckInit.headers as Record<string, string> | undefined)?.Authorization).toBeUndefined()
   })
 })
 
@@ -71,6 +94,12 @@ describe('LINEブロードキャスト送信 - 記事ページの公開が確認
     // LINE配信エンドポイントへのPOSTが一度も行われていないこと(公開確認のGETのみ呼ばれる)
     const lineApiCalls = fetchMock.mock.calls.filter(([url]) => url === 'https://api.line.me/v2/bot/message/broadcast')
     expect(lineApiCalls).toHaveLength(0)
+    // ポーリング回数の退行(例: 1回で諦める)を検出できるよう、期待されるGET回数・sleep回数を
+    // 明示的に検証する(pollIntervalMs=1000, timeoutMs=2000のため、0ms→1000ms→2000msの
+    // 3回GETし、その間に2回sleepする)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(sleep).toHaveBeenCalledTimes(2)
+    expect(sleep).toHaveBeenCalledWith(1000)
   })
 })
 
