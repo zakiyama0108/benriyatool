@@ -60,7 +60,9 @@ describe('LINEブロードキャスト送信 - LINE Messaging APIの一斉配信
     expect(body.messages[0].type).toBe('text')
     // 配信本文に載るURLと、公開確認でGETしたURLが同一であること(design.md「記事ページの
     // 公開を待つ処理」手順1。片方だけURL生成が変わる退行をCLI単体でも検出する)
-    expect(body.messages[0].text).toContain(publishCheckUrl)
+    // buildBroadcastMessageはURLを最終行に置くため末尾一致で見る(toContainだと本文側だけ
+    // URL末尾にクエリ等が付く退行を検出できないため)
+    expect(body.messages[0].text.endsWith(publishCheckUrl)).toBe(true)
   })
 
   it('記事ページの公開確認は成功したがLINE配信APIがエラーレスポンス(例: 月間無料通数超過)を返した場合、リトライせず1回のみ送信され、配信失敗として扱われること', async () => {
