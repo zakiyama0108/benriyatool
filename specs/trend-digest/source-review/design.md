@@ -22,7 +22,7 @@
   1. `content/trend-digest/articles/*.json`のうち、実行日から過去1ヶ月分のファイルを読み込み、[content-selection](../content-selection/design.md)のログが記録した「候補0件のジャンル・情報源」の傾向を把握する材料として、各回の`topics`に含まれなかったジャンル(そのジャンルの掲載が見送られた回)を集計する(content-selection/requirements.md#情報源の健全性監視-1)
   2. `trend_digest_feedback`テーブルから、直近1ヶ月分・`is_test = false`のレコードを`benriyatool_readonly`ロールで読み取る(ADR-0004の接続方式。`is_test`除外はADR-0001の集計時の共通ルール)。フィードバックは領域で絞り込まず全件取得する(領域の振り分けは次の「見直し案を作成する処理」でエージェントが内容から判断する。requirements.md#見直しの実行-3)
   3. `content/trend-digest/history/`配下の直近1ヶ月分の観測ログ([trend-history/design.md](../trend-history/design.md))を読み込み、全観測ログから候補ごとのステータスを再計算したうえで、ジャンルごとに次の2つを集計する(requirements.md#選定領域の見直し案の粒度・提示方法-9・-10の判断材料):
-     - そのジャンルで候補は収集できているのに、中長期トレンドとみなせるステータス([trend-history/design.md](../trend-history/design.md)の`LONG_TERM_TREND_STATUSES`)の候補が0件だった回の数
+     - そのジャンルで**採用基準を満たした候補が1件以上ある**(観測ログの`meetsCriteria`が真の項目が1件以上ある)のに、中長期トレンドとみなせるステータス([trend-history/design.md](../trend-history/design.md)の`LONG_TERM_TREND_STATUSES`)の候補が0件だった回の数。観測ログには採用基準を満たさなかった項目も入る([trend-history/requirements.md#機能要件](../trend-history/requirements.md)-1)ため、観測ログが非空であることを「候補が収集できている」と読み替えてはいけない(全ジャンルで常に真になり、見直し案が毎月発火してノイズになる)
      - そのジャンルの候補のうち、発祥地域・主な流行地域が「不明」のまま記録された候補の割合
      標準エラー出力のログではなく観測ログから集計し直す。ログは実行時にしか残らず、月次の時点で過去1ヶ月分を取得できないため
   4. 上記3種類のデータをまとめ、見直し案の根拠として使えるようにする

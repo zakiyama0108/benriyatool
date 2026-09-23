@@ -40,9 +40,9 @@ flowchart LR
 
 ### 記事本文表示
 - [1] その回の記事タイトル・公開日を表示する
-- [2] その回の対象ジャンル(エンタメ編9ジャンル・カルチャー編10ジャンル)のうち、掲載対象となったジャンルだけを見出しとして表示する(掲載対象の候補がなかったジャンルは見出し自体を表示しない。[content-selection/requirements.md#機能要件-4](../content-selection/requirements.md))
-- [3] 各ジャンル見出しの下に、そのジャンルで採用されたトピック(最大2件、[content-selection/requirements.md#機能要件-5](../content-selection/requirements.md))を、それぞれ見出し・本文・出典情報(情報源名・元URLへのリンク)とセットで表示する
-- [4] 全ジャンル合計で最大10件のトピックを表示する([content-selection/requirements.md#機能要件-6](../content-selection/requirements.md))
+- [2] その回の対象ジャンル(エンタメ編9ジャンル・カルチャー編10ジャンル)のうち、掲載対象となったジャンルだけを見出しとして表示する(掲載対象の候補がなかったジャンルは見出し自体を表示しない。[content-selection/requirements.md#機能要件-5](../content-selection/requirements.md))
+- [3] 各ジャンル見出しの下に、そのジャンルで採用されたトピック(最大2件、[content-selection/requirements.md#機能要件-6](../content-selection/requirements.md))を、それぞれ見出し・本文・出典情報(情報源名・元URLへのリンク)とセットで表示する
+- [4] 全ジャンル合計で最大10件のトピックを表示する([content-selection/requirements.md#機能要件-7](../content-selection/requirements.md))
 
 ### 運営者向けフィードバック
 - [5] 各トピックの下に、フィードバック入力欄(自由記述のテキスト)を表示する

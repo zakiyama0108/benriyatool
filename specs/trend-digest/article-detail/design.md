@@ -161,8 +161,8 @@ sequenceDiagram
 - `id`: ファイル名と一致すること。`<date>-<edition>`の形式であること
 - `edition`: `entertainment`または`culture-lifestyle`であること
 - `date`: `YYYY-MM-DD`形式であること
-- `topics`: 配列長が1件以上10件以下であること(content-selection/requirements.md#機能要件-6)
-- 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが3件以上存在しないこと(content-selection/requirements.md#機能要件-5)
+- `topics`: 配列長が1件以上10件以下であること(content-selection/requirements.md#機能要件-7)
+- 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが3件以上存在しないこと(content-selection/requirements.md#機能要件-6)
 - 各`topic`の`trend`は省略可。ある場合は、`status`が`GROWING`/`ESTABLISHED`/`STABLE`のいずれかであること(掲載できないステータスが記事に混入していないかをビルド時に検知するため。[content-selection/requirements.md#中長期トレンドの絞り込み-1](../content-selection/requirements.md))、`continuationDays`が0以上の整数であること、`firstDetectedDate`が`YYYY-MM-DD`形式で記事の`date`以前であること、`reportCount`が1以上の整数であること、`originRegion`が文字列(空文字でなく50文字以内・制御文字を含まない)またはnullであること、`currentRegions`が文字列の配列(各要素は空文字でなく50文字以内・制御文字を含まない、10件以内)であること。地域情報は収集エージェントが生成した自由文字列のため、記事データに取り込む時点でも外部入力として検証する([trend-history/design.md](../trend-history/design.md)のバリデーションと同じ上限)
 - `body`の文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2、content-generation/design.md「本文の分量を検証する処理」)
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(requirements.md#運営者向けフィードバック-9)

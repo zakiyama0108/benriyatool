@@ -20,11 +20,11 @@
   - 🔴 過去に掲載がない候補はそのまま残り報告回数が1になること、前回掲載時と今回のステータスが同じ候補が除外されること、ステータスが変わった候補は続報として残り報告回数が「過去の掲載回数+1」になること、前回掲載時のステータスが不明な候補は除外されること、前後の空白・全角半角・大文字小文字の違いを吸収して同一話題と判定することを確認するテストを書く
   - 🟢 `app/trend-digest/lib/selection.ts`に`excludeUnchangedTopics(candidates, judgements, publishRecords)`を実装する。`normalizeTitle`は[trend-history](../trend-history/tasks.md)と共用し、正規化ルールを二重に持たない
 
-- Task 5: ジャンル内の絞り込み(仕様: requirements.md#機能要件-5、requirements.md#ジャンル内の絞り込み-1〜2、design.md「ジャンル内の絞り込みを行う処理」)
+- Task 5: ジャンル内の絞り込み(仕様: requirements.md#機能要件-6、requirements.md#ジャンル内の絞り込み-1〜2、design.md「ジャンル内の絞り込みを行う処理」)
   - 🔴 候補が3件以上ある場合は`strength`降順で上位2件に絞られること、0〜2件の場合はそのまま採用されることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/selection.ts`に`narrowGenreCandidates(candidates, perGenreMax)`を実装する
 
-- Task 6: 編全体の絞り込み(仕様: requirements.md#機能要件-6、requirements.md#配信全体の絞り込み-1、design.md「編全体の絞り込みを行う処理」)
+- Task 6: 編全体の絞り込み(仕様: requirements.md#機能要件-7、requirements.md#配信全体の絞り込み-1、design.md「編全体の絞り込みを行う処理」)
   - 🔴 各ジャンルの1件目がすべて残ること、合計が10件を超える場合は2件目が固定リスト→WebSearchの順で残り枠に追加されること、最終的にジャンルの定義順に並ぶこと、カルチャー編は1件目だけで10ジャンル分となり2件目が入らないこと、全ジャンル0件なら`status: 'skipped'`になることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/selection.ts`に`selectEditionTopics(genreCandidates, criteria, genreOrder): SelectionResult`を実装する
 
@@ -33,7 +33,7 @@
   - 🟢 `app/trend-digest/lib/fetchFixedListCandidates.ts`を実装する。情報源の`region`から日本での強度・海外での強度を数える処理は[trend-history](../trend-history/tasks.md)のTask 8で追加する
 
 - Task 8: WebSearchジャンルの候補収集・判定(仕様: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1〜7、design.md「WebSearchジャンルの候補を収集・判定する処理」)(TDD対象外。Claude Code CLIのヘッドレス起動を伴い、検索・判定自体に検証可能な決定的ロジックがないため)
-  - `scripts/trend-digest/collect-websearch-candidates.ts`を実装する。対象ジャンルの`searchHints`をプロンプトに含めてClaude Code CLI(`claude -p ... --output-format json`)をヘッドレス起動し、独立情報源数が`minIndependentSources`以上の話題のみを候補としたJSON配列を生成する
+  - `scripts/trend-digest/collect-websearch-candidates.ts`を実装する。対象ジャンルの`searchHints`をプロンプトに含めてClaude Code CLI(`claude -p ... --output-format json`)をヘッドレス起動し、独立情報源数が`minIndependentSources`以上の話題を候補としたJSON配列を生成する。あわせて、閾値未満の話題も含む観測項目の一覧(上位`maxObservationsPerSource`件まで)を返し、履歴へ引き渡す([trend-history/requirements.md#機能要件](../trend-history/requirements.md)-1〜4)
   - `dev-trends`(開発手法・開発サービス)には、個々のリリース・アップデートのニュースを候補にせず、複数の情報源が開発の進め方・道具立ての変化として論じている潮流だけを候補にする指示をプロンプトに含める(ai-dev-digestとの重複を避けるため)
   - 地域情報を返す指示の追加は[trend-history](../trend-history/tasks.md)のTask 9で行う
 

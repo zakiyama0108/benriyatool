@@ -8,19 +8,23 @@
   - `app/trend-digest/lib/historyTypes.ts`に`TrendStatus`/`Observation`/`ObservationLog`/`CandidateHistory`/`StatusJudgement`/`HistoryCriteria`を定義する(TDD対象外。型定義のみのため)。`Edition`/`Genre`は`app/trend-digest/lib/types.ts`からimportして再利用し、本specでは再定義しない
   - `historyTypes.ts`に`LONG_TERM_TREND_STATUSES`(GROWING/ESTABLISHED/STABLE)も定義する(性質をテストで固定するのはTask 6)
   - `app/trend-digest/lib/watchlistTypes.ts`の`Criteria`に`history: HistoryCriteria`を追加する(型は`historyTypes.ts`からimportする。型定義の置き場所は本specが持つ)
-  - `content/trend-digest/criteria.json`にdesign.mdの`history`初期値を追加する
+  - `content/trend-digest/criteria.json`にdesign.mdの`history`初期値を追加する(`maxObservationsPerSource`・`stableRankBand`・`risingRankImprovement`・`decliningRankDrop`を含む)
 
 - Task 2: 観測ログのスキーマ検証・パース(仕様: design.md「バリデーション」)
-  - 🔴 `date`が`YYYY-MM-DD`でない・`edition`が定義外・`observations`が配列でない・`genre`が定義外・`title`が空文字・`strength`が数値でない・`rank`が0以下や小数・`method`が定義外・ファイル名と中身の`date`/`edition`が食い違う・同じファイル内に同じ正規化タイトルの観測が2件ある、の各ケースで例外になること、正しいログはそのままパースされること、`observations`が0件のログは正常に読めることを確認するテストを書く
+  - 🔴 `date`が`YYYY-MM-DD`でない・`edition`が定義外・`observations`が配列でない・`genre`が定義外・`title`が空文字・`strength`が数値でない・`rank`が0以下や小数・`method`が定義外・ファイル名と中身の`date`/`edition`が食い違う・同じファイル内に同じ正規化タイトル**かつ同じ選定方式**の観測が2件ある・`rank`が`maxObservationsPerSource`を超える・`title`に制御文字が含まれる、の各ケースで例外になること、**正規化タイトルが同じでも選定方式が違う観測2件は例外にならないこと**(記録処理が方式ごとに1件ずつ残す仕様と整合すること)、正しいログはそのままパースされること、`observations`が0件のログは正常に読めることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/historySchema.ts`に`parseObservationLog(raw, filename)`を実装する
 
 - Task 3: 観測ログの書き出し(仕様: design.md「その回の観測を履歴に記録する処理」)
   - 🔴 一時ディレクトリを使い、候補一覧から`<date>-<edition>.json`が作られること、同じ回に同じ正規化タイトルの候補が複数あるとき**選定方式ごとに**`strength`が最大の1件だけが残ること(固定リストとWebSearchの双方で取れた候補は方式ごとに1件ずつ、計2件が残ること)、候補0件でも`observations`が空のファイルが作られること、同名ファイルが既にある場合は上書きせず例外になることを確認するテストを書く
-  - 🔴 固定リストジャンルの候補は順位(`rank`)が観測ログに記録されること、新着記事一覧型の候補とWebSearchジャンルの候補は`rank`がnullで記録されることを確認するテストを書く
+  - 🔴 固定リストジャンルの項目は順位(`rank`)が観測ログに記録されること、新着記事一覧型の項目とWebSearchジャンルの項目は`rank`がnullで記録されることを確認するテストを書く
+  - 🔴 **情報源ごとに上位`maxObservationsPerSource`件までに絞られること**、順位を持たない情報源は掲載日時が新しい順に同数まで絞られることを確認するテストを書く
+  - 🔴 **履歴側の強度が`(maxObservationsPerSource + 1) - 順位`で設定されること**(1位が最大・上限位が1)、content-selectionの`100 - 順位`をそのまま使っていないこと、上限を超える順位の項目は記録対象外なので負値が発生しないことを確認するテストを書く
+  - 🔴 採用基準を満たしたかどうか(`meetsCriteria`)が項目ごとに記録されることを確認するテストを書く
+  - 🔴 **同じ回・同じ方式で同名の項目が複数ある場合のdedupeの優先順位**を確認するテストを書く: `rank`を持つ観測が`rank`を持たない観測より優先されること、`rank`を持つ観測が複数あれば最上位の1件が残ること、`rank`を持つ観測がなければ強度最大の1件が残ること
   - 🟢 `app/trend-digest/lib/writeObservationLog.ts`に`writeObservationLog(historyDir, date, edition, candidates)`を実装する
 
 - Task 4: 履歴の集約(仕様: design.md「履歴を候補ごとの系列に集約する処理」)
-  - 🔴 一時ディレクトリに複数回分の観測ログを置き、正規化タイトルごとに1本の系列へまとまること、**ジャンルが違っても同じ正規化タイトルなら同じ系列にまとまること**、初回検知日・直近検知日・検知回数・強度の推移(日付昇順、選定方式付き)が正しく求まること、同じ回に両方式で観測された候補の検知回数が1回と数えられること、**`isActive`が「同じ編の直近の実行で検知されたか」で決まること**(エンタメ編の候補が、より新しいカルチャー編の実行によって『途絶えた』と判定されないこと)、両方の編で観測されている候補はいずれかの編の直近の実行で検知されていれば`isActive`が真になること、`observedEditions`に観測された編がすべて入ること、`isFirstRun`が「どの編でも過去に観測がなく今回が初検知」のときだけ真になること、ジャンル・原題・主な流行地域は直近の観測の値が採られること、発祥地域は最も古い観測で判定できた値が優先されること、観測ログが1件もないときは空の結果になることを確認するテストを書く
+  - 🔴 一時ディレクトリに複数回分の観測ログを置き、正規化タイトルごとに1本の系列へまとまること、**ジャンルが違っても同じ正規化タイトルなら同じ系列にまとまること**、初回検知日・直近検知日・検知回数・強度の推移(日付昇順、選定方式付き)が正しく求まること、同じ回に両方式で観測された候補の検知回数が1回と数えられること、**`isActive`が「同じ編の直近の実行で検知されたか」で決まること**(エンタメ編の候補が、より新しいカルチャー編の実行によって『途絶えた』と判定されないこと)、両方の編で観測されている候補はいずれかの編の直近の実行で検知されていれば`isActive`が真になること、`observedEditions`に観測された編がすべて入ること、強度の推移にジャンルが保持されること、`isFirstRun`が「どの編でも過去に観測がなく今回が初検知」のときだけ真になること、ジャンル・原題・主な流行地域は直近の観測の値が採られること、発祥地域は最も古い観測で判定できた値が優先されること、観測ログが1件もないときは空の結果になることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/aggregateHistory.ts`に`aggregateHistory(logs): CandidateHistory[]`を実装する。正規化は`selection.ts`の`normalizeTitle`を再利用し、正規化ルールを二重に持たない
 
 - Task 5: 継続日数の算出とステータス判定(仕様: requirements.md#ステータス判定基準-1〜7、design.md「継続日数と強度の推移からステータスを判定する処理」)
@@ -28,7 +32,7 @@
   - 🔴 **選定方式ごとに増減の測り方が変わることを確認するテストを書く**(requirements.md#ステータス判定基準-9): 固定リストの推移は**順位の差**で判定されること(前半平均順位−後半平均順位が`risingRankImprovement`以上でGROWING / 直近順位−最良順位が`decliningRankDrop`以上でDECLINING)、WebSearchの推移は**言及元数の比**で判定されること(`risingRatio`/`decliningRatio`)
   - 🔴 **固定リストの現実的な強度帯(90〜99)でGROWINGに到達できることを確認するテストを書く**: 10位→7位のように順位が`risingRankImprovement`以上改善した系列がGROWINGになること(比で判定していたら99÷90=1.10で`risingRatio`に届かず到達不能だった経路の回帰テスト)
   - 🔴 固定リストの推移に`rank`がnullの観測(新着記事一覧型)が混ざる場合、その観測が増減の判定から除外されること、除外の結果`minSamplesForTrend`未満になったら増減を判定しないことを確認するテストを書く
-  - 🔴 **選定方式が混在する系列のテストを書く**: 固定リストで99・WebSearchで3を観測した候補が、比0.03でDECLININGと判定されないこと(方式をまたいで強度を比べないこと) / 増減の判定に観測件数が最も多い方式の推移が使われること / 件数が同じ場合は直近の観測が属する方式が使われること / **`rank`がnullの観測を除外した後の件数**で方式が選ばれること(除外前の件数で選ぶと判定できる方式があるのに諦めてしまうケース) / 同じ回に両方式で観測されていて直近の方式が1つに決まらない場合は固定リストの推移が使われること
+  - 🔴 **選定方式が混在する系列のテストを書く**: 固定リストで99・WebSearchで3を観測した候補が、比0.03でDECLININGと判定されないこと(方式をまたいで強度を比べないこと) / 増減の判定に観測件数が最も多い方式の推移が使われること / 件数が同じ場合は直近の観測が属する方式が使われること / **`rank`がnullの観測を除外した後の件数**で方式が選ばれること(除外前の件数で選ぶと判定できる方式があるのに諦めてしまうケース) / 同じ回に両方式で観測されていて直近の方式が1つに決まらない場合は固定リストの推移が使われること / **固定リストの推移を使う場合は観測件数が最も多いジャンル1つに絞られること**(同じ作品が書籍/漫画で2位・アニメで8位に観測され週ごとに残る側が入れ替わっても、2→8の変化がDECLININGと誤判定されないこと)
   - 🔴 **横ばい(STABLE)も方式ごとに測ることを確認するテストを書く**(requirements.md#ステータス判定基準-9): 固定リストの推移は平均順位の上下`stableRankBand`以内かで判定されること、**順位が1位と10位を往復している継続90日以上の候補がSTABLEにならないこと**(強度の比で測っていたら90〜99が平均95の±20%=76〜114に全部収まり無条件にSTABLEになっていた経路の回帰テスト)、WebSearchの推移は従来どおり`stableBandRatio`で判定されること
   - 🔴 境界値・特殊ケースのテストを書く(design.md「境界値・特殊ケースの扱い」の表): ピーク強度が0なら減少と判定しないこと / 前半の平均が0なら増加傾向と判定しないこと / 直近`minSamplesForTrend`回分がすべて0なら横ばいとみなすこと・1件でも0でなければ横ばいとみなさないこと / 観測回数が奇数のとき前半が`floor(件数÷2)`件・後半が残りに分かれること
   - 🟢 `app/trend-digest/lib/judgeStatus.ts`に`judgeStatus(history, criteria): StatusJudgement`を実装する(途絶え・初検知の判定材料は`CandidateHistory`の`isActive`・`isFirstRun`が持つため、実行日は引数に取らない)
@@ -42,16 +46,20 @@
   - 🔴 一時ディレクトリに過去記事JSONを置き、同じ正規化タイトルの掲載回数が数えられること、今回の報告回数が「過去の掲載回数+1」になること、前回掲載時のステータスが最も新しい掲載トピックのものになること、`trend`を持たない過去記事しかない場合は「前回掲載時のステータスは不明」になること、一度も掲載されていない候補は掲載回数0・報告回数1になることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/publishRecords.ts`に`collectPublishRecords(articlesDir)`を実装する(既存の`reviewRecords.ts`と同じく、ディレクトリを引数で受け取る形にする)
 
-- Task 8a: 順位(`rank`)の採取と、採用基準の判定前の全項目の保持(仕様: [content-selection/design.md](../content-selection/design.md)「固定リストジャンルの候補を収集・判定する処理」手順2・手順7、requirements.md#機能要件-1〜2)
+- Task 8a: 順位(`rank`)の採取と、採用基準の判定前の全項目の保持(仕様: [content-selection/design.md](../content-selection/design.md)「固定リストジャンルの候補を収集・判定する処理」手順2・手順7、requirements.md#機能要件-1〜4)
   - 🔴 順位付きランキング型の情報源をモックし、候補に情報源の順位がそのまま`rank`として入ること、新着記事一覧型の情報源から抽出した候補は`rank`がnullになること、musicのような上昇幅加点があるジャンルでも`rank`が`100 - strength`ではなく実際の順位になることを確認するテストを書く
   - 🔴 **採用基準を満たさなかった項目も観測用に保持されること**を確認するテストを書く: `newEntryOrRisingRank`のジャンルで「新規でも順位上昇でもない」項目が、掲載候補には含まれないが観測ログへ渡す一覧には含まれること(上位に居続ける作品が履歴から消えないことの回帰テスト)
   - 🟢 `app/trend-digest/lib/fetchFixedListCandidates.ts`に`rank`の設定と、採用基準判定前の全項目を返す口を実装する
+
+- Task 8b: WebSearchジャンル側の観測項目の保持(仕様: [content-selection/design.md](../content-selection/design.md)「WebSearchジャンルの候補を収集・判定する処理」手順2〜3、requirements.md#機能要件-1〜4)
+  - 🔴 応答JSONのパース部のテストを書く: 独立言及元数が`minIndependentSources`未満の話題が**候補には含まれないが観測ログへ渡す一覧には含まれること**(言及元が1件の段階の話題が履歴に残り、後に3件へ伸びたときの初回検知日が実態とずれないことの回帰テスト)、上位`maxObservationsPerSource`件までに絞られること
+  - 🟢 `scripts/trend-digest/collect-websearch-candidates.ts`のプロンプトと応答の扱いを、採用基準判定前の全話題を返す形に変更する
 
 - Task 8: 地域情報の収集(固定リストジャンル側)(仕様: requirements.md#地域情報-1〜3、[content-selection/design.md](../content-selection/design.md)「固定リストジャンルの候補を収集・判定する処理」手順8)
   - 🔴 情報源に`region`を持たせたウォッチリストをモックし、日本の情報源だけで検出された候補は日本での強度に件数が入り海外での強度が0になること、両方の区分で検出された候補は両方に件数が入ること、そのジャンルに一方の区分の情報源が登録されていない場合はその区分が「不明」(null)になること、発祥地域・主な流行地域は「不明」のままになることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/fetchFixedListCandidates.ts`に地域情報の集計を追加する
 
-- Task 9: 地域情報の収集(WebSearchジャンル側)(仕様: requirements.md#地域情報-1〜3、[content-selection/design.md](../content-selection/design.md)「WebSearchジャンルの候補を収集・判定する処理」手順5)(TDD対象外。Claude Code CLIのヘッドレス起動を伴うため)
+- Task 9: 地域情報の収集(WebSearchジャンル側)(仕様: requirements.md#地域情報-1〜3、[content-selection/design.md](../content-selection/design.md)「WebSearchジャンルの候補を収集・判定する処理」手順6)(TDD対象外。Claude Code CLIのヘッドレス起動を伴うため)
   - `scripts/trend-digest/collect-websearch-candidates.ts`のプロンプトに、日本のメディア数・海外のメディア数・発祥地域・主な流行地域を返す指示と、判定できない項目は推測で埋めず「不明」で返す指示を追加する
   - 応答JSONの形式にこれらの項目を追加し、応答形式の分類ロジック(パース部)のみをテスト対象にする
 
@@ -62,7 +70,7 @@
   - **全候補の生成失敗・利用枠の枯渇で非ゼロ終了する場合も、その前に観測ログだけをコミット・push・PR作成する**([weekly-publish/design.md](../weekly-publish/design.md)「エラーハンドリング」)。観測ログを捨てて終了すると欠測週となり、以後の継続日数・報告回数が実態とずれるため
 
 - Task 11: ログ出力(仕様: design.md「ログ」)
-  - 🔴 観測件数・全候補のステータスごとの件数・地域が不明だった件数が標準エラー出力に出ることを確認するテストを書く(掲載可否にもとづく除外件数・再掲見送り件数・掲載可能0件の`WARN`はcontent-selection側のログのため、本タスクの対象外)
+  - 🔴 観測件数・全候補のステータスごとの件数・地域が不明だった件数が標準エラー出力に出ることを確認するテストを書く(content-selection側の観測項目数と候補件数を分けたログはcontent-selectionのタスクで確認する)(掲載可否にもとづく除外件数・再掲見送り件数・掲載可能0件の`WARN`はcontent-selection側のログのため、本タスクの対象外)
   - 🟢 ログ出力を実装する
 
 - Task 12: 運用開始直後・欠測週の挙動の確認(仕様: design.md「エラーハンドリング」、[content-selection/requirements.md#中長期トレンドの絞り込み-3](../content-selection/requirements.md))

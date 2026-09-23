@@ -52,8 +52,8 @@ export type WebSearchGenreCriteria = {
 }
 
 export type Criteria = {
-  perGenreMax: number // 1ジャンルの最大掲載数(requirements.md#機能要件-5 = 2)
-  perEditionMax: number // 1回の最大掲載数(requirements.md#機能要件-6 = 10)
+  perGenreMax: number // 1ジャンルの最大掲載数(requirements.md#機能要件-6 = 2)
+  perEditionMax: number // 1回の最大掲載数(requirements.md#機能要件-7 = 10)
   newEntryLookbackWeeks: number // 「新規ランクイン」を判定する際、何週間分の過去記事の掲載トピックを参照するか
   genreCriteria: Record<Genre, FixedListGenreCriteria | WebSearchGenreCriteria>
   history: HistoryCriteria // 中長期ステータス判定の閾値(trend-history/design.md「履歴データの形式」)
@@ -203,12 +203,13 @@ export type SelectionResult =
 - 対象: `watchlist.json`の`method: 'websearch'`の7ジャンル(実行対象のeditionのジャンルのうち該当するもの)
 - 手順:
   1. ジャンルごとの`searchHints`を手がかりに、Claude Code CLIのヘッドレス実行(WebSearchツール)で話題を検索する
-  2. 複数の独立した情報源(ニュースメディア・公式発表等)が同じ話題を報じている場合のみ「動きがあった」候補にする。独立情報源数が`minIndependentSources`未満の話題(単一情報源のみ、噂・未確認情報の域を出ないもの)は候補にしない(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1)
-  3. `dev-trends`(開発手法・開発サービス)は、個々の製品リリース・バージョンアップを報じる記事だけを根拠にした話題を候補にしない。複数の情報源が開発の進め方・道具立ての変化として論じている話題だけを候補にする(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-7)
-  4. 候補ごとに、話題の名称(`title`)・代表的な出典1件(`sourceName`/`sourceUrl`。最初に見つかった情報源、または最も権威のあるメディアを1件選ぶ)・独立情報源の言及数(`strength`として使う)をJSONで返す
-  5. あわせて、言及していた独立情報源のうち日本のメディアの数・海外のメディアの数、および記事の記述から判定できた場合のみ発祥地域・現在の主な流行地域を返す。判定できない項目は「不明」(値なし・空)として返し、推測で埋めない(requirements.md#情報源の地域区分-2、[trend-history/requirements.md#地域情報](../trend-history/requirements.md)-1)
-  6. 応答は指定のJSON配列単体とし、聞き返し・説明文のみの応答を返さない(ヘッドレス実行のため質問に応答する相手がいない。ai-dev-digest content-generationの応答形式ガードレールと同じ考え方)
-  7. ジャンルごとの候補件数(0件はその旨)を記録する(requirements.md#情報源の健全性監視-1)
+  2. **採用基準の判定を行う前に、検索で見つかった話題を上位`maxObservationsPerSource`件まで「その回の観測」として保持する**(話題の名称・独立言及元の数)。以降の手順で`minIndependentSources`未満として候補から外れた話題も含め、これらはすべて[trend-history](../trend-history/design.md)の観測ログへ記録する(requirements.md#機能要件-3、[trend-history/requirements.md#機能要件](../trend-history/requirements.md)-1〜4)。言及元が1件しかない段階の話題を記録しないと、後に3件へ伸びたときの初回検知日が実態より後ろにずれ、継続日数が過小評価されるため
+  3. 複数の独立した情報源(ニュースメディア・公式発表等)が同じ話題を報じている場合のみ「動きがあった」**候補**にする。独立情報源数が`minIndependentSources`未満の話題(単一情報源のみ、噂・未確認情報の域を出ないもの)は候補にしない(観測ログには手順2のとおり残る。requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1)
+  4. `dev-trends`(開発手法・開発サービス)は、個々の製品リリース・バージョンアップを報じる記事だけを根拠にした話題を候補にしない。複数の情報源が開発の進め方・道具立ての変化として論じている話題だけを候補にする(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-7)
+  5. 候補ごとに、話題の名称(`title`)・代表的な出典1件(`sourceName`/`sourceUrl`。最初に見つかった情報源、または最も権威のあるメディアを1件選ぶ)・独立情報源の言及数(`strength`として使う)をJSONで返す
+  6. あわせて、言及していた独立情報源のうち日本のメディアの数・海外のメディアの数、および記事の記述から判定できた場合のみ発祥地域・現在の主な流行地域を返す。判定できない項目は「不明」(値なし・空)として返し、推測で埋めない(requirements.md#情報源の地域区分-2、[trend-history/requirements.md#地域情報](../trend-history/requirements.md)-1)
+  7. 応答は指定のJSON配列単体とし、聞き返し・説明文のみの応答を返さない(ヘッドレス実行のため質問に応答する相手がいない。ai-dev-digest content-generationの応答形式ガードレールと同じ考え方)
+  8. ジャンルごとの候補件数(0件はその旨)を記録する(requirements.md#情報源の健全性監視-1)
 - 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1〜7、requirements.md#情報源の地域区分-2、requirements.md#情報源の健全性監視-1
 
 ### 全候補を履歴へ記録する処理(決定的なコード)
@@ -225,7 +226,7 @@ export type SelectionResult =
   2. ステータスが`LONG_TERM_TREND_STATUSES`([trend-history/design.md](../trend-history/design.md)が公開するGROWING/ESTABLISHED/STABLEの集合)に含まれない候補を除外する(requirements.md#中長期トレンドの絞り込み-1)。掲載できるステータスの一覧を本specに書き写さず、trend-history側の定義を参照する
   3. 除外した候補の件数をステータスごとに記録する(requirements.md#情報源の健全性監視-2)
   4. 掲載可能な候補が1件も残らなかった場合も、この時点では失敗とせず、後続の編全体の絞り込みでスキップとして扱う(運用開始直後は履歴が浅く全候補がNEWになるため、異常として扱わない。requirements.md#中長期トレンドの絞り込み-3)
-- 関連するビジネスルール: requirements.md#機能要件-4、requirements.md#中長期トレンドの絞り込み-1〜3、requirements.md#情報源の健全性監視-2
+- 関連するビジネスルール: requirements.md#機能要件-5、requirements.md#中長期トレンドの絞り込み-1〜3、requirements.md#情報源の健全性監視-2
 
 ### 掲載済み話題を除外する処理(決定的なコード)
 - 対象: 中長期トレンドの絞り込みを通過した候補(ジャンル内絞り込み・編全体の絞り込みより前に適用する)
@@ -236,15 +237,15 @@ export type SelectionResult =
   4. 前回掲載時のステータスが不明な候補(この機能の導入より前に生成された記事にのみ掲載されている候補)は、除外する(requirements.md#掲載済み話題の再掲抑制-3)
   5. 残した候補の報告回数を「過去の掲載回数 + 1」として設定する(requirements.md#掲載済み話題の再掲抑制-4)
   6. 同一話題かどうかの突き合わせは、候補の`title`と過去記事の`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を、trend-historyと同じ正規化関数(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)にかけてから行う。正規化ルールを二重に持たず、`selection.ts`の`normalizeTitle`を両specで共用する(requirements.md#掲載済み話題の再掲抑制-5)
-  7. すべての候補が除外され、そのジャンルで残る候補がなくなった場合は、そのジャンルは掲載しない(requirements.md#機能要件-4)
+  7. すべての候補が除外され、そのジャンルで残る候補がなくなった場合は、そのジャンルは掲載しない(requirements.md#機能要件-5)
 - 関連するビジネスルール: requirements.md#掲載済み話題の再掲抑制-1〜5
 
 ### ジャンル内の絞り込みを行う処理(決定的なコード)
 - 対象: 掲載済み話題の除外を通過した、1ジャンル分の候補
 - 手順:
   1. 候補を`strength`の降順に並べる
-  2. 候補が3件以上ある場合は上位2件に絞る。候補が0〜2件の場合はそのまま採用する(requirements.md#機能要件-5、requirements.md#ジャンル内の絞り込み-1〜2)
-- 関連するビジネスルール: requirements.md#機能要件-5、requirements.md#ジャンル内の絞り込み-1〜2
+  2. 候補が3件以上ある場合は上位2件に絞る。候補が0〜2件の場合はそのまま採用する(requirements.md#機能要件-6、requirements.md#ジャンル内の絞り込み-1〜2)
+- 関連するビジネスルール: requirements.md#機能要件-6、requirements.md#ジャンル内の絞り込み-1〜2
 
 ### 編全体の絞り込みを行う処理(決定的なコード)
 - 対象: 対象editionのジャンル分(エンタメ編9ジャンル・カルチャー編10ジャンル)の絞り込み済み候補(各ジャンル最大2件、`strength`降順)
@@ -252,8 +253,8 @@ export type SelectionResult =
   1. 各ジャンルの1件目(最有力候補)をすべて先に採用する
   2. 採用件数が`perEditionMax`(10件)を超えない範囲で、各ジャンルの2件目を「固定リストジャンル→WebSearchジャンル」の順(ジャンルはwatchlist.jsonの登録順)に1件ずつ残りの枠へ追加する(requirements.md#配信全体の絞り込み-1)
   3. 採用された候補を、そのeditionのジャンルの定義順(requirements.md#グループとジャンル)に並べ替える(ジャンル見出しの表示順・LINE配信のトピック一覧順として使われる。[article-detail/design.md](../article-detail/design.md)・[line-broadcast/requirements.md](../line-broadcast/requirements.md)参照)
-  4. 対象editionのすべてのジャンルで候補が1件も残らなかった場合のみ「候補不足によりスキップ」とする(requirements.md#機能要件-4、[weekly-publish/requirements.md#掲載件数の保証-1](../weekly-publish/requirements.md))。カルチャー編は1件目だけで10ジャンル分となり`perEditionMax`と同数になるため、2件目が採用されるのは1件目が10ジャンル未満しか埋まらなかった回に限られる
-- 関連するビジネスルール: requirements.md#機能要件-6、requirements.md#配信全体の絞り込み-1
+  4. 対象editionのすべてのジャンルで候補が1件も残らなかった場合のみ「候補不足によりスキップ」とする(requirements.md#機能要件-5、[weekly-publish/requirements.md#掲載件数の保証-1](../weekly-publish/requirements.md))。カルチャー編は1件目だけで10ジャンル分となり`perEditionMax`と同数になるため、2件目が採用されるのは1件目が10ジャンル未満しか埋まらなかった回に限られる
+- 関連するビジネスルール: requirements.md#機能要件-7、requirements.md#配信全体の絞り込み-1
 
 ## エラーハンドリング
 
@@ -284,12 +285,12 @@ scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出し�
 - 固定リストジャンルの情報源取得は、公式サイト・公開ページの閲覧の範囲にとどめ、非公式APIや利用規約を超えた高頻度アクセスは行わない(requirements.md#データ取得方法-1)。アクセス頻度は週2回(編ごと1回)の実行分のみで、履歴の蓄積のために収集頻度を上げることはしない(requirements.md#スコープ外)
 - WebSearchジャンルの検索はClaude Code CLI標準のWebSearchツールの範囲で行い、追加のスクレイピング処理は持たない
 - 食べログ・Rettyの有料APIやX/Instagram/Threads/TikTokの公式APIは利用しない(requirements.md#選定方式-4〜5、スコープ外)
-- 収集した候補は採用・不採用を問わず履歴としてリポジトリに残るが、記録するのは公開情報から得た話題名と強度・地域だけであり、個人情報・機微情報は含まない([trend-history/design.md](../trend-history/design.md)のセキュリティ参照)
+- 情報源から取得した観測項目は採用基準の判定前の全件(情報源ごとに上位30件まで)が履歴としてリポジトリに残るが、記録するのは公開情報から得た話題名と強度・地域だけであり、個人情報・機微情報は含まない([trend-history/design.md](../trend-history/design.md)のセキュリティ参照)
 
 ## ログ
 
-- 週次実行のログに、ジャンルごとに「収集した候補件数(取得失敗・検索失敗はその旨)」を標準エラー出力へ記録する(requirements.md#情報源の健全性監視-1)
-- 候補件数が0件だった情報源・ジャンルは警告(`WARN`)と分かる形で出力する(慢性的な0件を月次見直しで拾えるようにするため)
+- 週次実行のログに、ジャンルごとに「**観測項目数**(採用基準の判定前・記録上限適用後の件数)」と「**候補件数**(採用基準を満たした件数。取得失敗・検索失敗はその旨)」を分けて標準エラー出力へ記録する(requirements.md#情報源の健全性監視-1)。観測項目は情報源が項目を返す限り常に数十件出るため、この2つを1つの数値にまとめると情報源の健全性が読み取れなくなる
+- **候補件数**が0件だった情報源・ジャンルは警告(`WARN`)と分かる形で出力する(観測項目数ではなく候補件数で判断する)(慢性的な0件を月次見直しで拾えるようにするため)
 - 中長期トレンドの絞り込みで除外した候補の件数を、ステータスごと(NEW/EMERGING/DECLINING)に記録する(requirements.md#情報源の健全性監視-2)。絞り込みの対象はその回に収集された候補=必ず同じ編の直近の実行で検知されている候補であり、「途絶えた」ことを条件とするSHORT_TERMはここには現れないため内訳に含めない。SHORT_TERMを含む全ステータスの分布は、[trend-history/design.md](../trend-history/design.md)のログ(全候補のステータスごとの件数)で確認する
 - 前回掲載時からステータスが変わらないために再掲を見送った候補の件数と、続報として再掲する候補の件数(報告回数付き)を記録する
 - 対象editionで掲載可能な候補が0件の場合は、その旨を「収集自体が0件」「絞り込みで全件除外」のどちらなのかが分かる形で標準エラー出力へ記録する。[weekly-publish](../weekly-publish/design.md)側は標準出力のJSONの`status`フィールドを見てPRを作成しない判断に使う
