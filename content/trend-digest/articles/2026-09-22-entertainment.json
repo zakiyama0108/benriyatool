@@ -1,0 +1,34 @@
+{
+  "id": "2026-09-22-entertainment",
+  "edition": "entertainment",
+  "date": "2026-09-22",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "music",
+      "heading": "EBiDAN大集結の「Yes! 東京」、11週連続でBillboard JAPAN首位をキープ",
+      "body": "EBiDAN(恵比寿学園男子部)を中心に、超特急やM!LK、SUPER★DRAGON、ONE N' ONLYなど男性アイドル・バンド9組以上が参加する大型コラボ曲「Yes! 東京」が、Billboard JAPAN Hot 100で1位を維持し続けている。チャートインから11週が経過してもなお首位をキープしている点は、単発ヒットではなく継続的な支持を集めていることを示す。多数の人気グループが一つの楽曲に集結する企画は、各グループのファン層を横断的に巻き込みやすく、それが息の長いチャート推移につながっていると見られる。「東京」をテーマにした共演曲として、ジャンルや事務所の垣根を越えたコラボレーションの熱量が今週も話題になっている。",
+      "sourceTitle": "1 1 前回：1 チャートイン：11 Yes! 東京 (feat. 超特急,M!LK,SUPER★DRAGON,Sakurashimeji,ONE N' ONLY,原因は自分にある。,BUDDiiS,ICEx,Lienel) EBiDAN 全国推定売上枚数 総合ポイント数 8,300 詳細・購入はこちら 11",
+      "sourceName": "Billboard JAPAN Hot 100",
+      "sourceUrl": "https://www.billboard-japan.com/charts/detail?a=hot100"
+    },
+    {
+      "id": "topic-2",
+      "genre": "music",
+      "heading": "M!LK『LOVE ENG!NE』が自己最高、初のミリオン突破",
+      "body": "アイドルグループM!LKの楽曲『LOVE ENG!NE』が、グループ結成以来初めてとなる100万枚超えを達成したと報じられている。デビュー以来着実にファン層を広げてきた同グループにとって、ミリオンは大きな節目であり、これまでの活動の積み重ねが一気に開花した形といえる。単発のヒットではなく継続的な人気の高まりが数字として可視化されたことが、音楽ファンの間で話題を呼んでいる理由だろう。詳細な集計方法や最新の順位動向は、出典元のBillboard JAPAN Hot 100で確認できる。",
+      "sourceTitle": "【先ヨミ速報】M!LK『LOVE ENG!NE』自身初のミリオン突破",
+      "sourceName": "Billboard JAPAN Hot 100",
+      "sourceUrl": "https://www.billboard-japan.com/charts/detail?a=hot100"
+    },
+    {
+      "id": "topic-3",
+      "genre": "japanese-drama",
+      "heading": "『VIVANT』シーズン2、最終回発表でXトレンド8週連続1位",
+      "body": "TBS日曜劇場『VIVANT』シーズン2は、放送開始から視聴率15%前後の高水準を安定して維持し続けており、動画配信が主流になった今も「みんなが見ている番組」という位置づけを保てている点が支持の土台になっている。加えて放送のたびにSNS上で会話が生まれ、Xの世界トレンドでは8週連続で1位を獲得するという勢いを見せている。今回はその中でも主演の堺雅人がサプライズ登場し、最終回の放送日が発表された回にあたり、物語の着地点への関心が一気に高まった。ドラマの内容そのものだけでなく「あと何話で終わるのか」という区切りの情報自体が拡散を呼び、話題が長引いている構図がうかがえる。",
+      "sourceTitle": "TBS日曜劇場『VIVANT』シーズン2が視聴率15%台をキープし各話好調、X世界トレンドも8週連続1位",
+      "sourceName": "スポニチアネックス",
+      "sourceUrl": "https://news.yahoo.co.jp/articles/7ec35881d2883fb6fba9192de0602624da56813b"
+    }
+  ]
+}
