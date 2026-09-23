@@ -206,10 +206,17 @@ describe('記事ページの公開待ち - 記事詳細ページへのHTTP GET�
   it('GETがrequestTimeoutMsを超えて応答しない場合、タイムアウトしてネットワークエラー扱いになること(応答しない相手への張り付きを防ぐ)', async () => {
     // fetchのinitに渡されたAbortSignalが実際にabortされたらrejectする、fetch本来のタイムアウト
     // 挙動を模したモック。requestTimeoutMsを小さい値にすることで実時間をほぼ使わずに検証する
+    // signalを受け取れたか・どう中断されたかを記録する(実装からsignalの指定を外した場合に
+    // このテストが確実に落ちるようにするため。undefinedのまま素通りさせない)
+    const observed: { signal?: unknown; abortReasonName?: string } = {}
     const fetchMock = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      observed.signal = init.signal
       return new Promise((_resolve, reject) => {
         const signal = init.signal as AbortSignal
-        signal.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')))
+        signal.addEventListener('abort', () => {
+          observed.abortReasonName = (signal.reason as Error | undefined)?.name
+          reject(new DOMException('The operation was aborted.', 'AbortError'))
+        })
       })
     })
     const sleep = vi.fn().mockResolvedValue(undefined)
@@ -225,5 +232,8 @@ describe('記事ページの公開待ち - 記事詳細ページへのHTTP GET�
     expect(result.available).toBe(false)
     if (result.available) throw new Error('unreachable')
     expect(result.lastStatus).toBe('network-error')
+    // requestTimeoutMsによる中断であること(signal未指定への退行を検出する)
+    expect(observed.signal).toBeInstanceOf(AbortSignal)
+    expect(observed.abortReasonName).toBe('TimeoutError')
   })
 })
