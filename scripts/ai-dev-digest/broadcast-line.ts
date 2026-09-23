@@ -9,6 +9,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { parseArticle } from '../../app/ai-dev-digest/lib/articleSchema'
 import { buildBroadcastMessage } from '../../app/ai-dev-digest/lib/buildBroadcastMessage'
+import { buildArticleUrl } from '../../app/ai-dev-digest/lib/articleUrl'
+import { waitForPageAvailable } from '../../app/lib/waitForPageAvailable'
 
 const BROADCAST_ENDPOINT = 'https://api.line.me/v2/bot/message/broadcast'
 
@@ -32,6 +34,26 @@ async function main() {
 
   const message = buildBroadcastMessage(article)
   console.error(`配信対象日付: ${article.date} / トピック数: ${article.topics.length}件`)
+
+  // 記事詳細ページが本番サイトで実際に閲覧可能になったことを確認してから配信する
+  // (requirements.md#配信タイミング・方式-8〜9、design.md「記事ページの公開を待つ処理」)。
+  // 試行ごとの経過秒数・HTTPステータスはonAttemptを通じて実行ログ(console.error)に記録する
+  // (design.md「記事ページの公開を待つ処理」手順5・「ログ」参照。このファイルはno-consoleの
+  // 例外対象のためconsole.errorを直接呼べる)
+  const waitResult = await waitForPageAvailable(buildArticleUrl(article), {
+    onAttempt: ({ elapsedSeconds, status }) => {
+      console.error(`記事ページ公開待ち: 経過${elapsedSeconds}秒 / HTTPステータス ${status}`)
+    },
+  })
+
+  if (!waitResult.available) {
+    // 公開が確認できないまま時間切れになった場合、LINE APIを呼ばずに異常終了する
+    // (requirements.md#配信タイミング・方式-9、design.md「エラーハンドリング」)
+    console.error(
+      `記事ページの公開を確認できませんでした: 最後に観測したHTTPステータス ${waitResult.lastStatus} / 経過時間 ${waitResult.elapsedMs}ms`
+    )
+    process.exit(1)
+  }
 
   const response = await fetch(BROADCAST_ENDPOINT, {
     method: 'POST',
