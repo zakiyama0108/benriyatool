@@ -44,3 +44,25 @@
 - Task 10: 情報源・ジャンルごとの取得件数ログ(仕様: requirements.md#情報源の健全性監視-1〜2、design.md「ログ」)
   - 🔴 収集処理がジャンルごとの候補件数を返し、0件のジャンル・情報源が警告として区別できること、中長期トレンドの絞り込みで除外した件数がステータスごとに出ること、再掲を見送った件数と続報として再掲する件数が出ること、掲載可能な候補が0件のとき「収集自体が0件」と「絞り込みで全件除外」が区別して出ることを確認するテストを書く
   - 🟢 `collect-and-select.ts`が情報源・ジャンルごとの取得件数と絞り込みの内訳を集計し、0件のものを`WARN`付きでstderrに出力する
+- Task 11: ウォッチリスト・採用基準データの更新(仕様: requirements.md#選定方式、requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)、design.md「データ設計」)
+  - `content/trend-digest/watchlist.json`をdesign.mdの新しい初期値(音楽=Billboard JAPANのみ、日本/海外映画=興行通信社+映画.com+Filmarks、日本ドラマ/バラエティ=ビデオリサーチ、書籍漫画=トーハン+日販、流行りの言葉=Google公式トレンドRSS、ゲーム=Steam公式API+ファミ通、旅行観光=じゃらんnet、ファッション/ガジェット家電=WebSearchへ変更)に更新する
+  - `content/trend-digest/criteria.json`の`genreCriteria`をdesign.mdの新しい初期値(japanese-drama/varietyがrankThreshold方式に変更、fashion/gadgetsがwebsearchに変更、WebSearchジャンルの`minIndependentSources`を3に引き上げ)に更新する
+
+- Task 12: 情報源取得の共通処理の修正(仕様: requirements.md#データ取得方法-2、design.md「固定リストジャンルの候補を収集・判定する処理」)
+  - 🔴 Content-Type/metaでShift-JIS等を指定したレスポンスが正しくデコードされること、User-Agent未設定時に403を返すテストダブルに対して一般的なブラウザUser-Agentが付与されることを確認するテストを書く
+  - 🟢 `scripts/trend-digest/fetchSourcePage.ts`にUser-Agent付与・文字コード判定(Content-Type/metaのcharsetを読み取ってデコード)を実装する
+
+- Task 13: サイトごとの専用パーサー(仕様: design.md「サイトごとの専用パーサー」)
+  - 🔴 実際に取得したHTMLを`__tests__/trend-digest/fixtures/sourceParsers/`に保存し、各パーサーがタイトル・順位(・前週順位/NEW表記があれば)を正しく抽出することを確認するテストを、9サイト(billboardJapan/kogyoTsushin/eigaCom/filmarks/videoResearch/tohan/nippan/famitsu/jalan)それぞれで書く。トーハン・日販は順位がCSSクラス名(`rank-Nth`)で表現される点を必ずテストに含める
+  - 🟢 `scripts/trend-digest/sourceParsers/`配下に9パーサーを実装する
+
+- Task 14: 構造化データ情報源の取得・パース(仕様: design.md「データ設計」`FixedListSourceFormat`)
+  - 🔴 Netflix TSV(タブ区切り、Japan行の抽出)・Google公式トレンドRSS(XML、item要素の抽出)・Steam公式Web API(JSON、ranksの抽出)それぞれのサンプルレスポンスを入力に、順位付き一覧へ正しく変換されることを確認するテストを書く
+  - 🟢 `scripts/trend-digest/fetchStructuredSource.ts`に`structured-tsv`/`structured-rss`/`structured-json-api`の取得・パース処理を実装する
+
+- Task 15: 固定リストジャンル収集処理のformat別ディスパッチへの更新(仕様: design.md「固定リストジャンルの候補を収集・判定する処理」)
+  - 🔴 情報源の`format`に応じて`fetchStructuredSource`または`sourceParsers/<parserId>`が呼び分けられること、books-comicsのように複数情報源(トーハン・日販)の結果が正しく合算され、同一作品はより高い順位の`strength`が採用されることを確認するテストを書く
+  - 🟢 `app/trend-digest/lib/fetchFixedListCandidates.ts`を新しいwatchlist構造(`format`/`parserId`)に合わせて更新する
+
+- Task 16: WebSearchジャンルの独立言及基準の更新(仕様: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)、design.md「WebSearchジャンルの候補を収集・判定する処理」)(TDD対象外。Task 7と同じ理由)
+  - `scripts/trend-digest/collect-websearch-candidates.ts`のプロンプトを更新する。独立した言及元にSNS投稿・口コミ増加を含めること、単一メディアの特集記事のみでは採用しないこと、`minIndependentSources`(3件)未満は候補にしないこと、言及元の内訳を`note`に含めて返すことを反映する
