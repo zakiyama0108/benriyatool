@@ -6,7 +6,8 @@
 ## 2. アーキテクチャの目的
 - 対象ジャンルが19種類と多く、ジャンルごとに情報源の性質(公式ランキング・チャートの有無)が大きく異なるため、情報源・採用基準を1つの設計に押し込めず、ジャンルの性質に応じて2つの選定方式を使い分ける([content-selection](content-selection/requirements.md)「選定方式」参照)
 - 1回の配信であらゆるジャンルを無理に埋めるのではなく、掲載できる候補があったジャンルだけを掲載し、ジャンル数の多さが「薄い内容の水増し」につながらないようにする
-- 収集した候補を横断的な履歴として蓄積し、継続日数と強度の推移から中長期トレンドかどうかを機械的に判定することで、1日〜1週間で消える一過性の話題を掲載対象から外す([trend-history](trend-history/requirements.md))。選定の可否を人間の主観やエージェントの雑感ではなく、実際の出現履歴という事実に置く
+- 取得した項目を採用基準の判定前に横断的な履歴として蓄積し、途切れずに続いている期間から継続度を機械的に判定する([trend-history](trend-history/requirements.md))。段階の判定を人間の主観やエージェントの雑感ではなく、実際の出現履歴という事実に置く
+- 掲載の可否は継続度で決めず、各ジャンルから必ず1件を掲載したうえで継続度ラベルを添える。ジャンルが回によって記事から消えると読者がそのジャンルの動向を追えなくなるため
 - 19ジャンルを1回にまとめず「エンタメ編」「カルチャー・ライフスタイル編」の2グループに分けて週2回配信することで、1回あたりの掲載量を読める分量に抑える
 - ai-dev-digestの[daily-publish](../ai-dev-digest/daily-publish/requirements.md)・[line-broadcast](../ai-dev-digest/line-broadcast/requirements.md)・[watchlist-review](../ai-dev-digest/watchlist-review/requirements.md)と同じ運用パターン(GitHub Actionsによる自動実行・完全自動マージ、月次の人間承認込み見直し)を踏襲し、新しい運用パターンを増やさない
 
@@ -98,7 +99,7 @@ flowchart LR
 ## 5. アーキテクチャ概要
 Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイル(`content/trend-digest/`)として管理する。
 
-対象ジャンルは19種類あり、[content-selection](content-selection/requirements.md)で「エンタメ編」(音楽・日本映画・海外映画・日本ドラマ・海外ドラマ・アニメ・バラエティ・サブスク動画・書籍/漫画の9ジャンル)と「カルチャー・ライフスタイル編」(SNSバズり・流行語・グルメ・趣味・ファッション・ガジェット/家電・ゲーム・旅行/観光・経済/お金・開発手法/開発サービスの10ジャンル)の2グループに分ける。エンタメ編は毎週火曜、カルチャー・ライフスタイル編は毎週金曜にGitHub Actionsが実行され、ジャンルごとの情報源から候補を収集する。選定方式はジャンルによって2通りある: 公式ランキング・チャートを持つジャンルは固定リストからの定量的コード判定、決まった集計元がないジャンルはClaude Code CLIのヘッドレス実行によるWebSearchベースの判定(LLM判定)を行う。情報源から取得した項目は採用基準の判定前の全件(情報源ごとに上位30件まで)が`content/trend-digest/history/`配下の観測ログへ追記され、[trend-history](trend-history/requirements.md)が全観測ログから候補ごとの継続日数・強度の推移を再計算してNEW/SHORT_TERM/EMERGING/GROWING/ESTABLISHED/STABLE/DECLININGのステータスを判定する。記事に載せるのはGROWING/ESTABLISHED/STABLEの候補だけで、前回掲載時からステータスが変わっていない話題は続報として載せない。選定後はClaude Code CLIが翻訳・要約([content-generation](content-generation/requirements.md))を行い記事を生成、PRを作成しCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。掲載できる候補が1件もない回、および候補の生成に失敗した回は記事を作らず、観測ログだけをPRにして自動マージする(履歴を欠かさないため)。このマージをトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクを、既存の「AI駆動開発ニュース」と同じLINE公式アカウントから配信する。配信メッセージの見出しには「週刊トレンド エンタメ編」「週刊トレンド カルチャー編」の接頭辞を付け、日次のAI駆動開発ニュースと区別する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。記事詳細ページの各トピックには、中長期ステータスのバッジ・継続期間・通算の報告回数・地域が添えられる。ログイン中の運営者本人は記事詳細ページの各トピック下にフィードバックを残せる(ai-dev-digestと同じ`authenticated`ロールのINSERT専用パターン)。月次のGitHub Actionsワークフローがフィードバックと掲載実績・収集ログを読み、情報源・採用基準の見直し案をPRとして提案し、運営者の承認を経てからマージされる([source-review](source-review/requirements.md))。
+対象ジャンルは19種類あり、[content-selection](content-selection/requirements.md)で「エンタメ編」(音楽・日本映画・海外映画・日本ドラマ・海外ドラマ・アニメ・バラエティ・サブスク動画・書籍/漫画の9ジャンル)と「カルチャー・ライフスタイル編」(SNSバズり・流行語・グルメ・趣味・ファッション・ガジェット/家電・ゲーム・旅行/観光・経済/お金・開発手法/開発サービスの10ジャンル)の2グループに分ける。エンタメ編は毎週火曜、カルチャー・ライフスタイル編は毎週金曜にGitHub Actionsが実行され、ジャンルごとの情報源から候補を収集する。選定方式はジャンルによって2通りある: 公式ランキング・チャートを持つジャンルは固定リストからの定量的コード判定、決まった集計元がないジャンルはClaude Code CLIのヘッドレス実行によるWebSearchベースの判定(LLM判定)を行う。情報源から取得した項目は採用基準の判定前の全件(情報源ごとに上位30件まで)が`content/trend-digest/history/`配下の観測ログへ追記され、[trend-history](trend-history/requirements.md)が全観測ログから話題ごとの継続度ラベル・注目度ラベルを再計算する。記事には各ジャンルから1件ずつを載せ、まだ掲載したことがない話題を優先して選ぶ。選定後はClaude Code CLIが翻訳・要約([content-generation](content-generation/requirements.md))を行い記事を生成、PRを作成しCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。情報源から項目を取得できなかったジャンルは取得できなかった旨を掲載し、全ジャンルで1件も取得できなかった回と候補の生成に失敗した回は記事を作らず、観測ログだけをPRにして自動マージする(履歴を欠かさないため)。このマージをトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクを、既存の「AI駆動開発ニュース」と同じLINE公式アカウントから配信する。配信メッセージの見出しには「週刊トレンド エンタメ編」「週刊トレンド カルチャー編」の接頭辞を付け、日次のAI駆動開発ニュースと区別する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。記事詳細ページの各トピックには、継続度ラベルと注目度ラベルのバッジ・継続期間・通算の報告回数・地域が添えられる。運営者はログイン時のみ、ジャンルごとの情報源を一覧するページ([source-directory](source-directory/requirements.md))を確認できる。ログイン中の運営者本人は記事詳細ページの各トピック下にフィードバックを残せる(ai-dev-digestと同じ`authenticated`ロールのINSERT専用パターン)。月次のGitHub Actionsワークフローがフィードバックと掲載実績・収集ログを読み、情報源・採用基準の見直し案をPRとして提案し、運営者の承認を経てからマージされる([source-review](source-review/requirements.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -117,13 +118,14 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | spec | 役割 | 依存 | 状態 |
 |---|---|---|---|
 | [content-selection](content-selection/requirements.md) | 19ジャンルを2グループ(エンタメ編9・カルチャー編10)に分け、ジャンルごとの情報源・採用基準に沿って各回の候補を収集し、中長期ステータスで掲載候補を絞る | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md))。掲載可否・再掲可否の判定はtrend-historyのステータス・掲載実績に従う([trend-history/requirements.md](trend-history/requirements.md)) | リリース済み(中長期トレンド対応の改訂は未実装) |
-| [trend-history](trend-history/requirements.md) | content-selectionが収集した全候補を横断的に履歴として蓄積し、継続日数・強度の推移からNEW/SHORT_TERM/EMERGING/GROWING/ESTABLISHED/STABLE/DECLININGのステータスと、通算の報告回数を機械的に判定する | content-selectionの収集結果と、article-detailの記事データの掲載実績を参照する([content-selection/requirements.md](content-selection/requirements.md)、[article-detail/requirements.md](article-detail/requirements.md)) | 仕様のみ(未実装) |
+| [trend-history](trend-history/requirements.md) | content-selectionが取得した全項目を採用基準の判定前に横断的に蓄積し、継続度ラベル(4段階)・注目度ラベル(3段階)・通算の報告回数を機械的に判定する | content-selectionの収集結果と、article-detailの記事データの掲載実績を参照する([content-selection/requirements.md](content-selection/requirements.md)、[article-detail/requirements.md](article-detail/requirements.md)) | 仕様のみ(未実装) |
 | [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルール(著作権配慮・続報の書き方を含む)を定める | content-selectionの選定結果とtrend-historyの掲載実績を受け取る([content-selection/requirements.md](content-selection/requirements.md)) | リリース済み(続報対応の改訂は未実装) |
 | [weekly-publish](weekly-publish/requirements.md) | 週2回(火・金)の収集・選定・要約・記事公開と観測ログの追記を自動実行し、完全自動マージする | content-selection・content-generationの結果を公開し、trend-historyの観測ログを同じPRに含める | リリース済み(観測ログ対応の改訂は未実装) |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの記事PRがmainへ自動マージされた直後に、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング([weekly-publish/requirements.md](weekly-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))に従う | リリース済み |
 | [article-list](article-list/requirements.md) | エンタメ編・カルチャー編の記事を時系列1本のフィードでバッジ表示する | article-detailの記事構造を参照([article-detail/requirements.md](article-detail/requirements.md)) | リリース済み |
 | [article-detail](article-detail/requirements.md) | 記事本文(ジャンル見出しごとのトピック・要約・出典・中長期トレンドの表示)と、運営者本人向けフィードバック入力欄を表示する。記事データの共有スキーマもこのspecが定義する | content-selectionの選定結果、content-generationの生成ルール、trend-historyの判定結果に従う | リリース済み(トレンド表示の改訂は未実装) |
 | [source-review](source-review/requirements.md) | 月次で情報源・採用基準の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック、content-selectionの掲載実績・収集ログを参照する | リリース済み |
+| [source-directory](source-directory/requirements.md) | ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する | content-selectionのジャンル定義・情報源・採用基準を参照([content-selection/requirements.md](content-selection/requirements.md))。ログイン判定はarticle-detailと同じ仕組み | 仕様のみ(未実装) |
 
 ## 8. コンポーネント図
 ```mermaid
@@ -195,10 +197,11 @@ content/trend-digest/criteria.json         # 採用基準・ステータス判�
 |---|---|
 | エンタメ編 | 火曜配信の9ジャンル(音楽・日本映画・海外映画・日本ドラマ・海外ドラマ・アニメ・バラエティ・サブスク動画・書籍/漫画)をまとめた回。[content-selection](content-selection/requirements.md)で定義 |
 | カルチャー・ライフスタイル編 | 金曜配信の10ジャンル(SNSバズり・流行語・グルメ・趣味・ファッション・ガジェット/家電・ゲーム・旅行/観光・経済/お金・開発手法/開発サービス)をまとめた回。[content-selection](content-selection/requirements.md)で定義 |
-| 中長期ステータス | 候補の継続日数と強度の推移から機械的に判定する段階(NEW/SHORT_TERM/EMERGING/GROWING/ESTABLISHED/STABLE/DECLINING)。記事に載るのはGROWING/ESTABLISHED/STABLEのみ(EMERGINGを載せないのは、半月〜1ヶ月の段階では「伸びていること」を中長期トレンドの条件とし、1ヶ月以上定着したもの(ESTABLISHED)は増加傾向を問わない、という段階の分け方によるもの)。[trend-history](trend-history/requirements.md)で定義 |
-| 観測ログ | 1回の実行で情報源から取得した全項目(採用基準の判定前。情報源ごとに上位30件まで)を記録した`content/trend-digest/history/<id>.json`。後から書き換えない追記専用のデータで、ステータスは毎回すべての観測ログから再計算する。[trend-history](trend-history/design.md)で定義 |
-| 継続日数 | 候補の初回検知日から直近検知日までの日数。中長期ステータスの判定軸。[trend-history](trend-history/requirements.md)で定義 |
-| 報告回数 | 同じ話題が通算で何回目の掲載かを表す数。続報として再掲するときに記事へ表示する。[trend-history](trend-history/requirements.md)で定義 |
+| 継続度ラベル | 話題が途切れずに続いている期間から機械的に判定する4段階(流行前/注目され始め/話題/非常に話題)。区切りは半月・1ヶ月・3ヶ月。掲載可否には使わず、読者への表示と並べ替えに使う。[trend-history](trend-history/requirements.md)で定義 |
+| 注目度ラベル | その回どれくらい強かったかを表す3段階(高い/普通/低い)。同じジャンルの過去の観測の分布と比べて決める(履歴が足りないうちは情報源での位置で決める)。[trend-history](trend-history/requirements.md)で定義 |
+| 観測ログ | 1回の実行で情報源から取得した全項目(採用基準の判定前。情報源ごとに上位30件まで)を記録した`content/trend-digest/history/<id>.json`。後から書き換えない追記専用のデータで、継続度・注目度は毎回すべての観測ログから再計算する。[trend-history](trend-history/design.md)で定義 |
+| 継続日数 | 話題が途切れずに検知され続けている日数。継続度ラベルの判定軸。一度途切れたらそこで区切り、再び検知されたら数え直す。[trend-history](trend-history/requirements.md)で定義 |
+| 報告回数 | 同じ話題が通算で何回目の掲載かを表す数。2回目以降の掲載で記事へ表示し、掲載する話題の並べ替えにも使う。[trend-history](trend-history/requirements.md)で定義 |
 | 固定リストジャンル | 公式ランキング・チャート等の決まった情報源を持ち、定量的なコード判定で採用可否を決めるジャンル。[content-selection](content-selection/requirements.md)で定義 |
 | WebSearchジャンル | 決まった集計元がなく、Claude Code CLIのWebSearchによる探索的収集とLLM判定で「動きがあったか」を決めるジャンル。[content-selection](content-selection/requirements.md)で定義 |
 | GitHub Actions | スケジュール実行・pushトリガー実行のワークフロー基盤。週2回の記事生成([weekly-publish](weekly-publish/requirements.md))・月次の見直し提案([source-review](source-review/requirements.md))・LINE新着記事配信([line-broadcast](line-broadcast/requirements.md))の実行主体 |
