@@ -44,6 +44,10 @@
   6. LINE Messaging APIのテキストメッセージには文字数上限(公式ドキュメント上5000文字)があるが、トピック件数は最大10件・各見出しも短文であるため、通常の記事データでこの上限を超過する可能性は低いと見込まれる。本specでは上限超過への特別な切り詰め処理は設けず、万一超過した場合は後述のエラーハンドリング(LINE配信APIがエラーを返した場合の扱い)に従う
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
+### 記事ページの公開を待つ処理
+[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)と同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/trend-digest/<id>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ(`pollIntervalMs`・`timeoutMs`とその根拠)・リダイレクトの扱い(3xxは追う)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避(`cache: 'no-store'`相当)・試行ごとのログの責務(待機関数は`onAttempt`コールバックで呼び出し元へ渡すだけで`console`を持たず、実行ログへの出力は配信CLI側が行う)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
+- 関連するビジネスルール: requirements.md#配信タイミング・方式-8〜9
+
 ### LINEブロードキャストメッセージを送信する処理
 - 対象: 組み立てたメッセージ本文
 - 手順:
@@ -55,6 +59,7 @@
 
 ## エラーハンドリング
 
+- 既定の待機時間(`timeoutMs`)内に記事ページの公開を確認できなかった場合、配信を行わずワークフローのステップを異常終了させる(requirements.md#配信タイミング・方式-9)。「開けないリンクを送ってしまう」ことの方が「その回の配信が飛ぶ」ことより読者への影響が大きいと判断したため、公開が確認できない限り送らない側に倒す。この場合もリトライは行わず、`waitForPageAvailable`の戻り値に含まれる「最後に観測したHTTPステータス」と「経過時間(ミリ秒)」を実行ログに記録する(戻り値の形は[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)参照)
 - 記事データのパースに失敗した場合(通常は発生しない想定。article-detailのビルド時バリデーションを既に通過したデータのはずだが、念のため防御的に検証する)、配信を行わずワークフローのステップを異常終了させる
 - LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-3〜4)。このワークフローは記事公開(weekly-publishのPRマージ)が完了した**後**に、ファイルが分離された独立のワークフローとして起動するため、配信の失敗がweekly-publishの処理(記事公開)自体に影響を及ぼす経路はそもそも存在しない(requirements.mdビジネスルール[3]相当。ai-dev-digest/line-broadcastの考え方をそのまま踏襲)
 - 配信失敗時の記録方法: このワークフローはPRマージ後(PRが既にクローズ済み)に実行されるためコメント先のPRが存在しない。専用のGitHub Issue作成等の追加の通知手段は設けず、GitHub Actionsのワークフロー実行結果(失敗)と実行ログの内容で運営者が把握する方式とする(ai-dev-digest/line-broadcastと同じ考え方。無料枠と共有される点も同じで、配信失敗の発生頻度は低いと見込まれ、追加の通知基盤を持つコストに見合わないと判断した。要件[5]が定める「原因を記録し、運営者が把握できるようにする」は、失敗したステップ名・HTTPステータス・エラーレスポンス概要を実行ログに出力することで満たす)
@@ -63,7 +68,9 @@
 
 ```
 .github/workflows/trend-digest-line-broadcast.yml (新規: mainへのpush(content/trend-digest/articles/*.jsonの新規追加)をトリガーに配信を実行するワークフロー)
-app/trend-digest/lib/buildBroadcastMessage.ts (新規: 記事データからLINE配信用のテキスト本文を組み立てる純粋関数。buildBroadcastTitleを含む)
+app/trend-digest/lib/buildBroadcastMessage.ts (既存: 記事データからLINE配信用のテキスト本文を組み立てる純粋関数。buildBroadcastTitleを含む。記事URLの導出をbuildArticleUrlへ切り出して共有する)
+app/trend-digest/lib/articleUrl.ts (新規: 記事データから記事詳細ページのURL(`${SITE_URL}/trend-digest/${article.id}`)を導出する純粋関数。配信本文と公開待ちで同じURLを使うために共有する)
+app/lib/waitForPageAvailable.ts (新規: 指定URLが200を返すまでポーリングして待つ。3アプリの配信CLIで共有する)
 scripts/trend-digest/broadcast-line.ts (新規: 記事データを読み込みbuildBroadcastMessageで組み立て、LINE Messaging APIへ送信するCLI)
 app/trend-digest/lib/types.ts (既存: GENRE_ORDER・GENRE_LABELSを利用)
 app/trend-digest/lib/articleSchema.ts (既存: parseArticleを利用)
@@ -76,6 +83,7 @@ content/trend-digest/articles/<id>.json (既存: 配信内容の元データ)
 - このワークフローはGitHubへの書き込み(コミット・PR作成等)を一切行わないため、書き込み用PAT(`TREND_DIGEST_GH_PAT`)は使わない。リポジトリのチェックアウトにはワークフロー既定の読み取り専用`GITHUB_TOKEN`を使う
 - 配信メッセージの本文は記事データ(開発者・エージェントが作成しリポジトリにコミットされるコンテンツ)のみから組み立てられ、訪問者からの入力を一切含まない
 - 配信は友だち全員への一斉配信(ブロードキャスト)のみを行い、個々の友だちを識別・追跡する情報(ユーザーID等)を扱わない(requirements.mdスコープ外「セグメント配信、パーソナライズ配信」)
+- 公開確認のGET(`app/lib/waitForPageAvailable.ts`)は認証情報を一切付けない(LINE APIへのリクエストとヘッダーを共有しない)
 
 ## ログ
 

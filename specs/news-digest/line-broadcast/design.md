@@ -43,6 +43,10 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
   6. LINE Messaging APIのテキストメッセージ上限(公式ドキュメント上5000文字)への特別な切り詰め処理は設けない(トピック件数は最大7件・各見出しも短文のため超過の可能性は低い。万一超過した場合は下記エラーハンドリングに従う)
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
+### 記事ページの公開を待つ処理
+[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)と同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/news-digest/<date>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ(`pollIntervalMs`・`timeoutMs`とその根拠)・リダイレクトの扱い(3xxは追う)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避(`cache: 'no-store'`相当)・試行ごとのログの責務(待機関数は`onAttempt`コールバックで呼び出し元へ渡すだけで`console`を持たず、実行ログへの出力は配信CLI側が行う)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
+- 関連するビジネスルール: requirements.md#配信タイミング・方式-8〜9
+
 ### LINEブロードキャストメッセージを送信する処理
 - 対象: 組み立てたメッセージ本文
 - 手順:
@@ -50,19 +54,22 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
   2. リクエストボディは`{"messages": [{"type": "text", "text": "<組み立てたメッセージ>"}]}`とする
   3. レスポンスが成功(HTTPステータス200)の場合、配信成功として実行ログに記録する
   4. レスポンスが失敗の場合、リトライはせず、下記エラーハンドリングに従う
-- 関連するビジネスルール: requirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-3〜4
+- 関連するビジネスルール: requirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-3〜5
 
 ## エラーハンドリング
 
+- 既定の待機時間(`timeoutMs`)内に記事ページの公開を確認できなかった場合、配信を行わずワークフローのステップを異常終了させる(requirements.md#配信タイミング・方式-9)。「開けないリンクを送ってしまう」ことの方が「その回の配信が飛ぶ」ことより読者への影響が大きいと判断したため、公開が確認できない限り送らない側に倒す。この場合もリトライは行わず、`waitForPageAvailable`の戻り値に含まれる「最後に観測したHTTPステータス」と「経過時間(ミリ秒)」を実行ログに記録する(戻り値の形は[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)参照)
 - 記事データのパースに失敗した場合、配信を行わずワークフローのステップを異常終了させる
-- LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-3〜4)。このワークフローは記事公開(weekly-publishのPRマージ)が完了した後に起動する独立ワークフローのため、配信の失敗が記事公開自体に影響を及ぼす経路は存在しない
+- LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-4〜5)。このワークフローは記事公開(weekly-publishのPRマージ)が完了した後に起動する独立ワークフローのため、配信の失敗が記事公開自体に影響を及ぼす経路は存在しない
 - 配信失敗時の記録方法: 専用のGitHub Issue作成等の追加の通知手段は設けず、GitHub Actionsのワークフロー実行結果(失敗)と実行ログの内容で運営者が把握する(ai-dev-digestと同じ方針。日次・週次いずれも無料枠が少なく配信失敗の発生頻度は低いと見込まれ、追加の通知基盤を持つコストに見合わないと判断した)
 
 ## 関連するファイル(抜粋)
 
 ```
 .github/workflows/news-digest-line-broadcast.yml (新規: mainへのpush(content/news-digest/articles/*.jsonの新規追加)をトリガーに配信を実行するワークフロー)
-app/news-digest/lib/buildBroadcastMessage.ts (新規: 記事データからLINE配信用のテキスト本文を組み立てる純粋関数)
+app/news-digest/lib/buildBroadcastMessage.ts (既存: 記事データからLINE配信用のテキスト本文を組み立てる純粋関数。記事URLの導出をbuildArticleUrlへ切り出して共有する)
+app/news-digest/lib/articleUrl.ts (新規: 記事データから記事詳細ページのURL(`${SITE_URL}/news-digest/${article.date}`)を導出する純粋関数。配信本文と公開待ちで同じURLを使うために共有する)
+app/lib/waitForPageAvailable.ts (新規: 指定URLが200を返すまでポーリングして待つ。3アプリの配信CLIで共有する)
 scripts/news-digest/broadcast-line.ts (新規: 記事データを読み込みbuildBroadcastMessageで組み立て、LINE Messaging APIへ送信するCLI)
 app/news-digest/lib/articleTitle.ts (既存: buildArticleTitleを利用)
 app/news-digest/lib/articleSchema.ts (既存: parseArticleを利用)
@@ -75,6 +82,7 @@ content/news-digest/articles/<date>.json (既存: 配信内容の元データ)
 - このワークフローはGitHubへの書き込みを一切行わないため、書き込み用PAT(`NEWS_DIGEST_GH_PAT`)は使わない。リポジトリのチェックアウトにはワークフロー既定の読み取り専用`GITHUB_TOKEN`を使う
 - 配信メッセージの本文は記事データ(開発者・エージェントが作成しリポジトリにコミットされるコンテンツ)のみから組み立てられ、訪問者からの入力を一切含まない
 - 配信は友だち全員への一斉配信(ブロードキャスト)のみを行い、個々の友だちを識別・追跡する情報を扱わない
+- 公開確認のGET(`app/lib/waitForPageAvailable.ts`)は認証情報を一切付けない(LINE APIへのリクエストとヘッダーを共有しない)
 
 ## ログ
 

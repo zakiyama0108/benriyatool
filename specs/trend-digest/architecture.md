@@ -71,6 +71,7 @@ flowchart LR
     weeklyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
     repo -->|記事追加のpushで起動| broadcastRoutine
+    broadcastRoutine -->|記事ページの公開をGETで確認| cf
     broadcastRoutine -->|見出しに接頭辞を付けて配信| lineApi
     lineApi -->|メッセージ配信| lineFriends
 ```
@@ -93,7 +94,7 @@ flowchart LR
 ## 5. アーキテクチャ概要
 Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイル(`content/trend-digest/`)として管理する。
 
-対象ジャンルは18種類あり、[content-selection](content-selection/requirements.md)で「エンタメ編」(音楽・日本映画・海外映画・日本ドラマ・海外ドラマ・アニメ・バラエティ・サブスク動画・書籍/漫画の9ジャンル)と「カルチャー・ライフスタイル編」(SNSバズり・流行語・グルメ・趣味・ファッション・ガジェット/家電・ゲーム・旅行/観光・経済/お金の9ジャンル)の2グループに分ける。エンタメ編は毎週火曜、カルチャー・ライフスタイル編は毎週金曜にGitHub Actionsが実行され、ジャンルごとの情報源から候補を収集し、選定基準に沿ってその回に「動きがあった」ジャンルのトピックを選ぶ。選定方式はジャンルによって2通りある: 公式ランキング・チャートを持つジャンルは固定リストからの定量的コード判定、決まった集計元がないジャンルはClaude Code CLIのヘッドレス実行によるWebSearchベースの判定(LLM判定)を行う。選定後はClaude Code CLIが翻訳・要約([content-generation](content-generation/requirements.md))を行い記事を生成、PRを作成しCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。このマージをトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクを、既存の「AI駆動開発ニュース」と同じLINE公式アカウントから配信する。配信メッセージの見出しには「週刊トレンド エンタメ編」「週刊トレンド カルチャー編」の接頭辞を付け、日次のAI駆動開発ニュースと区別する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。ログイン中の運営者本人は記事詳細ページの各トピック下にフィードバックを残せる(ai-dev-digestと同じ`authenticated`ロールのINSERT専用パターン)。月次のGitHub Actionsワークフローがフィードバックと掲載実績・収集ログを読み、情報源・採用基準の見直し案をPRとして提案し、運営者の承認を経てからマージされる([source-review](source-review/requirements.md))。
+対象ジャンルは18種類あり、[content-selection](content-selection/requirements.md)で「エンタメ編」(音楽・日本映画・海外映画・日本ドラマ・海外ドラマ・アニメ・バラエティ・サブスク動画・書籍/漫画の9ジャンル)と「カルチャー・ライフスタイル編」(SNSバズり・流行語・グルメ・趣味・ファッション・ガジェット/家電・ゲーム・旅行/観光・経済/お金の9ジャンル)の2グループに分ける。エンタメ編は毎週火曜、カルチャー・ライフスタイル編は毎週金曜にGitHub Actionsが実行され、ジャンルごとの情報源から候補を収集し、選定基準に沿ってその回に「動きがあった」ジャンルのトピックを選ぶ。選定方式はジャンルによって2通りある: 公式ランキング・チャートを持つジャンルは固定リストからの定量的コード判定、決まった集計元がないジャンルはClaude Code CLIのヘッドレス実行によるWebSearchベースの判定(LLM判定)を行う。選定後はClaude Code CLIが翻訳・要約([content-generation](content-generation/requirements.md))を行い記事を生成、PRを作成しCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。このマージをトリガーに、独立したGitHub Actionsワークフローが起動する。デプロイ([deploy.yml](../../docs/architecture/deployment.md))とは同じpushで並列に起動するため、本番の記事ページが閲覧可能になったことをGETで確認してから、記事タイトル・トピック見出し一覧・記事リンクを、既存の「AI駆動開発ニュース」と同じLINE公式アカウントから配信する。配信メッセージの見出しには「週刊トレンド エンタメ編」「週刊トレンド カルチャー編」の接頭辞を付け、日次のAI駆動開発ニュースと区別する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。ログイン中の運営者本人は記事詳細ページの各トピック下にフィードバックを残せる(ai-dev-digestと同じ`authenticated`ロールのINSERT専用パターン)。月次のGitHub Actionsワークフローがフィードバックと掲載実績・収集ログを読み、情報源・採用基準の見直し案をPRとして提案し、運営者の承認を経てからマージされる([source-review](source-review/requirements.md))。
 
 ## 6. 採用技術
 | 技術 | 用途 |
@@ -114,7 +115,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [content-selection](content-selection/requirements.md) | 18ジャンルを2グループ(エンタメ編・カルチャー編)に分け、ジャンルごとの情報源・採用基準に沿って各回「動きがあった」トピックを選び出す | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md)) | リリース済み |
 | [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルール(著作権配慮を含む)を定める | content-selectionの選定結果を受け取る([content-selection/requirements.md](content-selection/requirements.md)) | リリース済み |
 | [weekly-publish](weekly-publish/requirements.md) | 週2回(火・金)の収集・選定・要約・記事公開を自動実行し、完全自動マージする | content-selection・content-generationの結果を公開する | リリース済み |
-| [line-broadcast](line-broadcast/requirements.md) | weekly-publishの記事PRがmainへ自動マージされた直後に、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング([weekly-publish/requirements.md](weekly-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))に従う | リリース済み |
+| [line-broadcast](line-broadcast/requirements.md) | weekly-publishの記事PRがmainへ自動マージされた後、記事ページが本番で閲覧可能になったことを確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング([weekly-publish/requirements.md](weekly-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))に従う | リリース済み |
 | [article-list](article-list/requirements.md) | エンタメ編・カルチャー編の記事を時系列1本のフィードでバッジ表示する | article-detailの記事構造を参照([article-detail/requirements.md](article-detail/requirements.md)) | リリース済み |
 | [article-detail](article-detail/requirements.md) | 記事本文(ジャンル見出しごとのトピック・要約・出典)と、運営者本人向けフィードバック入力欄を表示する | content-selectionの選定結果、content-generationの生成ルールに従う | リリース済み |
 | [source-review](source-review/requirements.md) | 月次で情報源・採用基準の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック、content-selectionの掲載実績・収集ログを参照する | リリース済み |
@@ -130,6 +131,7 @@ flowchart LR
     broadcast["LINE新着記事配信<br>(line-broadcast)"]
     review["月次見直し<br>(source-review)"]
     client["共通のSupabase接続<br>(app/lib)"]
+    pageWait["ページ公開待ち<br>(app/lib)"]
 
     publish -->|選定を実行| selection
     publish -->|翻訳・要約を実行| generation
@@ -137,6 +139,7 @@ flowchart LR
     publish -->|記事を生成しmainへ反映| detailScreen
     publish -->|記事JSON新規追加のpushをトリガーに起動| broadcast
     broadcast -->|記事データ構造を参照| detailScreen
+    broadcast -->|記事ページの公開確認に利用| pageWait
     detailScreen -->|フィードバック保存・運営者判定に利用| client
     review -->|フィードバック・実績を参照| detailScreen
     review -->|選定領域の見直し案を反映| selection

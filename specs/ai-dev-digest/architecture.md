@@ -76,6 +76,7 @@ flowchart LR
     dailyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
     repo -->|記事追加のpushで起動| broadcastRoutine
+    broadcastRoutine -->|記事ページの公開をGETで確認| cf
     broadcastRoutine -->|タイトル・見出し・リンクを一斉配信| lineApi
     lineApi -->|メッセージ配信| lineFriends
 ```
@@ -96,7 +97,7 @@ flowchart LR
 これらの図の正となる文章は下記「[5. アーキテクチャ概要](#5-アーキテクチャ概要)」と各specの設計書。このアプリから見た構成のみを描いており、プロジェクト共通インフラの詳細は[docs/architecture/](../../docs/architecture/infrastructure.md)を参照。
 
 ## 5. アーキテクチャ概要
-Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。このマージ(記事JSONの新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクをLINE Messaging APIのブロードキャスト機能で友だち全員へ配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。
+Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文はDBではなくJSONのコンテンツファイルとしてリポジトリ内(`content/ai-dev-digest/`)に置き、ビルド時に取り込む。日次のGitHub Actionsワークフローが情報源(公式API・公式RSSフィード・公式ブログ・公開ページ)から候補を収集し、選定基準([content-selection](content-selection/requirements.md))に沿ってトピックを選び、Claude Code CLIのヘッドレス実行による翻訳・要約([content-generation](content-generation/requirements.md))を経て記事を生成、PRを作成しCI成功後に自動マージする([daily-publish](daily-publish/requirements.md))。このマージ(記事JSONの新規追加)をトリガーに、独立したGitHub Actionsワークフローが起動する。デプロイ([deploy.yml](../../docs/architecture/deployment.md))とは同じpushで並列に起動するため、本番の記事ページが閲覧可能になったことをGETで確認してから、記事タイトル・トピック見出し一覧・記事リンクをLINE Messaging APIのブロードキャスト機能で友だち全員へ配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は記事一覧・詳細ページ([article-list](article-list/requirements.md)、[article-detail](article-detail/requirements.md))を未ログインでも閲覧できる。
 
 2026-08追加: 記事詳細ページのGoogle OIDCログインは読者全員に開放されており、ログイン中の読者はトピックに自由記述メモ付きの付箋を貼り([bookmark](bookmark/requirements.md))、専用の一覧画面(`/ai-dev-digest/bookmarks`)から自分の付箋を振り返れる(付箋データは本人の行のみRLSで操作可能な`ai_dev_digest_bookmarks`テーブルに保存)。この変更に伴い、運営者向けフィードバック欄(記事詳細ページの各トピック下)の表示条件は「ログイン中」から「ログイン中かつ運営者本人」に変更された(既存のINSERT専用パターン(`authenticated`ロール)自体は変更なし。表示切り替えのみ`admin_emails`のSELECTを追加で利用)。月次のGitHub Actionsワークフローがフィードバックと掲載実績を読み、ヘッドレス起動したClaude Code経由で、各フィードバックを選定領域(ウォッチリスト・採用基準)・生成領域(翻訳・要約・記事執筆ルール)・対象外に振り分けたうえで見直し案をPRとして提案し、これは日次記事と異なり運営者の承認を経てからマージされる([watchlist-review](watchlist-review/requirements.md))。
 
@@ -122,7 +123,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [content-selection](content-selection/requirements.md) | 情報源ウォッチリストと採用基準を定義し、日次のトピックを選び出す | daily-publishの実行タイミングに従う([daily-publish/requirements.md#機能要件](daily-publish/requirements.md)) |
 | [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルールを定める | content-selectionの選定結果を受け取る([content-selection/requirements.md#機能要件](content-selection/requirements.md)) |
 | [daily-publish](daily-publish/requirements.md) | 収集・翻訳・要約・記事公開を1日1回自動実行し、完全自動マージする | content-selection・content-generationの結果を公開する |
-| [line-broadcast](line-broadcast/requirements.md) | daily-publishの日次記事PRがmainへ自動マージされた直後に、新着記事をLINE公式アカウントの友だち全員へ自動配信する | daily-publishのマージタイミング([daily-publish/requirements.md#実行](daily-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))、content-generationのタイトル導出処理([content-generation/design.md](content-generation/design.md))に従う |
+| [line-broadcast](line-broadcast/requirements.md) | daily-publishの日次記事PRがmainへ自動マージされた後、記事ページが本番で閲覧可能になったことを確認してから、新着記事をLINE公式アカウントの友だち全員へ自動配信する | daily-publishのマージタイミング([daily-publish/requirements.md#実行](daily-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))、content-generationのタイトル導出処理([content-generation/design.md](content-generation/design.md))に従う |
 | [watchlist-review](watchlist-review/requirements.md) | 月次でウォッチリスト・採用基準(選定領域)と翻訳・要約・記事執筆ルール(生成領域)の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック([article-detail/requirements.md#運営者向けフィードバック](article-detail/requirements.md))、content-selectionの掲載実績([content-selection/requirements.md#1日の掲載件数](content-selection/requirements.md))、生成領域の変更対象として[content-generation/requirements.md](content-generation/requirements.md)を参照 |
 
 ## 8. コンポーネント図
@@ -137,6 +138,7 @@ flowchart LR
     broadcast["LINE新着記事配信<br>(line-broadcast)"]
     review["月次見直し<br>(watchlist-review)"]
     client["共通のSupabase接続<br>(app/lib)"]
+    pageWait["ページ公開待ち<br>(app/lib)"]
 
     publish -->|選定を実行| selection
     publish -->|翻訳・要約を実行| generation
@@ -144,6 +146,7 @@ flowchart LR
     publish -->|記事を生成しmainへ反映| detailScreen
     publish -->|記事JSON新規追加のpushをトリガーに起動| broadcast
     broadcast -->|タイトル導出・記事データ構造を参照| detailScreen
+    broadcast -->|記事ページの公開確認に利用| pageWait
     detailScreen -->|フィードバック保存・運営者判定に利用| client
     detailScreen -->|付箋の保存・編集・削除に利用| client
     bookmarkScreen -->|自分の付箋の取得・編集・削除に利用| client
