@@ -22,7 +22,7 @@
 ### 見直しの実行
 - [1] 月1回、蓄積された運営者フィードバック([article-detail/requirements.md](../article-detail/requirements.md)のフィードバック機能で保存された内容)と、直近1ヶ月の収集ログ・掲載実績(ジャンルごとの候補件数・継続度ラベルごとの掲載件数・掲載を見送った回数など、[content-selection/requirements.md#情報源の健全性監視](../content-selection/requirements.md))をもとに、見直し案を作成する
 - [2] 見直しの対象は次の2領域とする。1つのPRに複数領域の変更が含まれてよい:
-  - 選定領域: ジャンル別情報源・採用基準([content-selection/requirements.md](../content-selection/requirements.md))と、中長期ステータス判定の閾値([trend-history/requirements.md](../trend-history/requirements.md))
+  - 選定領域: ジャンル別情報源・採用基準([content-selection/requirements.md](../content-selection/requirements.md))と、継続度ラベル・注目度ラベルの判定に使う値([trend-history/requirements.md](../trend-history/requirements.md))
   - 生成領域: 要約・記事執筆のルール([content-generation/requirements.md](../content-generation/requirements.md))
 - [3] 各運営者フィードバックを内容から「選定領域」「生成領域」「いずれにも該当しない」のいずれかに振り分け、該当領域の見直し案にまとめる
 - [4] いずれの領域にも該当しないフィードバック(画面表示の不具合など)は見直し案の対象にしない。PR本文の判断材料の表にその内容と「対象外」である旨を記録する

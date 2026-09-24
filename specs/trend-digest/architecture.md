@@ -1,7 +1,7 @@
 # アーキテクチャ: trend-digest
 
 ## 1. 概要
-音楽・映像・グルメ・ファッションなど様々なジャンルの流行を週2回自動で収集し、半月〜1ヶ月以上続いている中長期トレンドだけを要約してダイジェスト記事として公開するアプリ。ai-dev-digestと同じ運用パターン(GitHub Actionsによる自動収集・記事生成・LINE配信)を踏襲する。URL: `/trend-digest`
+音楽・映像・グルメ・ファッションなど様々なジャンルの流行を週2回自動で収集し、各ジャンルから1件ずつを、どれだけ続いているか(継続度)と今どれくらい強いか(注目度)を添えて要約し、ダイジェスト記事として公開するアプリ。ai-dev-digestと同じ運用パターン(GitHub Actionsによる自動収集・記事生成・LINE配信)を踏襲する。URL: `/trend-digest`
 
 ## 2. アーキテクチャの目的
 - 対象ジャンルが19種類と多く、ジャンルごとに情報源の性質(公式ランキング・チャートの有無)が大きく異なるため、情報源・採用基準を1つの設計に押し込めず、ジャンルの性質に応じて2つの選定方式を使い分ける([content-selection](content-selection/requirements.md)「選定方式」参照)
@@ -71,8 +71,8 @@ flowchart LR
     lineFriends["LINE公式アカウントの友だち"]
 
     weeklyRoutine -->|情報取得| sources
-    weeklyRoutine -->|全候補の観測ログを追記| history
-    history -->|継続日数・強度の推移からステータス判定| weeklyRoutine
+    weeklyRoutine -->|全観測項目の観測ログを追記| history
+    history -->|継続期間・その回の強さからラベル判定| weeklyRoutine
     weeklyRoutine -->|記事JSONと観測ログを追加| weeklyPR
     weeklyPR -->|CI成功で自動マージ| repo
     repo -->|ビルド・配信| cf
@@ -118,13 +118,13 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 7. 機能マップ
 | spec | 役割 | 依存 | 状態 |
 |---|---|---|---|
-| [content-selection](content-selection/requirements.md) | 19ジャンルを2グループ(エンタメ編9・カルチャー編10)に分け、ジャンルごとの情報源・採用基準に沿って各回の候補を収集し、中長期ステータスで掲載候補を絞る | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md))。掲載可否・再掲可否の判定はtrend-historyのステータス・掲載実績に従う([trend-history/requirements.md](trend-history/requirements.md)) | リリース済み(中長期トレンド対応の改訂は未実装) |
+| [content-selection](content-selection/requirements.md) | 19ジャンルを2グループ(エンタメ編9・カルチャー編10)に分け、ジャンルごとの情報源・採用基準に沿って各回の項目を収集し、各ジャンルから1件ずつを選んで掲載する | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md))。掲載する話題の並べ替えはtrend-historyの継続度ラベル・注目度ラベル・掲載実績に従う([trend-history/requirements.md](trend-history/requirements.md)) | リリース済み(継続度・注目度対応の改訂は未実装) |
 | [trend-history](trend-history/requirements.md) | content-selectionが取得した全項目を採用基準の判定前に横断的に蓄積し、継続度ラベル(4段階)・注目度ラベル(3段階)・通算の報告回数を機械的に判定する | content-selectionの収集結果と、article-detailの記事データの掲載実績を参照する([content-selection/requirements.md](content-selection/requirements.md)、[article-detail/requirements.md](article-detail/requirements.md)) | 仕様のみ(未実装) |
-| [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルール(著作権配慮・続報の書き方を含む)を定める | content-selectionの選定結果とtrend-historyの掲載実績を受け取る([content-selection/requirements.md](content-selection/requirements.md)) | リリース済み(続報対応の改訂は未実装) |
+| [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルール(著作権配慮・続報の書き方を含む)を定める | content-selectionの選定結果とtrend-historyの掲載実績を受け取る([content-selection/requirements.md](content-selection/requirements.md)) | リリース済み(継続度・注目度対応の改訂は未実装) |
 | [weekly-publish](weekly-publish/requirements.md) | 週2回(火・金)の収集・選定・要約・記事公開と観測ログの追記を自動実行し、完全自動マージする | content-selection・content-generationの結果を公開し、trend-historyの観測ログを同じPRに含める | リリース済み(観測ログ対応の改訂は未実装) |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの記事PRがmainへ自動マージされた後、記事ページが本番で閲覧可能になったことを確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング([weekly-publish/requirements.md](weekly-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))に従う | リリース済み |
 | [article-list](article-list/requirements.md) | エンタメ編・カルチャー編の記事を時系列1本のフィードでバッジ表示する | article-detailの記事構造を参照([article-detail/requirements.md](article-detail/requirements.md)) | リリース済み |
-| [article-detail](article-detail/requirements.md) | 記事本文(ジャンル見出しごとのトピック・要約・出典・中長期トレンドの表示)と、運営者本人向けフィードバック入力欄を表示する。記事データの共有スキーマもこのspecが定義する | content-selectionの選定結果、content-generationの生成ルール、trend-historyの判定結果に従う | リリース済み(トレンド表示の改訂は未実装) |
+| [article-detail](article-detail/requirements.md) | 記事本文(ジャンル見出しごとのトピック・要約・出典・継続度ラベル/注目度ラベルの表示)と、運営者本人向けフィードバック入力欄を表示する。記事データの共有スキーマもこのspecが定義する | content-selectionの選定結果、content-generationの生成ルール、trend-historyの判定結果に従う | リリース済み(継続度・注目度表示の改訂は未実装) |
 | [source-review](source-review/requirements.md) | 月次で情報源・採用基準の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック、content-selectionの掲載実績・収集ログを参照する | リリース済み |
 | [source-directory](source-directory/requirements.md) | ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する | content-selectionのジャンル定義・情報源・採用基準を参照([content-selection/requirements.md](content-selection/requirements.md))。ログイン判定はarticle-detailと同じ仕組み | 仕様のみ(未実装) |
 
@@ -134,7 +134,7 @@ flowchart LR
     listScreen["記事一覧画面<br>(article-list)"]
     detailScreen["記事詳細画面<br>(article-detail)"]
     selection["選定ロジック<br>(content-selection)"]
-    history["継続履歴・ステータス判定<br>(trend-history)"]
+    history["継続履歴・継続度/注目度の判定<br>(trend-history)"]
     generation["翻訳・要約<br>(content-generation)"]
     publish["週2回実行・公開<br>(weekly-publish)"]
     broadcast["LINE新着記事配信<br>(line-broadcast)"]
@@ -143,10 +143,10 @@ flowchart LR
     pageWait["ページ公開待ち<br>(app/lib)"]
 
     publish -->|選定を実行| selection
-    selection -->|全候補を観測ログへ記録| history
-    history -->|ステータス・掲載実績を返す| selection
+    selection -->|全観測項目を観測ログへ記録| history
+    history -->|継続度・注目度・掲載実績を返す| selection
     history -->|過去記事の掲載実績を参照| detailScreen
-    selection -->|ステータス・報告回数を添えて渡す| generation
+    selection -->|継続度・注目度・報告回数を添えて渡す| generation
     publish -->|翻訳・要約を実行| generation
     publish -->|記事を生成しmainへ反映| listScreen
     publish -->|記事を生成しmainへ反映| detailScreen
@@ -156,7 +156,7 @@ flowchart LR
     detailScreen -->|フィードバック保存・運営者判定に利用| client
     review -->|フィードバック・実績を参照| detailScreen
     review -->|選定領域の見直し案を反映| selection
-    review -->|ステータス判定の閾値の見直し案を反映| history
+    review -->|ラベル判定に使う値の見直し案を反映| history
     review -->|生成領域の見直し案を反映| generation
 ```
 
@@ -169,7 +169,7 @@ CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。ただ�
 content/trend-digest/articles/<id>.json    # 1回1ファイルの記事データ(weekly-publishが追加)
 content/trend-digest/history/<id>.json     # 1回1ファイルの観測ログ(weekly-publishが追加。追記専用・後から書き換えない)
 content/trend-digest/watchlist.json        # ジャンル別の情報源(source-reviewが変更)
-content/trend-digest/criteria.json         # 採用基準・ステータス判定の閾値(source-reviewが変更)
+content/trend-digest/criteria.json         # 採用基準・継続度/注目度の判定に使う値(source-reviewが変更)
 ```
 
 収集・選定・記事組み立てのスクリプトは`scripts/trend-digest/`配下に置く(ai-dev-digestと同じ置き場所の考え方)。LINE配信のスクリプトも同様に`scripts/trend-digest/`配下に置く。

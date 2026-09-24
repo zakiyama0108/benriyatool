@@ -1,6 +1,6 @@
 # 要件定義: 要約・記事執筆のルール
 
-> ステータス: 仕様確認中(中長期トレンド対応は未実装)
+> ステータス: 仕様確認中(継続度・注目度対応は未実装)
 
 ## サマリ
 content-selectionで採用された各トピック(音楽・映画・グルメなど多様なジャンルの流行)について、著作権リスクを抑えつつ「なぜ今週話題なのか」が伝わる短い解説を生成するルールを定める。著作権配慮の方針(要約分量の制限・出典明記・利用規約への条項追記)はai-dev-digestと同じ考え方を踏襲する。
@@ -29,7 +29,7 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - [6] 1回分の記事全体のタイトルを生成する(「週刊トレンド エンタメ編 2026年9月15日号」のような形式。具体的な生成ルールは設計で確定する)
 
 ### 続報の執筆
-- [7] 過去にも掲載した話題を続報として掲載する場合([content-selection/requirements.md#掲載済み話題の再掲抑制](../content-selection/requirements.md))、本文は前回掲載時から何が変わったか(継続度ラベルの進行・継続期間の伸び・注目度の変化)を軸に書き、前回と同じ内容を繰り返さない
+- [7] 過去にも掲載した話題を続報として掲載する場合([content-selection/requirements.md#掲載する話題の選び方](../content-selection/requirements.md))、本文は前回掲載時から何が変わったか(継続度ラベルの進行・継続期間の伸び・注目度の変化)を軸に書き、前回と同じ内容を繰り返さない
 - [8] 続報の本文は、前回の記事を読んでいない読者にも通じるよう、話題そのものの最小限の説明を含める(続報であることを理由に説明を省かない)
 
 ## ビジネスルール・制約
@@ -52,7 +52,7 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - 生成された記事は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 記事の生成・公開タイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 - ここで定める要約・記事執筆のルールは、蓄積された運営者フィードバックをもとに[source-review/requirements.md](../source-review/requirements.md)の月次見直し(生成領域)で調整される
-- 続報かどうか・通算の報告回数・中長期ステータスは[trend-history/requirements.md](../trend-history/requirements.md)の判定結果を、content-selectionを経て受け取る
+- 続報かどうか・通算の報告回数・継続度ラベル・注目度ラベルは[trend-history/requirements.md](../trend-history/requirements.md)の判定結果を、content-selectionを経て受け取る
 
 ## スコープ外
 - 日本語以外の言語への翻訳(対象読者は日本語話者のみ)

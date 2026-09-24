@@ -22,7 +22,7 @@ architecture.mdが定める2つの選定方式を、実装形態として次の�
 ```ts
 // app/trend-digest/lib/watchlistTypes.ts
 import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
-import type { HistoryCriteria } from './historyTypes' // trend-history/design.mdが定義するステータス判定の閾値
+import type { HistoryCriteria } from './historyTypes' // trend-history/design.mdが定義する継続度・注目度の判定に使う値
 
 export type SelectionMethod = 'fixed-list' | 'websearch'
 
@@ -69,12 +69,12 @@ export type WebSearchGenreCriteria = {
 }
 
 export type Criteria = {
-  perGenreMax: number // 1ジャンルの最大掲載数(requirements.md#機能要件-6 = 2)
-  perEditionMax: number // 1回の最大掲載数(requirements.md#機能要件-7 = 10)
   newEntryLookbackWeeks: number // 「新規ランクイン」を判定する際、何週間分の過去記事の掲載トピックを参照するか
   genreCriteria: Record<Genre, FixedListGenreCriteria | WebSearchGenreCriteria>
-  history: HistoryCriteria // 中長期ステータス判定の閾値(trend-history/design.md「履歴データの形式」)
+  history: HistoryCriteria // 継続度ラベル・注目度ラベルの判定に使う値(trend-history/design.md「履歴データの形式」)
 }
+
+1ジャンルあたり・1回あたりの掲載件数の上限は持たない。掲載件数は「その編のジャンル数と同じ(各ジャンル1件)」に固定されており(requirements.md#掲載件数-1〜2)、調整できる値ではないため。
 ```
 
 `watchlist.json`の初期値(全19ジャンル。sourcesはrequirements.mdの各ジャンル節の情報源をそのまま構造化したもの。URLは実際にアクセスして生存確認済み[2026-09-19時点]。`region`はその情報源が日本の流行と海外の流行のどちらを映すかの区分):
@@ -143,8 +143,6 @@ export type Criteria = {
 `criteria.json`の初期値(妥当性は運用実績を見て[source-review](../source-review/requirements.md)で見直す。`history`の各値の意味は[trend-history/design.md](../trend-history/design.md)「履歴データの形式」参照):
 ```json
 {
-  "perGenreMax": 2,
-  "perEditionMax": 10,
   "newEntryLookbackWeeks": 4,
   "genreCriteria": {
     "music": { "method": "fixed-list", "newEntryOrRisingRank": true, "risingRankMinImprovement": 10 },
@@ -182,7 +180,7 @@ export type Criteria = {
 // app/trend-digest/lib/candidateTypes.ts
 import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
 import type { SelectionMethod } from './watchlistTypes'
-import type { TrendStatus } from './historyTypes' // trend-history/design.mdが定義する中長期ステータス
+import type { DurationLabel, HeatLabel } from './historyTypes' // trend-history/design.mdが定義する継続度ラベル・注目度ラベル
 
 export type Candidate = {
   genre: Genre
@@ -190,27 +188,37 @@ export type Candidate = {
   sourceName: string
   sourceUrl: string
   method: SelectionMethod
-  strength: number // 絞り込みの優先順位付けに使う数値。固定リスト: 100-順位(順位が高い=強い)。WebSearch: 独立情報源の言及数
-  rank: number | null // 固定リストジャンルの順位付きランキング型の情報源から取れた候補のその回の順位(1が最上位)。
-                      // 新着記事一覧型の候補とWebSearchジャンルの候補はnull。trend-historyの増減判定に渡す(trend-history/requirements.md#ステータス判定基準-9)
+  strength: number // 並べ替えの優先順位付けに使う数値。固定リスト: 100-順位(順位が高い=強い)。WebSearch: 独立情報源の言及数
+  rank: number | null // 固定リストジャンルの候補のその回の順位(1が最上位)。WebSearchジャンルの候補はnull。
+                      // trend-historyの観測ログと注目度ラベルの判定に渡す(trend-history/requirements.md#注目度ラベル-9)
   originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。trend-history/requirements.md#地域情報-1)
   currentRegions: string[] // 現在の主な流行地域。判定できない場合は空配列(=不明)
   strengthJapan: number | null // 日本の情報源での言及数。判定できない場合はnull
   strengthOverseas: number | null // 海外の情報源での言及数。判定できない場合はnull
+  meetsCriteria: boolean // その回にそのジャンルの採用基準を満たしたか。満たさない項目も観測ログへ渡すため、判定結果を項目に添えて持つ(requirements.md#機能要件-4)
   note?: string // 判定根拠のメモ(新規ランクイン/順位変動/独立情報源数など。ログ・PR本文向け)
 }
 
-// 中長期トレンドの絞り込みを通過した候補。ステータス・掲載実績が確定している
-export type PublishableCandidate = Candidate & {
-  status: TrendStatus
+// そのジャンルの掲載枠に選ばれた1件。trend-historyの判定結果が添えられている
+export type SelectedTopic = Candidate & {
+  durationLabel: DurationLabel
+  heatLabel: HeatLabel
   continuationDays: number
-  firstDetectedDate: string
-  reportCount: number // 今回掲載した場合に通算何回目の報告になるか(requirements.md#掲載済み話題の再掲抑制-4)
+  continuationStartDate: string // 途切れずに検知され続けている期間の開始日(trend-history/design.md)
+  reportCount: number // 今回掲載した場合に通算何回目の報告になるか(requirements.md#掲載する話題の選び方-7)
+  lastPublishedDurationLabel: DurationLabel | null // 直近掲載時の継続度ラベル。未掲載・判定不能はnull。content-generationが続報の本文を書くために使う
 }
 
 export type SelectionResult =
-  | { status: 'ok'; edition: Edition; topics: PublishableCandidate[] } // 絞り込み後、edition内ジャンル順に並んだ最終候補
-  | { status: 'skipped'; edition: Edition; reason: string } // 掲載可能な候補が1件も残らなかった場合
+  // 1件以上のジャンルで話題を選べた場合。topicsはedition内ジャンル順に並ぶ
+  | {
+      status: 'ok'
+      edition: Edition
+      topics: SelectedTopic[]
+      unavailableGenres: Genre[] // 情報源から項目を1件も取得できなかったジャンル(requirements.md#掲載件数-3)
+    }
+  // 対象editionのすべてのジャンルで項目を1件も取得できなかった場合(requirements.md#掲載件数-3)
+  | { status: 'skipped'; edition: Edition; reason: string }
 ```
 
 ### 固定リストジャンルの候補を収集・判定する処理(決定的なコード)
@@ -251,55 +259,46 @@ export type SelectionResult =
 ### 全観測項目を履歴へ記録する処理(決定的なコード)
 - 対象: 固定リストジャンル・WebSearchジャンルから収集した観測項目すべて(採用基準の判定前の全件)
 - 手順:
-  1. 収集した全観測項目を[trend-history/design.md](../trend-history/design.md)「その回の観測を履歴に記録する処理」へ引き渡し、その回の観測ログを書き出させる(requirements.md#機能要件-3)。引き渡す値には強度だけでなく**その回の順位**と**採用基準を満たしたかどうか**も含める(順位は固定リストジャンルのみ。WebSearchジャンルは順位なしとして渡す)
+  1. 収集した全観測項目を[trend-history/design.md](../trend-history/design.md)「その回の観測を履歴に記録する処理」へ引き渡し、その回の観測ログを書き出させる(requirements.md#機能要件-3)。引き渡す値には強さだけでなく**その回の順位**と**採用基準を満たしたかどうか**も含める(順位は固定リストジャンルのみ。WebSearchジャンルは順位なしとして渡す)
   2. 観測ログの書き出しが失敗した場合は、以降の選定・記事生成を行わずに実行を失敗させる([trend-history/design.md](../trend-history/design.md)のエラーハンドリング参照)
+  3. 書き出した観測ログを含む全観測ログから、trend-historyに継続度ラベル・注目度ラベル・掲載実績を判定させ、その結果を下記「掲載する話題を選ぶ処理」へ渡す
 - 関連するビジネスルール: requirements.md#機能要件-3
 
-### 掲載済み話題を除外する処理(決定的なコード)
-- 対象: 中長期トレンドの絞り込みを通過した候補(ジャンル内絞り込み・編全体の絞り込みより前に適用する)
+### 掲載する話題を選ぶ処理(決定的なコード)
+- 対象: 対象editionの各ジャンルの観測項目と、[trend-history/design.md](../trend-history/design.md)が返したその回の判定結果(継続度ラベル・注目度ラベル・継続日数・掲載回数・報告回数・直近掲載時の継続度ラベル)
 - 手順:
-  1. [trend-history/design.md](../trend-history/design.md)「掲載実績(報告回数・前回掲載時のステータス)を求める処理」から、候補ごとの過去の掲載回数と前回掲載時のステータスを受け取る
-  2. 過去に掲載されたことがない候補は、そのまま残し報告回数を1とする
-  3. 過去に掲載されたことがある候補は、前回掲載時のステータスと今回のステータスを比べる。同じ場合は除外し、異なる場合は続報として残す(requirements.md#掲載済み話題の再掲抑制-1〜2)
-  4. 前回掲載時のステータスが不明な候補(この機能の導入より前に生成された記事にのみ掲載されている候補)は、除外する(requirements.md#掲載済み話題の再掲抑制-3)
-  5. 残した候補の報告回数を「過去の掲載回数 + 1」として設定する(requirements.md#掲載済み話題の再掲抑制-4)
-  6. 同一話題かどうかの突き合わせは、候補の`title`と過去記事の`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を、trend-historyと同じ正規化関数(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)にかけてから行う。正規化ルールを二重に持たず、`selection.ts`の`normalizeTitle`を両specで共用する(requirements.md#掲載済み話題の再掲抑制-5)
-  7. すべての候補が除外され、そのジャンルで残る候補がなくなった場合は、そのジャンルは掲載しない(requirements.md#機能要件-5)
-- 関連するビジネスルール: requirements.md#掲載済み話題の再掲抑制-1〜5
-
-### ジャンル内の絞り込みを行う処理(決定的なコード)
-- 対象: 掲載済み話題の除外を通過した、1ジャンル分の候補
-- 手順:
-  1. 候補を`strength`の降順に並べる
-  2. 候補が3件以上ある場合は上位2件に絞る。候補が0〜2件の場合はそのまま採用する(requirements.md#機能要件-6、requirements.md#ジャンル内の絞り込み-1〜2)
-- 関連するビジネスルール: requirements.md#機能要件-6、requirements.md#ジャンル内の絞り込み-1〜2
-
-### 編全体の絞り込みを行う処理(決定的なコード)
-- 対象: 対象editionのジャンル分(エンタメ編9ジャンル・カルチャー編10ジャンル)の絞り込み済み候補(各ジャンル最大2件、`strength`降順)
-- 手順:
-  1. 各ジャンルの1件目(最有力候補)をすべて先に採用する
-  2. 採用件数が`perEditionMax`(10件)を超えない範囲で、各ジャンルの2件目を「固定リストジャンル→WebSearchジャンル」の順(ジャンルはwatchlist.jsonの登録順)に1件ずつ残りの枠へ追加する(requirements.md#配信全体の絞り込み-1)
-  3. 採用された候補を、そのeditionのジャンルの定義順(requirements.md#グループとジャンル)に並べ替える(ジャンル見出しの表示順・LINE配信のトピック一覧順として使われる。[article-detail/design.md](../article-detail/design.md)・[line-broadcast/requirements.md](../line-broadcast/requirements.md)参照)
-  4. 対象editionのすべてのジャンルで候補が1件も残らなかった場合のみ「候補不足によりスキップ」とする(requirements.md#機能要件-5、[weekly-publish/requirements.md#掲載件数の保証-1](../weekly-publish/requirements.md))。カルチャー編は1件目だけで10ジャンル分となり`perEditionMax`と同数になるため、2件目が採用されるのは1件目が10ジャンル未満しか埋まらなかった回に限られる
-- 関連するビジネスルール: requirements.md#機能要件-7、requirements.md#配信全体の絞り込み-1
+  1. ジャンルごとに、その回の観測項目を「採用基準を満たした項目(候補)」と「満たさなかった項目」に分ける(requirements.md#機能要件-4の用語に従う)
+  2. そのジャンルに候補が1件以上あれば、候補だけを手順4の順序で並べ、最上位の1件を掲載する話題とする
+  3. 候補が0件で観測項目が1件以上あるジャンルは、**観測項目全体**を同じ順序で並べ、最上位の1件を掲載する話題とする。各ジャンルから必ず1件を掲載するため、採用基準に届く話題がない回でもそのジャンルを空にしない(requirements.md#掲載件数-1)。採用基準は「その回の掲載候補にするもの」を選ぶための基準であって掲載可否の門ではなく(requirements.md#機能要件-4)、届かなかった話題も継続度ラベル「流行前」として基準を満たしていないことが記事に表れる([article-detail/requirements.md#継続度・注目度の表示](../article-detail/requirements.md))
+  4. 並べ替えは次の3階層で行う(requirements.md#掲載する話題の選び方-4〜6):
+     1. 過去に一度も掲載したことがない話題(掲載回数0)を、掲載したことがある話題より先にする
+     2. 掲載したことがない話題どうしは、継続度ラベルが高い順、同じなら注目度ラベルが高い順、それも同じならその回の強さが大きい順とする
+     3. 掲載したことがある話題どうしは、注目度ラベルが高い順、同じなら継続度ラベルが高い順、それも同じなら掲載回数が少ない順とする
+     4. ここまでですべて同じ場合は、正規化タイトルの昇順で決める(同点のときに選ばれる話題が実行のたびに変わらないようにするため)
+  5. 情報源から項目を1件も取得できなかったジャンル(取得に失敗した、または情報源が0件を返した)は、掲載する話題を持たない「取得できなかったジャンル」として選定結果に載せる。架空の話題は作らない(requirements.md#掲載件数-3)
+  6. 選んだ話題を、そのeditionのジャンルの定義順(`GENRE_ORDER`)に並べ替える(ジャンル見出しの表示順・LINE配信のトピック一覧順として使われる。[article-detail/design.md](../article-detail/design.md)・[line-broadcast/requirements.md](../line-broadcast/requirements.md)参照)
+  7. 対象editionのすべてのジャンルで項目を1件も取得できなかった場合のみ「取得できずスキップ」とする([weekly-publish/requirements.md#掲載件数の保証-1](../weekly-publish/requirements.md))
+  8. 同一の話題かどうかの突き合わせは、候補の`title`と過去記事の`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を、trend-historyと同じ正規化関数(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)にかけてから行う。正規化ルールを二重に持たず、`selection.ts`の`normalizeTitle`を両specで共用する(requirements.md#掲載する話題の選び方-8)
+- 掲載件数の上限は設けない。掲載件数はその編のジャンル数(エンタメ編9件・カルチャー編10件)と必ず一致する(requirements.md#掲載件数-2)
+- 関連するビジネスルール: requirements.md#機能要件-5、requirements.md#掲載件数-1、requirements.md#掲載件数-2、requirements.md#掲載件数-3、requirements.md#掲載する話題の選び方-4、requirements.md#掲載する話題の選び方-5、requirements.md#掲載する話題の選び方-6、requirements.md#掲載する話題の選び方-7、requirements.md#掲載する話題の選び方-8
 
 ## エラーハンドリング
 
 - 個々の情報源(固定リストジャンル)の取得失敗は、その情報源だけを除外して収集処理を続ける(処理フロー参照)。取得できなかった情報源はログに記録し、[source-review](../source-review/requirements.md)の月次見直しで妥当性を確認する
 - WebSearchジャンルの検索・判定自体が失敗・応答不能だった場合、そのジャンルは「候補0件」として扱い、他のジャンルの収集・選定を止めない
-- 観測ログの書き出しの失敗・履歴データの破損は、[trend-history](../trend-history/design.md)のエラーハンドリングのとおり実行を失敗させる(収集失敗と異なり、履歴の欠落は以後の全ステータス判定に影響し続けるため、握りつぶさない)
-- 掲載可能な候補が対象editionで1件も残らなかった場合は、[weekly-publish](../weekly-publish/design.md)側が「候補不足によりスキップ」として扱う。収集自体が0件だった場合と、収集はできたが中長期トレンドの絞り込み・再掲抑制で全件除外された場合の両方がこれに当たり、ログではそれぞれを区別して記録する
+- 観測ログの書き出しの失敗・履歴データの破損は、[trend-history](../trend-history/design.md)のエラーハンドリングのとおり実行を失敗させる(収集失敗と異なり、履歴の欠落は以後の全ラベル判定に影響し続けるため、握りつぶさない)
+- 対象editionのすべてのジャンルで項目を1件も取得できなかった場合のみ、[weekly-publish](../weekly-publish/design.md)側が「取得できずスキップ」として扱う。一部のジャンルだけが0件だった場合はスキップせず、そのジャンルを「取得できなかったジャンル」として記事に載せる(requirements.md#掲載件数-3)。採用基準を満たす候補が0件のジャンルは、観測項目から1件を選んで掲載するためスキップの理由にならない
 
 ## 関連するファイル(抜粋)
 
 ```
 content/trend-digest/watchlist.json (既存: 情報源をformat/parserId付きに刷新・dev-trendsジャンルの追加・各情報源へのregion付与)
-content/trend-digest/criteria.json (既存: genreCriteria・minIndependentSourcesの更新とhistoryの値を追加)
+content/trend-digest/criteria.json (既存: perGenreMax・perEditionMaxの削除、genreCriteria・minIndependentSourcesの更新、historyの値を追加)
 app/trend-digest/lib/types.ts (既存: Genreにdev-trendsを追加、GENRE_ORDER・GENRE_LABELSも更新)
-app/trend-digest/lib/watchlistTypes.ts (既存: FixedListSourceFormat・SourceRegionの追加、CriteriaへのhistoryとWatchlistEntryのsourcesへのregion追加)
-app/trend-digest/lib/candidateTypes.ts (既存: Candidateへの順位・地域情報の追加)
-app/trend-digest/lib/historyTypes.ts (trend-historyで新規作成: 継続度・注目度の型を利用)
-app/trend-digest/lib/selection.ts (既存: 掲載する話題の選び方の書き換え。normalizeTitleはtrend-historyと共用)
+app/trend-digest/lib/watchlistTypes.ts (既存: FixedListSourceFormat・SourceRegionの追加、CriteriaからのperGenreMax・perEditionMaxの削除とhistoryの追加、WatchlistEntryのsourcesへのregion追加)
+app/trend-digest/lib/candidateTypes.ts (既存: Candidateへの順位・採用基準の判定結果・地域情報の追加、PublishableCandidateのSelectedTopicへの置き換え)
+app/trend-digest/lib/historyTypes.ts (trend-historyで新規作成: 継続度ラベル・注目度ラベルの型と並び順を利用)
+app/trend-digest/lib/selection.ts (既存: 掲載する話題の選び方を3階層の並べ替え+各ジャンル1件に書き換え。normalizeTitleはtrend-historyと共用)
 app/trend-digest/lib/fetchFixedListCandidates.ts (既存: format別のディスパッチ・順位の保持・regionからの地域強度の集計)
 scripts/trend-digest/fetchSourcePage.ts (既存: HTTP取得・文字コード変換・User-Agent付与。サイト固有パースはsourceParsers/へ委譲するよう更新)
 scripts/trend-digest/sourceParsers/billboardJapan.ts, kogyoTsushin.ts, eigaCom.ts, filmarks.ts, videoResearch.ts, tohan.ts, nippan.ts, famitsu.ts, jalan.ts (新規: サイトごとの専用パーサー)
@@ -322,6 +321,6 @@ scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出し�
 
 - 週次実行のログに、ジャンルごとに「**観測項目数**(採用基準の判定前・記録上限適用後の件数)」と「**候補件数**(採用基準を満たした件数。取得失敗・検索失敗はその旨)」を分けて標準エラー出力へ記録する(requirements.md#情報源の健全性監視-1)。観測項目は情報源が項目を返す限り常に数十件出るため、この2つを1つの数値にまとめると情報源の健全性が読み取れなくなる
 - **候補件数**が0件だった情報源・ジャンルは警告(`WARN`)と分かる形で出力する(観測項目数ではなく候補件数で判断する)(慢性的な0件を月次見直しで拾えるようにするため)
-- 中長期トレンドの絞り込みで除外した候補の件数を、ステータスごと(NEW/EMERGING/DECLINING)に記録する(requirements.md#情報源の健全性監視-2)。絞り込みの対象はその回に収集された候補=必ず同じ編の直近の実行で検知されている候補であり、「途絶えた」ことを条件とするSHORT_TERMはここには現れないため内訳に含めない。SHORT_TERMを含む全ステータスの分布は、[trend-history/design.md](../trend-history/design.md)のログ(全候補のステータスごとの件数)で確認する
-- 前回掲載時からステータスが変わらないために再掲を見送った候補の件数と、続報として再掲する候補の件数(報告回数付き)を記録する
-- 対象editionで掲載可能な候補が0件の場合は、その旨を「収集自体が0件」「絞り込みで全件除外」のどちらなのかが分かる形で標準エラー出力へ記録する。[weekly-publish](../weekly-publish/design.md)側は標準出力のJSONの`status`フィールドを見てPRを作成しない判断に使う
+- ジャンルごとに、掲載する話題を**候補から選んだか、採用基準に届かなかった観測項目から選んだか**を記録する(requirements.md#情報源の健全性監視-2)。後者が慢性的に続くジャンルは、情報源か採用基準のどちらかが実態に合っていないため、[source-review](../source-review/requirements.md)の月次見直しで拾う
+- 選んだ話題の継続度ラベル・注目度ラベル・報告回数をジャンルごとに記録する(継続度ラベルが「流行前」ばかりになっていないかを月次見直しで確認できるようにするため)
+- 情報源から項目を1件も取得できなかったジャンルは、警告(`WARN`)と分かる形で出力する。対象editionの全ジャンルが該当した場合は、その旨を標準エラー出力へ記録する。[weekly-publish](../weekly-publish/design.md)側は標準出力のJSONの`status`フィールドを見てPRを作成しない判断に使う

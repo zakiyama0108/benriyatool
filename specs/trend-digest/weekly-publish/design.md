@@ -23,10 +23,10 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
 - 対象: 実行日(JST)とedition(火曜実行=`entertainment`、金曜実行=`culture-lifestyle`)
 - 手順:
   1. 作業用ブランチ`trend-digest/articles/<id>`(`<id>`は`<date>-<edition>`)を作成する
-  2. [content-selection](../content-selection/design.md)の`scripts/trend-digest/collect-and-select.ts`を実行し、対象editionのジャンル(エンタメ編9・カルチャー編10)の候補収集・採用基準判定を行う。同スクリプトはその回の全候補を`content/trend-digest/history/<id>.json`へ観測ログとして書き出したうえで、中長期トレンドの絞り込み・再掲抑制・絞り込み(最大10件)を行い選定結果を返す([trend-history/design.md](../trend-history/design.md)参照)
-  3. 選定結果が「候補不足によりスキップ」だった場合は、記事を作成せず後述「記事生成をスキップする処理」に進む(観測ログは手順2で既に書き出されているため、そのファイルだけをコミット対象にする)
+  2. [content-selection](../content-selection/design.md)の`scripts/trend-digest/collect-and-select.ts`を実行し、対象editionのジャンル(エンタメ編9・カルチャー編10)の候補収集・採用基準判定を行う。同スクリプトはその回の全観測項目を`content/trend-digest/history/<id>.json`へ観測ログとして書き出したうえで、継続度ラベル・注目度ラベル・掲載実績の判定結果を使って各ジャンル1件を選び、選定結果を返す([trend-history/design.md](../trend-history/design.md)参照)
+  3. 選定結果が「取得できずスキップ」だった場合(対象editionのすべてのジャンルで項目を1件も取得できなかった場合)は、記事を作成せず後述「記事生成をスキップする処理」に進む(観測ログは手順2で既に書き出されているため、そのファイルだけをコミット対象にする)
   4. 選定された各候補について、`scripts/trend-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでClaude Code CLI(`claude -p`)を1件ずつヘッドレス起動し、見出し・本文(日本語)を生成する。1候補の生成が一時的な失敗に終わった場合は、同じ候補を最大2回まで(初回+リトライ1回)起動し直す(ai-dev-digestと同じリトライ回数の考え方)。リトライしても失敗する候補は、その候補だけを除外して次の候補に進む(後述「エラーハンドリング」)
-  5. 生成に成功した候補が1件以上あれば、`assembleArticle(edition, date, topics)`でその候補のみから記事データ(`id`・`edition`・`date`・`topics`。article-detail/design.mdのスキーマに従う。`topics`はGENRE_ORDER順に並べ替える)を組み立て、`writeArticleFile`で`content/trend-digest/articles/<id>.json`として書き出す。選定された全候補の生成が失敗した場合、または利用枠の枯渇でその回の生成を続行できない場合は、記事は作らないが**手順2で書き出した観測ログだけは先にコミット・push・PR作成して自動マージし、そのうえで**明示的なエラーメッセージとともに非ゼロ終了する。GitHub Actionsの実行は失敗(赤)として残る(requirements.md#掲載件数の保証-2。候補不足による正常なスキップ(緑)と区別する)。観測ログを残さずに終了すると、requirements.md#実行-5が求める「記事を公開しない回でも観測ログだけは必ず追加する」を満たせず、以後の継続日数・ステータス判定が実態とずれるため(後述「エラーハンドリング」)
+  5. 生成に成功した候補が1件以上あれば、`assembleArticle(edition, date, topics, unavailableGenres)`でその候補のみから記事データ(`id`・`edition`・`date`・`topics`・`unavailableGenres`。article-detail/design.mdのスキーマに従う。`topics`はGENRE_ORDER順に並べ替える。生成に失敗して除外したジャンルと、情報源から項目を取得できなかったジャンルは、いずれも`unavailableGenres`に入れて全ジャンルが記事に現れる状態を保つ)を組み立て、`writeArticleFile`で`content/trend-digest/articles/<id>.json`として書き出す。選定された全候補の生成が失敗した場合、または利用枠の枯渇でその回の生成を続行できない場合は、記事は作らないが**手順2で書き出した観測ログだけは先にコミット・push・PR作成して自動マージし、そのうえで**明示的なエラーメッセージとともに非ゼロ終了する。GitHub Actionsの実行は失敗(赤)として残る(requirements.md#掲載件数の保証-2。情報源から項目を取得できなかったことによる正常なスキップ(緑)と区別する)。観測ログを残さずに終了すると、requirements.md#実行-5が求める「記事を公開しない回でも観測ログだけは必ず追加する」を満たせず、以後の継続日数・ラベル判定が実態とずれるため(後述「エラーハンドリング」)
   6. 記事ファイルと手順2で書き出した観測ログをまとめてコミットし、ブランチをリモートにpushする(requirements.md#実行-5)
 - 関連するビジネスルール: requirements.md#実行-1〜5、requirements.md#掲載件数の保証-1〜2
 
@@ -55,7 +55,7 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
 - 関連するビジネスルール: requirements.md#公開フロー-7
 
 ### 記事生成をスキップする処理
-- 対象: content-selectionが「候補不足」と判定した回(対象editionのすべてのジャンルで掲載可能な候補が0件。正常なスキップ。GitHub Actionsの実行は成功(緑)のまま終わる)
+- 対象: content-selectionが「取得できずスキップ」と判定した回(対象editionのすべてのジャンルで情報源から項目を1件も取得できなかった。正常なスキップ。GitHub Actionsの実行は成功(緑)のまま終わる)
 - 手順:
   1. 記事ファイルは作成しない
   2. 手順2で書き出した観測ログだけをコミットし、ブランチをpushしてPRを作成する(タイトル例: `[trend-digest] <id>の観測履歴を記録(記事なし)`)。記事が出ない回でも観測ログを欠かさないため、この回もPRを作って自動マージする(requirements.md#実行-5、requirements.md#自動マージの範囲-3)
@@ -79,7 +79,7 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
 .github/workflows/trend-digest-weekly.yml (新規: 火曜(エンタメ編)・金曜(カルチャー編)それぞれ起動するワークフロー本体)
 scripts/trend-digest/collect-and-select.ts (content-selectionで新規: 候補収集・選定のCLI)
 scripts/trend-digest/generate-content.ts (content-generationで新規: 見出し・本文生成のCLI)
-app/trend-digest/lib/assembleArticle.ts (新規: 選定結果+生成済み見出し・本文からArticleを組み立てる純粋関数)
+app/trend-digest/lib/assembleArticle.ts (新規: 選定結果+生成済み見出し・本文からArticleを組み立てる純粋関数。話題を取得できなかったジャンル・生成に失敗したジャンルをunavailableGenresへ入れる)
 scripts/trend-digest/write-article.ts (新規: assembleArticleの結果をcontent/trend-digest/articles/<id>.jsonへ書き出すCLI)
 content/trend-digest/articles/<id>.json (新規: 生成される記事データ。1回1ファイル)
 content/trend-digest/history/<id>.json (trend-historyで新規作成: その回の観測ログ。記事を作らない回も追加する)

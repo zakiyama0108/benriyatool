@@ -1,38 +1,53 @@
-# 設計: トレンド継続履歴と中長期ステータス判定
+# 設計: トレンド継続履歴と継続度・注目度の判定
 
 ## サマリ
-[content-selection](../content-selection/design.md)が各回に情報源から取得した全項目(採用基準の判定前の全件)を、実行1回=1ファイルの観測ログ`content/trend-digest/history/<date>-<edition>.json`として追記していく。観測ログは後から書き換えない追記専用のデータとし、ステータスは毎回すべての観測ログを読み直して再計算する(判定基準を見直したときに過去分も一貫した基準で評価し直せるようにするため)。候補の同一性は正規化タイトルのみで判定し、ジャンルをまたいで1本の系列にまとめる(requirements.md#機能要件-5。同一性のキーは正規化タイトルのみで、ジャンルを含めない)。ただし強度のものさしは選定方式ごとに異なるため、系列は1本のまま、強度の推移だけは選定方式を添えて保持し、増減の判定は同じ方式の観測どうしで行う(requirements.md#ステータス判定基準-9)。継続日数・強度の推移からNEW/SHORT_TERM/EMERGING/GROWING/ESTABLISHED/STABLE/DECLININGを決定的なコードで判定し、継続日数・掲載実績(報告回数・前回掲載時のステータス)とあわせてcontent-selectionへ渡す(掲載可否・再掲可否の判断はcontent-selection側が行う)。主要な設計判断は「[履歴データの形式](#履歴データの形式)」(DBではなくcontent/配下のJSON)・「[ステータスを判定する処理](#継続日数と強度の推移からステータスを判定する処理)」(判定順序と閾値の外出し)・「[セキュリティ](#セキュリティ)」。処理の俯瞰は「[週次実行の中での位置づけ](#週次実行の中での位置づけシーケンス図)」参照。
+[content-selection](../content-selection/design.md)が各回に情報源から取得した全項目(採用基準の判定前の全件)を、実行1回=1ファイルの観測ログ`content/trend-digest/history/<date>-<edition>.json`として追記していく。観測ログは後から書き換えない追記専用のデータとし、ラベルは毎回すべての観測ログを読み直して再計算する(判定基準を見直したときに過去分も一貫した基準で評価し直せるようにするため)。話題の同一性は正規化タイトルのみで判定し、ジャンルをまたいで1本の系列にまとめる(requirements.md#機能要件-4)。系列から、**途切れずに検知され続けている期間**にもとづく継続度ラベル(流行前/注目され始め/話題/非常に話題)と、**その回の強さ**にもとづく注目度ラベル(高い/普通/低い)を決定的なコードで判定し、掲載実績(掲載回数・直近掲載時の継続度ラベル)とあわせてcontent-selectionへ渡す。どちらのラベルも掲載可否を決めず、記事への表示と、ジャンル内に複数候補があるときの並べ替えに使う。主要な設計判断は「[履歴データの形式](#履歴データの形式)」(DBではなく`content/`配下のJSON)・「[途切れずに続いている期間を求める処理](#途切れずに続いている期間を求める処理)」(一度途切れたら数え直す)・「[注目度ラベルを判定する処理](#注目度ラベルを判定する処理)」(分布と情報源での位置の切り替え)・「[セキュリティ](#セキュリティ)」。処理の俯瞰は「[週次実行の中での位置づけ](#週次実行の中での位置づけシーケンス図)」参照。
 
 ## 履歴データの形式
 
 履歴は記事データ(`content/trend-digest/articles/`)と同じく、DBではなくビルド時・実行時に読み込む静的なコンテンツファイルとして`content/trend-digest/history/`配下に持つ(architecture.md#3-設計方針の「記事本文はDBに保存せずJSONとして管理する」と同じ扱い)。エージェントが生成しリポジトリにコミットされるデータであり、[ADR-0001](../../../docs/adr/0001-user-input-database.md)がSupabaseの対象とする「利用者がブラウザから入力するデータ」には当たらないため、Supabaseのテーブルは新設しない。あわせて、履歴の変化が週次記事PRの差分としてそのまま読めること・外部サービスの資格情報を週次実行に増やさずに済むこと・純粋なファイル入出力のためvitestで完全にテストできることを利点として採る。
 
 - 格納場所: `content/trend-digest/history/<date>-<edition>.json`(`<date>`は実行日`YYYY-MM-DD`、`<edition>`は実行対象の編。記事ファイルと同じ命名規則)
-- 1ファイル=1回の実行で観測した全候補。**一度書いたファイルは後から書き換えない**(追記専用)。過去の観測結果を後から補正すると、同じ履歴から毎回同じステータスが再現できなくなるため
-- 記事が生成されなかった回(全ジャンル候補0件でスキップした回)も、観測ログ自体は残す(「その回に何も検知されなかった」ことがDECLINING・SHORT_TERMの判定に必要なため。requirements.md#機能要件-6)
-- 削除・自動アーカイブは行わない(requirements.md#履歴データの保持期間-1)
+- 1ファイル=1回の実行で観測した全項目。**一度書いたファイルは後から書き換えない**(追記専用)。過去の観測結果を後から補正すると、同じ履歴から毎回同じラベルが再現できなくなるため
+- 記事が生成されなかった回(全ジャンルで項目を1件も取得できずスキップした回)も、観測ログ自体は残す(「その回にその話題が検知されなかった」ことが継続の途切れの判定に必要なため。requirements.md#継続度ラベル-1)
+- 削除・自動アーカイブは行わない(requirements.md#履歴データの保持期間-17)
 
 ```ts
 // app/trend-digest/lib/historyTypes.ts
 import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
 import type { SelectionMethod } from './watchlistTypes'
 
-// 中長期ステータス(requirements.md#ステータス判定基準-1〜7)
-export type TrendStatus = 'NEW' | 'SHORT_TERM' | 'EMERGING' | 'GROWING' | 'ESTABLISHED' | 'STABLE' | 'DECLINING'
+// 継続度ラベル(requirements.md#継続度ラベル-1〜4)。「どれだけ続いているか」を表す
+export type DurationLabel = 'pre-trend' | 'emerging' | 'talked' | 'highly-talked'
 
-// その回に観測した項目1件分。採用基準の判定前の全項目を記録する(requirements.md#機能要件-1〜4)
+// 注目度ラベル(requirements.md#注目度ラベル-8〜9)。「今どれくらい強いか」を表す
+export type HeatLabel = 'high' | 'normal' | 'low'
+
+// 継続度ラベルの強さの順(並べ替えの比較に使う。大きいほど長く続いている)。
+// 画面表示用の日本語ラベルはarticle-detail/design.mdが持つ(表示の責務がそちらにあるため)
+export const DURATION_LABEL_ORDER: Record<DurationLabel, number> = {
+  'pre-trend': 0,
+  emerging: 1,
+  talked: 2,
+  'highly-talked': 3,
+}
+
+// 注目度ラベルの強さの順(同上。大きいほど今強い)
+export const HEAT_LABEL_ORDER: Record<HeatLabel, number> = { low: 0, normal: 1, high: 2 }
+
+// その回に観測した項目1件分。採用基準を満たすかどうかの判定前の全項目を記録する(requirements.md#機能要件-1〜3)
 export type Observation = {
   genre: Genre
   title: string // 原題(content-selectionのCandidate.titleをそのまま引き継ぐ)
   strength: number // その回の強さを表す値。固定リストは`(記録上限 + 1) - 順位`(上位ほど大きい。上限30なら1位=30・30位=1)、
-                   // WebSearchは独立した言及元の数。**content-selectionが絞り込みに使う`strength`(固定リストは`100 - 順位`)とは別の値**で、
+                   // WebSearchは独立した言及元の数。**content-selectionが並べ替えに使う`strength`(固定リストは`100 - 順位`)とは別の値**で、
                    // 記録上限の中で必ず1以上になるよう張り直したもの(`100 - 順位`をそのまま使うと101位以降で負になりバリデーションを通らないため)
-  meetsCriteria: boolean // その回にcontent-selectionの採用基準を満たしたか(requirements.md#機能要件-3)。
-                         // 満たさなかった項目も記録するため、候補の有無をsource-reviewが見分けられるように残す
-  rank: number | null // 固定リストジャンルの項目のその回の順位(1が最上位。記録上限以内)。順位を持たない情報源(新着記事一覧型)とWebSearchジャンルはnull。
+  meetsCriteria: boolean // その回にcontent-selectionの採用基準を満たしたか(requirements.md#機能要件-2)。
+                         // 満たさなかった項目も記録するため、候補の有無をcontent-selection・source-reviewが見分けられるように残す
+  rank: number | null // 固定リストジャンルの項目のその回の順位(1が最上位。記録上限以内)。WebSearchジャンルはnull。
                       // strengthから逆算せず順位そのものを持つ(musicのような上昇幅加点があるジャンルでは`100 - strength`が実際の順位と一致しないため)
   method: SelectionMethod
-  originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。requirements.md#地域情報-1)
+  originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。requirements.md#地域情報-15)
   currentRegions: string[] // 現在の主な流行地域。判定できない場合は空配列(=不明)
   strengthJapan: number | null // 日本の情報源での言及数。判定できない場合はnull
   strengthOverseas: number | null // 海外の情報源での言及数。判定できない場合はnull
@@ -42,60 +57,60 @@ export type Observation = {
 export type ObservationLog = {
   date: string // YYYY-MM-DD。実行日
   edition: Edition
-  observations: Observation[] // その回の全候補。0件(全ジャンルで何も取れなかった回)もありうる
+  observations: Observation[] // その回の全観測項目。0件(全ジャンルで何も取れなかった回)もありうる
 }
 
-// 全観測ログを候補単位に集約した系列(ファイルには保存せず、実行のたびに再計算する)
+// 全観測ログを話題単位に集約した系列(ファイルには保存せず、実行のたびに再計算する)
 export type CandidateHistory = {
-  normalizedTitle: string // 同一性判定のキー。ジャンルは含めない(requirements.md#機能要件-5。同一性のキーは正規化タイトルのみで、ジャンルを含めない)
+  normalizedTitle: string // 同一性判定のキー。ジャンルは含めない(requirements.md#機能要件-4)
   latestTitle: string // 表示・突合用の原題(直近の観測のもの)
   latestGenre: Genre // 直近に観測されたジャンル
-  firstDetectedDate: string // 初回検知日
+  latestMethod: SelectionMethod // 直近の観測の選定方式(注目度ラベルの判定に使う)
+  latestStrength: number // 直近の観測の強さ(注目度ラベルの判定に使う)
+  latestRank: number | null // 直近の観測の順位(固定リストジャンルのみ。注目度ラベルの判定に使う)
+  firstDetectedDate: string // 初回検知日(途切れを挟んだ通算の最古。表示には使わず、運用状況の確認用に残す)
   lastDetectedDate: string // 直近検知日
-  detectionCount: number // 検知した実行回数
-  strengthSeries: Array<{ date: string; strength: number; rank: number | null; method: SelectionMethod }> // 日付昇順の強度の推移。ものさしが選定方式ごとに異なるため、増減の判定は同じmethodの要素どうしでのみ、方式ごとの測り方(固定リスト=順位の差、WebSearch=言及元数の比)で行う(requirements.md#ステータス判定基準-9)
-  observedEditions: Edition[] // この候補が観測された編(両編のジャンルで観測される候補は2件になる)
-  isActive: boolean // 観測されたいずれかの編の直近の実行で検知されているか。falseなら「言及が途絶えた」状態(requirements.md#ステータス判定基準の前文・同-2)
-  isFirstRun: boolean // この候補が過去に一度も観測されておらず、今回の実行が初検知か(requirements.md#ステータス判定基準-1)
+  continuationStartDate: string // 途切れずに検知され続けている期間の開始日(下記「途切れずに続いている期間を求める処理」)
+  continuationDays: number // continuationStartDateからlastDetectedDateまでの日数。初検知のみなら0
+  detectionCount: number // 検知した実行回数(途切れを挟んだ通算。選定方式・編をまたいで1回と数える)
+  observedEditions: Edition[] // この話題が観測された編(両編のジャンルで観測される話題は2件になる)
   originRegion: string | null
   currentRegions: string[]
   strengthJapan: number | null
   strengthOverseas: number | null
 }
 
-// 判定結果。content-selectionへ渡す単位
-// 掲載可否そのものは持たせない。履歴側は事実(ステータス・継続日数)の提供にとどめ、
-// 掲載できるステータスかどうかの判断はcontent-selectionが行う(requirements.md#ステータス判定基準-8)
-export type StatusJudgement = {
-  status: TrendStatus
-  continuationDays: number // 初回検知日から直近検知日までの日数(requirements.md#ステータス判定基準の前文)
-  firstDetectedDate: string
-  detectionCount: number // 検知した実行回数(選定方式をまたいだ通算。requirements.md#ステータス判定基準-9)
+// 話題1件分の判定結果。content-selectionへ渡す単位。
+// 掲載可否そのものは持たせない。履歴側は事実(ラベル・継続日数・掲載実績)の提供にとどめ、
+// どれを載せるかの判断はcontent-selectionが行う(requirements.md#継続度ラベル-7、同#注目度ラベル-12)
+export type HistoryJudgement = {
+  durationLabel: DurationLabel
+  heatLabel: HeatLabel
+  heatBasis: 'distribution' | 'source-position' // 注目度をどちらの方法で決めたか(ログ・月次見直し用)
+  continuationDays: number
+  continuationStartDate: string
+  detectionCount: number
+  publishedCount: number // 過去に記事へ掲載された回数(未掲載は0。requirements.md#掲載実績の追跡-13)
+  reportCount: number // 今回掲載する場合に通算何回目の報告になるか(= publishedCount + 1)
+  lastPublishedDurationLabel: DurationLabel | null // 直近掲載時の継続度ラベル。未掲載・判定不能はnull(requirements.md#掲載実績の追跡-14)
 }
-
-// 「中長期トレンドとみなせるステータス」の集合(requirements.md#ステータス判定基準-8)。
-// content-selectionはこの集合を参照して掲載可否を判定する(判定の閾値を二重に持たないため)
-export const LONG_TERM_TREND_STATUSES: readonly TrendStatus[] = ['GROWING', 'ESTABLISHED', 'STABLE']
 ```
 
-判定に使う閾値は`content/trend-digest/criteria.json`に`history`として持ち、[source-review](../source-review/requirements.md)の月次見直しで調整できるようにする(requirements.md#スコープ外「閾値の動的な自動チューニングは行わず、運用実績を見て人間が見直す」に対応するため、コードに直書きしない)。
+判定に使う日数・件数は`content/trend-digest/criteria.json`に`history`として持ち、[source-review](../source-review/requirements.md)の月次見直しで調整できるようにする(requirements.md#スコープ外「日数の区切り・観測の上限の動的な自動チューニングは行わず、運用実績を見て人間が見直す」に対応するため、コードに直書きしない)。
 
 ```ts
 // app/trend-digest/lib/historyTypes.ts(watchlistTypes.tsのCriteriaがこの型を読み込んで持つ。
-// 閾値の意味は本specが所有するため、型も本specのファイルに置く)
+// 値の意味は本specが所有するため、型も本specのファイルに置く)
 export type HistoryCriteria = {
-  shortTermMaxDays: number // SHORT_TERMとみなす継続日数の上限(requirements.md#ステータス判定基準-2 = 13。半月=14日の1日手前)
-  growingMinDays: number // GROWING判定の継続日数の下限(同-4 = 14。半月)
-  establishedMinDays: number // ESTABLISHED判定の継続日数の下限(同-5 = 30。1ヶ月)
-  stableMinDays: number // STABLE判定の継続日数の下限(同-6 = 90。3ヶ月)
-  maxObservationsPerSource: number // 1つの情報源から観測ログに記録する項目数の上限(requirements.md#機能要件-2)
-  minSamplesForTrend: number // 増加傾向・横ばいを判定するために最低限必要な観測回数
-  risingRatio: number // WebSearchジャンル用。「明確に増加傾向」とみなす倍率(後半平均÷前半平均がこの値以上)
-  decliningRatio: number // WebSearchジャンル用。「明確に減少」とみなす倍率(直近強度÷ピーク強度がこの値以下)
-  risingRankImprovement: number // 固定リストジャンル用。「明確に増加傾向」とみなす順位の改善幅(前半平均順位 - 後半平均順位がこの値以上)
-  decliningRankDrop: number // 固定リストジャンル用。「明確に減少」とみなす順位の悪化幅(直近順位 - 最良順位がこの値以上)
-  stableBandRatio: number // WebSearchジャンル用。「大きく増減せず一定」とみなす、平均からのぶれ幅の割合
-  stableRankBand: number // 固定リストジャンル用。「大きく増減せず一定」とみなす、平均順位からのぶれ幅(順位)
+  emergingMinDays: number // 「注目され始め」とみなす継続日数の下限(requirements.md#継続度ラベル-2 = 14。半月)
+  talkedMinDays: number // 「話題」とみなす継続日数の下限(同-3 = 30。1ヶ月)
+  highlyTalkedMinDays: number // 「非常に話題」とみなす継続日数の下限(同-4 = 90。3ヶ月)
+  maxObservationsPerSource: number // 1つの情報源から観測ログに記録する項目数の上限(requirements.md#機能要件-3)
+  heatMinObservationRuns: number // 注目度を過去の分布で決めるのに必要な、そのジャンルの実行回数(requirements.md#注目度ラベル-8、同-10)
+  heatRankHigh: number // 固定リストジャンル用。この順位以内なら注目度「高い」(同-9)
+  heatRankNormal: number // 固定リストジャンル用。この順位以内なら注目度「普通」(同-9)
+  heatSourcesHigh: number // WebSearchジャンル用。独立言及元がこの件数以上なら注目度「高い」(同-9)
+  heatSourcesNormal: number // WebSearchジャンル用。独立言及元がこの件数以上なら注目度「普通」(同-9)
 }
 ```
 
@@ -103,48 +118,26 @@ export type HistoryCriteria = {
 ```json
 {
   "history": {
-    "shortTermMaxDays": 13,
-    "establishedMinDays": 30,
-    "growingMinDays": 14,
-    "stableMinDays": 90,
+    "emergingMinDays": 14,
+    "talkedMinDays": 30,
+    "highlyTalkedMinDays": 90,
     "maxObservationsPerSource": 30,
-    "minSamplesForTrend": 3,
-    "risingRatio": 1.2,
-    "decliningRatio": 0.6,
-    "risingRankImprovement": 2,
-    "decliningRankDrop": 3,
-    "stableBandRatio": 0.2,
-    "stableRankBand": 2
+    "heatMinObservationRuns": 12,
+    "heatRankHigh": 3,
+    "heatRankNormal": 10,
+    "heatSourcesHigh": 5,
+    "heatSourcesNormal": 3
   }
 }
 ```
 
-日数の閾値(13/14/30/90)の根拠はrequirements.md#ステータス判定基準の前文のとおり半月・1ヶ月・3ヶ月の暦の区切り。増減の判定に使う値は運用実績がまだないため、下記の考え方で置いた初期値であり、[source-review](../source-review/requirements.md)の月次見直しで実績に合わせて調整する。特に`rankThreshold: 10`のジャンルでは、観測3回(前半1件・後半2件)のとき「8位 → 5位・6位」のような週次ランキングの通常のゆらぎでも前半平均8−後半平均5.5=2.5となりGROWINGが成立しうるため、**運用初期に固定リストジャンルのGROWINGが過剰に出ていないかを最初の月次見直しで確認する**:
+日数の区切り(14/30/90)と実行回数(12)の根拠はrequirements.md#継続度ラベル-5・#注目度ラベル-10のとおり半月・1ヶ月・3ヶ月の暦の区切りと、3ヶ月=週1回の観測で約12回という対応。件数の初期値は次の考え方で置いた:
 
-- `maxObservationsPerSource: 30` — 1つの情報源から記録する項目数の上限。掲載候補になる条件(上位5位・10位以内)より十分広く取り、上位圏に上がってくる前の動きも追えるようにする一方、ランキング下位まで際限なく記録すると順位の幅が広がりすぎてゆらぎと傾向を区別できなくなるため、3倍程度の30位で止める
-- `minSamplesForTrend: 3` — 増加・減少・横ばいはいずれも「向き」の判断であり、2点では直線しか引けずぶれと傾向を区別できない。3点を最小とする
-- `risingRatio: 1.2`(WebSearchジャンル) — 言及元が2割増えたら「明確に増加」とみなす。言及元数は2〜5件の範囲で動くため、2件→3件・3件→4件といった1件の増加が判定に乗る水準
-- `decliningRatio: 0.6`(WebSearchジャンル) — ピークの4割減を「明確に減少」とみなす。増加側(2割)より大きく取るのは、掲載を止める判断(DECLINING)を掲載を始める判断(GROWING)より慎重にするため
-- `risingRankImprovement: 2`(固定リストジャンル) — 平均順位が2位以上良くなったら「明確に増加」とみなす。掲載候補になる順位の幅が最も狭いジャンル(5位以内)でも判定が成立する最小の幅であり、1位差はランキングの通常のゆらぎと区別できないため下限を2位とする。記録上限を30位まで広げたことで20位台のゆらぎも2位差を満たしうるが、掲載可否に効くのは上位帯に上がってきた候補であり、下位帯でGROWINGと判定されても掲載の条件(上位N位以内)を満たさず記事にはならない。実際にGROWINGが過剰に出ていないかは最初の月次見直しで確認する
-- `decliningRankDrop: 3`(固定リストジャンル) — 直近の順位が最良順位より3位以上悪化したら「明確に減少」とみなす。増加側(2位)より大きく取る理由は`decliningRatio`と同じ。掲載候補になる5位以内のジャンルでは「最良1位→直近4位・5位」「最良2位→直近5位」の3通りでしか成立せず範囲は狭いが、それより大きく落ちた候補は順位圏外となって候補に上がらなくなり、`isActive`が偽になって手順2-2のDECLINING(b)で拾われるため、取りこぼしにはならない
-- `stableBandRatio: 0.2`(WebSearchジャンル) — 平均の上下2割に収まっていれば横ばいとみなす。`risingRatio`の2割と同じ幅にし、「増加とみなす動きがない」ことと「横ばい」が重ならないようにする
-- `stableRankBand: 2`(固定リストジャンル) — 平均順位の上下2位に収まっていれば横ばいとみなす。20〜30位帯では2位のゆらぎがノイズと区別しにくいが、STABLEとESTABLISHEDはどちらも掲載可能ステータスであり掲載可否を変えないため実害は小さい(往復による再掲の繰り返しは下記「STABLEとESTABLISHEDの往復」で別途抑える)。`risingRankImprovement`の2位と同じ幅にし、増加とみなす動きと横ばいが重ならないようにする(`stableBandRatio`と同じ考え方)。**固定リストの横ばいを比で測ってはいけない**: 強度は90〜99(5位以内のジャンルは95〜99)の帯にしかなく、平均95に対する上下2割は76〜114で取りうる値がすべて帯の中に入るため、順位が1位と10位を往復していても無条件に横ばいと判定されてしまう(増加・減少側と同じ「`100`という意味のない下駄」の問題)
+- `maxObservationsPerSource: 30` — 1つの情報源から記録する項目数の上限。掲載候補になる条件(上位5位・10位以内)より十分広く取り、上位圏に上がってくる前の動きも追えるようにする一方、ランキング下位まで際限なく記録しても継続の判断には使えないため、3倍程度の30位で止める(requirements.md#機能要件-3)
+- `heatRankHigh: 3` / `heatRankNormal: 10` — 順位そのものの体感に合わせ、表彰台にあたる3位以内を「高い」、ランキング上位の一般的な区切りである10位以内を「普通」、それ以下を「低い」とする
+- `heatSourcesHigh: 5` / `heatSourcesNormal: 3` — 採用基準の`minIndependentSources`(既定3件)をそのまま「普通」の下限に据え、その倍近い5件を「高い」とする。採用基準に届かない2件以下は「低い」になる
 
-**増減の測り方を選定方式で変える理由**(requirements.md#ステータス判定基準-9)。強度は選定方式によって別のものさしで測られる:
-
-| 選定方式 | 履歴に記録する強度 | 順位 | 取りうる値 |
-|---|---|---|---|
-| 固定リストジャンル | `(maxObservationsPerSource + 1) - 順位` | 1〜`maxObservationsPerSource`(初期値30) | 強度は1〜30 |
-| WebSearchジャンル | 独立した言及元の数 | なし(null) | おおむね1〜5 |
-
-**content-selectionが絞り込みに使う`strength`(`100 - 順位`)をそのまま履歴に持ち込まない**。理由は2つ:
-
-1. **比で判定できない**。content-selection側の`strength`で掲載候補になる順位帯(`rankThreshold`の5位・10位以内)を見ると値は90〜99に偏り、最も大きな上昇である「10位→1位」でも`99 ÷ 90 = 1.10`、5位以内のジャンルなら`99 ÷ 95 = 1.04`にしかならない。比の閾値をどう置いても「伸びている」を意味のある形で切り出せない(1.2は到達不能、1.05まで下げると`rankThreshold`を変えるたびに再計算が必要)。原因は「100」が意味のない下駄で、順位が1位でも10位でも90以上が常に乗り、実際の差(9)が埋もれること
-2. **記録対象を広げると負になる**。履歴には採用基準の判定前の項目を記録する(requirements.md#機能要件-1)ため、情報源によっては101位以降が入りうる。`100 - 順位`はそこで負値になり、バリデーション(強度は0以上)を通らず週次実行が失敗する
-
-そこで履歴側の強度は記録上限を基準に張り直し(1位が最大・上限位が1)、**増減は順位の差**(何位上がったか・下がったか)で判定する。ランキングの動きを語る自然な単位であり、`rankThreshold`や記録上限を変えても意味が変わらない。既存の`watchlist.json`が持つ`risingRankMinImprovement`(music。候補にする条件としての順位上昇幅)と同じ考え方で、こちらは候補化後の継続判定に使う点が異なる。WebSearchジャンルの言及元数は0が本当の起点であり倍率に意味があるため、従来どおり比で判定する。
-
-そこで固定リストジャンルは**順位の差**(何位上がったか・下がったか)で増減を判定する。ランキングの動きを語る自然な単位であり、`rankThreshold`を変えても意味が変わらない。既存の`watchlist.json`が持つ`risingRankMinImprovement`(music。候補にする条件としての順位上昇幅)と同じ考え方で、こちらは候補化後の継続判定に使う点が異なる。WebSearchジャンルの言及元数は0が本当の起点であり倍率に意味があるため、従来どおり比で判定する。
+**注目度の測り方が切り替わるときの見え方**(requirements.md#注目度ラベル-8〜9)。そのジャンルの実行が`heatMinObservationRuns`回に達すると、注目度の根拠が「情報源での位置」から「そのジャンルの過去の観測の分布」へ切り替わる。固定リストジャンルは毎回ほぼ`maxObservationsPerSource`件を記録するため、強さの分布は1〜30にほぼ一様に広がり、上位3分の1の境目はおおむね順位10位付近になる。つまり切り替え後は「高い」の範囲が**1〜3位からおおむね1〜10位へ広がる**。これは「過去の実績と比べる」という要件の意図どおりの挙動だが、読者から見ると同じ順位の話題のラベルが切り替わり時点で変わって見える。実際にどちらが実態に合うかは運用実績がないと判断できないため、**切り替え後にジャンルごとの注目度の分布が偏っていないかを最初の月次見直しで確認する**(requirements.md#注目度ラベル-11の「分布との比較は同じジャンルの中だけで行う」に従い、ジャンルをまたいだ比較はしない)。
 
 ### 週次実行の中での位置づけ(シーケンス図)
 俯瞰用の図。正となる文章は下記「[処理フロー](#処理フロー)」の各手順。
@@ -156,129 +149,89 @@ sequenceDiagram
     participant history as 履歴ファイル（content/trend-digest/history/）
     participant articles as 記事ファイル（content/trend-digest/articles/）
 
-    actions ->> selection: 対象編の全ジャンルの候補を収集
+    actions ->> selection: 対象編の全ジャンルの項目を収集
     selection -->> actions: 全観測項目（採用基準の判定前）
     actions ->> history: 今回の観測ログを1ファイル追記
     actions ->> history: 過去の全観測ログを読み込む
-    history -->> actions: 候補ごとの系列（継続日数・強度の推移）
+    history -->> actions: 話題ごとの系列（継続期間・直近の強さ・ジャンルの強さの分布）
     actions ->> articles: 過去の全記事の掲載実績を読み込む
-    articles -->> actions: 候補ごとの掲載回数・前回掲載時のステータス
-    actions ->> actions: ステータス・掲載可否・再掲可否・報告回数を判定
-    actions ->> selection: 掲載可能な候補だけを絞り込みへ引き渡す
+    articles -->> actions: 話題ごとの掲載回数・直近掲載時の継続度ラベル
+    actions ->> actions: 継続度ラベル・注目度ラベル・報告回数を判定
+    actions ->> selection: 判定結果を添えて掲載する話題の選定へ引き渡す
 ```
 
 ## 処理フロー
 
 ### その回の観測を履歴に記録する処理
-- 対象: content-selectionがその回に情報源から取得した全項目(**採用基準の判定を行う前**の全件。ジャンル内絞り込み・編全体の絞り込みより前であることはもちろん、`rankThreshold`・`newEntryOrRisingRank`の判定も適用しない。requirements.md#機能要件-1〜4)
+- 対象: content-selectionがその回に情報源から取得した全項目(**採用基準の判定を行う前**の全件。`rankThreshold`・`newEntryOrRisingRank`・`minIndependentSources`のいずれも適用しない。requirements.md#機能要件-1〜3)
 - 手順:
-  1. 項目ごとに、ジャンル・原題・強度(履歴側の尺度。上記「履歴データの形式」参照)・順位・選定方式・地域情報(下記「地域情報を判定する処理」で求めたもの)を1件の観測として組み立てる
-  2. 情報源ごとに、記録する項目を上位`maxObservationsPerSource`件までに絞る(requirements.md#機能要件-2)。順位を持たない新着記事一覧型の情報源は、掲載日時が新しい順に同数まで
-  3. 項目ごとに、その回にcontent-selectionの採用基準を満たしたかどうか(`meetsCriteria`)を記録する(requirements.md#機能要件-3)
-  4. 同じ正規化タイトルの項目が同じ回に複数のジャンル・情報源から取れた場合は、**選定方式ごとに1件だけ**残す。残す1件は次の順で選ぶ: (a) `rank`を持つ観測を優先する(順位を持たない仮の値が残ると増減の判定から除外されてしまうため)、(b) それでも複数あれば順位が最も上位(`rank`が小さい)の1件、(c) `rank`を持つ観測がなければ強度が最も大きい1件。固定リストジャンルとWebSearchジャンルの双方で取れた場合は方式ごとに1件ずつ、計2件を残す。方式をまたいで最大値を採らないのは、強度のものさしが方式で異なり、単純に比べると一方の観測が必ず失われるため(requirements.md#ステータス判定基準-9)
-  5. 実行日・対象の編・組み立てた観測の一覧を1つのファイルとして`content/trend-digest/history/<実行日>-<編>.json`へ書き出す。同じ名前のファイルが既にある場合は上書きせず、処理を失敗させる(追記専用の前提を壊さないため)
-  6. 項目が1件も取れなかった回も、観測の一覧が空のファイルとして書き出す(requirements.md#機能要件-6)
-- 関連するビジネスルール: requirements.md#機能要件-1、requirements.md#機能要件-6
+  1. 項目ごとに、ジャンル・原題・強さ(履歴側の尺度。上記「履歴データの形式」参照)・順位・選定方式・採用基準を満たしたかどうか・地域情報(下記「地域情報を判定する処理」で求めたもの)を1件の観測として組み立てる
+  2. 情報源ごとに、記録する項目を上位`maxObservationsPerSource`件までに絞る(requirements.md#機能要件-3)
+  3. 同じ正規化タイトルの項目が同じ回に複数のジャンル・情報源から取れた場合は、**選定方式ごとに1件だけ**残す。残す1件は次の順で選ぶ: (a) 順位を持つ観測を優先する、(b) それでも複数あれば順位が最も上位(順位の数値が小さい)の1件、(c) 順位を持つ観測がなければ強さが最も大きい1件。固定リストジャンルとWebSearchジャンルの双方で取れた場合は方式ごとに1件ずつ、計2件を残す。方式をまたいで最大値を採らないのは、強さのものさしが方式で異なり、単純に比べると一方の観測が必ず失われるため
+  4. 実行日・対象の編・組み立てた観測の一覧を1つのファイルとして`content/trend-digest/history/<実行日>-<編>.json`へ書き出す。同じ名前のファイルが既にある場合は上書きせず、処理を失敗させる(追記専用の前提を壊さないため)
+  5. 項目が1件も取れなかった回も、観測の一覧が空のファイルとして書き出す(その回に検知されなかったことを継続の途切れの判定に使うため)
+- 関連するビジネスルール: requirements.md#機能要件-1、requirements.md#機能要件-2、requirements.md#機能要件-3
 
 ### 地域情報を判定する処理
-- 対象: その回に観測ログへ記録する全項目(採用基準を満たさなかった項目も含む。requirements.md#機能要件-1)
+- 対象: その回に観測ログへ記録する全項目(採用基準を満たさなかった項目も含む)
 - 手順:
-  1. 固定リストジャンルの候補は、その候補を検出した情報源に登録された地域区分(日本の情報源か、海外の情報源か)から判定する。日本の情報源だけで検出されたなら「日本での強度」に検出件数を数え、海外の情報源だけなら「海外での強度」に数える。両方で検出された場合はそれぞれに数える
-  2. WebSearchジャンルの候補は、言及していた独立情報源のうち日本のメディアの数・海外のメディアの数を、収集を担うエージェントに数えさせて受け取る
-  3. 発祥地域・現在の主な流行地域は、情報源の記述から判定できた場合のみ記録する。判定できない場合は発祥地域を「不明」(値なし)、主な流行地域を「不明」(空)として扱い、推測で埋めない(requirements.md#地域情報-1)
+  1. 固定リストジャンルの項目は、それを検出した情報源に登録された地域区分(日本の情報源か、海外の情報源か)から判定する。日本の情報源だけで検出されたなら「日本での強度」に検出件数を数え、海外の情報源だけなら「海外での強度」に数える。両方で検出された場合はそれぞれに数える
+  2. WebSearchジャンルの項目は、言及していた独立情報源のうち日本のメディアの数・海外のメディアの数を、収集を担うエージェントに数えさせて受け取る
+  3. 発祥地域・現在の主な流行地域は、情報源の記述から判定できた場合のみ記録する。判定できない場合は発祥地域を「不明」(値なし)、主な流行地域を「不明」(空)として扱い、推測で埋めない(requirements.md#地域情報-15)
   4. 日本での強度・海外での強度も、判定できない場合は「不明」(値なし)として扱う。0件だったことと、判定できなかったことを区別する(慢性的に判定できていない状態を月次見直しで拾えるようにするため)
-  5. 比率を目安の配分(日本8割・海外2割)へ寄せる調整は行わない(requirements.md#地域情報-3)
-- 関連するビジネスルール: requirements.md#機能要件-8、requirements.md#地域情報-1〜3
+- 関連するビジネスルール: requirements.md#機能要件-8、requirements.md#地域情報-15、requirements.md#地域情報-16
 
-### 履歴を候補ごとの系列に集約する処理
+### 履歴を話題ごとの系列に集約する処理
 - 対象: `content/trend-digest/history/`配下の全観測ログ
 - 手順:
   1. すべての観測ログを読み込み、実行日の昇順に並べる。JSONとして読めないファイル・形式を満たさないファイルがあった場合は例外を投げる(下記エラーハンドリング参照)
-  2. 観測を正規化タイトル(既存の[掲載済み話題の再掲抑制](../content-selection/requirements.md#掲載済み話題の再掲抑制)と同じ正規化ルール。前後の空白除去・全角/半角の統一・英字の大文字小文字統一)ごとにまとめる。**ジャンルはキーに含めない**ため、同じ話題が複数ジャンルで検知された場合も1本の系列に集約される(requirements.md#機能要件-1)
-  3. 系列ごとに、初回検知日(最も古い観測の実行日)・直近検知日(最も新しい観測の実行日)・検知した実行回数(観測が存在する実行の数)・強度の推移(実行日昇順に、強度と選定方式を組にした並び)を求める。検知した実行回数は選定方式をまたいで通算する(同じ回に両方式で観測された場合は1回と数える)
-  4. 地域情報・ジャンル・原題は、直近の観測のものを採る(最新の状況を表すため)。ただし発祥地域は最も古い観測で判定できたものを優先して残す(「最初に流行が確認された地域」という定義上、後の回で不明になっても失いたくないため。requirements.md#地域情報-1)
-  5. 系列ごとに、その候補が観測された編の一覧(`observedEditions`)を求める。編は候補が観測されたジャンルから決まり、両方の編のジャンルで観測された候補は2件になる
-  6. 系列ごとに「言及が途絶えていないか」(`isActive`)を求める。`observedEditions`の各編について「その編の観測ログのうち最も実行日が新しいもの」を取り、**そのいずれかにこの候補が含まれていれば`isActive`は真**、どの編の直近の実行にも含まれていなければ偽とする(requirements.md#機能要件-6)。全観測ログ横断の最新ログでは判定しない。編は火曜(エンタメ9ジャンル)・金曜(カルチャー10ジャンル)で対象ジャンルが完全に分かれており、横断の最新ログを基準にすると金曜の実行のたびにエンタメ編の全候補が「途絶えた」と判定されてしまうため。両編で観測される候補を「いずれかで検知されていれば継続中」とするのは、片方の編で扱いが終わっただけで途絶えたとみなさないため(requirements.md#ステータス判定基準の前文)
-  7. 系列ごとに「今回が初検知か」(`isFirstRun`)を求める。観測が存在する実行が1つだけで、その実行が`observedEditions`のいずれかの編の直近の実行であれば真。どの編であれ過去に観測があれば偽とする(requirements.md#ステータス判定基準-1)
-- 関連するビジネスルール: requirements.md#機能要件-1〜6、requirements.md#機能要件-8
+  2. 観測を正規化タイトル(既存の`selection.ts`の正規化ルール。前後の空白除去・全角/半角の統一・英字の大文字小文字統一)ごとにまとめる。**ジャンルはキーに含めない**ため、同じ話題が複数ジャンルで検知された場合も1本の系列に集約される(requirements.md#機能要件-4)
+  3. 系列ごとに、初回検知日(最も古い観測の実行日)・直近検知日(最も新しい観測の実行日)・検知した実行回数を求める。検知した実行回数は選定方式・編をまたいで通算する(同じ回に両方式で観測された場合は1回と数える)
+  4. 系列ごとに、直近の観測のジャンル・選定方式・強さ・順位を取り出す(注目度ラベルの判定に使う)。同じ回に両方式で観測されている場合は、順位を持つ固定リストジャンルの観測を採る(順位という具体的な位置が分かる方を優先するため)
+  5. 系列ごとに、下記「途切れずに続いている期間を求める処理」で継続の開始日と継続日数を求める
+  6. 地域情報・原題は、直近の観測のものを採る(最新の状況を表すため)。ただし発祥地域は最も古い観測で判定できたものを優先して残す(「最初に流行が確認された地域」という定義上、後の回で不明になっても失いたくないため。requirements.md#地域情報-15)
+  7. 系列ごとに、その話題が観測された編の一覧(`observedEditions`)を求める。編は話題が観測されたジャンルから決まり、両方の編のジャンルで観測された話題は2件になる
+- 関連するビジネスルール: requirements.md#機能要件-1、requirements.md#機能要件-4、requirements.md#機能要件-8
 
-### 継続日数と強度の推移からステータスを判定する処理
-- 対象: 集約した候補ごとの系列1本
-- 増減の判定に使う推移の選び方(requirements.md#ステータス判定基準-9)。方式をまたいで値を混ぜて比べることはしない。次の順に決める:
-  1. 系列の強度の推移を選定方式ごとに分ける
-  2. **判定に使えない観測を先に取り除く**(固定リストの推移から`rank`がnullの観測を除く。順位を持たず順位差で測れないため)
-  3. **取り除いた後の件数**が最も多い方式の推移を、増減・横ばい・ピークの判定に使う(取り除く前の件数では数えない。除外の結果`minSamplesForTrend`に満たない方式を選んでしまい、判定できる方式があるのに判定を諦めることになるため。固定リストの情報源の一方が新着記事一覧型であるfashion・gadgetsで実際に起こりうる)
-  4. 件数が同じ場合は、直近の観測が属する方式を使う。**同じ回に両方式で観測されていて直近の方式が1つに決まらない場合は、固定リストの推移を使う**(順位という具体的な尺度を持ち、順位差での判定の方が言及元数の比より安定するため)
-  5. 固定リストの推移を使う場合は、さらに**観測件数が最も多いジャンル1つに絞る**(件数が同じ場合は直近の観測のジャンル)。ジャンルが違えば順位を出している情報源も違い、別のランキングの順位を1本の推移に混ぜると、残ったジャンルが入れ替わっただけで順位が跳ねて急増・急減と誤判定されるため(例: 同じ作品が書籍/漫画で2位、アニメで8位に観測され、週によって残る側が入れ替わると2→8と動いたように見える)。方式をまたいで混ぜない理由(requirements.md#ステータス判定基準-9)と同じ考え方を、同じ方式の中の別ランキングにも適用する
-  6. 選んだ推移の観測が`minSamplesForTrend`回未満の場合は、増減・横ばいを判定しない
-- 増減の測り方は、判定に使う推移の選定方式で決まる(requirements.md#ステータス判定基準-9):
-
-| 選定方式 | 増加傾向(手順2-7) | 減少(手順2-4) | 横ばい(手順2-5) |
-|---|---|---|---|
-| 固定リスト(`rank`あり) | 前半の平均順位 − 後半の平均順位 ≧ `risingRankImprovement`(順位が良くなった幅) | 直近の順位 − 最良順位 ≧ `decliningRankDrop`(順位が悪くなった幅) | 直近`minSamplesForTrend`回分の順位がいずれも、その平均順位の上下`stableRankBand`以内 |
-| WebSearch(`rank`がnull) | 後半の平均強度 ÷ 前半の平均強度 ≧ `risingRatio` | 直近の強度 ÷ ピーク強度 ≦ `decliningRatio` | 直近`minSamplesForTrend`回分の強度がいずれも、その平均の上下`stableBandRatio`の幅に収まる |
-
-増加・減少・**横ばい**の3つすべてを方式ごとの測り方で行う(requirements.md#ステータス判定基準-9が[4][6][7]の3つを対象としているため)。
+### 途切れずに続いている期間を求める処理
+- 対象: 集約した系列1本
 - 手順:
-  1. 継続日数を「初回検知日から直近検知日までの日数」として求める(requirements.md#ステータス判定基準の前文)
-  2. 下記の順に条件を当てはめ、最初に当てはまったものをその候補のステータスとする。上から順に当てはめるのは、要件の各条件が重なる範囲を持つため(例: 継続日数が20日で増加傾向のある候補はEMERGINGの条件とGROWINGの条件を同時に満たす)。**途絶えの判定を継続日数より先に置く**のは、1回だけ検知されて消えた候補が継続日数0のままNEWに留まり、一過性の話題を除外するSHORT_TERMがその最頻ケースを拾えなくなるのを避けるため(requirements.md#ステータス判定基準-1〜2)
-     1. `isActive`が偽(言及が途絶えた)で、継続日数が`shortTermMaxDays`以下ならSHORT_TERM(同-2)。1回だけ検知されて途絶えた候補(継続日数0)もここに入る
-     2. `isActive`が偽で、継続日数が`shortTermMaxDays`を超えているならDECLINING(同-7(b))
-     3. `isFirstRun`が真の場合はNEW(同-1)。ここに到達する時点で`isActive`は真であり、どの編でも過去に観測がない候補だけが当たる
-     4. 直近の強度がピークから明確に減少している場合はDECLINING(同-7(a))。「明確に減少」は上記の表のとおり選定方式ごとに測り、かつピーク(固定リストでは最良順位)が直近の観測ではないこと(直近がピーク自身であれば減少していないため)。観測が`minSamplesForTrend`回未満の系列では判定しない(数回の観測ではぶれと減少を区別できないため)。WebSearchの推移で**ピーク強度が0の場合は判定しない**(0で割れず、比では減少を測れないため。下記「境界値・特殊ケースの扱い」参照)
-     5. 継続日数が`stableMinDays`以上で、強度が大きく増減せず一定を保っている場合はSTABLE(同-6)。「一定を保っている」は上記の表のとおり選定方式ごとに測る(固定リストは平均順位からのぶれ幅、WebSearchは平均からのぶれ幅の割合)
-     6. 継続日数が`establishedMinDays`以上の場合はESTABLISHED(同-5)
-     7. 継続日数が`growingMinDays`以上で、強度が明確に増加傾向にある場合はGROWING(同-4)。「明確に増加傾向」は、推移を前半と後半に二分したうえで上記の表のとおり選定方式ごとに測ること。観測が`minSamplesForTrend`回未満の系列では判定しない
-     8. 上記のいずれにも当てはまらない場合はEMERGING(同-3)。ここに到達する時点で`isActive`は真であり、継続中の候補だけが当たる
-  3. 判定したステータス・継続日数・初回検知日・検知した実行回数を、content-selectionへ渡す。掲載できるステータスかどうかの判断は持たない(履歴側は事実の提供にとどめる。requirements.md#ステータス判定基準-8)
-- 境界値・特殊ケースの扱い(いずれも「判定できないものは判定しない」=その条件には当てはまらないものとして次の条件へ進む):
+  1. その話題が観測された編(`observedEditions`)ごとに、その編の観測ログの実行日を昇順に並べた「実行の並び」を作る。**その編の観測ログが存在しない週は、実行の並びに現れない**(週次実行そのものが失敗した欠測週を「検知されなかった回」と数えないため。下記エラーハンドリング参照)
+  2. 編ごとに、直近検知日にあたる実行から実行の並びを1つずつ古い方へたどる。その実行にこの話題の観測があれば続け、観測がない実行に当たったらそこで止める。止まる直前までにたどった実行のうち最も古い実行日を、その編での「継続の開始日」とする。直近検知日を含む実行より古い実行が1つもない場合(その編の初回実行で初検知された場合)は、直近検知日自体を継続の開始日とする
+  3. 両方の編で観測されている話題は、編ごとに求めた継続の開始日のうち**最も古いもの**を採る(片方の編で扱いが終わっただけで継続が切れたとみなさないため。requirements.md#継続度ラベルの前文が言う「一度途切れたらそこで区切る」は、その話題を扱っている編での途切れを指す)
+  4. 継続日数は「直近検知日 − 継続の開始日」の日数とする。同じ回に初めて検知された話題は継続日数0になる
+  5. 直近検知日が直近の実行より古い(=今回の実行では検知されなかった)話題も、この手順で求めた過去の継続期間をそのまま持つ。今回検知されなかった話題は掲載候補にならないため、現在の状態へ引き伸ばす補正はしない
+- 初回検知日から直近検知日までの通算日数で測らないのは、3ヶ月前に1回だけ検知された話題が今週また1件検知されただけで「3ヶ月続いている」と判定されてしまい、「継続的に注目されている話題」という言葉の意味と正反対になるため(requirements.md#継続度ラベルの前文)
+- 関連するビジネスルール: requirements.md#継続度ラベル-1
 
-| ケース | 扱い | 理由 |
-|---|---|---|
-| (WebSearch)ピーク強度が0 | 減少(手順2-4)の判定をしない | 0で割れない。比では0からの減少を表せない |
-| (WebSearch)前半の平均が0 | 増加傾向(手順2-7)の判定をしない | 0で割れない。0からの増加は倍率で表せない |
-| (WebSearch)直近`minSamplesForTrend`回分の平均が0 | すべての観測が0なら横ばい(手順2-5)とみなす。1件でも0でない値があれば横ばいとみなさない | 全て0は「増減していない」という事実そのもの。混在は平均比で測れない |
-| 観測回数が奇数のときの前半・後半の二分 | 先頭から`floor(件数÷2)`件を前半、残りを後半とする(中央の1件は後半に入る) | 直近側の変化を拾うため。件数が奇数でも両方が必ず1件以上になる |
-| 強度が負の値 | バリデーションで弾く(下記「バリデーション」) | 順位由来の値も言及元数も負にならず、負値は書き出し側の不具合 |
-| (固定リスト)推移に`rank`がnullの観測が混ざる | その観測を増減の判定から除外する。残りが`minSamplesForTrend`回未満なら増減を判定しない | 新着記事一覧型の情報源は順位を持たず、順位差で測れないため |
-| (固定リスト)順位が同値のまま動かない | 増加とも減少とも判定しない(差が0のため閾値に届かない)。横ばいは手順2-5で`stableRankBand`により真と判定される | 順位が動いていないことは横ばいそのもの |
+### 継続度ラベルを判定する処理
+- 対象: 集約した系列1本と、その継続日数
+- 手順:
+  1. 継続日数が`highlyTalkedMinDays`以上なら「非常に話題」とする
+  2. そうでなく`talkedMinDays`以上なら「話題」とする
+  3. そうでなく`emergingMinDays`以上なら「注目され始め」とする
+  4. いずれにも当たらない(継続日数が`emergingMinDays`未満の)場合は「流行前」とする。その回に初めて検知された話題(継続日数0)もここに入る
+  5. 判定したラベルは、掲載するかどうかの条件には使わない。各ジャンルから必ず1件を掲載するため、「流行前」の話題も掲載されうる(requirements.md#継続度ラベル-7、[content-selection/design.md](../content-selection/design.md)「掲載する話題を選ぶ処理」)
+- 関連するビジネスルール: requirements.md#機能要件-5、requirements.md#継続度ラベル-2、requirements.md#継続度ラベル-3、requirements.md#継続度ラベル-4、requirements.md#継続度ラベル-5、requirements.md#継続度ラベル-6、requirements.md#継続度ラベル-7
 
-- 状態遷移図(俯瞰用。正は上記の手順の文章。判定は毎回すべての観測ログから再計算するため、この図は「前の状態から遷移する」のではなく「継続日数と強度の推移が変わった結果どのステータスに移りうるか」を表す。継続日数は減ることがないため、日数を戻す向きの遷移は起こらない):
+### 注目度ラベルを判定する処理
+- 対象: 集約した系列1本(直近の観測のジャンル・選定方式・強さ・順位)と、全観測ログ
+- 手順:
+  1. その話題の直近の観測のジャンルについて、**そのジャンルの観測が1件以上ある実行ログの数**を数える。これがそのジャンルの実行回数にあたる
+  2. 実行回数が`heatMinObservationRuns`以上の場合は、そのジャンルの全観測(今回の観測を含む)の強さを昇順に並べ、三分位で段階を決める。件数をNとしたとき、下側の境目を昇順の並びの`floor(N ÷ 3)`番目(0始まり)の値、上側の境目を`floor(N × 2 ÷ 3)`番目の値とし、今回の強さが上側の境目以上なら「高い」、下側の境目未満なら「低い」、その間なら「普通」とする。ただし上側と下側の境目が同じ値になる(分布に幅がない)場合は「普通」とする。並べる対象を同じジャンルに限るのは、ジャンルが違えば強さの測り方も情報源も違い、そのまま比べても意味を持たないため(requirements.md#注目度ラベル-11)
+  3. 実行回数が`heatMinObservationRuns`未満の場合は、情報源での位置から決める。固定リストジャンルは直近の観測の順位が`heatRankHigh`以内なら「高い」、`heatRankNormal`以内なら「普通」、それ以下なら「低い」とする。WebSearchジャンルは直近の観測の強さ(独立した言及元の数)が`heatSourcesHigh`以上なら「高い」、`heatSourcesNormal`以上なら「普通」、それ未満なら「低い」とする
+  4. どちらの方法で決めたかを判定結果に残す(ログと月次見直しで、切り替わり前後の分布を確認できるようにするため)
+  5. 判定したラベルは、掲載するかどうかの条件には使わない(requirements.md#注目度ラベル-12)
+- 関連するビジネスルール: requirements.md#機能要件-6、requirements.md#注目度ラベル-8、requirements.md#注目度ラベル-9、requirements.md#注目度ラベル-10、requirements.md#注目度ラベル-11、requirements.md#注目度ラベル-12
 
-```mermaid
-stateDiagram-v2
-    [*] --> NEW: 今回初めて検知
-    NEW --> EMERGING: 同じ編の次回も検知（継続中）
-    NEW --> SHORT_TERM: 次回以降で途絶えた（継続13日以下）
-    EMERGING --> GROWING: 14日以上 かつ 強度が増加傾向
-    EMERGING --> SHORT_TERM: 途絶えた（継続13日以下）
-    EMERGING --> DECLINING: 途絶えた（継続14日以上） または 強度がピークから明確に減少
-    EMERGING --> ESTABLISHED: 30日以上 継続
-    GROWING --> ESTABLISHED: 30日以上 継続
-    GROWING --> EMERGING: 増加傾向でなくなった（30日未満）
-    GROWING --> DECLINING: 途絶えた または 強度がピークから明確に減少
-    ESTABLISHED --> STABLE: 90日以上 かつ 強度が横ばい
-    STABLE --> ESTABLISHED: 強度が横ばいでなくなった
-    ESTABLISHED --> DECLINING: 途絶えた または 強度がピークから明確に減少
-    STABLE --> DECLINING: 途絶えた または 強度がピークから明確に減少
-    DECLINING --> ESTABLISHED: 強度が持ち直した（30日以上）
-    DECLINING --> EMERGING: 強度が持ち直した（30日未満）
-    SHORT_TERM --> EMERGING: 後日また検知された（継続30日未満）
-    SHORT_TERM --> ESTABLISHED: 後日また検知された（継続30日以上）
-```
-SHORT_TERMは終端ではない。判定は毎回すべての観測ログから再計算し、系列は削除しないため(requirements.md#ステータス判定基準-2「参考データとして履歴には残す」・#履歴データの保持期間-1)、途絶えた候補が後日また検知されれば`isActive`が真に戻り、初回検知日からの継続日数で判定し直される。
-
-- **STABLEとESTABLISHEDの往復**: この2つは継続日数の条件が重なり(90日以上はどちらの条件も満たす)、違いは横ばいかどうかだけで、いずれも掲載可能なステータス。横ばい判定は観測値のゆらぎで週ごとに変わりうるため、継続90日以上の候補はESTABLISHEDとSTABLEを往復しうる。[content-selection](../content-selection/design.md)の再掲抑制は「前回掲載時からステータスが変わったら続報として再掲する」ため、この往復だけで同じ話題が繰り返し掲載されることになる。これを防ぐため、**ESTABLISHEDとSTABLEの間の変化だけでは「ステータスが変わった」とみなさない**ことをcontent-selection側のルールとする([content-selection/requirements.md#掲載済み話題の再掲抑制](../content-selection/requirements.md)-6)。段階が進んだと言えるのは伸び・定着・減少の向きが変わったときであり、横ばいかどうかのゆらぎは読者にとって新しい情報ではないため
-- 関連するビジネスルール: requirements.md#機能要件-7、requirements.md#ステータス判定基準-1〜9
-
-### 掲載実績(報告回数・前回掲載時のステータス)を求める処理
+### 掲載実績(掲載回数・直近掲載時の継続度ラベル)を求める処理
 - 対象: `content/trend-digest/articles/`配下の全記事の全トピック
 - 手順:
   1. 全記事のトピックを、対象作品・話題の原題を正規化したものごとにまとめ、発行日の昇順に並べる
-  2. 候補ごとに、過去に掲載された回数を数える。今回掲載する場合の「何回目の報告か」は、この回数に1を足した値とする(requirements.md#掲載実績の追跡-1)
-  3. 直近で掲載されたときのステータスを、最も新しい掲載トピックが持つステータスから取る。ステータスを持たない過去の記事(この機能の導入より前に生成された記事)しかない場合は「前回掲載時のステータスは不明」として扱う(requirements.md#掲載実績の追跡-2)
-  4. 求めた報告回数・前回掲載時のステータスを、ステータス判定結果とあわせてcontent-selectionへ渡す。これらを使った再掲可否の判定自体は[content-selection](../content-selection/design.md)が行う(履歴側は事実の提供にとどめ、選定の判断を持たないため)
-- 関連するビジネスルール: requirements.md#機能要件-9、requirements.md#掲載実績の追跡-1〜2
+  2. 話題ごとに、過去に掲載された回数を数える。今回掲載する場合の「何回目の報告か」は、この回数に1を足した値とする(requirements.md#掲載実績の追跡-13)
+  3. 直近で掲載されたときの継続度ラベルを、最も新しい掲載トピックが持つ値から取る。継続度ラベルを持たない過去の記事(この機能の導入より前に生成された記事)しかない場合は「不明」として扱う(requirements.md#掲載実績の追跡-14)
+  4. 求めた掲載回数・報告回数・直近掲載時の継続度ラベルを、ラベルの判定結果とあわせてcontent-selectionへ渡す。掲載回数は[掲載する話題の選び方](../content-selection/requirements.md)の並べ替えに、直近掲載時の継続度ラベルは[content-generation](../content-generation/design.md)が続報の本文で「前回から何が変わったか」を書くために使う。使い方の判断自体は各specが行い、履歴側は事実の提供にとどめる
+- 関連するビジネスルール: requirements.md#機能要件-7、requirements.md#掲載実績の追跡-13、requirements.md#掲載実績の追跡-14
 
 ## バリデーション
 
@@ -287,59 +240,62 @@ SHORT_TERMは終端ではない。判定は毎回すべての観測ログから�
 - `edition`: `entertainment`または`culture-lifestyle`であること
 - `observations`: 配列であること(0件を許容する)
 - 各`observation`: `genre`が定義済みジャンルのいずれかであること、`title`が空文字でなく200文字以内で、制御文字(改行・タブを含む)を含まないこと(情報源のページやLLMの出力に由来する文字列であり、記録件数が1回あたり数百件に増えるため外部入力として検証する)、`strength`が0以上の有限の数値であること、`rank`が1以上`maxObservationsPerSource`以下の整数またはnullであること、`meetsCriteria`が真偽値であること、`method`が`fixed-list`または`websearch`であること、`strengthJapan`・`strengthOverseas`が0以上の数値またはnullであること
-- 地域情報は収集エージェント(Claude Code CLIのWebSearch)が生成した自由文字列であり、**外部入力として検証する**(想定外の長さ・制御文字がそのまま記事データに転記され、画面表示や`check:spec-coverage`・`next build`の想定外の失敗につながることを防ぐため):
+- 地域情報は収集エージェント(Claude Code CLIのWebSearch)が生成した自由文字列であり、**外部入力として検証する**(想定外の長さ・制御文字がそのまま記事データに転記され、画面表示や`check:spec-coverage`・`next build`の想定外の失敗につながることを防ぐため。requirements.md#地域情報-16):
   - `originRegion`: 文字列またはnullであること。文字列の場合は空文字でなく**50文字以内**であること
   - `currentRegions`: 文字列の配列であること。各要素は空文字でなく**50文字以内**であること。要素数は10件以内であること
   - `originRegion`・`currentRegions`の各要素に制御文字(改行・タブを含む)を含まないこと
   - 50文字という上限は、記録するのが国名・地域名(「日本」「北米」「東アジア」など)であり、正当な値がこの長さを超えないため
-- 同じファイル内に、同じ正規化タイトル**かつ同じ選定方式**の観測が2件以上ないこと(処理フロー「その回の観測を履歴に記録する処理」手順2が方式ごとに1件へ寄せているため、同じ方式で2件以上あれば書き出し側の不具合)。**正規化タイトルが同じでも選定方式が違う観測は2件まで許容する**(固定リストとWebSearchの双方で同じ話題が取れた場合。方式ごとに推移を分けて持つ設計のため。requirements.md#ステータス判定基準-9)
+- 同じファイル内に、同じ正規化タイトル**かつ同じ選定方式**の観測が2件以上ないこと(処理フロー「その回の観測を履歴に記録する処理」手順3が方式ごとに1件へ寄せているため、同じ方式で2件以上あれば書き出し側の不具合)。**正規化タイトルが同じでも選定方式が違う観測は2件まで許容する**(固定リストとWebSearchの双方で同じ話題が取れた場合)
 - ファイル名(`<date>-<edition>.json`)と中身の`date`・`edition`が一致すること
 
 ## エラーハンドリング
 
-- 観測ログのスキーマ違反・ファイル名との不一致は例外として扱い、週次実行を失敗させる。履歴は以後すべてのステータス判定の土台になるデータであり、壊れたまま先に進むと誤った掲載判断が続くため、記事のスキーマ違反([article-detail/design.md](../article-detail/design.md)のエラーハンドリング)と同じく検知した時点で止める
-- 観測ログを書き出す前の段階(候補収集)で個々の情報源の取得が失敗した場合は、[content-selection](../content-selection/design.md)のエラーハンドリングのとおりその情報源だけを除外して処理を続ける。その回の観測ログには、取得できた範囲の候補だけが記録される(その結果、一時的に検知が途絶えた候補がSHORT_TERM・DECLININGと判定されうる。情報源の慢性的な取得失敗は[source-review](../source-review/requirements.md)の月次見直しで拾う)
+- 観測ログのスキーマ違反・ファイル名との不一致は例外として扱い、週次実行を失敗させる。履歴は以後すべてのラベル判定の土台になるデータであり、壊れたまま先に進むと誤った表示が続くため、記事のスキーマ違反([article-detail/design.md](../article-detail/design.md)のエラーハンドリング)と同じく検知した時点で止める
+- 観測ログを書き出す前の段階(項目収集)で個々の情報源の取得が失敗した場合は、[content-selection](../content-selection/design.md)のエラーハンドリングのとおりその情報源だけを除外して処理を続ける。その回の観測ログには、取得できた範囲の項目だけが記録される(その結果、継続中の話題の継続が一時的に途切れたと判定されうる。情報源の慢性的な取得失敗は[source-review](../source-review/requirements.md)の月次見直しで拾う)
 - 観測ログの書き出しに失敗した場合は、その回の記事を生成せず週次実行を失敗させる。記事だけが増えて履歴が欠けると、以後の継続日数・報告回数が実態とずれるため
-- `content/trend-digest/history/`が存在しない、または観測ログが1件もない運用開始直後は、すべての候補が継続日数0のNEWとして扱われる(例外にはしない)
-- **週次実行そのものが失敗し、その回の観測ログが1件も書き出されなかった場合**(欠測)は、その週を「存在しなかった実行」として扱い、判定上は何も補わない。具体的には、欠測週は検知した実行回数にも強度の推移にも現れず、「同じ編の直近の実行」は欠測週ではなく**実際に観測ログが残っている最も新しい実行**を指す。欠測を「検知されなかった回」として数えると、実行基盤の障害が候補の途絶えと区別できず、継続中の候補が一斉にSHORT_TERM・DECLININGへ落ちるため。継続日数は日付の差で測るため、欠測があっても値は変わらない
-- 欠測が続くと`minSamplesForTrend`(増減判定に必要な観測回数)に達するまでの期間が延びるが、判定を甘くする補正は行わない(観測していない期間の傾向を推測しないため)。欠測の頻度は[source-review](../source-review/requirements.md)の月次見直しで確認する
+- `content/trend-digest/history/`が存在しない、または観測ログが1件もない運用開始直後は、すべての話題が継続日数0の「流行前」として扱われる(例外にはしない)。注目度は実行回数が`heatMinObservationRuns`に満たないため、情報源での位置から決まる
+- **週次実行そのものが失敗し、その回の観測ログが1件も書き出されなかった場合**(欠測)は、その週を「存在しなかった実行」として扱い、判定上は何も補わない。具体的には、欠測週は検知した実行回数にも実行の並びにも現れず、継続をさかのぼる際にも飛ばされる。欠測を「検知されなかった回」として数えると、実行基盤の障害が話題の途切れと区別できず、継続中の話題の継続度ラベルが一斉に「流行前」へ落ちるため。継続日数は日付の差で測るため、欠測があっても値は変わらない
+- 欠測が続くと注目度を分布で決められるようになるまでの期間が延びるが、判定を甘くする補正は行わない(観測していない期間を推測しないため)。欠測の頻度は[source-review](../source-review/requirements.md)の月次見直しで確認する
 
 ## 関連するファイル(抜粋)
 
 ```
 content/trend-digest/history/<date>-<edition>.json (新規: 1実行1ファイルの観測ログ。追記専用)
-content/trend-digest/criteria.json (既存: historyの閾値を追加)
+content/trend-digest/criteria.json (既存: historyの値を追加)
 app/trend-digest/lib/types.ts (既存: Edition/Genreを利用。本specでは再定義しない)
 app/trend-digest/lib/watchlistTypes.ts (既存: CriteriaがhistoryTypes.tsのHistoryCriteriaを読み込んで持つ)
-app/trend-digest/lib/historyTypes.ts (新規: TrendStatus/Observation/ObservationLog/CandidateHistory/StatusJudgement/HistoryCriteriaの型定義とLONG_TERM_TREND_STATUSES)
-  ※ historyTypes.ts と types.ts・watchlistTypes.ts は型を相互に参照する(historyTypes→Edition/Genre・SelectionMethod、types→TrendStatus、watchlistTypes→HistoryCriteria)。
-    すべて`import type`のため実行時には循環が残らず、このリポジトリのeslint設定にも`import/no-cycle`はないため許容する。値(LONG_TERM_TREND_STATUSES)は
+app/trend-digest/lib/historyTypes.ts (新規: DurationLabel/HeatLabel/Observation/ObservationLog/CandidateHistory/HistoryJudgement/HistoryCriteriaの型定義と並び順の定数)
+  ※ historyTypes.ts と types.ts・watchlistTypes.ts は型を相互に参照する(historyTypes→Edition/Genre・SelectionMethod、types→DurationLabel/HeatLabel、watchlistTypes→HistoryCriteria)。
+    すべて`import type`のため実行時には循環が残らず、このリポジトリのeslint設定にも`import/no-cycle`はないため許容する。値(並び順の定数)は
     historyTypes.tsからの一方向参照にとどめ、循環に値を持ち込まない
 app/trend-digest/lib/historySchema.ts (新規: 観測ログJSONのバリデーション・パース)
 app/trend-digest/lib/writeObservationLog.ts (新規: その回の観測を1ファイルとして書き出す処理)
-app/trend-digest/lib/aggregateHistory.ts (新規: 全観測ログを候補ごとの系列に集約する純粋関数)
-app/trend-digest/lib/judgeStatus.ts (新規: 系列からステータス・継続日数を判定する純粋関数)
-app/trend-digest/lib/publishRecords.ts (新規: 過去記事から報告回数・前回掲載時のステータスを求める処理)
+app/trend-digest/lib/aggregateHistory.ts (新規: 全観測ログを話題ごとの系列に集約し、継続期間を求める純粋関数)
+app/trend-digest/lib/judgeDurationLabel.ts (新規: 継続日数から継続度ラベルを判定する純粋関数)
+app/trend-digest/lib/judgeHeatLabel.ts (新規: ジャンルの分布・情報源での位置から注目度ラベルを判定する純粋関数)
+app/trend-digest/lib/publishRecords.ts (新規: 過去記事から掲載回数・直近掲載時の継続度ラベルを求める処理)
 app/trend-digest/lib/selection.ts (既存: normalizeTitleを再利用。正規化ルールを二重に持たない)
-scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出しと、履歴にもとづく絞り込みの呼び出しを追加)
+scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出しと、ラベル判定の呼び出しを追加)
 ```
 
-`aggregateHistory.ts`・`judgeStatus.ts`は入出力が純粋なデータのみのため、通常のvitestで完全にテストできる。`historySchema.ts`・`publishRecords.ts`はファイル入出力を伴うが、読み込み対象のディレクトリを引数で受け取る形にして一時ディレクトリでテストする(既存の`reviewRecords.ts`と同じ書き方)。
+`aggregateHistory.ts`・`judgeDurationLabel.ts`・`judgeHeatLabel.ts`は入出力が純粋なデータのみのため、通常のvitestで完全にテストできる。`historySchema.ts`・`publishRecords.ts`はファイル入出力を伴うが、読み込み対象のディレクトリを引数で受け取る形にして一時ディレクトリでテストする(既存の`reviewRecords.ts`と同じ書き方)。
 
 ## セキュリティ
 
-- 履歴データに含まれるのは、公開されているランキング・ニュース記事から得た作品名・話題名と、その出現回数・強度・地域だけであり、個人情報・機微情報は扱わない。利用者がブラウザから入力したデータも含まない
-- 履歴ファイルはリポジトリにコミットされ、静的サイトのビルド対象ディレクトリに置かれる。**記事ページからは参照しない値(生の強度・情報源ごとの内訳)を画面に埋め込まない**ようにし、配信物に載るのは[article-detail](../article-detail/design.md)が表示に使う値(ステータス・継続日数・報告回数・地域)に限る
+- 履歴データに含まれるのは、公開されているランキング・ニュース記事から得た作品名・話題名と、その出現回数・強さ・順位・地域だけであり、個人情報・機微情報は扱わない。利用者がブラウザから入力したデータも含まない
+- 履歴ファイルはリポジトリにコミットされ、静的サイトのビルド対象ディレクトリに置かれる。**記事ページからは参照しない値(生の強さ・情報源ごとの内訳)を画面に埋め込まない**ようにし、配信物に載るのは[article-detail](../article-detail/design.md)が表示に使う値(継続度ラベル・注目度ラベル・継続日数・報告回数・地域)に限る
 - 履歴の書き込みは週次実行のGitHub Actionsだけが行い、その変更は記事PRの差分として残る。追記専用(既存ファイルを上書きしない)としているため、過去の判定根拠が後から書き換わることがない
-- 地域情報は情報源から判定できた範囲のみを記録し、推測で埋めない(requirements.md#地域情報-1)。判定できない項目を「不明」として保持することで、誤った地域情報が記事に表示されることを防ぐ
+- 地域情報は情報源から判定できた範囲のみを記録し、推測で埋めない(requirements.md#地域情報-15)。判定できない項目を「不明」として保持することで、誤った地域情報が記事に表示されることを防ぐ。取り込み時に長さ・制御文字を検証する(requirements.md#地域情報-16、上記バリデーション)
 
 ## パフォーマンス
 
-- ステータス判定のたびに全観測ログを読み直す。週2回の実行で1回あたり1ファイル増えるため、年間で約104ファイルになる。採用基準の判定前の全項目を記録する(requirements.md#機能要件-1〜4)ため1ファイルあたりの観測件数は数百件規模(各ジャンルの情報源が返すランキングの項目数の合計)で、年間で数万件・数年分で十数万件になる。1件あたり数百バイトのJSONであり、週次実行の中で全件をメモリ上に読み込んで集約しても支障はない(パフォーマンスのための分割・インデックス化は行わない)。件数が想定を大きく超えた場合は[source-review](../source-review/requirements.md)の月次見直しで、情報源ごとに記録する上位件数の上限を設けることを検討する
+- ラベル判定のたびに全観測ログを読み直す。週2回の実行で1回あたり1ファイル増えるため、年間で約104ファイルになる。採用基準の判定前の全項目を記録する(requirements.md#機能要件-1)ため1ファイルあたりの観測件数は数百件規模(各ジャンルの情報源が返すランキングの項目数の合計)で、年間で数万件・数年分で十数万件になる。1件あたり数百バイトのJSONであり、週次実行の中で全件をメモリ上に読み込んで集約しても支障はない(パフォーマンスのための分割・インデックス化は行わない)。件数が想定を大きく超えた場合は[source-review](../source-review/requirements.md)の月次見直しで、情報源ごとに記録する上位件数の上限を下げることを検討する
+- 注目度の判定に使うジャンルごとの強さの分布は、全観測ログの読み込み時にジャンル単位で1度だけ組み立てて使い回す(話題ごとに全ログを走査し直さないため)
 - 履歴ファイルは記事ページのビルドでは読み込まない(表示に必要な値は記事JSONのトピックに持たせる。[article-detail/design.md](../article-detail/design.md)参照)。履歴の蓄積が`next build`の時間に影響しないようにするため
 
 ## ログ
 
 - 観測ログを書き出した際に、実行日・編・記録した観測件数を標準エラー出力へ記録する
-- ステータス判定の結果を、全候補のステータスごとの件数(NEWが何件・SHORT_TERMが何件・EMERGINGが何件…)として標準エラー出力へ記録する(掲載可能な候補が慢性的に枯渇していないかを月次見直しで拾えるようにするため)。掲載可否にもとづく除外件数・再掲見送り件数・掲載可能0件の警告は本specでは出さず、[content-selection/design.md](../content-selection/design.md)のログが担う(掲載可否の判断がcontent-selectionの責務のため。requirements.md#ステータス判定基準-8)
-- 地域情報が「不明」のまま記録された候補の件数を記録する(慢性的に判定できていない状態を[source-review](../source-review/requirements.md)の月次見直しで拾えるようにするため)
+- 判定結果を、全話題の継続度ラベルごとの件数(流行前が何件・注目され始めが何件…)と注目度ラベルごとの件数として標準エラー出力へ記録する(ラベルの分布が偏っていないかを月次見直しで拾えるようにするため)
+- 注目度をどちらの方法(過去の分布/情報源での位置)で決めたかを、ジャンルごとに記録する(切り替わりの前後でラベルの出方が変わるため、月次見直しで切り替え済みのジャンルを見分けられるようにする)
+- 地域情報が「不明」のまま記録された話題の件数を記録する(慢性的に判定できていない状態を[source-review](../source-review/requirements.md)の月次見直しで拾えるようにするため)

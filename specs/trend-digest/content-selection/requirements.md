@@ -1,13 +1,13 @@
 # 要件定義: ジャンル別情報源と採用基準
 
-> ステータス: 仕様確認中(情報源の見直しと中長期トレンド対応は未実装)
+> ステータス: 仕様確認中(情報源の見直しと継続度・注目度対応は未実装)
 
 ## サマリ
 19ジャンルの流行を「エンタメ編」(火曜配信)と「カルチャー・ライフスタイル編」(金曜配信)の2グループに分け、ジャンルごとの情報源から項目を収集する。実際の消費・行動を集計した客観データ(売上・視聴率・興行収入・チャート順位・検索ボリューム等)が存在するジャンルは定量的なコード判定、存在しないジャンルはWebSearchによるLLM判定(独立した言及の広がりを基準にする)を行う(架空の話題は作らない)。取得した項目は採用基準の判定前の全件を[trend-history](../trend-history/requirements.md)の履歴へ記録し、そこで判定された継続度ラベル・注目度ラベル・掲載実績を使って、各ジャンルから1件ずつを選んで掲載する。継続が半月に満たない話題しかないジャンルもその旨を添えて掲載し、ジャンルが回によって記事から消えないようにする。詳細は「[ユースケース図](#ユースケース図)」参照。
 
 ## 概要
 - 機能名: ジャンル別情報源と採用基準
-- 目的: 19ジャンルの流行を、ジャンルの性質に応じた方法(定量判定・LLM判定)で収集し、継続履歴にもとづいて中長期トレンドと判定された話題だけを週2回選び出す
+- 目的: 19ジャンルの流行を、ジャンルの性質に応じた方法(定量判定・LLM判定)で収集し、継続履歴にもとづく継続度・注目度を添えて、各ジャンルから1件ずつを週2回選び出す
 - 優先度: 高
 
 ## ユーザーストーリー
@@ -24,17 +24,17 @@ flowchart LR
     selectGenres["ジャンル別に候補を収集する"]
     judgeFixed["固定リストジャンルを<br>定量判定する"]
     judgeSearch["WebSearchジャンルを<br>LLM判定する"]
-    recordHistory["全候補を履歴に記録する<br>（trend-history）"]
-    filterStatus["中長期ステータスで<br>掲載候補を絞る"]
-    capTopics["掲載件数の上限内に絞り込む"]
+    recordHistory["全観測項目を履歴に記録する<br>（trend-history）"]
+    judgeLabels["継続度ラベル・注目度ラベル・<br>掲載実績を受け取る"]
+    pickOne["各ジャンルから1件を選ぶ"]
 
     weeklyPublish --> selectGenres
     selectGenres --> judgeFixed
     selectGenres --> judgeSearch
     judgeFixed --> recordHistory
     judgeSearch --> recordHistory
-    recordHistory --> filterStatus
-    filterStatus --> capTopics
+    recordHistory --> judgeLabels
+    judgeLabels --> pickOne
     operator -.->|月次見直しで基準を調整| selectGenres
 ```
 上記は俯瞰用の図。正となる文章は下記「機能要件」「ビジネスルール・制約」。
@@ -110,13 +110,13 @@ flowchart LR
 
 ### 情報源の健全性監視
 - [1] 週次実行のログに、ジャンルごとに「収集した候補件数(取得失敗はその旨)」を出力する(ai-dev-digestと同じ方針)。候補件数が0件の状態が慢性的に続くジャンルは、[source-review/requirements.md](../source-review/requirements.md)の月次見直しで情報源・基準の妥当性を確認する
-- [2] あわせて、収集はできたが中長期トレンドの絞り込みを通過しなかった候補の件数も出力する。候補は取れているのに掲載可能な候補が慢性的に0件のジャンルは、月次見直しでステータス判定の閾値([trend-history/requirements.md](../trend-history/requirements.md))の妥当性を確認する
+- [2] あわせて、ジャンルごとに「掲載する話題を採用基準を満たした候補から選んだか、採用基準に届かなかった観測項目から選んだか」を出力する。観測項目から選ぶ状態が慢性的に続くジャンルは、情報源か採用基準のどちらかが実態に合っていないため、月次見直しで妥当性を確認する
 
 ## 依存関係
-- 収集した全候補は[trend-history/requirements.md](../trend-history/requirements.md)の履歴へ記録され、掲載可否・再掲可否・報告回数の判定はそのステータス・掲載実績に従う
+- 収集した全観測項目は[trend-history/requirements.md](../trend-history/requirements.md)の履歴へ記録され、掲載する話題の並べ替えと報告回数はそこで判定された継続度ラベル・注目度ラベル・掲載実績に従う
 - 選定されたトピックは[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 選定候補の翻訳・要約は[content-generation/requirements.md](../content-generation/requirements.md)のルールに従って行われる
-- 情報源・採用基準・ステータス判定の閾値の変更は[source-review/requirements.md](../source-review/requirements.md)の月次見直しでのみ行う
+- 情報源・採用基準・継続度/注目度の判定に使う値の変更は[source-review/requirements.md](../source-review/requirements.md)の月次見直しでのみ行う
 - 収集・選定の実行タイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 
 ## スコープ外

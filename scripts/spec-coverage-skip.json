@@ -4886,18 +4886,8 @@
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
-    "item": "掲載済み話題を除外する処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#掲載済み話題の再掲抑制-1でselection.test.tsによりテスト済みのため"
-  },
-  {
-    "specFile": "trend-digest/content-selection/design.md",
-    "item": "ジャンル内の絞り込みを行う処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-4、requirements.md#ジャンル内の絞り込み(1ジャンル最大2件)-1〜2でselection.test.tsによりテスト済みのため"
-  },
-  {
-    "specFile": "trend-digest/content-selection/design.md",
-    "item": "編全体の絞り込みを行う処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-5、requirements.md#配信全体の絞り込み(1回最大10件)-1でselection.test.tsによりテスト済みのため"
+    "item": "掲載する話題を選ぶ処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-5、requirements.md#掲載件数-1〜3、requirements.md#掲載する話題の選び方-4〜8でselection.test.tsがテスト済みのため"
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
@@ -5137,7 +5127,7 @@
   {
     "specFile": "trend-digest/weekly-publish/design.md",
     "item": "記事生成をスキップする処理",
-    "reason": "候補不足時にブランチ・PRを作成しないというワークフローの実行判断の記述で、判定ロジック自体はcontent-selection/selection.test.tsでテスト済みのため(weekly-publish側はオーケストレーションのみを担当)"
+    "reason": "情報源から項目を取得できなかった回にブランチ・PRを作成しないというワークフローの実行判断の記述で、判定ロジック自体はcontent-selection/selection.test.tsでテスト済みのため(weekly-publish側はオーケストレーションのみを担当)"
   },
   {
     "specFile": "trend-digest/weekly-publish/design.md",
@@ -6563,5 +6553,160 @@
     "specFile": "news-digest/monthly-review/design.md",
     "item": "ログ",
     "reason": "月次実行ごとの集計結果をGitHub Actionsのワークフロー実行ログに記録するという記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "履歴データの形式",
+    "reason": "型定義・判定に使う値の宣言で、実際の値・構造の妥当性はhistorySchema.test.ts・watchlistData.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "週次実行の中での位置づけ(シーケンス図)",
+    "reason": "週次実行の中での呼び出し順序を俯瞰するMermaid図で、正となる文章は同design.mdの処理フロー・requirements.md#機能要件-1〜7側にあり、図自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "その回の観測を履歴に記録する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-1〜3でwriteObservationLog.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "地域情報を判定する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#地域情報-15〜16でfetchFixedListCandidates.test.ts・historySchema.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "履歴を話題ごとの系列に集約する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-4でaggregateHistory.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "途切れずに続いている期間を求める処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#継続度ラベル-1でaggregateHistory.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "継続度ラベルを判定する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#継続度ラベル-2〜7でjudgeDurationLabel.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "注目度ラベルを判定する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#注目度ラベル-8〜12でjudgeHeatLabel.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "掲載実績(掲載回数・直近掲載時の継続度ラベル)を求める処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#掲載実績の追跡-13〜14でpublishRecords.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "バリデーション",
+    "reason": "観測ログのスキーマ検証項目の一覧で、個別の検証の振る舞いはhistorySchema.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "エラーハンドリング",
+    "reason": "スキーマ違反時の実行停止・運用開始直後や欠測週の扱いの方針の記述で、個別の振る舞いはhistorySchema.test.ts・aggregateHistory.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "セキュリティ",
+    "reason": "履歴データに個人情報を含めない・追記専用とする・配信物に生の強さを載せないという方針の記述で、地域情報の長さ・制御文字の検証はhistorySchema.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "パフォーマンス",
+    "reason": "全観測ログを毎回読み直す前提と件数の見積もりの記述で、運用上の判断でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/design.md",
+    "item": "ログ",
+    "reason": "観測件数・ラベルごとの件数をstderrに記録するCLIの説明で、出力自体はrequirements.md側の項目を持たないため個別にテストする(tasks.md Task 14)"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "表示する行を組み立てる処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-1〜3・-5、requirements.md#表示の順序-6でbuildSourceDirectory.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "採用基準を日本語にする処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-4〜5でbuildSourceDirectory.test.tsがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "ログイン状態に応じて表示を切り替える処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#閲覧できる人-1・-3でpage.test.tsxがテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "エラーハンドリング",
+    "reason": "ウォッチリストのスキーマ違反をビルド時に失敗させる方針・ログイン確認失敗時の表示方針の記述で、個別の振る舞いはpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "画面設計",
+    "reason": "UIレイアウトの説明見出しで、個別の表示要件はrequirements.md#機能要件-1〜4の各テストで担保済みのため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "画面遷移図",
+    "reason": "画面の状態遷移を俯瞰するMermaid図で、正となる文章はdesign.md「ログイン状態に応じて表示を切り替える処理」にあり、図自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "コンポーネント設計 > SourceTable",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはSourceTable.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "状態管理",
+    "reason": "画面の状態(確認中/ログイン促し/閲覧不可/一覧/確認エラー)の持ち方の説明で、状態ごとの表示はpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "セキュリティ",
+    "reason": "静的配信では表示制御がデータの秘匿ではないこと・編集手段を持たないこと・サイトマップ除外の方針の記述で、リンクのスキーム制限とサイトマップ除外は個別にテストする(tasks.md Task 4・7)"
+  },
+  {
+    "specFile": "trend-digest/source-directory/design.md",
+    "item": "ログ",
+    "reason": "画面からのログ出力を行わないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
   }
 ]
