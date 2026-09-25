@@ -2301,6 +2301,11 @@
   },
   {
     "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
     "item": "実行環境の前提(初導入のため明記する設計判断)",
     "reason": "ワークフローファイルを分割する設計判断・チャネルアクセストークンのActions Secrets管理方針の記述で、コードとしてのテスト対象を持たないため"
   },
@@ -2343,6 +2348,11 @@
     "specFile": "ai-dev-digest/line-broadcast/design.md",
     "item": "ログ",
     "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
   },
   {
     "specFile": "ai-dev-digest/line-broadcast/requirements.md",
