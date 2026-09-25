@@ -45,6 +45,7 @@ flowchart TD
     cf["Cloudflare Workers<br>（静的配信）"]
     list["/trend-digest<br>記事一覧"]
     detail["/trend-digest/[id]<br>記事詳細・運営者フィードバック"]
+    sourceDirectory["/trend-digest/admin/sources<br>情報源一覧（運営者専用）"]
     auth["Supabase Auth<br>（Google OIDC）"]
     feedbackDb[("trend_digest_feedback")]
 
@@ -52,8 +53,11 @@ flowchart TD
     admin -->|ページ取得| cf
     cf --> list
     cf --> detail
+    admin -->|URL直打ちでアクセス（他画面からのリンクなし）| cf
+    cf --> sourceDirectory
     admin -->|Googleでログイン（運営者本人のみ）| auth
     detail -->|運営者本人か判定 - 欄の表示切替のみ| auth
+    sourceDirectory -->|運営者本人か判定 - 表全体の表示可否を決める| auth
     detail -->|フィードバックを保存 - authenticatedでINSERT| feedbackDb
 ```
 
@@ -133,6 +137,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 flowchart LR
     listScreen["記事一覧画面<br>(article-list)"]
     detailScreen["記事詳細画面<br>(article-detail)"]
+    sourceDirectoryScreen["情報源一覧画面（運営者専用）<br>(source-directory)"]
     selection["選定ロジック<br>(content-selection)"]
     history["継続履歴・継続度/注目度の判定<br>(trend-history)"]
     generation["翻訳・要約<br>(content-generation)"]
@@ -154,6 +159,8 @@ flowchart LR
     broadcast -->|記事データ構造を参照| detailScreen
     broadcast -->|記事ページの公開確認に利用| pageWait
     detailScreen -->|フィードバック保存・運営者判定に利用| client
+    selection -->|ジャンル定義・情報源・採用基準を参照| sourceDirectoryScreen
+    sourceDirectoryScreen -->|運営者判定に利用| client
     review -->|フィードバック・実績を参照| detailScreen
     review -->|選定領域の見直し案を反映| selection
     review -->|ラベル判定に使う値の見直し案を反映| history
