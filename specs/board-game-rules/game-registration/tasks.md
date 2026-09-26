@@ -23,6 +23,12 @@
 - マージ後、design.md「追加マイグレーション(登録実行・下書きレビュー)」T0の実機確認(`status`のデフォルト・CHECK制約、運営者本人のgames INSERT可・anon/authenticatedのINSERT不可、運営者本人による新カラムのUPDATE可)を行う
 - (TDD対象外: マイグレーションの適用と手動確認)
 
+## T0d. 追加マイグレーション適用(対応人数・プレイ時間のNULL許容化)
+- `board_game_rules_games`の`min_players`・`max_players`・`min_minutes`・`max_minutes`のNOT NULL制約を外す`ALTER TABLE`マイグレーションを追加しCI適用する(design.md「追加マイグレーション(対応人数・プレイ時間のNULL許容化)」)
+- T0cと同じくmigrateジョブがデプロイに先行して適用するため、実装([admin/tasks.md](../admin/tasks.md) T4e)と同じPRに含めてよい
+- マージ後、design.md「追加マイグレーション(対応人数・プレイ時間のNULL許容化)」T0の実機確認(対応人数・プレイ時間がNULLのままの公開INSERTが成功しanonからSELECTできること、片方だけNULLでも拒否されないこと)を行う
+- (TDD対象外: マイグレーションの適用と手動確認)
+
 ## T1. ジャンルの固定選択肢(`lib/genres.ts`)
 - 🔴 固定リストの値・順序・各項目の説明が仕様どおりであることをテストする
 - 🟢 ジャンルの選択肢定数(値+説明)を実装する(game-list/adminと共有)

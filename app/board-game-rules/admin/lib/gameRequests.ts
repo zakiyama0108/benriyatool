@@ -15,10 +15,12 @@ export type GameRequestStatus = 'pending' | 'queued' | 'running' | 'draft' | 'pu
 // scripts/board-game-rules/registerGame.ts の GameRegistrationInput)
 export type GameDraftContent = {
   name: string
-  minPlayers: number
-  maxPlayers: number
-  minMinutes: number
-  maxMinutes: number
+  // 根拠(写真・Web検索)が得られた場合のみ埋める方針のため未登録(NULL)を許容する
+  // (仕様: admin/requirements.md#登録実行のローカル処理起動-13。games テーブルのNOT NULL制約は撤廃済み)
+  minPlayers?: number | null
+  maxPlayers?: number | null
+  minMinutes?: number | null
+  maxMinutes?: number | null
   genres: string[]
   minAge?: number | null
   difficulty?: string | null
@@ -264,10 +266,10 @@ export async function publishDraft(
         .from('board_game_rules_games')
         .insert({
           name: draft.name,
-          min_players: draft.minPlayers,
-          max_players: draft.maxPlayers,
-          min_minutes: draft.minMinutes,
-          max_minutes: draft.maxMinutes,
+          min_players: draft.minPlayers ?? null,
+          max_players: draft.maxPlayers ?? null,
+          min_minutes: draft.minMinutes ?? null,
+          max_minutes: draft.maxMinutes ?? null,
           genres: draft.genres,
           min_age: draft.minAge ?? null,
           difficulty: draft.difficulty ?? null,

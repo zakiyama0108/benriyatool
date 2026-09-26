@@ -150,6 +150,23 @@ describe('お気に入り一覧ページ - 1件以上ある場合、登録日時
   })
 })
 
+// 仕様: specs/board-game-rules/admin/requirements.md#登録実行のローカル処理起動-13、specs/board-game-rules/favorite/requirements.md#お気に入り一覧-6
+describe('お気に入り一覧ページ - 対応人数・プレイ時間が未登録(NULL)の場合の表示 - 「不明」と表示する', () => {
+  it('対応人数・プレイ時間がともにNULLのとき、それぞれ「不明」と表示されること', async () => {
+    vi.mocked(useSession).mockReturnValue({ session: makeSession('taro@example.com'), loading: false })
+    vi.mocked(fetchMyFavoriteGames).mockResolvedValue([
+      makeFavorite({
+        game: { ...makeFavorite().game, minPlayers: null, maxPlayers: null, minMinutes: null, maxMinutes: null },
+      }),
+    ])
+
+    render(<FavoritesPage />)
+
+    await waitFor(() => expect(screen.getByText('不明人')).toBeTruthy())
+    expect(screen.getByText('不明分')).toBeTruthy()
+  })
+})
+
 // 仕様: specs/board-game-rules/favorite/requirements.md#お気に入り一覧-6
 describe('お気に入り一覧ページ - 各項目からその場でお気に入りを解除できる', () => {
   it('解除操作を押して成功すると、詳細画面に戻らず一覧からその項目が消えること', async () => {

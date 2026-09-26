@@ -1,0 +1,65 @@
+[
+  {
+    "id": "nhk-news-web",
+    "category": "general",
+    "name": "NHK NEWS WEB(政治・国際)",
+    "channels": [
+      { "type": "rss", "feedUrl": "https://www3.nhk.or.jp/rss/news/cat4.xml" },
+      { "type": "rss", "feedUrl": "https://www3.nhk.or.jp/rss/news/cat6.xml" }
+    ]
+  },
+  {
+    "id": "kyodo-news",
+    "category": "general",
+    "name": "共同通信",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/kyodonews/all.xml" }]
+  },
+  {
+    "id": "jiji-press",
+    "category": "general",
+    "name": "時事通信",
+    "channels": [{ "type": "official-page", "url": "https://www.jiji.com/" }]
+  },
+  {
+    "id": "nikkei",
+    "category": "business",
+    "name": "日本経済新聞(電子版)",
+    "channels": [{ "type": "official-page", "url": "https://www.nikkei.com/" }]
+  },
+  {
+    "id": "toyokeizai",
+    "category": "business",
+    "name": "東洋経済オンライン",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/toyo/all.xml" }]
+  },
+  {
+    "id": "kanagawa-pref",
+    "category": "kanagawa",
+    "name": "神奈川県公式サイト(お知らせ)",
+    "channels": [{ "type": "official-page", "url": "https://www.pref.kanagawa.jp/news/index.html" }]
+  },
+  {
+    "id": "kanaloco",
+    "category": "kanagawa",
+    "name": "神奈川新聞(カナロコ)",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/kana/all.xml" }]
+  },
+  {
+    "id": "cfa",
+    "category": "childcare",
+    "name": "こども家庭庁",
+    "channels": [{ "type": "official-page", "url": "https://www.cfa.go.jp/news" }]
+  },
+  {
+    "id": "mhlw",
+    "category": "childcare",
+    "name": "厚生労働省(子育て支援関連)",
+    "channels": [{ "type": "rss", "feedUrl": "https://www.mhlw.go.jp/stf/news.rdf" }]
+  },
+  {
+    "id": "nhk-life-childcare",
+    "category": "childcare",
+    "name": "NHK生活情報(子育て)",
+    "channels": [{ "type": "official-page", "url": "https://www.nhk.or.jp/sukusuku/" }]
+  }
+]

@@ -68,6 +68,8 @@ mainマージから本番反映までの経路の詳細は[デプロイメント
 | Supabase Auth | 管理画面の運営者ログイン(Google OIDC) | [ADR-0006](../adr/0006-admin-screen-oidc-rls.md) |
 | GitHub Actions | PR時のCI(lint+spec-coverage・変更影響テスト・ビルドを並列実行)、mainマージ時のマイグレーション適用+全テスト+デプロイ、週次のSupabaseヘルスチェック | [ADR-0003](../adr/0003-db-schema-migration-ci.md)、[ADR-0008](../adr/0008-ci-changed-tests-and-parallel-jobs.md)、[deployment.md](deployment.md) |
 
+spotify-playlistが利用するSpotify Web APIは、利用者のブラウザから直接呼び出され運営者のインフラを経由しない(課金・運用管理の対象にもならない)ため、この表の対象外とする。詳細は[spotify-playlist/architecture.md](../../specs/spotify-playlist/architecture.md)を参照。
+
 ## 課金/無料枠の境界
 
 全サービスを無料枠で運用しており、課金中のサービスはない([ADR-0001](../adr/0001-user-input-database.md)の前提「無料枠に収まる範囲で運用」)。
