@@ -15,7 +15,7 @@
 
 - Task 4: ワークフロー本体(仕様: design.md「実行環境の前提」「処理フロー」「収集失敗で実行を失敗させる処理」)(TDD対象外。GitHub Actionsの定義のため。分岐の判定ロジックはTask 1の`decidePublishOutcome`でテスト済みで、ここではその結果に従うだけ。future-digest-weekly.ymlと同じ構造で実装する)
   - `.github/workflows/research-digest-weekly.yml`を作る: `schedule`(`43 22 * * 0`)・`workflow_dispatch`・`workflow_run`(ci.ymlの完了)をトリガーにする
-  - `publish`ジョブ: `RESEARCH_DIGEST_GH_PAT`でcheckout→Claude Code CLIのインストール→実行日(JST)の算出→ブランチ作成→`collect-and-select.ts`→`decidePublishOutcome`の結果が`'skip'`なら成功で終了/`'fail'`なら非ゼロ終了→(`'publish'`のときのみ)`generate-content.ts`→`write-article.ts`→コミット・push・PR作成・`gh pr merge --auto --squash`
+  - `publish`ジョブ: `RESEARCH_DIGEST_GH_PAT`でcheckout→Claude Code CLIのインストール→実行日(JST)の算出→ブランチ作成→`collect-and-select.ts`を実行(内部でTask 1の`decidePublishOutcome`を呼び、判定結果を`GITHUB_OUTPUT`の`outcome`に書き出す。`'fail'`のときはCLIが非ゼロ終了しジョブはここで失敗する)→`outcome=='skip'`ならここでジョブを終了(成功)/`outcome=='publish'`のときのみ`generate-content.ts`→`write-article.ts`→コミット・push・PR作成・`gh pr merge --auto --squash`
   - `record-ci-failure`ジョブ: `research-digest/articles/**`ブランチのPRでCIが失敗したとき、失敗したジョブ・ステップ名をPRにコメントする
 
 - Task 5: Actions Secretsの準備(仕様: design.md「実行環境の前提」)(TDD対象外。手動の設定作業)

@@ -21,8 +21,8 @@ GitHub Actionsのスケジュール実行が毎週月曜07:43(日本時間)頃�
 - 対象: 実行日(日本時間の日付)
 - 手順:
   1. 作業用ブランチ`research-digest/articles/<実行日>`を作る
-  2. [content-selection](../content-selection/design.md)の収集・選定を実行し、採用した候補・候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)を受け取る
-  3. 選定結果を純粋関数`decidePublishOutcome(genreResults)`に渡し、`'publish'`(採用した候補が1件以上ある)/`'skip'`(採用0件で、空になったジャンルがすべて候補なし)/`'fail'`(採用0件で、収集失敗のジャンルが1つ以上混在する。全ジャンルが収集失敗の場合を含む)のいずれかを判定する(requirements.md#掲載件数の保証-3)。`'skip'`は記事を作らず後述「公開をスキップする処理」に進み、`'fail'`は記事を作らず後述「収集失敗で実行を失敗させる処理」に進む【推測】
+  2. [content-selection](../content-selection/design.md)の収集・選定CLI(`collect-and-select.ts`)を実行する。このCLIは選定の最後に、採用した候補・候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)を選定結果として組み立て、それを本specの純粋関数`decidePublishOutcome(genreResults)`に渡して`'publish'`(採用した候補が1件以上ある)/`'skip'`(採用0件で、空になったジャンルがすべて候補なし)/`'fail'`(採用0件で、収集失敗のジャンルが1つ以上混在する。全ジャンルが収集失敗の場合を含む)のいずれかを判定し(requirements.md#掲載件数の保証-3)、判定結果を`GITHUB_OUTPUT`に`outcome=publish|skip|fail`として書き出す。`'fail'`のときはCLIを非ゼロ終了で終える。判定ロジック自体はcontent-selection側には持たせず、本specの`decidePublishOutcome`だけが持つ【推測】
+  3. ワークフローは`outcome`を見て分岐する。`'skip'`のときは記事を作らず後述「公開をスキップする処理」に進んでジョブを成功で終える。`'fail'`のときはCLIの非ゼロ終了でジョブが失敗するため追加の分岐は不要で、後述「収集失敗で実行を失敗させる処理」の記録がそのまま当たる。`'publish'`のときだけ選定結果(採用した候補)を使って次に進む
   4. 採用した候補ごとに[content-generation](../content-generation/design.md)の生成を行う。一時的な失敗は同じ候補を最大2回まで(初回+1回)起動し直し、それでも失敗した候補は「生成に失敗したジャンル」として除き、次に進む(requirements.md#掲載件数の保証-4)
   5. 生成に1本以上成功した場合は、記事データ(発行日・研究・掲載できなかったジャンル)を組み立てる。掲載できなかったジャンルには、候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)・生成に失敗したジャンルの3種を理由つきで入れ、その回に有効な全ジャンルが過不足なく記事に現れるようにする。`content/research-digest/articles/<実行日>.json`に書き出す
   6. 全件の生成に失敗した場合、または利用上限への到達で続行できない場合は、記事を書き出さずに、理由を明示して実行を失敗として終える(requirements.md#掲載件数の保証-4)
@@ -37,12 +37,13 @@ sequenceDiagram
     participant gh as GitHub
 
     actions ->> select: 収集・選定を実行
-    select -->> actions: 採用した候補・候補なしのジャンル・収集失敗のジャンル
-    alt 採用0件・すべて候補なし
+    select ->> select: decidePublishOutcomeで判定(publish/skip/fail)
+    select -->> actions: outcome(GITHUB_OUTPUT)・'publish'なら採用した候補も
+    alt outcome=skip
         actions ->> actions: 公開をスキップ(実行は成功)
-    else 採用0件・収集失敗が混在
-        actions ->> actions: 公開せず実行を失敗にする
-    else 採用した候補あり
+    else outcome=fail
+        actions ->> actions: CLIが非ゼロ終了・公開せず実行を失敗にする
+    else outcome=publish
         actions ->> gen: 候補ごとに生成(失敗は1回やり直し)
         gen -->> actions: 生成結果(一部失敗は除外)
         alt 1本以上成功
@@ -107,7 +108,7 @@ sequenceDiagram
 .github/workflows/research-digest-weekly.yml (新規: 月曜に起動するワークフロー本体。publishジョブとrecord-ci-failureジョブ)
 scripts/research-digest/collect-and-select.ts (content-selectionで新規)
 scripts/research-digest/generate-content.ts (content-generationで新規)
-app/research-digest/lib/decidePublishOutcome.ts (新規: 選定結果から'publish'/'skip'/'fail'を判定する純粋関数)
+app/research-digest/lib/decidePublishOutcome.ts (新規: 選定結果から'publish'/'skip'/'fail'を判定する純粋関数。content-selectionの`collect-and-select.ts`から呼ばれる)
 app/research-digest/lib/assembleArticle.ts (新規: 選定結果+生成結果から記事データを組み立てる純粋関数)
 scripts/research-digest/write-article.ts (新規: assembleArticleの結果をcontent/research-digest/articles/<date>.jsonへ書き出すCLI)
 content/research-digest/articles/<date>.json (新規: 生成される記事データ)
