@@ -1,7 +1,7 @@
 // LINE公式アカウントへのブロードキャストメッセージ送信CLI(仕様: design.md「LINEブロードキャスト
 // メッセージを送信する処理」)。記事データをparseArticleでパースし、buildBroadcastMessageで
 // 本文を組み立ててLINE Messaging APIへPOSTする。
-// リトライは行わない(requirements.md#無料枠と配信失敗時の扱い-4〜5)。
+// リトライは行わない(requirements.md#無料枠と配信失敗時の扱い-3〜4)。
 //
 // 実行方法: LINE_CHANNEL_ACCESS_TOKEN=xxx npx tsx scripts/trend-digest/broadcast-line.ts content/trend-digest/articles/2026-09-15-entertainment.json
 import fs from 'node:fs'
