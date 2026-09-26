@@ -14,13 +14,13 @@
   - 🔴 定義外の影響度・順位が0以下・必須項目が空・`http(s)`以外のURL・`10.`で始まらないDOI・未来の発表年・真偽値でない`isPreprint`・長さ上限超え・制御文字を含む候補が捨てられ、理由が返ることを確認するテストを書く。`https://doi.org/`付きのDOIは正規化されて受け付けられることも確認する
   - 🟢 `app/research-digest/lib/candidateValidation.ts`に`validateCandidates(raw, today)`を実装する
 
-- Task 4: ジャンルごとの採用と候補なしの記録(仕様: requirements.md#機能要件-2〜4、requirements.md#影響度-3、requirements.md#候補が見つからないジャンル-1、design.md「ジャンルごとに1本を採用する処理」)
-  - 🔴 `selectGenres(candidatesByGenre, genres, delivered)`について次を確認するテストを書く: 影響度の大きい候補が採用される/同じ影響度では順位の小さい候補が採用される/配信済みのURLまたはDOIの候補は除かれる/同じ回の別のジャンルで採用済みのURL・DOIは除かれる/候補が残らないジャンルは`no-candidate`になる/有効な全ジャンルがジャンル順で結果に含まれる/各ジャンルの候補件数が返る
+- Task 4: ジャンルごとの採用・候補なしの記録・収集失敗ジャンルの合流(仕様: requirements.md#機能要件-2〜4、requirements.md#影響度-3、requirements.md#候補が見つからないジャンル-1、requirements.md#収集失敗-1、design.md「ジャンルごとに1本を採用する処理」)
+  - 🔴 `selectGenres(candidatesByGenre, genres, delivered, collectionFailedGenres)`について次を確認するテストを書く: 影響度の大きい候補が採用される/同じ影響度では順位の小さい候補が採用される/配信済みのURLまたはDOIの候補は除かれる/同じ回の別のジャンルで採用済みのURL・DOIは除かれる/候補が残らないジャンルは`no-candidate`になる/`collectionFailedGenres`に含まれるジャンルは候補の有無に関わらず分類ラベルつきの`collection-failed`になる/有効な全ジャンル(候補あり・候補なし・収集失敗を合わせて)がジャンル順で結果に含まれる/各ジャンルの候補件数が返る(収集失敗のジャンルは候補件数を持たない)
   - 🟢 `app/research-digest/lib/selectGenres.ts`に実装する
 
 - Task 5: ジャンルごとの収集CLI(仕様: design.md「ジャンルごとに候補を集める処理」「エラーハンドリング」)
-  - 🔴 Claude CLIの呼び出しを差し替え可能にし、`collectForGenre`について次を確認するテストを書く: 応答JSONから候補が取り出される/JSONを取り出せない場合は1回だけやり直す/2回とも失敗したら`status: 'collection-failed'`とその分類ラベル(`invalid-format`)を持つ結果として返り例外にしない(候補0件の`no-candidate`とは区別する)/呼び出しが設定したタイムアウト値を超えたら1回だけやり直し、2回とも超えたら`timeout`の分類ラベルで返る/その他の異常終了は2回とも失敗したら`other`の分類ラベルで返る/利用上限への到達でやり直さずに打ち切りの例外を投げる(`collection-failed`にはしない)
+  - 🔴 Claude CLIの呼び出しを差し替え可能にし、`collectForGenre`について次を確認するテストを書く: 応答JSONから候補が取り出される/JSONを取り出せない場合は1回だけやり直す/2回とも失敗したら分類ラベル(`invalid-format`)つきの収集失敗を示す結果として返り例外にしない(候補0件の`no-candidate`とは区別する)/呼び出しが設定したタイムアウト値を超えたら1回だけやり直し、2回とも超えたら`timeout`の分類ラベルで返る/その他の異常終了は2回とも失敗したら`other`の分類ラベルで返る/利用上限への到達でやり直さずに打ち切りの例外を投げる(収集失敗にはしない)/応答の形(候補配列)自体が読めない・満たさない場合は`invalid-format`の収集失敗として扱う(候補単位のバリデーションで個々の候補が捨てられ0件になった場合は`no-candidate`のまま返す。境界ケースのテストを含める)【推測】
   - 🟢 `scripts/research-digest/collect-candidates.ts`を実装する。`requirements.md`を実行時に読み込み、その内容(採用基準・影響度・配信済みの研究の除外)をプロンプトに含める(別ファイルへの複製・転記はしない)。あわせてジャンルの説明、配信済みの一覧、応答JSONの形もプロンプトに含める。許可ツールはWebSearch・WebFetchに限る
 
-- Task 6: 収集・選定のまとめCLI(仕様: design.md「収集状況を記録する処理」「ログ」)(TDD対象外。Task 1〜5の関数を順に呼ぶだけのため)
-  - `scripts/research-digest/collect-and-select.ts`を実装する。配信済みの一覧→ジャンルごとの収集(収集失敗したジャンルは`collection-failed`のまま結果に含め、`selectGenres`には渡さない)→検証→採用を行い、選定結果(採用した候補・候補なしのジャンル・収集失敗のジャンル)を標準出力にJSONで出す。ジャンルごとの候補件数・候補なしのジャンルの一覧・収集失敗のジャンルの一覧(分類ラベル別)を標準エラー出力に出す
+- Task 6: 収集・選定のまとめCLI(仕様: design.md「収集状況を記録する処理」「ログ」)(TDD対象外。Task 1〜5の関数を順に呼ぶだけで、ジャンルの合流・採用ロジックはTask 4・5でテスト済みのため)
+  - `scripts/research-digest/collect-and-select.ts`を実装する。配信済みの一覧→ジャンルごとの収集(収集に失敗したジャンルの一覧を`collectionFailedGenres`として保持)→検証→`selectGenres`によるジャンルごとの採用・候補なしの記録・収集失敗ジャンルの合流を行い、選定結果(採用した候補・候補なしのジャンル・収集失敗のジャンル)を標準出力にJSONで出す。ジャンルごとの候補件数・候補なしのジャンルの一覧・収集失敗のジャンルの一覧(分類ラベル別)を標準エラー出力に出す

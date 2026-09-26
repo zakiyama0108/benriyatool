@@ -22,7 +22,7 @@ GitHub Actionsのスケジュール実行が毎週月曜07:43(日本時間)頃�
 - 手順:
   1. 作業用ブランチ`research-digest/articles/<実行日>`を作る
   2. [content-selection](../content-selection/design.md)の収集・選定を実行し、採用した候補・候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)を受け取る
-  3. 採用した候補が1件もない場合、空になったジャンルがすべて候補なしであれば、記事を作らず後述「公開をスキップする処理」に進む(requirements.md#掲載件数の保証-3)。収集失敗のジャンルが1つ以上混在する場合は、記事を作らず後述「収集失敗で実行を失敗させる処理」に進む(requirements.md#掲載件数の保証-3)【推測】
+  3. 選定結果を純粋関数`decidePublishOutcome(genreResults)`に渡し、`'publish'`(採用した候補が1件以上ある)/`'skip'`(採用0件で、空になったジャンルがすべて候補なし)/`'fail'`(採用0件で、収集失敗のジャンルが1つ以上混在する。全ジャンルが収集失敗の場合を含む)のいずれかを判定する(requirements.md#掲載件数の保証-3)。`'skip'`は記事を作らず後述「公開をスキップする処理」に進み、`'fail'`は記事を作らず後述「収集失敗で実行を失敗させる処理」に進む【推測】
   4. 採用した候補ごとに[content-generation](../content-generation/design.md)の生成を行う。一時的な失敗は同じ候補を最大2回まで(初回+1回)起動し直し、それでも失敗した候補は「生成に失敗したジャンル」として除き、次に進む(requirements.md#掲載件数の保証-4)
   5. 生成に1本以上成功した場合は、記事データ(発行日・研究・掲載できなかったジャンル)を組み立てる。掲載できなかったジャンルには、候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)・生成に失敗したジャンルの3種を理由つきで入れ、その回に有効な全ジャンルが過不足なく記事に現れるようにする。`content/research-digest/articles/<実行日>.json`に書き出す
   6. 全件の生成に失敗した場合、または利用上限への到達で続行できない場合は、記事を書き出さずに、理由を明示して実行を失敗として終える(requirements.md#掲載件数の保証-4)
@@ -107,6 +107,7 @@ sequenceDiagram
 .github/workflows/research-digest-weekly.yml (新規: 月曜に起動するワークフロー本体。publishジョブとrecord-ci-failureジョブ)
 scripts/research-digest/collect-and-select.ts (content-selectionで新規)
 scripts/research-digest/generate-content.ts (content-generationで新規)
+app/research-digest/lib/decidePublishOutcome.ts (新規: 選定結果から'publish'/'skip'/'fail'を判定する純粋関数)
 app/research-digest/lib/assembleArticle.ts (新規: 選定結果+生成結果から記事データを組み立てる純粋関数)
 scripts/research-digest/write-article.ts (新規: assembleArticleの結果をcontent/research-digest/articles/<date>.jsonへ書き出すCLI)
 content/research-digest/articles/<date>.json (新規: 生成される記事データ)

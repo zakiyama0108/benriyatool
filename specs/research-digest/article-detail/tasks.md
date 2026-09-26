@@ -22,7 +22,7 @@
 
 ## 表示ロジック
 
-- Task 5: ジャンル枠の一覧の組み立てと並べ替え(仕様: requirements.md#記事本文の表示-3、requirements.md#並び順の切り替え-8〜9)
+- Task 5: ジャンル枠の一覧の組み立てと並べ替え(仕様: requirements.md#記事本文の表示-3〜6、requirements.md#並び順の切り替え-8〜9)
   - 🔴 `sortGenres(article, order)`について次を確認するテストを書く: 影響度順で大→中→小、同じ影響度はジャンル順に並ぶ/掲載できなかったジャンルは影響度順では末尾(その中はジャンル順)に並ぶ/ジャンル順では定義順に並び、掲載できなかったジャンルも本来の位置に並ぶ/どちらの並び順でも全ジャンルが含まれる
   - 🟢 `app/research-digest/lib/sortGenres.ts`に実装する
 
@@ -30,7 +30,7 @@
   - 🔴 ジャンル・影響度が日本語ラベルで表示されること、`isPreprint`が真のときだけ「査読前」のバッジが出ることを確認するテストを書く
   - 🟢 `app/research-digest/components/FindingBadges.tsx`を実装する
 
-- Task 7: 1ジャンル分のカード(仕様: requirements.md#記事本文の表示-2〜4)
+- Task 7: 1ジャンル分のカード(仕様: requirements.md#記事本文の表示-2〜5)
   - 🔴 研究があるジャンルで見出し・本文・影響度の根拠・出典(論文名・掲載誌名/発表元・年、新規タブのリンク、`rel="noopener noreferrer"`)が表示されること、`publishedYear`が`null`なら年を出さないこと、`no-candidate`で「候補が見つかりませんでした」、`collection-failed`で分類ラベルを含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`で「今回は記事を用意できませんでした」が表示されることを確認するテストを書く
   - 🟢 `app/research-digest/components/FindingCard.tsx`を実装する
 

@@ -31,7 +31,7 @@
   - 🔴 ジャンル・時間軸・影響度が日本語ラベル(例:「テクノロジー・AI」「近未来」「影響度 大」)で表示されること、`impact`がないときは影響度バッジを出さないことを確認するテストを書く
   - 🟢 `app/future-digest/components/SlotBadges.tsx`を実装する
 
-- Task 7: 1枠分のカード(仕様: requirements.md#記事本文の表示-2〜4、design.md「その回の記事本文を表示する処理」手順3〜4)
+- Task 7: 1枠分のカード(仕様: requirements.md#記事本文の表示-2〜5、design.md「その回の記事本文を表示する処理」手順3〜4)
   - 🔴 予測がある枠で見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ、`rel="noopener noreferrer"`)が表示されること、`no-candidate`の枠で「候補が見つかりませんでした」、`collection-failed`の枠で分類ラベルを含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`の枠で「今回は記事を用意できませんでした」が表示され、いずれも本文・フィードバック欄が出ないことを確認するテストを書く
   - 🟢 `app/future-digest/components/PredictionCard.tsx`を実装する
 

@@ -97,7 +97,7 @@ export type SlotResult =
   4. 配信済みの一覧と実質的に同じ内容(同じ技術・同じ出来事について同じ見通しを述べるもの)の記事は候補にしない(requirements.md#配信済みの記事・予測の除外-2)
   5. 各候補に影響度(大・中・小)とその根拠(1文)を付け、同じ時間軸・同じ影響度の中での順位を付ける(requirements.md#影響度-1〜3)
   6. 応答は決められた形のJSON(時間軸ごとの候補の配列。時間軸あたり最大5件)だけを返させる。候補が見つからない時間軸は空の配列にする。聞き返しはさせない(ヘッドレス実行のため)
-  7. 応答をJSONとして読み取り、各候補を下記「バリデーション」で検証し、満たさない候補は捨てる
+  7. 応答をJSONとして読み取る。応答全体の形(時間軸ごとの候補配列)自体が読み取れない・満たさない場合はスキーマ不正として扱う(下記「エラーハンドリング」の`invalid-format`)。全体の形が正しければ、各候補を下記「バリデーション」で検証し、満たさない候補だけをその場で捨てる(候補単位のバリデーションで全件捨てられても、応答全体の形は正しいため候補なしの枠として扱う)【推測】
 - シーケンス図(俯瞰用。正は上記の手順の文章):
 
 ```mermaid
@@ -119,14 +119,15 @@ sequenceDiagram
 - 関連するビジネスルール: requirements.md#機能要件-4〜5、requirements.md#時間軸-5〜6、requirements.md#採用基準-1〜3、requirements.md#影響度-1〜3、requirements.md#データ取得方法-1
 
 ### 枠ごとに1本を採用する処理(決定的なコード)
-- 対象: 収集に成功したジャンルの枠(下記「エラーハンドリング」で収集失敗と確定した枠は対象外。それらは`collection-failed`のまま`SlotResult`に直接入る)に集まった候補
+- 対象: 収集に成功したジャンルの候補と、収集に失敗したジャンルの一覧(`collectionFailedGenres`。ジャンルごとの分類ラベルつき)
 - 手順:
   1. 配信済みの元URLと正規化後に一致する候補を除く(Claudeの判定漏れに対する最終防波堤。requirements.md#配信済みの記事・予測の除外-1)
   2. 同じ回の別の枠で既に採用した元URLと一致する候補も除く(同じ記事が2つの枠に載らないようにするため)
   3. 残った候補を影響度の大きい順に並べ、同じ影響度の中ではClaudeが付けた順位の小さい順に並べて、先頭の1本を採用する(requirements.md#機能要件-4、requirements.md#影響度-3)
   4. 残った候補が1件もない場合は、その枠を「候補が見つからなかった枠」として記録する(requirements.md#候補が見つからない枠-1)
   5. 採用処理はジャンル順・時間軸の近い順に枠を処理する(手順2の重複除外の結果を毎回同じにするため)
-- 関連するビジネスルール: requirements.md#機能要件-3〜5、requirements.md#配信済みの記事・予測の除外-1、requirements.md#候補が見つからない枠-1
+  6. `collectionFailedGenres`に含まれるジャンルは候補の採用処理を行わず、その回の2時間軸それぞれを`status: 'collection-failed'`(分類ラベルつき)の枠として、手順5と同じジャンル順・時間軸の近い順の位置に合流させる
+- 関連するビジネスルール: requirements.md#機能要件-3〜5、requirements.md#配信済みの記事・予測の除外-1、requirements.md#候補が見つからない枠-1、requirements.md#収集失敗-1
 
 ### 収集状況を記録する処理
 - 対象: 全枠の採用結果(収集失敗の枠を含む)
@@ -150,7 +151,7 @@ Claudeが返した候補ごとに検証し、満たさない候補はその場�
 - 1ジャンルの収集が失敗した場合(応答からJSONを取り出せない・Claude CLIが異常終了した・Claude CLI呼び出しが設定したタイムアウト値を超えた)は、そのジャンルを最大2回まで(初回+1回)起動し直す。それでも失敗した場合は、そのジャンルの2枠を`status: 'collection-failed'`として扱い(候補なしとは区別する。requirements.md#収集失敗-1)、他のジャンルの収集を続ける(1ジャンルの失敗で回全体を止めないため)。失敗したことは実行ログに残す【推測】
   - 失敗原因は次のとおり分類ラベルに変換する(requirements.md#収集失敗-2)。原因のエラー文字列はログにのみ残し、分類ラベルだけを記事データ・読者向け表示に渡す【推測】
     - `timeout`: Claude CLI呼び出しがタイムアウト値を超えて中断された場合(タイムアウト値は環境変数等で調整可能な定数とする)
-    - `invalid-format`: Claude CLIは正常終了したが応答からJSONを取り出せなかった・スキーマを満たさなかった場合
+    - `invalid-format`: Claude CLIは正常終了したが応答からJSONを取り出せなかった・応答全体の形(時間軸ごとの候補配列)のスキーマを満たさなかった場合(候補単位のバリデーションで個々の候補が捨てられ0件になった場合は含まない。その場合は`no-candidate`として扱う)【推測】
     - `other`: 上記のいずれにも当たらない異常終了・例外の場合
 - 応答が利用上限への到達を示す場合は、そのジャンルの収集失敗として`collection-failed`にはせず、同じ実行内でやり直しても回復しないため、その時点で収集を打ち切り、スクリプトを失敗として終える(requirements.md#収集失敗-3。[weekly-publish/design.md](../weekly-publish/design.md)「エラーハンドリング」で公開せずに実行を失敗させる)
 - その回で1本も採用できなかった場合、空になった枠がすべて`no-candidate`であれば選定結果として「全枠候補なし」を返す(正常な結果。[weekly-publish](../weekly-publish/design.md)が公開をスキップする)。`collection-failed`の枠が1つでも混在する場合は、選定結果に収集失敗の枠が含まれる旨を持たせて返し、[weekly-publish](../weekly-publish/design.md)がその回の実行を失敗として終える(requirements.md#収集失敗-4)【推測】
@@ -165,7 +166,7 @@ app/future-digest/lib/candidateTypes.ts (新規: Candidate/SlotResult)
 app/future-digest/lib/issue.ts (新規: 次の回数を求めるnextIssueNumber)
 app/future-digest/lib/deliveredIndex.ts (新規: 配信済みURLの正規化と、配信済みの一覧の組み立て)
 app/future-digest/lib/candidateValidation.ts (新規: Claudeが返した候補の検証)
-app/future-digest/lib/selectSlots.ts (新規: 枠ごとの採用と候補なしの記録)
+app/future-digest/lib/selectSlots.ts (新規: 枠ごとの採用・候補なしの記録・収集失敗ジャンルの合流)
 scripts/future-digest/collect-candidates.ts (新規: ジャンルごとにClaude Code CLIを起動して候補を集めるCLI)
 scripts/future-digest/collect-and-select.ts (新規: 回数の決定→収集→採用→結果のJSON出力までをまとめるCLI。weekly-publishから呼ぶ)
 app/future-digest/lib/articles.ts (article-detailで新規: getAllArticlesを利用)
