@@ -38,3 +38,13 @@
   - Task A〜Cが揃った状態で、実際の週次記事マージ(またはworkflow_dispatch)により配信ワークフローを実行し、実行ログに公開待ちのポーリングログ(試行ごとの経過秒数とHTTPステータス)が記録されることを確認する(デプロイ完了まで約2分・その間404というタイミング差はユニットテストで再現できないため、本番環境での確認が必要)
   - LINE通知の到達が本番デプロイ完了より後になり、通知に載ったリンクを開いた時点で記事ページが閲覧できることを確認する
   - 実行ログから、記事ページへのGETで実際に観測したリダイレクトのHTTPステータスコードを確認する(design.md「記事ページの公開を待つ処理」の「3xx」という記述の実際の値を裏取りする)
+
+## 2026-09-26 追加(配信CLIのテスト整備)
+
+- Task E: 配信CLIのCLIレベルテスト整備(仕様: [ai-dev-digest/line-broadcast/design.md](../../ai-dev-digest/line-broadcast/design.md)「LINEブロードキャストメッセージを送信する処理」「記事ページの公開を待つ処理」「テストからの注入」)
+  - 3アプリ共通の背景・進め方は[ai-dev-digest/line-broadcast/tasks.md](../../ai-dev-digest/line-broadcast/tasks.md)のTask Eを参照。本タスクはnews-digest分の実施
+  - ビジネスルール・仕様の変更は伴わない。trend-digestの配信CLIと同じ構造に揃えるリファクタとテスト追加のみ
+  - 🔴 `__tests__/news-digest/scripts/broadcast-line.test.ts`(新設)に、`__tests__/trend-digest/scripts/broadcast-line.test.ts`と同じ観点(公開確認GETが`buildArticleUrl(article)`と一致すること・公開確認GETに`Authorization`が付かないこと・LINE APIへのPOSTのエンドポイント/本文・POST本文末尾が公開確認でGETしたURLと一致すること・公開確認が時間切れになった場合はLINE APIを呼ばずに失敗すること・LINE APIがエラーを返した場合はリトライせず失敗すること)のテストを書く
+  - 🟢 `scripts/news-digest/broadcast-line.ts`を、trend-digestの`broadcastArticle(articlePath, accessToken, waitSettings?)`と同じ形にリファクタする(`main()`はそれを呼ぶだけにする)。既存の挙動(標準エラー出力の内容・終了コード・`onAttempt`での`console.error`出力・時間切れ時にLINE APIを呼ばないこと)は変えない
+  - 🔵 リファクタ
+  - 追加したテストが実際に退行を検出できることを確認する(公開確認のURLを`buildArticleUrl`以外に変える・公開確認のGETに`Authorization`を付ける、のそれぞれでテストが落ちることを確認してから元に戻す)
