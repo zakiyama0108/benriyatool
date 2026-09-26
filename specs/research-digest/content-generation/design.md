@@ -7,6 +7,7 @@
 - 「本文を書く」ことだけをClaudeに任せ、分量・タイトル・値の引き継ぎは決定的なコードで扱う(future-digest・trend-digestと同じ役割分担)
 - 執筆ルールの正はこのrequirements.md/design.mdとし、生成CLIは実行時に両ファイルを読み込んでプロンプトに含める
 - 査読前の論文は、本文の注意点で触れさせることに加え、画面のバッジ([article-detail/design.md](../article-detail/design.md))でも必ず示す
+- 図: [見出し・本文を書く処理](#見出し本文を書く処理エージェントの推論)のシーケンス図
 
 ## 処理フロー
 
@@ -21,6 +22,20 @@
   6. 元の論文・発表に書かれている範囲にとどめ、書かれていない内容を推測で断定しない(requirements.md#内容の逸脱防止-3)
   7. 影響度・その根拠・出典・査読前かどうかは渡された値を事実として扱い、本文でそれと食い違うことを書かない
   8. 応答は`{ "heading": "...", "body": "..." }`のJSONだけを返させる。元の論文を読めなかった場合は、渡された情報の範囲で書けるところまで書き、それも難しい場合は`heading`を`null`にして返させる(聞き返しはさせない)
+- シーケンス図(俯瞰用。正は上記の手順の文章):
+
+```mermaid
+sequenceDiagram
+    participant script as generate-content.ts
+    participant claude as Claude Code CLI(ヘッドレス)
+    participant source as 論文・公式発表のURL
+
+    script ->> claude: requirements.md・design.mdとガードレール文言、採用された研究1本の情報を渡す
+    claude ->> source: WebFetchで内容を把握する
+    source -->> claude: 本文・要旨等
+    claude -->> script: 見出し・本文のJSON(または heading: null)
+    script ->> script: 生成結果を検証し、記事データの1本分を組み立てる
+```
 - プロンプトに必ず含めるガードレール文言(requirements.md#要約-4〜5、requirements.md#内容の逸脱防止-3の具体化):
   > この記事で扱ってよいのは、渡された論文・公式発表に書かれている研究結果だけである。元の構成・表現の順序をなぞらず独自に書き直し、数値・全文を網羅的に転記しない。研究結果を実際より確かなもの・効果の大きいものとして書かず、研究の限界を注意点に書く。健康に関わる研究では、読者に個別の治療・服薬の開始・中止・変更を勧めない。元にない内容を推測で断定しない。渡された影響度・その根拠・査読前かどうかは事実として扱い、それと異なることを書かない。査読前の論文であれば、そのことを注意点に必ず書く。
 - 関連するビジネスルール: requirements.md#要約-1〜5、requirements.md#記事の構成-6、requirements.md#著作権への配慮-1、requirements.md#内容の逸脱防止-3
