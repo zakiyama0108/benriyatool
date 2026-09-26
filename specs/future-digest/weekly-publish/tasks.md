@@ -2,7 +2,7 @@
 
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
-- Task 1: 選定結果からの公開判定(仕様: requirements.md#掲載件数の保証-3、content-selection/requirements.md#収集失敗-4、design.md「1回分の記事を生成する処理」手順3)
+- Task 1: 選定結果からの公開判定(仕様: requirements.md#掲載件数の保証-3、content-selection/requirements.md#収集失敗-4、design.md「1回分の記事を生成する処理」手順2)
   - 🔴 `decidePublishOutcome(slotResults)`について次を確認するテストを書く: 採用した候補が1件以上あれば`'publish'`/採用0件で空いた枠がすべて`no-candidate`なら`'skip'`/採用0件で`collection-failed`の枠が1つ以上混在するなら`'fail'`/全枠(有効なジャンル数×2時間軸)が`collection-failed`の場合も`'fail'`
   - 🟢 `app/future-digest/lib/decidePublishOutcome.ts`に実装する
 

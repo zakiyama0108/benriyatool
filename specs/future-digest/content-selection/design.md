@@ -112,9 +112,9 @@ sequenceDiagram
         claude ->> web: WebSearch・WebFetchで未来予測記事を探す
         web -->> claude: 検索結果・記事本文
         claude -->> script: 時間軸ごとの候補(影響度・根拠・順位つき)のJSON
-        script ->> script: 候補を検証し、配信済みURLを除く
+        script ->> script: 候補を検証する
     end
-    script ->> script: 枠ごとに1本を採用し、候補なしの枠・収集失敗の枠(collection-failed)を記録する(利用上限への到達を検知した場合はそこで打ち切り実行全体を失敗にする)
+    script ->> script: 配信済みURLを除いて枠ごとに1本を採用し、候補なしの枠・収集失敗の枠(collection-failed)を記録する(利用上限への到達を検知した場合はそこで打ち切り実行全体を失敗にする)
 ```
 - 関連するビジネスルール: requirements.md#機能要件-4〜5、requirements.md#時間軸-5〜6、requirements.md#採用基準-1〜3、requirements.md#影響度-1〜3、requirements.md#データ取得方法-1
 
@@ -136,7 +136,7 @@ sequenceDiagram
   2. 候補が見つからなかった枠の一覧と、収集に失敗した枠の一覧(分類ラベル別の件数つき)を、最後にまとめて出す
   3. 候補なしの枠・収集失敗の枠は記事データの`emptySlots`にも`reason`つきで残るため、[source-review](../source-review/design.md)の月次見直しは記事データから集計できる(収集失敗は候補なしの集計から除く。requirements.md#収集失敗-5)
   4. `collect-and-select.ts`の最後に、全枠の採用結果(`SlotResult`の一覧)を[weekly-publish/design.md](../weekly-publish/design.md)の`decidePublishOutcome`に渡し、判定結果(`'publish'`/`'skip'`/`'fail'`)を`GITHUB_OUTPUT`に`outcome=publish|skip|fail`として書き出す。`'fail'`のときはCLIを非ゼロ終了で終える。公開するか・スキップするか・失敗にするかの判定ロジック自体はweekly-publish designの`decidePublishOutcome`が持ち、本specでは二重に持たない【推測】
-- 関連するビジネスルール: requirements.md#収集状況の記録-1
+- 関連するビジネスルール: requirements.md#収集状況の記録-1、requirements.md#収集失敗-4
 
 ## バリデーション
 
@@ -155,7 +155,7 @@ Claudeが返した候補ごとに検証し、満たさない候補はその場�
     - `invalid-format`: Claude CLIは正常終了したが応答からJSONを取り出せなかった・応答全体の形(時間軸ごとの候補配列)のスキーマを満たさなかった場合(2回とも)。候補単位のバリデーションで個々の候補が捨てられ0件になった場合はここに含めない(`collectForGenre`は0件の候補配列を返す成功として扱う。上記手順7)【推測】
     - `other`: 上記のいずれにも当たらない異常終了・例外の場合
 - 応答が利用上限への到達を示す場合は、そのジャンルの収集失敗として`collection-failed`にはせず、同じ実行内でやり直しても回復しないため、その時点で収集を打ち切り、スクリプトを失敗として終える(requirements.md#収集失敗-3。[weekly-publish/design.md](../weekly-publish/design.md)「エラーハンドリング」で公開せずに実行を失敗させる)
-- その回で1本も採用できなかった場合、空になった枠がすべて`no-candidate`であれば選定結果として「全枠候補なし」を返す(正常な結果。[weekly-publish](../weekly-publish/design.md)が公開をスキップする)。`collection-failed`の枠が1つでも混在する場合は、選定結果に収集失敗の枠が含まれる旨を持たせて返し、[weekly-publish](../weekly-publish/design.md)がその回の実行を失敗として終える(requirements.md#収集失敗-4)【推測】
+- その回で1本も採用できなかった場合も、`SlotResult`の一覧をそのまま返す(判定用の値は別に持たせない)。公開・スキップ・失敗の判定は[weekly-publish/design.md](../weekly-publish/design.md)の`decidePublishOutcome`だけが行う(上記「収集状況を記録する処理」手順4、requirements.md#収集失敗-4)【推測】
 - 記事データの読み込みに失敗した場合(過去記事のJSONが壊れている)は、配信済みの判定ができないため処理を失敗として終える(重複した記事を配信するより、その回を止める方を選ぶ)
 
 ## 関連するファイル(抜粋)

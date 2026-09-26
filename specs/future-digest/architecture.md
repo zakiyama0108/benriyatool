@@ -86,7 +86,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 未実装のためこれから実装に着手する場合は、依存関係の浅い順に次の順で進める(spec間の依存は上表「依存」列が正):
 1. content-selection・content-generation(記事データの元となる選定・要約ルール)
 2. article-detail(記事データの共有スキーマを定義するspec。他のUI specはこのスキーマに依存する)
-3. weekly-publish(選定・生成・公開の自動実行)
+3. weekly-publish(選定・生成・公開の自動実行)。ただし公開判定の純粋関数`decidePublishOutcome`(weekly-publish/tasks.md Task 1)はcontent-selectionのまとめCLIから呼ばれるため、content-selectionのまとめCLIより先に実装する
 4. article-list・bookmark・line-broadcast(article-detailのデータ構造を使う周辺機能。この3つの間に依存はなく並行できる)
 5. source-review(記事データ・フィードバックの蓄積を前提とする月次見直し)
 

@@ -37,7 +37,7 @@ sequenceDiagram
     participant gh as GitHub
 
     actions ->> select: 収集・選定を実行
-    select ->> select: decidePublishOutcomeで判定(publish/skip/fail)
+    select ->> select: 公開判定(公開・スキップ・失敗)
     select -->> actions: outcome(GITHUB_OUTPUT)・'publish'なら採用した候補も
     alt outcome=skip
         actions ->> actions: 公開をスキップ(実行は成功)
