@@ -1,7 +1,7 @@
 # 設計: 記事詳細ページ
 
 ## サマリ
-その回の研究発見の記事(ジャンルごとに1本、10ジャンル)を、初期表示は影響度順、切り替えでジャンル順に並べて表示する。候補が見つからなかったジャンルも「候補が見つかりませんでした」として必ず表示し、全ジャンルが画面に現れる状態を保つ。査読前の論文には「査読前」のバッジを付ける。運営者本人がログイン中の場合のみ、各研究の下にフィードバック入力欄を出し、`research_digest_feedback`テーブルへINSERT専用で保存する。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。
+その回の研究発見の記事(ジャンルごとに1本、有効なジャンルの数だけ。現在は10ジャンル)を、初期表示は影響度順、切り替えでジャンル順に並べて表示する。候補が見つからなかったジャンルも「候補が見つかりませんでした」として必ず表示し、全ジャンルが画面に現れる状態を保つ。査読前の論文には「査読前」のバッジを付ける。運営者本人がログイン中の場合のみ、各研究の下にフィードバック入力欄を出し、`research_digest_feedback`テーブルへINSERT専用で保存する。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。
 
 主要な設計判断:
 - 記事データは`content/research-digest/articles/<date>.json`の静的JSON。ジャンルは設定ファイル`content/research-digest/genres.json`から読み、追記だけで増やせるようにする
@@ -52,7 +52,7 @@ export type Finding = {
 export type EmptyGenre = {
   genre: Genre
   reason: 'no-candidate' | 'collection-failed' | 'generation-failed' // 候補が見つからなかった / 収集の処理自体が失敗した / 候補はあったが要約の生成に失敗した
-  collectionFailureReason?: 'timeout' | 'usage-limit' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル(requirements.md#収集失敗-2)【推測】
+  collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル(requirements.md#収集失敗-2)。利用上限への到達は実行全体を打ち切るため値に含まない(requirements.md#収集失敗-3)【推測】
 }
 
 export type Article = {
@@ -64,7 +64,7 @@ export type Article = {
 ```
 
 - 記事タイトルはJSONに保存せず、`date`から`buildArticleTitle(date)`([content-generation/design.md](../content-generation/design.md))で導出する
-- `emptyGenres`の`reason`は、候補が見つからなかったジャンル(requirements.md#記事本文の表示-3)・収集の処理自体が失敗したジャンル(requirements.md#収集失敗)・生成に失敗して除いたジャンル([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))の3つを区別するために持つ。表示文言もこの3つで異なる(requirements.md#記事本文の表示-3〜5、future-digestと同じ扱い)
+- `emptyGenres`の`reason`は、候補が見つからなかったジャンル(requirements.md#記事本文の表示-3)・収集の処理自体が失敗したジャンル(requirements.md#記事本文の表示-4。分類ラベルは[content-selection/requirements.md#収集失敗](../content-selection/requirements.md)で定義)・生成に失敗して除いたジャンル([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))の3つを区別するために持つ。表示文言もこの3つで異なる(requirements.md#記事本文の表示-3〜6、future-digestと同じ扱い)
 
 ## 処理フロー
 
@@ -106,7 +106,7 @@ export type Article = {
 ### フィードバックを送信する処理
 - 対象: フィードバック入力欄に入力された自由記述
 - 手順:
-  1. 入力内容の前後の空白を除いた結果が空の場合は、送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)
+  1. 入力欄に`maxLength={1000}`を設定し、前後の空白を除いた結果が空、または1000字を超える場合は送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)。入力欄の下に残り字数(例:「120/1000字」)を表示する【推測】
   2. 送信時、記事ID・研究ID・入力内容を1件のレコードとして`research_digest_feedback`に保存する(`authenticated`ロールでのINSERT)
   3. 成功した場合は入力欄を空にし「送信しました」を数秒表示する(requirements.md#運営者向けフィードバック-12)
   4. 失敗した場合は入力内容を残したまま「送信に失敗しました。もう一度お試しください」を表示する
@@ -137,7 +137,8 @@ sequenceDiagram
 - 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`body`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること、`body`が160〜480字であること
 - 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`reason`が定義済みの値であること
 - 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。その回に有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
-- 研究が1件以上あること(全ジャンルで採用できなかった回は公開しない。weekly-publish/requirements.md#掲載件数の保証-1)
+- 研究が1件以上あること(全ジャンルで採用できなかった回は公開しない。weekly-publish/requirements.md#掲載件数の保証-3)
+- 各掲載できなかったジャンル: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)【推測】
 - フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない)
 
 ## エラーハンドリング

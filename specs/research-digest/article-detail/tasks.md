@@ -13,7 +13,7 @@
   - 🟢 `app/research-digest/lib/types.ts`を実装する
 
 - Task 3: 記事データのスキーマ検証(仕様: design.md「バリデーション」)
-  - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(研究9件+掲載できなかったジャンル1件)を受け付ける/同じジャンルが2回現れる場合・`genres.json`にないジャンルの場合に拒否する/`id`が`genre`と一致しない研究を拒否する/必須文字列が空の研究を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/`doi`が`10.`で始まらない文字列なら拒否する(`null`は受け付ける)/`publishedYear`が発行日の年より後なら拒否する/`isPreprint`が真偽値でなければ拒否する/本文が160字未満・480字超なら拒否する/研究が0件の記事を拒否する/`reason`が定義外なら拒否する
+  - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(研究9件+掲載できなかったジャンル1件)を受け付ける/同じジャンルが2回現れる場合・`genres.json`にないジャンルの場合に拒否する/`id`が`genre`と一致しない研究を拒否する/必須文字列が空の研究を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/`doi`が`10.`で始まらない文字列なら拒否する(`null`は受け付ける)/`publishedYear`が発行日の年より後なら拒否する/`isPreprint`が真偽値でなければ拒否する/本文が160字未満・480字超なら拒否する/研究が0件の記事を拒否する/`reason`が定義外なら拒否する/`reason`が`'collection-failed'`で`collectionFailureReason`が欠けている・定義外の値である場合に拒否する/`reason`が`'no-candidate'`・`'generation-failed'`で`collectionFailureReason`を持つ場合に拒否する
   - 🟢 `app/research-digest/lib/articleSchema.ts`に`parseArticle(raw, fileId)`を実装する(本文の分量検証は[content-generation/tasks.md](../content-generation/tasks.md)のTask 1を使う)
 
 - Task 4: 記事データの読み込み(仕様: design.md「記事データを読み込む処理」)
@@ -30,8 +30,8 @@
   - 🔴 ジャンル・影響度が日本語ラベルで表示されること、`isPreprint`が真のときだけ「査読前」のバッジが出ることを確認するテストを書く
   - 🟢 `app/research-digest/components/FindingBadges.tsx`を実装する
 
-- Task 7: 1ジャンル分のカード(仕様: requirements.md#記事本文の表示-2〜3)
-  - 🔴 研究があるジャンルで見出し・本文・影響度の根拠・出典(論文名・掲載誌名/発表元・年、新規タブのリンク、`rel="noopener noreferrer"`)が表示されること、`publishedYear`が`null`なら年を出さないこと、`no-candidate`で「候補が見つかりませんでした」、`generation-failed`で「今回は記事を用意できませんでした」が表示されることを確認するテストを書く
+- Task 7: 1ジャンル分のカード(仕様: requirements.md#記事本文の表示-2〜4)
+  - 🔴 研究があるジャンルで見出し・本文・影響度の根拠・出典(論文名・掲載誌名/発表元・年、新規タブのリンク、`rel="noopener noreferrer"`)が表示されること、`publishedYear`が`null`なら年を出さないこと、`no-candidate`で「候補が見つかりませんでした」、`collection-failed`で分類ラベルを含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`で「今回は記事を用意できませんでした」が表示されることを確認するテストを書く
   - 🟢 `app/research-digest/components/FindingCard.tsx`を実装する
 
 - Task 8: 並び順の切り替え(仕様: requirements.md#並び順の切り替え-7・10)
@@ -45,7 +45,7 @@
   - 🟢 `app/research-digest/lib/saveFeedback.ts`を実装する
 
 - Task 10: フィードバック入力欄(仕様: requirements.md#運営者向けフィードバック-12〜13)
-  - 🔴 空・空白のみで送信不可、送信中はボタン無効、成功で入力欄が空になり「送信しました」、失敗で入力が残り失敗文言が出ることを確認するテストを書く
+  - 🔴 空・空白のみで送信不可、1000字を超える入力で送信不可、入力欄に`maxLength={1000}`が設定されていること、送信中はボタン無効、成功で入力欄が空になり「送信しました」、失敗で入力が残り失敗文言が出ることを確認するテストを書く
   - 🟢 `app/research-digest/components/FeedbackForm.tsx`を実装する
 
 - Task 11: 運営者判定による出し分け(仕様: requirements.md#運営者向けフィードバック-11、requirements.md#フィードバックの保存・権限-3)

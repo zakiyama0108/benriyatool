@@ -14,7 +14,7 @@
   - 🟢 `app/future-digest/lib/types.ts`に型・`GENRE_ORDER`・`GENRE_LABELS`(genres.jsonから組み立て)・`HORIZON_ORDER`・`HORIZON_LABELS`・`IMPACT_ORDER`・`IMPACT_LABELS`・`horizonsForIssue`を実装する
 
 - Task 3: 記事データのスキーマ検証(仕様: design.md「バリデーション」)
-  - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(予測18件+掲載できなかった枠2件)を受け付ける/記事に現れるジャンルでその回の2時間軸の片方が欠けている場合・同じ枠が重複する場合・`genres.json`にないジャンルの場合に拒否する/その回の時間軸以外の`horizon`を拒否する/`id`が`<genre>--<horizon>`と一致しない予測を拒否する/必須文字列が空の予測を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/本文が160字未満・480字超なら拒否する/予測が0件の記事を拒否する/`issueNumber`が1未満なら拒否する/`reason`が定義外なら拒否する
+  - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(予測18件+掲載できなかった枠2件)を受け付ける/記事に現れるジャンルでその回の2時間軸の片方が欠けている場合・同じ枠が重複する場合・`genres.json`にないジャンルの場合に拒否する/その回の時間軸以外の`horizon`を拒否する/`id`が`<genre>--<horizon>`と一致しない予測を拒否する/必須文字列が空の予測を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/本文が160字未満・480字超なら拒否する/予測が0件の記事を拒否する/`issueNumber`が1未満なら拒否する/`reason`が定義外なら拒否する/`reason`が`'collection-failed'`で`collectionFailureReason`が欠けている・定義外の値である場合に拒否する/`reason`が`'no-candidate'`・`'generation-failed'`で`collectionFailureReason`を持つ場合に拒否する
   - 🟢 `app/future-digest/lib/articleSchema.ts`に`parseArticle(raw, fileId)`を実装する(本文の分量検証は[content-generation/tasks.md](../content-generation/tasks.md)のTask 1の`isValidBodyLength`を使う)
 
 - Task 4: 記事データの読み込み(仕様: design.md「記事データを読み込む処理」)
@@ -31,8 +31,8 @@
   - 🔴 ジャンル・時間軸・影響度が日本語ラベル(例:「テクノロジー・AI」「近未来」「影響度 大」)で表示されること、`impact`がないときは影響度バッジを出さないことを確認するテストを書く
   - 🟢 `app/future-digest/components/SlotBadges.tsx`を実装する
 
-- Task 7: 1枠分のカード(仕様: requirements.md#記事本文の表示-2〜3、design.md「その回の記事本文を表示する処理」手順3〜4)
-  - 🔴 予測がある枠で見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ、`rel="noopener noreferrer"`)が表示されること、`no-candidate`の枠で「候補が見つかりませんでした」、`generation-failed`の枠で「今回は記事を用意できませんでした」が表示され本文・フィードバック欄が出ないことを確認するテストを書く
+- Task 7: 1枠分のカード(仕様: requirements.md#記事本文の表示-2〜4、design.md「その回の記事本文を表示する処理」手順3〜4)
+  - 🔴 予測がある枠で見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ、`rel="noopener noreferrer"`)が表示されること、`no-candidate`の枠で「候補が見つかりませんでした」、`collection-failed`の枠で分類ラベルを含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`の枠で「今回は記事を用意できませんでした」が表示され、いずれも本文・フィードバック欄が出ないことを確認するテストを書く
   - 🟢 `app/future-digest/components/PredictionCard.tsx`を実装する
 
 - Task 8: 並び順の切り替え(仕様: requirements.md#並び順の切り替え-7・10)
@@ -41,12 +41,12 @@
 
 ## フィードバック
 
-- Task 9: フィードバックの保存処理(仕様: requirements.md#運営者向けフィードバック-9、design.md「フィードバックを送信する処理」)
+- Task 9: フィードバックの保存処理(仕様: requirements.md#運営者向けフィードバック-12、design.md「フィードバックを送信する処理」)
   - 🔴 Supabaseクライアントをモックし、`saveFeedback`が`future_digest_feedback`に`article_id`・`prediction_id`・`comment`・`is_test`をINSERTし、成功/失敗を返すことを確認するテストを書く
   - 🟢 `app/future-digest/lib/saveFeedback.ts`を実装する(trend-digestの`saveFeedback.ts`と同じ構成)
 
 - Task 10: フィードバック入力欄(仕様: requirements.md#運営者向けフィードバック-12〜13)
-  - 🔴 空・空白のみでは送信ボタンが無効になること、送信中はボタンが無効になること、成功で入力欄が空になり「送信しました」が出ること、失敗で入力内容が残り失敗文言が出ることを確認するテストを書く
+  - 🔴 空・空白のみでは送信ボタンが無効になること、1000字を超える入力では送信ボタンが無効になること、入力欄に`maxLength={1000}`が設定されていること、送信中はボタンが無効になること、成功で入力欄が空になり「送信しました」が出ること、失敗で入力内容が残り失敗文言が出ることを確認するテストを書く
   - 🟢 `app/future-digest/components/FeedbackForm.tsx`を実装する
 
 - Task 11: 運営者判定による出し分け(仕様: requirements.md#運営者向けフィードバック-11、requirements.md#フィードバックの保存・権限-3)

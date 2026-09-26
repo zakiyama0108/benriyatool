@@ -1,7 +1,7 @@
 # 設計: 記事詳細ページ
 
 ## サマリ
-その回の未来予測記事(10ジャンル×その回の2時間軸=20枠。ジャンル数は設定ファイルに従う)を、初期表示は影響度順、切り替えでジャンル順に並べて表示する。候補が見つからなかった枠も「候補が見つかりませんでした」として必ず表示し、20枠すべてが画面に現れる状態を保つ。運営者本人がログイン中の場合のみ、各記事の下にフィードバック入力欄を出し、`future_digest_feedback`テーブルへINSERT専用で保存する(trend-digestと同じ`authenticated`ロールのINSERT専用パターン)。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。
+その回の未来予測記事(有効なジャンルの数×その回の2時間軸。現在は10ジャンル×2時間軸=20枠。ジャンル数は設定ファイルに従う)を、初期表示は影響度順、切り替えでジャンル順に並べて表示する。候補が見つからなかった枠も「候補が見つかりませんでした」として必ず表示し、20枠すべてが画面に現れる状態を保つ。運営者本人がログイン中の場合のみ、各記事の下にフィードバック入力欄を出し、`future_digest_feedback`テーブルへINSERT専用で保存する(trend-digestと同じ`authenticated`ロールのINSERT専用パターン)。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。
 
 主要な設計判断:
 - 記事データは`content/future-digest/articles/<date>.json`の静的JSON。回数(何回目の配信か)を記事データに持たせ、時間軸の組み合わせ(奇数回=近未来+長期未来、偶数回=中期未来+超長期未来)との整合をビルド時に検証する
@@ -62,7 +62,7 @@ export type EmptySlot = {
   genre: Genre
   horizon: Horizon
   reason: 'no-candidate' | 'collection-failed' | 'generation-failed' // 候補が見つからなかった / 収集の処理自体が失敗した / 候補はあったが要約の生成に失敗した
-  collectionFailureReason?: 'timeout' | 'usage-limit' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル(requirements.md#収集失敗-2)【推測】
+  collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル(requirements.md#収集失敗-2)。利用上限への到達は実行全体を打ち切るため値に含まない(requirements.md#収集失敗-3)【推測】
 }
 
 export type Article = {
@@ -76,7 +76,7 @@ export type Article = {
 
 - 扱う時間軸2区分は記事データに別フィールドとして持たず、`horizonsForIssue(issueNumber)`で常に導出する(二重管理による食い違いを防ぐため)
 - 記事タイトルはJSONに保存せず、`date`から`buildArticleTitle(date)`([content-generation/design.md](../content-generation/design.md))で導出する
-- `emptySlots`の`reason`は、候補が見つからなかった枠(requirements.md#記事本文の表示-3)・収集の処理自体が失敗した枠(requirements.md#収集失敗)・候補はあったが要約の生成に失敗して除いた枠([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))の3つを区別するために持つ。表示文言もこの3つで異なる(requirements.md#記事本文の表示-3〜5)
+- `emptySlots`の`reason`は、候補が見つからなかった枠(requirements.md#記事本文の表示-3)・収集の処理自体が失敗した枠(requirements.md#記事本文の表示-4。分類ラベルは[content-selection/requirements.md#収集失敗](../content-selection/requirements.md)で定義)・候補はあったが要約の生成に失敗して除いた枠([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))の3つを区別するために持つ。表示文言もこの3つで異なる(requirements.md#記事本文の表示-3〜6)
 
 ## 処理フロー
 
@@ -118,7 +118,7 @@ export type Article = {
 ### フィードバックを送信する処理
 - 対象: フィードバック入力欄に入力された自由記述
 - 手順:
-  1. 入力内容の前後の空白を除いた結果が空の場合は、送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)
+  1. 入力欄に`maxLength={1000}`を設定し、前後の空白を除いた結果が空、または1000字を超える場合は送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)。入力欄の下に残り字数(例:「120/1000字」)を表示する【推測】
   2. 送信時、記事ID・予測ID・入力内容を1件のレコードとして`future_digest_feedback`に保存する(ログイン中のセッションによる`authenticated`ロールでのINSERT)
   3. 保存に成功した場合は、入力欄を空にし「送信しました」を数秒表示する(requirements.md#運営者向けフィードバック-12)
   4. 保存に失敗した場合は、入力内容を残したまま「送信に失敗しました。もう一度お試しください」を表示する
@@ -151,7 +151,8 @@ sequenceDiagram
 - 各掲載できなかった枠: `genre`・`horizon`・`reason`が定義済みの値で、`horizon`がその回の2区分のどちらかであること
 - `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること
 - 同じ枠(ジャンル×時間軸)が2回現れないこと。記事に現れるジャンルは、その回の2時間軸の両方が予測または掲載できなかった枠として揃っていること(枠が黙って消える事故をビルド時に検知するため。content-selection/requirements.md#機能要件-3)。その回に有効だった全ジャンルが揃っていることは、記事を組み立てる時点で[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルを後から追加・廃止しても過去記事の検証が壊れないよう、ビルド時の検証は「その記事の中での整合」に限る)
-- 予測が1件以上あること(全枠で採用できなかった回は公開しない。weekly-publish/requirements.md#掲載件数の保証-1)
+- 予測が1件以上あること(全枠で採用できなかった回は公開しない。weekly-publish/requirements.md#掲載件数の保証-3)
+- 各掲載できなかった枠: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)【推測】
 - フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない。requirements.md#運営者向けフィードバック-13)
 
 ## エラーハンドリング
