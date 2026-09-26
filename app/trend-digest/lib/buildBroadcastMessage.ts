@@ -1,6 +1,6 @@
 import type { Article, Edition } from './types'
 import { GENRE_LABELS } from './types'
-import { SITE_URL } from '../../lib/site'
+import { buildArticleUrl } from './articleUrl'
 
 // LINE配信メッセージ専用の見出し(仕様: requirements.md#配信内容-2、
 // design.md「配信メッセージ本文を組み立てる処理」手順2)。
@@ -21,13 +21,14 @@ export function buildBroadcastTitle(edition: Edition, date: string): string {
 // LINEブロードキャストメッセージの本文を組み立てる(仕様: design.md「配信メッセージ本文を
 // 組み立てる処理」)。配信専用タイトル・トピック見出し一覧(記事データのtopics配列順・
 // ジャンル名付き・全件)・記事詳細ページリンクの3要素のみで構成し、トピックごとの出典URL
-// (sourceUrl)は含めない(requirements.md#配信内容-1、3、4)
+// (sourceUrl)は含めない(requirements.md#配信内容-1、3、4)。
+// URLはbuildArticleUrlで導出し、記事ページ公開確認(waitForPageAvailable)と同じ文字列にする
 export function buildBroadcastMessage(article: Article): string {
   const title = buildBroadcastTitle(article.edition, article.date)
   const headings = article.topics
     .map((topic) => `・【${GENRE_LABELS[topic.genre]}】${topic.heading}`)
     .join('\n')
-  const url = `${SITE_URL}/trend-digest/${article.id}`
+  const url = buildArticleUrl(article)
 
   return [title, '', headings, '', '記事を読む', url].join('\n')
 }

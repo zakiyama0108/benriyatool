@@ -2301,6 +2301,11 @@
   },
   {
     "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
     "item": "実行環境の前提(初導入のため明記する設計判断)",
     "reason": "ワークフローファイルを分割する設計判断・チャネルアクセストークンのActions Secrets管理方針の記述で、コードとしてのテスト対象を持たないため"
   },
@@ -2322,12 +2327,7 @@
   {
     "specFile": "ai-dev-digest/line-broadcast/design.md",
     "item": "LINEブロードキャストメッセージを送信する処理",
-    "reason": "LINE Messaging APIへのHTTPリクエストを行うだけの薄いラッパー(scripts/ai-dev-digest/broadcast-line.ts)の記述で、tasks.md Task2のTDD対象外宣言に基づきユニットテスト対象を持たないため(メッセージ組み立てロジック自体はbuildBroadcastMessage.test.tsでテスト済み)"
-  },
-  {
-    "specFile": "ai-dev-digest/line-broadcast/design.md",
-    "item": "エラーハンドリング",
-    "reason": "LINE配信APIエラー時・記事データパース失敗時にリトライせずワークフローを失敗させるという運用上の対応の記述で、broadcast-line.ts(TDD対象外)側の振る舞いでありユニットテスト対象を持たないため"
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-4〜5でテスト済み(__tests__/ai-dev-digest/scripts/broadcast-line.test.ts)"
   },
   {
     "specFile": "ai-dev-digest/line-broadcast/design.md",
@@ -2343,6 +2343,11 @@
     "specFile": "ai-dev-digest/line-broadcast/design.md",
     "item": "ログ",
     "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
   },
   {
     "specFile": "ai-dev-digest/line-broadcast/requirements.md",
@@ -2371,11 +2376,6 @@
   },
   {
     "specFile": "ai-dev-digest/line-broadcast/requirements.md",
-    "item": "配信タイミング・方式 [7]",
-    "reason": "LINE Messaging APIのブロードキャストエンドポイントへのHTTPリクエストという要件で、scripts/ai-dev-digest/broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いでありユニットテスト対象を持たないため"
-  },
-  {
-    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
     "item": "ビジネスルール・制約",
     "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },
@@ -2396,18 +2396,8 @@
   },
   {
     "specFile": "ai-dev-digest/line-broadcast/requirements.md",
-    "item": "無料枠と配信失敗時の扱い [4]",
-    "reason": "配信APIエラー時にリトライせず記事公開自体には影響させないという要件で、broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いおよびワークフローファイルが分離されている設計自体(design.md「実行環境の前提」)で実現するためユニットテスト対象を持たないため(実際の疎通確認はTask5で行う)"
-  },
-  {
-    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
-    "item": "無料枠と配信失敗時の扱い [5]",
-    "reason": "一時的なAPIエラーについてもリトライせず失敗として記録するにとどめるという要件で、broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いでありユニットテスト対象を持たないため(実際の疎通確認はTask5で行う)"
-  },
-  {
-    "specFile": "ai-dev-digest/line-broadcast/requirements.md",
     "item": "無料枠と配信失敗時の扱い [6]",
-    "reason": "配信失敗時に原因を記録し運営者が把握できるようにするという要件で、broadcast-line.tsの標準エラー出力によるログ記録(tasks.md Task2、TDD対象外)で実現するためユニットテスト対象を持たないため"
+    "reason": "配信失敗時に原因を記録し運営者が把握できるようにするという要件で、broadcast-line.tsの標準エラー出力によるログ記録・GitHub Actionsの実行結果表示で実現するためユニットテスト対象を持たないため"
   },
   {
     "specFile": "ai-dev-digest/line-broadcast/requirements.md",
@@ -6312,12 +6302,7 @@
   {
     "specFile": "news-digest/line-broadcast/design.md",
     "item": "LINEブロードキャストメッセージを送信する処理",
-    "reason": "LINE Messaging APIへのHTTPリクエストを行うだけの薄いラッパー(scripts/news-digest/broadcast-line.ts)の記述で、tasks.md Task2のTDD対象外宣言に基づきユニットテスト対象を持たないため(メッセージ組み立てロジック自体はbuildBroadcastMessage.test.tsでテスト済み)"
-  },
-  {
-    "specFile": "news-digest/line-broadcast/design.md",
-    "item": "エラーハンドリング",
-    "reason": "LINE配信APIエラー時・記事データパース失敗時にリトライせずワークフローを失敗させるという運用上の対応の記述で、broadcast-line.ts(TDD対象外)側の振る舞いでありユニットテスト対象を持たないため"
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-4〜5でテスト済み(__tests__/news-digest/scripts/broadcast-line.test.ts)"
   },
   {
     "specFile": "news-digest/line-broadcast/design.md",
@@ -6366,11 +6351,6 @@
   },
   {
     "specFile": "news-digest/line-broadcast/requirements.md",
-    "item": "配信タイミング・方式 [7]",
-    "reason": "LINE Messaging APIのブロードキャストエンドポイントへのHTTPリクエストという要件で、scripts/news-digest/broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いでありユニットテスト対象を持たないため"
-  },
-  {
-    "specFile": "news-digest/line-broadcast/requirements.md",
     "item": "ビジネスルール・制約",
     "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },
@@ -6391,18 +6371,8 @@
   },
   {
     "specFile": "news-digest/line-broadcast/requirements.md",
-    "item": "無料枠と配信失敗時の扱い [4]",
-    "reason": "配信APIエラー時にリトライせず記事公開自体には影響させないという要件で、broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いおよびワークフローファイルが分離されている設計自体(design.md「実行環境の前提」)で実現するためユニットテスト対象を持たないため(実際の疎通確認はTask4のSecrets確認後に行う)"
-  },
-  {
-    "specFile": "news-digest/line-broadcast/requirements.md",
-    "item": "無料枠と配信失敗時の扱い [5]",
-    "reason": "一時的なAPIエラーについてもリトライせず失敗として記録するにとどめるという要件で、broadcast-line.ts(tasks.md Task2、TDD対象外)の振る舞いでありユニットテスト対象を持たないため"
-  },
-  {
-    "specFile": "news-digest/line-broadcast/requirements.md",
     "item": "無料枠と配信失敗時の扱い [6]",
-    "reason": "配信失敗時に原因を記録し運営者が把握できるようにするという要件で、broadcast-line.tsの標準エラー出力によるログ記録(tasks.md Task2、TDD対象外)で実現するためユニットテスト対象を持たないため"
+    "reason": "配信失敗時に原因を記録し運営者が把握できるようにするという要件で、broadcast-line.tsの標準エラー出力によるログ記録・GitHub Actionsの実行結果表示で実現するためユニットテスト対象を持たないため"
   },
   {
     "specFile": "news-digest/line-broadcast/requirements.md",

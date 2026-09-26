@@ -1,23 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
-import { broadcastArticle } from '../../../scripts/trend-digest/broadcast-line'
-import { parseArticle } from '../../../app/trend-digest/lib/articleSchema'
-import { buildArticleUrl } from '../../../app/trend-digest/lib/articleUrl'
+import { broadcastArticle } from '../../../scripts/news-digest/broadcast-line'
+import { parseArticle } from '../../../app/news-digest/lib/articleSchema'
+import { buildArticleUrl } from '../../../app/news-digest/lib/articleUrl'
 
-const FIXTURE_PATH = path.join(
-  process.cwd(),
-  '__tests__/trend-digest/fixtures/articles-valid/2026-09-15-entertainment.json'
-)
+const FIXTURE_PATH = path.join(process.cwd(), '__tests__/news-digest/fixtures/articles-valid/2026-09-02.json')
 
 // 公開確認のGET先URLが配信本文のURLと同一文字列であることを検証するための期待値
 // (design.md「記事ページの公開を待つ処理」手順1)。broadcastArticleと同じ導出関数
 // (buildArticleUrl)から求めることで、実装と食い違わない期待値にする
 const EXPECTED_ARTICLE_URL = buildArticleUrl(
-  parseArticle(
-    JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8')) as unknown,
-    path.basename(FIXTURE_PATH)
-  )
+  parseArticle(JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8')) as unknown, path.basename(FIXTURE_PATH))
 )
 
 let fetchMock: MockInstance<typeof fetch>
@@ -33,7 +27,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-// 仕様: specs/trend-digest/line-broadcast/requirements.md#配信タイミング・方式-7、specs/trend-digest/line-broadcast/requirements.md#無料枠と配信失敗時の扱い-3、specs/trend-digest/line-broadcast/requirements.md#無料枠と配信失敗時の扱い-4
+// 仕様: specs/news-digest/line-broadcast/requirements.md#配信タイミング・方式-7、specs/news-digest/line-broadcast/requirements.md#無料枠と配信失敗時の扱い-4、specs/news-digest/line-broadcast/requirements.md#無料枠と配信失敗時の扱い-5
 describe('LINEブロードキャスト送信 - LINE Messaging APIの一斉配信エンドポイントへ送信し、成否をリトライなしで記録する', () => {
   it('記事ページの公開確認(GET)が200を返した場合、友だち全員への一斉配信エンドポイントへ1件のテキストメッセージが送信され、配信成功として扱われること', async () => {
     fetchMock
@@ -83,7 +77,7 @@ describe('LINEブロードキャスト送信 - LINE Messaging APIの一斉配信
   })
 })
 
-// 仕様: specs/trend-digest/line-broadcast/requirements.md#配信タイミング・方式-8、specs/trend-digest/line-broadcast/requirements.md#配信タイミング・方式-9
+// 仕様: specs/news-digest/line-broadcast/requirements.md#配信タイミング・方式-8、specs/news-digest/line-broadcast/requirements.md#配信タイミング・方式-9
 describe('LINEブロードキャスト送信 - 記事ページの公開が確認できるまで待ってから配信する(デプロイ完了前配信の防止)', () => {
   it('記事ページの公開確認が既定の時間内に取れず時間切れになった場合、LINE APIを呼ばずに配信失敗として扱われること', async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 404 })) // デプロイ未完了を模した404が続く
@@ -108,13 +102,10 @@ describe('LINEブロードキャスト送信 - 記事ページの公開が確認
   })
 })
 
-// 仕様: specs/trend-digest/line-broadcast/design.md#エラーハンドリング
+// 仕様: specs/news-digest/line-broadcast/design.md#エラーハンドリング
 describe('LINEブロードキャスト送信 - 記事データのパースに失敗した場合は配信を行わない(防御的な検証)', () => {
   it('記事データのパースに失敗した場合、配信を行わず例外が投げられること', async () => {
-    const invalidPath = path.join(
-      process.cwd(),
-      '__tests__/trend-digest/fixtures/articles-invalid/2026-09-15-entertainment.json'
-    )
+    const invalidPath = path.join(process.cwd(), '__tests__/news-digest/fixtures/articles-invalid/2026-09-09.json')
     // フィクスチャの存在を前提とする(article-detailで用意済み)
     expect(fs.existsSync(invalidPath)).toBe(true)
 
