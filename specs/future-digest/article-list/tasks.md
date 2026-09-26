@@ -29,8 +29,8 @@
 
 ## 新規アプリの初回UI・公開画面に伴うタスク
 
-- Task 7: styleguideページ(仕様: `.claude/skills/design/SKILL.md`「UIデザインの確定(Step0)」)
-  - `app/future-digest/styleguide/page.tsx`(ヘッダー・フッター・SlotBadges・ArticleCard・PredictionCardの各状態(予測あり/候補なし/生成失敗)・SortToggle・Pagination・BookmarkPanelを並べる)と、そのキャプチャ`styleguide.png`を作る
+- Task 7: styleguideページ(仕様: [article-detail/design.md](../article-detail/design.md)「画面設計」。Step0は実施しない(D4。trend-digestの確定済みデザインを流用))
+  - `app/future-digest/styleguide/page.tsx`(ヘッダー・フッター・SlotBadges・ArticleCard・PredictionCardの各状態(予測あり/候補なし/収集失敗/生成失敗)・SortToggle・Pagination・BookmarkPanelを並べる)と、そのキャプチャ`styleguide.png`を作る
 
 - Task 8: トップページへのツールカード追加・sitemap・hub-siteの仕様(仕様: `specs/hub-site/requirements.md`)
   - 🔴 `__tests__/page.test.tsx`に、トップページに`/future-digest`(週刊未来予測)へのツールカードが表示されることを追加する。`__tests__/sitemap.test.ts`に、`/future-digest/`と各記事ページが含まれ、`/future-digest/styleguide/`・`/future-digest/bookmarks/`が含まれないことを追加する

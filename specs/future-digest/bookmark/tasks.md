@@ -26,7 +26,7 @@
   - 🟢 `app/future-digest/components/BookmarkPanel.tsx`を実装する(news-digestと同じ実装)
 
 - Task 5: 記事詳細ページへの配線(仕様: requirements.md#記事への付箋-5、design.md「記事内の自分の付箋をまとめて取得する処理」)
-  - 🔴 ログイン中だけ予測がある枠に`BookmarkPanel`が出ること、候補なし・生成失敗の枠には出ないこと、取得した付箋が予測IDで引き当てられて渡ること、取得失敗時は全て未付箋になること、各カードに予測IDの`id`属性が付くことを確認するテストを書く
+  - 🔴 ログイン中だけ予測がある枠に`BookmarkPanel`が出ること、候補なし・収集失敗・生成失敗の枠には出ないこと、取得した付箋が予測IDで引き当てられて渡ること、取得失敗時は全て未付箋になること、各カードに予測IDの`id`属性が付くことを確認するテストを書く
   - 🟢 `ArticleDetailView.tsx`・`PredictionCard.tsx`に配線する([article-detail/tasks.md](../article-detail/tasks.md)のTask 7・11と同じファイルを変更するため、その後に行う)
 
 - Task 6: 付箋一覧の1項目(仕様: requirements.md#付箋の一覧-10〜12)
