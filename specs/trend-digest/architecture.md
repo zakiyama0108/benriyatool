@@ -122,15 +122,15 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 7. 機能マップ
 | spec | 役割 | 依存 | 状態 |
 |---|---|---|---|
-| [content-selection](content-selection/requirements.md) | 19ジャンルを2グループ(エンタメ編9・カルチャー編10)に分け、ジャンルごとの情報源・採用基準に沿って各回の項目を収集し、各ジャンルから1件ずつを選んで掲載する | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md))。掲載する話題の並べ替えはtrend-historyの継続度ラベル・注目度ラベル・掲載実績に従う([trend-history/requirements.md](trend-history/requirements.md)) | リリース済み(継続度・注目度対応の改訂は未実装) |
-| [trend-history](trend-history/requirements.md) | content-selectionが取得した全項目を採用基準の判定前に横断的に蓄積し、継続度ラベル(4段階)・注目度ラベル(3段階)・通算の報告回数を機械的に判定する | content-selectionの収集結果と、article-detailの記事データの掲載実績を参照する([content-selection/requirements.md](content-selection/requirements.md)、[article-detail/requirements.md](article-detail/requirements.md)) | 仕様のみ(未実装) |
+| [content-selection](content-selection/requirements.md) | 19ジャンルを2グループ(エンタメ編9・カルチャー編10)に分け、ジャンルごとの情報源・採用基準に沿って各回の項目を収集し、各ジャンルから1件ずつを選んで掲載する | weekly-publishの実行タイミングに従う([weekly-publish/requirements.md](weekly-publish/requirements.md))。掲載する話題の並べ替えはtrend-historyの継続度ラベル・注目度ラベル・掲載実績に従う([trend-history/requirements.md](trend-history/requirements.md)) | 実装中(継続度・注目度対応の改訂) |
+| [trend-history](trend-history/requirements.md) | content-selectionが取得した全項目を採用基準の判定前に横断的に蓄積し、継続度ラベル(4段階)・注目度ラベル(3段階)・通算の報告回数を機械的に判定する | content-selectionの収集結果と、article-detailの記事データの掲載実績を参照する([content-selection/requirements.md](content-selection/requirements.md)、[article-detail/requirements.md](article-detail/requirements.md)) | 実装中 |
 | [content-generation](content-generation/requirements.md) | 選定されたトピックの翻訳・要約・記事執筆のルール(著作権配慮・続報の書き方を含む)を定める | content-selectionの選定結果とtrend-historyの掲載実績を受け取る([content-selection/requirements.md](content-selection/requirements.md)) | リリース済み(継続度・注目度対応の改訂は未実装) |
 | [weekly-publish](weekly-publish/requirements.md) | 週2回(火・金)の収集・選定・要約・記事公開と観測ログの追記を自動実行し、完全自動マージする | content-selection・content-generationの結果を公開し、trend-historyの観測ログを同じPRに含める | リリース済み(観測ログ対応の改訂は未実装) |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの記事PRがmainへ自動マージされた後、記事ページが本番で閲覧可能になったことを確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング([weekly-publish/requirements.md](weekly-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))に従う | リリース済み |
 | [article-list](article-list/requirements.md) | エンタメ編・カルチャー編の記事を時系列1本のフィードでバッジ表示する | article-detailの記事構造を参照([article-detail/requirements.md](article-detail/requirements.md)) | リリース済み |
 | [article-detail](article-detail/requirements.md) | 記事本文(ジャンル見出しごとのトピック・要約・出典・継続度ラベル/注目度ラベルの表示)と、運営者本人向けフィードバック入力欄を表示する。記事データの共有スキーマもこのspecが定義する | content-selectionの選定結果、content-generationの生成ルール、trend-historyの判定結果に従う | リリース済み(継続度・注目度表示の改訂は未実装) |
 | [source-review](source-review/requirements.md) | 月次で情報源・採用基準の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック、content-selectionの掲載実績・収集ログを参照する | リリース済み |
-| [source-directory](source-directory/requirements.md) | ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する | content-selectionのジャンル定義・情報源・採用基準を参照([content-selection/requirements.md](content-selection/requirements.md))。ログイン判定はarticle-detailと同じ仕組み | 仕様のみ(未実装) |
+| [source-directory](source-directory/requirements.md) | ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する | content-selectionのジャンル定義・情報源・採用基準を参照([content-selection/requirements.md](content-selection/requirements.md))。ログイン判定はarticle-detailと同じ仕組み | 実装中 |
 
 ## 8. コンポーネント図
 ```mermaid
