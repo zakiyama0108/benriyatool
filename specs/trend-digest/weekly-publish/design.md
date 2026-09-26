@@ -23,12 +23,12 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
 - 対象: 実行日(JST)とedition(火曜実行=`entertainment`、金曜実行=`culture-lifestyle`)
 - 手順:
   1. 作業用ブランチ`trend-digest/articles/<id>`(`<id>`は`<date>-<edition>`)を作成する
-  2. [content-selection](../content-selection/design.md)の`scripts/trend-digest/collect-and-select.ts`を実行し、対象editionの9ジャンルの候補収集・採用基準判定・絞り込み(最大10件)を行う
-  3. 選定結果が「候補不足によりスキップ」だった場合は、記事を作成せず後述「記事生成をスキップする処理」に進む
+  2. [content-selection](../content-selection/design.md)の`scripts/trend-digest/collect-and-select.ts`を実行し、対象editionのジャンル(エンタメ編9・カルチャー編10)の候補収集・採用基準判定を行う。同スクリプトはその回の全観測項目を`content/trend-digest/history/<id>.json`へ観測ログとして書き出したうえで、継続度ラベル・注目度ラベル・掲載実績の判定結果を使って各ジャンル1件を選び、選定結果を返す([trend-history/design.md](../trend-history/design.md)参照)
+  3. 選定結果が「取得できずスキップ」だった場合(対象editionのすべてのジャンルで項目を1件も取得できなかった場合)は、記事を作成せず後述「記事生成をスキップする処理」に進む(観測ログは手順2で既に書き出されているため、そのファイルだけをコミット対象にする)
   4. 選定された各候補について、`scripts/trend-digest/generate-content.ts`から[content-generation](../content-generation/design.md)のルールを踏まえたプロンプトでClaude Code CLI(`claude -p`)を1件ずつヘッドレス起動し、見出し・本文(日本語)を生成する。1候補の生成が一時的な失敗に終わった場合は、同じ候補を最大2回まで(初回+リトライ1回)起動し直す(ai-dev-digestと同じリトライ回数の考え方)。リトライしても失敗する候補は、その候補だけを除外して次の候補に進む(後述「エラーハンドリング」)
-  5. 生成に成功した候補が1件以上あれば、`assembleArticle(edition, date, topics)`でその候補のみから記事データ(`id`・`edition`・`date`・`topics`。article-detail/design.mdのスキーマに従う。`topics`はGENRE_ORDER順に並べ替える)を組み立て、`writeArticleFile`で`content/trend-digest/articles/<id>.json`として書き出す。選定された全候補の生成が失敗した場合、または利用枠の枯渇でその回の生成を続行できない場合は、`generate-content.ts`が明示的なエラーメッセージとともに非ゼロ終了し、後続のステップ(記事書き出し・commit・push・PR作成)を実行しない。この場合、ブランチ・PRは作られず、GitHub Actionsの実行が失敗(赤)として残る(requirements.md#掲載件数の保証-2。候補不足による正常なスキップ(緑)と区別する。後述「エラーハンドリング」)
-  6. 変更をコミットし、ブランチをリモートにpushする
-- 関連するビジネスルール: requirements.md#実行-1〜4、requirements.md#掲載件数の保証-1〜2
+  5. 生成に成功した候補が1件以上あれば、`assembleArticle(edition, date, topics, unavailableGenres)`でその候補のみから記事データ(`id`・`edition`・`date`・`topics`・`unavailableGenres`。article-detail/design.mdのスキーマに従う。`topics`はGENRE_ORDER順に並べ替える。生成に失敗して除外したジャンルと、情報源から項目を取得できなかったジャンルは、いずれも`unavailableGenres`に入れて全ジャンルが記事に現れる状態を保つ)を組み立て、`writeArticleFile`で`content/trend-digest/articles/<id>.json`として書き出す。選定された全候補の生成が失敗した場合、または利用枠の枯渇でその回の生成を続行できない場合は、記事は作らないが**手順2で書き出した観測ログだけは先にコミット・push・PR作成して自動マージし、そのうえで**明示的なエラーメッセージとともに非ゼロ終了する。GitHub Actionsの実行は失敗(赤)として残る(requirements.md#掲載件数の保証-2。情報源から項目を取得できなかったことによる正常なスキップ(緑)と区別する)。観測ログを残さずに終了すると、requirements.md#実行-5が求める「記事を公開しない回でも観測ログだけは必ず追加する」を満たせず、以後の継続日数・ラベル判定が実態とずれるため(後述「エラーハンドリング」)
+  6. 記事ファイルと手順2で書き出した観測ログをまとめてコミットし、ブランチをリモートにpushする(requirements.md#実行-5)
+- 関連するビジネスルール: requirements.md#実行-1〜5、requirements.md#掲載件数の保証-1〜2
 
 ### PRを作成しCIの結果を待つ処理
 - 対象: 上記で作成したブランチ
@@ -36,7 +36,7 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
   1. `main`向けにPRを作成する(タイトル例: `[trend-digest] <id>を公開`。本文に選定件数の概要を記載する)
   2. 既存の`ci.yml`(lint・test・check:spec-coverage・build)がこのPRに対しても通常どおり実行される(このPRだけの特別なCI設定は追加しない。article-detail/design.mdのビルド時バリデーションが記事データの妥当性をここで検証する)
   3. GitHub標準のauto-merge機能(`gh pr merge --auto --squash`)を有効にし、CIの成功を待って自動マージされるようにする
-- 関連するビジネスルール: requirements.md#公開フロー-5
+- 関連するビジネスルール: requirements.md#公開フロー-6
 
 ### PRを自動マージする処理(完全自動マージの例外運用)
 - 対象: `trend-digest/articles/**`ブランチからのPRのみ
@@ -52,14 +52,15 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
   1. マージは行わず、PRをオープンのまま残す(GitHub上でCI失敗のPRとして可視化される)
   2. 失敗の概要(どのチェックが失敗したか)をPRへのコメントとして自動追記する(ai-dev-digestと同じ方法。追加の通知チャネルは設けない)
   3. 次回分の実行はこのPRの状態に関わらず独立して行う
-- 関連するビジネスルール: requirements.md#実行-6
+- 関連するビジネスルール: requirements.md#公開フロー-7
 
 ### 記事生成をスキップする処理
-- 対象: content-selectionが「候補不足」と判定した回(対象9ジャンルすべてで候補が0件。正常なスキップ。GitHub Actionsの実行は成功(緑)のまま終わる)
+- 対象: content-selectionが「取得できずスキップ」と判定した回(対象editionのすべてのジャンルで情報源から項目を1件も取得できなかった。正常なスキップ。GitHub Actionsの実行は成功(緑)のまま終わる)
 - 手順:
-  1. ブランチ・PRを作成しない(空のPRを作らない)
-  2. スキップした旨を実行ログに記録する(content-selection/design.md#ログ)
-  3. 次回以降は通常どおり実行を続ける
+  1. 記事ファイルは作成しない
+  2. 手順2で書き出した観測ログだけをコミットし、ブランチをpushしてPRを作成する(タイトル例: `[trend-digest] <id>の観測履歴を記録(記事なし)`)。記事が出ない回でも観測ログを欠かさないため、この回もPRを作って自動マージする(requirements.md#実行-5、requirements.md#自動マージの範囲-3)
+  3. スキップした旨を実行ログに記録する(content-selection/design.md#ログ)
+  4. 次回以降は通常どおり実行を続ける
 - 選定はできたが全候補の生成が失敗した場合・利用枠が枯渇した場合は、この正常なスキップとは区別し、実行を失敗(赤)として終える(後述「エラーハンドリング」。requirements.md#掲載件数の保証-2)
 - 関連するビジネスルール: requirements.md#掲載件数の保証-1
 
@@ -67,8 +68,9 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
 
 - CIの失敗(lint/test/check:spec-coverage/buildのいずれか)は上記「CI失敗時に記録する処理」に従い、マージせずPRを残す
 - **個々の候補の生成失敗(一時的な失敗)**: 1候補の生成が応答からのJSON抽出失敗・分量不正などに終わった場合は、その候補を最大2回まで(初回+リトライ1回)起動し直す。リトライしても失敗する候補は、その候補**だけ**を除外し、生成に成功した残りの候補でその回の記事を公開する(requirements.md#掲載件数の保証-2)。除外した候補があった旨(ジャンル・作品名・失敗理由)は実行ログに記録する
-- **全候補の生成失敗・利用枠の枯渇(恒久的な失敗)**: 選定された全候補がリトライしても生成に失敗した場合、または応答が利用上限到達を示す場合は、`generate-content.ts`が非ゼロ終了する。利用枠の枯渇は同じ実行内でリトライしても回復しないため上記のリトライ対象とせず、検知した時点でその候補以降の生成を打ち切って終了する。非ゼロ終了により後続ステップ(記事書き出し・commit・push・PR作成)は実行されず、ブランチ・PRは作られないまま、GitHub Actionsの実行が失敗(赤)として残る。終了時のエラーメッセージには失敗理由(全候補の生成失敗か、利用枠の枯渇か)を明示する
-- 記事生成処理が上記以外の例外で中断した場合(外部サービスの全面障害等)も同様に非ゼロ終了し、ブランチ・PRは作成しない、または作成済みでコミット前に失敗した場合は何もリモートに残さない
+- **全候補の生成失敗・利用枠の枯渇(恒久的な失敗)**: 選定された全候補がリトライしても生成に失敗した場合、または応答が利用上限到達を示す場合は、`generate-content.ts`が非ゼロ終了する。利用枠の枯渇は同じ実行内でリトライしても回復しないため上記のリトライ対象とせず、検知した時点でその候補以降の生成を打ち切って終了する。記事ファイルは書き出さないが、**手順2で書き出した観測ログだけは非ゼロ終了する前にコミット・push・PR作成し、自動マージする**(タイトル例: `[trend-digest] <id>の観測履歴を記録(記事生成失敗)`)。生成失敗はリトライしても起こりうる想定内の失敗であり、ここで観測ログを捨てると欠測week扱いとなって以後の継続日数・報告回数が実態とずれるため(requirements.md#実行-5、[trend-history/design.md](../trend-history/design.md)のエラーハンドリング)。GitHub Actionsの実行は失敗(赤)として残る。終了時のエラーメッセージには失敗理由(全候補の生成失敗か、利用枠の枯渇か)を明示する
+- **観測ログのコミット・push・PR作成自体が失敗した場合**: その回は観測ログを残せないため、[trend-history/design.md](../trend-history/design.md)のエラーハンドリングが定める「欠測した週」として扱われる(次回以降の判定では存在しなかった実行とみなす)。非ゼロ終了し、GitHub Actionsの実行が失敗(赤)として残る
+- 記事生成処理が上記以外の例外で中断した場合(外部サービスの全面障害等)も、観測ログが手順2で書き出せていればそれだけをコミット・push・PR作成してから非ゼロ終了する。観測ログの書き出し前に中断した場合は何もリモートに残さず、その週は欠測として扱われる
 - 1回の実行が失敗・スキップしても、他の回([article-list](../article-list/requirements.md)・[article-detail](../article-detail/requirements.md))の表示には影響しない(該当ファイルが存在しないだけで、一覧・詳細ページは正常に動作する)
 
 ## 関連するファイル(抜粋)
@@ -77,9 +79,10 @@ GitHub Actionsのスケジュール実行が火曜(エンタメ編)・金曜(カ
 .github/workflows/trend-digest-weekly.yml (新規: 火曜(エンタメ編)・金曜(カルチャー編)それぞれ起動するワークフロー本体)
 scripts/trend-digest/collect-and-select.ts (content-selectionで新規: 候補収集・選定のCLI)
 scripts/trend-digest/generate-content.ts (content-generationで新規: 見出し・本文生成のCLI)
-app/trend-digest/lib/assembleArticle.ts (新規: 選定結果+生成済み見出し・本文からArticleを組み立てる純粋関数)
+app/trend-digest/lib/assembleArticle.ts (新規: 選定結果+生成済み見出し・本文からArticleを組み立てる純粋関数。話題を取得できなかったジャンル・生成に失敗したジャンルをunavailableGenresへ入れる)
 scripts/trend-digest/write-article.ts (新規: assembleArticleの結果をcontent/trend-digest/articles/<id>.jsonへ書き出すCLI)
 content/trend-digest/articles/<id>.json (新規: 生成される記事データ。1回1ファイル)
+content/trend-digest/history/<id>.json (trend-historyで新規作成: その回の観測ログ。記事を作らない回も追加する)
 .github/workflows/ci.yml (既存: 変更不要。全PR共通のlint/test/buildがこのPRにもそのまま適用される)
 ```
 
