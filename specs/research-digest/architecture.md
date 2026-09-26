@@ -4,7 +4,7 @@
 研究発見・論文の要約を毎週月曜に配信するアプリ。有効なジャンルの数(現在は10ジャンル)から、日々の生活への影響が大きい研究を1本ずつ選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなり、いずれも仕様のみ(未実装)。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
 
 ## 1. 概要
-10ジャンルから、世の中に影響を与える研究の発見・論文を、日々の生活への影響度(大・中・小)の大きい順に1ジャンル1本ずつ選び、要約して毎週月曜に公開するアプリ。 URL: `/research-digest`
+有効なジャンル(現在は10ジャンル)から、世の中に影響を与える研究の発見・論文を、日々の生活への影響度(大・中・小)の大きい順に1ジャンル1本ずつ選び、要約して毎週月曜に公開するアプリ。 URL: `/research-digest`
 
 ## 2. アーキテクチャの目的
 - 既存のdigestアプリが配信していない月曜を埋め、trend-digestと同じ運用パターン(GitHub Actionsによる週次の自動生成・完全自動マージ、LINE配信、月次の人の承認込み見直し)をそのまま使い、新しい運用パターンを増やさない
@@ -30,11 +30,12 @@ flowchart LR
     futureDigest["future-digest<br>（別アプリ・同じLINEアカウントに相乗り）"]
 
     readers -->|閲覧・付箋・フィードバック| app
-    operator -->|フィードバック・月次承認| app
+    operator -->|フィードバック| app
+    operator -->|月次承認（PRマージ）| github
     app -->|ログイン・保存（RLS）| supabase
     github -->|収集・選定・要約・公開| app
     sources -->|WebSearchで情報取得| github
-    app -->|新着記事を配信| line
+    github -->|新着記事を配信| line
     futureDigest -.->|LINE無料枠を分け合う| line
 ```
 この図の正となる文章は「[6. アーキテクチャ概要](#6-アーキテクチャ概要)」と各specの要件定義。

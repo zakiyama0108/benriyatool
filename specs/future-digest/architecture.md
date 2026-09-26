@@ -30,11 +30,12 @@ flowchart LR
     researchDigest["research-digest<br>（別アプリ・同じLINEアカウントに相乗り）"]
 
     readers -->|閲覧・付箋・フィードバック| app
-    operator -->|フィードバック・月次承認| app
+    operator -->|フィードバック| app
+    operator -->|月次承認（PRマージ）| github
     app -->|ログイン・保存（RLS）| supabase
     github -->|収集・選定・要約・公開| app
     sources -->|WebSearchで情報取得| github
-    app -->|新着記事を配信| line
+    github -->|新着記事を配信| line
     researchDigest -.->|LINE無料枠を分け合う| line
 ```
 この図の正となる文章は「[6. アーキテクチャ概要](#6-アーキテクチャ概要)」と各specの要件定義。

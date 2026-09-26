@@ -26,7 +26,7 @@
 
 ```mermaid
 sequenceDiagram
-    participant script as generate-content.ts
+    participant script as 生成スクリプト
     participant claude as Claude Code CLI(ヘッドレス)
     participant source as 論文・公式発表のURL
 
