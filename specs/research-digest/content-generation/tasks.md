@@ -18,7 +18,7 @@
   - 🔴 Claude CLIの応答を「成功」「一時的な失敗(JSONを取り出せない・`heading`が`null`・検証エラー・生成拒否)」「利用上限への到達」の3種に分類する`classifyGenerationResult`のテストを書く
   - 🟢 `scripts/research-digest/generate-content.ts`(または同ディレクトリの純粋関数モジュール)に実装する
 
-- Task 5: 生成のやり直しと除外(仕様: weekly-publish/requirements.md#掲載件数の保証-2)
+- Task 5: 生成のやり直しと除外(仕様: weekly-publish/requirements.md#掲載件数の保証-4)
   - 🔴 `generateFindings(candidates, callFn)`について、一時的な失敗→やり直しで成功/2回失敗で「生成に失敗したジャンル」として返る/1件でも成功すれば結果が返る/全件失敗で例外/利用上限でやり直さず以降を呼ばずに例外/2つの例外が区別できることを確認するテストを書く
   - 🟢 `generateFindings`を実装する
 

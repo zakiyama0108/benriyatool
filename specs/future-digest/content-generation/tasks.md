@@ -18,7 +18,7 @@
   - 🔴 Claude CLIの応答を「成功」「一時的な失敗(JSONを取り出せない・`heading`が`null`・検証エラー・生成拒否)」「利用上限への到達」の3種に分類する`classifyGenerationResult`のテストを書く
   - 🟢 `scripts/future-digest/generate-content.ts`(または同ディレクトリの純粋関数モジュール)に実装する(trend-digestの`classifyGenerationResult`と同じ判定)
 
-- Task 5: 生成のやり直しと除外(仕様: weekly-publish/requirements.md#掲載件数の保証-2、weekly-publish/design.md「1回分の記事を生成する処理」)
+- Task 5: 生成のやり直しと除外(仕様: weekly-publish/requirements.md#掲載件数の保証-4、weekly-publish/design.md「1回分の記事を生成する処理」)
   - 🔴 Claude CLIの呼び出しを差し替え可能にし、`generatePredictions(candidates, callFn)`について次を確認するテストを書く: 一時的な失敗→やり直しで成功した予測は結果に入る/2回失敗した予測は「生成に失敗した枠」として返る/1件でも成功すれば結果が返る/全件失敗で例外を投げる/利用上限への到達でやり直さず以降を呼ばずに例外を投げる/全件失敗と利用上限の例外が区別できる
   - 🟢 `generatePredictions`を実装する
 
