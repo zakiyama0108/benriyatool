@@ -73,7 +73,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 8. 機能マップ
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
-| [content-selection](content-selection/requirements.md) | ジャンルごとに影響の大きい研究を選ぶ | 有効なジャンルの数だけ、生活への影響度が最も大きく未配信の研究・論文を1本選ぶ | weekly-publishの実行タイミングに従う | 仕様のみ(未実装) |
+| [content-selection](content-selection/requirements.md) | ジャンルごとに影響の大きい研究を選ぶ | 有効なジャンルの数だけ、生活への影響度が最も大きく未配信の研究・論文を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの公開判定(`decidePublishOutcome`)を呼ぶ | 仕様のみ(未実装) |
 | [content-generation](content-generation/requirements.md) | 研究発見の要約を読む | 選ばれた記事の要約・影響度の根拠の執筆ルール(著作権への配慮を含む)を定める | content-selectionの選定結果を受け取る | 仕様のみ(未実装) |
 | [weekly-publish](weekly-publish/requirements.md) | 毎週月曜に新しい記事が並ぶ | 毎週月曜の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | 仕様のみ(未実装) |
 | [line-broadcast](line-broadcast/requirements.md) | LINEで新着記事の通知を受け取る | 記事ページの公開を確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング、article-detailの記事データに従う | 仕様のみ(未実装) |

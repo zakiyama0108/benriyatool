@@ -73,7 +73,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 8. 機能マップ
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
-| [content-selection](content-selection/requirements.md) | ジャンル・時間軸ごとに影響の大きい未来予測を選ぶ | 有効なジャンル数×その回の2時間軸の枠ごとに、影響度が最も大きく未配信の未来予測記事を1本選ぶ | weekly-publishの実行タイミングに従う | 仕様のみ(未実装) |
+| [content-selection](content-selection/requirements.md) | ジャンル・時間軸ごとに影響の大きい未来予測を選ぶ | 有効なジャンル数×その回の2時間軸の枠ごとに、影響度が最も大きく未配信の未来予測記事を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの公開判定(`decidePublishOutcome`)を呼ぶ | 仕様のみ(未実装) |
 | [content-generation](content-generation/requirements.md) | 予測の要約を読む | 選ばれた記事の要約・影響度の根拠の執筆ルール(著作権への配慮を含む)を定める | content-selectionの選定結果を受け取る | 仕様のみ(未実装) |
 | [weekly-publish](weekly-publish/requirements.md) | 毎週木曜に新しい記事が並ぶ | 毎週木曜の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | 仕様のみ(未実装) |
 | [line-broadcast](line-broadcast/requirements.md) | LINEで新着記事の通知を受け取る | 記事ページの公開を確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング、article-detailの記事データに従う | 仕様のみ(未実装) |
