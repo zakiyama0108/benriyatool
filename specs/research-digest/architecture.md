@@ -59,7 +59,13 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [source-review](source-review/requirements.md) | 月次でジャンル・採用基準・執筆ルールの見直し案を作り、人の承認を経て反映する | article-detailのフィードバック、content-selectionの収集状況を参照 | 仕様のみ(未実装) |
 
 ## 8. ディレクトリ構成
-CLAUDE.mdの一般規約(`components/`,`lib/`)どおり。記事本文・ジャンル設定はコンテンツデータとして`content/research-digest/`配下、収集・配信のスクリプトは`scripts/research-digest/`配下に置く(trend-digestと同じ考え方)。具体的なファイル構成は設計で決める。
+CLAUDE.mdの一般規約(`components/`,`lib/`)どおり。trend-digestと同じ考え方で、次のように置く(各ファイルの役割は各specのdesign.md「関連するファイル」参照)。
+- `content/research-digest/genres.json` — ジャンル設定(運営者が追記して増やす)
+- `content/research-digest/articles/<発行日>.json` — 1回分の記事データ(型は[article-detail/design.md](article-detail/design.md)で定義)
+- `app/research-digest/` — 一覧・詳細・付箋一覧のページと`components/`・`lib/`
+- `scripts/research-digest/` — 収集・選定、生成、記事の書き出し、LINE配信、月次見直しの材料収集のCLI
+- `.github/workflows/research-digest-weekly.yml`・`research-digest-line-broadcast.yml`・`research-digest-monthly.yml` — 週次公開・配信・月次見直し
+- Supabaseのテーブルは`research_digest_feedback`(運営者フィードバック)と`research_digest_bookmarks`(読者の付箋)の2つ
 
 ## 9. 関連ADR
 - [0001-user-input-database.md](../../docs/adr/0001-user-input-database.md) — フィードバック(INSERT専用)・付箋(本人のみRLS)の保存パターン
