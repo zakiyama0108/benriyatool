@@ -20,7 +20,7 @@
 
 - Task 5: ジャンルごとの収集CLI(仕様: design.md「ジャンルごとに候補を集める処理」「エラーハンドリング」)
   - 🔴 Claude CLIの呼び出しを差し替え可能にし、`collectForGenre`について次を確認するテストを書く: 応答JSONから候補が取り出される/JSONを取り出せない場合は1回だけやり直す/2回とも失敗したら候補0件として返り例外にしない/利用上限への到達でやり直さずに打ち切りの例外を投げる
-  - 🟢 `scripts/research-digest/collect-candidates.ts`を実装する。プロンプトにはジャンルの説明、requirements.md#採用基準・#影響度・#配信済みの研究の除外の内容、配信済みの一覧、応答JSONの形を含める。許可ツールはWebSearch・WebFetchに限る
+  - 🟢 `scripts/research-digest/collect-candidates.ts`を実装する。`requirements.md`を実行時に読み込み、その内容(採用基準・影響度・配信済みの研究の除外)をプロンプトに含める(別ファイルへの複製・転記はしない)。あわせてジャンルの説明、配信済みの一覧、応答JSONの形もプロンプトに含める。許可ツールはWebSearch・WebFetchに限る
 
 - Task 6: 収集・選定のまとめCLI(仕様: design.md「収集状況を記録する処理」「ログ」)(TDD対象外。Task 1〜5の関数を順に呼ぶだけのため)
   - `scripts/research-digest/collect-and-select.ts`を実装する。配信済みの一覧→ジャンルごとの収集→検証→採用を行い、選定結果(採用した候補・候補なしのジャンル)を標準出力にJSONで出す。ジャンルごとの候補件数・候補なしのジャンルの一覧を標準エラー出力に出す

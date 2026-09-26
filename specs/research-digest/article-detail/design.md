@@ -7,8 +7,8 @@
 - 記事データは`content/research-digest/articles/<date>.json`の静的JSON。ジャンルは設定ファイル`content/research-digest/genres.json`から読み、追記だけで増やせるようにする
 - 並び順の切り替えはfuture-digestの記事詳細ページと同じ作り(画面内の状態で切り替え、並べ替えは決定的な純粋関数)
 - 査読前かどうかは記事データのフラグで持ち、バッジは画面側で決定的に出す(本文の書きぶりだけに頼らない)
-- UIはStep0を簡易実施する(trend-digestの実装済みレイアウトを流用し、アクセントカラーのみティール系に変える。下記「画面設計」)
-- 図: 「フィードバックを送信する処理」のシーケンス図、「状態管理」の状態遷移図
+- UIはStep0を実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するため)。trend-digestの実装済みレイアウトを流用し、アクセントカラーのみティール系に変える(下記「画面設計」)
+- 図: [フィードバックを送信する処理](#フィードバックを送信する処理)のシーケンス図、[状態管理](#状態管理)の状態遷移図
 
 ## 前提: 記事データの形式(この機能が定義する共有スキーマ)
 
@@ -51,7 +51,8 @@ export type Finding = {
 // 掲載できなかったジャンル。reasonで表示文言を出し分ける
 export type EmptyGenre = {
   genre: Genre
-  reason: 'no-candidate' | 'generation-failed' // 候補が見つからなかった / 候補はあったが要約の生成に失敗した
+  reason: 'no-candidate' | 'collection-failed' | 'generation-failed' // 候補が見つからなかった / 収集の処理自体が失敗した / 候補はあったが要約の生成に失敗した
+  collectionFailureReason?: 'timeout' | 'usage-limit' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル(requirements.md#収集失敗-2)【推測】
 }
 
 export type Article = {
@@ -63,7 +64,7 @@ export type Article = {
 ```
 
 - 記事タイトルはJSONに保存せず、`date`から`buildArticleTitle(date)`([content-generation/design.md](../content-generation/design.md))で導出する
-- `emptyGenres`の`reason`は、候補が見つからなかったジャンル(requirements.md#記事本文の表示-3)と、生成に失敗して除いたジャンル([weekly-publish/requirements.md#掲載件数の保証-2](../weekly-publish/requirements.md))を区別するために持つ。後者は「今回は記事を用意できませんでした」と表示する(future-digestと同じ扱い)
+- `emptyGenres`の`reason`は、候補が見つからなかったジャンル(requirements.md#記事本文の表示-3)・収集の処理自体が失敗したジャンル(requirements.md#収集失敗)・生成に失敗して除いたジャンル([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))の3つを区別するために持つ。表示文言もこの3つで異なる(requirements.md#記事本文の表示-3〜5、future-digestと同じ扱い)
 
 ## 処理フロー
 
@@ -79,35 +80,35 @@ export type Article = {
 - 対象: 1回分の記事
 - 手順:
   1. 掲載した研究と掲載できなかったジャンルを、1つの「ジャンル枠」の一覧にまとめる
-  2. 影響度順の場合は、研究があるジャンルを影響度の大きい順に並べ、同じ影響度の中ではジャンル順に並べる。掲載できなかったジャンルは、その後ろにジャンル順で並べる(requirements.md#記事本文の表示-3、requirements.md#並び順の切り替え-5)
-  3. ジャンル順の場合は、ジャンルの定義順に並べ、掲載できなかったジャンルも本来の位置に置く(requirements.md#並び順の切り替え-6)
-- 関連するビジネスルール: requirements.md#記事本文の表示-3、requirements.md#並び順の切り替え-5〜6
+  2. 影響度順の場合は、研究があるジャンルを影響度の大きい順に並べ、同じ影響度の中ではジャンル順に並べる。掲載できなかったジャンルは、その後ろにジャンル順で並べる(requirements.md#記事本文の表示-3、requirements.md#並び順の切り替え-8)
+  3. ジャンル順の場合は、ジャンルの定義順に並べ、掲載できなかったジャンルも本来の位置に置く(requirements.md#並び順の切り替え-9)
+- 関連するビジネスルール: requirements.md#記事本文の表示-3、requirements.md#並び順の切り替え-8〜9
 
 ### その回の記事本文を表示する処理
 - 対象: 組み立てたジャンル枠の一覧
 - 手順:
   1. 記事タイトル・公開日を見出しとして表示する(requirements.md#記事本文の表示-1)
-  2. ページを開いた時点では影響度順で表示する(requirements.md#並び順の切り替え-7)
+  2. ページを開いた時点では影響度順で表示する(requirements.md#並び順の切り替え-10)
   3. 研究があるジャンルは、ジャンル・影響度のバッジ(査読前の論文は「査読前」のバッジも)、見出し、本文、影響度の根拠、出典(論文名または発表元・掲載誌名/発表元・年・元URLへのリンク。新規タブで開く)を表示する(requirements.md#記事本文の表示-2)
-  4. 候補が見つからなかったジャンルは、ジャンルのバッジと「候補が見つかりませんでした」を表示する。生成に失敗したジャンルは、同じバッジと「今回は記事を用意できませんでした」を表示する(requirements.md#記事本文の表示-3)
-  5. 並び順の切り替え操作が行われたら、同じ記事データから一覧を組み立て直して表示し直す(requirements.md#並び順の切り替え-4)
-- 関連するビジネスルール: requirements.md#記事本文の表示-1〜3、requirements.md#並び順の切り替え-4〜7、requirements.md#表示分量・著作権への配慮-1
+  4. 候補が見つからなかったジャンルは、ジャンルのバッジと「候補が見つかりませんでした」を表示する(requirements.md#記事本文の表示-3)。収集の処理自体が失敗したジャンルは、同じバッジと分類ラベルを含む「情報収集に失敗しました」を表示する(requirements.md#記事本文の表示-4)。生成に失敗したジャンルは、同じバッジと「今回は記事を用意できませんでした」を表示する(requirements.md#記事本文の表示-5)
+  5. 並び順の切り替え操作が行われたら、同じ記事データから一覧を組み立て直して表示し直す(requirements.md#並び順の切り替え-7)
+- 関連するビジネスルール: requirements.md#記事本文の表示-1〜3、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
 - 手順:
   1. ページ表示時に現在のログインセッションを取得する(`app/lib/adminAuth.ts`の`getSession`)
-  2. ログイン中の場合、`isAuthorizedAdmin()`で運営者本人かを確認し、許可対象と判定された場合のみ、研究がある各ジャンルの下にフィードバック入力欄を表示する(requirements.md#運営者向けフィードバック-8、requirements.md#フィードバックの保存・権限-3)
+  2. ログイン中の場合、`isAuthorizedAdmin()`で運営者本人かを確認し、許可対象と判定された場合のみ、研究がある各ジャンルの下にフィードバック入力欄を表示する(requirements.md#運営者向けフィードバック-11、requirements.md#フィードバックの保存・権限-3)
   3. 確認中・確認に失敗した場合は「未許可」として扱い、入力欄を出さない。失敗はブラウザのコンソールにだけ出す
   4. ログイン状態の変化を購読し、変化のたびに1〜3をやり直す
-- 関連するビジネスルール: requirements.md#運営者向けフィードバック-8、requirements.md#フィードバックの保存・権限-3〜4
+- 関連するビジネスルール: requirements.md#運営者向けフィードバック-11、requirements.md#フィードバックの保存・権限-3〜4
 
 ### フィードバックを送信する処理
 - 対象: フィードバック入力欄に入力された自由記述
 - 手順:
-  1. 入力内容の前後の空白を除いた結果が空の場合は、送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-10)
+  1. 入力内容の前後の空白を除いた結果が空の場合は、送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)
   2. 送信時、記事ID・研究ID・入力内容を1件のレコードとして`research_digest_feedback`に保存する(`authenticated`ロールでのINSERT)
-  3. 成功した場合は入力欄を空にし「送信しました」を数秒表示する(requirements.md#運営者向けフィードバック-9)
+  3. 成功した場合は入力欄を空にし「送信しました」を数秒表示する(requirements.md#運営者向けフィードバック-12)
   4. 失敗した場合は入力内容を残したまま「送信に失敗しました。もう一度お試しください」を表示する
 - シーケンス図(俯瞰用。正は上記の手順の文章):
 
@@ -127,7 +128,7 @@ sequenceDiagram
         screen ->> screen: 入力内容を残し「送信に失敗しました」を表示
     end
 ```
-- 関連するビジネスルール: requirements.md#運営者向けフィードバック-9〜10、requirements.md#フィードバックの保存・権限-2
+- 関連するビジネスルール: requirements.md#運営者向けフィードバック-12〜13、requirements.md#フィードバックの保存・権限-2
 
 ## バリデーション
 
@@ -137,7 +138,7 @@ sequenceDiagram
 - 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`reason`が定義済みの値であること
 - 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。その回に有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
 - 研究が1件以上あること(全ジャンルで採用できなかった回は公開しない。weekly-publish/requirements.md#掲載件数の保証-1)
-- フィードバックの入力内容は、前後の空白を除いて空でないことのみ確認する
+- フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない)
 
 ## エラーハンドリング
 
@@ -154,7 +155,7 @@ app/research-digest/lib/articleSchema.ts (新規: parseArticle)
 app/research-digest/lib/articles.ts (新規: getAllArticles/getArticleById)
 app/research-digest/lib/sortGenres.ts (新規: ジャンル枠の一覧の組み立てと影響度順・ジャンル順の並べ替え)
 app/research-digest/lib/saveFeedback.ts (新規)
-app/research-digest/[id]/page.tsx (新規: 記事詳細ページ。generateStaticParamsで全IDを列挙)
+app/research-digest/[id]/page.tsx (新規: 記事詳細ページ。generateStaticParamsで全IDを列挙。記事が1件もない運用開始直後はダミーIDを1件返しnotFound()に倒す。trend-digestと同じNext.js固有の挙動差分対応(app/trend-digest/[id]/page.tsx:8-19、.claude/skills/implementation/references/nextjs-notes.md参照))
 app/research-digest/components/ArticleDetailView.tsx (新規)
 app/research-digest/components/SortToggle.tsx (新規)
 app/research-digest/components/FindingCard.tsx (新規: 1ジャンル分の表示)
@@ -179,6 +180,8 @@ content/research-digest/articles/*.json (新規: 記事本文データ)
 | finding_id | text, not null | 対象研究の`Finding.id` |
 | comment | text, not null | 自由記述のフィードバック |
 
+RLSはtrend-digestの`trend_digest_feedback`のINSERT専用パターンを踏襲するが、INSERTは運営者本人(`admin_emails`)に限定する(画面側の表示切り替えだけに頼らず、DB側でも本人以外からの書き込みを拒否するため。前例: [supabase/migrations/20260807160000_create_board_game_rules_games.sql](../../../supabase/migrations/20260807160000_create_board_game_rules_games.sql))。`comment`には長さのCHECK制約を付ける。
+
 ```sql
 create table research_digest_feedback (
   id uuid primary key default gen_random_uuid(),
@@ -186,15 +189,16 @@ create table research_digest_feedback (
   is_test boolean not null default false,
   article_id text not null,
   finding_id text not null,
-  comment text not null
+  comment text not null check (char_length(comment) between 1 and 1000)
 );
 
 alter table research_digest_feedback enable row level security;
 
--- authenticatedはINSERTのみ許可(入力欄はログイン中の運営者本人にのみ表示される)
+-- authenticatedは運営者本人(admin_emails)のみINSERT可(入力欄もログイン中の運営者本人にのみ表示される)
 grant insert on research_digest_feedback to authenticated;
-create policy "authenticated can insert" on research_digest_feedback
-  for insert to authenticated with check (true);
+create policy "admin can insert feedback" on research_digest_feedback
+  for insert to authenticated
+  with check ((auth.jwt() ->> 'email') in (select email from admin_emails));
 
 -- benriyatool_readonlyはSELECTのみ許可(ADR-0004。source-reviewの月次見直しが読む)
 grant select on research_digest_feedback to benriyatool_readonly;
@@ -204,14 +208,15 @@ create policy "benriyatool_readonly can select" on research_digest_feedback
 
 ## 画面設計
 
-Step0: 簡易実施。trend-digestの記事詳細ページの配色・レイアウトパターンを流用し、アクセントカラーのみティール系(研究・自然科学を表す落ち着いた寒色。future-digestのインディゴ系と見分けられる色)に変える。最終的な見た目の確認は実装後のlocalhostでの画面レビューで行う。
+Step0: 実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するため)。trend-digestの記事詳細ページの配色・レイアウトパターンを流用し、アクセントカラーのみティール系(研究・自然科学を表す落ち着いた寒色。future-digestのインディゴ系と見分けられる色)に変える。最終的な見た目の確認は実装後のlocalhostでの画面レビューで行う。
 
 - パンくず(べんりやつーる › 週刊研究発見 › 記事タイトル)
 - 記事タイトル・公開日
 - 並び順の切り替え(「影響度順」「ジャンル順」。初期は影響度順)
 - ジャンル枠のカード一覧(ジャンル数分。現在は10件):
-  - 研究があるジャンル: ジャンル・影響度のバッジ(大・中・小を文字でも表示)、査読前の論文は「査読前」のバッジ、見出し、本文、「影響度の根拠: 〜」、出典(論文名・掲載誌名または発表元・年、元URLへのリンク。新規タブで開く)
+  - 研究があるジャンル: ジャンル・影響度のバッジ(大・中・小を文字でも表示)、査読前の論文は「査読前」のバッジ、見出し、本文、「影響度の根拠: 〜」、出典(「詳しくは元の論文・発表を読む」の文言を添えた、論文名・掲載誌名または発表元・年、元URLへのリンク。新規タブで開く。requirements.md#著作権への配慮-1、content-generation/requirements.md#著作権への配慮-1)
   - 候補が見つからなかったジャンル: ジャンルのバッジと「候補が見つかりませんでした」(淡い配色)
+  - 収集の処理自体が失敗したジャンル: 同じバッジと分類ラベルを含む「情報収集に失敗しました」
   - 生成に失敗したジャンル: 同じバッジと「今回は記事を用意できませんでした」
 - 研究があるジャンルの下: 付箋の操作領域([bookmark/design.md](../bookmark/design.md))、運営者本人のみフィードバック入力欄
 - ページ下部: ログイン状態表示(未ログインは「ログイン」、ログイン中はメールアドレス・付箋一覧リンク・ログアウト)

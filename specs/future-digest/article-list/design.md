@@ -1,12 +1,12 @@
 # 設計: 記事一覧ページ
 
 ## サマリ
-公開済みの回を発行日の新しい順に日付リストで表示し、1ページ20件でページ分けする。各回には公開日・その回の時間軸2区分・見出し最大3件・詳細ページへのリンクを出す。見出しは、その回の予測を影響度順(同じ影響度はジャンル順→時間軸の近い順)に並べた先頭3件とする(「大」が3件以上あれば「大」だけ、「大」が少なければ「中」「小」で補う)。UIはStep0を簡易実施する(trend-digestの一覧のレイアウトを流用し、アクセントカラーのみインディゴ系)。
+公開済みの回を発行日の新しい順に日付リストで表示し、1ページ20件でページ分けする。各回には公開日・その回の時間軸2区分・見出し最大3件・詳細ページへのリンクを出す。見出しは、その回の予測を影響度順(同じ影響度はジャンル順→時間軸の近い順)に並べた先頭3件とする(「大」が3件以上あれば「大」だけ、「大」が少なければ「中」「小」で補う)。UIはStep0を実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するため)。trend-digestの一覧のレイアウトを流用し、アクセントカラーのみインディゴ系に変更する。
 
 主要な設計判断:
 - 一覧用の見出しは記事データの見出しをそのまま使い、別の要約を作らない(requirements.md#ビジネスルール・制約-1)
 - 見出しの並べ方は記事詳細ページの影響度順([article-detail/design.md](../article-detail/design.md)の`sortSlots`)と同じ規則を使い、詳細ページを開いたときの先頭と一致させる
-- 図: 「画面遷移図」
+- 図: [画面遷移図](#画面遷移図)
 
 ## 処理フロー
 
@@ -36,7 +36,7 @@
 
 ```
 app/future-digest/page.tsx (新規: 一覧1ページ目)
-app/future-digest/page/[page]/page.tsx (新規: 2ページ目以降。generateStaticParamsで総ページ数分を列挙)
+app/future-digest/page/[page]/page.tsx (新規: 2ページ目以降。generateStaticParamsで総ページ数分を列挙。2ページ目が存在しない(記事が20件以下)場合は空配列でのビルド失敗を避けるため、trend-digestと同じくプレースホルダーpathを返しページ側でnotFound()に倒す(app/trend-digest/page/[page]/page.tsx、.claude/skills/implementation/references/nextjs-notes.md参照))
 app/future-digest/layout.tsx (新規: title/description、共通ヘッダー)
 app/future-digest/lib/pagination.ts (新規: paginate(articles, page, pageSize = 20))
 app/future-digest/lib/selectCardHeadings.ts (新規: 各回に載せる見出し最大3件を選ぶ)
@@ -54,7 +54,7 @@ specs/hub-site/requirements.md (既存: メタ情報・ファビコン・sitemap
 
 ## 画面設計
 
-Step0: 簡易実施。trend-digestの一覧ページ(`app/trend-digest/page.tsx`)の配色・レイアウトを流用し、アクセントカラーをインディゴ系にする(article-detailと共通)。最終的な見た目の確認は実装後のlocalhostでの画面レビューで行う。
+Step0: 実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するため)。trend-digestの一覧ページ(`app/trend-digest/page.tsx`)の配色・レイアウトを流用し、アクセントカラーをインディゴ系にする(article-detailと共通)。最終的な見た目の確認は実装後のlocalhostでの画面レビューで行う。
 
 - 見出し「週刊未来予測」と短い紹介文(requirements.md#メタ情報-6のdescriptionと同じ趣旨)
 - 日付リスト(新しい順、1ページ20件)。各行: 公開日・記事タイトル・その回の時間軸2区分のバッジ・見出し最大3件(それぞれ影響度のバッジつき)・詳細ページへのリンク

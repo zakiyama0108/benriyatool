@@ -6,11 +6,11 @@ GitHub Actionsのスケジュール実行が毎週木曜07:43(日本時間)頃�
 主要な設計判断:
 - 実行基盤・認証・自動マージの仕組みはtrend-digestと同じ構成をそのまま使う(新しい運用パターンを増やさない。architecture.md#2)
 - 全枠で候補がなかった回は「正常なスキップ」(実行は成功)、全件の生成失敗・利用上限への到達は「失敗」(実行は失敗表示)として区別する
-- 図: 「1回分の記事を生成する処理」のシーケンス図
+- 図: [1回分の記事を生成する処理](#1回分の記事を生成する処理)のシーケンス図
 
 ## 実行環境の前提
 
-- ワークフロー本体は`.github/workflows/future-digest-weekly.yml`とし、`schedule`の`43 22 * * 3`(水曜22:43 UTC=木曜07:43 JST)で起動する。GitHub Actionsのスケジュール実行は毎時0分に遅れやすいため0分を避ける(trend-digestと同じ)。ai-dev-digestの日次実行(06:43 JST)と1時間ずらす。`workflow_dispatch`でも起動できるようにする(Secrets設定後の動作確認用)
+- ワークフロー本体は`.github/workflows/future-digest-weekly.yml`とし、`schedule`の`43 22 * * 3`(水曜22:43 UTC=木曜07:43 JST)で起動する。GitHub Actionsのスケジュール実行は毎時0分に遅れやすいため0分を避ける(trend-digestと同じ)。ai-dev-digestの日次実行(06:43 JST)と1時間ずらす。`workflow_dispatch`でも起動できるようにする(Secrets設定後の動作確認用。requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの動作確認用の手動起動を除く)
 - GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を`FUTURE_DIGEST_GH_PAT`としてActions Secretsに保存して使う。既定の`GITHUB_TOKEN`で作ったPRでは後続の`ci.yml`が起動しないため使わない(trend-digestと同じ理由)
 - 収集・生成はClaude Code CLIのヘッドレス実行で行い、既存の`CLAUDE_CODE_OAUTH_TOKEN`(運営者個人のPro/Maxサブスクリプション。ai-dev-digest・news-digest・trend-digestと共用)をそのまま使う。利用枠は他のdigestと共有する
 - 実行指示の根拠は本specと参照先specのrequirements.md/design.mdとし、専用のプロンプトファイルを複製しない

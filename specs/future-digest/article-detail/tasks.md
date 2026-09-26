@@ -23,8 +23,8 @@
 
 ## 表示ロジック
 
-- Task 5: 枠の一覧の組み立てと並べ替え(仕様: requirements.md#記事本文の表示-3、requirements.md#並び順の切り替え-5〜6、design.md「表示する枠の一覧を組み立てる処理」)
-  - 🔴 `sortSlots(article, order)`について次を確認するテストを書く: 影響度順で大→中→小に並ぶ/同じ影響度の中ではジャンル順→時間軸の近い順に並ぶ/掲載できなかった枠は影響度順では末尾(その中はジャンル順)に並ぶ/ジャンル順ではジャンルの定義順→時間軸の近い順に並び、掲載できなかった枠も本来の位置に並ぶ/どちらの並び順でも20枠すべてが含まれる
+- Task 5: 枠の一覧の組み立てと並べ替え(仕様: requirements.md#記事本文の表示-3〜6、requirements.md#並び順の切り替え-8〜9、design.md「表示する枠の一覧を組み立てる処理」)
+  - 🔴 `sortSlots(article, order)`について次を確認するテストを書く: 影響度順で大→中→小に並ぶ/同じ影響度の中ではジャンル順→時間軸の近い順に並ぶ/候補が見つからなかった枠・収集に失敗した枠・生成に失敗した記事は影響度順では末尾(その中はジャンル順)に並ぶ/ジャンル順ではジャンルの定義順→時間軸の近い順に並び、それらの枠も本来の位置に並ぶ/どちらの並び順でも全枠(有効なジャンル数×2時間軸。現在は20枠)が含まれる
   - 🟢 `app/future-digest/lib/sortSlots.ts`に実装する
 
 - Task 6: バッジ表示(仕様: requirements.md#記事本文の表示-2)
@@ -35,7 +35,7 @@
   - 🔴 予測がある枠で見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ、`rel="noopener noreferrer"`)が表示されること、`no-candidate`の枠で「候補が見つかりませんでした」、`generation-failed`の枠で「今回は記事を用意できませんでした」が表示され本文・フィードバック欄が出ないことを確認するテストを書く
   - 🟢 `app/future-digest/components/PredictionCard.tsx`を実装する
 
-- Task 8: 並び順の切り替え(仕様: requirements.md#並び順の切り替え-4・7)
+- Task 8: 並び順の切り替え(仕様: requirements.md#並び順の切り替え-7・10)
   - 🔴 `SortToggle`で選択中の並び順が分かる表示(`aria-pressed`)になること、押すと`onChange`が呼ばれることを確認するテストを書く。`ArticleDetailView`で初期表示が影響度順であり、「ジャンル順」を押すとカードの並びがジャンル順に変わることを確認するテストを書く
   - 🟢 `app/future-digest/components/SortToggle.tsx`と、`ArticleDetailView.tsx`の並び順の状態を実装する
 
@@ -45,11 +45,11 @@
   - 🔴 Supabaseクライアントをモックし、`saveFeedback`が`future_digest_feedback`に`article_id`・`prediction_id`・`comment`・`is_test`をINSERTし、成功/失敗を返すことを確認するテストを書く
   - 🟢 `app/future-digest/lib/saveFeedback.ts`を実装する(trend-digestの`saveFeedback.ts`と同じ構成)
 
-- Task 10: フィードバック入力欄(仕様: requirements.md#運営者向けフィードバック-9〜10)
+- Task 10: フィードバック入力欄(仕様: requirements.md#運営者向けフィードバック-12〜13)
   - 🔴 空・空白のみでは送信ボタンが無効になること、送信中はボタンが無効になること、成功で入力欄が空になり「送信しました」が出ること、失敗で入力内容が残り失敗文言が出ることを確認するテストを書く
   - 🟢 `app/future-digest/components/FeedbackForm.tsx`を実装する
 
-- Task 11: 運営者判定による出し分け(仕様: requirements.md#運営者向けフィードバック-8、requirements.md#フィードバックの保存・権限-3)
+- Task 11: 運営者判定による出し分け(仕様: requirements.md#運営者向けフィードバック-11、requirements.md#フィードバックの保存・権限-3)
   - 🔴 `isAuthorizedAdmin`をモックし、許可された場合だけ予測がある枠にフィードバック入力欄が出ること、未ログイン・許可外・確認失敗では出ないことを確認するテストを書く
   - 🟢 `ArticleDetailView.tsx`にセッション取得・`isAuthorizedAdmin`・`onAuthChange`の購読を実装し、`LoginStatus.tsx`をページ下部に置く
 
