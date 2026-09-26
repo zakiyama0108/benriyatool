@@ -5,6 +5,28 @@ import EditionBadge from '../components/EditionBadge'
 import ArticleCard from '../components/ArticleCard'
 import Pagination from '../components/Pagination'
 import LoginStatus from '../components/LoginStatus'
+import DurationBadge from '../components/DurationBadge'
+import HeatBadge from '../components/HeatBadge'
+import TrendMeta from '../components/TrendMeta'
+import GenreSection from '../components/GenreSection'
+import type { DurationLabel, HeatLabel } from '../lib/historyTypes'
+import type { TopicTrend } from '../lib/types'
+
+const DURATION_LABEL_VALUES: DurationLabel[] = ['pre-trend', 'emerging', 'talked', 'highly-talked']
+const HEAT_LABEL_VALUES: HeatLabel[] = ['high', 'normal', 'low']
+
+function makeTrend(overrides: Partial<TopicTrend>): TopicTrend {
+  return {
+    durationLabel: 'talked',
+    heatLabel: 'high',
+    continuationDays: 30,
+    continuationStartDate: '2026-08-16',
+    reportCount: 1,
+    originRegion: null,
+    currentRegions: [],
+    ...overrides,
+  }
+}
 
 // 週刊トレンド(trend-digest)の共通部品カタログ(styleguide)。開発者向け確認用ページで、
 // 利用者向けの公開機能ではない(sitemap除外: specs/hub-site/requirements.md#機能要件-5)。
@@ -92,6 +114,35 @@ export default function TrendDigestStyleguidePage() {
 
         <Section title="ページネーション(Pagination)">
           <Pagination currentPage={2} totalPages={3} />
+        </Section>
+
+        <Section title="継続度ラベルのバッジ(DurationBadge・全4段階)">
+          <div className="flex flex-wrap items-center gap-3">
+            {DURATION_LABEL_VALUES.map((label) => (
+              <DurationBadge key={label} label={label} />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="注目度ラベルのバッジ(HeatBadge・全3段階)">
+          <div className="flex flex-wrap items-center gap-3">
+            {HEAT_LABEL_VALUES.map((label) => (
+              <HeatBadge key={label} label={label} />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="トレンド情報の行(TrendMeta)">
+          <div className="space-y-2 rounded-2xl bg-white p-4 shadow-sm">
+            <p className="text-xs font-bold text-gray-400">地域あり・続報(2回目以降)</p>
+            <TrendMeta trend={makeTrend({ reportCount: 3, originRegion: '日本', currentRegions: ['日本', '北米'] })} />
+            <p className="mt-3 text-xs font-bold text-gray-400">地域なし・初掲載</p>
+            <TrendMeta trend={makeTrend({ reportCount: 1, originRegion: null, currentRegions: [] })} />
+          </div>
+        </Section>
+
+        <Section title="話題を取得できなかったジャンルの表示(GenreSection)">
+          <GenreSection genre="music" topic={null} isAdmin={false} articleId="styleguide-sample" />
         </Section>
 
         <Section title="フッター(LoginStatus・未ログイン)">
