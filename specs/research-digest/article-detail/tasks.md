@@ -31,7 +31,7 @@
   - 🟢 `app/research-digest/components/FindingBadges.tsx`を実装する
 
 - Task 7: 1ジャンル分のカード(仕様: requirements.md#記事本文の表示-2〜5)
-  - 🔴 研究があるジャンルで見出し・本文・影響度の根拠・出典(論文名・掲載誌名/発表元・年、新規タブのリンク、`rel="noopener noreferrer"`)が表示されること、`publishedYear`が`null`なら年を出さないこと、`no-candidate`で「候補が見つかりませんでした」、`collection-failed`で分類ラベルを含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`で「今回は記事を用意できませんでした」が表示されることを確認するテストを書く
+  - 🔴 研究があるジャンルで見出し・本文・影響度の根拠・出典(論文名・掲載誌名/発表元・年、新規タブのリンク、`rel="noopener noreferrer"`)が表示されること、`publishedYear`が`null`なら年を出さないこと、`no-candidate`で「候補が見つかりませんでした」、`collection-failed`で`COLLECTION_FAILURE_LABELS`による日本語ラベル(例:「時間切れ」)を含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`で「今回は記事を用意できませんでした」が表示されることを確認するテストを書く
   - 🟢 `app/research-digest/components/FindingCard.tsx`を実装する
 
 - Task 8: 並び順の切り替え(仕様: requirements.md#並び順の切り替え-7・10)

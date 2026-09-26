@@ -55,6 +55,11 @@ export type EmptyGenre = {
   collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル。利用上限への到達は実行全体を打ち切るため値に含まない(content-selection/requirements.md#収集失敗-2・3)【推測】
 }
 
+// 収集失敗の分類ラベルの日本語表示(IMPACT_LABELSと同じ形式)
+export const COLLECTION_FAILURE_LABELS: Record<NonNullable<EmptyGenre['collectionFailureReason']>, string> = {
+  timeout: '時間切れ', 'invalid-format': '応答形式不正', other: 'その他',
+}
+
 export type Article = {
   id: string // ファイル名と一致(= date)
   date: string // YYYY-MM-DD。発行日

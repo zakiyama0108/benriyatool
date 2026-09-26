@@ -32,7 +32,7 @@
   - 🟢 `app/future-digest/components/SlotBadges.tsx`を実装する
 
 - Task 7: 1枠分のカード(仕様: requirements.md#記事本文の表示-2〜5、design.md「その回の記事本文を表示する処理」手順3〜4)
-  - 🔴 予測がある枠で見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ、`rel="noopener noreferrer"`)が表示されること、`no-candidate`の枠で「候補が見つかりませんでした」、`collection-failed`の枠で分類ラベルを含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`の枠で「今回は記事を用意できませんでした」が表示され、いずれも本文・フィードバック欄が出ないことを確認するテストを書く
+  - 🔴 予測がある枠で見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ、`rel="noopener noreferrer"`)が表示されること、`no-candidate`の枠で「候補が見つかりませんでした」、`collection-failed`の枠で`COLLECTION_FAILURE_LABELS`による日本語ラベル(例:「時間切れ」)を含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`の枠で「今回は記事を用意できませんでした」が表示され、いずれも本文・フィードバック欄が出ないことを確認するテストを書く
   - 🟢 `app/future-digest/components/PredictionCard.tsx`を実装する
 
 - Task 8: 並び順の切り替え(仕様: requirements.md#並び順の切り替え-7・10)
