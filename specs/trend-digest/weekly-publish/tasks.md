@@ -3,8 +3,9 @@
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 記事データの組み立て(仕様: design.md「1回分の記事を生成する処理」手順5)
-  - 🔴 選定結果(edition・9ジャンル分の候補)と生成済みの見出し・本文の配列から、`id`(`<date>-<edition>`)・`edition`・`date`・`topics`(GENRE_ORDER順に並び替え済み)を持つArticleが組み立てられることを確認するテストを書く。生成が失敗した候補は結果から除外されていることも確認する
-  - 🟢 `app/trend-digest/lib/assembleArticle.ts`に`assembleArticle(edition, date, topics): Article`を実装する
+  - 🔴 選定結果(edition・その編の全ジャンル分の話題)と生成済みの見出し・本文の配列から、`id`(`<date>-<edition>`)・`edition`・`date`・`topics`(GENRE_ORDER順に並び替え済み)・`unavailableGenres`を持つArticleが組み立てられることを確認するテストを書く
+  - 🔴 **全ジャンルが記事に現れることのテストを書く**: 情報源から項目を取得できなかったジャンルが`unavailableGenres`に入ること、生成に失敗して除外した候補のジャンルも`unavailableGenres`に入ること、`topics`のジャンルと`unavailableGenres`を合わせると`GENRE_ORDER[edition]`と過不足なく一致すること(ジャンルが黙って記事から消えないことの回帰テスト。[article-detail/design.md](../article-detail/design.md)のバリデーションと対になる)
+  - 🟢 `app/trend-digest/lib/assembleArticle.ts`に`assembleArticle(edition, date, topics, unavailableGenres): Article`を実装する
 
 - Task 2: 記事データの書き出しCLI(仕様: design.md「関連するファイル」)
   - TDD対象外(assembleArticleの薄い呼び出し+ファイル書き出しのみのため。ロジック自体はTask 1でテスト済み)
@@ -14,7 +15,7 @@
   - TDD対象外(GitHub Actionsワークフロー定義のためユニットテスト不可。ai-dev-digest-daily.ymlと同じ構造で実装する)
   - `.github/workflows/trend-digest-weekly.yml`を作成する:
     - `schedule`に火曜用(`43 22 * * 1`)・金曜用(`43 22 * * 4`)の2エントリ、`workflow_dispatch`(edition入力)、`workflow_run`(CI完了通知)を設定する
-    - `publish`ジョブ: `TREND_DIGEST_GH_PAT`でcheckout→Claude Code CLIインストール→実行日(JST)・edition算出→作業用ブランチ作成→`collect-and-select.ts`実行→候補不足によるスキップ判定→`generate-content.ts`実行→`write-article.ts`実行→コミット・push・PR作成・`gh pr merge --auto --squash`
+    - `publish`ジョブ: `TREND_DIGEST_GH_PAT`でcheckout→Claude Code CLIインストール→実行日(JST)・edition算出→作業用ブランチ作成→`collect-and-select.ts`実行→項目を取得できなかったことによるスキップ判定→`generate-content.ts`実行→`write-article.ts`実行→コミット・push・PR作成・`gh pr merge --auto --squash`
     - `record-ci-failure`ジョブ: `trend-digest/articles/**`ブランチ由来のPRのCI失敗時にコメントを追記する(ai-dev-digest-daily.ymlの同名ジョブと同じ構造)
 
 - Task 4: GitHub Actions Secretsの準備(仕様: design.md「実行環境の前提」)(TDD対象外。手動のインフラ設定作業)

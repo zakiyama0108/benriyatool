@@ -19,7 +19,7 @@
 ### 配信内容
 - [1] 配信メッセージは、記事タイトル・その回に掲載された全トピックの見出し一覧(ジャンル名付き)・記事詳細ページへのリンクの3要素で構成する
 - [2] 配信メッセージのタイトルは、記事タイトルとは別に、接頭辞+日付からなる専用の文言を組み立てる。接頭辞はエンタメ編が「【週刊トレンド エンタメ編】」、カルチャー・ライフスタイル編が「【週刊トレンド カルチャー編】」とする(根拠: /consultおよび/requirementでの決定。既存の日次「AI駆動開発ニュース」と同じLINE公式アカウントに相乗りするため、友だちが一目でどちらの配信か区別できるようにする。記事タイトル自体が既に編名を含むため、そのまま流用すると編名が重複表示されてしまう)
-- [3] トピック見出し一覧は、その回の記事に掲載された順(記事データの`topics`配列順)で全件表示する(最大10件。件数の根拠は[content-selection/requirements.md#配信全体の絞り込み1回最大10件](../content-selection/requirements.md))
+- [3] トピック見出し一覧は、その回の記事に掲載された順(記事データの`topics`配列順)で全件表示する(件数はその編のジャンル数と同じで、エンタメ編9件・カルチャー編10件。根拠は[content-selection/requirements.md#掲載件数](../content-selection/requirements.md))
 - [4] リンクは記事詳細ページ(`https://benriyatool.com/trend-digest/<id>`)への1本のみとし、トピックごとの出典URLは含めない
 
 ### 配信タイミング・方式
@@ -42,7 +42,7 @@
 
 ## 依存関係
 - 配信タイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)の週次実行・自動マージフローに従う
-- 配信内容(タイトル・トピック見出し)は[article-detail/design.md](../article-detail/design.md)が定める記事データ構造、および記事詳細ページに表示される記事タイトルをそのまま利用する。トピック件数(最大10件)は[content-selection/requirements.md#配信全体の絞り込み1回最大10件](../content-selection/requirements.md)に従う
+- 配信内容(タイトル・トピック見出し)は[article-detail/design.md](../article-detail/design.md)が定める記事データ構造、および記事詳細ページに表示される記事タイトルをそのまま利用する。トピック件数(エンタメ編9件・カルチャー編10件)は[content-selection/requirements.md#掲載件数](../content-selection/requirements.md)に従う
 - リンク先は[article-detail/requirements.md](../article-detail/requirements.md)が定める記事詳細ページ
 - 配信元アカウントは[ai-dev-digest/line-broadcast/requirements.md#アカウント配信主体](../../ai-dev-digest/line-broadcast/requirements.md)で開設済みのものを再利用する
 

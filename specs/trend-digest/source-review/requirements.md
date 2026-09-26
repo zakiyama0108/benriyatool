@@ -1,5 +1,7 @@
 # 要件定義: 月次見直し(情報源・採用基準・生成ルール)
 
+> ステータス: 仕様確認中(継続度・注目度対応は未実装)
+
 ## サマリ
 蓄積された運営者フィードバックと収集ログ・掲載実績をもとに、ジャンル別の情報源・採用基準([content-selection](../content-selection/requirements.md))と要約ルール([content-generation](../content-generation/requirements.md))を、人の承認を得た上で月1回更新する。ai-dev-digestのwatchlist-reviewと同じ運用パターンを踏襲する。
 
@@ -18,9 +20,9 @@
 ## 機能要件
 
 ### 見直しの実行
-- [1] 月1回、蓄積された運営者フィードバック([article-detail/requirements.md](../article-detail/requirements.md)のフィードバック機能で保存された内容)と、直近1ヶ月の収集ログ・掲載実績(ジャンルごとの候補件数・動きがなく掲載を見送った回数など、[content-selection/requirements.md#情報源の健全性監視](../content-selection/requirements.md))をもとに、見直し案を作成する
+- [1] 月1回、蓄積された運営者フィードバック([article-detail/requirements.md](../article-detail/requirements.md)のフィードバック機能で保存された内容)と、直近1ヶ月の収集ログ・掲載実績(ジャンルごとの候補件数・継続度ラベルごとの掲載件数・掲載を見送った回数など、[content-selection/requirements.md#情報源の健全性監視](../content-selection/requirements.md))をもとに、見直し案を作成する
 - [2] 見直しの対象は次の2領域とする。1つのPRに複数領域の変更が含まれてよい:
-  - 選定領域: ジャンル別情報源・採用基準([content-selection/requirements.md](../content-selection/requirements.md))
+  - 選定領域: ジャンル別情報源・採用基準([content-selection/requirements.md](../content-selection/requirements.md))と、継続度ラベル・注目度ラベルの判定に使う値([trend-history/requirements.md](../trend-history/requirements.md))
   - 生成領域: 要約・記事執筆のルール([content-generation/requirements.md](../content-generation/requirements.md))
 - [3] 各運営者フィードバックを内容から「選定領域」「生成領域」「いずれにも該当しない」のいずれかに振り分け、該当領域の見直し案にまとめる
 - [4] いずれの領域にも該当しないフィードバック(画面表示の不具合など)は見直し案の対象にしない。PR本文の判断材料の表にその内容と「対象外」である旨を記録する
@@ -32,9 +34,11 @@
 - [6] 見直し案は、既存の情報源の除外や既存の数値基準(閾値)の調整だけでなく、新しい採用基準・情報源の追加提案も対象に含む
 - [7] 直近1ヶ月分の材料(収集ログ・運営者フィードバック)が1件でもある場合は、その内容を踏まえた具体的な変更案(実際のファイル差分)を必ず作成してPRとして提示する。材料が1件もない月のみPRを作成しない(ai-dev-digestのwatchlist-reviewと同じ考え方)
 - [8] 特に、あるジャンルで候補件数0件、または「動きなし」による掲載見送りが直近1ヶ月継続している場合は、そのジャンルの情報源・採用基準の妥当性を検証する見直し案を必ず含める
+- [9] 候補は収集できているのに、継続度ラベルが「流行前」の話題しか掲載できない状態が直近1ヶ月継続しているジャンルがある場合は、そのジャンルの情報源・採用基準と、継続度ラベルの日数の区切り([trend-history/requirements.md#継続度ラベル](../trend-history/requirements.md))の妥当性を検証する見直し案を必ず含める([content-selection/requirements.md#情報源の健全性監視-2](../content-selection/requirements.md)の出力を材料にする)
+- [10] 地域情報が「不明」のまま記録された候補の割合が高い状態が続く場合は、地域を判定するための情報源・収集指示の見直し案を含める([trend-history/requirements.md#地域情報](../trend-history/requirements.md))
 
 ### 生成領域の見直し案の粒度・提示方法
-- [9] 生成領域の見直しは、[content-generation/requirements.md](../content-generation/requirements.md)の機能要件・ビジネスルール(要約の分量、本文の内容など)を変更対象とする。選定領域の[7]と同じく、生成領域に振り分けた材料が1件でもある月は必ず具体案をPRとして提示する。ただし、著作権ガード(ビジネスルール・制約[3])に抵触するため採用できない要望は、却下した旨と理由をPR本文の判断材料の表に行として残す
+- [11] 生成領域の見直しは、[content-generation/requirements.md](../content-generation/requirements.md)の機能要件・ビジネスルール(要約の分量、本文の内容など)を変更対象とする。選定領域の[7]と同じく、生成領域に振り分けた材料が1件でもある月は必ず具体案をPRとして提示する。ただし、著作権ガード(ビジネスルール・制約[3])に抵触するため採用できない要望は、却下した旨と理由をPR本文の判断材料の表に行として残す
 
 ## ビジネスルール・制約
 - [1] 見直しの実行頻度は月1回とする
