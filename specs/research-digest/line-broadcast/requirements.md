@@ -27,7 +27,7 @@
 - [5] リンクは記事詳細ページ(`https://benriyatool.com/research-digest/<id>`)への1本だけとし、研究ごとの出典URLは含めない
 
 ### 配信タイミング・方式
-- [6] 週次記事PRがmainへ自動マージされたあとに配信する。実際に送るのは、記事詳細ページが本番で開けることを確認してからとする(trend-digestの[line-broadcast/requirements.md#配信タイミング方式](../../trend-digest/line-broadcast/requirements.md)と同じ。デプロイより先に通知が届き、リンクが404になるのを防ぐため)
+- [6] 週次記事PRがmainへ自動マージされたあとに配信する。実際に送るのは、記事詳細ページが本番で開けることを確認してからとする(trend-digestの[line-broadcast/requirements.md#配信タイミング・方式](../../trend-digest/line-broadcast/requirements.md)と同じ。デプロイより先に通知が届き、リンクが404になるのを防ぐため)
 - [7] 決められた待ち時間のうちに公開を確認できない場合は送らず、その回の配信は失敗として扱う
 - [8] 配信は週1回、その回に公開した記事についてだけ行う。友だち全員への一斉配信とし、対象を絞るセグメント配信はしない
 - [9] 上記[6][7]の自動配信が失敗した場合に限り、運営者が`workflow_dispatch`(記事ID指定)でその回の配信を手動で再送できる。再送も1回までとし、複数回の配信・古い過去記事の掘り出し配信には使わない
@@ -45,7 +45,7 @@
 ## 依存関係
 - 配信タイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 - 配信内容(見出し・影響度・ジャンル)は[article-detail/requirements.md](../article-detail/requirements.md)の記事データをそのまま使う
-- 配信元アカウントは[ai-dev-digest/line-broadcast/requirements.md#アカウント配信主体](../../ai-dev-digest/line-broadcast/requirements.md)で開設済みのものを使う
+- 配信元アカウントは[ai-dev-digest/line-broadcast/requirements.md#アカウント・配信主体](../../ai-dev-digest/line-broadcast/requirements.md)で開設済みのものを使う
 
 ## スコープ外
 - 新しいLINE公式アカウントの開設・友だち追加の導線

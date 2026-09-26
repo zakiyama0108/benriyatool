@@ -167,7 +167,7 @@ erDiagram
 運営者フィードバックの保存は`authenticated`ロールによるINSERT専用とし、SELECT/UPDATE/DELETEは許可しない。INSERTできるのは運営者本人(`admin_emails`)に限り、画面の表示切り替えだけに頼らずデータベース側(RLS)でも守る(ai-dev-digest・trend-digestより一段厳しい制約。[article-detail/design.md](article-detail/design.md)参照)。読者の付箋は本人のみが読み書きできるRLSで守る([bookmark/design.md](bookmark/design.md))。月次のsource-reviewがClaude Code CLIをヘッドレス実行する際は、DB接続情報・GitHub PATをそのステップに渡さず、材料収集・コミット/push/PR作成の各ステップに分離する([source-review/design.md](source-review/design.md))。
 
 ## 14. 技術的制約
-他者の記事・論文を要約して載せるため、著作権(翻案権)のリスクがある。ai-dev-digest・trend-digestと同じく、要約の分量を抑え、独自に書き直し、出典を明記し、利用規約に条項を追記してリスクを下げる([content-generation](content-generation/requirements.md))。性・恋愛ジャンルは、記事を書くClaude Code CLIの利用規約の範囲(官能的・扇情的な描写をしない)で率直に書き、LINE配信には見出しを載せない([content-generation](content-generation/requirements.md#性恋愛ジャンルの書き方)・[line-broadcast](line-broadcast/requirements.md))。3アプリ(未来予測・研究発見・既存アプリ)分をまとめて利用規約を変更する場合は、先に実装するアプリのPRで残り2アプリ分の条項も追記してよい(未公開のアプリ名が利用規約に一時的に載ることを許容する。根拠: /requirementでの決定)。
+他者の記事・論文を要約して載せるため、著作権(翻案権)のリスクがある。ai-dev-digest・trend-digestと同じく、要約の分量を抑え、独自に書き直し、出典を明記し、利用規約に条項を追記してリスクを下げる([content-generation](content-generation/requirements.md))。性・恋愛ジャンルは、記事を書くClaude Code CLIの利用規約の範囲(官能的・扇情的な描写をしない)で率直に書き、LINE配信には見出しを載せない([content-generation](content-generation/requirements.md#性・恋愛ジャンルの書き方)・[line-broadcast](line-broadcast/requirements.md))。3アプリ(未来予測・研究発見・既存アプリ)分をまとめて利用規約を変更する場合は、先に実装するアプリのPRで残り2アプリ分の条項も追記してよい(未公開のアプリ名が利用規約に一時的に載ることを許容する。根拠: /requirementでの決定)。
 
 ## 15. 用語集
 | 用語 | 説明 |

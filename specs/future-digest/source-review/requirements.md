@@ -46,7 +46,7 @@ flowchart LR
 ## ビジネスルール・制約
 - [1] 見直しは月1回とする
 - [2] PR本文には、判断材料として「対象のフィードバック・実績」「提案内容」「適用した場合の懸念」の3列の表を含める
-- [3] 生成領域の見直し案では、著作権への配慮([content-generation/requirements.md#著作権への配慮](../content-generation/requirements.md))と、性・恋愛ジャンルの書き方の制約([content-generation/requirements.md#性恋愛ジャンルの書き方](../content-generation/requirements.md))を弱める変更を提案しない。そうした要望があった場合は、却下したことと理由をPR本文の表に残す
+- [3] 生成領域の見直し案では、著作権への配慮([content-generation/requirements.md#著作権への配慮](../content-generation/requirements.md))と、性・恋愛ジャンルの書き方の制約([content-generation/requirements.md#性・恋愛ジャンルの書き方](../content-generation/requirements.md))を弱める変更を提案しない。そうした要望があった場合は、却下したことと理由をPR本文の表に残す
 
 ## 依存関係
 - フィードバックの保存形式は[article-detail/requirements.md](../article-detail/requirements.md)に従う

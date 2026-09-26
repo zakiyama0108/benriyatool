@@ -11,7 +11,7 @@
   - 🟢 `app/research-digest/lib/buildBroadcastMessage.ts`に`buildBroadcastTitle(date)`・`buildBroadcastMessage(article)`を実装する
 
 - Task 3: 配信CLI(仕様: design.md「配信する処理」「エラーハンドリング」)
-  - 🔴 `fetch`をモックし、公開確認のGETが200を返したあとにLINE APIへ1回だけPOSTすること、公開確認が時間切れならLINE APIを呼ばずに失敗すること、LINE APIの失敗時はリトライせず失敗することを確認するテストを書く(待ち時間・`sleep`は引数で差し替えられるようにする)
+  - 🔴 `fetch`をモックし、公開確認のGETが200を返したあとにLINE APIへ1回だけPOSTすること、公開確認が時間切れならLINE APIを呼ばずに失敗すること、LINE APIの失敗時はリトライせず失敗すること、指定された記事IDのデータが存在しない場合はLINE APIを呼ばずに失敗することを確認するテストを書く(待ち時間・`sleep`は引数で差し替えられるようにする)
   - 🟢 `scripts/research-digest/broadcast-line.ts`を実装する(記事の読み込み→`parseArticle`→`buildBroadcastMessage`→`waitForPageAvailable`→`POST /v2/bot/message/broadcast`。試行ごとの経過秒数とHTTPステータスを`console.error`で出す)
 
 - Task 4: ワークフロー本体(仕様: design.md「実行環境の前提」「配信対象の記事を決める処理」)(TDD対象外。GitHub Actionsの定義のため。trend-digest-line-broadcast.ymlと同じ構造で実装する)

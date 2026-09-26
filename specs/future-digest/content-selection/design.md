@@ -27,7 +27,7 @@
     "label": "性・恋愛",
     "description": "収集時にClaudeへ渡すジャンルの範囲の説明",
     "active": true,
-    "lineExcluded": true // LINE配信の代表見出しから除く(requirements.md#配信内容-4)。ジャンルIDの直接比較ではなくこの属性で判定する(LB1対応)
+    "lineExcluded": true // LINE配信の代表見出しから除く(line-broadcast/requirements.md#配信内容-4)。ジャンルIDの直接比較ではなくこの属性で判定する(LB1対応)
   },
   // ...
   {
@@ -177,7 +177,7 @@ app/future-digest/lib/articles.ts (article-detailで新規: getAllArticlesを利
 - Claudeが外部の記事から持ち帰った文字列(元記事タイトル・情報源名など)は、上記「バリデーション」で長さ・制御文字・URLのスキームを検証してから記事データに取り込む。画面ではReactのエスケープで表示する
 - 収集用のClaude CLIに許可するツールはWebSearch・WebFetchの読み取り系に限り、ファイル編集・シェル実行は許可しない(外部のページに書かれた指示でリポジトリを書き換えられないようにするため)
 - 公開ページの閲覧はClaude CLI標準のWebSearch・WebFetchの範囲にとどめ、非公式API・認証の回避は行わない(requirements.md#データ取得方法-1)
-- 性・恋愛ジャンルの収集では、未成年が関わる内容・特定の店舗や相手を探す手助けになる情報を候補にしないよう、プロンプトで明示する([content-generation/requirements.md#性恋愛ジャンルの書き方](../content-generation/requirements.md)の[6][7]と同じ制約を収集時点でも守る)
+- 性・恋愛ジャンルの収集では、未成年が関わる内容・特定の店舗や相手を探す手助けになる情報を候補にしないよう、プロンプトで明示する([content-generation/requirements.md#性・恋愛ジャンルの書き方](../content-generation/requirements.md)の[6][7]と同じ制約を収集時点でも守る)
 
 ## ログ
 
