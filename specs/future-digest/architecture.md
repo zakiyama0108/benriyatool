@@ -1,10 +1,10 @@
 # アーキテクチャ: future-digest
 
 ## サマリ
-未来予測記事を毎週木曜に配信するアプリ。10ジャンル×その回の時間軸2区分(現在は20枠)ごとに、公開されている未来予測・考察記事を影響度付きで1本選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなり、いずれも仕様のみ(未実装)。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
+未来予測記事を毎週木曜に配信するアプリ。有効なジャンル数×その回の時間軸2区分(現在は10ジャンル×2区分=20枠)ごとに、公開されている未来予測・考察記事を影響度付きで1本選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなり、いずれも仕様のみ(未実装)。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
 
 ## 1. 概要
-10ジャンルについて、公開されている未来予測・考察記事を近未来・中期未来・長期未来・超長期未来の4つの時間軸ごとに選び、影響度(大・中・小)付きで要約して毎週木曜に公開するアプリ。時間軸の区分は[content-selection/requirements.md#時間軸](content-selection/requirements.md)に従う。URL: `/future-digest`
+有効なジャンル(現在は10ジャンル)について、公開されている未来予測・考察記事を近未来・中期未来・長期未来・超長期未来の4つの時間軸ごとに選び、影響度(大・中・小)付きで要約して毎週木曜に公開するアプリ。時間軸の区分は[content-selection/requirements.md#時間軸](content-selection/requirements.md)に従う。URL: `/future-digest`
 
 ## 2. アーキテクチャの目的
 - 既存のdigestアプリが配信していない木曜を埋め、trend-digestと同じ運用パターン(GitHub Actionsによる週次の自動生成・完全自動マージ、LINE配信、月次の人の承認込み見直し)をそのまま使い、新しい運用パターンを増やさない

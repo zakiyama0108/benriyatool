@@ -29,7 +29,7 @@
 
 ## 新規アプリの初回UI・公開画面に伴うタスク
 
-- Task 7: styleguideページ(仕様: [article-detail/design.md](../article-detail/design.md)「画面設計」。Step0は実施しない(D4。trend-digestの確定済みデザインを流用))
+- Task 7: styleguideページ(仕様: [article-detail/design.md](../article-detail/design.md)「画面設計」。Step0は実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するため。詳細は同「画面設計」参照))
   - `app/future-digest/styleguide/page.tsx`(ヘッダー・フッター・SlotBadges・ArticleCard・PredictionCardの各状態(予測あり/候補なし/収集失敗/生成失敗)・SortToggle・Pagination・BookmarkPanelを並べる)と、そのキャプチャ`styleguide.png`を作る
 
 - Task 8: トップページへのツールカード追加・sitemap・hub-siteの仕様(仕様: `specs/hub-site/requirements.md`)
