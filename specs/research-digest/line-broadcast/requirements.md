@@ -38,7 +38,7 @@
 - [1] 新しいアカウントは開設せず、既存の「AI駆動開発ニュース」のLINE公式アカウントに相乗りする(根拠: /requirementでの決定)
 
 ### 無料枠と配信失敗時の扱い
-- [2] LINE公式アカウントの無料プラン(月200通)の月間配信量を、既存の3アプリ(ai-dev-digest・news-digest・trend-digest)と未来予測の配信([future-digest/line-broadcast](../../future-digest/line-broadcast/requirements.md))と分け合う。5アプリ合計の月間配信回数は、日次(ai-dev-digest)約30回+news-digest約4回+trend-digest約9回+研究発見約4回+未来予測約4回の合計約51回で、これに友だち数を掛けた通数が月200通以内であることを、本機能の追加前に運営者が試算して確認済み(根拠: /requirementでの確認)
+- [2] LINE公式アカウントの無料プラン(月200通)の月間配信量を、既存の3アプリ(ai-dev-digest・news-digest・trend-digest)と未来予測の配信([future-digest/line-broadcast](../../future-digest/line-broadcast/requirements.md))と分け合う。5アプリ合計の月間配信回数は、日次(ai-dev-digest)約30回+news-digest約4回+trend-digest約9回+研究発見約4回+未来予測約4回の合計約51回で、これに友だち数を掛けた通数が月200通以内であることを、本機能の追加前に運営者が試算して確認済み(根拠: /requirementでの確認)。目安として、友だち数が4人以上になると51回×4人=204通で月200通を超える計算になる【推測】
 - [3] 無料枠の残量は、LINE Official Account Managerの利用量ページで運営者が定期的に確認する(監視の自動化・アラートは設けない)【推測】
 - [4] 無料枠の超過やAPIの一時的なエラーで配信に失敗しても、リトライはしない。記事の公開には影響させない。失敗の原因は記録し、運営者が気づけるようにする(trend-digestと同じ扱い)
 

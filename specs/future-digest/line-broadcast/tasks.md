@@ -19,7 +19,7 @@
   - 🟢 `scripts/future-digest/broadcast-line.ts`を実装する(記事の読み込み→`parseArticle`→`buildBroadcastMessage`→`waitForPageAvailable`→`POST /v2/bot/message/broadcast`。試行ごとの経過秒数とHTTPステータスを`console.error`で出す)
 
 - Task 5: ワークフロー本体(仕様: design.md「実行環境の前提」「配信対象の記事を決める処理」)(TDD対象外。GitHub Actionsの定義のため。trend-digest-line-broadcast.ymlと同じ構造で実装する)
-  - `.github/workflows/future-digest-line-broadcast.yml`を作る: `push`(`branches: [main]`、`paths: content/future-digest/articles/*.json`)・`workflow_dispatch`(記事ID入力)で起動し、新規追加されたファイルだけを対象にTask 4のCLIを実行する。`LINE_CHANNEL_ACCESS_TOKEN`は既存のSecretを参照する
+  - `.github/workflows/future-digest-line-broadcast.yml`を作る: `push`(`branches: [main]`、`paths: content/future-digest/articles/*.json`)では新規追加されたファイルだけを対象に、`workflow_dispatch`(記事ID入力)では新規追加ファイルの判定を行わず入力された記事IDを対象に、Task 4のCLIを実行する。`LINE_CHANNEL_ACCESS_TOKEN`は既存のSecretを参照する
 
 - Task 6: 本番での通し確認(仕様: requirements.md#配信タイミング・方式-7〜8)(TDD対象外。手動確認)
   - 初回の週次記事のマージで配信ワークフローが動き、実行ログに公開待ちの試行記録が残ること、届いたLINEのリンクで記事ページが開けること、性・恋愛ジャンルの見出しが載っていないことを確認する
