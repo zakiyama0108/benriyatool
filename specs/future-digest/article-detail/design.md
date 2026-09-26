@@ -203,7 +203,7 @@ create table future_digest_feedback (
   is_test boolean not null default false,
   article_id text not null,
   prediction_id text not null,
-  comment text not null check (char_length(comment) between 1 and 1000)
+  comment text not null check (char_length(comment) between 1 and 1000) -- 1000字は【推測】
 );
 
 alter table future_digest_feedback enable row level security;
