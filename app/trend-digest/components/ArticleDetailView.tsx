@@ -94,7 +94,7 @@ export default function ArticleDetailView({ article }: Props) {
             <GenreSection
               key={genre}
               genre={genre}
-              topics={article.topics.filter((topic) => topic.genre === genre)}
+              topic={article.topics.find((topic) => topic.genre === genre) ?? null}
               isAdmin={isAdmin}
               articleId={article.id}
             />
