@@ -38,9 +38,12 @@ export type Candidate = {
   isPreprint: boolean
 }
 
+export type CollectionFailureReason = 'timeout' | 'invalid-format' | 'other' // 収集失敗の分類ラベル(requirements.md#収集失敗-2)。利用上限への到達は実行全体を打ち切るため候補に含まない(requirements.md#収集失敗-3)【推測】
+
 export type GenreResult =
   | { genre: Genre; status: 'selected'; candidate: Candidate; candidateCount: number }
   | { genre: Genre; status: 'no-candidate'; candidateCount: number }
+  | { genre: Genre; status: 'collection-failed'; reason: CollectionFailureReason }
 ```
 
 ## 処理フロー
@@ -87,7 +90,7 @@ sequenceDiagram
 - 関連するビジネスルール: requirements.md#機能要件-3〜4、requirements.md#採用基準-1〜4、requirements.md#影響度-1〜3、requirements.md#データ取得方法-1
 
 ### ジャンルごとに1本を採用する処理(決定的なコード)
-- 対象: 1ジャンルに集まった候補
+- 対象: 収集に成功したジャンル(下記「エラーハンドリング」で収集失敗と確定したジャンルは対象外。それらは`collection-failed`のまま`GenreResult`に直接入る)に集まった候補
 - 手順:
   1. 配信済みの元URL・DOIと正規化後に一致する候補を除く(Claudeの判定漏れに対する最終防波堤。requirements.md#配信済みの研究の除外-1)
   2. 同じ回の別のジャンルで既に採用したURL・DOIと一致する候補も除く(同じ研究が2つのジャンルに載らないようにするため)
@@ -97,11 +100,11 @@ sequenceDiagram
 - 関連するビジネスルール: requirements.md#機能要件-2〜4、requirements.md#配信済みの研究の除外-1、requirements.md#候補が見つからないジャンル-1
 
 ### 収集状況を記録する処理
-- 対象: 全ジャンルの採用結果
+- 対象: 全ジャンルの採用結果(収集失敗のジャンルを含む)
 - 手順:
-  1. ジャンルごとに、検証を通った候補の件数と、採用したか候補なしかを実行ログに1行ずつ出す
-  2. 候補が見つからなかったジャンルの一覧を、最後にまとめて出す
-  3. 候補なしのジャンルは記事データの`emptyGenres`にも残るため、月次見直しは記事データから集計できる
+  1. ジャンルごとに、検証を通った候補の件数と、採用したか候補なしか収集失敗(分類ラベル)かを実行ログに1行ずつ出す
+  2. 候補が見つからなかったジャンルの一覧と、収集に失敗したジャンルの一覧(分類ラベル別の件数つき)を、最後にまとめて出す
+  3. 候補なしのジャンル・収集失敗のジャンルは記事データの`emptyGenres`にも`reason`つきで残るため、月次見直しは記事データから集計できる(収集失敗は候補なしの集計から除く。requirements.md#収集失敗-5)
 - 関連するビジネスルール: requirements.md#収集状況の記録-1
 
 ## バリデーション
@@ -116,9 +119,13 @@ Claudeが返した候補ごとに検証し、満たさない候補は捨てる(�
 
 ## エラーハンドリング
 
-- 1ジャンルの収集が失敗した場合(JSONを取り出せない・Claude CLIの異常終了)は、最大2回まで(初回+1回)起動し直す。それでも失敗した場合は、そのジャンルを「候補が見つからなかったジャンル」として扱い、他のジャンルの収集を続ける。失敗したことは実行ログに残す
-- 応答が利用上限への到達を示す場合は、その時点で収集を打ち切り、スクリプトを失敗として終える([weekly-publish/design.md](../weekly-publish/design.md)で公開せずに実行を失敗させる)
-- 全ジャンルで採用できる候補がなかった場合は、選定結果として「全ジャンル候補なし」を返す(正常な結果。weekly-publishが公開をスキップする)
+- 1ジャンルの収集が失敗した場合(JSONを取り出せない・Claude CLIの異常終了・Claude CLI呼び出しが設定したタイムアウト値を超えた)は、最大2回まで(初回+1回)起動し直す。それでも失敗した場合は、そのジャンルを`status: 'collection-failed'`として扱い(候補なしとは区別する。requirements.md#収集失敗-1)、他のジャンルの収集を続ける。失敗したことは実行ログに残す【推測】
+  - 失敗原因は次のとおり分類ラベルに変換する(requirements.md#収集失敗-2)。原因のエラー文字列はログにのみ残し、分類ラベルだけを記事データ・読者向け表示に渡す【推測】
+    - `timeout`: Claude CLI呼び出しがタイムアウト値を超えて中断された場合(タイムアウト値は環境変数等で調整可能な定数とする)
+    - `invalid-format`: Claude CLIは正常終了したが応答からJSONを取り出せなかった・スキーマを満たさなかった場合
+    - `other`: 上記のいずれにも当たらない異常終了・例外の場合
+- 応答が利用上限への到達を示す場合は、そのジャンルの収集失敗として`collection-failed`にはせず、その時点で収集を打ち切り、スクリプトを失敗として終える(requirements.md#収集失敗-3。[weekly-publish/design.md](../weekly-publish/design.md)で公開せずに実行を失敗させる)
+- その回で1本も採用できなかった場合、空になったジャンルがすべて`no-candidate`であれば選定結果として「全ジャンル候補なし」を返す(正常な結果。weekly-publishが公開をスキップする)。`collection-failed`のジャンルが1つでも混在する場合は、選定結果に収集失敗のジャンルが含まれる旨を持たせて返し、weekly-publishがその回の実行を失敗として終える(requirements.md#収集失敗-4)【推測】
 - 過去記事の読み込みに失敗した場合は、配信済みの判定ができないため処理を失敗として終える
 
 ## 関連するファイル(抜粋)
@@ -144,7 +151,7 @@ app/research-digest/lib/articles.ts (article-detailで新規: getAllArticlesを�
 ## ログ
 
 - 実行開始時: 有効ジャンル数(info)
-- ジャンルごと: 収集の成否・やり直しの有無・候補件数・検証で捨てた候補の件数と理由(info。失敗時はerror)
-- ジャンルごと: 採用した元URL・DOI・影響度・査読前か、または候補なし(info)
-- 終了時: 候補なしのジャンルの一覧・採用件数の合計(info)。利用上限への到達で打ち切った場合はその旨(error)
+- ジャンルごと: 収集の成否・やり直しの有無・候補件数・検証で捨てた候補の件数と理由(info。失敗時はerror)。2回とも失敗した場合は分類ラベル(`timeout`/`invalid-format`/`other`)を添えてerrorで出す【推測】
+- ジャンルごと: 採用した元URL・DOI・影響度・査読前か、または候補なし、または収集失敗(分類ラベル)(info)
+- 終了時: 候補なしのジャンルの一覧・収集失敗のジャンルの一覧(分類ラベル別の件数)・採用件数の合計(info)。利用上限への到達で打ち切った場合はその旨(error)【推測】
 - ログは標準エラー出力(GitHub Actionsの実行ログ)に出し、選定結果のJSONは標準出力に出す

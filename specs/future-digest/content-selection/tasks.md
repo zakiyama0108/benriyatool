@@ -3,7 +3,7 @@
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: ジャンル設定ファイルの読み込み(仕様: requirements.md#機能要件-1、requirements.md#ジャンル-1〜10、design.md「データ設計」)
-  - 🔴 `genres.json`の記載順でジャンルが返ること、`active: false`のジャンルが収集対象から外れラベルは引けること、`id`の重複・`label`が空・`themes`が文字列配列でない場合に例外になることを確認するテストを書く
+  - 🔴 `genres.json`の記載順でジャンルが返ること、`active: false`のジャンルが収集対象から外れラベルは引けること、`id`の重複・`label`が空・`themes`が文字列配列でない・`lineExcluded`が真偽値でない場合に例外になること、`lineExcluded: true`のジャンルが1つ以上存在すること(LB1対応)を確認するテストを書く
   - 🟢 `content/future-digest/genres.json`(requirements.md#ジャンルの10ジャンル。個人的注目分野に`themes: ["AR・VR", "若返り"]`)と`app/future-digest/lib/genres.ts`を実装する
 
 - Task 2: 次の回数の決定(仕様: requirements.md#時間軸の切り替え-1〜2、design.md「その回の時間軸2区分を決める処理」)
@@ -23,8 +23,8 @@
   - 🟢 `app/future-digest/lib/selectSlots.ts`に実装する
 
 - Task 6: ジャンルごとの収集CLI(仕様: design.md「ジャンルごとに候補を集める処理」「エラーハンドリング」)
-  - 🔴 Claude CLIの呼び出しを差し替え可能にし、`collectForGenre`について次を確認するテストを書く: 応答JSONから候補が取り出される/JSONを取り出せない場合は1回だけやり直す/2回とも失敗したらそのジャンルは候補0件として返り例外にしない/利用上限への到達を示す応答では、やり直さずに打ち切りを示す例外を投げる
+  - 🔴 Claude CLIの呼び出しを差し替え可能にし、`collectForGenre`について次を確認するテストを書く: 応答JSONから候補が取り出される/JSONを取り出せない場合は1回だけやり直す/2回とも失敗したら`status: 'collection-failed'`とその分類ラベル(`invalid-format`)を持つ2枠分の結果として返り例外にしない(候補0件の`no-candidate`とは区別する)/呼び出しが設定したタイムアウト値を超えたら1回だけやり直し、2回とも超えたら`timeout`の分類ラベルで返る/その他の異常終了は2回とも失敗したら`other`の分類ラベルで返る/利用上限への到達を示す応答では、やり直さずに打ち切りを示す例外を投げる(`collection-failed`にはしない)
   - 🟢 `scripts/future-digest/collect-candidates.ts`を実装する。`requirements.md`を実行時に読み込み、その内容(採用基準・影響度・配信済みの記事・予測の除外)をプロンプトに含める(別ファイルへの複製・転記はしない)。あわせてジャンルの説明(注目テーマ)、時間軸の定義、配信済みの一覧、応答JSONの形、性・恋愛ジャンルの収集時の制約もプロンプトに含める。許可ツールはWebSearch・WebFetchに限る
 
 - Task 7: 収集・選定のまとめCLI(仕様: design.md「収集状況を記録する処理」「ログ」)(TDD対象外。Task 1〜6の関数を順に呼ぶだけで、ロジックは各タスクでテスト済みのため)
-  - `scripts/future-digest/collect-and-select.ts`を実装する。回数・時間軸の決定→配信済みの一覧→ジャンルごとの収集→検証→枠ごとの採用を行い、選定結果(回数・採用した候補・候補なしの枠)を標準出力にJSONで出す。枠ごとの候補件数・候補なしの枠の一覧を標準エラー出力に出す
+  - `scripts/future-digest/collect-and-select.ts`を実装する。回数・時間軸の決定→配信済みの一覧→ジャンルごとの収集(収集失敗したジャンルの2枠は`collection-failed`のまま結果に含め、`selectSlots`には渡さない)→検証→枠ごとの採用を行い、選定結果(回数・採用した候補・候補なしの枠・収集失敗の枠)を標準出力にJSONで出す。枠ごとの候補件数・候補なしの枠の一覧・収集失敗の枠の一覧(分類ラベル別)を標準エラー出力に出す

@@ -61,9 +61,12 @@ export type Candidate = {
   publishedAt: string | null // 元記事の公開日(分かる場合のみ)
 }
 
+export type CollectionFailureReason = 'timeout' | 'invalid-format' | 'other' // 収集失敗の分類ラベル(requirements.md#収集失敗-2)。利用上限への到達は実行全体を打ち切るため候補に含まない(requirements.md#収集失敗-3)【推測】
+
 export type SlotResult =
   | { genre: Genre; horizon: Horizon; status: 'selected'; candidate: Candidate; candidateCount: number }
   | { genre: Genre; horizon: Horizon; status: 'no-candidate'; candidateCount: number }
+  | { genre: Genre; horizon: Horizon; status: 'collection-failed'; reason: CollectionFailureReason }
 ```
 
 ## 処理フロー
@@ -89,7 +92,7 @@ export type SlotResult =
 - 対象: 有効なジャンル1つと、今回の時間軸2区分
 - 手順:
   1. `requirements.md`を実行時に読み込み、その内容(採用基準・影響度の観点)をプロンプトに含める(content-generationと同じく、別ファイルにルール文を複製・転記しない)。あわせてジャンルの説明(個人的注目分野はテーマ一覧も)、今回の時間軸2区分とその年数の定義、配信済みの一覧もプロンプトに含め、Claude Code CLIをヘッドレス起動する(WebSearch・WebFetchを使わせる)
-  2. Claudeは時間軸ごとに、採用基準を満たす未来予測記事を探す。予測の対象時期が明示・推定できない記事、噂・出典不明・根拠のない断定の記事、Claude自身の予測は候補にしない(requirements.md#時間軸-5、requirements.md#採用基準-1〜2)
+  2. Claudeは時間軸ごとに、採用基準を満たす未来予測記事を探す。予測の対象時期が明示・推定できない記事、対象時期が配信日から1年未満または配信日時点で既に過ぎている記事、噂・出典不明・根拠のない断定の記事、Claude自身の予測は候補にしない。この条件はプロンプトにも明示の指示として含める(requirements.md#時間軸-5〜6、requirements.md#採用基準-1〜2)
   3. 同じ内容について新しい予測がある場合は、新しい方だけを候補にする(requirements.md#採用基準-3)
   4. 配信済みの一覧と実質的に同じ内容(同じ技術・同じ出来事について同じ見通しを述べるもの)の記事は候補にしない(requirements.md#配信済みの記事・予測の除外-2)
   5. 各候補に影響度(大・中・小)とその根拠(1文)を付け、同じ時間軸・同じ影響度の中での順位を付ける(requirements.md#影響度-1〜3)
@@ -113,10 +116,10 @@ sequenceDiagram
     end
     script ->> script: 枠ごとに1本を採用し、候補なしの枠を記録する
 ```
-- 関連するビジネスルール: requirements.md#機能要件-4〜5、requirements.md#採用基準-1〜3、requirements.md#影響度-1〜3、requirements.md#データ取得方法-1
+- 関連するビジネスルール: requirements.md#機能要件-4〜5、requirements.md#時間軸-5〜6、requirements.md#採用基準-1〜3、requirements.md#影響度-1〜3、requirements.md#データ取得方法-1
 
 ### 枠ごとに1本を採用する処理(決定的なコード)
-- 対象: 1つの枠(ジャンル×時間軸)に集まった候補
+- 対象: 収集に成功したジャンルの枠(下記「エラーハンドリング」で収集失敗と確定した枠は対象外。それらは`collection-failed`のまま`SlotResult`に直接入る)に集まった候補
 - 手順:
   1. 配信済みの元URLと正規化後に一致する候補を除く(Claudeの判定漏れに対する最終防波堤。requirements.md#配信済みの記事・予測の除外-1)
   2. 同じ回の別の枠で既に採用した元URLと一致する候補も除く(同じ記事が2つの枠に載らないようにするため)
@@ -126,11 +129,11 @@ sequenceDiagram
 - 関連するビジネスルール: requirements.md#機能要件-3〜5、requirements.md#配信済みの記事・予測の除外-1、requirements.md#候補が見つからない枠-1
 
 ### 収集状況を記録する処理
-- 対象: 全枠の採用結果
+- 対象: 全枠の採用結果(収集失敗の枠を含む)
 - 手順:
-  1. 枠ごとに、検証を通った候補の件数と、採用したか候補なしかを実行ログに1行ずつ出す
-  2. 候補が見つからなかった枠の一覧を、最後にまとめて出す
-  3. 候補なしの枠は記事データの`emptySlots`にも残るため、[source-review](../source-review/design.md)の月次見直しは記事データから集計できる
+  1. 枠ごとに、検証を通った候補の件数と、採用したか候補なしか収集失敗(分類ラベル)かを実行ログに1行ずつ出す
+  2. 候補が見つからなかった枠の一覧と、収集に失敗した枠の一覧(分類ラベル別の件数つき)を、最後にまとめて出す
+  3. 候補なしの枠・収集失敗の枠は記事データの`emptySlots`にも`reason`つきで残るため、[source-review](../source-review/design.md)の月次見直しは記事データから集計できる(収集失敗は候補なしの集計から除く。requirements.md#収集失敗-5)
 - 関連するビジネスルール: requirements.md#収集状況の記録-1
 
 ## バリデーション
@@ -144,9 +147,13 @@ Claudeが返した候補ごとに検証し、満たさない候補はその場�
 
 ## エラーハンドリング
 
-- 1ジャンルの収集が失敗した場合(応答からJSONを取り出せない・Claude CLIが異常終了した)は、そのジャンルを最大2回まで(初回+1回)起動し直す。それでも失敗した場合は、そのジャンルの2枠を「候補が見つからなかった枠」として扱い、他のジャンルの収集を続ける(1ジャンルの失敗で回全体を止めないため)。失敗したことは実行ログに残す
-- 応答が利用上限への到達を示す場合は、同じ実行内でやり直しても回復しないため、その時点で収集を打ち切り、スクリプトを失敗として終える([weekly-publish/design.md](../weekly-publish/design.md)「エラーハンドリング」で公開せずに実行を失敗させる)
-- 全枠で採用できる候補がなかった場合は、選定結果として「全枠候補なし」を返す(正常な結果。[weekly-publish](../weekly-publish/design.md)が公開をスキップする)
+- 1ジャンルの収集が失敗した場合(応答からJSONを取り出せない・Claude CLIが異常終了した・Claude CLI呼び出しが設定したタイムアウト値を超えた)は、そのジャンルを最大2回まで(初回+1回)起動し直す。それでも失敗した場合は、そのジャンルの2枠を`status: 'collection-failed'`として扱い(候補なしとは区別する。requirements.md#収集失敗-1)、他のジャンルの収集を続ける(1ジャンルの失敗で回全体を止めないため)。失敗したことは実行ログに残す【推測】
+  - 失敗原因は次のとおり分類ラベルに変換する(requirements.md#収集失敗-2)。原因のエラー文字列はログにのみ残し、分類ラベルだけを記事データ・読者向け表示に渡す【推測】
+    - `timeout`: Claude CLI呼び出しがタイムアウト値を超えて中断された場合(タイムアウト値は環境変数等で調整可能な定数とする)
+    - `invalid-format`: Claude CLIは正常終了したが応答からJSONを取り出せなかった・スキーマを満たさなかった場合
+    - `other`: 上記のいずれにも当たらない異常終了・例外の場合
+- 応答が利用上限への到達を示す場合は、そのジャンルの収集失敗として`collection-failed`にはせず、同じ実行内でやり直しても回復しないため、その時点で収集を打ち切り、スクリプトを失敗として終える(requirements.md#収集失敗-3。[weekly-publish/design.md](../weekly-publish/design.md)「エラーハンドリング」で公開せずに実行を失敗させる)
+- その回で1本も採用できなかった場合、空になった枠がすべて`no-candidate`であれば選定結果として「全枠候補なし」を返す(正常な結果。[weekly-publish](../weekly-publish/design.md)が公開をスキップする)。`collection-failed`の枠が1つでも混在する場合は、選定結果に収集失敗の枠が含まれる旨を持たせて返し、[weekly-publish](../weekly-publish/design.md)がその回の実行を失敗として終える(requirements.md#収集失敗-4)【推測】
 - 記事データの読み込みに失敗した場合(過去記事のJSONが壊れている)は、配信済みの判定ができないため処理を失敗として終える(重複した記事を配信するより、その回を止める方を選ぶ)
 
 ## 関連するファイル(抜粋)
@@ -174,7 +181,7 @@ app/future-digest/lib/articles.ts (article-detailで新規: getAllArticlesを利
 ## ログ
 
 - 実行開始時: 今回の回数・時間軸2区分・有効ジャンル数(info)
-- ジャンルごと: 収集の成否・やり直しの有無・時間軸ごとの候補件数・検証で捨てた候補の件数と理由(info。失敗時はerror)
-- 枠ごと: 採用した元URLと影響度、または候補なし(info)
-- 終了時: 候補なしの枠の一覧・採用件数の合計(info)。利用上限への到達で打ち切った場合はその旨(error)
+- ジャンルごと: 収集の成否・やり直しの有無・時間軸ごとの候補件数・検証で捨てた候補の件数と理由(info。失敗時はerror)。2回とも失敗した場合は分類ラベル(`timeout`/`invalid-format`/`other`)を添えてerrorで出す【推測】
+- 枠ごと: 採用した元URLと影響度、または候補なし、または収集失敗(分類ラベル)(info)
+- 終了時: 候補なしの枠の一覧・収集失敗の枠の一覧(分類ラベル別の件数)・採用件数の合計(info)。利用上限への到達で打ち切った場合はその旨(error)【推測】
 - ログはGitHub Actionsの実行ログ(標準エラー出力)に出す。選定結果のJSONは標準出力に出し、ログと混ぜない
