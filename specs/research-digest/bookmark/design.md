@@ -6,8 +6,8 @@
 主要な設計判断:
 - ログインは既存のGoogle OIDC(`app/lib/adminAuth.ts`)を使い、運営者判定(`isAuthorizedAdmin`)は使わない(requirements.md#表示範囲・権限-2)
 - 1研究1読者1件・200文字の上限は、画面とデータベース(一意制約・CHECK制約)の両方で守る
-- Step0はarticle-detailと同じく簡易実施(news-digestの付箋部品の見た目を流用し、アクセントカラーのみ合わせる)
-- 図: 「処理フロー」冒頭のシーケンス図、「状態管理」の状態遷移図2つ
+- Step0は実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するarticle-detailの方針と同じく、news-digestの付箋部品の見た目を流用し、アクセントカラーのみ合わせる)
+- 図: [処理フロー](#処理フロー)冒頭のシーケンス図、[状態管理](#状態管理)の状態遷移図2つ
 
 ## 処理フロー
 
@@ -131,7 +131,7 @@ specs/legal/requirements.md (既存: プライバシーポリシーの仕様リ�
 | user_id | uuid, not null, references auth.users(id) on delete cascade | 付箋を貼った本人(退会時は付箋も消える) |
 | article_id | text, not null | 対象記事の`Article.id` |
 | finding_id | text, not null | 対象研究の`Finding.id`(記事IDとの組で対象を一意に特定する) |
-| memo | text, not null, check (char_length(memo) <= 200) | メモ(200文字まで) |
+| memo | text, not null, check (char_length(btrim(memo)) between 1 and 200) | メモ(1〜200文字。空白のみは不可) |
 | created_at | timestamptz, not null, default now() | 付箋を貼った日時 |
 | updated_at | timestamptz, not null, default now() | 最後に編集した日時。一覧の並び順に使う |
 
@@ -141,7 +141,7 @@ create table research_digest_bookmarks (
   user_id uuid not null references auth.users(id) on delete cascade,
   article_id text not null,
   finding_id text not null,
-  memo text not null check (char_length(memo) <= 200),
+  memo text not null check (char_length(btrim(memo)) between 1 and 200),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, article_id, finding_id)
@@ -170,7 +170,7 @@ create policy "benriyatool_readonly can select" on research_digest_bookmarks
 - 別アカウントでは他人の付箋が見えず、編集・削除もできないこと
 - 未ログイン(anon)ではいずれの操作もできないこと
 - 同じ研究への2件目の保存が一意制約で拒否されること
-- 200文字を超えるメモがCHECK制約で拒否されること
+- 200文字を超えるメモ・空白のみのメモがCHECK制約で拒否されること
 
 ## 画面設計
 

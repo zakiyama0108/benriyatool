@@ -11,8 +11,8 @@
   - `collectReviewData.ts`を実装する: 記事データの集計(Task 1)と、`research_digest_feedback`の過去1か月・`is_test = false`の読み取り(`benriyatool_readonly`)を行い、フィードバックに対象研究の見出し・ジャンルを添えて、1つのJSONを標準出力に出す。DB接続に失敗した場合はフィードバックを空にして続ける
 
 - Task 3: ワークフロー本体(仕様: design.md「実行環境の前提」「見直し案を作る処理」「見直し案をPRとして出す処理」)(TDD対象外。GitHub Actionsの定義とClaude CLIの起動のため。trend-digest-monthly.ymlと同じ構造で実装する)
-  - `.github/workflows/research-digest-monthly.yml`を作る: `schedule`(`30 0 2 * *`)・`workflow_dispatch`で起動し、Task 2→Claude CLIのヘッドレス起動(design.md「見直し案を作る処理」の指示をプロンプトに含める)→変更の検知→ブランチ`research-digest/source-review/<年-月>`の作成・コミット・push・PR作成(自動マージしない)を行う
-  - コミット対象のパスを、`specs/research-digest/content-selection/requirements.md`・`content/research-digest/genres.json`・`specs/research-digest/content-generation/`・`scripts/research-digest/generate-content.ts`に限る
+  - `.github/workflows/research-digest-monthly.yml`を作る: `schedule`(`30 0 2 * *`)・`workflow_dispatch`で起動し、Task 2(DB接続情報を使う材料収集。Claude CLI起動より前に完了させる)→Claude CLIのヘッドレス起動(design.md「見直し案を作る処理」の指示をプロンプトに含め、`--allowedTools`をファイル編集・`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`に限定。DB接続情報・GitHub PATは渡さない)→変更の検知→ブランチ`research-digest/source-review/<年-月>`の作成・コミット・push・PR作成(自動マージしない。GitHub PATを使うのはこのステップのみ)を行う
+  - コミット対象のパスを、`specs/research-digest/content-selection/requirements.md`・`content/research-digest/genres.json`・`specs/research-digest/content-generation/`に限る(記事生成CLIは`content-generation`のrequirements.md/design.mdを実行時に読み込むため変更対象外)
 
 - Task 4: Actions Secretsの確認(仕様: design.md「実行環境の前提」)(TDD対象外。手動の確認作業)
   - `RESEARCH_DIGEST_GH_PAT`([weekly-publish/tasks.md](../weekly-publish/tasks.md)のTask 4で発行)・`CLAUDE_CODE_OAUTH_TOKEN`・`SUPABASE_READONLY_DB_URL`がそのまま使えることを確認する

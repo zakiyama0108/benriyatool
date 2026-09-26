@@ -3,7 +3,7 @@
 > ステータス: 仕様確認中(未実装)
 
 ## サマリ
-月に1回、運営者のフィードバックと収集状況(候補が見つからなかったジャンル・候補件数)をもとに、ジャンル・採用基準([content-selection](../content-selection/requirements.md))と執筆ルール([content-generation](../content-generation/requirements.md))の見直し案をPRで出す。反映は運営者が確認して承認(マージ)してから行う。trend-digestのsource-reviewと同じ運用にする。
+月に1回、運営者のフィードバックと収集状況(候補が見つからなかったジャンル)をもとに、ジャンル・採用基準([content-selection](../content-selection/requirements.md))と執筆ルール([content-generation](../content-generation/requirements.md))の見直し案をPRで出す。反映は運営者が確認して承認(マージ)してから行う。trend-digestのsource-reviewと同じ運用にする。詳細は「[ユースケース図](#ユースケース図)」参照。
 
 ## 概要
 - 機能名: 月次見直し(ジャンル・採用基準・執筆ルール)
@@ -15,7 +15,21 @@
 - 運営者として、候補が見つからないジャンルが続いていることに気づき、基準を見直したい
 - 運営者として、これらの変更は、自分が内容を確認してから反映したい
 
-> ユースケース図は、アクターが運営者ひとりのため省略する。
+## ユースケース図
+```mermaid
+flowchart LR
+    operator["運営者"]
+    workflow["月次ワークフロー<br>（GitHub Actions・自動実行）"]
+    collectMaterial["材料を集める（フィードバック・収集状況）"]
+    proposeReview["見直し案をPRで作る"]
+    approve["見直し案を確認し承認（マージ）する"]
+
+    workflow --> collectMaterial
+    collectMaterial --> proposeReview
+    proposeReview --> approve
+    operator --> approve
+```
+上記は俯瞰用の図。正となる文章は下記「機能要件」「ビジネスルール・制約」。
 
 ## 機能要件
 
@@ -23,7 +37,7 @@
 - [1] 月1回、蓄積された運営者フィードバック([article-detail/requirements.md](../article-detail/requirements.md))と、直近1か月の収集状況([content-selection/requirements.md#収集状況の記録](../content-selection/requirements.md))をもとに見直し案を作る
 - [2] 見直しの対象は「選定領域」(ジャンル・採用基準・影響度の判定観点)と「生成領域」(執筆ルール)の2つとする。1つのPRに両方の変更を含めてよい
 - [3] フィードバックをそれぞれ「選定領域」「生成領域」「どちらでもない」に振り分ける。どちらでもないもの(画面の不具合など)は見直し案の対象にせず、PR本文の表に「対象外」と記録する
-- [4] 材料(フィードバック・収集状況)が1件でもある月は、具体的な変更案(ファイルの差分)を必ずPRで出す。材料が1件もない月だけPRを作らない
+- [4] 「材料」とは、直近1か月の運営者フィードバックが1件以上あること、または候補なしが続いているジャンル([content-selection/requirements.md#収集状況の記録](../content-selection/requirements.md)。収集失敗のジャンルはこの集計に含めない)が1つ以上あることを指す。材料が1件でもある月は、具体的な変更案(ファイルの差分)を必ずPRで出す。ただしテスト・lint・build等が通る変更案を作れなかった場合は、その理由を明記したPRを出してよい(具体的な変更案の代わりに理由を残す)。材料が1件もない月だけPRを作らない
 - [5] 候補が見つからなかったジャンルが直近1か月続いている場合は、その採用基準を確かめる見直し案を必ず含める
 
 ### 承認フロー

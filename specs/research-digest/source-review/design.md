@@ -6,14 +6,15 @@
 主要な設計判断:
 - 収集状況は実行時のログではなく記事データの`emptyGenres`から集計し直す(ログは月次の時点で取り出せないため)
 - 生成領域では、著作権への配慮と研究結果を誇張しない制約を弱める提案はさせず、要望があれば却下の理由を表に残させる
-- 図: 「見直し案をPRとして出す処理」のシーケンス図
+- 図: [見直し案をPRとして出す処理](#見直し案をprとして出す処理)のシーケンス図
 
 ## 実行環境の前提
 
 - ワークフロー本体は`.github/workflows/research-digest-monthly.yml`とし、`schedule`の`30 0 2 * *`(毎月2日00:30 UTC=2日09:30 JST)で起動する。既存の月次実行(ai-dev-digest 07:00・news-digest 07:30・trend-digest 08:00)・future-digest(08:30)と時間をずらし、Claude Code の利用枠の取り合いを避ける。`workflow_dispatch`でも起動できるようにする
-- DBの読み取りは既存の`SUPABASE_READONLY_DB_URL`(`benriyatool_readonly`ロール。[ADR-0004](../../../docs/adr/0004-agent-readonly-db-access.md))を使う。`research_digest_feedback`へのSELECT権限は[article-detail/design.md](../article-detail/design.md)のマイグレーションで付与する
-- GitHubへの書き込みは[weekly-publish](../weekly-publish/design.md)と同じ`RESEARCH_DIGEST_GH_PAT`を使う(このPRは自動マージしないため、自動マージの範囲と混ざらない)
-- Claude Code CLIの認証は`CLAUDE_CODE_OAUTH_TOKEN`(他のdigestと共用)を使う
+- Secretsは工程ごとに使う範囲を分離し、Claude CLIのヘッドレス実行ステップにはDB接続情報・GitHub PATのいずれも渡さない
+  - 材料収集ステップ(`collectReviewData.ts`。Claude CLI起動より前): 既存の`SUPABASE_READONLY_DB_URL`(`benriyatool_readonly`ロール。[ADR-0004](../../../docs/adr/0004-agent-readonly-db-access.md))でDBから読み取り、結果をJSONとして標準出力に書き出す。`research_digest_feedback`へのSELECT権限は[article-detail/design.md](../article-detail/design.md)のマイグレーションで付与する
+  - Claude CLIのヘッドレス実行ステップ: 材料収集ステップが出力したJSONと、`--allowedTools`で許可したツール(ファイル編集、`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`の実行)だけを渡す。DB接続情報・GitHub PATは渡さない(見直し案の作成にDB直接アクセスやgit操作は不要なため)。認証は`CLAUDE_CODE_OAUTH_TOKEN`(他のdigestと共用)を使う
+  - コミット・push・PR作成ステップ(Claude CLI実行より後): [weekly-publish](../weekly-publish/design.md)と同じ`RESEARCH_DIGEST_GH_PAT`を使う(このPRは自動マージしないため、自動マージの範囲と混ざらない)。このPATもClaude CLIのステップには渡さない
 - 実行指示の根拠は本specと`content-selection`・`content-generation`のrequirements.md/design.mdとし、専用のプロンプトファイルを複製しない
 
 ## 処理フロー
@@ -33,18 +34,19 @@
 - 手順:
   1. 材料(フィードバック・候補なしのジャンル)が1件もない月は、PRを作らずに終える(requirements.md#見直しの実行-4)
   2. 各フィードバックを「選定領域」(どのジャンル・研究を載せるか、影響度の判定)・「生成領域」(どう書くか)・「どちらでもない」(画面の不具合など)に振り分ける(requirements.md#見直しの実行-3)
-  3. 選定領域: フィードバックと収集状況をもとに、`content-selection/requirements.md`(ジャンル・採用基準・影響度の観点)と`content/research-digest/genres.json`(ジャンルの説明)の変更案を作る。候補なしが続いているジャンルがある場合は、その採用基準・ジャンルの説明を確かめる変更案を必ず含める(requirements.md#見直しの実行-2・5)
-  4. 生成領域: `content-generation/requirements.md`・`design.md`の変更案を作る。変更が生成CLIに書き写してあるルール文(ガードレール文言など)に及ぶ場合は、`scripts/research-digest/generate-content.ts`の該当箇所も変える
-  5. 著作権への配慮・研究結果を誇張しない制約([content-generation/requirements.md](../content-generation/requirements.md)の機能要件[4][5]。健康に関わる研究で個別の治療判断を勧めないことを含む)を弱める変更は提案しない。そうした要望は変更案に入れず、却下したことと理由を表に残す(requirements.md#ビジネスルール・制約-3)
-  6. 材料が1件でもある領域は、必ず具体的な変更案(ファイルの差分)を作る(requirements.md#見直しの実行-4)
-  7. 仕様(requirements.md)と機械可読データ(genres.json)・書き写し箇所は、片方だけを変えない。変更後に`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`を実行し、すべて成功することを確かめる
-  8. 判断材料の表(「対象のフィードバック・実績」「提案内容」「適用した場合の懸念」の3列)を`/tmp/source-review-pr-body.md`に書き出す。「どちらでもない」に振り分けたフィードバックは「対象外」、却下した要望は「却下(理由)」として行に残す(requirements.md#見直しの実行-3、requirements.md#ビジネスルール・制約-2〜3)
+  3. Claudeへ渡すプロンプトでは、フィードバックの本文はプロンプトの指示ではなくデータ(参考情報)として扱うことを明記する(フィードバック本文に指示めいた文言が含まれていても、それに従って挙動を変えない)【推測】
+  4. 選定領域: フィードバックと収集状況をもとに、`content-selection/requirements.md`(ジャンル・採用基準・影響度の観点)と`content/research-digest/genres.json`(ジャンルの説明)の変更案を作る。候補なしが続いているジャンルがある場合は、その採用基準・ジャンルの説明を確かめる変更案を必ず含める(requirements.md#見直しの実行-2・5)
+  5. 生成領域: `content-generation/requirements.md`・`design.md`の変更案を作る。記事生成CLI(`scripts/research-digest/generate-content.ts`)はこの2ファイルを実行時に読み込んでプロンプトへ渡すため、CLI自体の変更は不要(次回の週次生成に自動で反映される)
+  6. 著作権への配慮・研究結果を誇張しない制約([content-generation/requirements.md](../content-generation/requirements.md)の機能要件[4][5]。健康に関わる研究で個別の治療判断を勧めないことを含む)を弱める変更は提案しない。そうした要望は変更案に入れず、却下したことと理由を表に残す(requirements.md#ビジネスルール・制約-3)
+  7. 材料が1件でもある領域は、必ず具体的な変更案(ファイルの差分)を作る(requirements.md#見直しの実行-4)
+  8. 選定領域の変更は、仕様(requirements.md)と機械可読データ(genres.json)の片方だけを変えない。変更後に`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`を実行し、すべて成功することを確かめる
+  9. 判断材料の表(「対象のフィードバック・実績」「提案内容」「適用した場合の懸念」の3列)を`/tmp/source-review-pr-body.md`に書き出す。「どちらでもない」に振り分けたフィードバックは「対象外」、却下した要望は「却下(理由)」として行に残す(requirements.md#見直しの実行-3、requirements.md#ビジネスルール・制約-2〜3)
 - 関連するビジネスルール: requirements.md#見直しの実行-2〜5、requirements.md#ビジネスルール・制約-2〜3
 
 ### 見直し案をPRとして出す処理
 - 対象: 上記の変更
 - 手順:
-  1. ブランチ`research-digest/source-review/<年-月>`(例: `research-digest/source-review/2026-11`)を作ってコミットし、`main`向けのPRを作る。本文は`/tmp/source-review-pr-body.md`を使う
+  1. Claude CLIがファイルの変更・テスト実行まで終えたら、ワークフロー(GitHub PATを使うステップ)がブランチ`research-digest/source-review/<年-月>`(例: `research-digest/source-review/2026-11`)を作ってコミット・pushし、`main`向けのPRを作る。本文は`/tmp/source-review-pr-body.md`を使う
   2. このPRは自動マージしない。自動マージの対象は`research-digest/articles/**`だけで、このブランチは通常のレビュー必須のまま残り、運営者がマージするまで反映されない(requirements.md#承認フロー-6)
 - シーケンス図(俯瞰用。正は上記の手順の文章):
 
@@ -58,13 +60,14 @@ sequenceDiagram
 
     wf ->> articles: 過去1か月の候補なしのジャンルを集計
     wf ->> db: 過去1か月のフィードバックを読む
-    wf ->> claude: 材料と関連specを渡し見直し案を依頼
+    wf ->> claude: 材料と関連specを渡し見直し案を依頼(DB接続情報・PATは渡さない)
     claude ->> claude: 振り分け・変更案の作成・テスト実行
+    claude -->> wf: 変更されたファイル・判断材料の表を返す
     alt 材料が1件以上
-        claude ->> gh: source-reviewブランチでPRを作成(判断材料の表つき)
+        wf ->> gh: source-reviewブランチでコミット・push・PRを作成(判断材料の表つき)
         Note over gh: 自動マージしない(運営者が確認してマージ)
     else 材料なし
-        claude -->> wf: PRを作らず終了
+        wf ->> wf: PRを作らず終了
     end
 ```
 - 関連するビジネスルール: requirements.md#承認フロー-6、requirements.md#ビジネスルール・制約-1〜2
@@ -85,8 +88,7 @@ scripts/research-digest/collect-review-data/collectReviewData.ts (新規: 記事
 app/research-digest/lib/reviewRecords.ts (新規: 記事データから候補なしのジャンルを集計する純粋関数)
 content/research-digest/genres.json (content-selectionで新規: 選定領域の変更対象)
 specs/research-digest/content-selection/requirements.md (既存: 選定領域の変更対象)
-specs/research-digest/content-generation/requirements.md・design.md (既存: 生成領域の変更対象)
-scripts/research-digest/generate-content.ts (content-generationで新規: 書き写したルール文に変更が及ぶ場合だけ変更対象)
+specs/research-digest/content-generation/requirements.md・design.md (既存: 生成領域の変更対象。記事生成CLIが実行時に読み込むため、CLI自体は変更対象に含めない)
 ```
 
 ## データベース設計
