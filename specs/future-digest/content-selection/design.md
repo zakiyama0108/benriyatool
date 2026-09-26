@@ -27,7 +27,7 @@
     "label": "性・恋愛",
     "description": "収集時にClaudeへ渡すジャンルの範囲の説明",
     "active": true,
-    "lineExcluded": true // LINE配信の代表見出しから除く(line-broadcast/requirements.md#配信内容-4)。ジャンルIDの直接比較ではなくこの属性で判定する(LB1対応)
+    "lineExcluded": true // LINE配信の代表見出しから除く(line-broadcast/requirements.md#配信内容-4)。ジャンルIDの直接比較ではなくこの属性で判定する(ジャンルの追加・IDの変更に強くするため)
   },
   // ...
   {

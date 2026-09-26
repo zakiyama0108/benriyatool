@@ -11,7 +11,7 @@
 - Task 2: 型定義と時間軸の導出(仕様: design.md「前提: 記事データの形式」、content-selection/requirements.md#時間軸の切り替え-1)
   - 🔴 `horizonsForIssue(1)`・`horizonsForIssue(3)`が`['near','long']`、`horizonsForIssue(2)`・`horizonsForIssue(4)`が`['mid','ultra-long']`を返すこと、0以下では例外になることを確認するテストを書く
   - 🔴 `genres.json`の記載順どおりに`GENRE_ORDER`が組み立てられ、`GENRE_LABELS`で日本語ラベルが引けることを確認するテストを書く
-  - 🟢 `app/future-digest/lib/types.ts`に型・`GENRE_ORDER`・`GENRE_LABELS`(genres.jsonから組み立て)・`HORIZON_ORDER`・`HORIZON_LABELS`・`IMPACT_ORDER`・`IMPACT_LABELS`・`horizonsForIssue`を実装する
+  - 🟢 `app/future-digest/lib/types.ts`に型・`GENRE_ORDER`・`GENRE_LABELS`(genres.jsonから組み立て)・`HORIZON_ORDER`・`HORIZON_LABELS`・`IMPACT_ORDER`・`IMPACT_LABELS`・`COLLECTION_FAILURE_LABELS`・`horizonsForIssue`を実装する
 
 - Task 3: 記事データのスキーマ検証(仕様: design.md「バリデーション」)
   - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(予測18件+掲載できなかった枠2件)を受け付ける/記事に現れるジャンルでその回の2時間軸の片方が欠けている場合・同じ枠が重複する場合・`genres.json`にないジャンルの場合に拒否する/その回の時間軸以外の`horizon`を拒否する/`id`が`<genre>--<horizon>`と一致しない予測を拒否する/必須文字列が空の予測を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/本文が160字未満・480字超なら拒否する/予測が0件の記事を拒否する/`issueNumber`が1未満なら拒否する/`reason`が定義外なら拒否する/`reason`が`'collection-failed'`で`collectionFailureReason`が欠けている・定義外の値である場合に拒否する/`reason`が`'no-candidate'`・`'generation-failed'`で`collectionFailureReason`を持つ場合に拒否する

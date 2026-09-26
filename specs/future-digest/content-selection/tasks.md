@@ -3,7 +3,7 @@
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: ジャンル設定ファイルの読み込み(仕様: requirements.md#機能要件-1、requirements.md#ジャンル-1〜10、design.md「データ設計」)
-  - 🔴 `genres.json`の記載順でジャンルが返ること、`active: false`のジャンルが収集対象から外れラベルは引けること、`id`の重複・`label`が空・`themes`が文字列配列でない・`lineExcluded`が真偽値でない場合に例外になること、`lineExcluded: true`のジャンルが1つ以上存在すること(LB1対応)を確認するテストを書く
+  - 🔴 `genres.json`の記載順でジャンルが返ること、`active: false`のジャンルが収集対象から外れラベルは引けること、`id`の重複・`label`が空・`themes`が文字列配列でない・`lineExcluded`が真偽値でない場合に例外になること、`lineExcluded: true`のジャンルが1つ以上存在すること(line-broadcastの代表見出し選定がジャンルIDの直接比較に依存しないことを保証するため)を確認するテストを書く
   - 🟢 `content/future-digest/genres.json`(requirements.md#ジャンルの10ジャンル。個人的注目分野に`themes: ["AR・VR", "若返り"]`)と`app/future-digest/lib/genres.ts`を実装する
 
 - Task 2: 次の回数の決定(仕様: requirements.md#時間軸の切り替え-1〜2、design.md「その回の時間軸2区分を決める処理」)

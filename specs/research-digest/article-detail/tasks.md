@@ -10,7 +10,7 @@
 
 - Task 2: 型定義(仕様: design.md「前提: 記事データの形式」)
   - 🔴 `genres.json`の記載順どおりに`GENRE_ORDER`が組み立てられ、`GENRE_LABELS`で日本語ラベルが引けること、`IMPACT_LABELS`が大・中・小を返すことを確認するテストを書く
-  - 🟢 `app/research-digest/lib/types.ts`を実装する
+  - 🟢 `app/research-digest/lib/types.ts`に型・`GENRE_ORDER`・`GENRE_LABELS`・`IMPACT_ORDER`・`IMPACT_LABELS`・`COLLECTION_FAILURE_LABELS`を実装する
 
 - Task 3: 記事データのスキーマ検証(仕様: design.md「バリデーション」)
   - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(研究9件+掲載できなかったジャンル1件)を受け付ける/同じジャンルが2回現れる場合・`genres.json`にないジャンルの場合に拒否する/`id`が`genre`と一致しない研究を拒否する/必須文字列が空の研究を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/`doi`が`10.`で始まらない文字列なら拒否する(`null`は受け付ける)/`publishedYear`が発行日の年より後なら拒否する/`isPreprint`が真偽値でなければ拒否する/本文が160字未満・480字超なら拒否する/研究が0件の記事を拒否する/`reason`が定義外なら拒否する/`reason`が`'collection-failed'`で`collectionFailureReason`が欠けている・定義外の値である場合に拒否する/`reason`が`'no-candidate'`・`'generation-failed'`で`collectionFailureReason`を持つ場合に拒否する
