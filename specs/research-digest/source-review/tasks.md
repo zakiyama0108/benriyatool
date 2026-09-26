@@ -15,5 +15,5 @@
   - コミット対象のパスを、`specs/research-digest/content-selection/requirements.md`・`content/research-digest/genres.json`・`specs/research-digest/content-generation/`に限る(記事生成CLIは`content-generation`のrequirements.md/design.mdを実行時に読み込むため変更対象外)
 
 - Task 4: Actions Secretsの確認(仕様: design.md「実行環境の前提」)(TDD対象外。手動の確認作業)
-  - `RESEARCH_DIGEST_GH_PAT`([weekly-publish/tasks.md](../weekly-publish/tasks.md)のTask 4で発行)・`CLAUDE_CODE_OAUTH_TOKEN`・`SUPABASE_READONLY_DB_URL`がそのまま使えることを確認する
+  - `RESEARCH_DIGEST_GH_PAT`([weekly-publish/tasks.md](../weekly-publish/tasks.md)のTask 5「Actions Secretsの準備」で発行)・`CLAUDE_CODE_OAUTH_TOKEN`・`SUPABASE_READONLY_DB_URL`がそのまま使えることを確認する
   - `workflow_dispatch`で1回実行し、材料がない場合にPRが作られないこと、材料がある場合にPRが作られ自動マージされないことを確認する

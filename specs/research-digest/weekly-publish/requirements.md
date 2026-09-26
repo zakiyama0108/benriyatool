@@ -30,8 +30,8 @@
 ## ビジネスルール・制約
 
 ### 掲載件数の保証
-- [1] 候補が見つからないジャンルは、「候補が見つからなかった」ことが分かる記載にして公開する([content-selection/requirements.md#候補が見つからないジャンル](../content-selection/requirements.md))。読者への表示は[article-detail/requirements.md#記事本文の表示-3](../article-detail/requirements.md)に従う
-- [2] 収集の処理自体が失敗したジャンルは、[content-selection/requirements.md#収集失敗](../content-selection/requirements.md)の分類ラベルを添えて公開する。候補なしとは区別する。読者への表示は[article-detail/requirements.md#記事本文の表示-4〜6](../article-detail/requirements.md)に従う
+- [1] 候補が見つからないジャンルは、「候補が見つからなかった」ことが分かる記載にして公開する([content-selection/requirements.md#候補が見つからないジャンル](../content-selection/requirements.md))。読者への表示は[article-detail/requirements.md#記事本文の表示-3・6](../article-detail/requirements.md)に従う
+- [2] 収集の処理自体が失敗したジャンルは、[content-selection/requirements.md#収集失敗](../content-selection/requirements.md)の分類ラベルを添えて公開する。候補なしとは区別する。読者への表示は[article-detail/requirements.md#記事本文の表示-4・6](../article-detail/requirements.md)に従う
 - [3] 全ジャンル(有効なジャンルの数だけ。現在は10ジャンル)で1本も採用できなかった場合、空になったジャンルがすべて候補なし([1])であれば、その回の公開をスキップする(候補なしによる正常なスキップ)。収集失敗のジャンル([2])が1つ以上混在する場合は、公開せずにその回の実行を失敗として終える(候補なしによる正常なスキップとは区別し、GitHub Actionsの失敗表示で気づけるようにする)【推測】
 - [4] 個々の記事の要約の生成に失敗した場合は、その記事だけを除き、残りで公開する。全件の生成に失敗した場合と、利用枠の枯渇で続行できない場合は、公開せずに実行を失敗として終える(候補不足による正常なスキップとは区別し、GitHub Actionsの失敗表示で気づけるようにする)
 
