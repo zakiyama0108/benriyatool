@@ -27,7 +27,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-// 仕様: specs/news-digest/line-broadcast/requirements.md#配信タイミング・方式-7、specs/news-digest/line-broadcast/requirements.md#無料枠と配信失敗時の扱い-3、specs/news-digest/line-broadcast/requirements.md#無料枠と配信失敗時の扱い-4
+// 仕様: specs/news-digest/line-broadcast/requirements.md#配信タイミング・方式-7、specs/news-digest/line-broadcast/requirements.md#無料枠と配信失敗時の扱い-4、specs/news-digest/line-broadcast/requirements.md#無料枠と配信失敗時の扱い-5
 describe('LINEブロードキャスト送信 - LINE Messaging APIの一斉配信エンドポイントへ送信し、成否をリトライなしで記録する', () => {
   it('記事ページの公開確認(GET)が200を返した場合、友だち全員への一斉配信エンドポイントへ1件のテキストメッセージが送信され、配信成功として扱われること', async () => {
     fetchMock

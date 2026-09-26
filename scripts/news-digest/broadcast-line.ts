@@ -28,7 +28,7 @@ export type WaitForPageAvailableSettings = {
 // 成否をboolean で返す(HTTPクライアントをモックしたテストで成功/失敗の記録を検証できるように
 // するため)。記事データのパースに失敗した場合は配信を行わず例外を投げる
 // (design.md「エラーハンドリング」)。LINE配信APIがエラーを返した場合はリトライせずfalseを返す
-// (requirements.md#無料枠と配信失敗時の扱い-3〜5)
+// (requirements.md#無料枠と配信失敗時の扱い-4〜5)
 export async function broadcastArticle(
   articlePath: string,
   accessToken: string,
@@ -76,7 +76,7 @@ export async function broadcastArticle(
 
   if (!response.ok) {
     // リトライはせず、HTTPステータス・エラーレスポンス概要を記録して失敗を返す
-    // (design.md「エラーハンドリング」、requirements.md#無料枠と配信失敗時の扱い-3〜5)
+    // (design.md「エラーハンドリング」、requirements.md#無料枠と配信失敗時の扱い-4〜6)
     const errorBody = await response.text()
     console.error(`LINE配信APIがエラーを返しました: HTTP ${response.status}`)
     console.error(`レスポンス概要: ${errorBody}`)
