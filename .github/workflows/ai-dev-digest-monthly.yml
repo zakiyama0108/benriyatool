@@ -1,12 +1,13 @@
-# AI駆動開発ダイジェストのウォッチリスト・採用基準 月次見直しワークフロー
+# AI駆動開発ダイジェストの選定・生成の月次見直しワークフロー
 # (仕様: specs/ai-dev-digest/watchlist-review/design.md「実行環境の前提」「見直しの材料を集める処理」
 # 「見直し案を作成する処理」「見直し案をPRとして提案する処理」)
 #
 # collectReviewData.tsで直近1ヶ月の基準未達記録・フィードバックを集計し、Claude Code CLIを
-# ヘッドレス起動して見直し案の検討・ファイル編集を行わせる。変更があればブランチ作成・コミット・
-# push・PR作成まで行うが、daily-publishと異なり自動マージはしない(通常のレビュー必須フローのまま。
-# requirements.md#承認フロー-3参照)
-name: AI駆動開発ダイジェスト 月次ウォッチリスト見直し
+# ヘッドレス起動して見直し案の検討・ファイル編集を行わせる。見直し対象は選定領域(ウォッチリスト・
+# 採用基準)と生成領域(翻訳・要約・記事執筆ルール)の両方で、各フィードバックはエージェントが内容から
+# 選定/生成/対象外に振り分ける。変更があればブランチ作成・コミット・push・PR作成まで行うが、
+# daily-publishと異なり自動マージはしない(通常のレビュー必須フローのまま。requirements.md#承認フロー-5参照)
+name: AI駆動開発ダイジェスト 選定・生成の月次見直し
 
 on:
   schedule:
@@ -34,7 +35,9 @@ jobs:
         run: echo "date=$(date -u -d '-1 month' +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
 
       # 依存関係(pg/dotenv)を本体package.jsonから隔離した独立パッケージのため、専用にnpm installする
-      # (design.md「関連するファイル」、.claude/skills/data-check/と同じ隔離パターン)
+      # (design.md「関連するファイル」、.claude/skills/data-check/と同じ隔離パターン)。フィードバックは
+      # 領域で絞り込まず全件取得する(振り分けは後続のヘッドレスClaude Codeの推論。design.md「見直しの
+      # 材料を集める処理」手順2)
       - name: 基準未達記録・フィードバックを収集
         working-directory: scripts/ai-dev-digest/collect-review-data
         run: |
@@ -57,21 +60,28 @@ jobs:
           claude -p "$(cat <<'PROMPT'
           あなたはこのリポジトリのai-dev-digestアプリの月次見直し担当です。
           specs/ai-dev-digest/watchlist-review/requirements.md と design.md を読み、
-          「見直し案を作成する処理」の手順に従ってウォッチリスト・採用基準の見直し案を検討してください。
+          「見直し案を作成する処理」の手順に従って選定領域・生成領域の見直し案を検討してください。
 
-          見直し対象の仕様は specs/ai-dev-digest/content-selection/requirements.md と design.md、
-          機械可読データは content/ai-dev-digest/watchlist.json と content/ai-dev-digest/criteria.json です。
-          見直し案は、既存の情報源の除外・既存の数値基準(閾値)の調整だけでなく、新しい採用基準・
-          フィルター観点の追加提案も対象に含みます(requirements.md#見直し案の粒度・提示方法-4)。
+          見直し対象の仕様は次のとおりです:
+          - 選定領域: specs/ai-dev-digest/content-selection/requirements.md と design.md、
+            機械可読データ content/ai-dev-digest/watchlist.json と content/ai-dev-digest/criteria.json
+          - 生成領域: specs/ai-dev-digest/content-generation/requirements.md と design.md
 
           見直しの材料(直近1ヶ月の基準未達記録・運営者フィードバック)は /tmp/review-data.json に
-          JSON形式で保存されています。読み込んで判断材料にしてください。
+          JSON形式で保存されています。読み込んで判断材料にしてください。フィードバックは領域で絞り込まれて
+          いない全件です。
 
-          基準未達記録・フィードバックのいずれか1件でも材料がある場合は、必ず具体的な変更案
-          (実際のファイル差分)を作成してください。「1件では根拠が薄い」「単発のため見送り」といった
-          理由で提案自体を見送り、無言で終了することは禁止します(requirements.md#見直し案の粒度・
-          提示方法-5)。基準未達記録・フィードバックの両方が0件の場合のみ、一切のファイルを変更せず
-          終了してください。
+          # フィードバックの振り分け(requirements.md#見直しの実行-3〜4)
+          各運営者フィードバックを内容から「選定領域」「生成領域」「いずれにも該当しない」に振り分けて
+          ください(判断の目安は design.md「見直し案を作成する処理」手順1)。1件が両領域に関係する場合は
+          両方の見直し案の根拠にしてかまいません。いずれにも該当しないもの(画面表示の不具合、
+          フィードバック・付箋など他機能への要望)は見直し案に含めず、PR本文の判断材料の表にその内容と
+          「対象外」である旨を行として記録してください。
+
+          # 選定領域の見直し案
+          基準未達記録と選定領域に振り分けたフィードバックをもとに検討します。既存の情報源の除外・
+          既存の数値基準(閾値)の調整だけでなく、新しい採用基準・フィルター観点の追加提案も対象に
+          含みます(requirements.md#選定領域の見直し案の粒度・提示方法-6)。
           変更する場合は、specs/ai-dev-digest/content-selection/requirements.md と
           content/ai-dev-digest/watchlist.json・content/ai-dev-digest/criteria.json を
           必ずすべて更新してください(一部だけの更新はしないでください)。
@@ -82,9 +92,8 @@ jobs:
           先送りにしないでください(既存の実装済み項目に対する変更(閾値の調整・情報源の除外等)の
           みの場合、この対応は不要です)。実装ファイルはapp/ai-dev-digest/lib/配下、テストファイルは
           __tests__/ai-dev-digest/lib/配下に置いてください(選定ロジックはこの範囲にのみ存在します。
-          画面表示のコンポーネント等、他の範囲は変更しないでください)。実装後は必ず以下をすべて
-          実行し、成功することを確認してからコミットしてください:
-          npm test / npm run lint / npm run build / npm run check:spec-coverage
+          画面表示のコンポーネント等、他の範囲は変更しないでください)(requirements.md#選定領域の
+          見直し案の粒度・提示方法-8)。
 
           どうしても実装まで完了できない場合(判定方法自体にさらなる検討が必要な場合等)に限り、
           scripts/spec-coverage-skip.jsonの配列に以下の形式でエントリを追加し、判断材料の表
@@ -94,20 +103,56 @@ jobs:
           形式でそのまま使ってください(例: 見出しが「### 話題の関連性」で `- [12] ...` なら
           「話題の関連性 [12]」)。
 
-          変更した場合は、判断材料の表(「対象フィードバック・実績」「提案内容」「適用した場合の懸念」の
-          3列。1行が1つの見直し観点に対応し、複数の観点を検討した場合は複数行にする)をMarkdown形式で
-          /tmp/watchlist-review-pr-body.md に書き出してください。
+          # 生成領域の見直し案(requirements.md#生成領域の見直し案の粒度・提示方法-9〜10)
+          生成領域に振り分けたフィードバックがある場合、記事の分かりやすさ・情報の取捨選択・重要度の
+          付け方の問題に対し、specs/ai-dev-digest/content-generation/requirements.md の機能要件・
+          ビジネスルール(要約の分量、固定4観点の構成・内容、書き出しの順序、情報の優先順位、
+          重要度の基準など)と specs/ai-dev-digest/content-generation/design.md の該当処理の文言を、
+          具体的な変更案(実際のファイル差分)として作成してください。
+
+          変更は既存ルールの調整(数値・順序・観点の言い換え)にとどめてください。
+          content-generation/requirements.md の「### 著作権への配慮(根拠)」が定める著作権リスク低減の
+          緩和策(原文の構成をなぞらない独自の再構成、数値・結論の網羅的な転記の回避、出典の明記)を
+          弱める変更は提案しないでください(requirements.md#ビジネスルール・制約-3)。この著作権ガードに
+          抵触するため採用できない要望(例:「要約が浅いので原文の数値を全部載せてほしい」等)は
+          見直し案に反映せず、却下した旨と理由をPR本文の判断材料の表の行として残してください。
+
+          content-generation/requirements.md・design.md の変更は、記事生成CLI
+          (scripts/ai-dev-digest/generate-content.ts)が実行時に両ファイルを読み込むため次回の日次生成に
+          自動で反映されます。ただし変更が同CLI内に転記されているルール文(GUARDRAIL定数、出力JSON
+          スキーマ例に埋め込まれた字数指定など)に及ぶ場合は、その転記箇所の更新も同じコミットに
+          含めてください。
+
+          # 材料が1件でもあれば必ず具体案を出す
+          選定領域・生成領域それぞれについて、振り分けた材料(選定領域は基準未達記録も含む)が1件でも
+          ある場合は、必ず具体的な変更案(実際のファイル差分)を作成してください。「1件では根拠が薄い」
+          「単発のため見送り」といった理由で提案自体を見送り、無言で終了することは禁止します
+          (requirements.md#選定領域の見直し案の粒度・提示方法-7、requirements.md#生成領域の見直し案の
+          粒度・提示方法-9)。両領域とも材料が0件の場合のみ、一切のファイルを変更せず終了してください。
+
+          # 実装後の確認
+          ファイルを変更した場合は、コミット前に必ず以下をすべて実行し、成功することを確認してください:
+          npm test / npm run lint / npm run build / npm run check:spec-coverage
+
+          # 判断材料の表
+          変更した場合、または対象外・却下の行がある場合は、判断材料の表(「対象フィードバック・実績」
+          「提案内容」「適用した場合の懸念」の3列。1行が1つの見直し観点・対象外・却下に対応し、
+          複数を検討した場合は複数行にする)をMarkdown形式で /tmp/watchlist-review-pr-body.md に
+          書き出してください。
 
           ブランチ作成・コミット・PR作成は行わず、対象ファイルの編集だけを行ってください
           (それらは後続のステップが行います)。
           PROMPT
           )" --dangerously-skip-permissions
 
-      # 新しい判定ロジックの実装(design.md「見直し案を作成する処理」手順6)がapp/ai-dev-digest/lib・
-      # __tests__/ai-dev-digest/libのどのファイルに及ぶかは提案内容によって変わるため、個別ファイルの
-      # 列挙ではなくディレクトリ単位で対象を指定する(2026-08第6次改定。個別ファイル列挙が漏れて
-      # 変更が失われた実例(PR #166レビュー時)を踏まえた設計)。選定ロジックはlib/配下にのみ存在する
-      # ため、components/・[date]/等の画面コードは対象に含めない(design.md「変更対象ファイル」参照)
+      # 変更検知・git addの対象パス(design.md「関連するファイル」「見直し案を作成する処理」変更対象ファイル):
+      # - 選定領域: content-selection/requirements.md・watchlist.json・criteria.json。新しい判定ロジックの
+      #   実装(手順6)がapp/ai-dev-digest/lib・__tests__/ai-dev-digest/libのどのファイルに及ぶかは提案
+      #   内容によって変わるため、個別ファイルの列挙ではなくディレクトリ単位で対象を指定する(2026-08
+      #   第6次改定。個別ファイル列挙が漏れて変更が失われた実例(PR #166レビュー時)を踏まえた設計)。
+      #   選定ロジックはlib/配下にのみ存在するため、components/・[date]/等の画面コードは対象に含めない
+      # - 生成領域: content-generation配下(requirements.md・design.md)と、転記箇所に及ぶ場合の
+      #   scripts/ai-dev-digest/generate-content.ts(design.md「見直し案を作成する処理」手順8)
       - name: 変更の有無を確認
         id: diff
         run: |
@@ -117,7 +162,9 @@ jobs:
             content/ai-dev-digest/criteria.json \
             scripts/spec-coverage-skip.json \
             app/ai-dev-digest/lib \
-            __tests__/ai-dev-digest/lib; then
+            __tests__/ai-dev-digest/lib \
+            specs/ai-dev-digest/content-generation \
+            scripts/ai-dev-digest/generate-content.ts; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -141,8 +188,10 @@ jobs:
             content/ai-dev-digest/criteria.json \
             scripts/spec-coverage-skip.json \
             app/ai-dev-digest/lib \
-            __tests__/ai-dev-digest/lib
-          git commit -m "spec(ai-dev-digest): ${YEAR_MONTH}のウォッチリスト・採用基準見直し"
+            __tests__/ai-dev-digest/lib \
+            specs/ai-dev-digest/content-generation \
+            scripts/ai-dev-digest/generate-content.ts
+          git commit -m "spec(ai-dev-digest): ${YEAR_MONTH}の選定・生成の見直し"
           git push origin "$BRANCH"
 
           # 判断材料の表(design.md「見直し案をPRとして提案する処理」手順2)。Claude Codeが
@@ -157,5 +206,5 @@ jobs:
           fi
 
           gh pr create --base main \
-            --title "[ai-dev-digest] ${YEAR_MONTH}のウォッチリスト・採用基準見直し" \
+            --title "[ai-dev-digest] ${YEAR_MONTH}の選定・生成の見直し" \
             --body-file "$BODY_FILE"

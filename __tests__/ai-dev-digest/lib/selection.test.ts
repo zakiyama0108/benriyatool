@@ -1,15 +1,27 @@
 import { describe, it, expect } from 'vitest'
-import { meetsCriteria, describeShortfall, selectDailyTopics, isTopicExcluded } from '../../../app/ai-dev-digest/lib/selection'
+import {
+  meetsCriteria,
+  describeShortfall,
+  selectDailyTopics,
+  isTopicExcluded,
+  deduplicateSameSourceCandidates,
+  excludeAlreadyPublished,
+  normalizeUrl,
+} from '../../../app/ai-dev-digest/lib/selection'
 import type { Candidate } from '../../../app/ai-dev-digest/lib/candidateTypes'
 import type { Criteria } from '../../../app/ai-dev-digest/lib/watchlistTypes'
 
 const criteria: Criteria = {
   dailyTopicCount: { min: 3, max: 5 },
   youtubeRecentVideoWindow: 10,
+  youtubeCandidateVideoCount: 5,
   youtubeAboveAverageRatio: 1.2,
   qiitaMinLikes: 30,
+  qiitaMaxAgeDays: 60,
   zennMinLikes: 30,
+  minIndividualBlogBodyChars: 150,
   topicExcludeKeywords: [],
+  duplicateSuppressionSourceTypes: ['individual-blog'],
 }
 
 function baseCandidate(overrides: Partial<Candidate>): Candidate {
@@ -235,6 +247,109 @@ describe('話題の関連性フィルタ - 他の採用基準を満たしてい�
   it('収集した候補すべてが話題除外に該当し、実在する候補が残らないとき、候補不足によるスキップ結果になること', () => {
     const excluded = baseCandidate({ sourceId: 'medical', heading: 'AIによる医療診断支援の最新動向', sourceType: 'official' })
     const result = selectDailyTopics([excluded], criteriaWithExcludeKeywords)
+    expect(result.status).toBe('skipped')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#情報源内の重複掲載の抑制(種別を問わない横断フィルター)-13、specs/ai-dev-digest/content-selection/design.md#情報源内の重複を抑制する処理(決定的なコード)
+describe('情報源内の重複抑制 - duplicateSuppressionSourceTypesに含まれる種別は、同じ情報源から同日に複数候補があれば最新の1件だけを残す', () => {
+  it('個人ブログで同じ情報源から2件の候補があるとき、公開日時が新しい方だけが残ること', () => {
+    const older = baseCandidate({
+      sourceId: 'simon-willison',
+      sourceType: 'individual-blog',
+      heading: '古い方の投稿',
+      publishedAt: '2026-08-15T03:00:00.000Z',
+    })
+    const newer = baseCandidate({
+      sourceId: 'simon-willison',
+      sourceType: 'individual-blog',
+      heading: '新しい方の投稿',
+      publishedAt: '2026-08-15T20:00:00.000Z',
+    })
+    const result = deduplicateSameSourceCandidates([older, newer], criteria)
+    expect(result).toHaveLength(1)
+    expect(result[0].heading).toBe('新しい方の投稿')
+  })
+
+  it('duplicateSuppressionSourceTypesに含まれない種別(公式組織)は、同じ情報源から同日に複数候補があっても除外されないこと', () => {
+    const first = baseCandidate({ sourceId: 'openai', sourceType: 'official', heading: '1件目' })
+    const second = baseCandidate({ sourceId: 'openai', sourceType: 'official', heading: '2件目' })
+    const result = deduplicateSameSourceCandidates([first, second], criteria)
+    expect(result).toHaveLength(2)
+  })
+
+  it('異なる情報源(sourceId)の候補は、同じ種別でも互いに除外し合わないこと', () => {
+    const a = baseCandidate({ sourceId: 'simon-willison', sourceType: 'individual-blog', heading: 'a' })
+    const b = baseCandidate({ sourceId: 'another-blog', sourceType: 'individual-blog', heading: 'b' })
+    const result = deduplicateSameSourceCandidates([a, b], criteria)
+    expect(result).toHaveLength(2)
+  })
+
+  it('1日分のトピック選定に統合されたとき、同一情報源の重複候補は基準判定・件数選定より前に1件へ絞られること', () => {
+    const olderBlog = baseCandidate({
+      sourceId: 'simon-willison',
+      sourceType: 'individual-blog',
+      heading: '古い方の投稿',
+      publishedAt: '2026-08-15T03:00:00.000Z',
+    })
+    const newerBlog = baseCandidate({
+      sourceId: 'simon-willison',
+      sourceType: 'individual-blog',
+      heading: '新しい方の投稿',
+      publishedAt: '2026-08-15T20:00:00.000Z',
+    })
+    const others = ['a', 'b'].map((label) => baseCandidate({ sourceId: label, heading: `見出し${label}`, sourceType: 'official' }))
+    const result = selectDailyTopics([olderBlog, newerBlog, ...others], criteria)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics).toHaveLength(3)
+      expect(result.topics.some((t) => t.heading === '古い方の投稿')).toBe(false)
+      expect(result.topics.some((t) => t.heading === '新しい方の投稿')).toBe(true)
+    }
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#掲載済み記事の再掲抑制(種別を問わない横断フィルター)-14、specs/ai-dev-digest/content-selection/design.md#掲載済み記事を除外する処理(決定的なコード)
+describe('掲載済み記事の再掲抑制 - 過去に公開したダイジェストで既に取り上げた記事・動画は当日の候補から除外する', () => {
+  const publishedUrls = new Set<string>(['https://example.com/blog/post-a'])
+
+  it('掲載済みURLと元URLが一致する候補は候補から除外され、一致しない候補は残ること', () => {
+    const already = baseCandidate({ sourceId: 'a', heading: '再掲になる記事', url: 'https://example.com/blog/post-a' })
+    const fresh = baseCandidate({ sourceId: 'b', heading: '新しい記事', url: 'https://example.com/blog/post-b' })
+    const result = excludeAlreadyPublished([already, fresh], publishedUrls)
+    expect(result.map((c) => c.heading)).toEqual(['新しい記事'])
+  })
+
+  it('ホスト名の大文字小文字・追跡クエリ・末尾スラッシュだけが違うURLも、同じ記事として再掲抑制されること', () => {
+    const already = baseCandidate({
+      sourceId: 'a',
+      heading: '再掲になる記事',
+      url: 'https://EXAMPLE.com/blog/post-a/?utm_source=rss#comments',
+    })
+    const result = excludeAlreadyPublished([already], publishedUrls)
+    expect(result).toHaveLength(0)
+  })
+
+  it('URLの正規化は、ホスト名の小文字化・クエリとフラグメントの除去・末尾スラッシュの統一を行うこと', () => {
+    expect(normalizeUrl('https://EXAMPLE.com/blog/post-a/?utm=1#x')).toBe(normalizeUrl('https://example.com/blog/post-a'))
+  })
+
+  it('1日分のトピック選定で、掲載済みURLに一致する候補は基準判定より前に除外されること', () => {
+    const already = baseCandidate({ sourceId: 'a', heading: '再掲になる記事', sourceType: 'official', url: 'https://example.com/blog/post-a' })
+    const others = ['b', 'c', 'd'].map((label) =>
+      baseCandidate({ sourceId: label, heading: `見出し${label}`, sourceType: 'official', url: `https://example.com/blog/${label}` })
+    )
+    const result = selectDailyTopics([already, ...others], criteria, publishedUrls)
+    expect(result.status).toBe('ok')
+    if (result.status === 'ok') {
+      expect(result.topics.some((t) => t.heading === '再掲になる記事')).toBe(false)
+      expect(result.topics).toHaveLength(3)
+    }
+  })
+
+  it('収集した候補がすべて掲載済みで実在する候補が残らないとき、候補不足によるスキップ結果になること', () => {
+    const already = baseCandidate({ sourceId: 'a', heading: '再掲になる記事', sourceType: 'official', url: 'https://example.com/blog/post-a' })
+    const result = selectDailyTopics([already], criteria, publishedUrls)
     expect(result.status).toBe('skipped')
   })
 })

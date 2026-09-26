@@ -215,7 +215,7 @@ app/legal/page.tsx (既存: 利用規約に知的財産の条項を追記)
 - `is_official`列を撤廃する(全ゲームが運営者経由でのみ登録される前提になり、区別の意味がなくなったため)
 - `release_year int`列を追加する(発売年、任意)
 - `genre text`(単一)を`genres text[]`(複数)に変更し、CHECK制約で固定リストの値のみで構成されることを担保する
-- `board_game_rules_games`へのINSERTを許可するのは、運営者のローカル登録ツール(service_role相当の権限)と、運営者本人のログインセッション(「公開する」操作。ポリシーは下記「追加マイグレーション(登録実行・下書きレビュー)」、根拠は[adr/0002](../adr/0002-operator-publish-insert.md))のみ。anon・運営者以外のauthenticatedからの直接INSERT経路は持たない(このマイグレーションで従来のanon向けINSERTポリシーをDROPする)
+- `board_game_rules_games`へのINSERTを許可するのは、運営者のローカル登録ツール(service_role相当の権限)と、運営者本人のログインセッション(「公開する」操作。ポリシーは下記「追加マイグレーション(登録実行・下書きレビュー)」、根拠は[adr/0002](../adr/0002-operator-publish-insert.md))のみ。anon・運営者以外のauthenticatedからの直接INSERT経路は持たない(`board_game_rules_games`にはanon・運営者以外へINSERTを許可するポリシーを設けない)
 - `intro_photo_paths text[] not null default '{}'`列を追加する(ゲーム紹介画像、公開Storageバケットのパス。順序付きで先頭がメイン画像。requirements.md#ゲーム紹介画像の取り扱い-10)。`photo_paths`(元写真、非公開)とは異なり、この列は**公開列**としてanonのSELECT許可対象に含める(下記GRANT参照)。運営者は編集画面から差し替え・削除できる([admin/design.md](../admin/design.md))
 
 ### マイグレーション(実装より先に単独PRで適用)
@@ -320,7 +320,7 @@ grant insert on board_game_rules_game_requests to anon, authenticated;
 create policy "anyone can insert game request" on board_game_rules_game_requests
   for insert to anon, authenticated with check (true);
 
--- 確認・処理済みマーク・削除: 運営者本人のみ
+-- 確認・status等の更新(登録実行/下書きレビュー/公開時のprocessed_at)・削除: 運営者本人のみ
 grant select, update, delete on board_game_rules_game_requests to authenticated;
 create policy "admin can select game requests" on board_game_rules_game_requests
   for select to authenticated
@@ -413,6 +413,21 @@ T0(追加マイグレーション適用)の実機確認:
 - anon・運営者以外の認証ユーザーからの`board_game_rules_games`へのINSERTが拒否されること
 - 運営者本人が`board_game_rules_game_requests`の`status`・`draft_content`・`revision_note`・`revision_history`をUPDATEできること(既存の運営者向けUPDATEポリシーが新カラムにも及ぶこと)
 - `published_game_id`が指すゲームを運営者本人が物理削除([game-detail/design.md#物理削除のDB設計](../game-detail/design.md))してもFK違反にならず成功し、対応する依頼行の`published_game_id`がNULLに戻ること
+
+### 追加マイグレーション(対応人数・プレイ時間のNULL許容化)
+[admin/design.md#ローカル環境の定期処理](../admin/design.md)の生成方針変更(写真・Web検索で根拠が取れた値のみを埋め、根拠がなければ推定で埋めない)に伴い、`board_game_rules_games`の`min_players`・`max_players`・`min_minutes`・`max_minutes`のNOT NULL制約を外す(根拠: [admin/requirements.md#登録実行のローカル処理起動-14](../admin/requirements.md))。`min_players <= max_players`・`min_minutes <= max_minutes`のCHECK制約はPostgresの三値論理によりNULLを含む比較がUNKNOWN(真でも偽でもない)扱いとなりCHECK自体は通過するため、変更不要。
+
+```sql
+alter table board_game_rules_games
+  alter column min_players drop not null,
+  alter column max_players drop not null,
+  alter column min_minutes drop not null,
+  alter column max_minutes drop not null;
+```
+
+T0(追加マイグレーション適用)の実機確認:
+- 対応人数・プレイ時間がNULLのままの内容で運営者本人が`board_game_rules_games`へINSERTでき、公開ゲームとしてanonからSELECTできること
+- 対応人数・プレイ時間の一方がNULLで一方が値を持つ場合もINSERTが拒否されないこと(下限>上限の逆転がある場合のみCHECKで拒否されること)
 
 ### 運営者への通知(Supabase Database Webhooks + ntfy Message Templating)
 `board_game_rules_game_requests`へのINSERTをSupabase Database Webhooks機能(ダッシュボードから設定、pg_net拡張ベース)で購読し、ntfyへHTTP POSTする。送信先URLに、ntfy公式の**インラインMessage Templating**(`?tpl=yes`、Goテンプレート構文)を組み込むことで、中継サーバーを新設せずに次を実現する:

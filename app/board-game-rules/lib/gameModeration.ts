@@ -6,10 +6,12 @@ import type { Genre } from './genres'
 export type GameEditInput = {
   id: string
   name: string
-  minPlayers: number
-  maxPlayers: number
-  minMinutes: number
-  maxMinutes: number
+  // 根拠が得られなければ未登録(NULL)のままにする方針のため、他の任意項目と同じくoptional
+  // (仕様: admin/requirements.md#登録実行のローカル処理起動-13)
+  minPlayers?: number
+  maxPlayers?: number
+  minMinutes?: number
+  maxMinutes?: number
   genres: Genre[]
   minAge?: number
   difficulty?: string
@@ -26,8 +28,9 @@ export type GameEditInput = {
 // 唯一のWeb側書き込み経路(運営者編集)のため、DBのCHECKに反する更新を送らないようここで先に弾く。
 function isValidGameEdit(input: GameEditInput): boolean {
   if (input.name.trim() === '') return false
-  if (input.minPlayers > input.maxPlayers) return false
-  if (input.minMinutes > input.maxMinutes) return false
+  // 対応人数・プレイ時間は両方値がある場合のみ下限≤上限を検証する(片方だけ・両方ともNULLは許容)
+  if (input.minPlayers != null && input.maxPlayers != null && input.minPlayers > input.maxPlayers) return false
+  if (input.minMinutes != null && input.maxMinutes != null && input.minMinutes > input.maxMinutes) return false
   if (input.rulesSimple.length > 4000) return false
   if (JSON.stringify(input.rulesDetailed).length > 40000) return false
   return true
@@ -43,10 +46,10 @@ export async function editGame(input: GameEditInput): Promise<boolean> {
       .from('board_game_rules_games')
       .update({
         name: input.name,
-        min_players: input.minPlayers,
-        max_players: input.maxPlayers,
-        min_minutes: input.minMinutes,
-        max_minutes: input.maxMinutes,
+        min_players: input.minPlayers ?? null,
+        max_players: input.maxPlayers ?? null,
+        min_minutes: input.minMinutes ?? null,
+        max_minutes: input.maxMinutes ?? null,
         genres: input.genres,
         min_age: input.minAge ?? null,
         difficulty: input.difficulty ?? null,

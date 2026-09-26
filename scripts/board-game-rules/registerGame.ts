@@ -22,6 +22,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
+import { autocompleteIntroPhotos } from './gameIntroPhotos'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // 対話セッション向けの.env.local(docs/adr/0004。CIには含めない)からSUPABASE_URLを読む想定
@@ -103,6 +104,39 @@ async function resolvePhotoPaths(
   throw new Error('入力JSONにrequestIdまたはphotosDirのいずれかが必要です')
 }
 
+// ゲーム紹介画像(intro_photo_paths)を決める。
+// - 依頼由来で既に紹介画像が添付されていれば、それをそのまま引き継ぐ(design.md「登録実行・下書きレビューの処理」手順4)
+// - 0枚の場合はゲーム名で自動補完(BoardGameGeek検索 + Gemini加工 + 公開Storageアップロード。T6b)。
+//   依頼由来のときは補完結果を依頼行の intro_photo_paths にも書き戻す(design.md「ゲーム紹介画像を自動補完する処理」手順4)
+async function resolveIntroPhotoPaths(
+  supabase: ReturnType<typeof createClient>,
+  input: GameRegistrationInput
+): Promise<string[]> {
+  if (input.requestId) {
+    const { data } = await supabase
+      .from('board_game_rules_game_requests')
+      .select('intro_photo_paths')
+      .eq('id', input.requestId)
+      .single()
+    const existing = (data as { intro_photo_paths: string[] } | null)?.intro_photo_paths ?? []
+    if (existing.length > 0) return existing
+  }
+
+  const uploadId = randomUUID()
+  const generated = await autocompleteIntroPhotos(supabase, {
+    gameName: input.name,
+    uploadId,
+    geminiApiKey: process.env.GEMINI_API_KEY,
+  })
+  if (generated.length > 0 && input.requestId) {
+    await supabase
+      .from('board_game_rules_game_requests')
+      .update({ intro_photo_paths: generated })
+      .eq('id', input.requestId)
+  }
+  return generated
+}
+
 async function main() {
   const inputPath = process.argv[2]
   if (!inputPath) {
@@ -119,6 +153,7 @@ async function main() {
   const input = JSON.parse(fs.readFileSync(inputPath, 'utf8')) as GameRegistrationInput
 
   const photoPaths = await resolvePhotoPaths(supabase, input)
+  const introPhotoPaths = await resolveIntroPhotoPaths(supabase, input)
 
   const { data, error } = await supabase
     .from('board_game_rules_games')
@@ -139,6 +174,7 @@ async function main() {
       rules_simple: input.rulesSimple,
       rules_detailed: input.rulesDetailed,
       photo_paths: photoPaths,
+      intro_photo_paths: introPhotoPaths,
     })
     .select('id')
     .single()

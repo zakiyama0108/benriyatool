@@ -67,6 +67,12 @@
 - 🟢 `AdminControls`と各導線を実装する
 - 🔵 配置・確認ステップ・二重操作防止を整える
 
+## T11. 対応人数・プレイ時間が未登録(NULL)の場合の表示・編集(`components/GameInfo.tsx`, `lib/gameModeration.ts`, `components/AdminControls.tsx`)
+- 対象: [admin/tasks.md](../admin/tasks.md) T4e(`Game`型を`number | null`に変更)に伴う追随。design.md「分類情報を表示する処理」手順2
+- 🔴 `GameInfo`: 対応人数・プレイ時間が両方NULLのとき、その項目自体を表示しないことをテストする。`gameModeration`(`editGame`): 対応人数・プレイ時間が未入力(`undefined`)でもUPDATEでき、NULLとして保存されることをテストする。`AdminControls`: 対応人数・プレイ時間が未登録のゲームは、編集フォームの入力欄が空欄で始まり未入力のまま保存できることをテストする
+- 🟢 `GameInfo`は`lib/gameDisplay.ts`の`formatRange`が`null`を返す項目をチップに追加しない。`GameEditInput`の対応人数・プレイ時間を他の任意項目(対象年齢等)と同じ`number | undefined`にし、`isValidGameEdit`はいずれかが未登録なら下限≤上限の検証をスキップする。`AdminControls`の入力初期値は`game.minPlayers != null ? String(...) : ''`のように未登録なら空欄にする
+- 🔵 整理する
+
 ## 補足
 - `FavoriteButton`([favorite](../favorite/tasks.md))・`CommentSection`([comment](../comment/tasks.md))・`ReportButton`([report](../report/tasks.md))は各specで実装したものを組み込む。並行開発時は依存先の完成を待つか仮プレースホルダで先行する
 - 静的エクスポート下でクエリIDを扱う方式(単一ページ+クライアント取得)を採る。`[id]`動的ルートは使わない(design.md「詳細画面のルーティング」)

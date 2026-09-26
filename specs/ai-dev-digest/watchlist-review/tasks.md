@@ -1,4 +1,4 @@
-# タスク分解: ウォッチリスト・採用基準の月次見直し
+# タスク分解: 月次見直し(選定・生成)
 
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
@@ -28,17 +28,17 @@
 
 ## 動作確認
 
-- Task 6: 通しの動作確認(仕様: requirements.md#見直しの実行-1〜2、requirements.md#承認フロー-3)
+- Task 6: 通しの動作確認(仕様: requirements.md#見直しの実行-1〜2、requirements.md#承認フロー-5)
   - Task 1〜5が揃った状態で月次実行を行い、`specs/ai-dev-digest/content-selection/requirements.md`と`content/ai-dev-digest/watchlist.json`/`criteria.json`の両方を変更するPRが作成されることを確認する
   - 作成されたPRが自動マージされず、通常のレビュー必須フローのままであることを確認する
 
 ## 見直し案の粒度・提示方法の改善(2026-08改定)
 
-- Task 7: 見直し案のPR本文への判断材料表の反映(仕様: requirements.md#見直し案の粒度・提示方法-4〜5、design.md「見直し案を作成する処理」「見直し案をPRとして提案する処理」)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整とワークフロー定義ファイルの変更のため)
+- Task 7: 見直し案のPR本文への判断材料表の反映(仕様: requirements.md#選定領域の見直し案の粒度・提示方法-6〜7、design.md「見直し案を作成する処理」「見直し案をPRとして提案する処理」)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整とワークフロー定義ファイルの変更のため)
   - `.github/workflows/ai-dev-digest-monthly.yml`のプロンプトに、新しい採用基準・フィルター観点の追加提案も対象であること、材料が1件でもあれば具体的な変更案を必ず作成すること、判断材料の表を`/tmp/watchlist-review-pr-body.md`にMarkdown形式で書き出すことを追記する
   - PR作成ステップを`gh pr create --body-file /tmp/watchlist-review-pr-body.md`に変更する(ファイルが存在しない、または空の場合のフォールバック本文も用意する)
 
-- Task 8: 通しの動作確認(仕様: requirements.md#見直し案の粒度・提示方法-4〜5)
+- Task 8: 通しの動作確認(仕様: requirements.md#選定領域の見直し案の粒度・提示方法-6〜7)
   - 実際にフィードバックが1件だけ存在する状態で月次実行を行い、「1件では見送り」とならず具体的な変更案+判断材料の表を含むPRが作成されることを確認する
 
 ## 新規採用基準提案時のCI対応(2026-08第5次改定)
@@ -50,10 +50,24 @@
 
 ## 新規判定ロジックの実装をPRに含めるルールの追加(2026-08第6次改定)
 
-- Task 10: 見直し案が新しい判定ロジックを提案する場合の実装ルール(仕様: requirements.md#見直し案の粒度・提示方法-6、design.md「見直し案を作成する処理」手順6〜7)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整とワークフロー定義ファイルの変更のため)
+- Task 10: 見直し案が新しい判定ロジックを提案する場合の実装ルール(仕様: requirements.md#選定領域の見直し案の粒度・提示方法-8、design.md「見直し案を作成する処理」手順6〜7)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整とワークフロー定義ファイルの変更のため)
   - `.github/workflows/ai-dev-digest-monthly.yml`のプロンプトに、既存の選定ロジックでは判定できない新しい採用基準・フィルター観点を提案する場合、その判定ロジックの実装(TDDのテストを含む)を同じPRに含めること、実装後に`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`をすべて実行し成功を確認してからコミットすることを追記する。実装がどうしても完了できない場合のみ`scripts/spec-coverage-skip.json`への登録で代替してよいことも明記する
   - 「変更の有無を確認」ステップの`git diff --quiet`対象・「ブランチ作成・コミット・PR作成」ステップの`git add`対象を、個別ファイルの列挙から`app/ai-dev-digest/lib`・`__tests__/ai-dev-digest/lib`ディレクトリを含むパス指定に変更する(新しい判定ロジックがどのファイルに実装されるかは提案内容によって変わり、固定のファイル名では列挙しきれないため。以前個別ファイル列挙が漏れて変更が失われた実例(PR #166レビュー時)を踏まえた設計。`lib/`配下に限定するのは、design.md「変更対象ファイル」が定める範囲(選定ロジック)を超えて画面コンポーネント等まで書き込み対象を広げないため)
   - 実際にTask9のプロンプト改定後も、話題の関連性フィルタ(content-selection/requirements.md#話題の関連性-12)の実装がwatchlist-review側では行われず、別PR(#169)で運営者からの指示を受けて事後的に実装する対応になったことを踏まえた改定
 
-- Task 11: 通しの動作確認(仕様: requirements.md#見直し案の粒度・提示方法-6)
+- Task 11: 通しの動作確認(仕様: requirements.md#選定領域の見直し案の粒度・提示方法-8)
   - 既存の選定ロジックでは判定できない新しい観点のフィードバックが存在する状態で月次実行を行い、requirements.mdの変更提案だけでなく、対応する実装・テストファイルの変更も含むPRが作成されることを確認する
+
+## 見直し対象に生成領域(記事執筆ルール)を追加
+
+- Task 12: フィードバックの領域振り分け(仕様: requirements.md#見直しの実行-3〜4、design.md「見直し案を作成する処理」手順1)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整のため)
+  - `.github/workflows/ai-dev-digest-monthly.yml`のプロンプトに、各フィードバックを「選定領域」「生成領域」「いずれにも該当しない」に振り分けること、いずれにも該当しないものはPR本文の表に「対象外」として記録することを追記する
+  - `collectReviewData.ts`は変更しない(フィードバックは領域で絞らず全件返す。振り分けはエージェントの推論)
+
+- Task 13: 生成領域の見直し案(仕様: requirements.md#生成領域の見直し案の粒度・提示方法-9〜10、design.md「見直し案を作成する処理」手順3・8)(TDD対象外。ヘッドレスClaude Code呼び出しのプロンプト調整とワークフロー定義ファイルの変更のため)
+  - `.github/workflows/ai-dev-digest-monthly.yml`のプロンプトに、生成領域に振り分けたフィードバックがある場合は`specs/ai-dev-digest/content-generation/requirements.md`・`design.md`への具体的な変更案を作成すること、著作権リスク低減の前提を弱めないこと、変更が`scripts/ai-dev-digest/generate-content.ts`内の転記箇所(`GUARDRAIL`定数・JSONスキーマ例の字数指定)に及ぶ場合はそこも同じPRで更新することを追記する
+  - 「変更の有無を確認」ステップの`git diff --quiet`対象・「ブランチ作成・コミット・PR作成」ステップの`git add`対象に、`specs/ai-dev-digest/content-generation`・`scripts/ai-dev-digest/generate-content.ts`を追加する
+
+- Task 14: 通しの動作確認(仕様: requirements.md#見直しの実行-2〜3、requirements.md#生成領域の見直し案の粒度・提示方法-9)
+  - 記事の書きぶりに関するフィードバックが存在する状態で月次実行を行い、`content-generation/requirements.md`(必要なら`design.md`・`generate-content.ts`)への変更提案を含むPRが作成されることを確認する
+  - 選定領域・生成領域の両方に材料がある月に、1つのPRに両領域の変更がまとまることを確認する

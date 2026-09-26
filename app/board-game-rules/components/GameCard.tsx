@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { Game } from '../lib/games'
+import { formatRange } from '../lib/gameDisplay'
 import { getGamePhotoUrl } from '../lib/gamePhotos'
 import FavoriteButton from './FavoriteButton'
 
@@ -67,12 +68,10 @@ export default function GameCard({ game, favorited, onToggleFavorite }: Props) {
           {game.name}
         </Link>
         <div className="mt-2 space-y-1 text-xs text-bgr-subtext">
-          <p>
-            {game.minPlayers}〜{game.maxPlayers}人
-          </p>
-          <p>
-            {game.minMinutes}〜{game.maxMinutes}分
-          </p>
+          {/* 対応人数・プレイ時間は根拠が得られた場合のみ埋まるため未登録(NULL)のことがある。
+              未登録は「不明」と表示する(admin/requirements.md#登録実行のローカル処理起動-13) */}
+          <p>{formatRange(game.minPlayers, game.maxPlayers) ?? '不明'}人</p>
+          <p>{formatRange(game.minMinutes, game.maxMinutes) ?? '不明'}分</p>
         </div>
         {game.genres.length > 0 && (
           <div className="mt-auto flex flex-wrap gap-2 pt-4">

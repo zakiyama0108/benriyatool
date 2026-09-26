@@ -59,13 +59,18 @@ export const EMPTY_FILTERS: GameFilters = {
 // いずれの分類も、値が未登録(null/空文字)のゲームは、その分類で絞り込みを指定したときに
 // 除外する(requirements.md#未入力項目の扱い-3)
 function matchesFilters(game: Game, filters: GameFilters): boolean {
-  // 対応人数: 指定した人数がゲームの対応人数の範囲(下限〜上限)に収まるか(境界値は含む)
+  // 対応人数: 指定した人数がゲームの対応人数の範囲(下限〜上限)に収まるか(境界値は含む)。
+  // min_players・max_playersは根拠が得られた場合のみ埋まるため未登録(NULL)のことがあり、
+  // その場合はこの分類で絞り込みを指定したときは除外する(他の分類と同じ原則。requirements.md#未入力項目の扱い-3)
   if (filters.playerCount != null) {
+    if (game.minPlayers == null || game.maxPlayers == null) return false
     if (filters.playerCount < game.minPlayers || filters.playerCount > game.maxPlayers) return false
   }
 
-  // プレイ時間: 希望する時間帯とゲームのプレイ時間の範囲が重なるか(端が接する場合も重なりとみなす)
+  // プレイ時間: 希望する時間帯とゲームのプレイ時間の範囲が重なるか(端が接する場合も重なりとみなす)。
+  // min_minutes・max_minutesが未登録(NULL)のゲームも同様にこの分類の絞り込み時は除外する
   if (filters.playtimeBand != null) {
+    if (game.minMinutes == null || game.maxMinutes == null) return false
     const { minMinutes, maxMinutes } = filters.playtimeBand
     if (minMinutes > game.maxMinutes || maxMinutes < game.minMinutes) return false
   }

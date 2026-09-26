@@ -14,7 +14,8 @@ export type Candidate = {
   // 採用基準の判定に使う数値。qiita/zennはいいね数、individual-youtubeは再生回数。
   // official/individual-blogは常に基準を満たすため判定には使わない(0でよい)
   metricValue: number
-  // individual-youtubeのみ: そのチャンネルの直近youtubeRecentVideoWindow本の平均再生回数
+  // individual-youtubeのみ: 候補群を除いた直後のyoutubeRecentVideoWindow本の平均再生回数。
+  // 直近youtubeCandidateVideoCount本の候補は全て同じこの平均値を採用基準にする(design.md「採用基準を判定する処理」手順2)
   recentAverageViews?: number
 }
 
