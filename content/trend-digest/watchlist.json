@@ -19,8 +19,12 @@
       "sources": [{ "name": "ビデオリサーチ 視聴人数ランキング(ドラマ)", "url": "https://www.videor.co.jp/audience/", "format": "site-specific-html", "parserId": "videoResearchDrama", "region": "japan" }] },
     { "genre": "foreign-drama", "edition": "entertainment", "label": "海外ドラマ", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(シリーズ・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
-    { "genre": "anime", "edition": "entertainment", "label": "アニメ", "method": "fixed-list",
-      "sources": [{ "name": "Netflix公式Top10データ(日本のTOP10)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
+    { "genre": "anime", "edition": "entertainment", "label": "アニメ", "method": "hybrid",
+      "sources": [
+        { "name": "Filmarksアニメ 話題のおすすめアニメ", "url": "https://filmarks.com/list-anime/trend", "format": "site-specific-html", "parserId": "filmarksAnimeTrend", "region": "japan" },
+        { "name": "AniLab 日本ウィークリーアニメランキング", "url": "https://anilabb.com/rate/anime?region=japan", "format": "site-specific-html", "parserId": "anilabJapanWeekly", "region": "japan" }
+      ],
+      "searchHints": ["SNS 話題 アニメ 反響", "アニメ 配信 視聴 増加 ニュース", "アニメ 続編 発表 反応"] },
     { "genre": "variety", "edition": "entertainment", "label": "バラエティ", "method": "fixed-list",
       "sources": [{ "name": "ビデオリサーチ 視聴人数ランキング(バラエティ)", "url": "https://www.videor.co.jp/audience/", "format": "site-specific-html", "parserId": "videoResearchVariety", "region": "japan" }] },
     { "genre": "streaming-video", "edition": "entertainment", "label": "サブスク動画", "method": "fixed-list",

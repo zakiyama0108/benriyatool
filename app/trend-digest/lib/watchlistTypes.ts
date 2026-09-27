@@ -5,7 +5,8 @@
 import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
 import type { HistoryCriteria } from './historyTypes' // trend-history/design.mdが定義する継続度・注目度の判定に使う値
 
-export type SelectionMethod = 'fixed-list' | 'websearch'
+// hybridは固定リストとWebSearchを併用するジャンル専用(requirements.md#選定方式-7。現時点ではアニメのみ)
+export type SelectionMethod = 'fixed-list' | 'websearch' | 'hybrid'
 
 // 固定リストジャンルの情報源が、どの取得・パース処理を使うかを表す
 // (初回配信で汎用の正規表現1パターンが実際のサイト構造に対応しきれなかった反省から、
@@ -49,7 +50,15 @@ export type WebSearchGenreCriteria = {
   minIndependentSources: number // 「独立した言及が広がっている」と判定する最低独立言及元数(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-2)
 }
 
-export type GenreCriteria = FixedListGenreCriteria | WebSearchGenreCriteria
+// 併用ジャンルの採用基準(requirements.md#選定方式-7)。固定リスト側・WebSearch側それぞれの基準を持ち、
+// いずれか一方を満たせば候補にする(OR条件)。現時点ではアニメのみが対象
+export type HybridGenreCriteria = {
+  method: 'hybrid'
+  fixedList: Omit<FixedListGenreCriteria, 'method'>
+  webSearch: Omit<WebSearchGenreCriteria, 'method'>
+}
+
+export type GenreCriteria = FixedListGenreCriteria | WebSearchGenreCriteria | HybridGenreCriteria
 
 // 1ジャンルあたり・1回あたりの掲載件数の上限は持たない(design.md「データ設計」)。
 // 掲載件数は「その編のジャンル数と同じ(各ジャンル1件)」に固定されており(requirements.md#掲載件数-1〜2)、

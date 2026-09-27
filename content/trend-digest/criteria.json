@@ -6,7 +6,7 @@
     "foreign-movie": { "method": "fixed-list", "rankThreshold": 5 },
     "japanese-drama": { "method": "fixed-list", "rankThreshold": 5 },
     "foreign-drama": { "method": "fixed-list", "newEntryOrRisingRank": true },
-    "anime": { "method": "fixed-list", "newEntryOrRisingRank": true },
+    "anime": { "method": "hybrid", "fixedList": { "newEntryOrRisingRank": true }, "webSearch": { "minIndependentSources": 3 } },
     "variety": { "method": "fixed-list", "rankThreshold": 5 },
     "streaming-video": { "method": "fixed-list", "newEntryOrRisingRank": true },
     "books-comics": { "method": "fixed-list", "rankThreshold": 5, "newEntryOrRisingRank": true },

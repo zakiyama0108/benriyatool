@@ -10,10 +10,12 @@ const criteria = criteriaData as Criteria
 const ALL_GENRES = [...GENRE_ORDER.entertainment, ...GENRE_ORDER['culture-lifestyle']]
 
 const FIXED_LIST_GENRES = [
-  'music', 'japanese-movie', 'foreign-movie', 'japanese-drama', 'foreign-drama', 'anime', 'variety',
+  'music', 'japanese-movie', 'foreign-movie', 'japanese-drama', 'foreign-drama', 'variety',
   'streaming-video', 'books-comics', 'buzzwords', 'games', 'travel',
 ]
 const WEBSEARCH_GENRES = ['sns-buzz', 'gourmet', 'hobby', 'fashion', 'gadgets', 'economy-money', 'dev-trends']
+// アニメは固定リスト+WebSearchを併用する併用ジャンル(requirements.md#選定方式-7)
+const HYBRID_GENRES = ['anime']
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#グループとジャンル-1、specs/trend-digest/content-selection/requirements.md#グループとジャンル-2、specs/trend-digest/content-selection/requirements.md#機能要件-1
 describe('対象ジャンルのデータ - 19ジャンルをエンタメ編(火曜配信・9ジャンル)とカルチャー・ライフスタイル編(金曜配信・10ジャンル)に固定リストで分ける', () => {
@@ -33,9 +35,9 @@ describe('対象ジャンルのデータ - 19ジャンルをエンタメ編(火�
   })
 })
 
-// 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-2、specs/trend-digest/content-selection/requirements.md#選定方式-3
-describe('ジャンルの選定方式データ - 固定リストジャンル(12)とWebSearchジャンル(7)がrequirements.mdの記載と一致する', () => {
-  it('固定リストジャンル(method: fixed-list)がrequirements.mdに記載の12ジャンルと一致すること', () => {
+// 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-2、specs/trend-digest/content-selection/requirements.md#選定方式-3、specs/trend-digest/content-selection/requirements.md#選定方式-7
+describe('ジャンルの選定方式データ - 固定リストジャンル(11)・WebSearchジャンル(7)・併用ジャンル(1)がrequirements.mdの記載と一致する', () => {
+  it('固定リストジャンル(method: fixed-list)がrequirements.mdに記載の11ジャンルと一致すること', () => {
     const actual = watchlist.filter((e) => e.method === 'fixed-list').map((e) => e.genre).sort()
     expect(actual).toEqual([...FIXED_LIST_GENRES].sort())
   })
@@ -43,6 +45,11 @@ describe('ジャンルの選定方式データ - 固定リストジャンル(12)
   it('WebSearchジャンル(method: websearch)がrequirements.mdに記載の7ジャンルと一致すること', () => {
     const actual = watchlist.filter((e) => e.method === 'websearch').map((e) => e.genre).sort()
     expect(actual).toEqual([...WEBSEARCH_GENRES].sort())
+  })
+
+  it('併用ジャンル(method: hybrid)がrequirements.mdに記載のアニメの1ジャンルと一致すること(アニメ専用の集計データを持つ情報源が限られるため固定リストとWebSearchを併用する)', () => {
+    const actual = watchlist.filter((e) => e.method === 'hybrid').map((e) => e.genre).sort()
+    expect(actual).toEqual([...HYBRID_GENRES].sort())
   })
 })
 
@@ -123,8 +130,8 @@ describe('WebSearchジャンルの検索の手がかり(searchHints)データ - 
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#データ取得方法-1、specs/trend-digest/content-selection/requirements.md#情報源の地域区分-1
 describe('固定リストジャンルの情報源データ - 公式サイト・公開ページのみをhttps URLで登録し、各情報源に地域区分(region)を持たせる', () => {
-  it('固定リストジャンルは1件以上の情報源を持ち、すべてhttps URL・format・regionを持つこと', () => {
-    for (const genre of FIXED_LIST_GENRES) {
+  it('固定リストジャンル・併用ジャンルは1件以上の情報源を持ち、すべてhttps URL・format・regionを持つこと', () => {
+    for (const genre of [...FIXED_LIST_GENRES, ...HYBRID_GENRES]) {
       const entry = watchlist.find((e) => e.genre === genre)
       expect(entry?.sources.length).toBeGreaterThan(0)
       for (const source of entry?.sources ?? []) {
@@ -133,6 +140,12 @@ describe('固定リストジャンルの情報源データ - 公式サイト・�
         expect(['japan', 'overseas']).toContain(source.region)
       }
     }
+  })
+
+  it('併用ジャンル(アニメ)は固定リスト側の情報源を複数持ち、WebSearch側の検索の手がかり(searchHints)も持つこと(いずれか一方の採用基準を満たせば候補にするOR条件のため)', () => {
+    const anime = watchlist.find((e) => e.genre === 'anime')
+    expect(anime?.sources.length).toBeGreaterThanOrEqual(2)
+    expect(anime?.searchHints?.length).toBeGreaterThan(0)
   })
 
   it('format: site-specific-htmlの情報源はすべてparserIdを持つこと', () => {
