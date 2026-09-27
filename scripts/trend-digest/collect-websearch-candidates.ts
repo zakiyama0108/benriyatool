@@ -10,7 +10,12 @@
 // 対象editionのWebSearchジャンルごとにcollectWebSearchGenre()を呼び出す(このファイル単体では実行しない)
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { collectWebSearchCandidates, type ClaudeCliResponse, type WebSearchCallFn } from '../../app/trend-digest/lib/collectWebSearchCandidates'
+import {
+  collectWebSearchCandidates,
+  resolveWebSearchCriteria,
+  type ClaudeCliResponse,
+  type WebSearchCallFn,
+} from '../../app/trend-digest/lib/collectWebSearchCandidates'
 import type { WatchlistEntry, Criteria } from '../../app/trend-digest/lib/watchlistTypes'
 import criteriaData from '../../content/trend-digest/criteria.json'
 
@@ -66,11 +71,10 @@ const callClaudeCode: (entry: WatchlistEntry) => Promise<ClaudeCliResponse> = as
 
 const call: WebSearchCallFn = callClaudeCode
 
-// 1ジャンル分のWebSearch収集を行う。collect-and-select.tsが対象editionのWebSearchジャンルごとに呼び出す
+// 1ジャンル分のWebSearch収集を行う。collect-and-select.tsが対象editionのWebSearchジャンル・
+// 併用ジャンル(hybrid)のWebSearch側ごとに呼び出す(requirements.md#選定方式-7)。
+// 採用基準の解決(hybridはgenreCriteria.webSearchを使う)はresolveWebSearchCriteriaに委ねる
 export async function collectWebSearchGenre(entry: WatchlistEntry) {
-  const genreCriteria = criteria.genreCriteria[entry.genre]
-  if (genreCriteria.method !== 'websearch') {
-    throw new Error(`${entry.genre}はWebSearchジャンルではありません`)
-  }
-  return collectWebSearchCandidates(entry, genreCriteria, call, criteria.history.maxObservationsPerSource)
+  const webSearchCriteria = resolveWebSearchCriteria(criteria.genreCriteria[entry.genre], entry.genre)
+  return collectWebSearchCandidates(entry, webSearchCriteria, call, criteria.history.maxObservationsPerSource)
 }

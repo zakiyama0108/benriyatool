@@ -1,11 +1,22 @@
 import type { Candidate } from './candidateTypes'
-import type { WatchlistEntry, WebSearchGenreCriteria } from './watchlistTypes'
+import type { WatchlistEntry, WebSearchGenreCriteria, GenreCriteria } from './watchlistTypes'
+import type { Genre } from './types'
 
 // WebSearchジャンルの候補収集・判定(仕様: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1〜6、
 // design.md「WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)」)。
 // Claude Code CLIのヘッドレス起動そのもの(execFile)はscripts/trend-digest/collect-websearch-candidates.tsが担い、
 // 本モジュールは「CLIの応答をどう分類し、独立情報源数の基準をどう適用するか」という決定的ロジックのみを持つ
 // (ai-dev-digest content-generationのgenerateContent.tsと同じ考え方。CLI呼び出しを注入できる形にしてテストする)
+
+// ジャンルのgenreCriteriaからWebSearch側の採用基準を取り出す(requirements.md#選定方式-7)。
+// method: 'websearch'のジャンルはそのまま使い、method: 'hybrid'のジャンル(現時点ではアニメのみ)は
+// genreCriteria.webSearchから組み立てる。method: 'fixed-list'のジャンルはWebSearch側を
+// 持たないため例外を投げる(呼び出し元の設定ミスを検知するため)
+export function resolveWebSearchCriteria(genreCriteria: GenreCriteria, genre: Genre): WebSearchGenreCriteria {
+  if (genreCriteria.method === 'websearch') return genreCriteria
+  if (genreCriteria.method === 'hybrid') return { method: 'websearch', ...genreCriteria.webSearch }
+  throw new Error(`${genre}はWebSearchジャンル/併用ジャンルではありません`)
+}
 
 // Claude Code CLI(`claude -p ... --output-format json`)の応答のうち、分類に使うフィールドのみを型にする
 export type ClaudeCliResponse = {

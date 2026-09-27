@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { classifyWebSearchResult, collectWebSearchCandidates } from '../../../app/trend-digest/lib/collectWebSearchCandidates'
+import { classifyWebSearchResult, collectWebSearchCandidates, resolveWebSearchCriteria } from '../../../app/trend-digest/lib/collectWebSearchCandidates'
 import type { WebSearchCallFn } from '../../../app/trend-digest/lib/collectWebSearchCandidates'
-import type { WatchlistEntry, WebSearchGenreCriteria } from '../../../app/trend-digest/lib/watchlistTypes'
+import type { WatchlistEntry, WebSearchGenreCriteria, GenreCriteria } from '../../../app/trend-digest/lib/watchlistTypes'
 
 const MAX_OBSERVATIONS_PER_SOURCE = 30
 
@@ -114,5 +114,27 @@ describe('WebSearchジャンルの応答分類 - 応答がJSON配列単体以外
     if (classified.kind === 'ok') {
       expect(classified.topics.map((t) => t.title)).toEqual(['有効な話題3'])
     }
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-7
+describe('WebSearch側の採用基準の解決(resolveWebSearchCriteria) - 併用ジャンル(hybrid)はgenreCriteria.webSearchを、WebSearchジャンルはそのままの基準を使う', () => {
+  it('method: websearchのジャンルは、そのままの基準が返ること', () => {
+    const genreCriteria: GenreCriteria = { method: 'websearch', minIndependentSources: 3 }
+    expect(resolveWebSearchCriteria(genreCriteria, 'gourmet')).toEqual({ method: 'websearch', minIndependentSources: 3 })
+  })
+
+  it('method: hybridのジャンル(アニメ)は、genreCriteria.webSearchからmethod: websearchの基準が組み立てられること', () => {
+    const genreCriteria: GenreCriteria = {
+      method: 'hybrid',
+      fixedList: { newEntryOrRisingRank: true },
+      webSearch: { minIndependentSources: 3 },
+    }
+    expect(resolveWebSearchCriteria(genreCriteria, 'anime')).toEqual({ method: 'websearch', minIndependentSources: 3 })
+  })
+
+  it('method: fixed-listのジャンルはWebSearch側の基準を持たないため、例外を投げること(hybridでは例外を投げないこととの対比)', () => {
+    const genreCriteria: GenreCriteria = { method: 'fixed-list', rankThreshold: 5 }
+    expect(() => resolveWebSearchCriteria(genreCriteria, 'music')).toThrow()
   })
 })
