@@ -104,6 +104,32 @@ export function parseGoogleTrendsRss(xml: string): RankedItem[] {
 // format別ディスパッチ側(Task14)に委ねる
 export type SteamRank = { rank: number; appid: number; previousRank?: number }
 
+// appid1件のゲーム名を解決する関数。実際のHTTP通信はscripts側が注入する(テストではモックを渡す)
+export type SteamAppNameFetcher = (appid: number) => Promise<string | null>
+
+// Steamのランキング(appidのみ)にゲーム名を解決して付与する(design.md「固定リストジャンルの
+// 候補を収集・判定する処理」手順1)。appdetailsは1呼び出しにつきappid1件のみしか解決できない
+// (複数件をまとめて解決できない)ため、上位nameResolutionLimit件までに限定して解決する
+// (30件全件を毎回解決すると週次実行のたびに数十回のHTTP呼び出しが発生するため)。
+// 解決できなかった(404等)appidはその項目だけ観測項目から除外する(架空の名前を作らない)
+export async function resolveSteamRanking(
+  ranks: SteamRank[],
+  fetchAppName: SteamAppNameFetcher,
+  nameResolutionLimit: number
+): Promise<RankedItem[]> {
+  const items: RankedItem[] = []
+  for (const rankRow of ranks.slice(0, nameResolutionLimit)) {
+    const title = await fetchAppName(rankRow.appid)
+    if (!title) continue
+    items.push(
+      rankRow.previousRank === undefined
+        ? { title, currentRank: rankRow.rank }
+        : { title, currentRank: rankRow.rank, previousRank: rankRow.previousRank }
+    )
+  }
+  return items
+}
+
 export function parseSteamMostPlayed(json: string): SteamRank[] {
   let data: unknown
   try {

@@ -200,3 +200,37 @@ describe('観測項目の記録上限 - 情報源ごとに上位maxObservationsP
     expect(stats[0].observationCount).toBe(3)
   })
 })
+
+// 仕様: specs/trend-digest/content-selection/design.md「固定リストジャンルの候補を収集・判定する処理」手順6
+describe('複数情報源での同一作品の統合 - 書籍・漫画のように複数情報源(トーハン・日販)で同じ作品が観測された場合、より順位が高い方の情報源のデータを1件に統合する', () => {
+  const criteria: FixedListGenreCriteria = { method: 'fixed-list', rankThreshold: 5, newEntryOrRisingRank: true }
+  const entry = entryOf('books-comics', [
+    { name: 'トーハン週間ベストセラー', url: 'https://example.com/tohan' },
+    { name: '日販週間ベストセラー', url: 'https://example.com/nippan' },
+  ])
+
+  it('同じ作品(正規化タイトルが同一)が2つの情報源で観測された場合、観測項目が1件に統合され、より高い順位(小さい順位番号)のstrengthが採用されること', async () => {
+    const fetchSource: SourceFetcher = vi.fn().mockImplementation((source: { name: string }) => {
+      if (source.name === 'トーハン週間ベストセラー') {
+        return Promise.resolve({ providesRankChange: false, items: [{ title: '共通の新刊', currentRank: 3 }] })
+      }
+      return Promise.resolve({ providesRankChange: false, items: [{ title: '共通の新刊', currentRank: 5 }] })
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, 30)
+    expect(observations).toHaveLength(1)
+    expect(observations[0]).toMatchObject({ title: '共通の新刊', rank: 3, strength: 97, sourceName: 'トーハン週間ベストセラー' })
+    expect(observations[0].note).toContain('トーハン週間ベストセラー3位')
+    expect(observations[0].note).toContain('日販週間ベストセラー5位')
+  })
+
+  it('片方の情報源にしか無い作品は、そのまま単独の観測項目として残ること', async () => {
+    const fetchSource: SourceFetcher = vi.fn().mockImplementation((source: { name: string }) => {
+      if (source.name === 'トーハン週間ベストセラー') {
+        return Promise.resolve({ providesRankChange: false, items: [{ title: 'トーハン限定作品', currentRank: 2 }] })
+      }
+      return Promise.resolve({ providesRankChange: false, items: [{ title: '日販限定作品', currentRank: 4 }] })
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, 30)
+    expect(observations.map((o) => o.title).sort()).toEqual(['トーハン限定作品', '日販限定作品'])
+  })
+})
