@@ -1,7 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { describe, it, expect } from 'vitest'
-import { parseNetflixTsv, parseGoogleTrendsRss, parseSteamMostPlayed } from '../../../scripts/trend-digest/fetchStructuredSource'
+import { describe, it, expect, vi } from 'vitest'
+import {
+  parseNetflixTsv,
+  parseGoogleTrendsRss,
+  parseSteamMostPlayed,
+  resolveSteamRanking,
+} from '../../../scripts/trend-digest/fetchStructuredSource'
+import type { SteamAppNameFetcher } from '../../../scripts/trend-digest/fetchStructuredSource'
 
 const FIXTURES_DIR = path.join(__dirname, '../fixtures/structuredSources')
 
@@ -88,5 +94,44 @@ describe('Steam公式Web API(structured-json-api)のパース - 実際に取得�
 
   it('response.ranksを持たない応答の場合、空配列を返すこと', () => {
     expect(parseSteamMostPlayed(JSON.stringify({ response: {} }))).toEqual([])
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-7
+describe('Steam公式Web APIのゲーム名解決(resolveSteamRanking) - appdetailsは1呼び出しにつきappid1件のみ解決できるため、上位nameResolutionLimit件までのゲーム名を解決する', () => {
+  it('上位nameResolutionLimit件までのappidだけ名前解決が行われ、それ以降は解決されないこと', async () => {
+    const ranks = [
+      { rank: 1, appid: 730 },
+      { rank: 2, appid: 570 },
+      { rank: 3, appid: 999 },
+    ]
+    const fetchAppName: SteamAppNameFetcher = vi.fn().mockImplementation((appid: number) =>
+      Promise.resolve(appid === 730 ? 'Counter-Strike 2' : appid === 570 ? 'Dota 2' : 'Unresolved Game')
+    )
+    const items = await resolveSteamRanking(ranks, fetchAppName, 2)
+    expect(items).toEqual([
+      { title: 'Counter-Strike 2', currentRank: 1 },
+      { title: 'Dota 2', currentRank: 2 },
+    ])
+    expect(fetchAppName).toHaveBeenCalledTimes(2)
+  })
+
+  it('前週順位(previousRank)を持つ項目は、解決後のRankedItemにもpreviousRankが引き継がれること', async () => {
+    const ranks = [{ rank: 1, appid: 730, previousRank: 2 }]
+    const fetchAppName: SteamAppNameFetcher = vi.fn().mockResolvedValue('Counter-Strike 2')
+    const items = await resolveSteamRanking(ranks, fetchAppName, 10)
+    expect(items).toEqual([{ title: 'Counter-Strike 2', currentRank: 1, previousRank: 2 }])
+  })
+
+  it('名前解決に失敗した(nullが返る)appidは、その項目を観測項目から除外すること(架空の名前を作らない)', async () => {
+    const ranks = [
+      { rank: 1, appid: 730 },
+      { rank: 2, appid: 12345 },
+    ]
+    const fetchAppName: SteamAppNameFetcher = vi.fn().mockImplementation((appid: number) =>
+      Promise.resolve(appid === 730 ? 'Counter-Strike 2' : null)
+    )
+    const items = await resolveSteamRanking(ranks, fetchAppName, 10)
+    expect(items).toEqual([{ title: 'Counter-Strike 2', currentRank: 1 }])
   })
 })
