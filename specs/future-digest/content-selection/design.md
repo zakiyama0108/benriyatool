@@ -6,7 +6,7 @@
 主要な設計判断:
 - 「記事を探す・時間軸と影響度を判定する・実質的な重複を見分ける」は意味の判断が必要なためClaudeに任せ、「同じURLの除外・枠ごとの採用・候補なしの記録・回数の数え方」は揺れてはいけないため決定的なコードで行う(trend-digestのWebSearchジャンルと同じ役割分担)
 - ジャンル・注目テーマは`content/future-digest/genres.json`に置き、運営者が追記するだけで増やせる
-- 回数は公開済み記事の`issueNumber`の最大値+1とする(公開をスキップした回は記事ファイルがないため自然に数えない)
+- 回数は公開済み記事の`issueNumber`の最大値+1とする(利用上限への到達で打ち切られた回は記事ファイルがないため自然に数えない)
 - 図: [ジャンルごとに候補を集める処理](#ジャンルごとに候補を集める処理エージェントの推論)のシーケンス図
 
 ## データ設計(ジャンル・注目テーマの設定ファイル)
@@ -76,7 +76,7 @@ export type SlotResult =
 - 手順:
   1. 公開済みの記事のうち最も大きい回数に1を足して、今回の回数とする。記事が1件もない場合は1回目とする
   2. 回数が奇数なら近未来と長期未来、偶数なら中期未来と超長期未来を今回の時間軸とする
-- 公開をスキップした回は記事ファイルがないため、回数に数えられない(requirements.md#時間軸の切り替え-2)
+- 利用上限への到達で打ち切られた回は記事ファイルがないため、回数に数えられない(requirements.md#時間軸の切り替え-2)
 - 検討事項: CIが失敗した週次記事PRが自動マージされずに放置されたまま次週の実行を迎えると、次週も同じ回数(`issueNumber`)を採番してしまう(いずれのPRも`main`に未マージのため、mainの最大値は変わらない)。運営者が失敗したPRに気づいたら早めにクローズ・再実行する運用でこれを避ける(自動検証は設けない)【推測】
 - 関連するビジネスルール: requirements.md#時間軸の切り替え-1〜2
 
@@ -135,7 +135,7 @@ sequenceDiagram
   1. 枠ごとに、検証を通った候補の件数と、採用したか候補なしか収集失敗(分類ラベル)かを実行ログに1行ずつ出す
   2. 候補が見つからなかった枠の一覧と、収集に失敗した枠の一覧(分類ラベル別の件数つき)を、最後にまとめて出す
   3. 候補なしの枠・収集失敗の枠は記事データの`emptySlots`にも`reason`つきで残るため、[source-review](../source-review/design.md)の月次見直しは記事データから集計できる(収集失敗は候補なしの集計から除く。requirements.md#収集失敗-5)
-  4. `collect-and-select.ts`の最後に、全枠の採用結果(`SlotResult`の一覧)を[weekly-publish/design.md](../weekly-publish/design.md)の`decidePublishOutcome`に渡し、判定結果(`'publish'`/`'skip'`/`'fail'`)を`GITHUB_OUTPUT`に`outcome=publish|skip|fail`として書き出す。`'fail'`のときはCLIを非ゼロ終了で終える。公開するか・スキップするか・失敗にするかの判定ロジック自体はweekly-publish designの`decidePublishOutcome`が持ち、本specでは二重に持たない【推測】
+  4. `collect-and-select.ts`の最後に、全枠の採用結果(`SlotResult`の一覧)を[weekly-publish/design.md](../weekly-publish/design.md)の`shouldAlertOperator`に渡し、判定結果(全枠が収集失敗かどうか)を`GITHUB_OUTPUT`に`alert=true|false`として書き出す。採用0件でもこのCLIは非ゼロ終了せず選定結果を返す(公開はスキップしない)。運営者への警告が必要かの判定ロジック自体はweekly-publish designの`shouldAlertOperator`が持ち、本specでは二重に持たない【推測】
 - 関連するビジネスルール: requirements.md#収集状況の記録-1、requirements.md#収集失敗-4
 
 ## バリデーション
@@ -155,7 +155,7 @@ Claudeが返した候補ごとに検証し、満たさない候補はその場�
     - `invalid-format`: Claude CLIは正常終了したが応答からJSONを取り出せなかった・応答全体の形(時間軸ごとの候補配列)のスキーマを満たさなかった場合(2回とも)。候補単位のバリデーションで個々の候補が捨てられ0件になった場合はここに含めない(`collectForGenre`は0件の候補配列を返す成功として扱う。上記手順7)【推測】
     - `other`: 上記のいずれにも当たらない異常終了・例外の場合
 - 応答が利用上限への到達を示す場合は、そのジャンルの収集失敗として`collection-failed`にはせず、同じ実行内でやり直しても回復しないため、その時点で収集を打ち切り、スクリプトを失敗として終える(requirements.md#収集失敗-3。[weekly-publish/design.md](../weekly-publish/design.md)「エラーハンドリング」で公開せずに実行を失敗させる)
-- その回で1本も採用できなかった場合も、`SlotResult`の一覧をそのまま返す(判定用の値は別に持たせない)。公開・スキップ・失敗の判定は[weekly-publish/design.md](../weekly-publish/design.md)の`decidePublishOutcome`だけが行う(上記「収集状況を記録する処理」手順4、requirements.md#収集失敗-4)【推測】
+- その回で1本も採用できなかった場合も、`SlotResult`の一覧をそのまま返す(判定用の値は別に持たせない)。採用0件でも公開はスキップせず、運営者への警告が必要かの判定は[weekly-publish/design.md](../weekly-publish/design.md)の`shouldAlertOperator`だけが行う(上記「収集状況を記録する処理」手順4、requirements.md#収集失敗-4)【推測】
 - 記事データの読み込みに失敗した場合(過去記事のJSONが壊れている)は、配信済みの判定ができないため処理を失敗として終える(重複した記事を配信するより、その回を止める方を選ぶ)
 
 ## 関連するファイル(抜粋)
@@ -169,7 +169,7 @@ app/future-digest/lib/deliveredIndex.ts (新規: 配信済みURLの正規化と�
 app/future-digest/lib/candidateValidation.ts (新規: Claudeが返した候補の検証)
 app/future-digest/lib/selectSlots.ts (新規: 枠ごとの採用・候補なしの記録・収集失敗ジャンルの合流)
 scripts/future-digest/collect-candidates.ts (新規: ジャンルごとにClaude Code CLIを起動して候補を集めるCLI)
-scripts/future-digest/collect-and-select.ts (新規: 回数の決定→収集→採用→結果のJSON出力→decidePublishOutcomeによるGITHUB_OUTPUT書き出しまでをまとめるCLI。weekly-publishのワークフローから呼ばれる)
+scripts/future-digest/collect-and-select.ts (新規: 回数の決定→収集→採用→結果のJSON出力→shouldAlertOperatorによるGITHUB_OUTPUT書き出しまでをまとめるCLI。weekly-publishのワークフローから呼ばれる)
 app/future-digest/lib/articles.ts (article-detailで新規: getAllArticlesを利用)
 ```
 

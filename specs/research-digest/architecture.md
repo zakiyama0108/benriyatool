@@ -73,7 +73,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 8. 機能マップ
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
-| [content-selection](content-selection/requirements.md) | ジャンルごとに影響の大きい研究を選ぶ | 有効なジャンルの数だけ、生活への影響度が最も大きく未配信の研究・論文を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの公開判定(`decidePublishOutcome`)を呼ぶ | 仕様のみ(未実装) |
+| [content-selection](content-selection/requirements.md) | ジャンルごとに影響の大きい研究を選ぶ | 有効なジャンルの数だけ、生活への影響度が最も大きく未配信の研究・論文を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの運営者への警告判定(`shouldAlertOperator`)を呼ぶ | 仕様のみ(未実装) |
 | [content-generation](content-generation/requirements.md) | 研究発見の要約を読む | 選ばれた記事の要約・影響度の根拠の執筆ルール(著作権への配慮を含む)を定める | content-selectionの選定結果を受け取る | 仕様のみ(未実装) |
 | [weekly-publish](weekly-publish/requirements.md) | 毎週月曜に新しい記事が並ぶ | 毎週月曜の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | 仕様のみ(未実装) |
 | [line-broadcast](line-broadcast/requirements.md) | LINEで新着記事の通知を受け取る | 記事ページの公開を確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング、article-detailの記事データに従う | 仕様のみ(未実装) |
@@ -86,7 +86,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 未実装のためこれから実装に着手する場合は、依存関係の浅い順に次の順で進める(spec間の依存は上表「依存」列が正)。future-digestと構造が同じため、future-digestの実装順([future-digest/architecture.md#実装順](../future-digest/architecture.md))とあわせて進めてよい:
 1. content-selection・content-generation(記事データの元となる選定・要約ルール)
 2. article-detail(記事データの共有スキーマを定義するspec。他のUI specはこのスキーマに依存する)
-3. weekly-publish(選定・生成・公開の自動実行)。ただし公開判定の純粋関数`decidePublishOutcome`(weekly-publish/tasks.md Task 1)はcontent-selectionのまとめCLIから呼ばれるため、content-selectionのまとめCLIより先に実装する
+3. weekly-publish(選定・生成・公開の自動実行)。ただし運営者への警告判定の純粋関数`shouldAlertOperator`(weekly-publish/tasks.md Task 1)はcontent-selectionのまとめCLIから呼ばれるため、content-selectionのまとめCLIより先に実装する
 4. article-list・bookmark・line-broadcast(article-detailのデータ構造を使う周辺機能。この3つの間に依存はなく並行できる)
 5. source-review(記事データ・フィードバックの蓄積を前提とする月次見直し)
 

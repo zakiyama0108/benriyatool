@@ -106,7 +106,7 @@ sequenceDiagram
   1. ジャンルごとに、検証を通った候補の件数と、採用したか候補なしか収集失敗(分類ラベル)かを実行ログに1行ずつ出す
   2. 候補が見つからなかったジャンルの一覧と、収集に失敗したジャンルの一覧(分類ラベル別の件数つき)を、最後にまとめて出す
   3. 候補なしのジャンル・収集失敗のジャンルは記事データの`emptyGenres`にも`reason`つきで残るため、月次見直しは記事データから集計できる(収集失敗は候補なしの集計から除く。requirements.md#収集失敗-5)
-  4. `collect-and-select.ts`の最後に、全ジャンルの採用結果(`GenreResult`の一覧)を[weekly-publish/design.md](../weekly-publish/design.md)の`decidePublishOutcome`に渡し、判定結果(`'publish'`/`'skip'`/`'fail'`)を`GITHUB_OUTPUT`に`outcome=publish|skip|fail`として書き出す。`'fail'`のときはCLIを非ゼロ終了で終える。公開するか・スキップするか・失敗にするかの判定ロジック自体はweekly-publish designの`decidePublishOutcome`が持ち、本specでは二重に持たない【推測】
+  4. `collect-and-select.ts`の最後に、全ジャンルの採用結果(`GenreResult`の一覧)を[weekly-publish/design.md](../weekly-publish/design.md)の`shouldAlertOperator`に渡し、判定結果(全ジャンルが収集失敗かどうか)を`GITHUB_OUTPUT`に`alert=true|false`として書き出す。採用0件でもこのCLIは非ゼロ終了せず選定結果を返す(公開はスキップしない)。運営者への警告が必要かの判定ロジック自体はweekly-publish designの`shouldAlertOperator`が持ち、本specでは二重に持たない【推測】
 - 関連するビジネスルール: requirements.md#収集状況の記録-1、requirements.md#収集失敗-4
 
 ## バリデーション
@@ -127,7 +127,7 @@ Claudeが返した候補ごとに検証し、満たさない候補は捨てる(�
     - `invalid-format`: Claude CLIは正常終了したが応答からJSONを取り出せなかった・応答全体の形(候補の配列)のスキーマを満たさなかった場合(2回とも)。候補単位のバリデーションで個々の候補が捨てられ0件になった場合はここに含めない(`collectForGenre`は0件の候補配列を返す成功として扱う。上記手順9)【推測】
     - `other`: 上記のいずれにも当たらない異常終了・例外の場合
 - 応答が利用上限への到達を示す場合は、そのジャンルの収集失敗として`collection-failed`にはせず、その時点で収集を打ち切り、スクリプトを失敗として終える(requirements.md#収集失敗-3。[weekly-publish/design.md](../weekly-publish/design.md)で公開せずに実行を失敗させる)
-- その回で1本も採用できなかった場合も、`GenreResult`の一覧をそのまま返す(判定用の値は別に持たせない)。公開・スキップ・失敗の判定は[weekly-publish/design.md](../weekly-publish/design.md)の`decidePublishOutcome`だけが行う(上記「収集状況を記録する処理」手順4、requirements.md#収集失敗-4)【推測】
+- その回で1本も採用できなかった場合も、`GenreResult`の一覧をそのまま返す(判定用の値は別に持たせない)。採用0件でも公開はスキップせず、運営者への警告が必要かの判定は[weekly-publish/design.md](../weekly-publish/design.md)の`shouldAlertOperator`だけが行う(上記「収集状況を記録する処理」手順4、requirements.md#収集失敗-4)【推測】
 - 過去記事の読み込みに失敗した場合は、配信済みの判定ができないため処理を失敗として終える
 
 ## 関連するファイル(抜粋)
@@ -140,7 +140,7 @@ app/research-digest/lib/deliveredIndex.ts (新規: URL・DOIの正規化と、�
 app/research-digest/lib/candidateValidation.ts (新規: Claudeが返した候補の検証)
 app/research-digest/lib/selectGenres.ts (新規: ジャンルごとの採用・候補なしの記録・収集失敗ジャンルの合流)
 scripts/research-digest/collect-candidates.ts (新規: ジャンルごとにClaude Code CLIを起動して候補を集めるCLI)
-scripts/research-digest/collect-and-select.ts (新規: 収集→採用→結果のJSON出力→decidePublishOutcomeによるGITHUB_OUTPUT書き出しまでをまとめるCLI。weekly-publishのワークフローから呼ばれる)
+scripts/research-digest/collect-and-select.ts (新規: 収集→採用→結果のJSON出力→shouldAlertOperatorによるGITHUB_OUTPUT書き出しまでをまとめるCLI。weekly-publishのワークフローから呼ばれる)
 app/research-digest/lib/articles.ts (article-detailで新規: getAllArticlesを利用)
 ```
 
