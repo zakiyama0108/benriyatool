@@ -19,7 +19,7 @@
   - 🟢 `scripts/future-digest/generate-content.ts`(または同ディレクトリの純粋関数モジュール)に実装する(trend-digestの`classifyGenerationResult`と同じ判定)
 
 - Task 5: 生成のやり直しと除外(仕様: weekly-publish/requirements.md#掲載件数の保証-4、weekly-publish/design.md「1回分の記事を生成する処理」)
-  - 🔴 Claude CLIの呼び出しを差し替え可能にし、`generatePredictions(candidates, callFn)`について次を確認するテストを書く: 一時的な失敗→やり直しで成功した予測は結果に入る/2回失敗した予測は「生成に失敗した枠」として返る/1件でも成功すれば結果が返る/全件失敗で例外を投げる/利用上限への到達でやり直さず以降を呼ばずに例外を投げる/全件失敗と利用上限の例外が区別できる
+  - 🔴 Claude CLIの呼び出しを差し替え可能にし、`generatePredictions(candidates, callFn)`について次を確認するテストを書く: 一時的な失敗→やり直しで成功した予測は結果に入る/2回失敗した予測は「生成に失敗した枠」として返る/採用した候補全件が2回失敗しても例外を投げず、全件を「生成に失敗した枠」として返す(公開をスキップせず生成失敗の記載で公開するU1の方針のため)/利用上限への到達だけはやり直さず以降を呼ばずに例外を投げる(全件生成失敗とは区別される唯一の例外。この例外はweekly-publishの再実行に委ねられる)
   - 🟢 `generatePredictions`を実装する
 
 - Task 6: 見出し・本文生成CLI(仕様: design.md「見出し・本文を書く処理」)(TDD対象外。Claude CLIの起動とプロンプトの組み立てで、検証可能な決定的ロジックはTask 1〜5でテスト済みのため)
