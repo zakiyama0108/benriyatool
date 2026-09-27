@@ -7,7 +7,7 @@ GitHub Actionsのスケジュール実行が毎週木曜07:43(日本時間)頃�
 - 実行基盤・認証・自動マージの仕組みはtrend-digestと同じ構成をそのまま使う(新しい運用パターンを増やさない。architecture.md#2)
 - 採用0件の回・生成が全件失敗した回も、公開をスキップせず候補なし・収集失敗・生成失敗の記載で記事を作成・公開する(根拠: /requirementでの決定)。公開するかどうかの分岐はなくなり、「その回の実行を運営者への警告付きにするか」だけを判定する。全枠が収集失敗だった回は、公開はしたうえで実行を失敗表示にする(収集の仕組み自体の異常に運営者が気づけるようにするため)【推測】
 - 利用上限への到達は記事を作る材料が得られないため、その回はいったん打ち切るが、本番の12時間後・24時間後・36時間後の最大3回、自動的に再試行する(根拠: /requirementでの決定「12時間×3回くらいはリトライしてほしい」)。エラーメッセージから解除時刻を読み取って待つ方式は表示形式に依存し不安定なため採用しない【推測】
-- 再実行が翌日にまたがるため、記事の`date`・`issueNumber`は実行日ではなく「本来の配信日(その週の木曜)」から求める。これを純粋関数`getScheduledPublishDate(nowJst)`で算出し、本番cron・再実行cron・手動`workflow_dispatch`のすべてで共通に使う【推測】
+- 再実行が翌日にまたがるため、記事の`date`は実行日ではなく「本来の配信日(その週の木曜)」から求める(`issueNumber`は日付に依存せず「公開済みの最大値+1」で決まるため、再実行でも通常どおりの方法で採番する)。配信日はこれを純粋関数`getScheduledPublishDate(nowUtc)`(UTCの時点を受け取り、関数の内側でJSTに変換してから直近の木曜を求める。呼び出し側でJST変換はしない【推測】)で算出し、本番cron・再実行cron・手動`workflow_dispatch`のすべてで共通に使う
 - 図: [1回分の記事を生成する処理](#1回分の記事を生成する処理)・[利用上限への到達時に再実行する処理](#利用上限への到達時に再実行する処理)のシーケンス図
 
 ## 実行環境の前提
@@ -19,16 +19,16 @@ GitHub Actionsのスケジュール実行が毎週木曜07:43(日本時間)頃�
   - 3回目(本番の36時間後): `43 10 * * 5`(金曜10:43 UTC=金曜19:43 JST)
   これら3本のcronで起動した実行は、いずれも「利用上限への到達時に再実行する処理」の冪等チェックを最初に行う(requirements.md#利用上限への到達時の再実行-1〜2)。3本を区別する回数管理は行わず、3本目のcronのぶんまで走って公開に至らなければ、それ以上自動で再試行する仕組み自体がないというだけで足りる(requirements.md#利用上限への到達時の再実行-3)
 - `workflow_dispatch`でも起動できるようにする。用途は(a) Secrets設定後の動作確認、(b) 上記3回の自動再実行でも公開できなかった回の復旧、の2つ(requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの2つを除く)。入力`scheduled_publish_date`(省略可、`YYYY-MM-DD`)で本来の配信日を指定できる。省略時は実行日時から`getScheduledPublishDate`で求める(下記「配信日を求める処理」)【推測】
+- GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を`FUTURE_DIGEST_GH_PAT`としてActions Secretsに保存して使う。既定の`GITHUB_TOKEN`で作ったPRでは後続の`ci.yml`が起動しないため使わない(trend-digestと同じ理由)
+- 収集・生成はClaude Code CLIのヘッドレス実行で行い、既存の`CLAUDE_CODE_OAUTH_TOKEN`(運営者個人のPro/Maxサブスクリプション。ai-dev-digest・news-digest・trend-digestと共用)をそのまま使う。利用枠は他のdigestと共有する
+- 実行指示の根拠は本specと参照先specのrequirements.md/design.mdとし、専用のプロンプトファイルを複製しない
 
 ### 配信日を求める処理(決定的なコード)
 - 対象: 実行日時(JST)
 - 手順:
-  1. 純粋関数`getScheduledPublishDate(nowJst)`で、実行日時と同じかそれより前で直近の木曜日(JST)の日付を返す(本番cronの実行日はそのまま木曜のため、この関数を通しても同じ値になる)【推測】
-  2. 記事データの`date`・`issueNumber`の算出([content-selection/design.md](../content-selection/design.md)「回数を数える処理」)は、いずれもこの配信日を基準にする。本番cron・3本の再実行cron・手動`workflow_dispatch`のすべてでこの関数を通す(requirements.md#利用上限への到達時の再実行-5)
+  1. 純粋関数`getScheduledPublishDate(nowUtc)`(実行日時をUTCの`Date`で受け取り、関数の内側でJSTに変換する)で、実行日時と同じかそれより前で直近の木曜日(JST)の日付を返す(本番cronの実行日はそのまま木曜のため、この関数を通しても同じ値になる)【推測】
+  2. 記事データの`date`はこの配信日を基準にする。本番cron・3本の再実行cron・手動`workflow_dispatch`のすべてでこの関数を通す(requirements.md#利用上限への到達時の再実行-5)。`issueNumber`は日付に依存せず「公開済みの記事の最大値+1」で決まる([content-selection/design.md](../content-selection/design.md)「回数を数える処理」)ため、この配信日算出とは独立している
 - 関連するビジネスルール: requirements.md#利用上限への到達時の再実行-5
-- GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を`FUTURE_DIGEST_GH_PAT`としてActions Secretsに保存して使う。既定の`GITHUB_TOKEN`で作ったPRでは後続の`ci.yml`が起動しないため使わない(trend-digestと同じ理由)
-- 収集・生成はClaude Code CLIのヘッドレス実行で行い、既存の`CLAUDE_CODE_OAUTH_TOKEN`(運営者個人のPro/Maxサブスクリプション。ai-dev-digest・news-digest・trend-digestと共用)をそのまま使う。利用枠は他のdigestと共有する
-- 実行指示の根拠は本specと参照先specのrequirements.md/design.mdとし、専用のプロンプトファイルを複製しない
 
 ## 処理フロー
 
@@ -69,7 +69,7 @@ sequenceDiagram
 ### 利用上限への到達時に再実行する処理
 - 対象: 3本ある再実行cron(`43 10 * * 4`〈12時間後〉・`43 22 * * 4`〈24時間後〉・`43 10 * * 5`〈36時間後〉)のいずれかによる起動。この処理はどのcronで起動されても同じ手順で、何回目の再実行かを区別しない(R7: 3本のcronがそれぞれ独立に同じ判定を行うだけで、回数管理のコードは持たない)
 - 手順:
-  1. 起動直後に、純粋関数`getScheduledPublishDate(nowJst)`で配信日を求める(本番cronと同じ木曜の日付になる)。この配信日の記事ファイルが既に存在するかを純粋関数`shouldSkipRetry(articles, scheduledPublishDate)`で確認する(requirements.md#利用上限への到達時の再実行-2)
+  1. 起動直後に、純粋関数`getScheduledPublishDate(nowUtc)`で配信日を求める(本番cronと同じ木曜の日付になる)。この配信日の記事ファイルが既に存在するかを純粋関数`shouldSkipRetry(articles, scheduledPublishDate)`で確認する(requirements.md#利用上限への到達時の再実行-2)
   2. 記事ファイルが存在しない場合でも、その配信日のブランチ(`future-digest/articles/<配信日>`)からのPRが既にあるかを`gh pr list`(オープン・マージ済み・クローズ済みのすべてを対象)で確認する(前回の実行がCLIの非ゼロ終了より後まで進んでいた場合に備える。マージ済みPRなら記事ファイルの存在確認〈手順1〉でも検出できるため、この確認は主にオープン・クローズ済みPRの検出用。TDD対象外の運用チェック)【推測】
   3. いずれかが見つかった場合(公開済み、またはPRが存在する)は、何もせずジョブを成功として終える(requirements.md#利用上限への到達時の再実行-2)。打ち切りの理由が利用上限かどうかは問わない(R7)
   4. いずれも見つからない場合は、「1回分の記事を生成する処理」を配信日を指定して最初からやり直す(前回の途中結果は使わない。requirements.md#利用上限への到達時の再実行-4)
@@ -146,7 +146,7 @@ sequenceDiagram
 scripts/future-digest/collect-and-select.ts (content-selectionで新規: 収集・選定のCLI)
 scripts/future-digest/generate-content.ts (content-generationで新規: 見出し・本文生成のCLI)
 app/future-digest/lib/shouldAlertOperator.ts (新規: 選定結果から全枠収集失敗かどうか〈運営者への警告が必要か〉を判定する純粋関数。content-selectionの`collect-and-select.ts`から呼ばれる)
-app/future-digest/lib/scheduledPublishDate.ts (新規: 実行日時から本来の配信日〈直近の木曜、JST〉を求める純粋関数`getScheduledPublishDate`)
+app/future-digest/lib/scheduledPublishDate.ts (新規: 実行日時〈UTC〉から本来の配信日〈直近の木曜、JST〉を求める純粋関数`getScheduledPublishDate`。内部でJSTに変換する)
 app/future-digest/lib/shouldSkipRetry.ts (新規: 再実行cronの冪等チェック。配信日の記事が既に存在するかを判定する純粋関数)
 app/future-digest/lib/assembleArticle.ts (新規: 選定結果+生成結果から記事データを組み立てる純粋関数)
 scripts/future-digest/write-article.ts (新規: assembleArticleの結果をcontent/future-digest/articles/<date>.jsonへ書き出すCLI)

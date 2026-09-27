@@ -14,7 +14,7 @@
   - `scripts/future-digest/write-article.ts`を実装する。同じ日付のファイルが既にある場合は上書きせずに非ゼロで終える
 
 - Task 4: 配信日の算出と再実行cronの冪等チェック(仕様: requirements.md#利用上限への到達時の再実行-2・5、design.md「配信日を求める処理」「利用上限への到達時に再実行する処理」手順1)
-  - 🔴 `getScheduledPublishDate(nowJst)`について次を確認するテストを書く: 木曜の日時を渡すとその日の日付が返る/木曜19:43・金曜07:43・金曜19:43(いずれもJSTの3本の再実行cronの起動時刻を想定)を渡すと同じ週の木曜の日付が返る/週をまたいだ木曜(次の木曜)は返らない
+  - 🔴 `getScheduledPublishDate(nowUtc)`(UTCの`Date`を受け取り、関数の内側でJSTに変換してから直近の木曜を求める)について次を確認するテストを書く: 木曜07:43 JST相当のUTC日時を渡すとその日の日付が返る/木曜19:43・金曜07:43・金曜19:43(いずれもJSTの3本の再実行cronの起動時刻をUTCに換算した日時)を渡すと同じ週の木曜の日付が返る/週をまたいだ木曜(次の木曜)は返らない/境界値として、水曜22:43 UTC(=木曜07:43 JST)を渡すと同じ週の木曜の日付が返る
   - 🟢 `app/future-digest/lib/scheduledPublishDate.ts`に実装する
   - 🔴 `shouldSkipRetry(articles, scheduledPublishDate)`について次を確認するテストを書く: 指定した配信日と同じ`date`の記事が既にあれば`true`(スキップ)/なければ`false`(再実行してよい)
   - 🟢 `app/future-digest/lib/shouldSkipRetry.ts`に実装する
