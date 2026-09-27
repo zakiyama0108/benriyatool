@@ -62,7 +62,7 @@ export type EmptySlot = {
   genre: Genre
   horizon: Horizon
   reason: 'no-candidate' | 'collection-failed' | 'generation-failed' // 候補が見つからなかった / 収集の処理自体が失敗した / 候補はあったが要約の生成に失敗した
-  collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル。利用上限への到達は実行全体を打ち切るため値に含まない(content-selection/requirements.md#収集失敗-2・3)【推測】
+  collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル。利用上限への到達は実行全体を打ち切るため値に含まない(content-selection/requirements.md#収集失敗-2・3)
 }
 
 // 収集失敗の分類ラベルの読者向け表示(IMPACT_LABELSと同じ形式)。内部のコード値(timeout/invalid-format/other)は変えず、
@@ -126,7 +126,7 @@ export type Article = {
 ### フィードバックを送信する処理
 - 対象: フィードバック入力欄に入力された自由記述
 - 手順:
-  1. 入力欄に`maxLength={1000}`を設定し、前後の空白を除いた結果が空、または1000字を超える場合は送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)。入力欄の下に残り字数(例:「120/1000字」)を表示する【推測】
+  1. 入力欄に`maxLength={1000}`を設定し、前後の空白を除いた結果が空、または1000字を超える場合は送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)。入力欄の下に残り字数(例:「120/1000字」)を表示する
   2. 送信時、記事ID・予測ID・入力内容を1件のレコードとして`future_digest_feedback`に保存する(ログイン中のセッションによる`authenticated`ロールでのINSERT)
   3. 保存に成功した場合は、入力欄を空にし「送信しました」を数秒表示する(requirements.md#運営者向けフィードバック-12)
   4. 保存に失敗した場合は、入力内容を残したまま「送信に失敗しました。もう一度お試しください」を表示する
@@ -159,8 +159,8 @@ sequenceDiagram
 - 各掲載できなかった枠: `genre`・`horizon`・`reason`が定義済みの値で、`horizon`がその回の2区分のどちらかであること
 - `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること
 - 同じ枠(ジャンル×時間軸)が2回現れないこと。記事に現れるジャンルは、その回の2時間軸の両方が予測または掲載できなかった枠として揃っていること(枠が黙って消える事故をビルド時に検知するため。content-selection/requirements.md#機能要件-3)。その回に有効だった全ジャンルが揃っていることは、記事を組み立てる時点で[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルを後から追加・廃止しても過去記事の検証が壊れないよう、ビルド時の検証は「その記事の中での整合」に限る)
-- 予測は0件でもよい(全枠で採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)【推測】
-- 各掲載できなかった枠: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)【推測】
+- 予測は0件でもよい(全枠で採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)
+- 各掲載できなかった枠: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)
 - フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない。requirements.md#運営者向けフィードバック-13)
 
 ## エラーハンドリング
@@ -212,7 +212,7 @@ create table future_digest_feedback (
   is_test boolean not null default false,
   article_id text not null,
   prediction_id text not null,
-  comment text not null check (char_length(comment) between 1 and 1000) -- 1000字は【推測】
+  comment text not null check (char_length(comment) between 1 and 1000) -- 1000字は
 );
 
 alter table future_digest_feedback enable row level security;

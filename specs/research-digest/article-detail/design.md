@@ -52,7 +52,7 @@ export type Finding = {
 export type EmptyGenre = {
   genre: Genre
   reason: 'no-candidate' | 'collection-failed' | 'generation-failed' // 候補が見つからなかった / 収集の処理自体が失敗した / 候補はあったが要約の生成に失敗した
-  collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル。利用上限への到達は実行全体を打ち切るため値に含まない(content-selection/requirements.md#収集失敗-2・3)【推測】
+  collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル。利用上限への到達は実行全体を打ち切るため値に含まない(content-selection/requirements.md#収集失敗-2・3)
 }
 
 // 収集失敗の分類ラベルの読者向け表示(IMPACT_LABELSと同じ形式)。内部のコード値(timeout/invalid-format/other)は変えず、
@@ -114,7 +114,7 @@ export type Article = {
 ### フィードバックを送信する処理
 - 対象: フィードバック入力欄に入力された自由記述
 - 手順:
-  1. 入力欄に`maxLength={1000}`を設定し、前後の空白を除いた結果が空、または1000字を超える場合は送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)。入力欄の下に残り字数(例:「120/1000字」)を表示する【推測】
+  1. 入力欄に`maxLength={1000}`を設定し、前後の空白を除いた結果が空、または1000字を超える場合は送信ボタンを押せないようにする(requirements.md#運営者向けフィードバック-13)。入力欄の下に残り字数(例:「120/1000字」)を表示する
   2. 送信時、記事ID・研究ID・入力内容を1件のレコードとして`research_digest_feedback`に保存する(`authenticated`ロールでのINSERT)
   3. 成功した場合は入力欄を空にし「送信しました」を数秒表示する(requirements.md#運営者向けフィードバック-12)
   4. 失敗した場合は入力内容を残したまま「送信に失敗しました。もう一度お試しください」を表示する
@@ -145,8 +145,8 @@ sequenceDiagram
 - 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`body`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること、`body`が160〜480字であること
 - 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`reason`が定義済みの値であること
 - 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。その回に有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
-- 研究は0件でもよい(全ジャンルで採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)【推測】
-- 各掲載できなかったジャンル: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)【推測】
+- 研究は0件でもよい(全ジャンルで採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)
+- 各掲載できなかったジャンル: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)
 - フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない)
 
 ## エラーハンドリング
@@ -198,7 +198,7 @@ create table research_digest_feedback (
   is_test boolean not null default false,
   article_id text not null,
   finding_id text not null,
-  comment text not null check (char_length(comment) between 1 and 1000) -- 1000字は【推測】
+  comment text not null check (char_length(comment) between 1 and 1000) -- 1000字は
 );
 
 alter table research_digest_feedback enable row level security;
