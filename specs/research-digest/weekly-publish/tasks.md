@@ -13,16 +13,18 @@
 - Task 3: 記事データの書き出しCLI(仕様: design.md「エラーハンドリング」)(TDD対象外。Task 2の関数を呼んでファイルに書くだけのため)
   - `scripts/research-digest/write-article.ts`を実装する。同じ日付のファイルが既にある場合は上書きせずに非ゼロで終える
 
-- Task 4: 再実行cronの冪等チェック(仕様: requirements.md#利用上限への到達時の再実行-2、design.md「利用上限への到達時に再実行する処理」手順1)
+- Task 4: 配信日の算出と再実行cronの冪等チェック(仕様: requirements.md#利用上限への到達時の再実行-2・5、design.md「配信日を求める処理」「利用上限への到達時に再実行する処理」手順1)
+  - 🔴 `getScheduledPublishDate(nowJst)`について次を確認するテストを書く: 月曜の日時を渡すとその日の日付が返る/月曜19:43・火曜07:43・火曜19:43(いずれもJSTの3本の再実行cronの起動時刻を想定)を渡すと同じ週の月曜の日付が返る/週をまたいだ月曜(次の月曜)は返らない
+  - 🟢 `app/research-digest/lib/scheduledPublishDate.ts`に実装する
   - 🔴 `shouldSkipRetry(articles, scheduledPublishDate)`について次を確認するテストを書く: 指定した配信日と同じ`date`の記事が既にあれば`true`(スキップ)/なければ`false`(再実行してよい)
   - 🟢 `app/research-digest/lib/shouldSkipRetry.ts`に実装する
 
-- Task 5: ワークフロー本体(仕様: design.md「実行環境の前提」「処理フロー」「利用上限への到達時に再実行する処理」「収集失敗を運営者に警告する処理」)(TDD対象外。GitHub Actionsの定義のため。分岐の判定ロジックはTask 1の`shouldAlertOperator`・Task 4の`shouldSkipRetry`でテスト済みで、ここではその結果に従うだけ。future-digest-weekly.ymlと同じ構造で実装する)
-  - `.github/workflows/research-digest-weekly.yml`を作る: `schedule`(本番cron`43 22 * * 0`、再実行cron`43 10 * * 1`)・`workflow_dispatch`・`workflow_run`(ci.ymlの完了)をトリガーにする
-  - `publish`ジョブ: 再実行cronで起動した場合はまずTask 4の`shouldSkipRetry`と`gh pr list`でスキップ判定を行い、スキップならここで成功終了する→(本番cron、または再実行で継続する場合)`RESEARCH_DIGEST_GH_PAT`でcheckout→Claude Code CLIのインストール→実行日(JST。再実行時は本来の配信日)の算出→ブランチ作成→`collect-and-select.ts`を実行(内部でTask 1の`shouldAlertOperator`を呼び、判定結果を`GITHUB_OUTPUT`の`alert`に書き出す。利用上限への到達を検知した場合はここより前にCLIが非ゼロ終了しジョブはここで失敗し、再実行cronに委ねる)→採用件数にかかわらず`generate-content.ts`(候補0件なら何もしない)→`write-article.ts`→コミット・push・PR作成・`gh pr merge --auto --squash`→`alert=='true'`ならここでジョブを非ゼロ終了(公開後の警告表示)
+- Task 5: ワークフロー本体(仕様: design.md「実行環境の前提」「配信日を求める処理」「処理フロー」「利用上限への到達時に再実行する処理」「収集失敗を運営者に警告する処理」)(TDD対象外。GitHub Actionsの定義のため。分岐の判定ロジックはTask 1の`shouldAlertOperator`・Task 4の`getScheduledPublishDate`・`shouldSkipRetry`でテスト済みで、ここではその結果に従うだけ。future-digest-weekly.ymlと同じ構造で実装する)
+  - `.github/workflows/research-digest-weekly.yml`を作る: `schedule`(本番cron`43 22 * * 0`、再実行cron`43 10 * * 1`・`43 22 * * 1`・`43 10 * * 2`の3本)・`workflow_dispatch`(入力`scheduled_publish_date`省略可)・`workflow_run`(ci.ymlの完了)をトリガーにする
+  - `publish`ジョブ: 実行日時(JST)からTask 4の`getScheduledPublishDate`で配信日を求める(`workflow_dispatch`で`scheduled_publish_date`が入力されていればそれを優先)→再実行cronで起動した場合はまず`shouldSkipRetry`と`gh pr list`(オープン・マージ済み・クローズ済み)でスキップ判定を行い、スキップならここで成功終了する→(本番cron、または再実行で継続する場合)`RESEARCH_DIGEST_GH_PAT`でcheckout→Claude Code CLIのインストール→配信日を使ってブランチ作成→`collect-and-select.ts`を実行(内部でTask 1の`shouldAlertOperator`を呼び、判定結果を`GITHUB_OUTPUT`の`alert`に書き出す。利用上限への到達を検知した場合はここより前にCLIが非ゼロ終了しジョブはここで失敗し、次の再実行cronに委ねる)→採用件数にかかわらず`generate-content.ts`(候補0件なら何もしない)→`write-article.ts`→コミット・push・PR作成・`gh pr merge --auto --squash`→`alert=='true'`ならここでジョブを非ゼロ終了(公開後の失敗表示)
   - `record-ci-failure`ジョブ: `research-digest/articles/**`ブランチのPRでCIが失敗したとき、失敗したジョブ・ステップ名をPRにコメントする
 
 - Task 6: Actions Secretsの準備(仕様: design.md「実行環境の前提」)(TDD対象外。手動の設定作業)
   - fine-grained PAT(このリポジトリのみ、Contents・Pull requestsのwrite)を発行し`RESEARCH_DIGEST_GH_PAT`として保存する
   - 既存の`CLAUDE_CODE_OAUTH_TOKEN`がそのまま使えることを確認する
-  - `workflow_dispatch`で1回実行し、PR作成→CI→自動マージまで通ることを確認する
+  - `workflow_dispatch`で1回実行し、PR作成→CI→自動マージまで通ることを確認する(動作確認用途。復旧用途で使う場合は`scheduled_publish_date`を指定する)
