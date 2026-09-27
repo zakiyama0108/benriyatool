@@ -49,6 +49,23 @@ describe('固定リストジャンルの情報源ディスパッチ - formatに�
     ).rejects.toThrow()
   })
 
+  it('アニメ(併用ジャンル)の固定リスト側情報源(filmarksAnimeTrend・anilabJapanWeekly)もparserIdで正しく呼び分けられること', async () => {
+    mockFetchOnce(readHtmlFixture('filmarksAnimeTrend.html'))
+    const filmarksResult = await dispatchFixedListSource(
+      sourceOf({ format: 'site-specific-html', parserId: 'filmarksAnimeTrend' }),
+      'anime'
+    )
+    expect(filmarksResult.items.length).toBeGreaterThan(0)
+
+    mockFetchOnce(readHtmlFixture('anilabJapanWeekly.html'))
+    const anilabResult = await dispatchFixedListSource(
+      sourceOf({ format: 'site-specific-html', parserId: 'anilabJapanWeekly' }),
+      'anime'
+    )
+    expect(anilabResult.items.length).toBeGreaterThan(0)
+    expect(anilabResult.providesRankChange).toBe(true)
+  })
+
   it('format: structured-rssの場合、Google公式トレンドRSSのパース結果が反映されること', async () => {
     mockFetchOnce(readStructuredFixture('googleTrends.xml'))
     const result = await dispatchFixedListSource(sourceOf({ format: 'structured-rss' }), 'buzzwords')
@@ -63,9 +80,9 @@ describe('固定リストジャンルの情報源ディスパッチ - formatに�
     expect(result.items[0].title).toBe('Plastic Beauty')
   })
 
-  it('format: structured-tsvでNetflixのcategoryに対応付けられていないジャンル(anime)が指定された場合、例外を投げること(Netflix公式データにアニメ専用の区分が無いため)', async () => {
+  it('format: structured-tsvでNetflixのcategoryに対応付けられていないジャンルが指定された場合、例外を投げること(対応付けの設定漏れを検知するため)', async () => {
     mockFetchOnce(readStructuredFixture('netflixTop10.tsv'))
-    await expect(dispatchFixedListSource(sourceOf({ format: 'structured-tsv' }), 'anime')).rejects.toThrow()
+    await expect(dispatchFixedListSource(sourceOf({ format: 'structured-tsv' }), 'music')).rejects.toThrow()
   })
 
   it('format: structured-json-apiの場合、Steamのranks(appidのみ)をゲーム名解決した結果が反映されること', async () => {

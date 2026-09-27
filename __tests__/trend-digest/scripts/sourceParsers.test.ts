@@ -10,6 +10,8 @@ import { tohan } from '../../../scripts/trend-digest/sourceParsers/tohan'
 import { nippan } from '../../../scripts/trend-digest/sourceParsers/nippan'
 import { famitsu } from '../../../scripts/trend-digest/sourceParsers/famitsu'
 import { jalan } from '../../../scripts/trend-digest/sourceParsers/jalan'
+import { filmarksAnimeTrend } from '../../../scripts/trend-digest/sourceParsers/filmarksAnimeTrend'
+import { anilabJapanWeekly } from '../../../scripts/trend-digest/sourceParsers/anilabJapanWeekly'
 
 const FIXTURES_DIR = path.join(__dirname, '../fixtures/sourceParsers')
 
@@ -161,5 +163,41 @@ describe('じゃらんnet人気ランキングのパーサー - ページ自体�
   it('掲載順どおりに1位から順位が振られ、「新着」タブの記事(別途表示される新着記事)とは異なるタイトルが1位になること', () => {
     expect(items[0].currentRank).toBe(1)
     expect(items[0].title).not.toBe('【長野】「渋御殿湯」で“冷たい温泉”を体験！登山客に愛される秘湯の宿をご紹介＜20…')
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-9、specs/trend-digest/content-selection/design.md「併用ジャンル(アニメ)の候補を収集・判定する処理」
+describe('Filmarksアニメ「今話題のおすすめアニメ」のパーサー - 実際に取得したHTMLに埋め込まれたJSON-LD(ItemList)からアニメの話題ランキングを抽出する', () => {
+  const items = filmarksAnimeTrend(readFixture('filmarksAnimeTrend.html'))
+
+  it('話題のおすすめアニメ36件が取得できること', () => {
+    expect(items).toHaveLength(36)
+  })
+
+  it('1位のタイトル・順位が正しく抽出されること(DOM構造ではなくJSON-LDのpositionから読み取れることの確認)', () => {
+    expect(items[0]).toMatchObject({ currentRank: 1, title: 'ヤニねこ' })
+  })
+
+  it('2位以降も順位どおりに並んでいること', () => {
+    expect(items[1]).toMatchObject({ currentRank: 2, title: 'スーパーの裏でヤニ吸うふたり' })
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-9、specs/trend-digest/content-selection/design.md「併用ジャンル(アニメ)の候補を収集・判定する処理」
+describe('AniLab「日本ウィークリーアニメランキング」のパーサー - 実際に取得したHTMLの文中表記(「順位をN上げて」)から順位・前週比を抽出する', () => {
+  const items = anilabJapanWeekly(readFixture('anilabJapanWeekly.html'))
+
+  it('順位が上昇した作品が観測項目として取得できること', () => {
+    expect(items.length).toBeGreaterThan(0)
+  })
+
+  it('「Re:ゼロから始める異世界生活 4th season」が順位を11上げて日本1位にランクインした表記から、現在順位1位・前週順位12位が抽出されること', () => {
+    const item = items.find((i) => i.title === 'Re:ゼロから始める異世界生活 4th season')
+    expect(item).toMatchObject({ currentRank: 1, previousRank: 12 })
+  })
+
+  it('カルーセル表示のため同じ項目がHTML内に複数回現れても、重複せず1件として抽出されること', () => {
+    const titles = items.map((i) => i.title)
+    expect(new Set(titles).size).toBe(titles.length)
   })
 })

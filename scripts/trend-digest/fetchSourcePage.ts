@@ -21,6 +21,8 @@ import { tohan } from './sourceParsers/tohan'
 import { nippan } from './sourceParsers/nippan'
 import { famitsu } from './sourceParsers/famitsu'
 import { jalan } from './sourceParsers/jalan'
+import { filmarksAnimeTrend } from './sourceParsers/filmarksAnimeTrend'
+import { anilabJapanWeekly } from './sourceParsers/anilabJapanWeekly'
 import {
   parseNetflixTsv,
   parseGoogleTrendsRss,
@@ -87,13 +89,16 @@ const HTML_PARSERS: Record<string, (html: string) => ReturnType<typeof billboard
   nippan,
   famitsu,
   jalan,
+  filmarksAnimeTrend,
+  anilabJapanWeekly,
 }
 
 // Netflix公式Top10データ(structured-tsv)のcategory列は"Films"/"TV"の2種類のみで、アニメ専用の
 // 区分が存在しない(fetchStructuredSource.tsのコメント参照)。foreign-drama(TV)・
-// streaming-video(Films)はこのマップで機械的に区別できるが、animeジャンルをこのデータから
-// 区別する基準が無いため、意図的にマップへ含めていない(source-reviewでの検討事項。
-// tasks.md Task14完了報告で報告済み)
+// streaming-video(Films)はこのマップで機械的に区別できる。アニメはNetflixデータを情報源に
+// 使わない方針(Filmarksアニメ・AniLabという専用のアニメランキングを情報源とする併用ジャンルに
+// 変更した。design.md「補足(アニメが併用ジャンルになった経緯)」参照)のため、このマップには
+// 含めない
 const NETFLIX_CATEGORY_BY_GENRE: Partial<Record<Genre, NetflixCategory>> = {
   'foreign-drama': 'TV',
   'streaming-video': 'Films',
