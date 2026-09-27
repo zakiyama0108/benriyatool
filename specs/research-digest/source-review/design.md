@@ -16,7 +16,7 @@
   - 2回目(本番の24時間後): `30 0 3 * *`(毎月3日00:30 UTC=3日09:30 JST)
   - 3回目(本番の36時間後): `30 12 3 * *`(毎月3日12:30 UTC=3日21:30 JST)
   この3本のいずれかで起動した実行は、まず純粋関数`shouldSkipMonthlyRetry(hasSuccessfulRun, reviewPrExists)`で冪等チェックを行う。`hasSuccessfulRun`は`gh run list`でその月の同ワークフローの成功実行(本番または前回の再実行)があるかどうか、`reviewPrExists`はその月の見直しブランチ(`research-digest/source-review/<年-月>`)からのPR(オープン・マージ済み・クローズ済みのいずれでもよい)が既にあるかどうかを表す(いずれもワークフロー側で`gh`コマンドを使って調べる。TDD対象外の運用チェック。判定式`hasSuccessfulRun || reviewPrExists`だけを純粋関数として切り出しテストする)【推測】。材料がなくPRを作らなかった月は本番の実行自体が正常終了しているため、`hasSuccessfulRun`が`true`になり再実行は走らない
-  - 条件を満たせば何もせず成功で終える。満たさなければ月次処理を最初からやり直す([weekly-publish/requirements.md#利用上限への到達時の再実行](../weekly-publish/requirements.md)と同じ方針)。3本目の再実行でも公開(PR作成)に至らなかった場合は失敗として終え、それ以降は自動再実行しない(weekly-publishと同じくcronの本数で足りる。回数管理のコードは持たない)【推測】
+  - 条件を満たせば何もせず成功で終える。満たさなければ月次処理を最初からやり直す(requirements.md#利用上限への到達時の再実行-7)。3本目の再実行でも公開(PR作成)に至らなかった場合は失敗として終え、それ以降は自動再実行しない(weekly-publishと同じくcronの本数で足りる。回数管理のコードは持たない)【推測】
 - Secretsは工程ごとに使う範囲を分離し、Claude CLIのヘッドレス実行ステップにはDB接続情報・GitHub PATのいずれも渡さない
   - 材料収集ステップ(`collectReviewData.ts`。Claude CLI起動より前): 既存の`SUPABASE_READONLY_DB_URL`(`benriyatool_readonly`ロール。[ADR-0004](../../../docs/adr/0004-agent-readonly-db-access.md))でDBから読み取り、結果をJSONとして標準出力に書き出す。`research_digest_feedback`へのSELECT権限は[article-detail/design.md](../article-detail/design.md)のマイグレーションで付与する
   - Claude CLIのヘッドレス実行ステップ: 材料収集ステップが出力したJSONと、`--allowedTools`で許可したツール(ファイル編集、`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`の実行)だけを渡す。DB接続情報・GitHub PATは渡さない(見直し案の作成にDB直接アクセスやgit操作は不要なため)。認証は`CLAUDE_CODE_OAUTH_TOKEN`(他のdigestと共用)を使う

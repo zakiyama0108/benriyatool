@@ -23,7 +23,7 @@
   - 🟢 `generateFindings`を実装する
 
 - Task 6: 見出し・本文生成CLI(仕様: design.md「見出し・本文を書く処理」)(TDD対象外。Claude CLIの起動とプロンプトの組み立てで、決定的なロジックはTask 1〜5でテスト済みのため)
-  - `scripts/research-digest/generate-content.ts`の`main`を実装する。本specのrequirements.md・design.mdを実行時に読み込み、ガードレール文言を含めてClaude CLI(`claude -p ... --output-format json`、許可ツールはWebFetchのみ)を1本ずつ起動する
+  - `scripts/research-digest/generate-content.ts`の`main`を実装する。本specのrequirements.md・design.mdを実行時に読み込み、ガードレール文言を含めてClaude CLI(`claude -p ... --output-format json`、許可ツールはWebFetchのみ)を1本ずつ起動する。`generateFindings`が投げる利用上限への到達の例外はここで握りつぶさず、`main`から外に伝播させて`generate-content.ts`を非ゼロ終了させる(この場合ワークフローは後続の`write-article.ts`(公開)に進まず、次の再実行cronに委ねる。weekly-publish/design.md「1回分の記事を生成する処理」手順4)
 
 - Task 7: 利用規約への条項追記(仕様: requirements.md#利用規約への反映-2)(TDD対象外。静的な文言の変更のため)
   - [future-digest/content-generation/tasks.md](../../future-digest/content-generation/tasks.md)のTask 7と同じ1回の変更で、`app/legal/page.tsx`の「4. 知的財産」の条項を3アプリ対象の文面にする。`specs/legal/requirements.md`の知的財産の仕様リンクに本specを追加する

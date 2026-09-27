@@ -10,7 +10,7 @@
   - `scripts/research-digest/collect-review-data/`に独立した`package.json`(pg・dotenv)を作る
   - `collectReviewData.ts`を実装する: 記事データの集計(Task 1)と、`research_digest_feedback`の過去1か月・`is_test = false`の読み取り(`benriyatool_readonly`)を行い、フィードバックに対象研究の見出し・ジャンルを添えて、1つのJSONを標準出力に出す。DB接続に失敗した場合はフィードバックを空にして続ける
 
-- Task 3: 月次再実行cronの冪等チェック(仕様: design.md「実行環境の前提」)
+- Task 3: 月次再実行cronの冪等チェック(仕様: requirements.md#利用上限への到達時の再実行-7、design.md「実行環境の前提」)
   - 🔴 `shouldSkipMonthlyRetry(hasSuccessfulRun, reviewPrExists)`について次を確認するテストを書く: どちらかが`true`なら`true`(スキップ)/どちらも`false`なら`false`(再実行してよい)
   - 🟢 `app/research-digest/lib/shouldSkipMonthlyRetry.ts`に実装する
 
