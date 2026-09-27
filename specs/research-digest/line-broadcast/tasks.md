@@ -7,7 +7,7 @@
   - 🟢 `app/research-digest/lib/articleUrl.ts`に`buildArticleUrl(article)`を実装する(`app/lib/site.ts`の`SITE_URL`を使う)
 
 - Task 2: 配信メッセージの組み立て(仕様: requirements.md#配信内容-1〜5、design.md「配信メッセージを組み立てる処理」)
-  - 🔴 1行目が「【週刊研究発見】2026年10月5日号」になること、掲載した研究の見出しがすべて「・【影響度 大/ジャンル名】見出し」の形で載ること、影響度の大きい順・同じ影響度ではジャンル順に並ぶこと、候補なし・収集失敗・生成失敗のジャンルが載らないこと、末尾のURLが`buildArticleUrl`と一致し1本だけであること、出典URLを含まないことを確認するテストを書く
+  - 🔴 1行目が「【週刊研究発見】2026年10月5日号」になること、掲載した研究の見出しがすべて「・【影響度 大/ジャンル名】見出し」の形で載ること、影響度の大きい順・同じ影響度ではジャンル順に並ぶこと、候補なし・収集失敗・生成失敗のジャンルが載らないこと、末尾のURLが`buildArticleUrl`と一致し1本だけであること、出典URLを含まないこと、研究が0件(採用0件の回)なら見出しの行の代わりに「今週は掲載できる記事がありませんでした」の1行が入ることを確認するテストを書く
   - 🟢 `app/research-digest/lib/buildBroadcastMessage.ts`に`buildBroadcastTitle(date)`・`buildBroadcastMessage(article)`を実装する
 
 - Task 3: 配信CLI(仕様: design.md「配信する処理」「エラーハンドリング」)
