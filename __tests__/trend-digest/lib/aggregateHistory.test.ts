@@ -127,3 +127,97 @@ describe('観測ログの話題ごとの系列への集約(aggregateHistory) - �
     expect(history.originRegion).toBeNull()
   })
 })
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#継続度ラベル、specs/trend-digest/trend-history/design.md「途切れずに続いている期間を求める処理」
+describe('途切れずに続いている期間の算出(aggregateHistory) - 一度途切れたらそこで区切り、再検知時点から数え直す', () => {
+  it('3ヶ月前に1回だけ観測され、間のすべての実行で観測されず、直近の実行で再び観測された話題の継続日数が0になること(初回検知日からの通算で測っていたら約90日になる回帰テスト)', () => {
+    const logs = [
+      log('2026-06-01', 'entertainment', [observation({ title: '一度きりの話題' })]),
+      log('2026-06-08', 'entertainment', []),
+      log('2026-08-01', 'entertainment', []),
+      log('2026-09-01', 'entertainment', [observation({ title: '一度きりの話題' })]),
+    ]
+    const [history] = aggregateHistory(logs)
+    expect(history.continuationDays).toBe(0)
+    expect(history.continuationStartDate).toBe('2026-09-01')
+  })
+
+  it('直近から連続して検知されている実行をさかのぼり、検知がない実行に当たった直後で止まること(その最古の実行日が継続の開始日、日数は直近検知日との差)', () => {
+    const logs = [
+      log('2026-08-01', 'entertainment', []),
+      log('2026-08-08', 'entertainment', [observation({ title: '継続話題' })]),
+      log('2026-08-15', 'entertainment', [observation({ title: '継続話題' })]),
+      log('2026-08-22', 'entertainment', [observation({ title: '継続話題' })]),
+    ]
+    const [history] = aggregateHistory(logs)
+    expect(history.continuationStartDate).toBe('2026-08-08')
+    expect(history.continuationDays).toBe(14)
+  })
+
+  it('その編の初回実行で初検知された話題は継続日数0になること(直近検知日より古い実行が1つもない)', () => {
+    const logs = [log('2026-09-01', 'entertainment', [observation({ title: '新規話題' })])]
+    const [history] = aggregateHistory(logs)
+    expect(history.continuationStartDate).toBe('2026-09-01')
+    expect(history.continuationDays).toBe(0)
+  })
+
+  it('エンタメ編の話題の継続が、間に挟まるカルチャー編の実行(その話題を扱うジャンルがない)によって途切れたと判定されないこと', () => {
+    const logs = [
+      log('2026-08-08', 'entertainment', [observation({ title: 'エンタメ限定話題' })]),
+      log('2026-08-11', 'culture-lifestyle', [observation({ title: '別の話題', genre: 'gourmet', method: 'websearch', rank: null })]),
+      log('2026-08-15', 'entertainment', [observation({ title: 'エンタメ限定話題' })]),
+    ]
+    const [history] = aggregateHistory(logs)
+    expect(history.continuationStartDate).toBe('2026-08-08')
+    expect(history.continuationDays).toBe(7)
+  })
+
+  it('両編で観測される話題は、編ごとに求めた継続の開始日のうち最も古いものが採られること', () => {
+    const logs = [
+      log('2026-08-01', 'entertainment', [observation({ title: '両編話題', genre: 'anime' })]),
+      log('2026-08-04', 'culture-lifestyle', [observation({ title: '両編話題', genre: 'buzzwords', rank: 5 })]),
+      log('2026-08-08', 'entertainment', [observation({ title: '両編話題', genre: 'anime' })]),
+      log('2026-08-11', 'culture-lifestyle', [observation({ title: '両編話題', genre: 'buzzwords', rank: 5 })]),
+    ]
+    const [history] = aggregateHistory(logs)
+    // entertainment側は8/1〜8/8で継続、culture-lifestyle側は8/4〜8/11で継続。最も古い8/1が採られる
+    expect(history.continuationStartDate).toBe('2026-08-01')
+  })
+
+  it('片方の編で扱いが終わって観測されなくなっても、継続が切れたとはみなされないこと(編ごとの継続開始日のうち最も古いものを採る)', () => {
+    const logs = [
+      log('2026-08-01', 'entertainment', [observation({ title: '両編話題', genre: 'anime' })]),
+      log('2026-08-04', 'culture-lifestyle', [observation({ title: '両編話題', genre: 'buzzwords', rank: 5 })]),
+      log('2026-08-08', 'entertainment', []), // entertainment側はこの回以降扱いが終わる(観測されなくなる)
+      log('2026-08-11', 'culture-lifestyle', [observation({ title: '両編話題', genre: 'buzzwords', rank: 5 })]),
+    ]
+    const [history] = aggregateHistory(logs)
+    // entertainment側の継続開始日(8/1)がculture-lifestyle側(8/4)より古いため、8/1が採られる
+    expect(history.continuationStartDate).toBe('2026-08-01')
+    expect(history.lastDetectedDate).toBe('2026-08-11')
+  })
+
+  it('ある週の観測ログ自体が存在しない(欠測)場合、その週は実行の並びに現れず、継続のさかのぼりで飛ばされ、継続日数が0に戻らないこと', () => {
+    const logs = [
+      log('2026-08-01', 'entertainment', [observation({ title: '継続話題' })]),
+      log('2026-08-08', 'entertainment', [observation({ title: '継続話題' })]),
+      // 2026-08-15は週次実行そのものが失敗し、観測ログが存在しない(欠測)
+      log('2026-08-22', 'entertainment', [observation({ title: '継続話題' })]),
+    ]
+    const [history] = aggregateHistory(logs)
+    expect(history.continuationStartDate).toBe('2026-08-01')
+    expect(history.continuationDays).toBe(21)
+  })
+
+  it('今回の実行で検知されなかった話題も、過去の継続期間をそのまま持ち、現在まで引き伸ばされないこと', () => {
+    const logs = [
+      log('2026-08-01', 'entertainment', [observation({ title: '過去の話題' })]),
+      log('2026-08-08', 'entertainment', [observation({ title: '過去の話題' })]),
+      log('2026-08-15', 'entertainment', []), // 今回の実行では検知されなかった
+    ]
+    const [history] = aggregateHistory(logs)
+    expect(history.lastDetectedDate).toBe('2026-08-08')
+    expect(history.continuationStartDate).toBe('2026-08-01')
+    expect(history.continuationDays).toBe(7)
+  })
+})
