@@ -177,4 +177,4 @@ erDiagram
 | 候補なし | 採用基準を満たし配信済みでない候補が0件だった状態(収集の処理自体は完了している)。[content-selection/requirements.md#候補が見つからない枠](content-selection/requirements.md)で定義 |
 | 収集失敗 | 情報収集の処理自体が完了しなかった状態(候補なしとは区別する)。[content-selection/requirements.md#収集失敗](content-selection/requirements.md)で定義 |
 | 運営者への警告 | 全枠が収集失敗だった回に限り、記事は公開したうえで実行を失敗・警告表示にすること(`shouldAlertOperator`が判定)。採用0件は公開をスキップする理由にならない。[weekly-publish/requirements.md#掲載件数の保証](weekly-publish/requirements.md)で定義 |
-| 利用上限への到達時の再実行 | Claude Code CLIの利用上限に到達してその回を打ち切った場合、翌日同時刻の再実行cronで自動的に再試行する仕組み(`shouldSkipRetry`で冪等チェック)。[weekly-publish/requirements.md#利用上限への到達時の再実行](weekly-publish/requirements.md)で定義 |
+| 利用上限への到達時の再実行 | Claude Code CLIの利用上限に到達してその回を打ち切った場合、本番の12時間後の再実行cronで自動的に再試行する仕組み(`shouldSkipRetry`で冪等チェック)。[weekly-publish/requirements.md#利用上限への到達時の再実行](weekly-publish/requirements.md)で定義 |

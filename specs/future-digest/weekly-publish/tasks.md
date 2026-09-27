@@ -18,7 +18,7 @@
   - 🟢 `app/future-digest/lib/shouldSkipRetry.ts`に実装する
 
 - Task 5: ワークフロー本体(仕様: design.md「実行環境の前提」「1回分の記事を生成する処理」「利用上限への到達時に再実行する処理」「PRを作成しCIの結果を待つ処理」「PRを自動マージする処理」「CI失敗時に記録する処理」「収集失敗を運営者に警告する処理」)(TDD対象外。GitHub Actionsの定義のため。分岐の判定ロジックはTask 1の`shouldAlertOperator`・Task 4の`shouldSkipRetry`でテスト済みで、ここではその結果に従うだけ。trend-digest-weekly.ymlと同じ構造で実装する)
-  - `.github/workflows/future-digest-weekly.yml`を作る: `schedule`(本番cron`43 22 * * 3`、再実行cron`43 22 * * 4`)・`workflow_dispatch`・`workflow_run`(ci.ymlの完了)をトリガーにする
+  - `.github/workflows/future-digest-weekly.yml`を作る: `schedule`(本番cron`43 22 * * 3`、再実行cron`43 10 * * 4`)・`workflow_dispatch`・`workflow_run`(ci.ymlの完了)をトリガーにする
   - `publish`ジョブ: 再実行cronで起動した場合はまずTask 4の`shouldSkipRetry`と`gh pr list`でスキップ判定を行い、スキップならここで成功終了する→(本番cron、または再実行で継続する場合)`FUTURE_DIGEST_GH_PAT`でcheckout→Claude Code CLIのインストール→実行日(JST。再実行時は本来の配信日)の算出→ブランチ作成→`collect-and-select.ts`を実行(内部でTask 1の`shouldAlertOperator`を呼び、判定結果を`GITHUB_OUTPUT`の`alert`に書き出す。利用上限への到達を検知した場合はここより前にCLIが非ゼロ終了しジョブはここで失敗し、再実行cronに委ねる)→採用件数にかかわらず`generate-content.ts`(候補0件なら何もしない)→`write-article.ts`→コミット・push・PR作成・`gh pr merge --auto --squash`→`alert=='true'`ならここでジョブを非ゼロ終了(公開後の警告表示)
   - `record-ci-failure`ジョブ: `future-digest/articles/**`ブランチのPRでCIが失敗したとき、失敗したジョブ・ステップ名をPRにコメントする
 
