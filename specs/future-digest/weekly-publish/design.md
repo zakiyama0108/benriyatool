@@ -24,7 +24,7 @@ GitHub Actionsのスケジュール実行が毎週木曜07:43(日本時間)頃�
 - 実行指示の根拠は本specと参照先specのrequirements.md/design.mdとし、専用のプロンプトファイルを複製しない
 
 ### 配信日を求める処理(決定的なコード)
-- 対象: 実行日時(JST)
+- 対象: 実行日時(UTCのまま受け取り、JSTへの変換は関数の内側で行う)
 - 手順:
   1. 純粋関数`getScheduledPublishDate(nowUtc)`(実行日時をUTCの`Date`で受け取り、関数の内側でJSTに変換する)で、実行日時と同じかそれより前で直近の木曜日(JST)の日付を返す(本番cronの実行日はそのまま木曜のため、この関数を通しても同じ値になる)【推測】
   2. 記事データの`date`はこの配信日を基準にする。本番cron・3本の再実行cron・手動`workflow_dispatch`のすべてでこの関数を通す(requirements.md#利用上限への到達時の再実行-5)。`issueNumber`は日付に依存せず「公開済みの記事の最大値+1」で決まる([content-selection/design.md](../content-selection/design.md)「回数を数える処理」)ため、この配信日算出とは独立している
@@ -36,7 +36,7 @@ GitHub Actionsのスケジュール実行が毎週木曜07:43(日本時間)頃�
 - 対象: 配信日(`getScheduledPublishDate`で求めた、本来の配信日。本番cronの実行日は常にこの配信日と一致する)
 - 手順:
   1. 作業用ブランチ`future-digest/articles/<配信日>`を作る
-  2. [content-selection](../content-selection/design.md)の収集・選定CLI(`collect-and-select.ts`)を実行する。このCLIは選定の最後に、今回の回数・採用した候補・候補なしの枠・収集失敗の枠(分類ラベルつき)を選定結果として組み立て、それを本specの純粋関数`shouldAlertOperator(slotResults)`に渡して、全枠が収集失敗かどうか(運営者への警告が必要か)を判定し(requirements.md#掲載件数の保証-3)、判定結果を`GITHUB_OUTPUT`に`alert=true|false`として書き出す。利用上限への到達を検知した場合はこの判定より前にCLIが非ゼロ終了で終わり、記事を作らない。この回は打ち切り、次の再実行cronに委ねる(requirements.md#掲載件数の保証-4、requirements.md#利用上限への到達時の再実行-1。下記「利用上限への到達時に再実行する処理」)。判定ロジック自体はcontent-selection側には持たせず、本specの`shouldAlertOperator`だけが持つ【推測】
+  2. [content-selection](../content-selection/design.md)の収集・選定CLI(`collect-and-select.ts`)を、「配信日を求める処理」で求めた本来の配信日を引数に渡して実行する。このCLIは選定の最後に、今回の回数・採用した候補・候補なしの枠・収集失敗の枠(分類ラベルつき)を選定結果として組み立て、それを本specの純粋関数`shouldAlertOperator(slotResults)`に渡して、全枠が収集失敗かどうか(運営者への警告が必要か)を判定し(requirements.md#掲載件数の保証-3)、判定結果を`GITHUB_OUTPUT`に`alert=true|false`として書き出す。利用上限への到達を検知した場合はこの判定より前にCLIが非ゼロ終了で終わり、記事を作らない。この回は打ち切り、次の再実行cronに委ねる(requirements.md#掲載件数の保証-4、requirements.md#利用上限への到達時の再実行-1。下記「利用上限への到達時に再実行する処理」)。判定ロジック自体はcontent-selection側には持たせず、本specの`shouldAlertOperator`だけが持つ【推測】
   3. ワークフローは採用件数にかかわらず(0件でも)常に次の生成ステップへ進む。公開をスキップする分岐はない
   4. 採用した候補ごとに[content-generation](../content-generation/design.md)の生成を行う。1本の生成が一時的な失敗に終わった場合は、同じ候補を最大2回まで(初回+1回)起動し直し、それでも失敗した候補は「生成に失敗した枠」として除き、次の候補に進む(requirements.md#掲載件数の保証-4)。採用した候補がそもそも0件の場合はこのステップを何も行わずに次へ進む。生成中に利用上限への到達を検知した場合は`generate-content.ts`が非ゼロ終了し、後続の`write-article.ts`(公開)には進まない。この回は打ち切り、次の再実行cronに委ねる(下記「利用上限への到達時に再実行する処理」)
   5. 記事データ(回数・発行日・予測・掲載できなかった枠)を、生成の成否にかかわらず常に組み立てる。`date`は配信日をそのまま使う(requirements.md#利用上限への到達時の再実行-5)。掲載できなかった枠には、候補なしの枠・収集失敗の枠(分類ラベルつき)・生成に失敗した枠の3種を理由つきで入れ、その回に有効な全ジャンル×2時間軸の枠が過不足なく記事に現れるようにする(予測が0件でもよい)。組み立てた記事を`content/future-digest/articles/<配信日>.json`に書き出す(requirements.md#掲載件数の保証-3・4)

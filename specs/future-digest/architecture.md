@@ -173,7 +173,7 @@ erDiagram
 | 用語 | 説明 |
 |---|---|
 | 枠 | ジャンル×時間軸の組。1回の配信であてはめる記事1本の入れ物。[content-selection](content-selection/requirements.md)で定義 |
-| 近未来・中期未来・長期未来・超長期未来 | 配信日を基準点にした4つの時間軸区分。[content-selection/requirements.md#時間軸](content-selection/requirements.md)で定義 |
+| 近未来・中期未来・長期未来・超長期未来 | 本来の配信日(その週の木曜。再実行・手動復旧でも同じ)を基準点にした4つの時間軸区分。[content-selection/requirements.md#時間軸](content-selection/requirements.md)で定義 |
 | 候補なし | 採用基準を満たし配信済みでない候補が0件だった状態(収集の処理自体は完了している)。[content-selection/requirements.md#候補が見つからない枠](content-selection/requirements.md)で定義 |
 | 収集失敗 | 情報収集の処理自体が完了しなかった状態(候補なしとは区別する)。[content-selection/requirements.md#収集失敗](content-selection/requirements.md)で定義 |
 | 運営者への警告 | 全枠が収集失敗だった回に限り、記事は公開したうえで実行を失敗表示にすること(`shouldAlertOperator`が判定)。採用0件は公開をスキップする理由にならない。[weekly-publish/requirements.md#掲載件数の保証](weekly-publish/requirements.md)で定義 |
