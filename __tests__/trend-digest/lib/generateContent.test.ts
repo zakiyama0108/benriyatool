@@ -17,6 +17,12 @@ function makeCandidate(overrides: Partial<Candidate> = {}): Candidate {
     sourceUrl: 'https://example.com/a',
     method: 'fixed-list',
     strength: 90,
+    rank: 1,
+    originRegion: null,
+    currentRegions: [],
+    strengthJapan: null,
+    strengthOverseas: null,
+    meetsCriteria: true,
     ...overrides,
   }
 }
