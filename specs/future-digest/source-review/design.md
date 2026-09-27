@@ -10,7 +10,8 @@
 
 ## 実行環境の前提
 
-- ワークフロー本体は`.github/workflows/future-digest-monthly.yml`とし、`schedule`の`30 23 1 * *`(毎月1日23:30 UTC=2日08:30 JST)で起動する。既存の月次実行(ai-dev-digest 07:00・news-digest 07:30・trend-digest 08:00)と時間をずらし、Claude Code の利用枠の取り合いを避ける。`workflow_dispatch`でも起動できるようにする
+- ワークフロー本体は`.github/workflows/future-digest-monthly.yml`とし、`schedule`の`30 23 1 * *`(毎月1日23:30 UTC=2日08:30 JST。本番cron)で起動する。既存の月次実行(ai-dev-digest 07:00・news-digest 07:30・trend-digest 08:00)と時間をずらし、Claude Code の利用枠の取り合いを避ける。`workflow_dispatch`でも起動できるようにする
+- 利用上限への到達時の再実行用に、`schedule`の`30 23 2 * *`(毎月2日23:30 UTC=3日08:30 JST。本番cronの翌日同時刻)も追加する。この回はまず、その月の見直しブランチ(`future-digest/source-review/<年-月>`)からのPRが既にあるかを確認し、あれば([weekly-publish](../weekly-publish/design.md)と同じ考え方の冪等チェック)何もせず成功で終える。なければ月次処理を最初からやり直す([weekly-publish/requirements.md#利用上限への到達時の再実行](../weekly-publish/requirements.md)と同じ方針)【推測】
 - Secretsは工程ごとに使う範囲を分離し、Claude CLIのヘッドレス実行ステップにはDB接続情報・GitHub PATのいずれも渡さない
   - 材料収集ステップ(`collectReviewData.ts`。Claude CLI起動より前): 既存の`SUPABASE_READONLY_DB_URL`(`benriyatool_readonly`ロール。[ADR-0004](../../../docs/adr/0004-agent-readonly-db-access.md))でDBから読み取り、結果をJSONとして標準出力に書き出す。`future_digest_feedback`へのSELECT権限は[article-detail/design.md](../article-detail/design.md)のマイグレーションで付与する
   - Claude CLIのヘッドレス実行ステップ: 材料収集ステップが出力したJSONと、`--allowedTools`で許可したツール(ファイル編集、`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`の実行)だけを渡す。DB接続情報・GitHub PATは渡さない(見直し案の作成にDB直接アクセスやgit操作は不要なため)。認証は`CLAUDE_CODE_OAUTH_TOKEN`(他のdigestと共用)を使う
@@ -77,7 +78,8 @@ sequenceDiagram
 - DBへの接続に失敗した場合は、フィードバックなし(収集状況のみ)で見直し案を作る。接続の失敗は実行ログに残す(月次実行そのものは止めない)
 - テスト・lint・buildが失敗する変更案はコミットしない。直せない場合は変更を取り消し、表に「変更案を作れなかった理由」を残したPRにする(材料があるのにPRが出ない状態を避けるため)
 - 判断材料の表を書き出せなかった場合は、その旨を明記した簡潔な本文でPRを作る
-- 同じ月のブランチが既にある場合(手動の再実行)は、新しいPRを作らずに失敗として終える
+- Claude CLIが利用上限への到達で終了した場合は、その回は打ち切り、翌日同時刻の再実行cronに委ねる(weekly-publishと同じ方針)。再実行でも利用上限に到達した場合は失敗として終える【推測】
+- 同じ月のブランチ・PRが既にある場合(再実行cronの冪等チェック漏れ・手動の再実行)は、新しいPRを作らずに失敗として終える
 
 ## 関連するファイル(抜粋)
 

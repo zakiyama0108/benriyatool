@@ -5,12 +5,14 @@ GitHub Actionsのスケジュール実行が毎週月曜07:43(日本時間)頃�
 
 主要な設計判断:
 - 実行基盤・認証・自動マージの仕組みはtrend-digest・future-digestと同じ構成をそのまま使う(architecture.md#2)
-- 採用0件の回・生成が全件失敗した回も、公開をスキップせず候補なし・収集失敗・生成失敗の記載で記事を作成・公開する(根拠: /requirementでの決定)。公開するかどうかの分岐はなくなり、「その回の実行を運営者への警告付きにするか」だけを判定する。全ジャンルが収集失敗だった回は、公開はしたうえで実行を失敗表示にする(収集の仕組み自体の異常に運営者が気づけるようにするため)【推測】。利用上限への到達は記事を作る材料が得られないため、従来どおり実行全体を打ち切り失敗とする(変更なし)
-- 図: [1回分の記事を生成する処理](#1回分の記事を生成する処理)のシーケンス図
+- 採用0件の回・生成が全件失敗した回も、公開をスキップせず候補なし・収集失敗・生成失敗の記載で記事を作成・公開する(根拠: /requirementでの決定)。公開するかどうかの分岐はなくなり、「その回の実行を運営者への警告付きにするか」だけを判定する。全ジャンルが収集失敗だった回は、公開はしたうえで実行を失敗表示にする(収集の仕組み自体の異常に運営者が気づけるようにするため)【推測】
+- 利用上限への到達は記事を作る材料が得られないため、その回はいったん打ち切るが、翌日同時刻の再実行cronで自動的に再試行する(根拠: /requirementでの決定「上限が解除されたらリトライしてほしい」)。エラーメッセージから解除時刻を読み取って待つ方式は表示形式に依存し不安定なため採用しない【推測】
+- 図: [1回分の記事を生成する処理](#1回分の記事を生成する処理)・[利用上限への到達時に再実行する処理](#利用上限への到達時に再実行する処理)のシーケンス図
 
 ## 実行環境の前提
 
-- ワークフロー本体は`.github/workflows/research-digest-weekly.yml`とし、`schedule`の`43 22 * * 0`(日曜22:43 UTC=月曜07:43 JST)で起動する。0分を避け、ai-dev-digestの日次実行(06:43 JST)と1時間ずらす。`workflow_dispatch`でも起動できるようにする(Secrets設定後の動作確認用。requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの動作確認用の手動起動を除く)
+- ワークフロー本体は`.github/workflows/research-digest-weekly.yml`とし、`schedule`の`43 22 * * 0`(日曜22:43 UTC=月曜07:43 JST。本番cron)で起動する。0分を避け、ai-dev-digestの日次実行(06:43 JST)と1時間ずらす。`workflow_dispatch`でも起動できるようにする(Secrets設定後の動作確認用。requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの動作確認用の手動起動を除く)
+- 利用上限への到達時の再実行用に、`schedule`の`43 22 * * 1`(月曜22:43 UTC=火曜07:43 JST。本番cronの翌日同時刻)も同じワークフローに追加する。このcronで起動した実行は「利用上限への到達時に再実行する処理」の冪等チェックを最初に行う(requirements.md#利用上限への到達時の再実行-1)
 - GitHubへの書き込みには、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を`RESEARCH_DIGEST_GH_PAT`としてActions Secretsに保存して使う。既定の`GITHUB_TOKEN`は使わない(後続の`ci.yml`が起動しないため)
 - 収集・生成はClaude Code CLIのヘッドレス実行で行い、既存の`CLAUDE_CODE_OAUTH_TOKEN`(他のdigestと共用)をそのまま使う
 - 実行指示の根拠は本specと参照先specのrequirements.md/design.mdとし、専用のプロンプトファイルを複製しない
@@ -21,7 +23,7 @@ GitHub Actionsのスケジュール実行が毎週月曜07:43(日本時間)頃�
 - 対象: 実行日(日本時間の日付)
 - 手順:
   1. 作業用ブランチ`research-digest/articles/<実行日>`を作る
-  2. [content-selection](../content-selection/design.md)の収集・選定CLI(`collect-and-select.ts`)を実行する。このCLIは選定の最後に、採用した候補・候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)を選定結果として組み立て、それを本specの純粋関数`shouldAlertOperator(genreResults)`に渡して、全ジャンルが収集失敗かどうか(運営者への警告が必要か)を判定し(requirements.md#掲載件数の保証-3)、判定結果を`GITHUB_OUTPUT`に`alert=true|false`として書き出す。利用上限への到達を検知した場合はこの判定より前にCLIが非ゼロ終了で終わり、記事を作らない(requirements.md#掲載件数の保証-4)。判定ロジック自体はcontent-selection側には持たせず、本specの`shouldAlertOperator`だけが持つ【推測】
+  2. [content-selection](../content-selection/design.md)の収集・選定CLI(`collect-and-select.ts`)を実行する。このCLIは選定の最後に、採用した候補・候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)を選定結果として組み立て、それを本specの純粋関数`shouldAlertOperator(genreResults)`に渡して、全ジャンルが収集失敗かどうか(運営者への警告が必要か)を判定し(requirements.md#掲載件数の保証-3)、判定結果を`GITHUB_OUTPUT`に`alert=true|false`として書き出す。利用上限への到達を検知した場合はこの判定より前にCLIが非ゼロ終了で終わり、記事を作らない。この回は打ち切り、翌日同時刻の再実行cronに委ねる(requirements.md#掲載件数の保証-4、requirements.md#利用上限への到達時の再実行-1。下記「利用上限への到達時に再実行する処理」)。判定ロジック自体はcontent-selection側には持たせず、本specの`shouldAlertOperator`だけが持つ【推測】
   3. ワークフローは採用件数にかかわらず(0件でも)常に次の生成ステップへ進む。公開をスキップする分岐はない
   4. 採用した候補ごとに[content-generation](../content-generation/design.md)の生成を行う。一時的な失敗は同じ候補を最大2回まで(初回+1回)起動し直し、それでも失敗した候補は「生成に失敗したジャンル」として除き、次に進む(requirements.md#掲載件数の保証-4)。採用した候補が0件の場合はこのステップを何も行わずに次へ進む
   5. 記事データ(発行日・研究・掲載できなかったジャンル)を、生成の成否にかかわらず常に組み立てる。掲載できなかったジャンルには、候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)・生成に失敗したジャンルの3種を理由つきで入れ、その回に有効な全ジャンルが過不足なく記事に現れるようにする(研究が0件でもよい)。`content/research-digest/articles/<実行日>.json`に書き出す(requirements.md#掲載件数の保証-3・4)
@@ -50,6 +52,37 @@ sequenceDiagram
     end
 ```
 - 関連するビジネスルール: requirements.md#実行-1〜3、requirements.md#掲載件数の保証-1〜4
+
+### 利用上限への到達時に再実行する処理
+- 対象: 翌日同時刻の再実行cron(`schedule`の`43 22 * * 1`)による起動
+- 手順:
+  1. 起動直後に、対象週の配信日(本番cronの実行日。再実行cronの実行日の前日)を求め、その日付の記事ファイルが既に存在するかを純粋関数`shouldSkipRetry(articles, scheduledPublishDate)`で確認する(requirements.md#利用上限への到達時の再実行-2)
+  2. 記事ファイルが存在しない場合でも、その配信日のブランチ(`research-digest/articles/<配信日>`)からのオープンなPRが既にあるかを`gh pr list`で確認する(前回の実行がCLIの非ゼロ終了より後まで進んでいた場合に備える。TDD対象外の運用チェック)【推測】
+  3. いずれかが見つかった場合(公開済み、またはPRが存在する)は、何もせずジョブを成功として終える(requirements.md#利用上限への到達時の再実行-2)
+  4. いずれも見つからない場合は、「1回分の記事を生成する処理」を最初からやり直す(前回の途中結果は使わない。requirements.md#利用上限への到達時の再実行-4)。対象日付は本来の配信日を使う【推測】
+  5. この再実行でも利用上限に到達した場合は、公開せずに実行を失敗として終える。それ以降の自動再実行は行わない(requirements.md#利用上限への到達時の再実行-3)
+- シーケンス図(俯瞰用。正は上記の手順の文章):
+
+```mermaid
+sequenceDiagram
+    participant cron as 再実行cron(翌日07:43 JST)
+    participant check as 冪等チェック
+    participant flow as 「1回分の記事を生成する処理」
+
+    cron ->> check: shouldSkipRetry(articles, 配信日)・PRの有無を確認
+    alt 公開済みまたはPRあり
+        check -->> cron: スキップ(成功で終了)
+    else 未公開・PRなし
+        check -->> cron: 再実行してよい
+        cron ->> flow: 配信日を指定して最初からやり直す
+        alt 再度利用上限に到達
+            flow -->> cron: 公開せず失敗にする(以降は自動再実行しない)
+        else 成功
+            flow -->> cron: 記事を公開
+        end
+    end
+```
+- 関連するビジネスルール: requirements.md#利用上限への到達時の再実行-1〜4
 
 ### PRを作成しCIの結果を待つ処理
 - 対象: 上記で作ったブランチ
@@ -87,18 +120,20 @@ sequenceDiagram
 
 - CIの失敗は「CI失敗時に記録する処理」のとおりマージせずPRを残す
 - 1本の生成の一時的な失敗は、1回やり直したうえでその1本だけを除く(生成に失敗したジャンルとして記事に残す)。除いたジャンルと理由は実行ログに残す
-- 採用した候補すべての生成に失敗した場合も、公開をスキップせず、全ジャンルが生成失敗の記載で記事を作成・公開する(requirements.md#掲載件数の保証-4)。利用上限への到達・収集・選定の失敗は、記事を作る材料が得られないため、公開せず理由を明示して実行を失敗として終える。利用上限への到達は検知した時点で残りを打ち切る(ここは変更しない)
+- 採用した候補すべての生成に失敗した場合も、公開をスキップせず、全ジャンルが生成失敗の記載で記事を作成・公開する(requirements.md#掲載件数の保証-4)。利用上限への到達は、同じ実行内でやり直しても回復せず記事を作る材料が得られないため、公開せず理由を明示してその回を打ち切る。検知した時点で残りを打ち切り、「利用上限への到達時に再実行する処理」のとおり翌日同時刻の再実行cronに委ねる
 - 全ジャンルが収集失敗だった回は、「収集失敗を運営者に警告する処理」のとおり記事は公開したうえで実行を失敗・警告表示にする【推測】
+- 収集・選定のスクリプトが利用上限への到達で終えた場合は、公開せずその回を打ち切り、再実行cronに委ねる。過去記事の読み込み失敗で終えた場合は、再実行しても回復しない可能性が高いため、公開せず実行を失敗として終える
 - 同じ日付のブランチ・記事ファイルが既にある場合は、上書きせずに実行を失敗として終える
 - 1回の実行が失敗・警告表示になっても、他の回の表示には影響しない
 
 ## 関連するファイル(抜粋)
 
 ```
-.github/workflows/research-digest-weekly.yml (新規: 月曜に起動するワークフロー本体。publishジョブとrecord-ci-failureジョブ)
+.github/workflows/research-digest-weekly.yml (新規: 月曜の本番cronと火曜の再実行cronで起動するワークフロー本体。publishジョブとrecord-ci-failureジョブ)
 scripts/research-digest/collect-and-select.ts (content-selectionで新規)
 scripts/research-digest/generate-content.ts (content-generationで新規)
 app/research-digest/lib/shouldAlertOperator.ts (新規: 選定結果から全ジャンル収集失敗かどうか〈運営者への警告が必要か〉を判定する純粋関数。content-selectionの`collect-and-select.ts`から呼ばれる)
+app/research-digest/lib/shouldSkipRetry.ts (新規: 再実行cronの冪等チェック。配信日の記事が既に存在するかを判定する純粋関数)
 app/research-digest/lib/assembleArticle.ts (新規: 選定結果+生成結果から記事データを組み立てる純粋関数)
 scripts/research-digest/write-article.ts (新規: assembleArticleの結果をcontent/research-digest/articles/<date>.jsonへ書き出すCLI)
 content/research-digest/articles/<date>.json (新規: 生成される記事データ)
@@ -114,5 +149,5 @@ content/research-digest/articles/<date>.json (新規: 生成される記事デ�
 
 ## ログ
 
-- 実行ごとに、実行日・採用件数・候補なしのジャンルの数・収集失敗のジャンルの数(分類ラベル別)・生成に失敗したジャンルの数・査読前の論文の数・PRのURL・結果(公開/公開〈警告あり〉/失敗)を実行ログに出す
-- 失敗で終える場合は、理由(利用上限への到達/収集・選定の失敗/同じ日付が既にある)をエラーとして出す。全ジャンル収集失敗による警告は、公開後の警告として理由(全ジャンル収集失敗)とともに出す【推測】
+- 実行ごとに、実行日・採用件数・候補なしのジャンルの数・収集失敗のジャンルの数(分類ラベル別)・生成に失敗したジャンルの数・査読前の論文の数・PRのURL・結果(公開/公開〈警告あり〉/失敗/再実行に委ねてスキップ)を実行ログに出す
+- 失敗で終える場合は、理由(利用上限への到達〈再実行cronに委ねる旨を含む〉/過去記事の読み込み失敗/同じ日付が既にある/再実行でも利用上限に到達)をエラーとして出す。全ジャンル収集失敗による警告は、公開後の警告として理由(全ジャンル収集失敗)とともに出す【推測】
