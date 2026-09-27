@@ -2,48 +2,63 @@
   "genres": [
     { "genre": "music", "edition": "entertainment", "label": "音楽", "method": "fixed-list",
       "sources": [
-        { "name": "Oricon週間チャート", "url": "https://www.oricon.co.jp/rank/js/w/" },
-        { "name": "Billboard JAPAN Hot 100", "url": "https://www.billboard-japan.com/charts/detail?a=hot100" }
+        { "name": "Billboard JAPAN Hot 100", "url": "https://www.billboard-japan.com/charts/detail?a=hot100", "format": "site-specific-html", "parserId": "billboardJapan", "region": "japan" }
       ] },
     { "genre": "japanese-movie", "edition": "entertainment", "label": "日本映画", "method": "fixed-list",
-      "sources": [{ "name": "週末興行収入ランキング", "url": "https://www.eiga.com/box-office/japan/" }, { "name": "Filmarks劇場公開作品ランキング", "url": "https://filmarks.com/list/theater" }] },
+      "sources": [
+        { "name": "興行通信社CINEMAランキング通信(国内)", "url": "https://www.kogyotsushin.com/", "format": "site-specific-html", "parserId": "kogyoTsushin", "region": "japan" },
+        { "name": "映画.com国内ランキング", "url": "https://eiga.com/ranking/jp/", "format": "site-specific-html", "parserId": "eigaCom", "region": "japan" },
+        { "name": "Filmarks上映中ランキング", "url": "https://filmarks.com/list/now", "format": "site-specific-html", "parserId": "filmarks", "region": "japan" }
+      ] },
     { "genre": "foreign-movie", "edition": "entertainment", "label": "海外映画", "method": "fixed-list",
-      "sources": [{ "name": "週末興行収入ランキング", "url": "https://www.eiga.com/box-office/world/" }, { "name": "Filmarks劇場公開作品ランキング", "url": "https://filmarks.com/list/theater" }] },
-    { "genre": "japanese-drama", "edition": "entertainment", "label": "日本ドラマ", "method": "websearch",
-      "sources": [],
-      "searchHints": ["日本ドラマ 視聴率 好調", "ドラマ SNS 反響"] },
+      "sources": [
+        { "name": "映画.com全米ランキング", "url": "https://eiga.com/ranking/us/", "format": "site-specific-html", "parserId": "eigaCom", "region": "overseas" },
+        { "name": "Filmarks上映中ランキング", "url": "https://filmarks.com/list/now", "format": "site-specific-html", "parserId": "filmarks", "region": "japan" }
+      ] },
+    { "genre": "japanese-drama", "edition": "entertainment", "label": "日本ドラマ", "method": "fixed-list",
+      "sources": [{ "name": "ビデオリサーチ ドラマ視聴率速報", "url": "https://www.videor.co.jp/tvrating/daily/drama/", "format": "site-specific-html", "parserId": "videoResearch", "region": "japan" }] },
     { "genre": "foreign-drama", "edition": "entertainment", "label": "海外ドラマ", "method": "fixed-list",
-      "sources": [{ "name": "Netflix公式Top10(シリーズ・日本)", "url": "https://top10.netflix.com/jp" }] },
+      "sources": [{ "name": "Netflix公式Top10データ(シリーズ・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "anime", "edition": "entertainment", "label": "アニメ", "method": "fixed-list",
-      "sources": [{ "name": "Netflix公式Top10(日本のTOP10)", "url": "https://top10.netflix.com/jp" }] },
-    { "genre": "variety", "edition": "entertainment", "label": "バラエティ", "method": "websearch",
-      "sources": [],
-      "searchHints": ["バラエティ番組 視聴率 好調", "バラエティ SNS 話題"] },
+      "sources": [{ "name": "Netflix公式Top10データ(日本のTOP10)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
+    { "genre": "variety", "edition": "entertainment", "label": "バラエティ", "method": "fixed-list",
+      "sources": [{ "name": "ビデオリサーチ バラエティ視聴率速報", "url": "https://www.videor.co.jp/tvrating/past_tvrating/variety/", "format": "site-specific-html", "parserId": "videoResearch", "region": "japan" }] },
     { "genre": "streaming-video", "edition": "entertainment", "label": "サブスク動画", "method": "fixed-list",
-      "sources": [{ "name": "Netflix公式Top10(映画・日本)", "url": "https://top10.netflix.com/jp" }] },
+      "sources": [{ "name": "Netflix公式Top10データ(映画・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "books-comics", "edition": "entertainment", "label": "書籍・漫画", "method": "fixed-list",
-      "sources": [{ "name": "トーハン週間ベストセラー", "url": "https://www.tohan.jp/bestsellers/" }] },
+      "sources": [
+        { "name": "トーハン週間ベストセラー", "url": "https://www.tohan.jp/bestsellers/", "format": "site-specific-html", "parserId": "tohan", "region": "japan" },
+        { "name": "日販週間ベストセラー", "url": "https://www.nippan.co.jp/ranking/weekly/", "format": "site-specific-html", "parserId": "nippan", "region": "japan" }
+      ] },
     { "genre": "sns-buzz", "edition": "culture-lifestyle", "label": "SNSバズり", "method": "websearch",
       "sources": [],
-      "searchHints": ["X バズり 話題", "TikTok 話題 バズり", "Instagram Threads 話題"] },
+      "searchHints": ["Xで話題 バズり 複数メディア", "TikTok 投稿 話題 反響", "Instagram Threads 投稿 話題", "ねとらぼ grape TREND Sirabee SNS 話題"] },
     { "genre": "buzzwords", "edition": "culture-lifestyle", "label": "流行りの言葉", "method": "fixed-list",
-      "sources": [{ "name": "Googleトレンド急上昇ワード", "url": "https://trends.google.co.jp/trending?geo=JP" }, { "name": "Yahoo!検索急上昇ワード", "url": "https://search.yahoo.co.jp/realtime" }] },
+      "sources": [{ "name": "Google公式トレンドRSS(日本)", "url": "https://trends.google.com/trending/rss?geo=JP", "format": "structured-rss", "region": "japan" }] },
     { "genre": "gourmet", "edition": "culture-lifestyle", "label": "グルメ", "method": "websearch",
       "sources": [],
-      "searchHints": ["話題の飲食店", "食トレンド 話題"] },
+      "searchHints": ["SNS 口コミ 急増 飲食店", "話題 食トレンド 自然発生 SNS", "macaroniトレンド 話題の食べ方"] },
     { "genre": "hobby", "edition": "culture-lifestyle", "label": "流行りの趣味", "method": "websearch",
       "sources": [],
-      "searchHints": ["新しい趣味 話題", "ホビー トレンド"] },
-    { "genre": "fashion", "edition": "culture-lifestyle", "label": "ファッション", "method": "fixed-list",
-      "sources": [{ "name": "WWD JAPAN新着記事", "url": "https://www.wwdjapan.com/" }, { "name": "ZOZOTOWN人気ランキング", "url": "https://zozo.jp/ranking/" }] },
-    { "genre": "gadgets", "edition": "culture-lifestyle", "label": "ガジェット・家電", "method": "fixed-list",
-      "sources": [{ "name": "価格.com売れ筋ランキング", "url": "https://kakaku.com/ranking/" }, { "name": "Engadget日本版", "url": "https://japanese.engadget.com/" }] },
+      "searchHints": ["新しい趣味 SNS 話題 広がり", "ホビー トレンド 複数メディア言及"] },
+    { "genre": "fashion", "edition": "culture-lifestyle", "label": "ファッション", "method": "websearch",
+      "sources": [],
+      "searchHints": ["SNS 口コミ 急増 ファッションアイテム", "FASHION PRESS WWD JAPAN トレンド 話題"] },
+    { "genre": "gadgets", "edition": "culture-lifestyle", "label": "ガジェット・家電", "method": "websearch",
+      "sources": [],
+      "searchHints": ["SNS 口コミ 急増 ガジェット 家電", "GIZMODO 家電Watch ITmedia 話題の製品"] },
     { "genre": "games", "edition": "culture-lifestyle", "label": "ゲーム", "method": "fixed-list",
-      "sources": [{ "name": "Steam売上ランキング", "url": "https://store.steampowered.com/charts/topselling/JP" }, { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/" }] },
+      "sources": [
+        { "name": "Steam公式Web API(プレイヤー数)", "url": "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/", "format": "structured-json-api", "region": "overseas" },
+        { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/game-sales/", "format": "site-specific-html", "parserId": "famitsu", "region": "japan" }
+      ] },
     { "genre": "travel", "edition": "culture-lifestyle", "label": "旅行・観光", "method": "fixed-list",
-      "sources": [{ "name": "じゃらんnet人気ランキング", "url": "https://www.jalan.net/" }, { "name": "るるぶ&more!人気ランキング", "url": "https://rurubu.travel/" }] },
+      "sources": [{ "name": "じゃらんnet人気ランキング", "url": "https://www.jalan.net/news/", "format": "site-specific-html", "parserId": "jalan", "region": "japan" }] },
     { "genre": "economy-money", "edition": "culture-lifestyle", "label": "経済・お金", "method": "websearch",
       "sources": [],
-      "searchHints": ["NISA 話題", "家計 投資 話題のニュース"] }
+      "searchHints": ["流行っている節約術 SNS 口コミ", "話題のクーポン サービス 複数メディア", "LIMO ファイナンシャルフィールド 話題の節約"] },
+    { "genre": "dev-trends", "edition": "culture-lifestyle", "label": "開発手法・開発サービス", "method": "websearch",
+      "sources": [],
+      "searchHints": ["ソフトウェア開発 手法 潮流 複数メディア", "開発者 注目のサービス SNS 言及", "開発チーム 進め方 変化 議論"] }
   ]
 }
