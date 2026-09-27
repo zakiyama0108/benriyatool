@@ -5,8 +5,8 @@ import { normalizeTitle } from './selection'
 // 固定リストジャンルの候補収集・判定(仕様: requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜9、
 // requirements.md#データ取得方法-1、design.md「固定リストジャンルの候補を収集・判定する処理」)。
 // 外部ページへのHTTP呼び出しを伴うため、レスポンス形状のパース・エラー処理のみをモックしたテストの
-// 対象とする(design.md「関連するファイル(抜粋)」参照)。実際のHTTP通信・HTMLパースはscripts側が
-// 注入するSourceFetcherが担う
+// 対象とする(design.md「関連するファイル(抜粋)」参照)。実際のHTTP通信・HTMLパース(format別の
+// ディスパッチ)はscripts側が注入するSourceFetcherが担う(format別ディスパッチの実装はTask14で追加する)
 
 // 情報源から取得した順位付き一覧の1件(design.md「固定リストジャンルの候補を収集・判定する処理」手順1)。
 // previousRank/isNewは、情報源のページ自体が前週比の順位変動を提供する場合のみ設定される
@@ -17,23 +17,26 @@ export type RankedItem = {
   isNew?: boolean
 }
 
-// 情報源から取得した新着記事一覧の1件(design.md手順1。WWD JAPAN新着記事・Engadget日本版が該当。
-// 順位を持たないためcurrentRankを持たない)
-export type NewArticleItem = {
-  title: string
-  publishedAt: string // ISO 8601
-}
-
 // 情報源1件の取得結果。providesRankChangeは、そのページ自体が前週順位・NEW表記といった
 // 前週比データを提供しているか(design.md手順2の判定に使う)
-export type SourceFetchResult =
-  | { kind: 'ranked'; providesRankChange: boolean; items: RankedItem[] }
-  | { kind: 'new-articles'; items: NewArticleItem[] }
+export type SourceFetchResult = {
+  providesRankChange: boolean
+  items: RankedItem[]
+}
 
-// 情報源1件を取得する関数。実際のHTTP通信・HTMLパースはscripts/trend-digest側が注入する
-export type SourceFetcher = (source: { name: string; url: string }) => Promise<SourceFetchResult>
+// 情報源1件を取得する関数。実際のHTTP通信・パース(format別ディスパッチ)はscripts/trend-digest側が注入する
+export type SourceFetcher = (source: WatchlistEntry['sources'][number]) => Promise<SourceFetchResult>
 
-export type SourceFetchStat = { sourceName: string; sourceUrl: string; ok: boolean; count: number }
+// 情報源1件ぶんの取得件数(design.md「ログ」requirements.md#情報源の健全性監視-1)。
+// observationCountは記録上限(maxObservationsPerSource)適用後の観測項目数、
+// candidateCountはそのうち採用基準を満たした件数(候補件数)
+export type SourceFetchStat = {
+  sourceName: string
+  sourceUrl: string
+  ok: boolean
+  observationCount: number
+  candidateCount: number
+}
 
 // 順位付きランキング型の1件が候補になるかを判定する(design.md手順2〜4)。
 // wasPublishedRecentlyは、情報源のページが前週比データを提供しない場合のみ使う
@@ -45,7 +48,7 @@ function withinRankThreshold(item: RankedItem, criteria: FixedListGenreCriteria)
   return criteria.rankThreshold === undefined || item.currentRank <= criteria.rankThreshold
 }
 
-// newEntryOrRisingRank条件(新規ランクイン、または順位上昇)を満たすかを判定する(design.md手順2)
+// newEntryOrRisingRank条件(新規ランクイン、または順位上昇)を満たすかを判定する(design.md手順3)
 function matchesNewEntryOrRising(
   item: RankedItem,
   providesRankChange: boolean,
@@ -54,7 +57,7 @@ function matchesNewEntryOrRising(
 ): { matched: boolean; note: string } {
   if (!providesRankChange) {
     // 情報源のページが前週比を提供しない: 過去記事の掲載トピックに同名がなければ新規とみなす。
-    // 順位上昇の判定は諦める(design.md手順2)
+    // 順位上昇の判定は諦める(design.md手順3)
     const isNewEntry = !wasPublishedRecently(normalizeTitle(item.title))
     return isNewEntry ? { matched: true, note: `新規ランクイン(${item.currentRank}位)` } : NOT_MATCHED
   }
@@ -71,7 +74,7 @@ function matchesNewEntryOrRising(
   return risingMatched ? { matched: true, note: `順位上昇(${item.previousRank}位→${item.currentRank}位)` } : NOT_MATCHED
 }
 
-// 順位付きランキング型の1件が候補になるかを判定する(design.md手順2〜4)
+// 順位付きランキング型の1件が候補になるかを判定する(design.md手順3〜5)
 function judgeRankedItem(
   item: RankedItem,
   providesRankChange: boolean,
@@ -81,22 +84,25 @@ function judgeRankedItem(
   if (criteria.newEntryOrRisingRank) {
     const judged = matchesNewEntryOrRising(item, providesRankChange, criteria, wasPublishedRecently)
     if (!judged.matched) return NOT_MATCHED
-    // rankThresholdも指定されているジャンル(books-comics)は、両方を満たす項目のみ候補にする(design.md手順4)
+    // rankThresholdも指定されているジャンル(books-comics)は、両方を満たす項目のみ候補にする(design.md手順5)
     return withinRankThreshold(item, criteria) ? judged : NOT_MATCHED
   }
 
-  // newEntryOrRisingRankを持たないジャンル: rankThresholdのみで判定する(design.md手順3)
+  // newEntryOrRisingRankを持たないジャンル: rankThresholdのみで判定する(design.md手順4)
   return withinRankThreshold(item, criteria) ? { matched: true, note: `${item.currentRank}位` } : NOT_MATCHED
 }
 
-// 1ジャンル分の固定リスト候補を収集・判定する(design.md「固定リストジャンルの候補を収集・判定する処理」)
+// 1ジャンル分の固定リスト観測項目を収集・判定する(design.md「固定リストジャンルの候補を収集・判定する処理」)。
+// 採用基準を満たさなかった項目もmeetsCriteria: falseとして返す(観測項目全件をtrend-historyの履歴へ
+// 引き渡すため。requirements.md#機能要件-3〜4)
 export async function fetchFixedListGenreCandidates(
   entry: WatchlistEntry,
   criteria: FixedListGenreCriteria,
   recentPublishedNormalizedTitles: Set<string>,
-  fetchSource: SourceFetcher
-): Promise<{ candidates: Candidate[]; stats: SourceFetchStat[] }> {
-  const candidates: Candidate[] = []
+  fetchSource: SourceFetcher,
+  maxObservationsPerSource: number
+): Promise<{ observations: Candidate[]; stats: SourceFetchStat[] }> {
+  const observations: Candidate[] = []
   const stats: SourceFetchStat[] = []
 
   for (const source of entry.sources) {
@@ -105,47 +111,48 @@ export async function fetchFixedListGenreCandidates(
       result = await fetchSource(source)
     } catch {
       // 1情報源の取得失敗で他の情報源の収集を止めない(requirements.md#データ取得方法-1、design.md手順1)
-      stats.push({ sourceName: source.name, sourceUrl: source.url, ok: false, count: 0 })
+      stats.push({ sourceName: source.name, sourceUrl: source.url, ok: false, observationCount: 0, candidateCount: 0 })
       continue
     }
 
-    if (result.kind === 'ranked') {
-      const matchedItems: { title: string; currentRank: number; note: string }[] = []
-      for (const item of result.items) {
-        const judged = judgeRankedItem(item, result.providesRankChange, criteria, (t) =>
-          recentPublishedNormalizedTitles.has(t)
-        )
-        if (judged.matched) matchedItems.push({ title: item.title, currentRank: item.currentRank, note: judged.note })
-      }
-      for (const m of matchedItems) {
-        candidates.push({
-          genre: entry.genre,
-          title: m.title,
-          sourceName: source.name,
-          sourceUrl: source.url,
-          method: 'fixed-list',
-          strength: 100 - m.currentRank,
-          note: m.note,
-        })
-      }
-      stats.push({ sourceName: source.name, sourceUrl: source.url, ok: true, count: matchedItems.length })
-    } else {
-      // 新着記事一覧型: 順位を持たないため、rankThreshold判定を行わずそのまま候補にする
-      // (design.md手順3)。掲載順(配列の並び順)を仮の順位とみなしstrengthを算出する(design.md手順5)
-      result.items.forEach((article, index) => {
-        candidates.push({
-          genre: entry.genre,
-          title: article.title,
-          sourceName: source.name,
-          sourceUrl: source.url,
-          method: 'fixed-list',
-          strength: 100 - (index + 1),
-          note: `新着記事(${article.publishedAt})`,
-        })
+    // 採用基準の判定を行う前に、上位maxObservationsPerSource件までを「その回の観測」として保持する
+    // (design.md手順2)。以降で採用基準を満たさなかった項目も含めてすべて観測項目として返す
+    const cappedItems = result.items.slice(0, maxObservationsPerSource)
+    let candidateCount = 0
+
+    for (const item of cappedItems) {
+      const judged = judgeRankedItem(item, result.providesRankChange, criteria, (t) =>
+        recentPublishedNormalizedTitles.has(t)
+      )
+      if (judged.matched) candidateCount++
+
+      observations.push({
+        genre: entry.genre,
+        title: item.title,
+        sourceName: source.name,
+        sourceUrl: source.url,
+        method: 'fixed-list',
+        strength: 100 - item.currentRank, // design.md手順6。順位が高いほど大きい値
+        rank: item.currentRank, // design.md手順7。strengthからの逆算ではなく順位そのものを持つ
+        // 地域情報(originRegion/currentRegions/strengthJapan/strengthOverseas)の集計は
+        // trend-historyが情報源のregionから行う(design.md手順8。実装はtrend-history/tasks.mdのTask11)
+        originRegion: null,
+        currentRegions: [],
+        strengthJapan: null,
+        strengthOverseas: null,
+        meetsCriteria: judged.matched,
+        ...(judged.note ? { note: judged.note } : {}),
       })
-      stats.push({ sourceName: source.name, sourceUrl: source.url, ok: true, count: result.items.length })
     }
+
+    stats.push({
+      sourceName: source.name,
+      sourceUrl: source.url,
+      ok: true,
+      observationCount: cappedItems.length,
+      candidateCount,
+    })
   }
 
-  return { candidates, stats }
+  return { observations, stats }
 }
