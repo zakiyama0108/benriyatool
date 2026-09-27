@@ -9,11 +9,11 @@
   - アプリコードと同じPRでマージし、`deploy.yml`のmigrateジョブの成功を確認する
 
 - Task 2: 型定義(仕様: design.md「前提: 記事データの形式」)
-  - 🔴 `genres.json`の記載順どおりに`GENRE_ORDER`が組み立てられ、`GENRE_LABELS`で日本語ラベルが引けること、`IMPACT_LABELS`が大・中・小を返すことを確認するテストを書く
+  - 🔴 `genres.json`の記載順どおりに`GENRE_ORDER`が組み立てられ、`GENRE_LABELS`で日本語ラベルが引けること、`IMPACT_LABELS`が大・中・小を返すこと、`COLLECTION_FAILURE_LABELS`が`timeout`/`invalid-format`/`other`のそれぞれに読者向けの日本語文言(「調査が時間内に終わりませんでした」「調査結果を正しく読み取れませんでした」「調査中にエラーが発生しました」)を返すことを確認するテストを書く
   - 🟢 `app/research-digest/lib/types.ts`に型・`GENRE_ORDER`・`GENRE_LABELS`・`IMPACT_ORDER`・`IMPACT_LABELS`・`COLLECTION_FAILURE_LABELS`を実装する
 
 - Task 3: 記事データのスキーマ検証(仕様: design.md「バリデーション」)
-  - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(研究9件+掲載できなかったジャンル1件)を受け付ける/同じジャンルが2回現れる場合・`genres.json`にないジャンルの場合に拒否する/`id`が`genre`と一致しない研究を拒否する/必須文字列が空の研究を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/`doi`が`10.`で始まらない文字列なら拒否する(`null`は受け付ける)/`publishedYear`が発行日の年より後なら拒否する/`isPreprint`が真偽値でなければ拒否する/本文が160字未満・480字超なら拒否する/研究が0件の記事を拒否する/`reason`が定義外なら拒否する/`reason`が`'collection-failed'`で`collectionFailureReason`が欠けている・定義外の値である場合に拒否する/`reason`が`'no-candidate'`・`'generation-failed'`で`collectionFailureReason`を持つ場合に拒否する
+  - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(研究9件+掲載できなかったジャンル1件)を受け付ける/研究が0件で掲載できなかったジャンルだけ(全ジャンルが候補なし・収集失敗・生成失敗のいずれか)の記事も受け付ける/同じジャンルが2回現れる場合・`genres.json`にないジャンルの場合に拒否する/`id`が`genre`と一致しない研究を拒否する/必須文字列が空の研究を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/`doi`が`10.`で始まらない文字列なら拒否する(`null`は受け付ける)/`publishedYear`が発行日の年より後なら拒否する/`isPreprint`が真偽値でなければ拒否する/本文が160字未満・480字超なら拒否する/`reason`が定義外なら拒否する/`reason`が`'collection-failed'`で`collectionFailureReason`が欠けている・定義外の値である場合に拒否する/`reason`が`'no-candidate'`・`'generation-failed'`で`collectionFailureReason`を持つ場合に拒否する
   - 🟢 `app/research-digest/lib/articleSchema.ts`に`parseArticle(raw, fileId)`を実装する(本文の分量検証は[content-generation/tasks.md](../content-generation/tasks.md)のTask 1を使う)
 
 - Task 4: 記事データの読み込み(仕様: design.md「記事データを読み込む処理」)
@@ -31,7 +31,7 @@
   - 🟢 `app/research-digest/components/FindingBadges.tsx`を実装する
 
 - Task 7: 1ジャンル分のカード(仕様: requirements.md#記事本文の表示-2〜5)
-  - 🔴 研究があるジャンルで見出し・本文・影響度の根拠・出典(論文名・掲載誌名/発表元・年、新規タブのリンク、`rel="noopener noreferrer"`)が表示されること、`publishedYear`が`null`なら年を出さないこと、`no-candidate`で「候補が見つかりませんでした」、`collection-failed`で`COLLECTION_FAILURE_LABELS`による日本語ラベル(例:「時間切れ」)を含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`で「今回は記事を用意できませんでした」が表示されることを確認するテストを書く
+  - 🔴 研究があるジャンルで見出し・本文・影響度の根拠・出典(論文名・掲載誌名/発表元・年、新規タブのリンク、`rel="noopener noreferrer"`)が表示されること、`publishedYear`が`null`なら年を出さないこと、`no-candidate`で「候補が見つかりませんでした」、`collection-failed`で`COLLECTION_FAILURE_LABELS`による読者向け日本語ラベル(例:「調査が時間内に終わりませんでした」)を含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`で「今回は記事を用意できませんでした」が表示されることを確認するテストを書く
   - 🟢 `app/research-digest/components/FindingCard.tsx`を実装する
 
 - Task 8: 並び順の切り替え(仕様: requirements.md#並び順の切り替え-7・10)

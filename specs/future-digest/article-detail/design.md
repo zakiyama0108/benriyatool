@@ -14,7 +14,7 @@
 記事本文はDBではなく、ビルド時に取り込む静的コンテンツファイルとして管理する(architecture.md#3-設計方針)。この記事データの型・置き場所は本specで定義し、[article-list](../article-list/design.md)・[content-selection](../content-selection/design.md)・[content-generation](../content-generation/design.md)・[weekly-publish](../weekly-publish/design.md)・[line-broadcast](../line-broadcast/design.md)・[bookmark](../bookmark/design.md)・[source-review](../source-review/design.md)は共通してこの形式に従う。
 
 - 格納場所: `content/future-digest/articles/<id>.json`(`<id>`は発行日`YYYY-MM-DD`。週1回の配信のため日付だけで一意になる。URLの`[id]`と一致させる)
-- 1ファイル=1回分の記事。週次のGitHub Actionsワークフロー([weekly-publish](../weekly-publish/design.md))がこのファイルを新規追加する。公開をスキップした回はファイル自体を作らない
+- 1ファイル=1回分の記事。週次のGitHub Actionsワークフロー([weekly-publish](../weekly-publish/design.md))がこのファイルを新規追加する。採用0件の回も含め、実行を最後まで終えた回は必ずファイルを作る。利用上限への到達で実行を打ち切った回だけファイルを作らない
 - なぜJSONか: 枠ごとの予測(ジャンル・時間軸・影響度・出典など)を構造化フィールドとして持ち、フィールド単位でビルド時に検証するため(trend-digestと同じ考え方)
 
 ```ts
@@ -65,15 +65,18 @@ export type EmptySlot = {
   collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル。利用上限への到達は実行全体を打ち切るため値に含まない(content-selection/requirements.md#収集失敗-2・3)【推測】
 }
 
-// 収集失敗の分類ラベルの日本語表示(IMPACT_LABELSと同じ形式)
+// 収集失敗の分類ラベルの読者向け表示(IMPACT_LABELSと同じ形式)。内部のコード値(timeout/invalid-format/other)は変えず、
+// 表示文言だけを読者に分かる言葉にする(例:「情報収集に失敗しました(調査が時間内に終わりませんでした)」)
 export const COLLECTION_FAILURE_LABELS: Record<NonNullable<EmptySlot['collectionFailureReason']>, string> = {
-  timeout: '時間切れ', 'invalid-format': '応答形式不正', other: 'その他',
+  timeout: '調査が時間内に終わりませんでした',
+  'invalid-format': '調査結果を正しく読み取れませんでした',
+  other: '調査中にエラーが発生しました',
 }
 
 export type Article = {
   id: string // ファイル名と一致(= date)
   date: string // YYYY-MM-DD。発行日
-  issueNumber: number // 何回目の配信か(1始まり。公開をスキップした回は数えない)
+  issueNumber: number // 何回目の配信か(1始まり。利用上限への到達で打ち切られた回は数えない)
   predictions: Prediction[]
   emptySlots: EmptySlot[]
 }
@@ -156,7 +159,7 @@ sequenceDiagram
 - 各掲載できなかった枠: `genre`・`horizon`・`reason`が定義済みの値で、`horizon`がその回の2区分のどちらかであること
 - `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること
 - 同じ枠(ジャンル×時間軸)が2回現れないこと。記事に現れるジャンルは、その回の2時間軸の両方が予測または掲載できなかった枠として揃っていること(枠が黙って消える事故をビルド時に検知するため。content-selection/requirements.md#機能要件-3)。その回に有効だった全ジャンルが揃っていることは、記事を組み立てる時点で[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルを後から追加・廃止しても過去記事の検証が壊れないよう、ビルド時の検証は「その記事の中での整合」に限る)
-- 予測が1件以上あること(全枠で採用できなかった回は公開しない。weekly-publish/requirements.md#掲載件数の保証-3)
+- 予測は0件でもよい(全枠で採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)【推測】
 - 各掲載できなかった枠: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)【推測】
 - フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない。requirements.md#運営者向けフィードバック-13)
 

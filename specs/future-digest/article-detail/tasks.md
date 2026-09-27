@@ -11,10 +11,11 @@
 - Task 2: 型定義と時間軸の導出(仕様: design.md「前提: 記事データの形式」、content-selection/requirements.md#時間軸の切り替え-1)
   - 🔴 `horizonsForIssue(1)`・`horizonsForIssue(3)`が`['near','long']`、`horizonsForIssue(2)`・`horizonsForIssue(4)`が`['mid','ultra-long']`を返すこと、0以下では例外になることを確認するテストを書く
   - 🔴 `genres.json`の記載順どおりに`GENRE_ORDER`が組み立てられ、`GENRE_LABELS`で日本語ラベルが引けることを確認するテストを書く
+  - 🔴 `COLLECTION_FAILURE_LABELS`が`timeout`/`invalid-format`/`other`のそれぞれに読者向けの日本語文言(「調査が時間内に終わりませんでした」「調査結果を正しく読み取れませんでした」「調査中にエラーが発生しました」)を返すことを確認するテストを書く
   - 🟢 `app/future-digest/lib/types.ts`に型・`GENRE_ORDER`・`GENRE_LABELS`(genres.jsonから組み立て)・`HORIZON_ORDER`・`HORIZON_LABELS`・`IMPACT_ORDER`・`IMPACT_LABELS`・`COLLECTION_FAILURE_LABELS`・`horizonsForIssue`を実装する
 
 - Task 3: 記事データのスキーマ検証(仕様: design.md「バリデーション」)
-  - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(予測18件+掲載できなかった枠2件)を受け付ける/記事に現れるジャンルでその回の2時間軸の片方が欠けている場合・同じ枠が重複する場合・`genres.json`にないジャンルの場合に拒否する/その回の時間軸以外の`horizon`を拒否する/`id`が`<genre>--<horizon>`と一致しない予測を拒否する/必須文字列が空の予測を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/本文が160字未満・480字超なら拒否する/予測が0件の記事を拒否する/`issueNumber`が1未満なら拒否する/`reason`が定義外なら拒否する/`reason`が`'collection-failed'`で`collectionFailureReason`が欠けている・定義外の値である場合に拒否する/`reason`が`'no-candidate'`・`'generation-failed'`で`collectionFailureReason`を持つ場合に拒否する
+  - 🔴 `parseArticle`について次を確認するテストを書く: 正常な記事(予測18件+掲載できなかった枠2件)を受け付ける/予測が0件で掲載できなかった枠だけ(全枠が候補なし・収集失敗・生成失敗のいずれか)の記事も受け付ける/記事に現れるジャンルでその回の2時間軸の片方が欠けている場合・同じ枠が重複する場合・`genres.json`にないジャンルの場合に拒否する/その回の時間軸以外の`horizon`を拒否する/`id`が`<genre>--<horizon>`と一致しない予測を拒否する/必須文字列が空の予測を拒否する/`sourceUrl`が`http(s)`以外なら拒否する/本文が160字未満・480字超なら拒否する/`issueNumber`が1未満なら拒否する/`reason`が定義外なら拒否する/`reason`が`'collection-failed'`で`collectionFailureReason`が欠けている・定義外の値である場合に拒否する/`reason`が`'no-candidate'`・`'generation-failed'`で`collectionFailureReason`を持つ場合に拒否する
   - 🟢 `app/future-digest/lib/articleSchema.ts`に`parseArticle(raw, fileId)`を実装する(本文の分量検証は[content-generation/tasks.md](../content-generation/tasks.md)のTask 1の`isValidBodyLength`を使う)
 
 - Task 4: 記事データの読み込み(仕様: design.md「記事データを読み込む処理」)
@@ -32,7 +33,7 @@
   - 🟢 `app/future-digest/components/SlotBadges.tsx`を実装する
 
 - Task 7: 1枠分のカード(仕様: requirements.md#記事本文の表示-2〜5、design.md「その回の記事本文を表示する処理」手順3〜4)
-  - 🔴 予測がある枠で見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ、`rel="noopener noreferrer"`)が表示されること、`no-candidate`の枠で「候補が見つかりませんでした」、`collection-failed`の枠で`COLLECTION_FAILURE_LABELS`による日本語ラベル(例:「時間切れ」)を含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`の枠で「今回は記事を用意できませんでした」が表示され、いずれも本文・フィードバック欄が出ないことを確認するテストを書く
+  - 🔴 予測がある枠で見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ、`rel="noopener noreferrer"`)が表示されること、`no-candidate`の枠で「候補が見つかりませんでした」、`collection-failed`の枠で`COLLECTION_FAILURE_LABELS`による読者向け日本語ラベル(例:「調査が時間内に終わりませんでした」)を含む「情報収集に失敗しました」(候補なしと異なる文言)、`generation-failed`の枠で「今回は記事を用意できませんでした」が表示され、いずれも本文・フィードバック欄が出ないことを確認するテストを書く
   - 🟢 `app/future-digest/components/PredictionCard.tsx`を実装する
 
 - Task 8: 並び順の切り替え(仕様: requirements.md#並び順の切り替え-7・10)

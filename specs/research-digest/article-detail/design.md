@@ -15,7 +15,7 @@
 記事本文はDBではなく、ビルド時に取り込む静的コンテンツファイルとして管理する(architecture.md#3-設計方針)。この形式は[article-list](../article-list/design.md)・[content-selection](../content-selection/design.md)・[content-generation](../content-generation/design.md)・[weekly-publish](../weekly-publish/design.md)・[line-broadcast](../line-broadcast/design.md)・[bookmark](../bookmark/design.md)・[source-review](../source-review/design.md)が共通して従う。
 
 - 格納場所: `content/research-digest/articles/<id>.json`(`<id>`は発行日`YYYY-MM-DD`。URLの`[id]`と一致させる)
-- 1ファイル=1回分の記事。週次のワークフロー([weekly-publish](../weekly-publish/design.md))が新規追加する。公開をスキップした回はファイルを作らない
+- 1ファイル=1回分の記事。週次のワークフロー([weekly-publish](../weekly-publish/design.md))が新規追加する。採用0件の回も含め、実行を最後まで終えた回は必ずファイルを作る。利用上限への到達で実行を打ち切った回だけファイルを作らない
 
 ```ts
 // app/research-digest/lib/types.ts
@@ -55,9 +55,12 @@ export type EmptyGenre = {
   collectionFailureReason?: 'timeout' | 'invalid-format' | 'other' // reasonが'collection-failed'の場合の分類ラベル。利用上限への到達は実行全体を打ち切るため値に含まない(content-selection/requirements.md#収集失敗-2・3)【推測】
 }
 
-// 収集失敗の分類ラベルの日本語表示(IMPACT_LABELSと同じ形式)
+// 収集失敗の分類ラベルの読者向け表示(IMPACT_LABELSと同じ形式)。内部のコード値(timeout/invalid-format/other)は変えず、
+// 表示文言だけを読者に分かる言葉にする(例:「情報収集に失敗しました(調査が時間内に終わりませんでした)」)
 export const COLLECTION_FAILURE_LABELS: Record<NonNullable<EmptyGenre['collectionFailureReason']>, string> = {
-  timeout: '時間切れ', 'invalid-format': '応答形式不正', other: 'その他',
+  timeout: '調査が時間内に終わりませんでした',
+  'invalid-format': '調査結果を正しく読み取れませんでした',
+  other: '調査中にエラーが発生しました',
 }
 
 export type Article = {
@@ -142,7 +145,7 @@ sequenceDiagram
 - 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`body`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること、`body`が160〜480字であること
 - 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`reason`が定義済みの値であること
 - 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。その回に有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
-- 研究が1件以上あること(全ジャンルで採用できなかった回は公開しない。weekly-publish/requirements.md#掲載件数の保証-3)
+- 研究は0件でもよい(全ジャンルで採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)【推測】
 - 各掲載できなかったジャンル: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)【推測】
 - フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない)
 
