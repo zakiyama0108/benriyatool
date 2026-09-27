@@ -6678,5 +6678,315 @@
     "specFile": "trend-digest/source-directory/design.md",
     "item": "ログ",
     "reason": "画面からのログ出力を行わないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "機能要件 [2]",
+    "reason": "時間軸4区分のうち2区分を毎回扱うという定義の記述で、実際の2区分の決定はhorizonsForIssue(article-detail/design.mdが定義し、article-detail実装時に専用テストを書く。tasks.mdの実装順により本specでは最小限の実装のみ先行させている)が担うため、本specのコードとして検証可能な振る舞いを持たない"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "時間軸 [1]",
+    "reason": "近未来の年数区分の定義で、対象時期の判定・区分適用はClaude Code CLIの推論に委ねる要件のため(design.md「ジャンルごとに候補を集める処理」)。コード側はhorizonが今回の時間軸2区分に含まれるかだけをcandidateValidation.test.tsで検証する"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "時間軸 [2]",
+    "reason": "中期未来の年数区分の定義で、時間軸[1]と同じ理由によりClaudeの推論に委ねるため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "時間軸 [3]",
+    "reason": "長期未来の年数区分の定義で、時間軸[1]と同じ理由によりClaudeの推論に委ねるため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "時間軸 [4]",
+    "reason": "超長期未来の年数区分の定義で、時間軸[1]と同じ理由によりClaudeの推論に委ねるため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "時間軸 [5]",
+    "reason": "対象時期の明示・推定可否の判定はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "時間軸 [6]",
+    "reason": "対象時期が1年未満・既に過ぎているかの判定はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため(design.md「ジャンルごとに候補を集める処理」手順2でプロンプトに明示の指示として含める)"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "採用基準 [1]",
+    "reason": "候補が研究機関・報道機関等の予測記事であることの判定はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "採用基準 [2]",
+    "reason": "噂・出典不明・断定記事の除外判定はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "採用基準 [3]",
+    "reason": "同一内容の新旧比較・優先判定はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "影響度 [2]",
+    "reason": "影響度判定の3つの観点(影響を受ける人の多さ等)はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため。判定結果の値の妥当性(大・中・小のいずれか)はcandidateValidation.test.tsでテスト済み"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "収集失敗 [5]",
+    "reason": "収集失敗の枠を候補なしの集計から除く運用ルールの記述で、SlotResultの'collection-failed'と'no-candidate'が別ステータスとして区別されること自体はselectSlots.test.tsでテスト済み。実際の集計(source-reviewの月次見直し)は別spec(未実装)の責務のため、集計処理自体のテストはここには存在しない"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "データ取得方法 [1]",
+    "reason": "WebSearch・WebFetchの範囲にとどめる運用方針の記述で、Claude CLIへの許可ツール設定(scripts/future-digest/collect-candidates.tsの--allowedTools)という宣言的な設定であり、ユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "収集状況の記録 [1]",
+    "reason": "実行ログへの出力方針の記述で、scripts/future-digest/collect-and-select.tsのconsole.error呼び出し(TDD対象外のCLI。tasks.md Task7)という運用上の記録であり、ユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "データ設計(ジャンル・注目テーマの設定ファイル)",
+    "reason": "型定義・JSON初期値の宣言で、実際の値・構造の妥当性はgenres.test.tsで、Candidate/SlotResultの実際の振る舞いはcandidateValidation.test.ts・selectSlots.test.ts・collect-candidates.test.tsの各テストで検証されるため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "その回の時間軸2区分を決める処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#時間軸の切り替え-1〜2でissue.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "配信済みの一覧を作る処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#配信済みの記事・予測の除外-1〜2でdeliveredIndex.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "ジャンルごとに候補を集める処理(エージェントの推論)",
+    "reason": "エージェント(Claude Code CLI)の推論に委ねる収集手順の説明で、応答の分類・やり直し・候補単位のバリデーション以外はコードとして実装・テストしないため(分類ロジックはcollect-candidates.test.tsで、候補検証はcandidateValidation.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "枠ごとに1本を採用する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-3〜5等でselectSlots.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "収集状況を記録する処理",
+    "reason": "実行ログ出力(TDD対象外のcollect-and-select.ts)の説明で、判定結果の書き出し先であるshouldAlertOperatorの判定ロジック自体はweekly-publish/tasks.mdのTask1でテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "バリデーション",
+    "reason": "design.mdの検証ルールの説明で、実際の振る舞いはcandidateValidation.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "エラーハンドリング",
+    "reason": "収集失敗の分類・やり直し・利用上限到達時の打ち切りの記述で、個別の振る舞いはcollect-candidates.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "セキュリティ",
+    "reason": "許可ツールの範囲・性・恋愛ジャンルのプロンプト制約の記述で、運用上の設定でありこのリポジトリのコードとして直接テストする性質のものではないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "ログ",
+    "reason": "収集・選定結果をstderrに記録するCLI(scripts/future-digest/collect-and-select.ts)の説明で、TDD対象外の薄いラッパー(tasks.md Task7)のため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機の説明とユースケース図省略の理由を示す見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "要約 [2]",
+    "reason": "本文に書くべき内容(対象時期・根拠・影響)の構成に関する執筆内容の質の要件で、コードで自動検証できないため(渡された値が引き継がれることはbuildPrediction.test.tsでテスト済み。本文自体の記述内容はガードレール文言と月次見直しに委ねる)"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "要約 [4]",
+    "reason": "元記事の構成・表現をなぞらないという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。分量の上下限のみコードで強制する)"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "要約 [5]",
+    "reason": "予測であることが分かる書き方をするという執筆内容の質に関する要件で、コードで自動検証できないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "著作権への配慮 [1]",
+    "reason": "著作権法上のリスクの法的根拠・ai-dev-digestとの方針踏襲を説明する記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "利用規約への反映 [3]",
+    "reason": "TDD対象外の静的な文言追加のみのため(tasks.md Task7)。反映内容はspecs/legal/requirements.md・app/legal/page.tsxへの追記で担保する"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "性・恋愛ジャンルの書き方 [4]",
+    "reason": "性・恋愛ジャンルの執筆内容の質に関するガードレール文言の記述で、コードとして実装・テストしないため(scripts/future-digest/generate-content.tsにガードレール文言をそのまま転記している)"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "性・恋愛ジャンルの書き方 [5]",
+    "reason": "官能的・扇情的な描写を避けるガードレール文言の記述で、性・恋愛ジャンルの書き方[4]と同じ理由によりコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "性・恋愛ジャンルの書き方 [6]",
+    "reason": "性産業に関する記述範囲のガードレール文言の記述で、性・恋愛ジャンルの書き方[4]と同じ理由によりコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "性・恋愛ジャンルの書き方 [7]",
+    "reason": "未成年に関わる内容の禁止を示すガードレール文言の記述で、性・恋愛ジャンルの書き方[4]と同じ理由によりコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "内容の逸脱防止 [8]",
+    "reason": "元記事に書かれている範囲にとどめるという執筆内容の質に関する要件で、コードで自動検証できないため(ガードレール文言と月次見直しでの運営者の確認に委ねる)"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "見出し・本文を書く処理(エージェントの推論)",
+    "reason": "エージェント(Claude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "生成結果を検証する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#要約-3でbodyValidation.test.ts・generateContent.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "記事データの1本分を組み立てる処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-6でbuildPrediction.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "記事タイトルを導出する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-7でarticleTitle.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "エラーハンドリング",
+    "reason": "生成結果の検証失敗・JSON抽出失敗・生成拒否をその1本の生成失敗として扱う旨の記述で、応答の分類・除外の振る舞いはgenerateContent.test.tsでテスト済みで、見出し・本文の内容の質はコードで保証できない限界の明記であるため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "セキュリティ",
+    "reason": "見出し・本文の表示はReactの標準エスケープに委ね、著作権リスク対応は個別にテスト済みのため、この見出し自体は追加のテスト対象を持たない"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "ログ",
+    "reason": "生成過程の実行ログ出力方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "future-digest/content-generation/design.md",
+    "item": "利用規約への反映",
+    "reason": "requirements.mdの条項文言をそのまま転記した見出しで、実際の反映はapp/legal/page.tsx・specs/legal/requirements.mdへの追記(TDD対象外、tasks.md Task7)で担保するため"
   }
 ]

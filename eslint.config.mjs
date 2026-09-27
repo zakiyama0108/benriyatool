@@ -32,7 +32,7 @@ const eslintConfig = defineConfig([
     // scripts/配下はCLI実行が前提のNodeスクリプトのため、console出力を許可する
     // (ai-dev-digest・news-digest・trend-digestの収集・公開スクリプトは実行ログとして
     // console出力を使う設計のため、.tsも対象に含める。design.md「ログ」参照)
-    files: ["scripts/**/*.mjs", "scripts/ai-dev-digest/**/*.ts", "scripts/news-digest/**/*.ts", "scripts/trend-digest/**/*.ts"],
+    files: ["scripts/**/*.mjs", "scripts/ai-dev-digest/**/*.ts", "scripts/news-digest/**/*.ts", "scripts/trend-digest/**/*.ts", "scripts/future-digest/**/*.ts"],
     rules: {
       "no-console": "off",
     },
