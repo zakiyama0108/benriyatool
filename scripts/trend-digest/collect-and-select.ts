@@ -1,4 +1,6 @@
-// 収集+選定のCLI化(仕様: design.md「関連するファイル(抜粋)」)。TDD対象外
+// 収集+選定のCLI化(仕様: design.md「関連するファイル(抜粋)」)。collectGenreObservationsの
+// hybrid分岐(併用ジャンルで固定リスト側・WebSearch側の両方を呼び出し結合する部分)は
+// tasks.md Task16でテスト対象とする。それ以外(main()自体)はTDD対象外
 // (fetchFixedListCandidates/collectWebSearchCandidates/selectionの薄い呼び出しのみのため。
 // ロジック自体はTask6〜7でテスト済み。tasks.md Task8参照)。GitHub Actions(weekly-publish)が
 // 火曜(エンタメ編)・金曜(カルチャー・ライフスタイル編)の実行時にこのスクリプトを呼び出す。
@@ -10,14 +12,16 @@
 // trend-history実装ファイルが存在しないため、本specの範囲ではここまでで処理を止める)
 //
 // 実行方法: npx tsx scripts/trend-digest/collect-and-select.ts <entertainment|culture-lifestyle>
+import { pathToFileURL } from 'node:url'
 import { fetchFixedListGenreCandidates } from '../../app/trend-digest/lib/fetchFixedListCandidates'
+import type { SourceFetchStat } from '../../app/trend-digest/lib/fetchFixedListCandidates'
 import { collectWebSearchGenre } from './collect-websearch-candidates'
 import { dispatchFixedListSource } from './fetchSourcePage'
 import { normalizeTitle } from '../../app/trend-digest/lib/selection'
 import { buildHealthLogLines } from '../../app/trend-digest/lib/sourceHealthLog'
 import type { SourceCollectionStat } from '../../app/trend-digest/lib/sourceHealthLog'
 import type { Candidate } from '../../app/trend-digest/lib/candidateTypes'
-import type { WatchlistEntry, Criteria } from '../../app/trend-digest/lib/watchlistTypes'
+import type { WatchlistEntry, Criteria, GenreCriteria, FixedListGenreCriteria } from '../../app/trend-digest/lib/watchlistTypes'
 import type { Edition } from '../../app/trend-digest/lib/types'
 import { readAllArticles, collectRecentPublishedNormalizedTitles } from './readArticles'
 import watchlistData from '../../content/trend-digest/watchlist.json'
@@ -33,36 +37,68 @@ type GenreObservationsOutput = {
   observations: Candidate[]
 }
 
-async function collectGenreObservations(
+// 固定リストジャンル側の観測項目を取得する関数。実際のHTTP通信(dispatchFixedListSource)は
+// mainが注入する(テストではモックを渡す)
+export type FixedListFetcher = (
   entry: WatchlistEntry,
-  recentPublishedNormalizedTitles: Set<string>
+  criteria: FixedListGenreCriteria
+) => Promise<{ observations: Candidate[]; stats: SourceFetchStat[] }>
+
+// WebSearchジャンル側の観測項目を取得する関数。collectWebSearchGenre(criteriaの解決を含む)を
+// そのまま注入する(テストではモックを渡す)
+export type WebSearchFetcher = (
+  entry: WatchlistEntry
+) => Promise<{ observations: Candidate[]; ok: boolean; detail?: string }>
+
+function statsFromFixedList(label: string, sourceStats: SourceFetchStat[]): SourceCollectionStat[] {
+  return sourceStats.map((s) => ({
+    label: `${label} / ${s.sourceName}`,
+    ok: s.ok,
+    observationCount: s.observationCount,
+    candidateCount: s.candidateCount,
+  }))
+}
+
+function statsFromWebSearch(
+  label: string,
+  result: { observations: Candidate[]; ok: boolean }
+): SourceCollectionStat[] {
+  const candidateCount = result.observations.filter((o) => o.meetsCriteria).length
+  return [{ label, ok: result.ok, observationCount: result.observations.length, candidateCount }]
+}
+
+// 1ジャンル分の観測項目を収集する(design.md「固定リストジャンルの候補を収集・判定する処理」
+// 「WebSearchジャンルの候補を収集・判定する処理」「併用ジャンル(アニメ)の候補を収集・判定する処理」)。
+// method: 'hybrid'のジャンルは、固定リスト側(genreCriteria.fixedList)・WebSearch側
+// (collectWebSearchGenreがgenreCriteria.webSearchを解決する)の両方を呼び出し、観測項目を
+// 1つの配列に結合する(いずれか一方が0件・取得失敗でも他方の観測は残す。requirements.md#選定方式-7)
+export async function collectGenreObservations(
+  entry: WatchlistEntry,
+  genreCriteria: GenreCriteria,
+  fetchFixedList: FixedListFetcher,
+  fetchWebSearch: WebSearchFetcher
 ): Promise<{ observations: Candidate[]; stats: SourceCollectionStat[] }> {
-  const genreCriteria = criteria.genreCriteria[entry.genre]
+  if (entry.method === 'hybrid' && genreCriteria.method === 'hybrid') {
+    const fixedListCriteria: FixedListGenreCriteria = { method: 'fixed-list', ...genreCriteria.fixedList }
+    const [fixedResult, webResult] = await Promise.all([fetchFixedList(entry, fixedListCriteria), fetchWebSearch(entry)])
+    if (!webResult.ok) {
+      console.error(`${entry.label}(WebSearch側): 検索・判定に失敗しました(観測項目0件として扱います): ${webResult.detail}`)
+    }
+    return {
+      observations: [...fixedResult.observations, ...webResult.observations],
+      stats: [...statsFromFixedList(entry.label, fixedResult.stats), ...statsFromWebSearch(`${entry.label}(WebSearch)`, webResult)],
+    }
+  }
 
   if (entry.method === 'fixed-list' && genreCriteria.method === 'fixed-list') {
-    const { observations, stats: sourceStats } = await fetchFixedListGenreCandidates(
-      entry,
-      genreCriteria,
-      recentPublishedNormalizedTitles,
-      (source) => dispatchFixedListSource(source, entry.genre),
-      criteria.history.maxObservationsPerSource
-    )
-    const stats = sourceStats.map((s) => ({
-      label: `${entry.label} / ${s.sourceName}`,
-      ok: s.ok,
-      observationCount: s.observationCount,
-      candidateCount: s.candidateCount,
-    }))
-    return { observations, stats }
+    const { observations, stats: sourceStats } = await fetchFixedList(entry, genreCriteria)
+    return { observations, stats: statsFromFixedList(entry.label, sourceStats) }
   }
 
-  const { observations, ok, detail } = await collectWebSearchGenre(entry)
-  if (!ok) console.error(`${entry.label}: 検索・判定に失敗しました(観測項目0件として扱います): ${detail}`)
-  const candidateCount = observations.filter((o) => o.meetsCriteria).length
-  return {
-    observations,
-    stats: [{ label: entry.label, ok, observationCount: observations.length, candidateCount }],
-  }
+  // method: 'websearch'。collectWebSearchGenreがcriteriaの解決を行うため、ここではgenreCriteriaを使わない
+  const webResult = await fetchWebSearch(entry)
+  if (!webResult.ok) console.error(`${entry.label}: 検索・判定に失敗しました(観測項目0件として扱います): ${webResult.detail}`)
+  return { observations: webResult.observations, stats: statsFromWebSearch(entry.label, webResult) }
 }
 
 async function main() {
@@ -80,11 +116,26 @@ async function main() {
     normalizeTitle
   )
 
+  const fetchFixedList: FixedListFetcher = (entry, fixedListCriteria) =>
+    fetchFixedListGenreCandidates(
+      entry,
+      fixedListCriteria,
+      recentPublishedNormalizedTitles,
+      (source) => dispatchFixedListSource(source, entry.genre),
+      criteria.history.maxObservationsPerSource
+    )
+
   const genreObservations: GenreObservationsOutput[] = []
   const stats: SourceCollectionStat[] = []
 
   for (const entry of orderedEntries) {
-    const { observations, stats: entryStats } = await collectGenreObservations(entry, recentPublishedNormalizedTitles)
+    const genreCriteria = criteria.genreCriteria[entry.genre]
+    const { observations, stats: entryStats } = await collectGenreObservations(
+      entry,
+      genreCriteria,
+      fetchFixedList,
+      collectWebSearchGenre
+    )
     genreObservations.push({ genre: entry.genre, label: entry.label, observations })
     stats.push(...entryStats)
   }
@@ -113,7 +164,13 @@ async function main() {
   process.stdout.write(JSON.stringify({ date, edition, genres: genreObservations }, null, 2) + '\n')
 }
 
-main().catch((error: unknown) => {
-  console.error(error)
-  process.exit(1)
-})
+// CLIとして直接実行されたときだけmain()を走らせる(テストからcollectGenreObservationsを
+// importした際に、モジュール読み込みの副作用でCLIが起動してしまわないようにするため。
+// scripts/trend-digest/broadcast-line.tsの既存パターンと同じ)
+const isMainModule = process.argv[1] != null && import.meta.url === pathToFileURL(process.argv[1]).href
+if (isMainModule) {
+  main().catch((error: unknown) => {
+    console.error(error)
+    process.exit(1)
+  })
+}
