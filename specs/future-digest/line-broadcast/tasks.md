@@ -10,7 +10,7 @@
   - 🔴 記事IDから`https://benriyatool.com/future-digest/<id>`が作られることを確認するテストを書く
   - 🟢 `app/future-digest/lib/articleUrl.ts`に`buildArticleUrl(article)`を実装する(`app/lib/site.ts`の`SITE_URL`を使う)
 
-- Task 3: 配信メッセージの組み立て(仕様: requirements.md#配信内容-1〜2・6、design.md「配信メッセージを組み立てる処理」)
+- Task 3: 配信メッセージの組み立て(仕様: requirements.md#配信内容-1〜2・6〜7、design.md「配信メッセージを組み立てる処理」)
   - 🔴 1行目が「【週刊未来予測】2026年10月1日号」、2行目がその回の時間軸(例:「今回の時間軸: 近未来・長期未来」)になること、代表見出しが「・【影響度 大/ジャンル名】見出し」の形で並ぶこと、末尾のURLが`buildArticleUrl`と一致し1本だけであること、出典URLを含まないこと、性・恋愛ジャンルの見出しを含まないこと、代表見出しが0件でも予測が1件以上あればタイトル・時間軸・リンクで組み立てられること、予測が0件(採用0件の回)なら代表見出しの行の代わりに「今週は掲載できる予測がありませんでした」の1行が入ることを確認するテストを書く
   - 🟢 `buildBroadcastTitle(date)`・`buildBroadcastMessage(article)`を実装する
 
@@ -21,5 +21,5 @@
 - Task 5: ワークフロー本体(仕様: design.md「実行環境の前提」「配信対象の記事を決める処理」)(TDD対象外。GitHub Actionsの定義のため。trend-digest-line-broadcast.ymlと同じ構造で実装する)
   - `.github/workflows/future-digest-line-broadcast.yml`を作る: `push`(`branches: [main]`、`paths: content/future-digest/articles/*.json`)では新規追加されたファイルだけを対象に、`workflow_dispatch`(記事ID入力)では新規追加ファイルの判定を行わず入力された記事IDを対象に、Task 4のCLIを実行する。`LINE_CHANNEL_ACCESS_TOKEN`は既存のSecretを参照する
 
-- Task 6: 本番での通し確認(仕様: requirements.md#配信タイミング・方式-7〜8)(TDD対象外。手動確認)
+- Task 6: 本番での通し確認(仕様: requirements.md#配信タイミング・方式-8〜9)(TDD対象外。手動確認)
   - 初回の週次記事のマージで配信ワークフローが動き、実行ログに公開待ちの試行記録が残ること、届いたLINEのリンクで記事ページが開けること、性・恋愛ジャンルの見出しが載っていないことを確認する

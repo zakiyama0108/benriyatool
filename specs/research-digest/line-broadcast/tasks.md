@@ -6,7 +6,7 @@
   - 🔴 記事IDから`https://benriyatool.com/research-digest/<id>`が作られることを確認するテストを書く
   - 🟢 `app/research-digest/lib/articleUrl.ts`に`buildArticleUrl(article)`を実装する(`app/lib/site.ts`の`SITE_URL`を使う)
 
-- Task 2: 配信メッセージの組み立て(仕様: requirements.md#配信内容-1〜5、design.md「配信メッセージを組み立てる処理」)
+- Task 2: 配信メッセージの組み立て(仕様: requirements.md#配信内容-1〜6、design.md「配信メッセージを組み立てる処理」)
   - 🔴 1行目が「【週刊研究発見】2026年10月5日号」になること、掲載した研究の見出しがすべて「・【影響度 大/ジャンル名】見出し」の形で載ること、影響度の大きい順・同じ影響度ではジャンル順に並ぶこと、候補なし・収集失敗・生成失敗のジャンルが載らないこと、末尾のURLが`buildArticleUrl`と一致し1本だけであること、出典URLを含まないこと、研究が0件(採用0件の回)なら見出しの行の代わりに「今週は掲載できる記事がありませんでした」の1行が入ることを確認するテストを書く
   - 🟢 `app/research-digest/lib/buildBroadcastMessage.ts`に`buildBroadcastTitle(date)`・`buildBroadcastMessage(article)`を実装する
 
@@ -17,5 +17,5 @@
 - Task 4: ワークフロー本体(仕様: design.md「実行環境の前提」「配信対象の記事を決める処理」)(TDD対象外。GitHub Actionsの定義のため。trend-digest-line-broadcast.ymlと同じ構造で実装する)
   - `.github/workflows/research-digest-line-broadcast.yml`を作る: `push`(`branches: [main]`、`paths: content/research-digest/articles/*.json`)では新規追加されたファイルだけを対象に、`workflow_dispatch`(記事ID入力)では新規追加ファイルの判定を行わず入力された記事IDを対象に、Task 3のCLIを実行する。`LINE_CHANNEL_ACCESS_TOKEN`は既存のSecretを参照する
 
-- Task 5: 本番での通し確認(仕様: requirements.md#配信タイミング・方式-6〜7)(TDD対象外。手動確認)
+- Task 5: 本番での通し確認(仕様: requirements.md#配信タイミング・方式-7〜8)(TDD対象外。手動確認)
   - 初回の週次記事のマージで配信ワークフローが動き、実行ログに公開待ちの試行記録が残ること、届いたLINEのリンクで記事ページが開けることを確認する
