@@ -6,7 +6,7 @@
       ] },
     { "genre": "japanese-movie", "edition": "entertainment", "label": "日本映画", "method": "fixed-list",
       "sources": [
-        { "name": "興行通信社CINEMAランキング通信(国内)", "url": "https://www.kogyotsushin.com/", "format": "site-specific-html", "parserId": "kogyoTsushin", "region": "japan" },
+        { "name": "興行通信社CINEMAランキング通信(国内)", "url": "https://www.kogyotsushin.com/archives/weekend/", "format": "site-specific-html", "parserId": "kogyoTsushin", "region": "japan" },
         { "name": "映画.com国内ランキング", "url": "https://eiga.com/ranking/jp/", "format": "site-specific-html", "parserId": "eigaCom", "region": "japan" },
         { "name": "Filmarks上映中ランキング", "url": "https://filmarks.com/list/now", "format": "site-specific-html", "parserId": "filmarks", "region": "japan" }
       ] },
@@ -16,13 +16,13 @@
         { "name": "Filmarks上映中ランキング", "url": "https://filmarks.com/list/now", "format": "site-specific-html", "parserId": "filmarks", "region": "japan" }
       ] },
     { "genre": "japanese-drama", "edition": "entertainment", "label": "日本ドラマ", "method": "fixed-list",
-      "sources": [{ "name": "ビデオリサーチ ドラマ視聴率速報", "url": "https://www.videor.co.jp/tvrating/daily/drama/", "format": "site-specific-html", "parserId": "videoResearch", "region": "japan" }] },
+      "sources": [{ "name": "ビデオリサーチ 視聴人数ランキング(ドラマ)", "url": "https://www.videor.co.jp/audience/", "format": "site-specific-html", "parserId": "videoResearchDrama", "region": "japan" }] },
     { "genre": "foreign-drama", "edition": "entertainment", "label": "海外ドラマ", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(シリーズ・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "anime", "edition": "entertainment", "label": "アニメ", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(日本のTOP10)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "variety", "edition": "entertainment", "label": "バラエティ", "method": "fixed-list",
-      "sources": [{ "name": "ビデオリサーチ バラエティ視聴率速報", "url": "https://www.videor.co.jp/tvrating/past_tvrating/variety/", "format": "site-specific-html", "parserId": "videoResearch", "region": "japan" }] },
+      "sources": [{ "name": "ビデオリサーチ 視聴人数ランキング(バラエティ)", "url": "https://www.videor.co.jp/audience/", "format": "site-specific-html", "parserId": "videoResearchVariety", "region": "japan" }] },
     { "genre": "streaming-video", "edition": "entertainment", "label": "サブスク動画", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(映画・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "books-comics", "edition": "entertainment", "label": "書籍・漫画", "method": "fixed-list",
@@ -50,7 +50,7 @@
     { "genre": "games", "edition": "culture-lifestyle", "label": "ゲーム", "method": "fixed-list",
       "sources": [
         { "name": "Steam公式Web API(プレイヤー数)", "url": "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/", "format": "structured-json-api", "region": "overseas" },
-        { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/game-sales/", "format": "site-specific-html", "parserId": "famitsu", "region": "japan" }
+        { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/game-sales", "format": "site-specific-html", "parserId": "famitsu", "region": "japan" }
       ] },
     { "genre": "travel", "edition": "culture-lifestyle", "label": "旅行・観光", "method": "fixed-list",
       "sources": [{ "name": "じゃらんnet人気ランキング", "url": "https://www.jalan.net/news/", "format": "site-specific-html", "parserId": "jalan", "region": "japan" }] },

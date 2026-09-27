@@ -77,7 +77,7 @@ export type Criteria = {
 1ジャンルあたり・1回あたりの掲載件数の上限は持たない。掲載件数は「その編のジャンル数と同じ(各ジャンル1件)」に固定されており(requirements.md#掲載件数-1〜2)、調整できる値ではないため。
 ```
 
-`watchlist.json`の初期値(全19ジャンル。sourcesはrequirements.mdの各ジャンル節の情報源をそのまま構造化したもの。URLは実際にアクセスして生存確認済み[2026-09-19時点]。`region`はその情報源が日本の流行と海外の流行のどちらを映すかの区分):
+`watchlist.json`の初期値(全19ジャンル。sourcesはrequirements.mdの各ジャンル節の情報源をそのまま構造化したもの。URLは実際にアクセスし、対象の順位付き一覧が実際にそのページに存在することまで確認済み[2026-09-27時点]。`region`はその情報源が日本の流行と海外の流行のどちらを映すかの区分):
 
 ```json
 {
@@ -88,7 +88,7 @@ export type Criteria = {
       ] },
     { "genre": "japanese-movie", "edition": "entertainment", "label": "日本映画", "method": "fixed-list",
       "sources": [
-        { "name": "興行通信社CINEMAランキング通信(国内)", "url": "https://www.kogyotsushin.com/", "format": "site-specific-html", "parserId": "kogyoTsushin", "region": "japan" },
+        { "name": "興行通信社CINEMAランキング通信(国内)", "url": "https://www.kogyotsushin.com/archives/weekend/", "format": "site-specific-html", "parserId": "kogyoTsushin", "region": "japan" },
         { "name": "映画.com国内ランキング", "url": "https://eiga.com/ranking/jp/", "format": "site-specific-html", "parserId": "eigaCom", "region": "japan" },
         { "name": "Filmarks上映中ランキング", "url": "https://filmarks.com/list/now", "format": "site-specific-html", "parserId": "filmarks", "region": "japan" }
       ] },
@@ -98,13 +98,13 @@ export type Criteria = {
         { "name": "Filmarks上映中ランキング", "url": "https://filmarks.com/list/now", "format": "site-specific-html", "parserId": "filmarks", "region": "japan" }
       ] },
     { "genre": "japanese-drama", "edition": "entertainment", "label": "日本ドラマ", "method": "fixed-list",
-      "sources": [{ "name": "ビデオリサーチ ドラマ視聴率速報", "url": "https://www.videor.co.jp/tvrating/daily/drama/", "format": "site-specific-html", "parserId": "videoResearch", "region": "japan" }] },
+      "sources": [{ "name": "ビデオリサーチ 視聴人数ランキング(ドラマ)", "url": "https://www.videor.co.jp/audience/", "format": "site-specific-html", "parserId": "videoResearchDrama", "region": "japan" }] },
     { "genre": "foreign-drama", "edition": "entertainment", "label": "海外ドラマ", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(シリーズ・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "anime", "edition": "entertainment", "label": "アニメ", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(日本のTOP10)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "variety", "edition": "entertainment", "label": "バラエティ", "method": "fixed-list",
-      "sources": [{ "name": "ビデオリサーチ バラエティ視聴率速報", "url": "https://www.videor.co.jp/tvrating/past_tvrating/variety/", "format": "site-specific-html", "parserId": "videoResearch", "region": "japan" }] },
+      "sources": [{ "name": "ビデオリサーチ 視聴人数ランキング(バラエティ)", "url": "https://www.videor.co.jp/audience/", "format": "site-specific-html", "parserId": "videoResearchVariety", "region": "japan" }] },
     { "genre": "streaming-video", "edition": "entertainment", "label": "サブスク動画", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(映画・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "books-comics", "edition": "entertainment", "label": "書籍・漫画", "method": "fixed-list",
@@ -126,7 +126,7 @@ export type Criteria = {
     { "genre": "games", "edition": "culture-lifestyle", "label": "ゲーム", "method": "fixed-list",
       "sources": [
         { "name": "Steam公式Web API(プレイヤー数)", "url": "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/", "format": "structured-json-api", "region": "overseas" },
-        { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/game-sales/", "format": "site-specific-html", "parserId": "famitsu", "region": "japan" }
+        { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/game-sales", "format": "site-specific-html", "parserId": "famitsu", "region": "japan" }
       ] },
     { "genre": "travel", "edition": "culture-lifestyle", "label": "旅行・観光", "method": "fixed-list",
       "sources": [{ "name": "じゃらんnet人気ランキング", "url": "https://www.jalan.net/news/", "format": "site-specific-html", "parserId": "jalan", "region": "japan" }] },
@@ -139,6 +139,10 @@ export type Criteria = {
 ```
 
 補足(情報源から外したサイト): Oricon週間チャート・ZOZOTOWN人気ランキング・Engadget日本版(2022年サイト閉鎖)・るるぶ&more!トップページ・Googleトレンド急上昇ワードページ・Yahoo!検索急上昇ワードページは、いずれもJS描画・Bot対策・サイト閉鎖のいずれかで機械的な取得ができないため情報源から外した。旅行・観光のるるぶ&more!は記事一覧ページ(`rurubu.jp/andmore/article`)であれば取得できる可能性があるため、[source-review](../source-review/requirements.md)で追加候補として再検証する。
+
+補足(ビデオリサーチのURL): ビデオリサーチが提供する「最新ドラマ視聴データ速報」ミニサイト(`tvrating/daily/drama/`)はドラマ専用で、バラエティに対応する同形式のページは存在しない。日本ドラマ・バラエティの両ジャンルとも、ジャンルごとのセクション(見出し「ドラマ」「バラエティ」)を持つ「視聴人数ランキング」ページ(`videor.co.jp/audience/`)を情報源とする(視聴率(%)ではなく視聴人数(万人)の順位だが、同じくビデオリサーチが集計する実視聴に基づく客観データであり、上位何位以内という判定方法は変わらない)。
+
+補足(じゃらんnet人気ランキングの限界): `jalan.net/news/`の「ランキング」タブは、jalanニュース内の人気記事(季節の解説記事等)のランキングであり、観光スポットそのものの人気ランキングではない。じゃらんnet本体に観光スポット単位の機械的に取得できる人気ランキングページが見つからなかったため、次善の情報源として人気記事ランキングを使う。取得した項目が観光スポット名ではなく記事タイトルになる点は、[source-review](../source-review/requirements.md)で情報源の妥当性を再検証する対象とする。
 
 `criteria.json`の初期値(妥当性は運用実績を見て[source-review](../source-review/requirements.md)で見直す。`history`の各値の意味は[trend-history/design.md](../trend-history/design.md)「履歴データの形式」参照):
 ```json
@@ -238,8 +242,8 @@ export type SelectionResult =
 - 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜8、requirements.md#情報源の地域区分-1、requirements.md#データ取得方法-1〜2、requirements.md#情報源の健全性監視-1
 
 ### サイトごとの専用パーサー(`scripts/trend-digest/sourceParsers/`)
-- 初回配信の実運用で、1つの正規表現パーサーで全HTML情報源を解析する方式は、サイトごとに異なる順位表現(プレーンテキスト・CSSクラス名・画像スプライト等)に対応できず機能しなかった。このためサイトごとに専用のパース関数を用意する(`billboardJapan.ts`/`kogyoTsushin.ts`/`eigaCom.ts`/`filmarks.ts`/`videoResearch.ts`/`tohan.ts`/`nippan.ts`/`famitsu.ts`/`jalan.ts`の9ファイル)
-- 各パーサーは`(html: string) => RankedItem[]`の形の純粋関数とし、そのサイトのHTML構造(セレクタ・CSSクラス名等)に関する実装コメントを関数ごとに残す(トーハン・日販は順位がCSSクラス名(`rank-1st`等)で表現されている点など、サイト固有の癖はコメントで明示する)。実際のHTML構造検証は疎通確認(週次実行結果)で代替する方針は維持する(`fetchSourcePage.ts`の既存コメント参照)
+- 初回配信の実運用で、1つの正規表現パーサーで全HTML情報源を解析する方式は、サイトごとに異なる順位表現(プレーンテキスト・CSSクラス名・画像スプライト等)に対応できず機能しなかった。このためサイトごとに専用のパース関数を用意する(`billboardJapan.ts`/`kogyoTsushin.ts`/`eigaCom.ts`/`filmarks.ts`/`videoResearch.ts`(videoResearchDrama/videoResearchVarietyの2関数を持つ)/`tohan.ts`/`nippan.ts`/`famitsu.ts`/`jalan.ts`の9ファイル)
+- 各パーサーは`(html: string) => RankedItem[]`の形の純粋関数とし、そのサイトのHTML構造(セレクタ・CSSクラス名等)に関する実装コメントを関数ごとに残す(トーハンは順位がCSSクラス名(`rank-1st`等)で、日販は順位が数値テキスト+前週比の方向を表すCSSクラス名(`is-new`/`is-up`/`is-down`/`is-stay`)の組で表現されている点など、サイト固有の癖はコメントで明示する)。実際のHTML構造検証は疎通確認(週次実行結果)で代替する方針は維持する(`fetchSourcePage.ts`の既存コメント参照)
 - サイト構造が変わりパーサーが機能しなくなった場合は、そのパーサーだけを[source-review](../source-review/requirements.md)の月次見直しで修正する(1サイトの構造変更が他ジャンルに波及しない)
 
 ### WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)
