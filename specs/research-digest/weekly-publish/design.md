@@ -18,7 +18,7 @@ GitHub Actionsのスケジュール実行が毎週月曜07:43(日本時間)頃�
   - 2回目(本番の24時間後): `43 22 * * 1`(月曜22:43 UTC=火曜07:43 JST)
   - 3回目(本番の36時間後): `43 10 * * 2`(火曜10:43 UTC=火曜19:43 JST)
   これら3本のcronで起動した実行は、いずれも「利用上限への到達時に再実行する処理」の冪等チェックを最初に行う(requirements.md#利用上限への到達時の再実行-1〜2)。3本を区別する回数管理は行わず、3本目のcronのぶんまで走って公開に至らなければ、それ以上自動で再試行する仕組み自体がないというだけで足りる(requirements.md#利用上限への到達時の再実行-3)
-- `workflow_dispatch`でも起動できるようにする。用途は(a) Secrets設定後の動作確認、(b) 上記3回の自動再実行でも公開できなかった回の復旧、の2つ(requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの2つを除く)。入力`scheduled_publish_date`(省略可、`YYYY-MM-DD`)で本来の配信日を指定できる。省略時は実行日時から`getScheduledPublishDate`で求める(下記「配信日を求める処理」)【推測】
+- `workflow_dispatch`でも起動できるようにする。用途は(a) Secrets設定後の動作確認、(b) 上記3回の自動再実行でも公開できなかった回の復旧、の2つ(requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの2つを除く)。入力`scheduled_publish_date`(省略可、`YYYY-MM-DD`)で本来の配信日を指定できる。省略時は実行日時から`getScheduledPublishDate`で求める(下記「配信日を求める処理」)。入力がある場合は純粋関数`validateScheduledPublishDate(value)`で`^\d{4}-\d{2}-\d{2}$`の形かつ実在する月曜日(JST)であることを検証し、満たさなければワークフローを失敗させる(下記「セキュリティ」)【推測】
 - GitHubへの書き込みには、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を`RESEARCH_DIGEST_GH_PAT`としてActions Secretsに保存して使う。既定の`GITHUB_TOKEN`は使わない(後続の`ci.yml`が起動しないため)
 - 収集・生成はClaude Code CLIのヘッドレス実行で行い、既存の`CLAUDE_CODE_OAUTH_TOKEN`(他のdigestと共用)をそのまま使う
 - 実行指示の根拠は本specと参照先specのrequirements.md/design.mdとし、専用のプロンプトファイルを複製しない
@@ -146,7 +146,7 @@ sequenceDiagram
 scripts/research-digest/collect-and-select.ts (content-selectionで新規)
 scripts/research-digest/generate-content.ts (content-generationで新規)
 app/research-digest/lib/shouldAlertOperator.ts (新規: 選定結果から全ジャンル収集失敗かどうか〈運営者への警告が必要か〉を判定する純粋関数。content-selectionの`collect-and-select.ts`から呼ばれる)
-app/research-digest/lib/scheduledPublishDate.ts (新規: 実行日時〈UTC〉から本来の配信日〈直近の月曜、JST〉を求める純粋関数`getScheduledPublishDate`。内部でJSTに変換する)
+app/research-digest/lib/scheduledPublishDate.ts (新規: 実行日時〈UTC〉から本来の配信日〈直近の月曜、JST〉を求める純粋関数`getScheduledPublishDate`。内部でJSTに変換する。手動入力`scheduled_publish_date`を検証する純粋関数`validateScheduledPublishDate`も同じモジュールに置く)
 app/research-digest/lib/shouldSkipRetry.ts (新規: 再実行cronの冪等チェック。配信日の記事が既に存在するかを判定する純粋関数)
 app/research-digest/lib/assembleArticle.ts (新規: 選定結果+生成結果から記事データを組み立てる純粋関数)
 scripts/research-digest/write-article.ts (新規: assembleArticleの結果をcontent/research-digest/articles/<date>.jsonへ書き出すCLI)
@@ -160,6 +160,7 @@ content/research-digest/articles/<date>.json (新規: 生成される記事デ�
 - `CLAUDE_CODE_OAUTH_TOKEN`は他のdigestと共用の運営者個人の認証情報。期限切れ時は再発行してSecretsを更新する
 - CI失敗の記録で失敗ジョブを調べる処理は読み取りだけのため、既定の`GITHUB_TOKEN`を使う
 - 記事内容の安全性はarticle-detailのビルド時検証で担保する
+- `workflow_dispatch`の入力`scheduled_publish_date`はワークフローファイルの`run:`に直接埋め込まず(シェルインジェクションを避けるため)、`env:`経由でステップに渡す。渡した値は`getScheduledPublishDate`ではなく純粋関数`validateScheduledPublishDate(value)`(`scheduledPublishDate.ts`と同じモジュール)で検証し、`^\d{4}-\d{2}-\d{2}$`の形かつ実在する月曜日(JST)でなければワークフローを非ゼロ終了で失敗させる【推測】
 
 ## ログ
 
