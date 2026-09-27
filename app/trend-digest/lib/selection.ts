@@ -2,6 +2,8 @@ import type { Genre } from './types'
 import { GENRE_ORDER } from './types'
 import type { Candidate, SelectionResult } from './candidateTypes'
 import type { Criteria } from './watchlistTypes'
+import type { HistoryJudgement } from './historyTypes'
+import { DURATION_LABEL_ORDER, HEAT_LABEL_ORDER } from './historyTypes'
 
 // 掲載済み話題の除外・ジャンル内の絞り込み・編全体の絞り込み(仕様: requirements.md#掲載済み話題の再掲抑制-1、
 // requirements.md#機能要件-4、requirements.md#機能要件-5、design.md「掲載済み話題を除外する処理」
@@ -12,6 +14,41 @@ import type { Criteria } from './watchlistTypes'
 // 前後の空白除去・全角/半角の統一(NFKC正規化)・英字の大文字小文字統一を行う
 export function normalizeTitle(title: string): string {
   return title.trim().normalize('NFKC').toLowerCase()
+}
+
+// trend-historyが判定した継続度ラベル・注目度ラベル・掲載実績を添えた候補(design.md「掲載する話題を選ぶ処理」)。
+// ラベルの判定自体はtrend-history(Task6〜8)が行い、ここでは受け取った結果を比較するだけ
+export type CandidateWithJudgement = Candidate & { judgement: HistoryJudgement }
+
+// 掲載する話題の並べ替え(requirements.md#掲載する話題の選び方-4〜6・-8、design.md「掲載する話題を選ぶ処理」手順4)。
+// 昇順の比較関数として使う(戻り値が負ならaを先にする)。次の3階層+タイブレークで比較する:
+//   1. 過去に一度も掲載したことがない話題(publishedCount=0)を、掲載したことがある話題より先にする
+//   2. 未掲載どうしは継続度ラベルが高い順→注目度ラベルが高い順→その回の強さ(strength)が大きい順
+//   3. 掲載済みどうしは注目度ラベルが高い順→継続度ラベルが高い順→掲載回数(publishedCount)が少ない順
+//   4. ここまで同値なら正規化タイトルの昇順(同点のときに選ばれる話題が実行のたびに変わらないようにするため)
+export function compareCandidates(a: CandidateWithJudgement, b: CandidateWithJudgement): number {
+  const aPublished = a.judgement.publishedCount > 0
+  const bPublished = b.judgement.publishedCount > 0
+  if (aPublished !== bPublished) return aPublished ? 1 : -1
+
+  let diff: number
+  if (!aPublished) {
+    diff = DURATION_LABEL_ORDER[b.judgement.durationLabel] - DURATION_LABEL_ORDER[a.judgement.durationLabel]
+    if (diff !== 0) return diff
+    diff = HEAT_LABEL_ORDER[b.judgement.heatLabel] - HEAT_LABEL_ORDER[a.judgement.heatLabel]
+    if (diff !== 0) return diff
+    diff = b.strength - a.strength
+    if (diff !== 0) return diff
+  } else {
+    diff = HEAT_LABEL_ORDER[b.judgement.heatLabel] - HEAT_LABEL_ORDER[a.judgement.heatLabel]
+    if (diff !== 0) return diff
+    diff = DURATION_LABEL_ORDER[b.judgement.durationLabel] - DURATION_LABEL_ORDER[a.judgement.durationLabel]
+    if (diff !== 0) return diff
+    diff = a.judgement.publishedCount - b.judgement.publishedCount
+    if (diff !== 0) return diff
+  }
+
+  return normalizeTitle(a.title).localeCompare(normalizeTitle(b.title))
 }
 
 // 過去に掲載済みのトピック(同一作品名・同一話題)を、採用基準を満たしていても候補から除外する

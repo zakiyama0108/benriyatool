@@ -1,13 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import {
   normalizeTitle,
+  compareCandidates,
   excludeAlreadyPublishedTopics,
   narrowGenreCandidates,
   selectEditionTopics,
 } from '../../../app/trend-digest/lib/selection'
+import type { CandidateWithJudgement } from '../../../app/trend-digest/lib/selection'
 import type { Candidate } from '../../../app/trend-digest/lib/candidateTypes'
 import type { GenreCandidateEntry } from '../../../app/trend-digest/lib/selection'
 import type { Criteria } from '../../../app/trend-digest/lib/watchlistTypes'
+import type { HistoryJudgement } from '../../../app/trend-digest/lib/historyTypes'
 import type { Genre } from '../../../app/trend-digest/lib/types'
 import criteriaData from '../../../content/trend-digest/criteria.json'
 
@@ -21,9 +24,116 @@ function baseCandidate(overrides: Partial<Candidate>): Candidate {
     sourceUrl: 'https://example.com/a',
     method: 'fixed-list',
     strength: 90,
+    rank: 1,
+    originRegion: null,
+    currentRegions: [],
+    strengthJapan: null,
+    strengthOverseas: null,
+    meetsCriteria: true,
     ...overrides,
   }
 }
+
+function baseJudgement(overrides: Partial<HistoryJudgement>): HistoryJudgement {
+  return {
+    durationLabel: 'pre-trend',
+    heatLabel: 'low',
+    heatBasis: 'source-position',
+    continuationDays: 0,
+    continuationStartDate: '2026-09-01',
+    detectionCount: 1,
+    publishedCount: 0,
+    reportCount: 1,
+    lastPublishedDurationLabel: null,
+    ...overrides,
+  }
+}
+
+function candidateWithJudgement(
+  candidateOverrides: Partial<Candidate>,
+  judgementOverrides: Partial<HistoryJudgement>
+): CandidateWithJudgement {
+  return { ...baseCandidate(candidateOverrides), judgement: baseJudgement(judgementOverrides) }
+}
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#掲載する話題の選び方-4、specs/trend-digest/content-selection/requirements.md#掲載する話題の選び方-5、specs/trend-digest/content-selection/requirements.md#掲載する話題の選び方-6
+describe('掲載する話題の並べ替え(compareCandidates) - 未掲載の話題を優先し、未掲載どうし・掲載済みどうしでそれぞれ異なる基準で並べる', () => {
+  it('未掲載の話題は、継続度・注目度が掲載済みの話題より低くても掲載済みより先になること', () => {
+    const unpublishedWeak = candidateWithJudgement(
+      { title: '未掲載の弱い話題' },
+      { publishedCount: 0, durationLabel: 'pre-trend', heatLabel: 'low' }
+    )
+    const publishedStrong = candidateWithJudgement(
+      { title: '掲載済みの強い話題' },
+      { publishedCount: 3, durationLabel: 'highly-talked', heatLabel: 'high' }
+    )
+    expect(compareCandidates(unpublishedWeak, publishedStrong)).toBeLessThan(0)
+    expect(compareCandidates(publishedStrong, unpublishedWeak)).toBeGreaterThan(0)
+  })
+
+  it('未掲載どうしは継続度ラベルが高い順になること', () => {
+    const talked = candidateWithJudgement({ title: '話題' }, { durationLabel: 'talked' })
+    const emerging = candidateWithJudgement({ title: '注目され始め' }, { durationLabel: 'emerging' })
+    expect(compareCandidates(talked, emerging)).toBeLessThan(0)
+  })
+
+  it('未掲載どうしは継続度ラベルが同じなら注目度ラベルが高い順になること', () => {
+    const high = candidateWithJudgement({ title: '注目度高' }, { durationLabel: 'talked', heatLabel: 'high' })
+    const normal = candidateWithJudgement({ title: '注目度普通' }, { durationLabel: 'talked', heatLabel: 'normal' })
+    expect(compareCandidates(high, normal)).toBeLessThan(0)
+  })
+
+  it('未掲載どうしは継続度・注目度が同じならその回の強さ(strength)が大きい順になること', () => {
+    const stronger = candidateWithJudgement({ title: '強い方', strength: 90 }, {})
+    const weaker = candidateWithJudgement({ title: '弱い方', strength: 50 }, {})
+    expect(compareCandidates(stronger, weaker)).toBeLessThan(0)
+  })
+
+  it('掲載済みどうしは注目度ラベルが高い順になること', () => {
+    const high = candidateWithJudgement({ title: '注目度高' }, { publishedCount: 1, heatLabel: 'high' })
+    const low = candidateWithJudgement({ title: '注目度低' }, { publishedCount: 1, heatLabel: 'low' })
+    expect(compareCandidates(high, low)).toBeLessThan(0)
+  })
+
+  it('掲載済みどうしは注目度ラベルが同じなら継続度ラベルが高い順になること', () => {
+    const talked = candidateWithJudgement({ title: '話題' }, { publishedCount: 1, heatLabel: 'normal', durationLabel: 'talked' })
+    const emerging = candidateWithJudgement({ title: '注目され始め' }, { publishedCount: 1, heatLabel: 'normal', durationLabel: 'emerging' })
+    expect(compareCandidates(talked, emerging)).toBeLessThan(0)
+  })
+
+  it('掲載済みどうしは注目度・継続度が同じなら掲載回数(publishedCount)が少ない順になること', () => {
+    const fewer = candidateWithJudgement({ title: '掲載回数少' }, { publishedCount: 1 })
+    const more = candidateWithJudgement({ title: '掲載回数多' }, { publishedCount: 5 })
+    expect(compareCandidates(fewer, more)).toBeLessThan(0)
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#掲載する話題の選び方-8
+describe('掲載する話題の並べ替え(compareCandidates) - すべての比較項目が同値のときは決定的な並びになる', () => {
+  it('すべての比較項目が同値の話題どうしは正規化タイトルの昇順で並び、入力の順序を変えても結果が変わらないこと', () => {
+    const alpha = candidateWithJudgement({ title: 'Alpha' }, {})
+    const beta = candidateWithJudgement({ title: 'Beta' }, {})
+    expect(compareCandidates(alpha, beta)).toBeLessThan(0)
+    expect(compareCandidates(beta, alpha)).toBeGreaterThan(0)
+
+    const sortedAscending = [beta, alpha].sort(compareCandidates).map((c) => c.title)
+    const sortedDescendingInput = [alpha, beta].sort(compareCandidates).map((c) => c.title)
+    expect(sortedAscending).toEqual(sortedDescendingInput)
+    expect(sortedAscending).toEqual(['Alpha', 'Beta'])
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/design.md「掲載する話題を選ぶ処理」手順4
+describe('掲載する話題の並べ替え(compareCandidates) - ラベルの比較順はtrend-historyのDURATION_LABEL_ORDER・HEAT_LABEL_ORDERを使い、本specで二重に定義しない', () => {
+  it('DURATION_LABEL_ORDER上「非常に話題」が最も強いラベルとして扱われること(注目され始め・話題より先になる)', () => {
+    const highlyTalked = candidateWithJudgement({ title: '非常に話題' }, { durationLabel: 'highly-talked' })
+    const talked = candidateWithJudgement({ title: '話題' }, { durationLabel: 'talked' })
+    const emerging = candidateWithJudgement({ title: '注目され始め' }, { durationLabel: 'emerging' })
+    const preTrend = candidateWithJudgement({ title: '流行前' }, { durationLabel: 'pre-trend' })
+    const sorted = [preTrend, talked, emerging, highlyTalked].sort(compareCandidates).map((c) => c.title)
+    expect(sorted).toEqual(['非常に話題', '話題', '注目され始め', '流行前'])
+  })
+})
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#掲載済み話題の再掲抑制-1
 describe('掲載済み話題の再掲抑制 - 過去に掲載済みのトピック(同一作品名・同一話題)は採用基準を満たしていても候補から除外する', () => {
