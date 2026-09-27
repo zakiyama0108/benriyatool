@@ -12,7 +12,7 @@
 // 実行方法: npx tsx scripts/trend-digest/collect-and-select.ts <entertainment|culture-lifestyle>
 import { fetchFixedListGenreCandidates } from '../../app/trend-digest/lib/fetchFixedListCandidates'
 import { collectWebSearchGenre } from './collect-websearch-candidates'
-import { fetchSourcePage } from './fetchSourcePage'
+import { dispatchFixedListSource } from './fetchSourcePage'
 import { normalizeTitle } from '../../app/trend-digest/lib/selection'
 import { buildHealthLogLines } from '../../app/trend-digest/lib/sourceHealthLog'
 import type { SourceCollectionStat } from '../../app/trend-digest/lib/sourceHealthLog'
@@ -44,7 +44,7 @@ async function collectGenreObservations(
       entry,
       genreCriteria,
       recentPublishedNormalizedTitles,
-      fetchSourcePage,
+      (source) => dispatchFixedListSource(source, entry.genre),
       criteria.history.maxObservationsPerSource
     )
     const stats = sourceStats.map((s) => ({
