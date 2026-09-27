@@ -10,10 +10,14 @@
   - `scripts/future-digest/collect-review-data/`に独立した`package.json`(pg・dotenv)を作る
   - `collectReviewData.ts`を実装する: 記事データの集計(Task 1)と、`future_digest_feedback`の過去1か月・`is_test = false`の読み取り(`benriyatool_readonly`)を行い、フィードバックに対象予測の見出し・ジャンル・時間軸を添えて、1つのJSONを標準出力に出す。DB接続に失敗した場合はフィードバックを空にして続ける
 
-- Task 3: ワークフロー本体(仕様: design.md「実行環境の前提」「見直し案を作る処理」「見直し案をPRとして出す処理」)(TDD対象外。GitHub Actionsの定義とClaude CLIの起動のため。trend-digest-monthly.ymlと同じ構造で実装する)
-  - `.github/workflows/future-digest-monthly.yml`を作る: `schedule`(`30 23 1 * *`)・`workflow_dispatch`で起動し、Task 2(DB接続情報を使う材料収集。Claude CLI起動より前に完了させる)→Claude CLIのヘッドレス起動(design.md「見直し案を作る処理」の指示をプロンプトに含め、`--allowedTools`をファイル編集・`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`に限定。DB接続情報・GitHub PATは渡さない)→変更の検知→ブランチ`future-digest/source-review/<年-月>`の作成・コミット・push・PR作成(自動マージしない。GitHub PATを使うのはこのステップのみ)を行う
+- Task 3: 月次再実行cronの冪等チェック(仕様: design.md「実行環境の前提」)
+  - 🔴 `shouldSkipMonthlyRetry(hasSuccessfulRun, reviewPrExists)`について次を確認するテストを書く: どちらかが`true`なら`true`(スキップ)/どちらも`false`なら`false`(再実行してよい)
+  - 🟢 `app/future-digest/lib/shouldSkipMonthlyRetry.ts`に実装する
+
+- Task 4: ワークフロー本体(仕様: design.md「実行環境の前提」「見直し案を作る処理」「見直し案をPRとして出す処理」)(TDD対象外。GitHub Actionsの定義とClaude CLIの起動のため。分岐の判定ロジックはTask 3の`shouldSkipMonthlyRetry`でテスト済みで、ここではその結果に従うだけ。trend-digest-monthly.ymlと同じ構造で実装する)
+  - `.github/workflows/future-digest-monthly.yml`を作る: `schedule`(本番cron`30 23 1 * *`、再実行cron`30 11 2 * *`・`30 23 2 * *`・`30 11 3 * *`の3本)・`workflow_dispatch`で起動し、再実行cronの場合はまず`gh run list`・`gh pr list`で得た値をTask 3の`shouldSkipMonthlyRetry`に渡してスキップ判定を行う→(本番cron、またはスキップしない場合)Task 2(DB接続情報を使う材料収集。Claude CLI起動より前に完了させる)→Claude CLIのヘッドレス起動(design.md「見直し案を作る処理」の指示をプロンプトに含め、`--allowedTools`をファイル編集・`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`に限定。DB接続情報・GitHub PATは渡さない)→変更の検知→ブランチ`future-digest/source-review/<年-月>`の作成・コミット・push・PR作成(自動マージしない。GitHub PATを使うのはこのステップのみ)を行う
   - コミット対象のパスを、`specs/future-digest/content-selection/requirements.md`・`content/future-digest/genres.json`・`specs/future-digest/content-generation/`に限る(記事生成CLIは`content-generation`のrequirements.md/design.mdを実行時に読み込むため変更対象外)
 
-- Task 4: Actions Secretsの確認(仕様: design.md「実行環境の前提」)(TDD対象外。手動の確認作業)
+- Task 5: Actions Secretsの確認(仕様: design.md「実行環境の前提」)(TDD対象外。手動の確認作業)
   - `FUTURE_DIGEST_GH_PAT`([weekly-publish/tasks.md](../weekly-publish/tasks.md)のTask 6「Actions Secretsの準備」で発行)・`CLAUDE_CODE_OAUTH_TOKEN`・`SUPABASE_READONLY_DB_URL`がそのまま使えることを確認する
   - `workflow_dispatch`で1回実行し、材料がない場合にPRが作られないこと、材料がある場合にPRが作られ自動マージされないことを確認する

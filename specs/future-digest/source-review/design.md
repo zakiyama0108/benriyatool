@@ -11,7 +11,12 @@
 ## 実行環境の前提
 
 - ワークフロー本体は`.github/workflows/future-digest-monthly.yml`とし、`schedule`の`30 23 1 * *`(毎月1日23:30 UTC=2日08:30 JST。本番cron)で起動する。既存の月次実行(ai-dev-digest 07:00・news-digest 07:30・trend-digest 08:00)と時間をずらし、Claude Code の利用枠の取り合いを避ける。`workflow_dispatch`でも起動できるようにする
-- 利用上限への到達時の再実行用に、`schedule`の`30 11 2 * *`(毎月2日11:30 UTC=2日20:30 JST。本番cronの12時間後)も追加する。この回はまず、その月の見直しブランチ(`future-digest/source-review/<年-月>`)からのPRが既にあるかを確認し、あれば([weekly-publish](../weekly-publish/design.md)と同じ考え方の冪等チェック)何もせず成功で終える。なければ月次処理を最初からやり直す([weekly-publish/requirements.md#利用上限への到達時の再実行](../weekly-publish/requirements.md)と同じ方針)【推測】
+- 利用上限への到達時の再実行用に、同じワークフローに`schedule`を3本追加する(weekly-publishと同じ12時間おき・最大3回の方針。いずれもUTC表記。JSTは括弧内)【推測】
+  - 1回目(本番の12時間後): `30 11 2 * *`(毎月2日11:30 UTC=2日20:30 JST)
+  - 2回目(本番の24時間後): `30 23 2 * *`(毎月2日23:30 UTC=3日08:30 JST)
+  - 3回目(本番の36時間後): `30 11 3 * *`(毎月3日11:30 UTC=3日20:30 JST)
+  この3本のいずれかで起動した実行は、まず純粋関数`shouldSkipMonthlyRetry(hasSuccessfulRun, reviewPrExists)`で冪等チェックを行う。`hasSuccessfulRun`は`gh run list`でその月の同ワークフローの成功実行(本番または前回の再実行)があるかどうか、`reviewPrExists`はその月の見直しブランチ(`future-digest/source-review/<年-月>`)からのPR(オープン・マージ済み・クローズ済みのいずれでもよい)が既にあるかどうかを表す(いずれもワークフロー側で`gh`コマンドを使って調べる。TDD対象外の運用チェック。判定式`hasSuccessfulRun || reviewPrExists`だけを純粋関数として切り出しテストする)【推測】。材料がなくPRを作らなかった月は本番の実行自体が正常終了しているため、`hasSuccessfulRun`が`true`になり再実行は走らない
+  - 条件を満たせば何もせず成功で終える。満たさなければ月次処理を最初からやり直す([weekly-publish/requirements.md#利用上限への到達時の再実行](../weekly-publish/requirements.md)と同じ方針)。3本目の再実行でも公開(PR作成)に至らなかった場合は失敗として終え、それ以降は自動再実行しない(weekly-publishと同じくcronの本数で足りる。回数管理のコードは持たない)【推測】
 - Secretsは工程ごとに使う範囲を分離し、Claude CLIのヘッドレス実行ステップにはDB接続情報・GitHub PATのいずれも渡さない
   - 材料収集ステップ(`collectReviewData.ts`。Claude CLI起動より前): 既存の`SUPABASE_READONLY_DB_URL`(`benriyatool_readonly`ロール。[ADR-0004](../../../docs/adr/0004-agent-readonly-db-access.md))でDBから読み取り、結果をJSONとして標準出力に書き出す。`future_digest_feedback`へのSELECT権限は[article-detail/design.md](../article-detail/design.md)のマイグレーションで付与する
   - Claude CLIのヘッドレス実行ステップ: 材料収集ステップが出力したJSONと、`--allowedTools`で許可したツール(ファイル編集、`npm test`・`npm run lint`・`npm run build`・`npm run check:spec-coverage`の実行)だけを渡す。DB接続情報・GitHub PATは渡さない(見直し案の作成にDB直接アクセスやgit操作は不要なため)。認証は`CLAUDE_CODE_OAUTH_TOKEN`(他のdigestと共用)を使う
@@ -78,16 +83,17 @@ sequenceDiagram
 - DBへの接続に失敗した場合は、フィードバックなし(収集状況のみ)で見直し案を作る。接続の失敗は実行ログに残す(月次実行そのものは止めない)
 - テスト・lint・buildが失敗する変更案はコミットしない。直せない場合は変更を取り消し、表に「変更案を作れなかった理由」を残したPRにする(材料があるのにPRが出ない状態を避けるため)
 - 判断材料の表を書き出せなかった場合は、その旨を明記した簡潔な本文でPRを作る
-- Claude CLIが利用上限への到達で終了した場合は、その回は打ち切り、本番の12時間後の再実行cronに委ねる(weekly-publishと同じ方針)。再実行でも利用上限に到達した場合は失敗として終える【推測】
-- 同じ月のブランチ・PRが既にある場合(再実行cronの冪等チェック漏れ・手動の再実行)は、新しいPRを作らずに失敗として終える
+- Claude CLIが利用上限への到達で終了した場合は、その回は打ち切り、次の再実行cronに委ねる(weekly-publishと同じ方針)。3本目の再実行でも利用上限に到達した場合は失敗として終える【推測】
+- 同じ月のブランチ・PRが既にある場合(冪等チェック漏れ・手動の再実行)は、新しいPRを作らずに失敗として終える
 
 ## 関連するファイル(抜粋)
 
 ```
-.github/workflows/future-digest-monthly.yml (新規: 月1回起動し、材料の収集→Claude CLI→PR作成を行う)
+.github/workflows/future-digest-monthly.yml (新規: 本番cronと3本の再実行cronで起動し、材料の収集→Claude CLI→PR作成を行う)
 scripts/future-digest/collect-review-data/package.json (新規: pg/dotenvの独立した依存。trend-digestと同じ隔離パターン)
 scripts/future-digest/collect-review-data/collectReviewData.ts (新規: 記事データの集計+フィードバックの読み取り)
 app/future-digest/lib/reviewRecords.ts (新規: 記事データから候補なしの枠を集計する純粋関数)
+app/future-digest/lib/shouldSkipMonthlyRetry.ts (新規: 月次再実行cronの冪等チェックの判定式を切り出した純粋関数)
 content/future-digest/genres.json (content-selectionで新規: 選定領域の変更対象)
 specs/future-digest/content-selection/requirements.md (既存: 選定領域の変更対象)
 specs/future-digest/content-generation/requirements.md・design.md (既存: 生成領域の変更対象。記事生成CLIが実行時に読み込むため、CLI自体は変更対象に含めない)
