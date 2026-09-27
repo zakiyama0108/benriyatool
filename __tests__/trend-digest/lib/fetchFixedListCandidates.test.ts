@@ -234,3 +234,115 @@ describe('複数情報源での同一作品の統合 - 書籍・漫画のよう�
     expect(observations.map((o) => o.title).sort()).toEqual(['トーハン限定作品', '日販限定作品'])
   })
 })
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-1、specs/trend-digest/trend-history/requirements.md#注目度ラベル-9
+describe('観測項目への順位の記録(trend-history連携) - rankはstrengthからの逆算ではなく情報源の実際の順位を持つ', () => {
+  it('上昇幅加点があるジャンル(音楽)でも、rankが実際の順位(currentRank)になり、100-strengthとは一致しないこと', async () => {
+    const criteria: FixedListGenreCriteria = { method: 'fixed-list', newEntryOrRisingRank: true, risingRankMinImprovement: 10 }
+    const entry = entryOf('music', [{ name: 'Billboard JAPAN Hot 100', url: 'https://example.com/billboard' }])
+    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
+      providesRankChange: true,
+      items: [{ title: '大幅上昇曲', currentRank: 5, previousRank: 20 }],
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
+    const [observation] = observations
+    // rankは情報源の実際の順位(currentRank)そのものであり、上昇幅加点で変わるstrengthから逆算した値ではない
+    // (musicのようなジャンルでは100-strengthが実際の順位と一致しない場合があるため、rankを別に持つ設計。
+    // trend-history/historyTypes.tsのObservation.rankのコメント参照)
+    expect(observation.rank).toBe(5)
+  })
+})
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-2
+describe('採用基準を満たさなかった項目の観測保持(trend-history連携) - 人気が定着している作品ほど履歴から消えることを防ぐため、動きがなかった項目もmeetsCriteria: falseとして観測項目に残す', () => {
+  it('newEntryOrRisingRankのジャンルで、新規でも順位上昇でもない(上位に居続けている)項目が、候補には含まれないが観測項目には残ること', async () => {
+    const criteria: FixedListGenreCriteria = { method: 'fixed-list', newEntryOrRisingRank: true }
+    const entry = entryOf('foreign-drama', [{ name: 'Netflix公式Top10データ(シリーズ・日本)', url: 'https://example.com/netflix' }])
+    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
+      providesRankChange: true,
+      items: [{ title: '定着作品', currentRank: 1, previousRank: 1 }],
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations.map((o) => o.title)).toEqual(['定着作品'])
+    expect(observations[0].meetsCriteria).toBe(false)
+  })
+})
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-8、specs/trend-digest/trend-history/requirements.md#地域情報-15
+describe('地域情報の収集(固定リストジャンル側) - 情報源の地域区分(region)から日本での強度・海外での強度を集計する', () => {
+  const criteria: FixedListGenreCriteria = { method: 'fixed-list', rankThreshold: 5 }
+
+  it('日本の情報源だけで検出された項目は日本での強度に検出件数が入り、登録されていない海外の情報源側は「不明」(null)になること', async () => {
+    const entry: WatchlistEntry = {
+      genre: 'japanese-movie',
+      edition: 'entertainment',
+      label: '日本映画',
+      method: 'fixed-list',
+      sources: [{ name: '国内情報源', url: 'https://example.com/jp', region: 'japan' }],
+    }
+    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
+      providesRankChange: false,
+      items: [{ title: '映画A', currentRank: 1 }],
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].strengthJapan).toBe(1)
+    expect(observations[0].strengthOverseas).toBeNull()
+  })
+
+  it('日本・海外の両方の情報源で同じ作品が検出された場合、両方の強度に件数が入ること', async () => {
+    const entry: WatchlistEntry = {
+      genre: 'foreign-movie',
+      edition: 'entertainment',
+      label: '海外映画',
+      method: 'fixed-list',
+      sources: [
+        { name: '国内情報源', url: 'https://example.com/jp', region: 'japan' },
+        { name: '海外情報源', url: 'https://example.com/us', region: 'overseas' },
+      ],
+    }
+    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
+      providesRankChange: false,
+      items: [{ title: '共通の映画', currentRank: 1 }],
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].strengthJapan).toBe(1)
+    expect(observations[0].strengthOverseas).toBe(1)
+  })
+
+  it('海外の情報源が登録されているジャンルで、海外の情報源では検出されなかった項目は、海外での強度が0件になること(「不明」とは区別する)', async () => {
+    const entry: WatchlistEntry = {
+      genre: 'foreign-movie',
+      edition: 'entertainment',
+      label: '海外映画',
+      method: 'fixed-list',
+      sources: [
+        { name: '国内情報源', url: 'https://example.com/jp', region: 'japan' },
+        { name: '海外情報源', url: 'https://example.com/us', region: 'overseas' },
+      ],
+    }
+    const fetchSource: SourceFetcher = vi.fn().mockImplementation((source: { name: string }) => {
+      if (source.name === '国内情報源') return Promise.resolve({ providesRankChange: false, items: [{ title: '国内限定の映画', currentRank: 1 }] })
+      return Promise.resolve({ providesRankChange: false, items: [] })
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].strengthJapan).toBe(1)
+    expect(observations[0].strengthOverseas).toBe(0)
+  })
+
+  it('発祥地域・主な流行地域はランキング情報源からは判定できないため「不明」のままになること', async () => {
+    const entry: WatchlistEntry = {
+      genre: 'japanese-movie',
+      edition: 'entertainment',
+      label: '日本映画',
+      method: 'fixed-list',
+      sources: [{ name: '国内情報源', url: 'https://example.com/jp', region: 'japan' }],
+    }
+    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
+      providesRankChange: false,
+      items: [{ title: '映画A', currentRank: 1 }],
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].originRegion).toBeNull()
+    expect(observations[0].currentRegions).toEqual([])
+  })
+})

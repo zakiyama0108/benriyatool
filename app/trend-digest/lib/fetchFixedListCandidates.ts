@@ -1,4 +1,4 @@
-import type { WatchlistEntry, FixedListGenreCriteria } from './watchlistTypes'
+import type { WatchlistEntry, FixedListGenreCriteria, SourceRegion } from './watchlistTypes'
 import type { Candidate } from './candidateTypes'
 import { normalizeTitle } from './selection'
 
@@ -93,8 +93,19 @@ function judgeRankedItem(
   return withinRankThreshold(item, criteria) ? { matched: true, note: `${item.currentRank}位` } : NOT_MATCHED
 }
 
-// 情報源をまたいで同一作品を突き合わせるための、情報源名・URLを添えた1件
-type SourceTaggedItem = RankedItem & { sourceName: string; sourceUrl: string; providesRankChange: boolean }
+// 情報源をまたいで同一作品を突き合わせるための、情報源名・URL・地域区分を添えた1件
+type SourceTaggedItem = RankedItem & { sourceName: string; sourceUrl: string; providesRankChange: boolean; region: SourceRegion }
+
+// その項目を検出した情報源の地域区分から、日本での強度・海外での強度を集計する
+// (design.md「地域情報を判定する処理」手順1、requirements.md#機能要件-8)。
+// 日本の情報源だけで検出されたなら日本での強度に検出件数を数え、海外の情報源だけなら海外での強度に数える。
+// 両方で検出された場合はそれぞれに数える。そのジャンルに一方の区分の情報源が登録されていない場合は、
+// 0件だったことと判定できなかったことを区別するため、その区分は「不明」(null)として扱う
+// (design.md手順4、requirements.md#地域情報-15)
+function countByRegion(group: SourceTaggedItem[], registeredRegions: Set<SourceRegion>, region: SourceRegion): number | null {
+  if (!registeredRegions.has(region)) return null
+  return group.filter((item) => item.region === region).length
+}
 
 // 1ジャンル分の固定リスト観測項目を収集・判定する(design.md「固定リストジャンルの候補を収集・判定する処理」)。
 // 採用基準を満たさなかった項目もmeetsCriteria: falseとして返す(観測項目全件をtrend-historyの履歴へ
@@ -130,7 +141,13 @@ export async function fetchFixedListGenreCandidates(
     ).length
 
     for (const item of cappedItems) {
-      allItems.push({ ...item, sourceName: source.name, sourceUrl: source.url, providesRankChange: result.providesRankChange })
+      allItems.push({
+        ...item,
+        sourceName: source.name,
+        sourceUrl: source.url,
+        providesRankChange: result.providesRankChange,
+        region: source.region,
+      })
     }
     stats.push({ sourceName: source.name, sourceUrl: source.url, ok: true, observationCount: cappedItems.length, candidateCount })
   }
@@ -145,6 +162,10 @@ export async function fetchFixedListGenreCandidates(
     if (group) group.push(item)
     else groupsByTitle.set(key, [item])
   }
+
+  // そのジャンルに登録されている情報源の地域区分(0件だったことと判定できなかったことを
+  // 区別するために使う。design.md「地域情報を判定する処理」手順4)
+  const registeredRegions = new Set(entry.sources.map((source) => source.region))
 
   const observations: Candidate[] = []
   for (const group of groupsByTitle.values()) {
@@ -164,12 +185,12 @@ export async function fetchFixedListGenreCandidates(
       method: 'fixed-list',
       strength: 100 - primary.currentRank, // design.md手順6。順位が高いほど大きい値
       rank: primary.currentRank, // design.md手順7。strengthからの逆算ではなく順位そのものを持つ
-      // 地域情報(originRegion/currentRegions/strengthJapan/strengthOverseas)の集計は
-      // trend-historyが情報源のregionから行う(design.md手順8。実装はtrend-history/tasks.mdのTask11)
+      // 発祥地域・主な流行地域はランキング情報源からは判定できないため「不明」のままにする
+      // (design.md「地域情報を判定する処理」手順3)。日本での強度・海外での強度は情報源のregionから集計する
       originRegion: null,
       currentRegions: [],
-      strengthJapan: null,
-      strengthOverseas: null,
+      strengthJapan: countByRegion(sorted, registeredRegions, 'japan'),
+      strengthOverseas: countByRegion(sorted, registeredRegions, 'overseas'),
       meetsCriteria: judged.matched,
       ...(note ? { note } : {}),
     })
