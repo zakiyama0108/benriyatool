@@ -40,8 +40,8 @@ function topicWithTrend(sourceTitle: string, durationLabel: string, overrides: R
   }
 }
 
-// 仕様: specs/trend-digest/trend-history/requirements.md#掲載実績の追跡-13、specs/trend-digest/trend-history/requirements.md#掲載実績の追跡-14
-describe('掲載実績(掲載回数・報告回数・直近掲載時の継続度ラベル)の算出(collectPublishRecords)', () => {
+// 仕様: specs/trend-digest/trend-history/requirements.md#掲載実績の追跡-13、specs/trend-digest/trend-history/requirements.md#掲載実績の追跡-14、specs/trend-digest/trend-history/requirements.md#掲載実績の追跡-15
+describe('掲載実績(掲載回数・報告回数・直近掲載時の継続度ラベル・直近掲載時の本文)の算出(collectPublishRecords)', () => {
   it('同じ正規化タイトルの掲載回数が数えられ、今回の報告回数が「過去の掲載回数+1」になること', () => {
     writeArticle('2026-09-01-entertainment.json', {
       id: '2026-09-01-entertainment',
@@ -62,26 +62,27 @@ describe('掲載実績(掲載回数・報告回数・直近掲載時の継続度
     expect(record.reportCount).toBe(3)
   })
 
-  it('直近で掲載されたときの継続度ラベルが、最も新しい掲載トピックのものになること', () => {
+  it('直近で掲載されたときの継続度ラベル・本文が、最も新しい掲載トピックのものになること', () => {
     writeArticle('2026-09-01-entertainment.json', {
       id: '2026-09-01-entertainment',
       edition: 'entertainment',
       date: '2026-09-01',
-      topics: [topicWithTrend('新曲A', 'pre-trend')],
+      topics: [topicWithTrend('新曲A', 'pre-trend', { body: '1回目の本文。'.repeat(30) })],
     })
     writeArticle('2026-09-08-entertainment.json', {
       id: '2026-09-08-entertainment',
       edition: 'entertainment',
       date: '2026-09-08',
-      topics: [topicWithTrend('新曲A', 'talked')],
+      topics: [topicWithTrend('新曲A', 'talked', { body: '2回目の本文。'.repeat(30) })],
     })
 
     const records = collectPublishRecords(tmpDir)
     const record = lookupPublishRecord(records, '新曲a')
     expect(record.lastPublishedDurationLabel).toBe('talked')
+    expect(record.lastPublishedBody).toBe('2回目の本文。'.repeat(30))
   })
 
-  it('trendを持たない過去記事しかない場合、直近掲載時の継続度ラベルが「不明」(null)になること', () => {
+  it('trendを持たない過去記事しかない場合、直近掲載時の継続度ラベルが「不明」(null)になること(本文は取得できる)', () => {
     writeArticle('2026-09-01-entertainment.json', {
       id: '2026-09-01-entertainment',
       edition: 'entertainment',
@@ -103,11 +104,12 @@ describe('掲載実績(掲載回数・報告回数・直近掲載時の継続度
     const record = lookupPublishRecord(records, '新曲a')
     expect(record.publishedCount).toBe(1)
     expect(record.lastPublishedDurationLabel).toBeNull()
+    expect(record.lastPublishedBody).toBe('あ'.repeat(200))
   })
 
-  it('一度も掲載されていない話題は、掲載回数0・報告回数1・直近掲載時のラベルnullになること', () => {
+  it('一度も掲載されていない話題は、掲載回数0・報告回数1・直近掲載時のラベル/本文ともnullになること', () => {
     const records = collectPublishRecords(tmpDir)
     const record = lookupPublishRecord(records, '未掲載の話題')
-    expect(record).toEqual({ publishedCount: 0, reportCount: 1, lastPublishedDurationLabel: null })
+    expect(record).toEqual({ publishedCount: 0, reportCount: 1, lastPublishedDurationLabel: null, lastPublishedBody: null })
   })
 })

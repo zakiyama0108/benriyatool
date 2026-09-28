@@ -101,7 +101,7 @@ type SourceTaggedItem = RankedItem & { sourceName: string; sourceUrl: string; pr
 // 日本の情報源だけで検出されたなら日本での強度に検出件数を数え、海外の情報源だけなら海外での強度に数える。
 // 両方で検出された場合はそれぞれに数える。そのジャンルに一方の区分の情報源が登録されていない場合は、
 // 0件だったことと判定できなかったことを区別するため、その区分は「不明」(null)として扱う
-// (design.md手順4、requirements.md#地域情報-15)
+// (design.md手順4、requirements.md#地域情報-16)
 function countByRegion(group: SourceTaggedItem[], registeredRegions: Set<SourceRegion>, region: SourceRegion): number | null {
   if (!registeredRegions.has(region)) return null
   return group.filter((item) => item.region === region).length

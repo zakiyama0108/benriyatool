@@ -42,7 +42,7 @@ export type WebSearchTopic = {
   sourceUrl: string
   independentSourceCount: number
   breakdown?: string // 言及元の内訳(例: "ニュースメディア2件+SNS言及1件"。design.md手順6)。LLMの応答にあれば使う
-  // 地域情報(design.md「地域情報を判定する処理」手順2〜3、requirements.md#地域情報-15〜16)。
+  // 地域情報(design.md「地域情報を判定する処理」手順2〜3、requirements.md#地域情報-16〜17)。
   // エージェントの出力に由来する自由文字列のため、想定外の形の値は「不明」として扱い、
   // そのために話題自体を無効にはしない(地域情報は補助的な値のため。厳密な長さ・制御文字の
   // 検証はhistorySchema.tsが観測ログ書き出し時に行う)
@@ -168,7 +168,7 @@ export async function collectWebSearchCandidates(
     strength: topic.independentSourceCount,
     rank: null, // WebSearchジャンルの観測項目は順位を持たない(design.md「候補の型(前提)」)
     // 地域情報(design.md「地域情報を判定する処理」手順2〜3)。エージェントが判定できた範囲のみを持ち、
-    // 判定できない場合はnull/空配列(=不明)のまま(requirements.md#地域情報-15)
+    // 判定できない場合はnull/空配列(=不明)のまま(requirements.md#地域情報-16)
     originRegion: topic.originRegion,
     currentRegions: topic.currentRegions,
     strengthJapan: topic.strengthJapan,

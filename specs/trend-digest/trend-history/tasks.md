@@ -66,11 +66,11 @@
   - 🔴 応答JSONのパース部のテストを書く: 独立言及元数が`minIndependentSources`未満の話題が**候補には含まれないが観測ログへ渡す一覧には含まれること**(言及元が1件の段階の話題が履歴に残り、後に3件へ伸びたときの継続の開始日が実態とずれないことの回帰テスト)、上位`maxObservationsPerSource`件までに絞られること
   - 🟢 `scripts/trend-digest/collect-websearch-candidates.ts`のプロンプトと応答の扱いを、採用基準判定前の全話題を返す形に変更する
 
-- Task 11: 地域情報の収集(固定リストジャンル側)(仕様: requirements.md#地域情報-15〜16、[content-selection/design.md](../content-selection/design.md)「固定リストジャンルの候補を収集・判定する処理」手順8)
+- Task 11: 地域情報の収集(固定リストジャンル側)(仕様: requirements.md#地域情報-16〜17、[content-selection/design.md](../content-selection/design.md)「固定リストジャンルの候補を収集・判定する処理」手順8)
   - 🔴 情報源に`region`を持たせたウォッチリストをモックし、日本の情報源だけで検出された項目は日本での強度に件数が入り海外での強度が0になること、両方の区分で検出された項目は両方に件数が入ること、そのジャンルに一方の区分の情報源が登録されていない場合はその区分が「不明」(null)になること、発祥地域・主な流行地域は「不明」のままになることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/fetchFixedListCandidates.ts`に地域情報の集計を追加する
 
-- Task 12: 地域情報の収集(WebSearchジャンル側)(仕様: requirements.md#地域情報-15〜16、[content-selection/design.md](../content-selection/design.md)「WebSearchジャンルの候補を収集・判定する処理」手順7)(TDD対象外。Claude Code CLIのヘッドレス起動を伴うため)
+- Task 12: 地域情報の収集(WebSearchジャンル側)(仕様: requirements.md#地域情報-16〜17、[content-selection/design.md](../content-selection/design.md)「WebSearchジャンルの候補を収集・判定する処理」手順7)(TDD対象外。Claude Code CLIのヘッドレス起動を伴うため)
   - `scripts/trend-digest/collect-websearch-candidates.ts`のプロンプトに、日本のメディア数・海外のメディア数・発祥地域・主な流行地域を返す指示と、判定できない項目は推測で埋めず「不明」で返す指示を追加する
   - 応答JSONの形式にこれらの項目を追加し、応答形式の分類ロジック(パース部)のみをテスト対象にする
 

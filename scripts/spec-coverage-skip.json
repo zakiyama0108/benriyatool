@@ -6552,7 +6552,7 @@
   {
     "specFile": "trend-digest/trend-history/design.md",
     "item": "地域情報を判定する処理",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#地域情報-15〜16でfetchFixedListCandidates.test.ts・historySchema.test.tsがテスト済みのため"
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#地域情報-16〜17でfetchFixedListCandidates.test.ts・historySchema.test.tsがテスト済みのため"
   },
   {
     "specFile": "trend-digest/trend-history/design.md",

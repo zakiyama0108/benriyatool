@@ -12,9 +12,15 @@ export type PublishRecord = {
   publishedCount: number // 過去に記事へ掲載された回数(未掲載は0)
   reportCount: number // 今回掲載する場合に通算何回目の報告になるか(= publishedCount + 1)
   lastPublishedDurationLabel: DurationLabel | null // 直近掲載時の継続度ラベル。未掲載・判定不能はnull
+  lastPublishedBody: string | null // 直近掲載時の本文。未掲載はnull。content-generationが続報の重複執筆を防ぐ検証に使う
 }
 
-const NEVER_PUBLISHED: PublishRecord = { publishedCount: 0, reportCount: 1, lastPublishedDurationLabel: null }
+const NEVER_PUBLISHED: PublishRecord = {
+  publishedCount: 0,
+  reportCount: 1,
+  lastPublishedDurationLabel: null,
+  lastPublishedBody: null,
+}
 
 // 正規化タイトル(selection.tsのnormalizeTitle)をキーにした掲載実績の一覧。
 // lookupPublishRecordで未掲載時のデフォルト値を含めて引く
@@ -38,6 +44,7 @@ export function collectPublishRecords(articlesDir: string): Map<string, PublishR
         publishedCount,
         reportCount: publishedCount + 1,
         lastPublishedDurationLabel: topic.trend?.durationLabel ?? null,
+        lastPublishedBody: topic.body,
       })
     }
   }

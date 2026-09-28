@@ -227,6 +227,7 @@ export type SelectedTopic = Candidate & {
   continuationStartDate: string // 途切れずに検知され続けている期間の開始日(trend-history/design.md)
   reportCount: number // 今回掲載した場合に通算何回目の報告になるか(requirements.md#掲載する話題の選び方-7)
   lastPublishedDurationLabel: DurationLabel | null // 直近掲載時の継続度ラベル。未掲載・判定不能はnull。content-generationが続報の本文を書くために使う
+  lastPublishedBody: string | null // 直近掲載時の本文。未掲載はnull。content-generationが続報の重複執筆を防ぐ検証に使う([trend-history/design.md](../trend-history/design.md)「掲載実績を求める処理」)
 }
 
 export type SelectionResult =

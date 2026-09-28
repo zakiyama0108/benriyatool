@@ -201,6 +201,7 @@ async function main() {
       publishedCount: publishRecord.publishedCount,
       reportCount: publishRecord.reportCount,
       lastPublishedDurationLabel: publishRecord.lastPublishedDurationLabel,
+      lastPublishedBody: publishRecord.lastPublishedBody,
     })
 
     durationLabelCounts[durationLabel] = (durationLabelCounts[durationLabel] ?? 0) + 1

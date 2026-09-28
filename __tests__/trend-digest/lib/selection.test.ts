@@ -34,6 +34,7 @@ function baseJudgement(overrides: Partial<HistoryJudgement>): HistoryJudgement {
     publishedCount: 0,
     reportCount: 1,
     lastPublishedDurationLabel: null,
+    lastPublishedBody: null,
     ...overrides,
   }
 }

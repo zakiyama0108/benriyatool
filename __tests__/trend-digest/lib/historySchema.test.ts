@@ -135,7 +135,7 @@ describe('観測ログのスキーマ検証(parseObservationLog) - 実行日・�
   })
 })
 
-// 仕様: specs/trend-digest/trend-history/requirements.md#地域情報-15、specs/trend-digest/trend-history/requirements.md#地域情報-16
+// 仕様: specs/trend-digest/trend-history/requirements.md#地域情報-16、specs/trend-digest/trend-history/requirements.md#地域情報-17
 describe('観測ログの地域情報の検証(parseObservationLog) - 収集エージェント由来の自由文字列を外部入力として検証する', () => {
   it('originRegionがnullの場合は許容されること(不明)', () => {
     const log = validLog({ observations: [validObservation({ originRegion: null })] })

@@ -85,6 +85,7 @@ function toSelectedTopic(candidate: CandidateWithJudgement): SelectedTopic {
     continuationStartDate: judgement.continuationStartDate,
     reportCount: judgement.reportCount,
     lastPublishedDurationLabel: judgement.lastPublishedDurationLabel,
+    lastPublishedBody: judgement.lastPublishedBody,
   }
 }
 

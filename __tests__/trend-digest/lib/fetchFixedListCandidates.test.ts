@@ -268,7 +268,7 @@ describe('採用基準を満たさなかった項目の観測保持(trend-histor
   })
 })
 
-// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-8、specs/trend-digest/trend-history/requirements.md#地域情報-15
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-8、specs/trend-digest/trend-history/requirements.md#地域情報-16
 describe('地域情報の収集(固定リストジャンル側) - 情報源の地域区分(region)から日本での強度・海外での強度を集計する', () => {
   const criteria: FixedListGenreCriteria = { method: 'fixed-list', rankThreshold: 5 }
 

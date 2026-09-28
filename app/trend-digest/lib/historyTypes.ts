@@ -39,7 +39,7 @@ export type Observation = {
   rank: number | null // 固定リストジャンルの項目のその回の順位(1が最上位。記録上限以内)。WebSearchジャンルはnull。
                       // strengthから逆算せず順位そのものを持つ(musicのような上昇幅加点があるジャンルでは`100 - strength`が実際の順位と一致しないため)
   method: SelectionMethod
-  originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。requirements.md#地域情報-15)
+  originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。requirements.md#地域情報-16)
   currentRegions: string[] // 現在の主な流行地域。判定できない場合は空配列(=不明)
   strengthJapan: number | null // 日本の情報源での言及数。判定できない場合はnull
   strengthOverseas: number | null // 海外の情報源での言及数。判定できない場合はnull
@@ -85,6 +85,7 @@ export type HistoryJudgement = {
   publishedCount: number // 過去に記事へ掲載された回数(未掲載は0。requirements.md#掲載実績の追跡-13)
   reportCount: number // 今回掲載する場合に通算何回目の報告になるか(= publishedCount + 1)
   lastPublishedDurationLabel: DurationLabel | null // 直近掲載時の継続度ラベル。未掲載・判定不能はnull(requirements.md#掲載実績の追跡-14)
+  lastPublishedBody: string | null // 直近掲載時の本文。未掲載はnull。content-generationが続報の重複執筆を防ぐ検証に使う(requirements.md#掲載実績の追跡-15)
 }
 
 // 継続度・注目度の判定に使う日数・件数(content/trend-digest/criteria.jsonの`history`として持つ。

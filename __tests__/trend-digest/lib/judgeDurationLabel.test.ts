@@ -74,6 +74,7 @@ describe('判定結果に掲載可否を持たせないこと(HistoryJudgement) 
       publishedCount: 0,
       reportCount: 1,
       lastPublishedDurationLabel: null,
+      lastPublishedBody: null,
     }
     expect(Object.keys(judgement).sort()).toEqual(
       [
@@ -83,6 +84,7 @@ describe('判定結果に掲載可否を持たせないこと(HistoryJudgement) 
         'durationLabel',
         'heatBasis',
         'heatLabel',
+        'lastPublishedBody',
         'lastPublishedDurationLabel',
         'publishedCount',
         'reportCount',
