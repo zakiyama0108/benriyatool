@@ -8,6 +8,7 @@ import { HORIZON_LABELS, horizonsForIssue } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
 import { sortSlots, type SortOrder } from '../lib/sortSlots'
 import { getSession, onAuthChange, signInWithGoogle, signOut, isAuthorizedAdmin } from '../../lib/adminAuth'
+import { fetchBookmarksByArticle, type BookmarkSummary } from '../lib/bookmarks'
 import SortToggle from './SortToggle'
 import PredictionCard from './PredictionCard'
 import LoginStatus from './LoginStatus'
@@ -25,6 +26,7 @@ export default function ArticleDetailView({ article }: Props) {
   const [order, setOrder] = useState<SortOrder>('impact')
   const [session, setSession] = useState<Session | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [bookmarks, setBookmarks] = useState<Map<string, BookmarkSummary>>(new Map())
 
   useEffect(() => {
     let active = true
@@ -41,6 +43,30 @@ export default function ArticleDetailView({ article }: Props) {
       unsubscribe()
     }
   }, [])
+
+  // 記事内の自分の付箋をまとめて取得する処理(design.md「記事内の自分の付箋をまとめて取得する処理」)。
+  // 未ログインなら何も取得しない(bookmark/requirements.md#記事への付箋-5)。取得に失敗した場合は
+  // 全予測を「未付箋」として扱う(design.md手順3)
+  useEffect(() => {
+    if (!session) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setBookmarks(new Map())
+      return
+    }
+    let active = true
+    fetchBookmarksByArticle(article.id)
+      .then((map) => {
+        if (active) setBookmarks(map)
+      })
+      .catch((e) => {
+        if (active) setBookmarks(new Map())
+        // eslint-disable-next-line no-console -- 原因究明用。画面にはエラーを出さず「未付箋」として扱う
+        console.error('記事詳細: 付箋の取得に失敗しました', e)
+      })
+    return () => {
+      active = false
+    }
+  }, [session, article.id])
 
   // ログイン状態に応じてフィードバック入力欄の表示を切り替える処理(design.md「ログイン状態に
   // 応じてフィードバック入力欄の表示を切り替える処理」)。確認中・セッションなし・確認失敗は
@@ -104,6 +130,8 @@ export default function ArticleDetailView({ article }: Props) {
               slot={slot}
               articleId={article.id}
               isAdmin={isAdmin}
+              session={session}
+              bookmark={slot.kind === 'prediction' ? bookmarks.get(slot.prediction.id) ?? null : null}
             />
           ))}
         </div>

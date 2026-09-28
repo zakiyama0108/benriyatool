@@ -5,6 +5,7 @@ import ArticleDetailView from '../../../app/future-digest/components/ArticleDeta
 import type { Article, Prediction } from '../../../app/future-digest/lib/types'
 import { GENRE_ORDER } from '../../../app/future-digest/lib/types'
 import { getSession, onAuthChange, isAuthorizedAdmin } from '../../../app/lib/adminAuth'
+import { fetchBookmarksByArticle } from '../../../app/future-digest/lib/bookmarks'
 
 vi.mock('../../../app/lib/adminAuth', () => ({
   getSession: vi.fn(),
@@ -16,10 +17,19 @@ vi.mock('../../../app/lib/adminAuth', () => ({
 // FeedbackForm経由でsaveFeedback(→supabaseClient)が読み込まれるが、本テストはisAdmin判定・
 // 並び順切り替えのみを検証するためモックする
 vi.mock('../../../app/future-digest/lib/saveFeedback', () => ({ saveFeedback: vi.fn() }))
+// 記事内の自分の付箋の取得(fetchBookmarksByArticle)をモックする
+// (design.md「記事内の自分の付箋をまとめて取得する処理」)
+vi.mock('../../../app/future-digest/lib/bookmarks', () => ({
+  fetchBookmarksByArticle: vi.fn(),
+  createBookmark: vi.fn(),
+  updateBookmark: vi.fn(),
+  deleteBookmark: vi.fn(),
+}))
 
 const getSessionMock = vi.mocked(getSession)
 const onAuthChangeMock = vi.mocked(onAuthChange)
 const isAuthorizedAdminMock = vi.mocked(isAuthorizedAdmin)
+const fetchBookmarksByArticleMock = vi.mocked(fetchBookmarksByArticle)
 
 function makeSession(email: string): Session {
   return { user: { email } } as Session
@@ -58,7 +68,8 @@ let consoleErrorSpy: ReturnType<typeof vi.spyOn>
 beforeEach(() => {
   getSessionMock.mockReset().mockResolvedValue(null)
   onAuthChangeMock.mockReset().mockReturnValue(() => {})
-  isAuthorizedAdminMock.mockReset()
+  isAuthorizedAdminMock.mockReset().mockResolvedValue(false)
+  fetchBookmarksByArticleMock.mockReset().mockResolvedValue(new Map())
   consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -109,5 +120,31 @@ describe('記事詳細ページでの運営者判定 - セッション確立後�
     render(<ArticleDetailView article={article} />)
     await waitFor(() => expect(consoleErrorSpy).toHaveBeenCalled())
     expect(screen.queryAllByRole('textbox')).toHaveLength(0)
+  })
+})
+
+// 仕様: specs/future-digest/bookmark/requirements.md#記事への付箋-5、specs/future-digest/bookmark/design.md「記事内の自分の付箋をまとめて取得する処理」
+describe('記事詳細ページでの付箋の取得・配線 - ログイン中だけ記事内の自分の付箋をまとめて取得し、予測IDで引き当てて渡す', () => {
+  it('未ログインの場合、付箋の取得(fetchBookmarksByArticle)を行わず、付箋の操作(「付箋を貼る」)も表示されないこと', async () => {
+    getSessionMock.mockResolvedValue(null)
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(getSessionMock).toHaveBeenCalled())
+    expect(fetchBookmarksByArticleMock).not.toHaveBeenCalled()
+    expect(screen.queryAllByRole('button', { name: '付箋を貼る' })).toHaveLength(0)
+  })
+
+  it('ログイン中の場合、記事IDで付箋を取得し、予測がある枠すべてに付箋の操作領域が表示されること', async () => {
+    getSessionMock.mockResolvedValue(makeSession('reader@example.com'))
+    fetchBookmarksByArticleMock.mockResolvedValue(new Map())
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(fetchBookmarksByArticleMock).toHaveBeenCalledWith(article.id))
+    await waitFor(() => expect(screen.getAllByRole('button', { name: '付箋を貼る' })).toHaveLength(2))
+  })
+
+  it('付箋の取得に失敗した場合、全予測が未付箋として扱われること(「付箋を貼る」操作のみが表示される)', async () => {
+    getSessionMock.mockResolvedValue(makeSession('reader@example.com'))
+    fetchBookmarksByArticleMock.mockRejectedValue(new Error('network error'))
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(screen.getAllByRole('button', { name: '付箋を貼る' })).toHaveLength(2))
   })
 })

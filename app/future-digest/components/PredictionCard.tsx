@@ -1,18 +1,24 @@
+import type { Session } from '@supabase/supabase-js'
 import type { Slot } from '../lib/sortSlots'
 import { COLLECTION_FAILURE_LABELS } from '../lib/types'
 import SlotBadges from './SlotBadges'
 import FeedbackForm from './FeedbackForm'
+import BookmarkPanel, { type BookmarkSummary } from './BookmarkPanel'
 
 type Props = {
   slot: Slot
   articleId: string
   isAdmin: boolean
+  session?: Session | null // ログイン中のみ付箋の操作領域を表示する(bookmark/requirements.md#記事への付箋-5)
+  bookmark?: BookmarkSummary | null // この予測の取得済みの付箋(未付箋はnull/undefined)
 }
 
 // 1枠分の表示(仕様: requirements.md#記事本文の表示-2〜5、design.md「その回の記事本文を表示する処理」
-// 手順3〜4)。予測がある枠は本文・出典・(運営者のみ)フィードバック入力欄を表示し、掲載できなかった
-// 枠は理由に応じた3種の文言だけを表示する(候補なし・収集失敗・生成失敗で異なる文言にする)
-export default function PredictionCard({ slot, articleId, isAdmin }: Props) {
+// 手順3〜4。付箋の操作領域はbookmark/design.md「記事詳細ページへの追加(article-detailの画面)」)。
+// 予測がある枠は本文・出典・(ログイン中のみ)付箋の操作領域・(運営者のみ)フィードバック入力欄を
+// 表示し、掲載できなかった枠は理由に応じた3種の文言だけを表示する(候補なし・収集失敗・生成失敗で
+// 異なる文言にする。付箋を貼る対象の予測がないため付箋の操作も出さない)
+export default function PredictionCard({ slot, articleId, isAdmin, session = null, bookmark = null }: Props) {
   if (slot.kind === 'empty') {
     const { emptySlot } = slot
     return (
@@ -34,7 +40,7 @@ export default function PredictionCard({ slot, articleId, isAdmin }: Props) {
 
   const { prediction } = slot
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
+    <div id={prediction.id} className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
       <SlotBadges genre={slot.genre} horizon={slot.horizon} impact={prediction.impact} />
       <p className="mt-2 text-[11px] text-gray-400">{prediction.targetPeriod}</p>
       <h3 className="mt-1 text-base font-bold leading-relaxed">{prediction.heading}</h3>
@@ -47,6 +53,9 @@ export default function PredictionCard({ slot, articleId, isAdmin }: Props) {
         </a>
       </p>
 
+      {session && (
+        <BookmarkPanel articleId={articleId} predictionId={prediction.id} initialBookmark={bookmark} />
+      )}
       {isAdmin && <FeedbackForm articleId={articleId} predictionId={prediction.id} />}
     </div>
   )
