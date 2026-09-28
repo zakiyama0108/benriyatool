@@ -22,7 +22,7 @@ description: 仕様書(requirements.md/design.md/tasks.md/appendix.md)を「人�
 | requirements.md | ユーザーストーリー | 人 | 見える | - |
 | requirements.md | ユースケース図 | 人 | 見える | - |
 | requirements.md | 機能要件 | AI | `###`ごとに要点が見える・`[n]`は畳む | 機能の1行概要 |
-| requirements.md | ビジネスルール・制約 | AI | `###`ごとに要点が見える・`[n]`は畳む | ルールの中身を1行で。数値・閾値があれば値を書き、根拠が未確認ならそう明示する |
+| requirements.md | ビジネスルール・制約 / 制約条件 | AI | `###`ごとに要点が見える・`[n]`は畳む | ルールの中身を1行で。数値・閾値があれば値を書き、根拠が未確認ならそう明示する |
 | requirements.md | 非機能要件 | 人 | 見える(数値だけの短い箇条書きにする) | - |
 | requirements.md | 依存関係 | AI | 要点が見える・本文は畳む | 外部依存ごとの実現性(できる / できない / 未確定)。未確定は名指しする |
 | requirements.md | UI/UX要件 | AI | 要点が見える・本文は畳む | 画面・操作の決めごとを1行で |
