@@ -6,10 +6,11 @@ import {
   AllTopicsFailedError,
   type ClaudeCliResponse,
 } from '../../../app/trend-digest/lib/generateContent'
-import type { Candidate } from '../../../app/trend-digest/lib/candidateTypes'
+import type { SelectedTopic } from '../../../app/trend-digest/lib/candidateTypes'
 
-// テスト用のCandidateを組み立てる(生成失敗時の分類・リトライ・除外の検証に必要な最小限のフィールド)
-function makeCandidate(overrides: Partial<Candidate> = {}): Candidate {
+// テスト用のSelectedTopicを組み立てる(生成失敗時の分類・リトライ・除外・続報の重複検知の
+// 検証に必要なフィールド。既定値は初回掲載(reportCount=1・前回情報なし)にしておく)
+function makeCandidate(overrides: Partial<SelectedTopic> = {}): SelectedTopic {
   return {
     genre: 'music',
     title: '対象作品A',
@@ -23,6 +24,13 @@ function makeCandidate(overrides: Partial<Candidate> = {}): Candidate {
     strengthJapan: null,
     strengthOverseas: null,
     meetsCriteria: true,
+    durationLabel: 'talked',
+    heatLabel: 'normal',
+    continuationDays: 3,
+    continuationStartDate: '2026-09-01',
+    reportCount: 1,
+    lastPublishedDurationLabel: null,
+    lastPublishedBody: null,
     ...overrides,
   }
 }
@@ -42,7 +50,7 @@ function okResult(): ClaudeCliResponse {
 // 仕様: specs/trend-digest/content-generation/design.md「見出し・本文を書く処理」手順6、specs/trend-digest/content-generation/design.md「エラーハンドリング」
 describe('classifyGenerationResult - Claude Code CLIの応答を成功/一時的失敗/利用枠枯渇の3種に分類する', () => {
   it('見出し・本文(160〜480字)を含むJSON応答はokに分類する', () => {
-    const c = classifyGenerationResult(okResult())
+    const c = classifyGenerationResult(okResult(), makeCandidate())
     expect(c.kind).toBe('ok')
     if (c.kind === 'ok') {
       expect(c.content.heading).toBe('見出し')
@@ -52,27 +60,27 @@ describe('classifyGenerationResult - Claude Code CLIの応答を成功/一時的
 
   it('JSONを抽出できない応答(聞き返し等)はtransientに分類する', () => {
     const res: ClaudeCliResponse = { result: 'この記事は取得できませんでした。どう進めますか?案1/案2/案3' }
-    expect(classifyGenerationResult(res).kind).toBe('transient')
+    expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
   it('headingがnullの応答(取得困難時の失敗シグナル)はtransientに分類する', () => {
     const res: ClaudeCliResponse = { result: JSON.stringify({ heading: null, body: null }) }
-    expect(classifyGenerationResult(res).kind).toBe('transient')
+    expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
   it('bodyの文字数が160字未満(分量不正)の応答はtransientに分類する', () => {
     const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', body: makeBody(100) }) }
-    expect(classifyGenerationResult(res).kind).toBe('transient')
+    expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
   it('bodyの文字数が480字を超える(分量不正)の応答はtransientに分類する', () => {
     const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', body: makeBody(500) }) }
-    expect(classifyGenerationResult(res).kind).toBe('transient')
+    expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
   it('headingが空文字の応答はtransientに分類する', () => {
     const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '', body: makeBody() }) }
-    expect(classifyGenerationResult(res).kind).toBe('transient')
+    expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
   it('api_error_statusが429の応答はquotaに分類する', () => {
@@ -81,17 +89,37 @@ describe('classifyGenerationResult - Claude Code CLIの応答を成功/一時的
       api_error_status: 429,
       result: "You've hit your weekly limit · resets 11pm (UTC)",
     }
-    expect(classifyGenerationResult(res).kind).toBe('quota')
+    expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('quota')
   })
 
   it('resultが利用上限到達メッセージを示す場合はquotaに分類する(api_error_statusが無くても)', () => {
     const res: ClaudeCliResponse = { is_error: true, result: "You've hit your weekly limit" }
-    expect(classifyGenerationResult(res).kind).toBe('quota')
+    expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('quota')
   })
 
   it('is_errorがtrueでも利用上限到達を示さない応答はtransientに分類する', () => {
     const res: ClaudeCliResponse = { is_error: true, result: 'ネットワークエラーが発生しました' }
-    expect(classifyGenerationResult(res).kind).toBe('transient')
+    expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
+  })
+})
+
+// 仕様: specs/trend-digest/content-generation/requirements.md#エージェントの逸脱防止-7、specs/trend-digest/content-generation/design.md「本文の分量を検証する処理」手順3
+describe('classifyGenerationResult - 続報の本文が前回掲載時の本文と完全に同一の場合は失敗として扱う(同じ内容の記事の繰り返し公開を防ぐ最終防波堤)', () => {
+  it('報告回数2回目以降の候補で、前回掲載時の本文と一字一句同じ本文が返された場合はtransientに分類する', () => {
+    const previousBody = makeBody(300)
+    const candidate = makeCandidate({ reportCount: 2, lastPublishedBody: previousBody })
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', body: previousBody }) }
+    expect(classifyGenerationResult(res, candidate).kind).toBe('transient')
+  })
+
+  it('報告回数2回目以降でも、前回掲載時の本文と異なる内容が返された場合はokに分類する', () => {
+    const candidate = makeCandidate({ reportCount: 2, lastPublishedBody: makeBody(300) })
+    expect(classifyGenerationResult(okResult(), candidate).kind).toBe('ok')
+  })
+
+  it('初回掲載(報告回数1回目)の候補は、lastPublishedBodyがnullのため重複判定の対象にならずokに分類する', () => {
+    const candidate = makeCandidate({ reportCount: 1, lastPublishedBody: null })
+    expect(classifyGenerationResult(okResult(), candidate).kind).toBe('ok')
   })
 })
 
@@ -100,7 +128,7 @@ describe('generateTopics - 個々の候補の生成失敗を除外し残りで�
   it('一時的失敗が初回に出てもリトライで成功した候補は結果に含まれる', async () => {
     const candidate = makeCandidate()
     const call = vi
-      .fn<(candidate: Candidate) => Promise<ClaudeCliResponse>>()
+      .fn<(candidate: SelectedTopic) => Promise<ClaudeCliResponse>>()
       .mockResolvedValueOnce({ result: '取得できませんでした' }) // 1回目: transient
       .mockResolvedValueOnce(okResult()) // 2回目: ok
     const result = await generateTopics([candidate], call)
@@ -113,8 +141,8 @@ describe('generateTopics - 個々の候補の生成失敗を除外し残りで�
     const failing = makeCandidate({ title: '失敗候補' })
     const passing = makeCandidate({ title: '成功候補' })
     const call = vi
-      .fn<(candidate: Candidate) => Promise<ClaudeCliResponse>>()
-      .mockImplementation((c: Candidate) =>
+      .fn<(candidate: SelectedTopic) => Promise<ClaudeCliResponse>>()
+      .mockImplementation((c: SelectedTopic) =>
         Promise.resolve(c.title === '失敗候補' ? { result: 'だめ' } : okResult()),
       )
     const onExcluded = vi.fn()
@@ -128,20 +156,20 @@ describe('generateTopics - 個々の候補の生成失敗を除外し残りで�
 
   it('1件でも成功すれば結果配列が返る', async () => {
     const candidate = makeCandidate()
-    const call = vi.fn<(candidate: Candidate) => Promise<ClaudeCliResponse>>().mockResolvedValue(okResult())
+    const call = vi.fn<(candidate: SelectedTopic) => Promise<ClaudeCliResponse>>().mockResolvedValue(okResult())
     const result = await generateTopics([candidate], call)
     expect(result).toHaveLength(1)
   })
 
   it('選定された全候補が失敗した場合はAllTopicsFailedErrorを投げる', async () => {
-    const call = vi.fn<(candidate: Candidate) => Promise<ClaudeCliResponse>>().mockResolvedValue({ result: 'だめ' })
+    const call = vi.fn<(candidate: SelectedTopic) => Promise<ClaudeCliResponse>>().mockResolvedValue({ result: 'だめ' })
     await expect(generateTopics([makeCandidate()], call)).rejects.toBeInstanceOf(AllTopicsFailedError)
   })
 
   it('利用枠枯渇を検知したらリトライせず即座にQuotaExhaustedErrorを投げ、以降の候補を呼ばない', async () => {
     const first = makeCandidate({ title: '1件目' })
     const second = makeCandidate({ title: '2件目' })
-    const call = vi.fn<(candidate: Candidate) => Promise<ClaudeCliResponse>>().mockResolvedValue({
+    const call = vi.fn<(candidate: SelectedTopic) => Promise<ClaudeCliResponse>>().mockResolvedValue({
       is_error: true,
       api_error_status: 429,
       result: "You've hit your weekly limit",
@@ -152,9 +180,9 @@ describe('generateTopics - 個々の候補の生成失敗を除外し残りで�
   })
 
   it('全候補失敗と利用枠枯渇の例外は互いに区別できる(型が異なる)', async () => {
-    const transientCall = vi.fn<(candidate: Candidate) => Promise<ClaudeCliResponse>>().mockResolvedValue({ result: 'だめ' })
+    const transientCall = vi.fn<(candidate: SelectedTopic) => Promise<ClaudeCliResponse>>().mockResolvedValue({ result: 'だめ' })
     const quotaCall = vi
-      .fn<(candidate: Candidate) => Promise<ClaudeCliResponse>>()
+      .fn<(candidate: SelectedTopic) => Promise<ClaudeCliResponse>>()
       .mockResolvedValue({ is_error: true, api_error_status: 429, result: 'limit' })
     await expect(generateTopics([makeCandidate()], transientCall)).rejects.toBeInstanceOf(AllTopicsFailedError)
     await expect(generateTopics([makeCandidate()], quotaCall)).rejects.not.toBeInstanceOf(AllTopicsFailedError)
