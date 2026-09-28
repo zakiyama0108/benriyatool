@@ -75,7 +75,7 @@ function makeAllEmptyArticleData() {
 }
 
 // 仕様: specs/future-digest/article-detail/design.md「バリデーション」
-describe('parseArticle - 記事データ(JSON)のスキーマを検証し、違反時は例外を投げる', () => {
+describe('記事データ(JSON)のスキーマ検証 - 違反時は例外を投げる', () => {
   it('正常な記事データ(予測18件+掲載できなかった枠2件)を受け付けること', () => {
     const article = parseArticle(makeValidArticleData(), '2026-09-24.json')
     expect(article.predictions).toHaveLength(18)

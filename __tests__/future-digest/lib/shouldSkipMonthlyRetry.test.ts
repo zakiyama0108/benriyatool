@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { shouldSkipMonthlyRetry } from '../../../app/future-digest/lib/shouldSkipMonthlyRetry'
 
 // 仕様: specs/future-digest/source-review/requirements.md#利用上限への到達時の再実行-7
-describe('shouldSkipMonthlyRetry - 月次見直しの再実行cronが同じ月の見直しを二重に実行しないための冪等チェック', () => {
+describe('月次見直しの再実行cronが同じ月の見直しを二重に実行しないための冪等チェック', () => {
   it('その月の本番(または前回の再実行)が正常終了済みならtrue(スキップ)を返すこと', () => {
     expect(shouldSkipMonthlyRetry(true, false)).toBe(true)
   })

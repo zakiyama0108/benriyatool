@@ -7,29 +7,16 @@
 //
 // 実行方法: npx tsx scripts/future-digest/collect-and-select.ts <配信日 YYYY-MM-DD>
 import fs from 'node:fs'
-import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { loadGenres, getActiveGenres } from '../../app/future-digest/lib/genres'
 import { nextIssueNumber } from '../../app/future-digest/lib/issue'
 import { horizonsForIssue } from '../../app/future-digest/lib/types'
-import type { Article } from '../../app/future-digest/lib/types'
 import { buildDeliveredIndex } from '../../app/future-digest/lib/deliveredIndex'
 import { selectSlots, type CollectionFailedGenre } from '../../app/future-digest/lib/selectSlots'
 import { shouldAlertOperator } from '../../app/future-digest/lib/shouldAlertOperator'
 import { collectGenre } from './collect-candidates'
 import type { Candidate } from '../../app/future-digest/lib/candidateTypes'
-
-const ARTICLES_DIR = path.join(process.cwd(), 'content/future-digest/articles')
-
-// article-detail(記事データの読み込み・検証)は別工程で実装するため、ここでは最小限の読み込みに
-// とどめる(検証はビルド時のparseArticleが担う。architecture.md#実装順)
-function readAllArticles(): Article[] {
-  if (!fs.existsSync(ARTICLES_DIR)) return []
-  return fs
-    .readdirSync(ARTICLES_DIR)
-    .filter((file) => file.endsWith('.json'))
-    .map((file) => JSON.parse(fs.readFileSync(path.join(ARTICLES_DIR, file), 'utf8')) as Article)
-}
+import { getAllArticles } from '../../app/future-digest/lib/articles'
 
 function writeGithubOutput(name: string, value: string) {
   const outputPath = process.env.GITHUB_OUTPUT
@@ -47,7 +34,7 @@ async function main() {
     process.exit(1)
   }
 
-  const articles = readAllArticles()
+  const articles = getAllArticles()
   const issueNumber = nextIssueNumber(articles)
   const horizons = horizonsForIssue(issueNumber)
   const deliveredIndex = buildDeliveredIndex(articles)
@@ -62,7 +49,7 @@ async function main() {
     // 利用上限への到達を検知した場合はQuotaExhaustedErrorがここから外へ伝播し、
     // main().catchで非ゼロ終了する(記事を作らずこの回を打ち切り、次の再実行cronに委ねる。
     // weekly-publish/design.md「1回分の記事を生成する処理」手順2)
-    const result = await collectGenre(genre, horizons, deliveredIndex)
+    const result = await collectGenre(genre, horizons, deliveredIndex, scheduledPublishDate)
     if (result.status === 'collection-failed') {
       console.error(`${genre.label}: 収集失敗(${result.reason})`)
       collectionFailedGenres.push({ genre: genre.id, reason: result.reason })
@@ -75,10 +62,34 @@ async function main() {
   const genreIds = genres.map((g) => g.id)
   const slots = selectSlots(allCandidates, genreIds, horizons, deliveredIndex.urls, collectionFailedGenres)
 
+  // 枠ごとに、検証を通った候補の件数と採用結果(採用/候補なし/収集失敗)を1行ずつ出す
+  // (content-selection/design.md「収集状況を記録する処理」手順1)
+  for (const slot of slots) {
+    if (slot.status === 'collection-failed') {
+      console.error(`枠[${slot.genre}/${slot.horizon}]: 収集失敗(${slot.reason})`)
+    } else {
+      console.error(`枠[${slot.genre}/${slot.horizon}]: 候補${slot.candidateCount}件 → ${slot.status === 'selected' ? '採用' : '候補なし'}`)
+    }
+  }
+
   const noCandidateSlots = slots.filter((s) => s.status === 'no-candidate')
-  const collectionFailedSlots = slots.filter((s) => s.status === 'collection-failed')
+  const collectionFailedSlots = slots.filter((s): s is Extract<typeof slots[number], { status: 'collection-failed' }> => s.status === 'collection-failed')
   const selectedSlots = slots.filter((s) => s.status === 'selected')
   console.error(`採用件数: ${selectedSlots.length}件 / 候補なし: ${noCandidateSlots.length}件 / 収集失敗: ${collectionFailedSlots.length}件`)
+
+  // 候補なしの枠の一覧と、収集失敗の枠の一覧(分類ラベル別件数つき)を最後にまとめて出す
+  // (content-selection/design.md「収集状況を記録する処理」手順2)
+  if (noCandidateSlots.length > 0) {
+    console.error(`候補なしの枠: ${noCandidateSlots.map((s) => `${s.genre}/${s.horizon}`).join('、')}`)
+  }
+  if (collectionFailedSlots.length > 0) {
+    const countByReason = new Map<string, number>()
+    for (const s of collectionFailedSlots) {
+      countByReason.set(s.reason, (countByReason.get(s.reason) ?? 0) + 1)
+    }
+    const reasonSummary = [...countByReason.entries()].map(([reason, count]) => `${reason}: ${count}件`).join('、')
+    console.error(`収集失敗の枠: ${collectionFailedSlots.map((s) => `${s.genre}/${s.horizon}`).join('、')}(${reasonSummary})`)
+  }
 
   const alert = shouldAlertOperator(slots)
   if (alert) {

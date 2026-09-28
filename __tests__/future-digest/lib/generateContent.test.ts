@@ -32,7 +32,7 @@ function okResult(): ClaudeCliResponse {
 }
 
 // 仕様: specs/future-digest/content-generation/design.md「見出し・本文を書く処理」手順8、specs/future-digest/content-generation/design.md「エラーハンドリング」
-describe('classifyGenerationResult - Claude Code CLIの応答を成功/一時的失敗/利用上限到達の3種に分類する', () => {
+describe('Claude Code CLIの応答の分類 - 成功/一時的失敗/利用上限到達の3種に分類する', () => {
   it('見出し・本文(160〜480字)を含むJSON応答はokに分類すること', () => {
     const c = classifyGenerationResult(okResult())
     expect(c.kind).toBe('ok')
@@ -72,7 +72,7 @@ describe('classifyGenerationResult - Claude Code CLIの応答を成功/一時的
 })
 
 // 仕様: specs/future-digest/weekly-publish/requirements.md#掲載件数の保証-4、specs/future-digest/weekly-publish/design.md「1回分の記事を生成する処理」手順4
-describe('generatePredictions - 個々の候補の生成失敗を除外し残りで公開する。全件失敗でも例外を投げず生成失敗の枠として返す', () => {
+describe('予測記事の生成 - 個々の候補の生成失敗を除外し残りで公開する。全件失敗でも例外を投げず生成失敗の枠として返す', () => {
   it('一時的失敗が初回に出てもやり直しで成功した候補は結果に含まれること', async () => {
     const candidate = makeCandidate()
     const call = vi

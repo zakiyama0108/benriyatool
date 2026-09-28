@@ -122,6 +122,11 @@ async function main() {
     },
   )
 
+  // 1本ごとに、生成の成否・本文の文字数を実行ログに出す(本文そのものはログに出さない。
+  // 失敗時の理由は上のonExcludedで既に出している。design.md「ログ」)
+  for (const { candidate, prediction } of result.succeeded) {
+    console.error(`${candidate.genre}/${candidate.horizon}: 生成成功(本文${prediction.body.length}字)`)
+  }
   console.error(`生成成功: ${result.succeeded.length}件 / 生成失敗: ${result.failed.length}件`)
 
   process.stdout.write(

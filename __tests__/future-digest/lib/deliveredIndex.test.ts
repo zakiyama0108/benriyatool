@@ -24,7 +24,7 @@ function makeArticle(predictions: Prediction[]): Article {
 }
 
 // 仕様: specs/future-digest/content-selection/requirements.md#配信済みの記事・予測の除外-1
-describe('normalizeUrl - スキーム・ホスト名の大文字小文字・末尾スラッシュ・フラグメント・計測用クエリの違いを同一視する', () => {
+describe('URLの正規化 - スキーム・ホスト名の大文字小文字・末尾スラッシュ・フラグメント・計測用クエリの違いを同一視する', () => {
   it('スキーム・ホスト名の大文字小文字を無視して同一視すること', () => {
     expect(normalizeUrl('HTTPS://Example.COM/path')).toBe(normalizeUrl('https://example.com/path'))
   })
@@ -47,7 +47,7 @@ describe('normalizeUrl - スキーム・ホスト名の大文字小文字・末�
 })
 
 // 仕様: specs/future-digest/content-selection/requirements.md#配信済みの記事・予測の除外-1、specs/future-digest/content-selection/requirements.md#配信済みの記事・予測の除外-2
-describe('buildDeliveredIndex - 過去の全予測から正規化URLの集合とジャンル・時間軸・見出し・元記事タイトルの一覧を作る', () => {
+describe('配信済み索引の作成 - 過去の全予測から正規化URLの集合とジャンル・時間軸・見出し・元記事タイトルの一覧を作る', () => {
   it('全予測の正規化URLの集合を返すこと', () => {
     const article = makeArticle([
       makePrediction({ sourceUrl: 'https://example.com/a/' }),

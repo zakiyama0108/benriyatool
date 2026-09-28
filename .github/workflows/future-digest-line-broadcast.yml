@@ -46,9 +46,16 @@ jobs:
       # (Added)された記事ファイルのみを対象にする(既存ファイルの変更(Modified)は対象外)
       - name: 配信対象IDを判定
         id: target
+        env:
+          # ${{ inputs.id }}をrun:に直接埋め込まずenv経由で渡す(シェルインジェクション対策)
+          INPUT_ID: ${{ inputs.id }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            ids="${{ inputs.id }}"
+            if ! echo "$INPUT_ID" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
+              echo "::error::記事IDの形式が不正です(YYYY-MM-DD形式で指定してください): $INPUT_ID"
+              exit 1
+            fi
+            ids="$INPUT_ID"
           else
             added=$(git diff --name-status "${{ github.event.before }}" "${{ github.sha }}" -- 'content/future-digest/articles/*.json' | awk '$1 == "A" {print $2}')
             if [ -z "$added" ]; then
@@ -68,9 +75,11 @@ jobs:
         if: steps.target.outputs.ids != ''
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          # ${{ steps.target.outputs.ids }}もrun:に直接埋め込まずenv経由で渡す
+          TARGET_IDS: ${{ steps.target.outputs.ids }}
         run: |
           failed=0
-          for id in ${{ steps.target.outputs.ids }}; do
+          for id in $TARGET_IDS; do
             echo "配信します: $id"
             if ! npx tsx scripts/future-digest/broadcast-line.ts "content/future-digest/articles/${id}.json"; then
               echo "::error::${id}の配信に失敗しました"

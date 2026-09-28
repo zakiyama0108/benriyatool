@@ -58,6 +58,7 @@ function isQuotaExhausted(res: ClaudeCliResponse): boolean {
 type Classified =
   | { kind: 'ok'; candidates: Candidate[] }
   | { kind: 'invalid-format'; detail: string }
+  | { kind: 'other'; detail: string }
   | { kind: 'quota'; detail: string }
 
 // 応答が「時間軸ごとの候補配列」の形(例: { near: [...], long: [...] })を満たすかを確認する
@@ -73,7 +74,9 @@ function classifyResponse(res: ClaudeCliResponse, genre: GenreConfig, horizons: 
     return { kind: 'quota', detail: res.result ?? '(メッセージなし)' }
   }
   if (res.is_error) {
-    return { kind: 'invalid-format', detail: res.result ?? '(メッセージなし)' }
+    // Claude CLI自体が異常終了した場合(利用上限を除く)はinvalid-format(正常終了したが応答が
+    // 不正)とは区別し、otherに分類する(design.md「エラーハンドリング」)
+    return { kind: 'other', detail: res.result ?? '(メッセージなし)' }
   }
   const text = res.result ?? ''
   const match = text.match(/\{[\s\S]*\}/)
@@ -134,8 +137,8 @@ export async function collectForGenre(
         // 利用上限枯渇: 同じ実行内でリトライしても回復しないため、やり直さず即座に打ち切る
         throw new QuotaExhaustedError(classified.detail)
       }
-      // invalid-format: 次の試行へ
-      lastReason = 'invalid-format'
+      // invalid-format/other: 次の試行へ
+      lastReason = classified.kind
       console.error(`${genre.label}: 収集に失敗しました(${attempt}回目): ${classified.detail}`)
     } catch (error) {
       if (error instanceof QuotaExhaustedError) throw error
@@ -156,7 +159,7 @@ export async function collectForGenre(
 const REQUIREMENTS_PATH = path.join(process.cwd(), 'specs/future-digest/content-selection/requirements.md')
 const CLAUDE_TIMEOUT_MS = Number(process.env.FUTURE_DIGEST_COLLECT_TIMEOUT_MS ?? 10 * 60 * 1000)
 
-function buildPrompt(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, requirements: string): string {
+function buildPrompt(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, requirements: string, scheduledPublishDate: string): string {
   const themesNote = genre.themes ? `\n個人的注目分野のテーマ: ${genre.themes.join('、')}` : ''
   const deliveredLines = deliveredIndex.lines.length > 0 ? deliveredIndex.lines.join('\n') : '(まだ配信済みの予測はありません)'
 
@@ -168,21 +171,24 @@ ${requirements}
 # ジャンルの説明
 ${genre.description}${themesNote}
 
+# 今回の配信日(時間軸の基準点)
+${scheduledPublishDate}
+
 # 今回の時間軸2区分
-${horizons.join('、')}(いずれも配信日を基準点とする。定義はrequirements.md#時間軸を参照)
+${horizons.join('、')}(いずれも上記の配信日を基準点とする。定義はrequirements.md#時間軸を参照)
 
 # 配信済みの予測一覧(実質的に同じ内容は候補にしないこと。ジャンル/時間軸/見出し/元記事タイトルの順)
 ${deliveredLines}
 
-各時間軸ごとに、採用基準を満たす未来予測記事を最大5件探し、影響度(large/medium/low)・根拠・順位を付けてください。予測の対象時期が明示・推定できない記事、対象時期が配信日から1年未満または既に過ぎている記事、噂・出典不明・断定だけの記事、Claude自身の予測は候補にしないでください。性・恋愛ジャンルの場合は、未成年が関わる内容・特定の店舗や相手を探す手助けになる情報を候補にしないでください。
+各時間軸ごとに、採用基準を満たす未来予測記事を最大5件探し、影響度(high/medium/low)・根拠・順位を付けてください。予測の対象時期が明示・推定できない記事、対象時期が上記の配信日から1年未満または既に過ぎている記事、噂・出典不明・断定だけの記事、Claude自身の予測は候補にしないでください。性・恋愛ジャンルの場合は、未成年が関わる内容・特定の店舗や相手を探す手助けになる情報を候補にしないでください。
 
 次のJSON形式のみで応答してください。トップレベルのキーは必ず"${horizons[0]}"と"${horizons[1]}"の2つにしてください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けないでください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文を返してはいけません(返答する相手がいません)。**候補が見つからない時間軸は空配列にしてください。
 
 {"${horizons[0]}": [{"impact": "high", "impactRank": 1, "impactReason": "...", "targetPeriod": "2030年まで", "sourceTitle": "...", "sourceName": "...", "sourceUrl": "https://...", "publishedAt": null}], "${horizons[1]}": []}`
 }
 
-async function callClaudeCode(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, requirements: string): Promise<ClaudeCliResponse> {
-  const prompt = buildPrompt(genre, horizons, deliveredIndex, requirements)
+async function callClaudeCode(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, requirements: string, scheduledPublishDate: string): Promise<ClaudeCliResponse> {
+  const prompt = buildPrompt(genre, horizons, deliveredIndex, requirements, scheduledPublishDate)
   try {
     const { stdout } = await execFileAsync(
       'claude',
@@ -206,10 +212,12 @@ async function callClaudeCode(genre: GenreConfig, horizons: [Horizon, Horizon], 
   }
 }
 
-// scripts/future-digest/collect-and-select.tsから呼ばれる、実行環境に紐づくcollectForGenreの薄いラッパー
-export async function collectGenre(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex): Promise<CollectForGenreResult> {
+// scripts/future-digest/collect-and-select.tsから呼ばれる、実行環境に紐づくcollectForGenreの薄いラッパー。
+// scheduledPublishDateは時間軸(近未来・中期未来等)の基準点としてプロンプトに明示する
+// (content-selection/requirements.md#時間軸)
+export async function collectGenre(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, scheduledPublishDate: string): Promise<CollectForGenreResult> {
   const requirements = fs.readFileSync(REQUIREMENTS_PATH, 'utf8')
-  const call: CollectCallFn = (g, h) => callClaudeCode(g, h, deliveredIndex, requirements)
+  const call: CollectCallFn = (g, h) => callClaudeCode(g, h, deliveredIndex, requirements, scheduledPublishDate)
   return collectForGenre(genre, horizons, call)
 }
 

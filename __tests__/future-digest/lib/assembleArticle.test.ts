@@ -26,7 +26,7 @@ const ACTIVE_GENRES = ['technology-ai', 'medical-health']
 // issueNumber=1は奇数回のため時間軸は near・long(types.ts horizonsForIssue)
 
 // 仕様: specs/future-digest/weekly-publish/requirements.md#掲載件数の保証-1、specs/future-digest/weekly-publish/requirements.md#掲載件数の保証-2、specs/future-digest/weekly-publish/requirements.md#掲載件数の保証-4
-describe('assembleArticle - 選定結果・生成結果から記事データ1回分を組み立てる', () => {
+describe('記事データの組み立て - 選定結果・生成結果から記事データ1回分を組み立てる', () => {
   it('id・date・issueNumberが入り、採用した予測がそのまま反映されること', () => {
     const predictions = [
       makePrediction({ id: 'technology-ai--near', genre: 'technology-ai', horizon: 'near' }),

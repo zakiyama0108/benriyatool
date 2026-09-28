@@ -43,7 +43,7 @@ function makeEmptySlot(overrides: Partial<EmptySlot> = {}): EmptySlot {
 }
 
 // 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-2
-describe('PredictionCard - 予測がある枠の表示', () => {
+describe('予測がある枠の表示', () => {
   it('見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ)が表示されること', () => {
     const prediction = makePrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
@@ -77,7 +77,7 @@ describe('PredictionCard - 予測がある枠の表示', () => {
 })
 
 // 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-3、specs/future-digest/article-detail/requirements.md#記事本文の表示-4、specs/future-digest/article-detail/requirements.md#記事本文の表示-5
-describe('PredictionCard - 掲載できなかった枠の表示(候補なし・収集失敗・生成失敗を異なる文言で区別する)', () => {
+describe('掲載できなかった枠の表示(候補なし・収集失敗・生成失敗を異なる文言で区別する)', () => {
   it('no-candidateの枠で「候補が見つかりませんでした」が表示され、本文・フィードバック欄が出ないこと', () => {
     const emptySlot = makeEmptySlot({ reason: 'no-candidate' })
     const slot: Slot = { genre: emptySlot.genre, horizon: emptySlot.horizon, kind: 'empty', emptySlot }
@@ -110,7 +110,7 @@ describe('PredictionCard - 掲載できなかった枠の表示(候補なし・�
 })
 
 // 仕様: specs/future-digest/bookmark/requirements.md#記事への付箋-5、specs/future-digest/bookmark/design.md「記事詳細ページへの追加(article-detailの画面)」
-describe('PredictionCard - 付箋の操作領域の表示切り替え(ログイン中のみ表示し、掲載できなかった枠には出さない)', () => {
+describe('付箋の操作領域の表示切り替え(ログイン中のみ表示し、掲載できなかった枠には出さない)', () => {
   it('未ログイン(sessionがnull)の場合、予測がある枠でも付箋の操作が表示されないこと', () => {
     const prediction = makePrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
@@ -140,6 +140,27 @@ describe('PredictionCard - 付箋の操作領域の表示切り替え(ログイ�
     expect(screen.getByText('気になるメモ')).toBeTruthy()
   })
 
+  it('付箋の取得が遅れて未付箋(null)でマウントされたあとに取得済みの付箋が届いた場合、保存済みのメモが表示され「付箋を貼る」に戻らないこと(bookmark/requirements.md#記事への付箋-4)', () => {
+    const prediction = makePrediction()
+    const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
+    const { rerender } = render(
+      <PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} session={makeSession('reader@example.com')} bookmark={null} />
+    )
+    expect(screen.getByRole('button', { name: '付箋を貼る' })).toBeTruthy()
+
+    rerender(
+      <PredictionCard
+        slot={slot}
+        articleId="2026-09-24"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        bookmark={{ id: 'bookmark-1', memo: '気になるメモ' }}
+      />
+    )
+    expect(screen.getByText('気になるメモ')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: '付箋を貼る' })).toBeNull()
+  })
+
   it('ログイン中でも、候補なし・収集失敗・生成失敗の枠(掲載できなかった枠)には付箋の操作が表示されないこと', () => {
     const emptySlot = makeEmptySlot({ reason: 'no-candidate' })
     const slot: Slot = { genre: emptySlot.genre, horizon: emptySlot.horizon, kind: 'empty', emptySlot }
@@ -149,7 +170,7 @@ describe('PredictionCard - 付箋の操作領域の表示切り替え(ログイ�
 })
 
 // 仕様: specs/future-digest/bookmark/design.md「記事詳細ページへの追加(article-detailの画面)」
-describe('PredictionCard - 予測カードへの予測ID属性の付与(付箋一覧からのリンク先になる)', () => {
+describe('予測カードへの予測ID属性の付与(付箋一覧からのリンク先になる)', () => {
   it('予測がある枠のカード要素に予測IDのid属性が付くこと(付箋一覧からのリンク先として使う)', () => {
     const prediction = makePrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }

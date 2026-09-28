@@ -54,7 +54,16 @@ export default function PredictionCard({ slot, articleId, isAdmin, session = nul
       </p>
 
       {session && (
-        <BookmarkPanel articleId={articleId} predictionId={prediction.id} initialBookmark={bookmark} />
+        // 付箋の取得は非同期のため、未取得(null)でマウントされた後に取得済みの付箋が届くことがある。
+        // BookmarkPanelはinitialBookmarkをuseStateの初期値としてしか使わないため、keyに付箋idを
+        // 含めて取得後に再マウントし、内部状態を届いた付箋に追従させる(bookmark/requirements.md#記事への付箋-4。
+        // 追従させないと付箋済みの予測にも「付箋を貼る」が表示され、保存時に一意制約違反になる)
+        <BookmarkPanel
+          key={bookmark?.id ?? 'none'}
+          articleId={articleId}
+          predictionId={prediction.id}
+          initialBookmark={bookmark}
+        />
       )}
       {isAdmin && <FeedbackForm articleId={articleId} predictionId={prediction.id} />}
     </div>

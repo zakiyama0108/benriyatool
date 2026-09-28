@@ -36,7 +36,7 @@ function okResponse(near: unknown[] = [rawCandidate()], long: unknown[] = []): C
 }
 
 // 仕様: specs/future-digest/content-selection/requirements.md#収集失敗-1、specs/future-digest/content-selection/requirements.md#収集失敗-2、specs/future-digest/content-selection/requirements.md#収集失敗-3、specs/future-digest/content-selection/design.md「ジャンルごとに候補を集める処理」手順6〜7、specs/future-digest/content-selection/design.md「エラーハンドリング」
-describe('collectForGenre - Claude Code CLIの応答からジャンル1つ分の候補を集め、失敗を分類してやり直す', () => {
+describe('ジャンル1つ分の収集 - Claude Code CLIの応答から候補を集め、失敗を分類してやり直す', () => {
   it('応答JSONから候補が取り出され、genre・horizonが補われること', async () => {
     const call: CollectCallFn = vi.fn().mockResolvedValue(okResponse())
     const result = await collectForGenre(GENRE, HORIZONS, call)
@@ -79,6 +79,16 @@ describe('collectForGenre - Claude Code CLIの応答からジャンル1つ分の
 
   it('その他の異常終了は2回とも失敗したらotherの分類ラベルで返ること', async () => {
     const call = vi.fn<CollectCallFn>().mockRejectedValue(new Error('予期しないエラー'))
+    const result = await collectForGenre(GENRE, HORIZONS, call)
+    expect(result).toEqual({ status: 'collection-failed', reason: 'other' })
+    expect(call).toHaveBeenCalledTimes(2)
+  })
+
+  it('Claude CLIが異常終了(is_error)した場合、利用上限以外はinvalid-formatではなくotherの分類ラベルで返ること(design.md「エラーハンドリング」)', async () => {
+    const call = vi.fn<CollectCallFn>().mockResolvedValue({
+      is_error: true,
+      result: '予期しないエラーで終了しました',
+    })
     const result = await collectForGenre(GENRE, HORIZONS, call)
     expect(result).toEqual({ status: 'collection-failed', reason: 'other' })
     expect(call).toHaveBeenCalledTimes(2)

@@ -6,7 +6,7 @@ function makeBody(length: number): string {
 }
 
 // 仕様: specs/future-digest/content-generation/requirements.md#要約-3
-describe('isValidBodyLength - 本文の分量(200〜400字程度)を160〜480字の範囲で検証する', () => {
+describe('本文の分量検証 - 本文の分量(200〜400字程度)を160〜480字の範囲で検証する', () => {
   it('160字未満は不正であること', () => {
     expect(isValidBodyLength(makeBody(BODY_MIN_LENGTH - 1))).toBe(false)
   })
@@ -33,7 +33,7 @@ describe('isValidBodyLength - 本文の分量(200〜400字程度)を160〜480字
 })
 
 // 仕様: specs/future-digest/content-generation/design.md「生成結果を検証する処理」
-describe('isValidHeading - 見出しが非空文字列かつ100字以内であることを検証する', () => {
+describe('見出しの検証 - 見出しが非空文字列かつ100字以内であることを検証する', () => {
   it('nullは不正であること', () => {
     expect(isValidHeading(null)).toBe(false)
   })

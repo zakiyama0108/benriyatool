@@ -47,7 +47,7 @@ describe('genres.json - 実データが10ジャンル(性・恋愛、個人的�
 })
 
 // 仕様: specs/future-digest/content-selection/design.md「データ設計(ジャンル・注目テーマの設定ファイル)」
-describe('parseGenres - 不正なジャンル設定を検知して例外を投げる(ビルド時に壊れた設定を弾くため)', () => {
+describe('ジャンル設定の検証 - 不正なジャンル設定を検知して例外を投げる(ビルド時に壊れた設定を弾くため)', () => {
   it('idが重複する場合に例外になること', () => {
     expect(() =>
       parseGenres(

@@ -18,7 +18,7 @@ function makeRawCandidate(overrides: Record<string, unknown> = {}) {
 }
 
 // 仕様: specs/future-digest/content-selection/requirements.md#影響度-1、specs/future-digest/content-selection/design.md「バリデーション」
-describe('validateCandidates - Claudeが返した候補ごとに検証し、満たさない候補はその場で捨てる', () => {
+describe('候補ごとの検証 - Claudeが返した候補ごとに検証し、満たさない候補はその場で捨てる', () => {
   it('全項目を満たす候補は採用されること', () => {
     const { candidates, rejected } = validateCandidates([makeRawCandidate()], ['near', 'long'])
     expect(candidates).toHaveLength(1)

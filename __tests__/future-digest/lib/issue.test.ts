@@ -7,7 +7,7 @@ function makeArticle(issueNumber: number): Article {
 }
 
 // 仕様: specs/future-digest/content-selection/requirements.md#時間軸の切り替え-1、specs/future-digest/content-selection/requirements.md#時間軸の切り替え-2
-describe('nextIssueNumber - 公開済み記事の回数から次の回数を決める', () => {
+describe('公開済み記事の回数から次の回数を決める', () => {
   it('記事が1件もない場合は1回目とすること', () => {
     expect(nextIssueNumber([])).toBe(1)
   })

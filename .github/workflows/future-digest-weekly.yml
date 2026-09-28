@@ -166,6 +166,17 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
+      # 生成に失敗した枠の数をPR本文に載せるため集計する(weekly-publish/design.md「ログ」)
+      - name: 生成結果の集計(PR本文用)
+        if: steps.idempotency.outputs.skip != 'true'
+        id: generation-summary
+        run: |
+          node -e "
+            const fs = require('fs');
+            const g = JSON.parse(fs.readFileSync('/tmp/generation.json', 'utf8'));
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'generationFailedCount=' + g.failedCandidates.length + '\n');
+          "
+
       # 同じ配信日の記事ファイルが既にある場合は上書きせず非ゼロ終了する(write-article.ts)
       - name: 記事データの組み立て・書き出し
         if: steps.idempotency.outputs.skip != 'true'
@@ -184,7 +195,7 @@ jobs:
           git push origin "future-digest/articles/$date"
           gh pr create --base main \
             --title "[future-digest] ${date}を公開" \
-            --body "週次自動生成PRです(回数: ${{ steps.selection-summary.outputs.issueNumber }} / 時間軸: ${{ steps.selection-summary.outputs.horizons }})。採用件数: ${{ steps.selection-summary.outputs.selectedCount }}件 / 候補なし: ${{ steps.selection-summary.outputs.noCandidateCount }}件 / 収集失敗: ${{ steps.selection-summary.outputs.collectionFailedCount }}件。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/future-digest/weekly-publish/design.md参照)。"
+            --body "週次自動生成PRです(回数: ${{ steps.selection-summary.outputs.issueNumber }} / 時間軸: ${{ steps.selection-summary.outputs.horizons }})。採用件数: ${{ steps.selection-summary.outputs.selectedCount }}件 / 候補なし: ${{ steps.selection-summary.outputs.noCandidateCount }}件 / 収集失敗: ${{ steps.selection-summary.outputs.collectionFailedCount }}件 / 生成失敗: ${{ steps.generation-summary.outputs.generationFailedCount }}件。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/future-digest/weekly-publish/design.md参照)。"
           gh pr merge --auto --squash "future-digest/articles/$date"
 
       # 全枠(有効なジャンル数×2時間軸)が収集失敗だった回は、記事は公開したうえでこのジョブを

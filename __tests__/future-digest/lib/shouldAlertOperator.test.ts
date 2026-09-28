@@ -38,7 +38,7 @@ function collectionFailedSlot(genre = 'technology-ai', horizon: SlotResult['hori
 }
 
 // 仕様: specs/future-digest/weekly-publish/requirements.md#掲載件数の保証-3、specs/future-digest/content-selection/requirements.md#収集失敗-4
-describe('shouldAlertOperator - 全枠が収集失敗だった回だけ運営者への警告が必要と判定する', () => {
+describe('全枠が収集失敗だった回だけ運営者への警告が必要と判定する', () => {
   it('全枠(有効なジャンル数×2時間軸)がcollection-failedならtrueを返すこと', () => {
     const slots: SlotResult[] = [
       collectionFailedSlot('technology-ai', 'near'),

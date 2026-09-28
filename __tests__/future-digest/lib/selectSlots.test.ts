@@ -23,7 +23,7 @@ const GENRES = ['technology-ai', 'medical-health']
 const HORIZONS: ['near', 'long'] = ['near', 'long']
 
 // 仕様: specs/future-digest/content-selection/requirements.md#機能要件-3、specs/future-digest/content-selection/requirements.md#機能要件-4、specs/future-digest/content-selection/requirements.md#機能要件-5、specs/future-digest/content-selection/requirements.md#影響度-3、specs/future-digest/content-selection/requirements.md#候補が見つからない枠-1、specs/future-digest/content-selection/requirements.md#収集失敗-1、specs/future-digest/content-selection/requirements.md#収集失敗-5
-describe('selectSlots - 枠ごとに影響度最大の候補を採用し、候補なし・収集失敗ジャンルを合流させる', () => {
+describe('枠ごとの候補採用 - 枠ごとに影響度最大の候補を採用し、候補なし・収集失敗ジャンルを合流させる', () => {
   it('影響度の大きい候補が採用されること', () => {
     const candidates = [
       makeCandidate({ sourceUrl: 'https://example.com/low', impact: 'low', impactRank: 1 }),

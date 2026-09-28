@@ -4,7 +4,7 @@ import SlotBadges from '../../../app/future-digest/components/SlotBadges'
 import { GENRE_ORDER, GENRE_LABELS } from '../../../app/future-digest/lib/types'
 
 // 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-2
-describe('SlotBadges - ジャンル・時間軸・影響度を日本語ラベルのバッジで表示する', () => {
+describe('ジャンル・時間軸・影響度のバッジ表示 - 日本語ラベルのバッジで表示する', () => {
   it('ジャンル・時間軸のラベルが表示されること', () => {
     render(<SlotBadges genre={GENRE_ORDER[0]} horizon="near" />)
     expect(screen.getByText(GENRE_LABELS[GENRE_ORDER[0]])).toBeTruthy()

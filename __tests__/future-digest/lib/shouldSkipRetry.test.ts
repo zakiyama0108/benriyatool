@@ -7,7 +7,7 @@ function makeArticle(date: string): Article {
 }
 
 // 仕様: specs/future-digest/weekly-publish/requirements.md#利用上限への到達時の再実行-2
-describe('shouldSkipRetry - 再実行cronが同じ配信日の記事を二重に公開しないための冪等チェック', () => {
+describe('再実行cronが同じ配信日の記事を二重に公開しないための冪等チェック', () => {
   it('指定した配信日と同じdateの記事が既にあればtrue(スキップしてよい)を返すこと', () => {
     const articles = [makeArticle('2026-09-24'), makeArticle('2026-10-01')]
     expect(shouldSkipRetry(articles, '2026-10-01')).toBe(true)

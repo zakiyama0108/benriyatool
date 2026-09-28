@@ -29,7 +29,7 @@ function makeArticle(predictions: Prediction[], emptySlots: EmptySlot[] = []): A
 }
 
 // 仕様: specs/future-digest/article-detail/requirements.md#並び順の切り替え-8
-describe('sortSlots(article, "impact") - 影響度の大きい順に枠を並べる', () => {
+describe('並び順「影響度」 - 影響度の大きい順に枠を並べる', () => {
   it('影響度が大→中→小の順に並ぶこと', () => {
     const article = makeArticle([
       makePrediction({ genre: GENRE_ORDER[0], horizon: 'near', impact: 'low' }),
@@ -80,7 +80,7 @@ describe('sortSlots(article, "impact") - 影響度の大きい順に枠を並べ
 })
 
 // 仕様: specs/future-digest/article-detail/requirements.md#並び順の切り替え-9
-describe('sortSlots(article, "genre") - ジャンルの定義順→時間軸の近い順に枠を並べる', () => {
+describe('並び順「ジャンル」 - ジャンルの定義順→時間軸の近い順に枠を並べる', () => {
   it('ジャンルの定義順に並び、同じジャンルの中では時間軸の近い順に並ぶこと(掲載できなかった枠も本来の位置に並ぶ)', () => {
     const article = makeArticle(
       [makePrediction({ genre: GENRE_ORDER[1], horizon: 'long', impact: 'low' })],
@@ -95,7 +95,7 @@ describe('sortSlots(article, "genre") - ジャンルの定義順→時間軸の�
 })
 
 // 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-2、specs/future-digest/article-detail/requirements.md#記事本文の表示-3、specs/future-digest/article-detail/requirements.md#記事本文の表示-4、specs/future-digest/article-detail/requirements.md#記事本文の表示-5
-describe('sortSlots - 有効なジャンル数×2時間軸の全枠を欠けなく含める', () => {
+describe('枠の並び替え - 有効なジャンル数×2時間軸の全枠を欠けなく含める', () => {
   it('影響度順・ジャンル順のどちらでも、予測+掲載できなかった枠の合計件数が全枠と一致すること', () => {
     const predictions = GENRE_ORDER.slice(0, 8).map((genre) => makePrediction({ genre, horizon: 'near' }))
     const emptySlots = GENRE_ORDER.slice(8).map((genre) => makeEmptySlot({ genre, horizon: 'near' }))

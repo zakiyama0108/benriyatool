@@ -7,7 +7,10 @@
 # (ジャンル・採用基準)と生成領域(執筆ルール)の両方で、各フィードバックはエージェントが内容から
 # 選定/生成/対象外に振り分ける。変更があればブランチ作成・コミット・push・PR作成まで行うが、
 # weekly-publishと異なり自動マージはしない(通常のレビュー必須フローのまま。requirements.md#承認フロー-6参照)。
-# Claude CLIのステップにはDB接続情報・GitHub PATのいずれも渡さない(design.md「実行環境の前提」)
+# Claude CLIのステップにはDB接続情報・GitHub PATのいずれも渡さない(design.md「実行環境の前提」)。
+# actions/checkoutにもPATを渡さず(persist-credentials: false)、.git/config経由でPATがClaude CLI
+# ステップ(Read/Edit/Bash(npm test)等を許可)から到達可能にならないようにする。PATはPR作成
+# ステップ内でのみ、gh auth setup-gitでgit操作用に一時設定して使う
 name: 週刊未来予測 選定・生成の月次見直し
 
 on:
@@ -22,10 +25,12 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      # GitHub書き込みはweekly-publishと同じ専用PATを使う(design.md「実行環境の前提」参照)
+      # GitHub書き込みはweekly-publishと同じ専用PATを使うが、checkout自体にはPATを渡さない
+      # (persist-credentials: false)。PATは後続のPR作成ステップ内だけでgit操作に使う
+      # (design.md「実行環境の前提」参照)
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.FUTURE_DIGEST_GH_PAT }}
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -63,8 +68,10 @@ jobs:
 
           year_month="${{ steps.since.outputs.year_month }}"
 
+          # 手動実行(workflow_dispatch)の動作確認を「本番が正常終了済み」と誤って数えないよう、
+          # 本番のcron実行(--event schedule)に絞り込む
           success_count=$(gh run list --repo "${{ github.repository }}" \
-            --workflow "future-digest-monthly.yml" --status success \
+            --workflow "future-digest-monthly.yml" --status success --event schedule \
             --created ">=${year_month}-01" --json databaseId --jq 'length')
           if [ "$success_count" -gt 0 ]; then
             has_successful_run=true
@@ -214,6 +221,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.FUTURE_DIGEST_GH_PAT }}
         run: |
+          # checkoutではPATを永続化していないため、ここでgit操作用にPATを設定する
+          # (このステップ内でのみGH_TOKENが使われ、以降のステップの.git/configには残らない)
+          gh auth setup-git
           YEAR_MONTH="${{ steps.since.outputs.year_month }}"
           BRANCH="future-digest/source-review/${YEAR_MONTH}"
           git config user.name "future-digest-bot"

@@ -68,7 +68,11 @@ async function main() {
   }
 
   const today = new Date().toISOString().slice(0, 10)
-  const articles = getAllArticles()
+  // ワークフローはこのディレクトリ(scripts/future-digest/collect-review-data)をworking-directoryに
+  // 実行するため、process.cwd()基準の既定パスに頼らずcontent/future-digest/articlesを明示する
+  // (trend-digestのcollectReviewData.tsと同じ対処)
+  const articlesDir = path.join(__dirname, '../../../content/future-digest/articles')
+  const articles = getAllArticles(articlesDir)
   // 枠(ジャンル×時間軸)ごとの候補なし・有効回数の集計(design.md「見直しの材料を集める処理」手順1〜2、
   // app/future-digest/lib/reviewRecords.tsでテスト済み)
   const emptySlotSummary = summarizeEmptySlots(articles, sinceDate, today)

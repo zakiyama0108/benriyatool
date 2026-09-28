@@ -9,7 +9,7 @@ import {
 import type { GenreConfig } from '../../../app/future-digest/lib/genres'
 
 // 仕様: specs/future-digest/article-detail/design.md「前提: 記事データの形式」、specs/future-digest/content-selection/requirements.md#時間軸の切り替え-1
-describe('horizonsForIssue - 配信回数からその回が扱う時間軸2区分を決める', () => {
+describe('配信回数からその回が扱う時間軸2区分を決める', () => {
   it('奇数回(1回目)は近未来と長期未来になること', () => {
     expect(horizonsForIssue(1)).toEqual(['near', 'long'])
   })
@@ -33,7 +33,7 @@ describe('horizonsForIssue - 配信回数からその回が扱う時間軸2区�
 })
 
 // 仕様: specs/future-digest/article-detail/design.md「前提: 記事データの形式」
-describe('GENRE_ORDER・GENRE_LABELS - genres.jsonの記載順・日本語ラベルをジャンル順の並べ替え・表示に使う', () => {
+describe('ジャンルの並び順・日本語ラベル - genres.jsonの記載順・日本語ラベルをジャンル順の並べ替え・表示に使う', () => {
   it('GENRE_ORDERがgenres.jsonの記載順どおりであること', () => {
     expect(GENRE_ORDER).toEqual((genresData as GenreConfig[]).map((g) => g.id))
   })
@@ -46,7 +46,7 @@ describe('GENRE_ORDER・GENRE_LABELS - genres.jsonの記載順・日本語ラベ
 })
 
 // 仕様: specs/future-digest/article-detail/design.md「前提: 記事データの形式」
-describe('COLLECTION_FAILURE_LABELS - 収集失敗の分類ラベルを読者に分かる日本語文言に変換する', () => {
+describe('収集失敗の分類ラベルを読者に分かる日本語文言に変換する', () => {
   it('timeoutは「調査が時間内に終わりませんでした」であること', () => {
     expect(COLLECTION_FAILURE_LABELS.timeout).toBe('調査が時間内に終わりませんでした')
   })
