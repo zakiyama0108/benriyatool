@@ -138,3 +138,71 @@ describe('WebSearch側の採用基準の解決(resolveWebSearchCriteria) - 併�
     expect(() => resolveWebSearchCriteria(genreCriteria, 'music')).toThrow()
   })
 })
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-2、specs/trend-digest/trend-history/design.md「その回の観測を履歴に記録する処理」手順3
+describe('WebSearchジャンルの観測保持(trend-history連携) - 独立言及元が少ない段階の話題も観測項目として残す(後に伸びたときの継続の開始日が実態とずれないための回帰テスト)', () => {
+  it('独立言及元が1件(minIndependentSources未満)の話題が、meetsCriteria: falseとして観測項目に残ること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([{ title: '言及が少ない話題', sourceName: '媒体', sourceUrl: 'https://example.com/z', independentSourceCount: 1 }]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations.map((o) => o.title)).toEqual(['言及が少ない話題'])
+    expect(observations[0].meetsCriteria).toBe(false)
+  })
+})
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#地域情報-15、specs/trend-digest/trend-history/requirements.md#地域情報-16
+describe('地域情報の収集(WebSearchジャンル側) - エージェントの応答から発祥地域・主な流行地域・日本/海外での言及数を取り込む', () => {
+  it('応答に地域情報が含まれる場合、observations側にそのまま反映されること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        {
+          title: '話題の店',
+          sourceName: '媒体',
+          sourceUrl: 'https://example.com/a',
+          independentSourceCount: 3,
+          originRegion: '日本',
+          currentRegions: ['日本', '韓国'],
+          strengthJapan: 2,
+          strengthOverseas: 1,
+        },
+      ]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0]).toMatchObject({
+      originRegion: '日本',
+      currentRegions: ['日本', '韓国'],
+      strengthJapan: 2,
+      strengthOverseas: 1,
+    })
+  })
+
+  it('応答に地域情報が含まれない場合、発祥地域はnull・主な流行地域は空配列(不明)になること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([{ title: '話題の店', sourceName: '媒体', sourceUrl: 'https://example.com/a', independentSourceCount: 3 }]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0]).toMatchObject({ originRegion: null, currentRegions: [], strengthJapan: null, strengthOverseas: null })
+  })
+
+  it('originRegionが空文字・型が不正な場合はnull(不明)として扱われ、話題自体は無効にならないこと', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        { title: '話題の店', sourceName: '媒体', sourceUrl: 'https://example.com/a', independentSourceCount: 3, originRegion: '', strengthJapan: 'たくさん' },
+      ]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].originRegion).toBeNull()
+    expect(observations[0].strengthJapan).toBeNull()
+  })
+
+  it('currentRegionsに文字列以外の要素が混ざる場合、その要素だけが除かれること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        { title: '話題の店', sourceName: '媒体', sourceUrl: 'https://example.com/a', independentSourceCount: 3, currentRegions: ['日本', 123, ''] },
+      ]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].currentRegions).toEqual(['日本'])
+  })
+})

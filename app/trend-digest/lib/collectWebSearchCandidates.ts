@@ -30,6 +30,10 @@ type RawWebSearchTopic = {
   sourceUrl?: unknown
   independentSourceCount?: unknown
   breakdown?: unknown
+  originRegion?: unknown
+  currentRegions?: unknown
+  strengthJapan?: unknown
+  strengthOverseas?: unknown
 }
 
 export type WebSearchTopic = {
@@ -38,6 +42,27 @@ export type WebSearchTopic = {
   sourceUrl: string
   independentSourceCount: number
   breakdown?: string // 言及元の内訳(例: "ニュースメディア2件+SNS言及1件"。design.md手順6)。LLMの応答にあれば使う
+  // 地域情報(design.md「地域情報を判定する処理」手順2〜3、requirements.md#地域情報-15〜16)。
+  // エージェントの出力に由来する自由文字列のため、想定外の形の値は「不明」として扱い、
+  // そのために話題自体を無効にはしない(地域情報は補助的な値のため。厳密な長さ・制御文字の
+  // 検証はhistorySchema.tsが観測ログ書き出し時に行う)
+  originRegion: string | null
+  currentRegions: string[]
+  strengthJapan: number | null
+  strengthOverseas: number | null
+}
+
+function parseRegionText(raw: unknown): string | null {
+  return typeof raw === 'string' && raw.trim() !== '' ? raw : null
+}
+
+function parseRegionList(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return []
+  return raw.filter((v): v is string => typeof v === 'string' && v.trim() !== '')
+}
+
+function parseRegionCount(raw: unknown): number | null {
+  return typeof raw === 'number' && Number.isFinite(raw) && raw >= 0 ? raw : null
 }
 
 export type ClassifiedWebSearchResult =
@@ -101,6 +126,10 @@ export function classifyWebSearchResult(res: ClaudeCliResponse): ClassifiedWebSe
         sourceUrl: raw.sourceUrl,
         independentSourceCount: raw.independentSourceCount,
         ...(raw.breakdown !== undefined ? { breakdown: raw.breakdown } : {}),
+        originRegion: parseRegionText(raw.originRegion),
+        currentRegions: parseRegionList(raw.currentRegions),
+        strengthJapan: parseRegionCount(raw.strengthJapan),
+        strengthOverseas: parseRegionCount(raw.strengthOverseas),
       })
     }
   }
@@ -138,12 +167,12 @@ export async function collectWebSearchCandidates(
     method: 'websearch',
     strength: topic.independentSourceCount,
     rank: null, // WebSearchジャンルの観測項目は順位を持たない(design.md「候補の型(前提)」)
-    // 地域情報(originRegion/currentRegions/strengthJapan/strengthOverseas)を返す指示の追加は
-    // trend-historyのTask12で行う(design.md「WebSearchジャンルの候補を収集・判定する処理」手順7)
-    originRegion: null,
-    currentRegions: [],
-    strengthJapan: null,
-    strengthOverseas: null,
+    // 地域情報(design.md「地域情報を判定する処理」手順2〜3)。エージェントが判定できた範囲のみを持ち、
+    // 判定できない場合はnull/空配列(=不明)のまま(requirements.md#地域情報-15)
+    originRegion: topic.originRegion,
+    currentRegions: topic.currentRegions,
+    strengthJapan: topic.strengthJapan,
+    strengthOverseas: topic.strengthOverseas,
     meetsCriteria: topic.independentSourceCount >= criteria.minIndependentSources,
     note: topic.breakdown ?? `独立情報源${topic.independentSourceCount}件`,
   }))
