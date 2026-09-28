@@ -4926,6 +4926,16 @@
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "続報の執筆 [7]",
+    "reason": "続報の本文を前回から何が変わったかを軸に書くという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・本文を書く処理」手順6でプロンプトに継続度・注目度の情報と指示を反映する。完全一致の重複投稿だけはisDuplicateOfLastPublishedBodyで機械的に検知する。requirements.md#エージェントの逸脱防止-7・generateContent.test.ts参照)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "続報の執筆 [8]",
+    "reason": "続報でも前回の記事を読んでいない読者に通じる最小限の説明を含めるという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・本文を書く処理」手順6でプロンプトに指示を反映する)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
     "item": "ビジネスルール・制約",
     "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },
@@ -4953,6 +4963,11 @@
     "specFile": "trend-digest/content-generation/requirements.md",
     "item": "エージェントの逸脱防止 [5]",
     "reason": "エージェントに適用するガードレール文言の記述で、コードとして実装・テストしないため(weekly-publishの実行指示に含める運用上の対応。scripts/trend-digest/generate-content.tsにガードレール文言をそのまま転記している)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "エージェントの逸脱防止 [6]",
+    "reason": "渡された継続度ラベル・注目度ラベル・継続日数・報告回数・地域と異なる段階・期間・地域を本文に書かないという執筆内容の質に関する要件で、コードで自動検証できないため(ガードレール文言・プロンプトへの継続度情報の反映で指示する。scripts/trend-digest/generate-content.ts参照)"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",

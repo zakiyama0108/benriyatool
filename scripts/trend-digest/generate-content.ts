@@ -15,9 +15,10 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import type { Candidate, SelectionResult } from '../../app/trend-digest/lib/candidateTypes'
+import type { SelectionResult, SelectedTopic } from '../../app/trend-digest/lib/candidateTypes'
 import { generateTopics, type ClaudeCliResponse } from '../../app/trend-digest/lib/generateContent'
 import type { GeneratedTopicInput } from '../../app/trend-digest/lib/assembleArticle'
+import { DURATION_LABELS, HEAT_LABELS } from '../../app/trend-digest/lib/types'
 
 const execFileAsync = promisify(execFile)
 
@@ -25,10 +26,29 @@ const REQUIREMENTS_PATH = path.join(process.cwd(), 'specs/trend-digest/content-g
 const DESIGN_PATH = path.join(process.cwd(), 'specs/trend-digest/content-generation/design.md')
 
 // content-generation/design.md「見出し・本文を書く処理」のガードレール文言をそのまま転記する
-// (weekly-publishの実行指示に必ず含める運用。requirements.md#エージェントの逸脱防止-5の具体化)
-const GUARDRAIL = `この記事で扱ってよい話題は、content-selectionの採用基準に基づき選定された候補のみである。選定候補に含まれない話題を新たに追加してはならない。本文は独自の視点で再構成した解説とし、原文の構成・表現の順序をそのままなぞってはならない。原文の詳細な数値・結論を網羅的に転記してはならない。`
+// (weekly-publishの実行指示に必ず含める運用。requirements.md#エージェントの逸脱防止-5〜7の具体化)
+const GUARDRAIL = `この記事で扱ってよい話題は、content-selectionの採用基準に基づき選定された候補のみである。選定候補に含まれない話題を新たに追加してはならない。本文は独自の視点で再構成した解説とし、原文の構成・表現の順序をそのままなぞってはならない。原文の詳細な数値・結論を網羅的に転記してはならない。渡された継続度ラベル・注目度ラベル・継続日数・報告回数・地域は事実として扱い、それと異なる段階・強さ・期間・地域を本文に書いてはならない。続報の場合は、前回掲載時の本文をそのまま言い換えただけの本文を書いてはならない。`
 
-function buildPrompt(candidate: Candidate, requirements: string, design: string): string {
+// 続報(報告回数2回目以降)の候補にだけ添える、前回からの変化を書くための情報(design.md
+// 「見出し・本文を書く処理」手順6)。lastPublishedBodyは前回掲載時の本文そのもので、
+// 「前回の言い換えで終わらせない」ためにエージェントへ渡す(重複時の機械検知はgenerateContent.ts
+// のclassifyGenerationResultがisDuplicateOfLastPublishedBodyで行う。requirements.md#エージェントの逸脱防止-7)
+function buildContinuityNote(candidate: SelectedTopic): string {
+  if (candidate.reportCount < 2) return ''
+  const lastLabel = candidate.lastPublishedDurationLabel ? DURATION_LABELS[candidate.lastPublishedDurationLabel] : '不明'
+  return `
+# 続報の情報(この話題は過去にも掲載済みです。requirements.md#続報の執筆-7〜8)
+- 通算の報告回数: ${candidate.reportCount}回目
+- 直近掲載時の継続度ラベル: ${lastLabel}
+- 今回の継続度ラベル: ${DURATION_LABELS[candidate.durationLabel]}
+- 今回の注目度ラベル: ${HEAT_LABELS[candidate.heatLabel]}
+- 継続日数: ${candidate.continuationDays}日
+- 前回掲載時の本文: ${candidate.lastPublishedBody ?? '(取得できませんでした)'}
+
+本文は、前回掲載時の本文をそのまま言い換えるのではなく、前回から何が変わったか(継続度ラベルの進行・継続期間の伸び・注目度の変化)を軸に書いてください。前回の記事を読んでいない読者にも通じるよう、話題そのものの最小限の説明も含めてください。`
+}
+
+function buildPrompt(candidate: SelectedTopic, requirements: string, design: string): string {
   return `あなたは「週刊トレンド」の記事執筆を担当するエージェントです。以下の要件定義・設計に厳密に従って、指定された候補の紹介記事を日本語で執筆してください。
 
 # 要件定義(content-generation/requirements.md)
@@ -45,6 +65,7 @@ ${GUARDRAIL}
 - 対象作品・話題名: ${candidate.title}
 - 情報源名: ${candidate.sourceName}
 - 元URL: ${candidate.sourceUrl}
+${buildContinuityNote(candidate)}
 
 WebFetchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、確認できた情報(作品名・ジャンル・情報源名)の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "body": null}\`)を返してください(いずれの場合も聞き返さない):
 
