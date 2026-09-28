@@ -83,7 +83,7 @@ function isHttpUrl(value: unknown): value is string {
 // 独立情報源の言及数」が揃っているか)。欠けている・型が不正な要素は無視し、有効な要素のみ残す
 function isUsableTopic(
   raw: RawWebSearchTopic
-): raw is { title: string; sourceName: string; sourceUrl: string; independentSourceCount: number; breakdown?: string } {
+): raw is RawWebSearchTopic & { title: string; sourceName: string; sourceUrl: string; independentSourceCount: number; breakdown?: string } {
   if (typeof raw.title !== 'string' || raw.title.trim() === '') return false
   if (typeof raw.sourceName !== 'string' || raw.sourceName.trim() === '') return false
   if (!isHttpUrl(raw.sourceUrl)) return false
