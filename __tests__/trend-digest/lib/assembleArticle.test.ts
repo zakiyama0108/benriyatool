@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { assembleArticle, type GeneratedTopicInput } from '../../../app/trend-digest/lib/assembleArticle'
+import { GENRE_ORDER } from '../../../app/trend-digest/lib/types'
 
 // 160〜480字の範囲を満たすダミー本文を作る
 function makeBody(length = 250): string {
@@ -21,7 +22,7 @@ function makeTopicInput(overrides: Partial<GeneratedTopicInput> = {}): Generated
 // 仕様: specs/trend-digest/weekly-publish/requirements.md#実行-4
 describe('assembleArticle - 選定・生成済みの候補から公開用の記事データ(id・edition・date・topics)を組み立てる', () => {
   it('editionと発行日から記事ID(<date>-<edition>形式)を組み立てる', () => {
-    const article = assembleArticle('entertainment', '2026-09-15', [makeTopicInput()])
+    const article = assembleArticle('entertainment', '2026-09-15', [makeTopicInput()], [])
     expect(article.id).toBe('2026-09-15-entertainment')
     expect(article.edition).toBe('entertainment')
     expect(article.date).toBe('2026-09-15')
@@ -31,7 +32,7 @@ describe('assembleArticle - 選定・生成済みの候補から公開用の記�
     // 入力順はanime→music(GENRE_ORDER上はmusicが先)。並び替え後にtopic-1/2が振られることを確認する
     const anime = makeTopicInput({ genre: 'anime', title: 'サンプルアニメB', heading: '見出しB' })
     const music = makeTopicInput({ genre: 'music', title: 'サンプル楽曲A', heading: '見出しA' })
-    const article = assembleArticle('entertainment', '2026-09-15', [anime, music])
+    const article = assembleArticle('entertainment', '2026-09-15', [anime, music], [])
 
     expect(article.topics.map((t) => t.genre)).toEqual(['music', 'anime'])
     expect(article.topics[0]).toMatchObject({
@@ -53,10 +54,33 @@ describe('assembleArticle - 生成に失敗した候補は記事データから�
     // generate-content.tsのgenerateTopicsが失敗候補を既に除外しているため、
     // ここでは「失敗候補が最初から渡されない」ケースを検証する
     const succeeded = makeTopicInput({ genre: 'music', title: '成功候補' })
-    const article = assembleArticle('entertainment', '2026-09-15', [succeeded])
+    const article = assembleArticle('entertainment', '2026-09-15', [succeeded], [])
 
     expect(article.topics).toHaveLength(1)
     expect(article.topics[0].sourceTitle).toBe('成功候補')
     expect(article.topics.some((t) => t.sourceTitle === '失敗候補')).toBe(false)
+  })
+})
+
+// 仕様: specs/trend-digest/weekly-publish/requirements.md#掲載件数の保証-1、specs/trend-digest/weekly-publish/requirements.md#掲載件数の保証-2
+describe('assembleArticle - 情報源から取得できなかったジャンル・生成に失敗したジャンルもunavailableGenresに入り、全ジャンルが記事に現れる', () => {
+  it('情報源から項目を取得できなかったジャンルと生成に失敗して除外したジャンルの両方がunavailableGenresに入る', () => {
+    const music = makeTopicInput({ genre: 'music' })
+    // entertainment編の残り8ジャンルのうち、japanese-movieは情報源から取得できなかった、
+    // foreign-movieは生成に失敗して除外したと想定し、どちらもunavailableGenresとして渡す
+    const article = assembleArticle('entertainment', '2026-09-15', [music], ['japanese-movie', 'foreign-movie'])
+
+    expect(article.unavailableGenres).toEqual(['japanese-movie', 'foreign-movie'])
+  })
+
+  it('topicsのジャンルとunavailableGenresを合わせるとGENRE_ORDER[edition]と過不足なく一致する(ジャンルが黙って記事から消えない回帰テスト)', () => {
+    const genres = GENRE_ORDER.entertainment
+    // 先頭ジャンルだけ生成に成功、残りは(情報源から取得できなかった想定で)すべてunavailableとする
+    const topics = [makeTopicInput({ genre: genres[0] })]
+    const unavailableGenres = genres.slice(1)
+    const article = assembleArticle('entertainment', '2026-09-15', topics, unavailableGenres)
+
+    const covered = new Set([...article.topics.map((t) => t.genre), ...(article.unavailableGenres ?? [])])
+    expect(covered).toEqual(new Set(genres))
   })
 })

@@ -19,10 +19,18 @@ export type GeneratedTopicInput = {
   body: string
 }
 
-// edition・発行日・生成済みトピック(生成に成功した候補のみ)からArticleを組み立てる。
+// edition・発行日・生成済みトピック(生成に成功した候補のみ)・unavailableGenres
+// (情報源から取得できなかったジャンル+生成に失敗して除外したジャンル)からArticleを組み立てる。
 // topicsはGENRE_ORDER(ジャンル定義順)に並び替え、並び替え後の位置に応じて
-// id(topic-1, topic-2, ...)を採番する
-export function assembleArticle(edition: Edition, date: string, topics: GeneratedTopicInput[]): Article {
+// id(topic-1, topic-2, ...)を採番する。unavailableGenresはtopicsのジャンルと重複しない前提で
+// そのまま持たせる(全ジャンルがtopics+unavailableGenresのいずれかに現れる状態を保つ。
+// requirements.md#掲載件数の保証-1〜2。網羅性の検証自体はwrite-article.tsが呼ぶparseArticleが担う)
+export function assembleArticle(
+  edition: Edition,
+  date: string,
+  topics: GeneratedTopicInput[],
+  unavailableGenres: Genre[]
+): Article {
   const order = GENRE_ORDER[edition]
   const sorted = [...topics].sort((a, b) => order.indexOf(a.genre) - order.indexOf(b.genre))
 
@@ -41,5 +49,6 @@ export function assembleArticle(edition: Edition, date: string, topics: Generate
     edition,
     date,
     topics: sortedTopics,
+    unavailableGenres,
   }
 }
