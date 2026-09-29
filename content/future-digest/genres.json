@@ -1,0 +1,73 @@
+[
+  {
+    "id": "technology-ai",
+    "label": "テクノロジー・AI",
+    "description": "テクノロジー・AI",
+    "active": true,
+    "lineExcluded": false
+  },
+  {
+    "id": "medical-health",
+    "label": "医療・健康",
+    "description": "医療・健康",
+    "active": true,
+    "lineExcluded": false
+  },
+  {
+    "id": "environment-energy",
+    "label": "環境・エネルギー",
+    "description": "環境・エネルギー",
+    "active": true,
+    "lineExcluded": false
+  },
+  {
+    "id": "economy-work",
+    "label": "経済・働き方",
+    "description": "経済・働き方",
+    "active": true,
+    "lineExcluded": false
+  },
+  {
+    "id": "society-population-life",
+    "label": "社会・人口・暮らし",
+    "description": "社会・人口・暮らし",
+    "active": true,
+    "lineExcluded": false
+  },
+  {
+    "id": "space-science",
+    "label": "宇宙・科学",
+    "description": "宇宙・科学",
+    "active": true,
+    "lineExcluded": false
+  },
+  {
+    "id": "geopolitics",
+    "label": "地政学",
+    "description": "地政学",
+    "active": true,
+    "lineExcluded": false
+  },
+  {
+    "id": "sexuality-romance",
+    "label": "性・恋愛",
+    "description": "自慰の新しいやり方・セルフプレジャーのテクノロジー、恋愛・結婚・性交・性生活に関する動向の変化、出会い系・立ちんぼ・風俗など性産業の動向の変化を扱う",
+    "active": true,
+    "lineExcluded": true
+  },
+  {
+    "id": "personal-interest",
+    "label": "個人的注目分野",
+    "description": "運営者が指定したテーマの中から選ぶ",
+    "themes": ["AR・VR", "若返り"],
+    "active": true,
+    "lineExcluded": false
+  },
+  {
+    "id": "other",
+    "label": "その他",
+    "description": "上記のいずれにも入らない、影響の大きい未来予測を扱う",
+    "active": true,
+    "lineExcluded": false
+  }
+]

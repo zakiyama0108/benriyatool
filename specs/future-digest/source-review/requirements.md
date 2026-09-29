@@ -1,7 +1,5 @@
 # 要件定義: 月次見直し(ジャンル・採用基準・執筆ルール)
 
-> ステータス: 仕様確認中(未実装)
-
 ## サマリ
 月に1回、運営者のフィードバックと収集状況(候補が見つからなかった枠)をもとに、ジャンル・注目テーマ・採用基準([content-selection](../content-selection/requirements.md))と執筆ルール([content-generation](../content-generation/requirements.md))の見直し案をPRで出す。反映は運営者が確認して承認(マージ)してから行う。trend-digestのsource-reviewと同じ運用にする。詳細は「[ユースケース図](#ユースケース図)」参照。
 
