@@ -24,7 +24,7 @@ description: /spec-reviewや/implementation-review、またはPR上で受けた�
 - 重要度の高い順(🔴→🟡)に1件ずつ対応する。🟢(対応任意)は対応するかどうかを先に宣言してから進める
 - 指摘に同意できない・修正すると別の問題が起きる場合は、黙って見送らず理由を添えてユーザーに確認する
 - 実装コードの修正はTDDのサイクルを守る。挙動が変わる修正は、先にテストを直す/追加してから実装を変える([/implementation](../implementation/SKILL.md)参照)
-- 仕様(3点セット)に影響する修正は、仕様書側も同じ変更で更新する(確認範囲は[/fix](../fix/SKILL.md)のStep2を参照)
+- 仕様(3点セット)に影響する修正は、仕様書側も同じ変更で更新する(確認範囲は[/fix](../fix/SKILL.md)のStep2を参照)。直した行・足した行にも読み手の分け方・出所の目印の規約([spec-layout](../spec-layout/SKILL.md))を守る。指摘を受けて書き手が書き換えた行の目印は`〔提案〕`にする(承認者が決めた内容に戻す修正なら`〔合意〕`)
 - 指摘されていない箇所のついで修正はしない(気づいた問題は別の指摘・別のタスクとして報告する)
 - 実装コードの修正でNext.js固有の挙動差分にぶつかったら、[/implementation](../implementation/SKILL.md)の[references/nextjs-notes.md](../implementation/references/nextjs-notes.md)を確認・追記する
 
