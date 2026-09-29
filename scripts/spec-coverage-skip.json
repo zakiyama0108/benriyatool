@@ -8113,5 +8113,200 @@
     "specFile": "research-digest/content-generation/design.md",
     "item": "利用規約への反映",
     "reason": "requirements.mdの条項文言をそのまま転記した見出しで、実際の反映はapp/legal/page.tsx・specs/legal/requirements.mdへの追記(TDD対象外、tasks.md Task 7)で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "前提: 記事データの形式(この機能が定義する共有スキーマ)",
+    "reason": "記事データ型の定義そのものであり、個々のフィールドの振る舞いはtypes.test.ts・articleSchema.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "記事データを読み込む処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事本文の表示-1〜2でarticles.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "表示するジャンルの一覧を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#記事本文の表示-6、requirements.md#並び順の切り替え-8〜9でsortGenres.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "その回の記事本文を表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#記事本文の表示-1〜6等でArticleDetailView.test.tsx・FindingCard.test.tsx等によりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "ログイン状態に応じてフィードバック入力欄の表示を切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#運営者向けフィードバック-11でArticleDetailView.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "フィードバックを送信する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#運営者向けフィードバック-12〜13でFeedbackForm.test.tsx・saveFeedback.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "バリデーション",
+    "reason": "バリデーションの各項目はarticleSchema.test.tsで検証済み(describe直前の仕様コメントで参照)。フィードバック入力内容の検証はrequirements.md#運営者向けフィードバック-13でFeedbackForm.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "エラーハンドリング",
+    "reason": "スキーマ違反の例外はarticleSchema.test.ts、送信失敗の文言・二重送信防止はFeedbackForm.test.tsxで、それぞれ対応するビジネスルール側の参照でテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "ファイル配置の一覧であり、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル・RLSのSQL定義であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用(deploy.ymlのmigrateジョブ)で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル)",
+    "reason": "テーブル・RLSのSQL定義であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネントのprops・役割の一覧で、各コンポーネントは個別のテストで検証済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "状態管理",
+    "reason": "並び順の状態はArticleDetailView.test.tsx(requirements.md#並び順の切り替え-7・10)、送信状態はFeedbackForm.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "セキュリティ",
+    "reason": "RLS(SQL)・Reactの標準エスケープ・外部リンクのrel属性(FindingCard.test.tsxで検証済み)による対策で、独立したテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "ログ",
+    "reason": "コンソール出力の方針。運営者判定失敗時のconsole.errorはArticleDetailView.test.tsxで検証済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "画面設計",
+    "reason": "見た目・レイアウトの設計であり、自動テストではなく実装後のlocalhostでの画面レビューで確認するため(design.mdに明記)"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > id",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > created_at",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > is_test",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > article_id",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > finding_id",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > comment",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > ArticleDetailView",
+    "reason": "コンポーネントのprops・役割の表の行で、ArticleDetailView.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > SortToggle",
+    "reason": "コンポーネントのprops・役割の表の行で、SortToggle.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > FindingCard",
+    "reason": "コンポーネントのprops・役割の表の行で、FindingCard.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > FindingBadges",
+    "reason": "コンポーネントのprops・役割の表の行で、FindingBadges.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > FeedbackForm",
+    "reason": "コンポーネントのprops・役割の表の行で、FeedbackForm.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "表示分量・著作権への配慮 [1]",
+    "reason": "本文の分量(160〜480字)の数値境界はdesign.md#バリデーションとしてarticleSchema.test.tsでテスト済み。出典の表示はFindingCard.test.tsx(requirements.md#記事本文の表示-2)で検証済み。「原文の全文転記はしない」は生成側(content-generation)の執筆ルールで、表示側に検証対象がないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "フィードバックの保存・権限 [4]",
+    "reason": "保存したフィードバックを一切表示・一覧化しないという不作為の要件で、対応するテスト(存在しないことの検証)を持たない。公開画面のコンポーネントがcommentを参照する実装が存在しないことで担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   }
 ]
