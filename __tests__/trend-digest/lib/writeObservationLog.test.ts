@@ -162,7 +162,7 @@ describe('観測ログの書き出し時の重複統合 - 同じ回に同じ正�
   })
 })
 
-// 仕様: specs/trend-digest/trend-history/design.md「その回の観測を履歴に記録する処理」手順2
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-3、specs/trend-digest/trend-history/design.md「その回の観測を履歴に記録する処理」手順2
 describe('観測ログの書き出し時の情報源ごとの記録上限 - 情報源ごとに上位maxObservationsPerSource件までに絞る', () => {
   it('同じ情報源から取れた項目数が上限を超える場合、上位(順位が小さい)から上限件数までに絞られること', () => {
     const items = Array.from({ length: 5 }, (_, i) =>

@@ -15,7 +15,7 @@ describe('継続度ラベルのバッジ - どれだけ続いているかを日�
   )
 })
 
-// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-11
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-11、specs/trend-digest/trend-history/requirements.md#継続度ラベル-6
 describe('「流行前」の継続度ラベルの表記 - 半月以上続いている話題という目安にまだ達していないことが分かる文言にする', () => {
   it('durationLabelが"pre-trend"のとき、半月に満たないことが分かる補足文言が表示されること', () => {
     render(<DurationBadge label="pre-trend" />)

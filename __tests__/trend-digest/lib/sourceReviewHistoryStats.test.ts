@@ -98,8 +98,8 @@ afterEach(() => {
   fs.rmSync(tmpDir, { recursive: true, force: true })
 })
 
-// 仕様: specs/trend-digest/source-review/requirements.md#選定領域の見直し案の粒度・提示方法-9〜10、
-// specs/trend-digest/source-review/design.md「見直しの材料を集める処理」手順3
+// 仕様: specs/trend-digest/source-review/design.md「見直しの材料を集める処理」手順3
+// (集計結果は選定領域の見直し案の粒度・提示方法[9][10]の材料になるが、見直し案自体の作成はエージェントの推論に委ねるためTDD対象外。本テストは材料となる集計ロジックのみを検証する)
 describe('観測ログからの継続度ラベル再集計・地域不明率の集計', () => {
   it('採用基準を満たした候補があるのに掲載した話題が「流行前」だった回数をジャンルごとに数えられること(候補が0件の回は数えない)', () => {
     // music: 08-04(候補あり・流行前→カウント対象)、08-11(候補なし→対象外。観測ログが非空でも

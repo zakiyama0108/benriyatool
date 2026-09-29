@@ -22,7 +22,7 @@ function log(date: string, edition: ObservationLog['edition'], observations: Obs
   return { date, edition, observations }
 }
 
-// 仕様: specs/trend-digest/trend-history/design.md「履歴を話題ごとの系列に集約する処理」、specs/trend-digest/trend-history/requirements.md#機能要件-4
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-4、specs/trend-digest/trend-history/design.md「履歴を話題ごとの系列に集約する処理」
 describe('観測ログの話題ごとの系列への集約(aggregateHistory) - 正規化タイトルごとに1本の系列へまとめる', () => {
   it('観測ログが1件もないとき、空の結果になること', () => {
     expect(aggregateHistory([])).toEqual([])
@@ -128,7 +128,7 @@ describe('観測ログの話題ごとの系列への集約(aggregateHistory) - �
   })
 })
 
-// 仕様: specs/trend-digest/trend-history/requirements.md#継続度ラベル、specs/trend-digest/trend-history/design.md「途切れずに続いている期間を求める処理」
+// 仕様: specs/trend-digest/trend-history/requirements.md#継続度ラベル-1、specs/trend-digest/trend-history/design.md「途切れずに続いている期間を求める処理」
 describe('途切れずに続いている期間の算出(aggregateHistory) - 一度途切れたらそこで区切り、再検知時点から数え直す', () => {
   it('3ヶ月前に1回だけ観測され、間のすべての実行で観測されず、直近の実行で再び観測された話題の継続日数が0になること(初回検知日からの通算で測っていたら約90日になる回帰テスト)', () => {
     const logs = [

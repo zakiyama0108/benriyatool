@@ -151,7 +151,7 @@ describe('WebSearchジャンルの観測保持(trend-history連携) - 独立言�
   })
 })
 
-// 仕様: specs/trend-digest/trend-history/requirements.md#地域情報-16、specs/trend-digest/trend-history/requirements.md#地域情報-17
+// 仕様: specs/trend-digest/trend-history/requirements.md#地域情報-16、specs/trend-digest/trend-history/requirements.md#地域情報-17、specs/trend-digest/content-selection/requirements.md#情報源の地域区分-2
 describe('地域情報の収集(WebSearchジャンル側) - エージェントの応答から発祥地域・主な流行地域・日本/海外での言及数を取り込む', () => {
   it('応答に地域情報が含まれる場合、observations側にそのまま反映されること', async () => {
     const call: WebSearchCallFn = vi.fn().mockResolvedValue({

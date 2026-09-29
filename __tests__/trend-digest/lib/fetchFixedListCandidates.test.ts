@@ -253,7 +253,7 @@ describe('観測項目への順位の記録(trend-history連携) - rankはstreng
   })
 })
 
-// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-2
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-2、specs/trend-digest/content-selection/requirements.md#機能要件-4
 describe('採用基準を満たさなかった項目の観測保持(trend-history連携) - 人気が定着している作品ほど履歴から消えることを防ぐため、動きがなかった項目もmeetsCriteria: falseとして観測項目に残す', () => {
   it('newEntryOrRisingRankのジャンルで、新規でも順位上昇でもない(上位に居続けている)項目が、候補には含まれないが観測項目には残ること', async () => {
     const criteria: FixedListGenreCriteria = { method: 'fixed-list', newEntryOrRisingRank: true }

@@ -52,7 +52,7 @@ afterEach(() => {
   fs.rmSync(tmpDir, { recursive: true, force: true })
 })
 
-// 仕様: specs/trend-digest/trend-history/design.md「エラーハンドリング」
+// 仕様: specs/trend-digest/trend-history/requirements.md#継続度ラベル-1、specs/trend-digest/trend-history/design.md「エラーハンドリング」
 describe('運用開始直後の挙動 - 履歴ディレクトリが存在しない・観測ログが1件もない状態から実行しても例外にならない', () => {
   it('初回実行で初めて観測された話題は、継続日数0の「流行前」、注目度は情報源での位置(実行回数不足)で決まること', () => {
     const historyDir = path.join(tmpDir, 'history') // まだ存在しないディレクトリ
@@ -73,7 +73,7 @@ describe('運用開始直後の挙動 - 履歴ディレクトリが存在しな�
   })
 })
 
-// 仕様: specs/trend-digest/trend-history/design.md「エラーハンドリング」、specs/trend-digest/trend-history/requirements.md#継続度ラベル-1
+// 仕様: specs/trend-digest/trend-history/design.md「エラーハンドリング」
 describe('欠測週(週次実行そのものの失敗)があっても判定がずれない', () => {
   it('欠測週があっても継続日数(日付の差)が変わらないこと', () => {
     const historyDir = path.join(tmpDir, 'history')

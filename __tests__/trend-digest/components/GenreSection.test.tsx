@@ -52,7 +52,7 @@ describe('ジャンル見出し+トピックカードの表示 - 各ジャンル
   })
 })
 
-// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-17
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-17、specs/trend-digest/content-selection/requirements.md#掲載件数-3
 describe('話題を取得できなかったジャンルの表示 - 見出しは出したうえで、取得できなかった旨をトピックカードの代わりに表示する', () => {
   it('topicがnullの場合、見出しは表示されつつ、取得できなかった旨がトピックカードの代わりに表示されること', () => {
     render(<GenreSection genre="music" topic={null} isAdmin={false} articleId="2026-09-15-entertainment" />)

@@ -145,7 +145,7 @@ describe('記事データのバリデーション - JSONのスキーマを検証
   })
 })
 
-// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-17、specs/trend-digest/content-selection/requirements.md#掲載件数
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-17、specs/trend-digest/content-selection/requirements.md#掲載件数-3
 describe('記事データのバリデーション - 全ジャンルの網羅(topics+unavailableGenresがGENRE_ORDER[edition]と一致すること)を検証する', () => {
   it('topicsとunavailableGenresを合わせてその編の全ジャンルと一致する場合、検証を通ること', () => {
     const allGenres = GENRE_ORDER.entertainment

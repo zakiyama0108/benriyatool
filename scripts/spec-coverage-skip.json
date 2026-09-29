@@ -4731,6 +4731,21 @@
   },
   {
     "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > DurationBadge",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDurationBadge.test.tsx(requirements.md#継続度・注目度の表示-10〜11・13)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > HeatBadge",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはHeatBadge.test.tsx(requirements.md#継続度・注目度の表示-12〜13)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > TrendMeta",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはTrendMeta.test.tsx(requirements.md#継続度・注目度の表示-14〜16)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
     "item": "状態管理",
     "reason": "ページの状態設計(useStateの持ち方)の説明で、tasks.md Task9の判断によりpage.tsx/ArticleDetailView.tsx自体はユニットテスト対象外とし、配下のGenreSection/TopicCard/FeedbackFormの各テストで担保するため"
   },
@@ -4783,6 +4798,16 @@
     "specFile": "trend-digest/article-detail/requirements.md",
     "item": "フィードバックの保存・権限 [5]",
     "reason": "保存したフィードバックを一切表示・一覧化しないという不作為の要件で、対応するテスト(存在しないことの検証)を持たない。公開画面のコンポーネント(GenreSection/TopicCard等)がフィードバック一覧表示を実装していないことはコードレビューで担保する"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "継続度・注目度の表示の扱い [7]",
+    "reason": "「色だけに頼らず文字ラベルも併記する」という文字表示の部分はDurationBadge.test.tsx/HeatBadge.test.tsxで担保済みだが、「段階ごとに色で見分けが付く」という配色自体の妥当性は見た目の判断でユニットテストでは検証できないため、localhost実機での目視確認に委ねる"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "継続度・注目度の表示の扱い [8]",
+    "reason": "継続度ラベル・注目度ラベルを見た目で区別するという配色・形状のトーン指定で、Tailwindでの実装確認はlocalhost実機での目視確認に委ねるため(DurationBadgeは暖色系の塗りつぶし・HeatBadgeは寒色系の枠線という区別はHeatBadge.tsx/DurationBadge.tsxの実装コメント参照)"
   },
   {
     "specFile": "trend-digest/article-detail/requirements.md",
@@ -4871,8 +4896,23 @@
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
+    "item": "サイトごとの専用パーサー(`scripts/trend-digest/sourceParsers/`)",
+    "reason": "design.mdの処理フローの見出しで、各サイト専用パーサーの実際の振る舞いはsourceParsers.test.ts(requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜9)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "併用ジャンル(アニメ)の候補を収集・判定する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#選定方式-7でcollect-and-select.test.ts(collectGenreObservations)がテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
     "item": "WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)",
     "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1等でcollectWebSearchCandidates.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "全観測項目を履歴へ記録する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-3でwriteObservationLog.test.ts・trend-history側の各テストがテスト済みのため"
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
@@ -5058,6 +5098,11 @@
     "specFile": "trend-digest/weekly-publish/requirements.md",
     "item": "実行 [3]",
     "reason": "実行主体がGitHub Actionsであり、候補収集・判定・要約・記事執筆をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "実行 [5]",
+    "reason": "観測ログのみのPRを(a)正常スキップ(b)生成失敗(c)通常公開のいずれでも必ずコミット・PR作成・自動マージするというワークフロー実行順序の要件で、.github/workflows/trend-digest-weekly.ymlのステップ順序という宣言的な定義でありユニットテスト対象を持たないため(collect-and-select.tsが観測ログの書き出しを選定・生成より先に行う実装はcollect-and-select.ts内のコメント参照)"
   },
   {
     "specFile": "trend-digest/weekly-publish/requirements.md",
@@ -6591,8 +6636,8 @@
   },
   {
     "specFile": "trend-digest/trend-history/design.md",
-    "item": "掲載実績(掲載回数・直近掲載時の継続度ラベル)を求める処理",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#掲載実績の追跡-13〜14でpublishRecords.test.tsがテスト済みのため"
+    "item": "掲載実績(掲載回数・直近掲載時の継続度ラベル・直近掲載時の本文)を求める処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#掲載実績の追跡-13〜15でpublishRecords.test.tsがテスト済みのため"
   },
   {
     "specFile": "trend-digest/trend-history/design.md",
@@ -6623,6 +6668,66 @@
     "specFile": "trend-digest/trend-history/design.md",
     "item": "ログ",
     "reason": "観測件数・ラベルごとの件数をstderrに記録するCLIの説明で、出力自体はrequirements.md側の項目を持たないため個別にテストする(tasks.md Task 14)"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "機能要件 [5]",
+    "reason": "「下記「継続度ラベル」に従って継続の長さを判定する」という参照のみの記述で、具体的な判定基準は継続度ラベル[1]〜[7](judgeDurationLabel.test.ts等)で個別にテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "機能要件 [6]",
+    "reason": "「下記「注目度ラベル」に従って今の強さを判定する」という参照のみの記述で、具体的な判定基準は注目度ラベル[8]〜[12](judgeHeatLabel.test.ts等)で個別にテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "機能要件 [7]",
+    "reason": "「下記「掲載実績の追跡」参照」という参照のみの記述で、具体的な算出方法は掲載実績の追跡[13]〜[15](publishRecords.test.ts)で個別にテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "継続度ラベル [5]",
+    "reason": "日数の区切り(14日・30日・90日)を選んだ根拠の説明で、具体的な日数境界そのものは継続度ラベル[1]〜[4](judgeDurationLabel.test.ts)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "履歴データの保持期間 [18]",
+    "reason": "履歴データを削除・自動アーカイブしないという不作為の要件で、対応するテスト(削除機能が存在しないことの検証)を持たない。削除・アーカイブ処理自体を実装していないことはコードレビューで担保する"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   },
   {
     "specFile": "trend-digest/source-directory/requirements.md",

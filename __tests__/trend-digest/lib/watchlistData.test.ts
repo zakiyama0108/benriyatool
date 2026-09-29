@@ -82,7 +82,7 @@ describe('ファッション・ガジェット家電の選定方式 - 実際の�
   })
 })
 
-// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-4、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-5、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-6、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-7、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-9、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-10
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-4、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-5、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-6、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-7、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-8、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-9、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-10、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11
 describe('WebSearchジャンルの検索の手がかり(searchHints)データ - ジャンルごとの検索観点がrequirements.mdの記載と対応する', () => {
   it('SNSバズりはX・TikTok・Instagram・Threadsについての検索の手がかりを持つこと', () => {
     const entry = watchlist.find((e) => e.genre === 'sns-buzz')
@@ -125,6 +125,44 @@ describe('WebSearchジャンルの検索の手がかり(searchHints)データ - 
     const entry = watchlist.find((e) => e.genre === 'dev-trends')
     const hints = entry?.searchHints?.join(' ') ?? ''
     expect(hints).toMatch(/開発/)
+  })
+
+  it('アニメ(併用ジャンルのWebSearch側)はSNS・口コミ・ニュースメディアでの言及増加についての検索の手がかりを持つこと(固定リスト側のランキングに現れない作品も拾うため)', () => {
+    const entry = watchlist.find((e) => e.genre === 'anime')
+    const hints = entry?.searchHints?.join(' ') ?? ''
+    expect(hints).toMatch(/SNS/)
+    expect(hints).toMatch(/ニュース/)
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-3
+describe('WebSearchジャンルの検索の手がかり(searchHints)データ - 単発ニュースではなく自然発生的な広がりを捉える表現にし、編集記事狙いの表現は使わない', () => {
+  it('WebSearchジャンル・併用ジャンルのどのsearchHintsにも「紹介する記事」のような編集記事狙いの表現が含まれないこと', () => {
+    const targets = watchlist.filter((e) => e.method === 'websearch' || e.method === 'hybrid')
+    for (const entry of targets) {
+      for (const hint of entry.searchHints ?? []) {
+        expect(hint).not.toMatch(/紹介する記事/)
+      }
+    }
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-2
+describe('WebSearchジャンルの独立言及の最低件数(minIndependentSources)の既定値 - ニュース性の高い単発の話題を誤って採用しないよう既定で3件以上とする', () => {
+  it('WebSearchジャンルのminIndependentSourcesが既定の3件以上であること', () => {
+    for (const genre of WEBSEARCH_GENRES) {
+      const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
+      if (genreCriteria.method !== 'websearch') throw new Error(`${genre}はwebsearchジャンルではありません`)
+      expect(genreCriteria.minIndependentSources).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('併用ジャンル(hybrid)のWebSearch側のminIndependentSourcesが既定の3件以上であること', () => {
+    for (const genre of HYBRID_GENRES) {
+      const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
+      if (genreCriteria.method !== 'hybrid') throw new Error(`${genre}はhybridジャンルではありません`)
+      expect(genreCriteria.webSearch.minIndependentSources).toBeGreaterThanOrEqual(3)
+    }
   })
 })
 

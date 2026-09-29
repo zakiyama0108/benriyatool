@@ -227,6 +227,41 @@ describe('各ジャンル1件の選定(selectEditionTopics) - 対象editionの�
   })
 })
 
+// 仕様: specs/trend-digest/content-selection/requirements.md#機能要件-6、specs/trend-digest/content-selection/requirements.md#掲載する話題の選び方-7
+describe('選定結果へのtrend-history判定結果の添付(selectEditionTopics) - 継続度ラベル・注目度ラベル・継続日数・報告回数・地域情報をトピックに持たせてcontent-generationへ引き渡す', () => {
+  it('選ばれたトピックが、判定結果の継続度ラベル・注目度ラベル・継続日数・報告回数・直近掲載時の情報をそのまま持つこと', () => {
+    const judgements: JudgementLookup = new Map()
+    judgements.set(
+      normalizeTitle('music-話題'),
+      baseJudgement({
+        durationLabel: 'talked',
+        heatLabel: 'high',
+        continuationDays: 45,
+        continuationStartDate: '2026-08-01',
+        reportCount: 3,
+        lastPublishedDurationLabel: 'emerging',
+        lastPublishedBody: '前回の本文',
+      })
+    )
+    const genreObservations: GenreObservations[] = [
+      { genre: 'music', observations: [baseCandidate({ genre: 'music', title: 'music-話題', meetsCriteria: true })] },
+    ]
+    const result = selectEditionTopics(genreObservations, judgements, 'entertainment')
+    expect(result.status).toBe('ok')
+    if (result.status !== 'ok') return
+    const [topic] = result.topics
+    expect(topic).toMatchObject({
+      durationLabel: 'talked',
+      heatLabel: 'high',
+      continuationDays: 45,
+      continuationStartDate: '2026-08-01',
+      reportCount: 3,
+      lastPublishedDurationLabel: 'emerging',
+      lastPublishedBody: '前回の本文',
+    })
+  })
+})
+
 // 仕様: specs/trend-digest/content-selection/requirements.md#掲載する話題の選び方-8
 describe('同一話題の突き合わせ(selectEditionTopics) - 観測項目のタイトルと判定結果の突き合わせは、前後の空白・全角半角・大文字小文字の違いを吸収する', () => {
   it('観測項目のタイトルが前後の空白・全角半角・大文字小文字違いでも、正規化後に一致する判定結果と正しく結び付くこと', () => {
