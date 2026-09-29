@@ -94,6 +94,17 @@ export default function ArticleDetailView({ article }: Props) {
     }
   }, [session])
 
+  // 付箋の作成・編集・削除をその場で記事内の付箋一覧(Map)へ反映する(bookmark/design.md「コンポーネント設計」)。
+  // 再取得が起きてもキー(付箋id)が変わらず、編集中のBookmarkPanelが再マウントされないようにするため
+  function handleBookmarkChange(predictionId: string, bookmark: BookmarkSummary | null) {
+    setBookmarks((prev) => {
+      const next = new Map(prev)
+      if (bookmark) next.set(predictionId, bookmark)
+      else next.delete(predictionId)
+      return next
+    })
+  }
+
   const title = buildArticleTitle(article.date)
   const horizons = horizonsForIssue(article.issueNumber)
   const slots = sortSlots(article, order)
@@ -131,6 +142,7 @@ export default function ArticleDetailView({ article }: Props) {
               articleId={article.id}
               isAdmin={isAdmin}
               session={session}
+              onBookmarkChange={handleBookmarkChange}
               bookmark={slot.kind === 'prediction' ? bookmarks.get(slot.prediction.id) ?? null : null}
             />
           ))}

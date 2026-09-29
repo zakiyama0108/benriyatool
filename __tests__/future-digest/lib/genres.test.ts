@@ -11,7 +11,7 @@ function makeRawGenres(overrides: Partial<GenreConfig>[] = []): unknown {
 }
 
 // 仕様: specs/future-digest/content-selection/requirements.md#機能要件-1
-describe('genres.json - ジャンル・個人的注目分野をコードではなく設定ファイルで管理する', () => {
+describe('ジャンル設定ファイル - ジャンル・個人的注目分野をコードではなく設定ファイルで管理する', () => {
   it('genres.jsonの記載順どおりにジャンルが返ること', () => {
     const genres = loadGenres()
     expect(genres.map((g) => g.id)).toEqual((genresData as GenreConfig[]).map((g) => g.id))
@@ -29,7 +29,7 @@ describe('genres.json - ジャンル・個人的注目分野をコードでは�
 })
 
 // 仕様: specs/future-digest/content-selection/requirements.md#ジャンル-1、specs/future-digest/content-selection/requirements.md#ジャンル-2、specs/future-digest/content-selection/requirements.md#ジャンル-3、specs/future-digest/content-selection/requirements.md#ジャンル-4、specs/future-digest/content-selection/requirements.md#ジャンル-5、specs/future-digest/content-selection/requirements.md#ジャンル-6、specs/future-digest/content-selection/requirements.md#ジャンル-7、specs/future-digest/content-selection/requirements.md#ジャンル-8、specs/future-digest/content-selection/requirements.md#ジャンル-9、specs/future-digest/content-selection/requirements.md#ジャンル-10
-describe('genres.json - 実データが10ジャンル(性・恋愛、個人的注目分野を含む)の定義を満たすこと', () => {
+describe('ジャンル設定ファイル - 実データが10ジャンル(性・恋愛、個人的注目分野を含む)の定義を満たすこと', () => {
   const genres = loadGenres()
 
   it('現在有効な10ジャンルが定義されていること', () => {
