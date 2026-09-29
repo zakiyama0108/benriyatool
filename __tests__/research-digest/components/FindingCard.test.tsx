@@ -1,9 +1,25 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import FindingCard from '../../../app/research-digest/components/FindingCard'
 import type { GenreEntry } from '../../../app/research-digest/lib/sortGenres'
 import type { EmptyGenre, Finding } from '../../../app/research-digest/lib/types'
 import { GENRE_ORDER } from '../../../app/research-digest/lib/types'
+
+import type { Session } from '@supabase/supabase-js'
+import { createBookmark } from '../../../app/research-digest/lib/bookmarks'
+
+// BookmarkPanel経由でlib/bookmarks(→supabaseClient)が読み込まれるが、本テストは付箋操作欄の
+// 表示切り替えのみを検証するためモックする(BookmarkPanel.test.tsxで保存・削除の挙動は担保済み)
+vi.mock('../../../app/research-digest/lib/bookmarks', () => ({
+  createBookmark: vi.fn(),
+  updateBookmark: vi.fn(),
+  deleteBookmark: vi.fn(),
+}))
+const createBookmarkMock = vi.mocked(createBookmark)
+
+function makeSession(email: string): Session {
+  return { user: { email } } as Session
+}
 
 // FeedbackForm経由でsaveFeedback(→supabaseClient)が読み込まれるため、表示切り替えの検証用にモックする
 vi.mock('../../../app/research-digest/lib/saveFeedback', () => ({ saveFeedback: vi.fn() }))
@@ -98,5 +114,90 @@ describe('掲載できなかったジャンルの表示(候補なし・収集失
     render(<FindingCard entry={emptyEntry({ reason: 'generation-failed' })} articleId="2026-10-05" isAdmin={true} />)
     expect(screen.getByText('今回は記事を用意できませんでした')).toBeTruthy()
     expect(screen.queryByRole('textbox')).toBeNull()
+  })
+})
+
+// 仕様: specs/research-digest/bookmark/requirements.md#記事への付箋-5
+describe('付箋の操作欄の表示切り替え(ログイン中のみ表示し、掲載できなかったジャンルには出さない)', () => {
+  it('ログインしていない場合、研究があるジャンルでも付箋の操作が表示されないこと', () => {
+    render(<FindingCard entry={findingEntry()} articleId="2026-10-05" isAdmin={false} session={null} />)
+    expect(screen.queryByRole('button', { name: '付箋を貼る' })).toBeNull()
+  })
+
+  it('ログイン中は、研究があるジャンルに「付箋を貼る」が表示されること', () => {
+    render(<FindingCard entry={findingEntry()} articleId="2026-10-05" isAdmin={false} session={makeSession('reader@example.com')} />)
+    expect(screen.getByRole('button', { name: '付箋を貼る' })).toBeTruthy()
+  })
+
+  it('取得済みの付箋がある場合、保存済みのメモが表示されること', () => {
+    render(
+      <FindingCard
+        entry={findingEntry()}
+        articleId="2026-10-05"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        bookmark={{ id: 'bookmark-1', memo: '気になるメモ' }}
+      />
+    )
+    expect(screen.getByText('気になるメモ')).toBeTruthy()
+  })
+
+  it('付箋の取得が遅れて、「付箋を貼る」の表示になった後に取得済みの付箋が届いた場合、保存済みのメモに表示し直され「付箋を貼る」は消えること', () => {
+    const session = makeSession('reader@example.com')
+    const { rerender } = render(
+      <FindingCard entry={findingEntry()} articleId="2026-10-05" isAdmin={false} session={session} bookmark={null} />
+    )
+    expect(screen.getByRole('button', { name: '付箋を貼る' })).toBeTruthy()
+
+    rerender(
+      <FindingCard
+        entry={findingEntry()}
+        articleId="2026-10-05"
+        isAdmin={false}
+        session={session}
+        bookmark={{ id: 'bookmark-1', memo: '気になるメモ' }}
+      />
+    )
+    expect(screen.getByText('気になるメモ')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: '付箋を貼る' })).toBeNull()
+  })
+
+  it('ログイン中でも、候補なし・収集失敗・生成失敗のジャンルには付箋の操作が表示されないこと', () => {
+    render(<FindingCard entry={emptyEntry({ reason: 'no-candidate' })} articleId="2026-10-05" isAdmin={false} session={makeSession('reader@example.com')} />)
+    expect(screen.queryByRole('button', { name: '付箋を貼る' })).toBeNull()
+  })
+
+  it('付箋を新規に貼ると、その研究の識別子と作られた付箋が記事詳細ページ側へ伝わること', async () => {
+    createBookmarkMock.mockResolvedValue('bookmark-1')
+    const onBookmarkChange = vi.fn()
+    const entry = findingEntry()
+    render(
+      <FindingCard
+        entry={entry}
+        articleId="2026-10-05"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        onBookmarkChange={onBookmarkChange}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: '付箋を貼る' }))
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '気になるメモ' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+
+    const findingId = entry.kind === 'finding' ? entry.finding.id : ''
+    await waitFor(() => expect(onBookmarkChange).toHaveBeenCalledWith(findingId, { id: 'bookmark-1', memo: '気になるメモ' }))
+  })
+})
+
+// 仕様: specs/research-digest/bookmark/design.md「記事詳細ページへの追加(article-detailの画面)」
+describe('研究カードへの研究ID属性の付与(付箋一覧からのリンク先になる)', () => {
+  it('研究があるジャンルのカード要素に研究IDのid属性が付き、掲載できなかったジャンルには付かないこと', () => {
+    const entry = findingEntry()
+    const findingId = entry.kind === 'finding' ? entry.finding.id : ''
+    const { container, rerender } = render(<FindingCard entry={entry} articleId="2026-10-05" isAdmin={false} />)
+    expect(container.querySelector(`#${findingId}`)).toBeTruthy()
+
+    rerender(<FindingCard entry={emptyEntry({ reason: 'no-candidate' })} articleId="2026-10-05" isAdmin={false} />)
+    expect(container.querySelector('[id]')).toBeNull()
   })
 })

@@ -7,6 +7,7 @@ import type { Article } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
 import { sortGenres, type SortOrder } from '../lib/sortGenres'
 import { getSession, onAuthChange, signInWithGoogle, signOut, isAuthorizedAdmin } from '../../lib/adminAuth'
+import { fetchBookmarksByArticle, type BookmarkSummary } from '../lib/bookmarks'
 import SortToggle from './SortToggle'
 import FindingCard from './FindingCard'
 import LoginStatus from './LoginStatus'
@@ -23,6 +24,7 @@ export default function ArticleDetailView({ article }: Props) {
   const [order, setOrder] = useState<SortOrder>('impact')
   const [session, setSession] = useState<Session | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [bookmarks, setBookmarks] = useState<Map<string, BookmarkSummary>>(new Map())
 
   useEffect(() => {
     let active = true
@@ -37,6 +39,31 @@ export default function ArticleDetailView({ article }: Props) {
       unsubscribe()
     }
   }, [])
+
+  // 記事内の自分の付箋をまとめて取得する処理(bookmark/design.md「記事内の自分の付箋をまとめて取得する処理」)。
+  // 未ログインなら何も取得しない(bookmark/requirements.md#記事への付箋-5)。取得に失敗した場合は
+  // 全研究を「未付箋」として扱う(画面にはエラーを出さずコンソールにのみ出力する)
+  useEffect(() => {
+    if (!session) {
+      // ログアウト時に付箋の表示を即座に引っ込める(session変化に同期する意図的なリセット)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setBookmarks(new Map())
+      return
+    }
+    let active = true
+    fetchBookmarksByArticle(article.id)
+      .then((map) => {
+        if (active) setBookmarks(map)
+      })
+      .catch((e) => {
+        if (active) setBookmarks(new Map())
+        // eslint-disable-next-line no-console -- 原因究明用。画面にはエラーを出さず「未付箋」として扱う
+        console.error('記事詳細: 付箋の取得に失敗しました', e)
+      })
+    return () => {
+      active = false
+    }
+  }, [session, article.id])
 
   // ログイン状態に応じてフィードバック入力欄の表示を切り替える処理(design.md「ログイン状態に応じて
   // フィードバック入力欄の表示を切り替える処理」)。確認中・セッションなし・確認失敗はいずれも
@@ -62,6 +89,17 @@ export default function ArticleDetailView({ article }: Props) {
       active = false
     }
   }, [session])
+
+  // 付箋の作成・編集・削除をその場で記事内の付箋一覧(Map)へ反映する(bookmark/design.md「コンポーネント設計」)。
+  // 再取得が起きてもキー(付箋id)が変わらず、編集中のBookmarkPanelが再マウントされないようにするため
+  function handleBookmarkChange(findingId: string, bookmark: BookmarkSummary | null) {
+    setBookmarks((prev) => {
+      const next = new Map(prev)
+      if (bookmark) next.set(findingId, bookmark)
+      else next.delete(findingId)
+      return next
+    })
+  }
 
   const title = buildArticleTitle(article.date)
   const entries = sortGenres(article, order)
@@ -90,7 +128,15 @@ export default function ArticleDetailView({ article }: Props) {
 
         <div className="space-y-4">
           {entries.map((entry) => (
-            <FindingCard key={entry.genre} entry={entry} articleId={article.id} isAdmin={isAdmin} />
+            <FindingCard
+              key={entry.genre}
+              entry={entry}
+              articleId={article.id}
+              isAdmin={isAdmin}
+              session={session}
+              bookmark={entry.kind === 'finding' ? (bookmarks.get(entry.finding.id) ?? null) : null}
+              onBookmarkChange={handleBookmarkChange}
+            />
           ))}
         </div>
 
