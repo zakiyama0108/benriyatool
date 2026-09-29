@@ -11,6 +11,9 @@ type Props = {
   isAdmin: boolean
   session?: Session | null // ログイン中のみ付箋の操作領域を表示する(bookmark/requirements.md#記事への付箋-5)
   bookmark?: BookmarkSummary | null // この予測の取得済みの付箋(未付箋はnull/undefined)
+  // 付箋の作成・編集・削除が起きたことを親(ArticleDetailView)へ伝え、記事内の付箋一覧を
+  // その場で更新してもらう(bookmark/design.md「コンポーネント設計」)
+  onBookmarkChange?: (predictionId: string, bookmark: BookmarkSummary | null) => void
 }
 
 // 1枠分の表示(仕様: requirements.md#記事本文の表示-2〜5、design.md「その回の記事本文を表示する処理」
@@ -18,7 +21,7 @@ type Props = {
 // 予測がある枠は本文・出典・(ログイン中のみ)付箋の操作領域・(運営者のみ)フィードバック入力欄を
 // 表示し、掲載できなかった枠は理由に応じた3種の文言だけを表示する(候補なし・収集失敗・生成失敗で
 // 異なる文言にする。付箋を貼る対象の予測がないため付箋の操作も出さない)
-export default function PredictionCard({ slot, articleId, isAdmin, session = null, bookmark = null }: Props) {
+export default function PredictionCard({ slot, articleId, isAdmin, session = null, bookmark = null, onBookmarkChange }: Props) {
   if (slot.kind === 'empty') {
     const { emptySlot } = slot
     return (
@@ -63,6 +66,7 @@ export default function PredictionCard({ slot, articleId, isAdmin, session = nul
           articleId={articleId}
           predictionId={prediction.id}
           initialBookmark={bookmark}
+          onChange={(next) => onBookmarkChange?.(prediction.id, next)}
         />
       )}
       {isAdmin && <FeedbackForm articleId={articleId} predictionId={prediction.id} />}

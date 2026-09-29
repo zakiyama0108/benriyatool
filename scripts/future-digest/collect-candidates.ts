@@ -187,12 +187,20 @@ ${deliveredLines}
 {"${horizons[0]}": [{"impact": "high", "impactRank": 1, "impactReason": "...", "targetPeriod": "2030年まで", "sourceTitle": "...", "sourceName": "...", "sourceUrl": "https://...", "publishedAt": null}], "${horizons[1]}": []}`
 }
 
+// Claude Code CLIへ渡す起動引数(純粋関数として切り出し、テストで検証できるようにする)。
+// --dangerously-skip-permissionsは全ツールを確認なしで許可してしまうため使わない。
+// --toolsで利用可能なツール自体をWebSearch・WebFetchに絞り(Bash・Read・Edit等を呼び出し不能にする)、
+// --allowedToolsで確認なしに使えるツールも同じ2つに限定する(content-selection/design.md「セキュリティ」)
+export function buildClaudeArgs(prompt: string): string[] {
+  return ['-p', prompt, '--output-format', 'json', '--tools', 'WebSearch,WebFetch', '--allowedTools', 'WebSearch,WebFetch']
+}
+
 async function callClaudeCode(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, requirements: string, scheduledPublishDate: string): Promise<ClaudeCliResponse> {
   const prompt = buildPrompt(genre, horizons, deliveredIndex, requirements, scheduledPublishDate)
   try {
     const { stdout } = await execFileAsync(
       'claude',
-      ['-p', prompt, '--output-format', 'json', '--allowedTools', 'WebSearch,WebFetch', '--dangerously-skip-permissions'],
+      buildClaudeArgs(prompt),
       { maxBuffer: 1024 * 1024 * 32, timeout: CLAUDE_TIMEOUT_MS },
     )
     return JSON.parse(stdout) as ClaudeCliResponse

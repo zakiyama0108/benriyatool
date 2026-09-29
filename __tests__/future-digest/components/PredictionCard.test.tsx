@@ -1,10 +1,11 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import type { Session } from '@supabase/supabase-js'
 import PredictionCard from '../../../app/future-digest/components/PredictionCard'
 import type { Slot } from '../../../app/future-digest/lib/sortSlots'
 import type { Prediction, EmptySlot } from '../../../app/future-digest/lib/types'
 import { GENRE_ORDER } from '../../../app/future-digest/lib/types'
+import { createBookmark } from '../../../app/future-digest/lib/bookmarks'
 
 function makeSession(email: string): Session {
   return { user: { email } } as Session
@@ -41,6 +42,8 @@ function makePrediction(overrides: Partial<Prediction> = {}): Prediction {
 function makeEmptySlot(overrides: Partial<EmptySlot> = {}): EmptySlot {
   return { genre: GENRE_ORDER[0], horizon: 'near', reason: 'no-candidate', ...overrides }
 }
+
+const createBookmarkMock = vi.mocked(createBookmark)
 
 // 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-2
 describe('予測がある枠の表示', () => {
@@ -166,6 +169,30 @@ describe('付箋の操作領域の表示切り替え(ログイン中のみ表示
     const slot: Slot = { genre: emptySlot.genre, horizon: emptySlot.horizon, kind: 'empty', emptySlot }
     render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} session={makeSession('reader@example.com')} />)
     expect(screen.queryByRole('button', { name: '付箋を貼る' })).toBeNull()
+  })
+})
+
+// 仕様: specs/future-digest/bookmark/design.md「コンポーネント設計」
+describe('付箋変更の親への通知 - BookmarkPanelのonChangeをonBookmarkChangeとして親(ArticleDetailView)へ伝える', () => {
+  it('付箋を新規作成すると、onBookmarkChangeが予測IDと作成された付箋で呼ばれること', async () => {
+    createBookmarkMock.mockResolvedValue('bookmark-1')
+    const onBookmarkChange = vi.fn()
+    const prediction = makePrediction()
+    const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
+    render(
+      <PredictionCard
+        slot={slot}
+        articleId="2026-09-24"
+        isAdmin={false}
+        session={makeSession('reader@example.com')}
+        onBookmarkChange={onBookmarkChange}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: '付箋を貼る' }))
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '気になるメモ' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+
+    await waitFor(() => expect(onBookmarkChange).toHaveBeenCalledWith(prediction.id, { id: 'bookmark-1', memo: '気になるメモ' }))
   })
 })
 

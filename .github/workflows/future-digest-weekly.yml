@@ -37,10 +37,13 @@ jobs:
     steps:
       # GitHub書き込みは既定のGITHUB_TOKENではなく専用PATを使う(既定トークンで作成したPR・pushは
       # 無限ループ防止のGitHub側の仕様により後続ワークフロー(ci.yml)が自動起動されないため)。
-      # shouldSkipRetryが記事ファイルの有無を確認するために必要なため、スキップ判定より先に行う
+      # ただしcheckout自体にはPATを渡さない(persist-credentials: false)。Claude Code CLIをヘッドレス
+      # 起動するステップ(収集・生成)から.git/config経由でPATに到達できないようにするため、PATは
+      # 「コミット・push・PR作成」ステップ内だけでgit auth setup-gitを使って一時的に設定する
+      # (月次見直しfuture-digest-monthly.ymlと同じ形。design.md「実行環境の前提」)
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.FUTURE_DIGEST_GH_PAT }}
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -187,6 +190,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.FUTURE_DIGEST_GH_PAT }}
         run: |
+          # checkoutではPATを永続化していないため、ここでgit操作用にPATを設定する
+          # (このステップ内でのみGH_TOKENが使われ、以降のステップの.git/configには残らない)
+          gh auth setup-git
           date="${{ steps.date.outputs.value }}"
           git config user.name "future-digest-bot"
           git config user.email "future-digest-bot@users.noreply.github.com"

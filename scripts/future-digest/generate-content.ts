@@ -60,11 +60,19 @@ WebFetchツールで元URLの内容を把握したうえで、次のJSON形式�
 {"heading": "何が起こると考えられているかが一目で分かる見出し", "body": "200〜400字程度の本文(対象時期・何が起こると考えられているか・根拠・暮らし社会への影響)"}`
 }
 
+// Claude Code CLIへ渡す起動引数(純粋関数として切り出し、テストで検証できるようにする)。
+// --dangerously-skip-permissionsは全ツールを確認なしで許可してしまうため使わない。
+// --toolsで利用可能なツール自体をWebFetchに絞り(Bash・Read・Edit等を呼び出し不能にする)、
+// --allowedToolsで確認なしに使えるツールも同じくWebFetchに限定する(content-generation/design.md「セキュリティ」)
+export function buildClaudeArgs(prompt: string): string[] {
+  return ['-p', prompt, '--output-format', 'json', '--tools', 'WebFetch', '--allowedTools', 'WebFetch']
+}
+
 async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
   try {
     const { stdout } = await execFileAsync(
       'claude',
-      ['-p', prompt, '--output-format', 'json', '--allowedTools', 'WebFetch', '--dangerously-skip-permissions'],
+      buildClaudeArgs(prompt),
       { maxBuffer: 1024 * 1024 * 32 },
     )
     return JSON.parse(stdout) as ClaudeCliResponse

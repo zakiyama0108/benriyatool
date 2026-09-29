@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   collectForGenre,
+  buildClaudeArgs,
   TimeoutError,
   QuotaExhaustedError,
   type ClaudeCliResponse,
@@ -109,5 +110,25 @@ describe('ジャンル1つ分の収集 - Claude Code CLIの応答から候補を
     const result = await collectForGenre(GENRE, HORIZONS, call)
     expect(result).toEqual({ status: 'ok', candidates: [] })
     expect(call).toHaveBeenCalledTimes(1) // バリデーションで0件になっただけなのでやり直さない
+  })
+})
+
+// 仕様: specs/future-digest/content-selection/design.md「セキュリティ」
+describe('Claude Code CLIの起動引数 - 危険な許可フラグを付けず、利用可能・許可ツールをWebSearch・WebFetchに限定する', () => {
+  it('--dangerously-skip-permissionsを含まないこと', () => {
+    const args = buildClaudeArgs('プロンプト')
+    expect(args).not.toContain('--dangerously-skip-permissions')
+  })
+
+  it('--toolsでWebSearch・WebFetchのみ利用可能にすること(Bash・Read・Edit等を呼び出し不能にする)', () => {
+    const args = buildClaudeArgs('プロンプト')
+    expect(args).toContain('--tools')
+    expect(args[args.indexOf('--tools') + 1]).toBe('WebSearch,WebFetch')
+  })
+
+  it('--allowedToolsで確認なしに使えるツールもWebSearch・WebFetchのみに限定すること', () => {
+    const args = buildClaudeArgs('プロンプト')
+    expect(args).toContain('--allowedTools')
+    expect(args[args.indexOf('--allowedTools') + 1]).toBe('WebSearch,WebFetch')
   })
 })

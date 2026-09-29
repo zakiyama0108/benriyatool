@@ -5,7 +5,7 @@ import ArticleDetailView from '../../../app/future-digest/components/ArticleDeta
 import type { Article, Prediction } from '../../../app/future-digest/lib/types'
 import { GENRE_ORDER } from '../../../app/future-digest/lib/types'
 import { getSession, onAuthChange, isAuthorizedAdmin } from '../../../app/lib/adminAuth'
-import { fetchBookmarksByArticle } from '../../../app/future-digest/lib/bookmarks'
+import { fetchBookmarksByArticle, createBookmark } from '../../../app/future-digest/lib/bookmarks'
 
 vi.mock('../../../app/lib/adminAuth', () => ({
   getSession: vi.fn(),
@@ -30,6 +30,7 @@ const getSessionMock = vi.mocked(getSession)
 const onAuthChangeMock = vi.mocked(onAuthChange)
 const isAuthorizedAdminMock = vi.mocked(isAuthorizedAdmin)
 const fetchBookmarksByArticleMock = vi.mocked(fetchBookmarksByArticle)
+const createBookmarkMock = vi.mocked(createBookmark)
 
 function makeSession(email: string): Session {
   return { user: { email } } as Session
@@ -70,6 +71,7 @@ beforeEach(() => {
   onAuthChangeMock.mockReset().mockReturnValue(() => {})
   isAuthorizedAdminMock.mockReset().mockResolvedValue(false)
   fetchBookmarksByArticleMock.mockReset().mockResolvedValue(new Map())
+  createBookmarkMock.mockReset()
   consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -146,5 +148,43 @@ describe('記事詳細ページでの付箋の取得・配線 - ログイン中�
     fetchBookmarksByArticleMock.mockRejectedValue(new Error('network error'))
     render(<ArticleDetailView article={article} />)
     await waitFor(() => expect(screen.getAllByRole('button', { name: '付箋を貼る' })).toHaveLength(2))
+  })
+})
+
+// 仕様: specs/future-digest/bookmark/design.md「コンポーネント設計」「状態管理」
+describe('記事詳細ページでの付箋変更の反映 - 作成・編集・削除をその場で記事内の付箋一覧(Map)に反映する', () => {
+  it('付箋を新規作成した直後に外部要因(再ログイン等)で付箋の再取得が起きても、編集中の下書きが消えないこと(先に親のMapを更新しキーが安定するため)', async () => {
+    // セッション取得のたびに新しいオブジェクトを返し、再ログイン等でsession状態が更新されうる状況を再現する
+    getSessionMock.mockImplementation(() => Promise.resolve(makeSession('reader@example.com')))
+    let authChangeCallback: () => void = () => {}
+    onAuthChangeMock.mockImplementation((cb: () => void) => {
+      authChangeCallback = cb
+      return () => {}
+    })
+    const targetPrediction = article.predictions.find((p) => p.genre === GENRE_ORDER[0])!
+    fetchBookmarksByArticleMock.mockResolvedValueOnce(new Map())
+    createBookmarkMock.mockResolvedValue('bookmark-1')
+
+    render(<ArticleDetailView article={article} />)
+    await waitFor(() => expect(screen.getAllByRole('button', { name: '付箋を貼る' })).toHaveLength(2))
+
+    // 1件目の予測(ジャンル1、影響度順で先頭)に新規付箋を作成する
+    fireEvent.click(screen.getAllByRole('button', { name: '付箋を貼る' })[0])
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'M1' } })
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    await waitFor(() => expect(screen.getByText('M1')).toBeTruthy())
+
+    // 保存済みの付箋をその場で編集開始(まだ保存していない下書き)
+    fireEvent.click(screen.getByRole('button', { name: '編集' }))
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '下書き中の内容' } })
+
+    // 外部要因でセッションが更新され、記事内の付箋の再取得が走る(サーバー側は今回作成した内容を返す)
+    fetchBookmarksByArticleMock.mockResolvedValueOnce(new Map([[targetPrediction.id, { id: 'bookmark-1', memo: 'M1' }]]))
+    authChangeCallback()
+    await waitFor(() => expect(fetchBookmarksByArticleMock).toHaveBeenCalledTimes(2))
+
+    // 再取得後もidが変わらない(先にonBookmarkChangeで親のMapを更新済みのため)ので、
+    // BookmarkPanelが再マウントされず、編集中の下書きが消えずに残っていること
+    expect(screen.getByRole<HTMLTextAreaElement>('textbox').value).toBe('下書き中の内容')
   })
 })
