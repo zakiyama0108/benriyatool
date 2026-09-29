@@ -8308,5 +8308,155 @@
     "specFile": "research-digest/article-detail/requirements.md",
     "item": "スコープ外",
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "サマリ",
+    "reason": "機能の概要を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "実行 [1]",
+    "reason": "毎週月曜の朝(日本時間)に収集・選定・要約・記事の組み立てを1回実行するという運用スケジュールの要件で、.github/workflows/research-digest-weekly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task5)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "実行 [2]",
+    "reason": "実行主体がGitHub Actionsであり、収集・選定・要約をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "実行 [3]",
+    "reason": "作った記事をJSONのコンテンツファイルとしてリポジトリに追加しビルド時に取り込むという静的サイト構成の要件で、write-article.ts(TDD対象外のCLI。tasks.md Task3)がファイル書き出しを担うためユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "公開フロー [4]",
+    "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、`gh pr create`/`gh pr merge --auto`の呼び出し自体はユニットテスト対象を持たないため(tasks.md Task5のワークフロー本体に該当。実際の疎通確認はTask6のSecrets設定後の初回実行で行う)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "公開フロー [5]",
+    "reason": "CI失敗時にマージせず原因を記録するという運用フローの要件で、GitHub標準の仕組み(PRコメント)に委ねるためこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "利用上限への到達時の再実行 [1]",
+    "reason": "利用上限到達時に本番の12・24・36時間後の最大3回自動的に再試行するという運用スケジュールの要件で、.github/workflows/research-digest-weekly.ymlの3本のscheduled cron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task5)。再実行の冪等判定ロジック自体はshouldSkipRetry.test.tsでテスト済み"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "利用上限への到達時の再実行 [3]",
+    "reason": "3回の再実行すべてで公開に至らなかった場合に自動再実行を打ち切り、以降は運営者が手動でworkflow_dispatchを起動するという運用方針の要件で、4本目以降の自動再実行cronが存在しないという宣言的な設計でありユニットテスト対象を持たないため(tasks.md Task5)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "利用上限への到達時の再実行 [4]",
+    "reason": "打ち切り時に部分的な結果を持ち越さず再実行時に最初からやり直すという実行順序の要件で、publishジョブが毎回collect-and-select.tsから起動し直すという宣言的な手順でありユニットテスト対象を持たないため(tasks.md Task5)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "自動マージの範囲 [1]",
+    "reason": "完全自動マージの対象をresearch-digest/articles/**ブランチに限定するという要件で、GitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる設計(weekly-publish/design.md「PRを自動マージする処理」参照)であり、ユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "実行環境の前提",
+    "reason": "GitHub Actionsのcron設定・Secrets(PAT・OAuthトークン)の管理方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "配信日を求める処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#利用上限への到達時の再実行-5でscheduledPublishDate.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "1回分の記事を生成する処理",
+    "reason": "ブランチ作成・collect-and-select.ts/generate-content.ts/write-article.tsの呼び出し順序というワークフロー本体の手順の記述で、記事データの組み立てロジック自体はassembleArticle.test.tsで、生成失敗の分類・リトライ・除外・打ち切りロジック自体はgenerateContent.test.tsで、警告判定ロジック自体はshouldAlertOperator.test.tsでテスト済みのため(weekly-publish側の手順記述自体はGitHub Actionsのワークフロー定義でありユニットテスト対象を持たない)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "利用上限への到達時に再実行する処理",
+    "reason": "再実行cronの起動順序・PR存在確認(gh pr list)というワークフロー本体の運用手順の記述で、冪等判定ロジック自体はshouldSkipRetry.test.tsで、配信日の算出自体はscheduledPublishDate.test.tsでテスト済みのため(gh pr listによるPR存在確認はTDD対象外の運用チェックとdesign.md自身が明記している)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "PRを作成しCIの結果を待つ処理",
+    "reason": "GitHub上のPR作成・auto-merge設定に関する運用手順の記述で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "PRを自動マージする処理(完全自動マージの例外運用)",
+    "reason": "自動マージ範囲の限定はGitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる旨の設計判断の記述で、コードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "CI失敗時に記録する処理",
+    "reason": "PRへのコメント自動追記等の運用手順の記述で、GitHub Actionsのワークフロー側の振る舞いでありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "収集失敗を運営者に警告する処理",
+    "reason": "PR作成後にワークフロー内で非ゼロ終了するステップを実行するという運用手順の記述で、警告が必要かどうかの判定ロジック自体はshouldAlertOperator.test.tsでテスト済みのため(ジョブを失敗表示にする処理自体はGitHub Actionsのステップ定義でありユニットテスト対象を持たない)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "エラーハンドリング",
+    "reason": "CI失敗時の扱い・記事生成処理自体の中断時の扱いの記述で、ワークフローの実行制御に関する運用上の対応でありユニットテスト対象を持たないため(生成失敗の分類・リトライ・除外・打ち切りロジック自体はgenerateContent.test.tsで、同じ配信日の記事ファイルが既にある場合に上書きしない判定はwrite-article.ts〈TDD対象外〉でテスト済みの範囲外)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "セキュリティ",
+    "reason": "GitHub Actions Secretsで保持するPAT・OAuthトークンの管理方針、workflow_dispatch入力の検証方針の記述で、検証ロジック自体はscheduledPublishDate.test.tsのvalidateScheduledPublishDateでテスト済みのため(env:経由で渡す運用自体は宣言的なワークフロー定義でありユニットテスト対象を持たない)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "ログ",
+    "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
   }
 ]
