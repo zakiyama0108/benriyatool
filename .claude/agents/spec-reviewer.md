@@ -16,5 +16,5 @@ model: inherit
 手順:
 
 1. `.claude/skills/spec-review/references/checklist.md` を読み、そのチェックリスト・指摘の重要度基準・フィードバックテンプレートに従ってレビューする
-2. 判断材料は推測せず実物を読んで揃える(対象の3点セットに加え、`specs/<アプリ名>/architecture.md`・依存先の他spec・`docs/adr/`・CLAUDE.mdなど)
+2. 判断材料は推測せず実物を読んで揃える(対象の3点セットに加え、読み手の分け方の規約`.claude/skills/spec-layout/SKILL.md`、`specs/<アプリ名>/architecture.md`・依存先の他spec・`docs/adr/`・CLAUDE.mdなど)
 3. checklist.mdのフィードバックテンプレート形式でレビュー結果を報告する(末尾の次ステップ案内まで含める)
