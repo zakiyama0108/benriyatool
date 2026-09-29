@@ -51,12 +51,13 @@ const eslintConfig = defineConfig([
     // 独立した依存関係(pg/dotenv/@supabase/supabase-js)を持つ隔離パッケージのため、本体のtsconfigプロジェクトに含めない
     // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」、specs/board-game-rules/admin/tasks.md T8、
     // specs/trend-digest/source-review/design.md「関連するファイル」、specs/news-digest/monthly-review/design.md「関連するファイル」、
-    // specs/future-digest/source-review/design.md「関連するファイル」)
+    // specs/future-digest/source-review/design.md「関連するファイル」、specs/research-digest/source-review/design.md「関連するファイル」)
     "scripts/ai-dev-digest/collect-review-data/**",
     "scripts/board-game-rules/**",
     "scripts/trend-digest/collect-review-data/**",
     "scripts/news-digest/collect-review-data/**",
     "scripts/future-digest/collect-review-data/**",
+    "scripts/research-digest/collect-review-data/**",
   ]),
 ]);
 
