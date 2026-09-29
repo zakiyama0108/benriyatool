@@ -3,11 +3,16 @@
 // 純粋関数のみを持ち、このページ用のデータを別に持たない(requirements.md#機能要件-5)
 
 import type { Edition } from './types'
+import { GENRE_ORDER, GENRE_LABELS } from './types'
 import type {
+  Criteria,
   GenreCriteria,
   FixedListGenreCriteria,
   WebSearchGenreCriteria,
   HybridGenreCriteria,
+  SelectionMethod,
+  SourceRegion,
+  WatchlistEntry,
 } from './watchlistTypes'
 
 // 情報源1件分の表示用の値(design.md「コンポーネント設計」)。地域区分は日本語に変換済み
@@ -77,4 +82,61 @@ export function buildCriteriaText(criteria: GenreCriteria): string {
     case 'hybrid':
       return buildHybridCriteriaText(criteria)
   }
+}
+
+// 選定方式の日本語表記(design.md「画面設計」)。hybridは固定リストとWebSearchを併用する
+// 併用ジャンル専用の表記(requirements.md#機能要件-6)
+const METHOD_LABELS: Record<SelectionMethod, string> = {
+  'fixed-list': '固定リスト',
+  websearch: 'WebSearch',
+  hybrid: '固定リスト+WebSearch',
+}
+
+// 編の日本語表記(design.md「画面設計」)
+const EDITION_LABELS: Record<Edition, string> = {
+  entertainment: 'エンタメ編',
+  'culture-lifestyle': 'カルチャー・ライフスタイル編',
+}
+
+// 情報源の地域区分の日本語表記(design.md「画面設計」)
+const REGION_LABELS: Record<SourceRegion, string> = {
+  japan: '日本',
+  overseas: '海外',
+}
+
+// watchlist.json・criteria.jsonから表示行を組み立てる(design.md「表示する行を組み立てる処理」)。
+// GENRE_ORDERの順(エンタメ編→カルチャー・ライフスタイル編、編の中は記事の見出し表示順)で
+// 行を並べるため、watchlist.json自体の登録順には依存しない(requirements.md#表示の順序-6)。
+// 表示行はwatchlist.json・criteria.jsonの値をそのまま写すだけで、別のデータを作らない
+// (requirements.md#機能要件-5)
+export function buildSourceDirectory(watchlist: WatchlistEntry[], criteria: Criteria): SourceDirectoryRow[] {
+  const rows: SourceDirectoryRow[] = []
+
+  for (const edition of EDITIONS) {
+    for (const genre of GENRE_ORDER[edition]) {
+      const entry = watchlist.find((w) => w.genre === genre)
+      if (!entry) {
+        throw new Error(`watchlist.jsonにジャンル(${genre})の情報源が定義されていません`)
+      }
+      const genreCriteria = criteria.genreCriteria[genre]
+      if (!genreCriteria) {
+        throw new Error(`criteria.jsonにジャンル(${genre})の採用基準が定義されていません`)
+      }
+
+      rows.push({
+        genreLabel: GENRE_LABELS[genre],
+        editionLabel: EDITION_LABELS[edition],
+        methodLabel: METHOD_LABELS[entry.method],
+        criteriaText: buildCriteriaText(genreCriteria),
+        sources: entry.sources.map((source) => ({
+          name: source.name,
+          url: source.url,
+          regionLabel: REGION_LABELS[source.region],
+        })),
+        searchHints: entry.searchHints ?? [],
+      })
+    }
+  }
+
+  return rows
 }
