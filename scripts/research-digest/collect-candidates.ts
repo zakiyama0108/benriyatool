@@ -12,7 +12,7 @@ import { validateCandidates } from '../../app/research-digest/lib/candidateValid
 import type { GenreConfig } from '../../app/research-digest/lib/genres'
 import { loadGenres, getActiveGenres } from '../../app/research-digest/lib/genres'
 import type { DeliveredIndex } from '../../app/research-digest/lib/deliveredIndex'
-import { IMPACT_ORDER } from '../../app/research-digest/lib/types'
+import { IMPACT_ORDER, IMPACT_LABELS } from '../../app/research-digest/lib/types'
 
 const execFileAsync = promisify(execFile)
 
@@ -155,7 +155,8 @@ const CLAUDE_TIMEOUT_MS = Number(process.env.RESEARCH_DIGEST_COLLECT_TIMEOUT_MS 
 function buildPrompt(genre: GenreConfig, deliveredIndex: DeliveredIndex, requirements: string, scheduledPublishDate: string): string {
   const deliveredLines = deliveredIndex.lines.length > 0 ? deliveredIndex.lines.join('\n') : '(まだ配信済みの研究はありません)'
   const year = scheduledPublishDate.slice(0, 4)
-  const impactValues = IMPACT_ORDER.join('/')
+  // 「大=high/中=medium/小=low」のように読者向けの言葉と英語コードの対応を示す
+  const impactValues = IMPACT_ORDER.map((i) => `${IMPACT_LABELS[i]}=${i}`).join('/')
 
   return `あなたは「週刊研究発見」の研究・論文の収集を担当するエージェントです。以下の要件定義に厳密に従って、ジャンル「${genre.label}」の研究の発見・論文をWebSearch・WebFetchで探してください。
 
@@ -171,7 +172,7 @@ ${scheduledPublishDate}(発表年は${year}年以下のものだけを候補に�
 # 配信済みの研究一覧(実質的に同じ研究は、それを扱う別の報道も含めて候補にしないこと。ジャンル/見出し/論文名の順)
 ${deliveredLines}
 
-採用基準を満たす研究を最大${MAX_CANDIDATES_PER_GENRE}件探し、日々の生活への影響度(${impactValues})・根拠(1文)・同じ影響度の中での順位を付けてください。科学系の報道をきっかけにしてもよいが、元の論文・公式発表をWebFetchで開いて確かめられたものだけを候補にし、sourceUrlには報道記事ではなくその論文・公式発表のURLを使ってください。査読前の論文(プレプリント)はisPreprintをtrueにしてください。出典を確かめられない話題、健康食品などの宣伝を目的とした発表は候補にしないでください。有料購読が必要な論文でも、要旨・公式発表など公開されている範囲で確かめてください。
+採用基準を満たす研究を最大${MAX_CANDIDATES_PER_GENRE}件探し、日々の生活への影響度(${impactValues} のいずれかの英語コードで)・根拠(1文)・同じ影響度の中での順位を付けてください。科学系の報道をきっかけにしてもよいが、元の論文・公式発表をWebFetchで開いて確かめられたものだけを候補にし、sourceUrlには報道記事ではなくその論文・公式発表のURLを使ってください。査読前の論文(プレプリント)はisPreprintをtrueにしてください。出典を確かめられない話題、健康食品などの宣伝を目的とした発表は候補にしないでください。有料購読が必要な論文でも、要旨・公式発表など公開されている範囲で確かめてください。
 
 次のJSON形式の配列のみで応答してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けないでください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文を返してはいけません(返答する相手がいません)。**候補が見つからない場合は空の配列[]にしてください。doiと発表年(publishedYear)が分からない場合はnullにしてください。
 

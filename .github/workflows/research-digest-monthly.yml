@@ -218,6 +218,7 @@ jobs:
             specs/research-digest/content-generation \
             scripts/spec-coverage-skip.json; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "見直し案の変更なしのためPRを作成しません(材料なし、またはClaudeが変更しなかった)"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
@@ -257,6 +258,7 @@ jobs:
             echo "このPRは自動マージされません。運営者が内容を確認のうえマージしてください。" >> "$BODY_FILE"
           fi
 
-          gh pr create --base main \
+          pr_url=$(gh pr create --base main \
             --title "[research-digest] ${YEAR_MONTH}の選定・生成の見直し" \
-            --body-file "$BODY_FILE"
+            --body-file "$BODY_FILE")
+          echo "PR作成: $pr_url"

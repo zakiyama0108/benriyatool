@@ -17,6 +17,7 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { pathToFileURL } from 'node:url'
 import type { Candidate, GenreResult } from '../../app/research-digest/lib/candidateTypes'
+import { GENRE_LABELS, IMPACT_LABELS } from '../../app/research-digest/lib/types'
 import { generateFindings, type ClaudeCliResponse } from '../../app/research-digest/lib/generateContent'
 
 const execFileAsync = promisify(execFile)
@@ -40,8 +41,8 @@ ${design}
 ${GUARDRAIL}
 
 # 対象研究
-- ジャンル: ${candidate.genre}
-- 影響度: ${candidate.impact}
+- ジャンル: ${GENRE_LABELS[candidate.genre] ?? candidate.genre}(${candidate.genre})
+- 影響度: ${IMPACT_LABELS[candidate.impact]}(${candidate.impact})
 - 影響度の根拠: ${candidate.impactReason}
 - 論文名(公式発表のタイトル): ${candidate.sourceTitle}
 - 掲載誌名・発表元: ${candidate.sourceName}

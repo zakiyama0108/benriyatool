@@ -104,7 +104,7 @@ jobs:
             console.log(shouldSkipRetry(getAllArticles(), '$date'))
           ")
           if [ "$published" = "true" ]; then
-            echo "配信日 $date の記事は既に公開済みのため、この再実行はスキップします"
+            echo "実行日: $(TZ=Asia/Tokyo date +%F) / 配信日: $date / 結果: 再実行に委ねてスキップ(記事は既に公開済みのため、この再実行はスキップします)"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -113,7 +113,7 @@ jobs:
             --head "research-digest/articles/$date" \
             --state all --json number --jq 'length')
           if [ "$pr_count" -gt 0 ]; then
-            echo "配信日 $date のPRが既に存在するため、この再実行はスキップします"
+            echo "実行日: $(TZ=Asia/Tokyo date +%F) / 配信日: $date / 結果: 再実行に委ねてスキップ(PRが既に存在するため、この再実行はスキップします)"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -188,6 +188,7 @@ jobs:
 
       - name: コミット・push・PR作成・自動マージ有効化
         if: steps.idempotency.outputs.skip != 'true'
+        id: publish-pr
         env:
           GH_TOKEN: ${{ secrets.RESEARCH_DIGEST_GH_PAT }}
         run: |
@@ -200,10 +201,27 @@ jobs:
           git add "content/research-digest/articles/$date.json"
           git commit -m "content(research-digest): ${date}を公開"
           git push origin "research-digest/articles/$date"
-          gh pr create --base main \
+          pr_url=$(gh pr create --base main \
             --title "[research-digest] ${date}を公開" \
-            --body "週次自動生成PRです。採用件数: ${{ steps.selection-summary.outputs.selectedCount }}件 / 候補なし: ${{ steps.selection-summary.outputs.noCandidateCount }}ジャンル / 収集失敗: ${{ steps.selection-summary.outputs.collectionFailedCount }}ジャンル / 生成失敗: ${{ steps.generation-summary.outputs.generationFailedCount }}ジャンル / 査読前の論文: ${{ steps.generation-summary.outputs.preprintCount }}件。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/research-digest/weekly-publish/design.md参照)。"
+            --body "週次自動生成PRです。採用件数: ${{ steps.selection-summary.outputs.selectedCount }}件 / 候補なし: ${{ steps.selection-summary.outputs.noCandidateCount }}ジャンル / 収集失敗: ${{ steps.selection-summary.outputs.collectionFailedCount }}ジャンル / 生成失敗: ${{ steps.generation-summary.outputs.generationFailedCount }}ジャンル / 査読前の論文: ${{ steps.generation-summary.outputs.preprintCount }}件。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/research-digest/weekly-publish/design.md参照)。")
           gh pr merge --auto --squash "research-digest/articles/$date"
+
+          # 実行ログ(weekly-publish/design.md「ログ」)。結果は全ジャンル収集失敗の警告の有無で決まる
+          if [ "${{ steps.selection.outputs.alert }}" = "true" ]; then
+            result="公開(警告あり)"
+          else
+            result="公開"
+          fi
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+          echo "実行日: $(TZ=Asia/Tokyo date +%F)"
+          echo "配信日: $date"
+          echo "採用件数: ${{ steps.selection-summary.outputs.selectedCount }}件"
+          echo "候補なしのジャンル数: ${{ steps.selection-summary.outputs.noCandidateCount }}"
+          echo "収集失敗のジャンル数: ${{ steps.selection-summary.outputs.collectionFailedCount }}"
+          echo "生成失敗のジャンル数: ${{ steps.generation-summary.outputs.generationFailedCount }}"
+          echo "査読前の論文の数: ${{ steps.generation-summary.outputs.preprintCount }}件"
+          echo "PRのURL: $pr_url"
+          echo "結果: $result"
 
       # 全ジャンルが収集失敗だった回は、記事は公開したうえでこのジョブを失敗表示にする
       # (design.md「収集失敗を運営者に警告する処理」)。収集失敗のジャンルと分類ラベルの一覧を
@@ -211,6 +229,7 @@ jobs:
       - name: 全ジャンル収集失敗を運営者に警告(公開後にジョブを失敗表示にする)
         if: steps.idempotency.outputs.skip != 'true' && steps.selection.outputs.alert == 'true'
         run: |
+          echo "実行日: $(TZ=Asia/Tokyo date +%F) / 配信日: ${{ steps.date.outputs.value }} / PRのURL: ${{ steps.publish-pr.outputs.pr_url }} / 結果: 公開(警告あり)(理由: 全ジャンル収集失敗)"
           node -e "
             const s = JSON.parse(require('fs').readFileSync('/tmp/selection.json', 'utf8'));
             for (const g of s.genreResults) if (g.status === 'collection-failed') console.log('収集失敗: ' + g.genre + ' (' + g.reason + ')');

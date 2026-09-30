@@ -94,7 +94,7 @@ describe('記事内の自分の付箋の一覧取得 - 指定した記事IDの�
 
 // 仕様: specs/research-digest/bookmark/requirements.md#付箋の一覧-13
 describe('付箋一覧の取得 - ログイン中の本人の付箋を更新日時の新しい順ですべて取得する', () => {
-  it('取得した付箋がarticleId・findingId・memoを持つ配列に変換され、updated_atの新しい順で問い合わせること', async () => {
+  it('取得した付箋が記事・見出し・メモを持つ配列に変換され、updated_atの新しい順で問い合わせること', async () => {
     orderMock.mockResolvedValue({
       data: [{ id: 'a', article_id: '2026-10-05', finding_id: 'ai-it', memo: '気になる' }],
       error: null,

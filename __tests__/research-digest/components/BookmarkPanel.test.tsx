@@ -35,7 +35,7 @@ describe('付箋の新規作成 - 未付箋の研究で「付箋を貼る」操�
     expect(screen.getByRole('button', { name: 'キャンセル' })).toBeTruthy()
   })
 
-  it('入力欄で「保存」を押すと、articleId・findingId・トリムしたメモでcreateBookmarkが呼ばれ、成功時は入力欄が閉じ保存内容が表示されること', async () => {
+  it('入力欄で「保存」を押すと、記事・見出し・トリムしたメモで付箋の新規保存が呼ばれ、成功時は入力欄が閉じ保存内容が表示されること', async () => {
     createBookmarkMock.mockResolvedValue('bookmark-1')
     const onChange = vi.fn()
     render(<BookmarkPanel articleId="2026-10-05" findingId="ai-it" initialBookmark={null} onChange={onChange} />)
@@ -107,7 +107,7 @@ describe('付箋の編集・削除 - 既に付箋を貼った研究で内容を�
     expect(screen.getByRole<HTMLTextAreaElement>('textbox').value).toBe('気になる')
   })
 
-  it('編集して保存すると、新規作成ではなく既存の付箋(同じid)がupdateBookmarkで上書き保存され、更新後の内容が表示されること', async () => {
+  it('編集して保存すると、新規作成ではなく既存の付箋(同じid)が更新処理で上書き保存され、更新後の内容が表示されること', async () => {
     updateBookmarkMock.mockResolvedValue(true)
     const onChange = vi.fn()
     render(
@@ -171,7 +171,7 @@ describe('付箋の編集・削除 - 既に付箋を貼った研究で内容を�
 
 // 仕様: specs/research-digest/bookmark/design.md#エラーハンドリング
 describe('保存中・削除中の二重操作防止 - 処理中は同じ操作ボタンを無効化する', () => {
-  it('保存処理が完了するまで保存ボタンが無効化され、連続クリックしてもcreateBookmarkが1回しか呼ばれないこと', async () => {
+  it('保存処理が完了するまで保存ボタンが無効化され、連続クリックしても付箋の保存処理が1回しか呼ばれないこと', async () => {
     let resolveCreate: (id: string | null) => void = () => {}
     createBookmarkMock.mockImplementation(() => new Promise((resolve) => { resolveCreate = resolve }))
     render(<BookmarkPanel articleId="2026-10-05" findingId="ai-it" initialBookmark={null} />)
@@ -188,7 +188,7 @@ describe('保存中・削除中の二重操作防止 - 処理中は同じ操作�
     await waitFor(() => expect(screen.queryByRole('textbox')).toBeNull())
   })
 
-  it('削除処理が完了するまで削除ボタンが無効化され、連続クリックしてもdeleteBookmarkが1回しか呼ばれないこと', async () => {
+  it('削除処理が完了するまで削除ボタンが無効化され、連続クリックしても付箋の削除処理が1回しか呼ばれないこと', async () => {
     let resolveDelete: (ok: boolean) => void = () => {}
     deleteBookmarkMock.mockImplementation(() => new Promise((resolve) => { resolveDelete = resolve }))
     render(
