@@ -35,7 +35,7 @@ describe('付箋の新規作成 - 未付箋の研究で「付箋を貼る」操�
     expect(screen.getByRole('button', { name: 'キャンセル' })).toBeTruthy()
   })
 
-  it('入力欄で「保存」を押すと、記事・見出し・トリムしたメモで付箋の新規保存が呼ばれ、成功時は入力欄が閉じ保存内容が表示されること', async () => {
+  it('入力欄で「保存」を押すと、記事ID・研究ID・トリムしたメモで付箋の新規保存が呼ばれ、成功時は入力欄が閉じ保存内容が表示されること', async () => {
     createBookmarkMock.mockResolvedValue('bookmark-1')
     const onChange = vi.fn()
     render(<BookmarkPanel articleId="2026-10-05" findingId="ai-it" initialBookmark={null} onChange={onChange} />)
