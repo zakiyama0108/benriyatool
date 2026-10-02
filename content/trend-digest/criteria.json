@@ -14,10 +14,10 @@
     "books-comics": { "method": "fixed-list", "rankThreshold": 5, "newEntryOrRisingRank": true },
     "sns-buzz": { "method": "websearch", "minIndependentSources": 2 },
     "buzzwords": { "method": "fixed-list", "rankThreshold": 10 },
-    "gourmet": { "method": "websearch", "minIndependentSources": 2 },
+    "gourmet": { "method": "websearch", "minIndependentSources": 2, "focusAreas": ["小田原", "茅ヶ崎", "横浜"] },
     "hobby": { "method": "websearch", "minIndependentSources": 2 },
-    "fashion": { "method": "fixed-list", "rankThreshold": 10 },
-    "gadgets": { "method": "fixed-list", "rankThreshold": 10 },
+    "fashion": { "method": "websearch", "minIndependentSources": 2 },
+    "gadgets": { "method": "websearch", "minIndependentSources": 2 },
     "games": { "method": "fixed-list", "rankThreshold": 10 },
     "travel": { "method": "fixed-list", "rankThreshold": 10 },
     "economy-money": { "method": "websearch", "minIndependentSources": 2 }

@@ -12,6 +12,7 @@ export type Candidate = {
   sourceUrl: string
   method: SelectionMethod
   strength: number // 絞り込みの優先順位付けに使う数値。固定リスト: 100-順位(順位が高い=強い)。WebSearch: 独立情報源の言及数
+  area?: string // WebSearchの応答が申告した話題の地域(focusAreasの地域枠判定に使う。地域に紐づかない話題は未設定)
   note?: string // 判定根拠のメモ(新規ランクイン/順位変動/独立情報源数など。ログ・PR本文向け)
 }
 
