@@ -5,6 +5,10 @@ import { getAllArticles } from './ai-dev-digest/lib/articles'
 import { paginate } from './ai-dev-digest/lib/pagination'
 import { getAllArticles as getAllTrendDigestArticles } from './trend-digest/lib/articles'
 import { paginate as paginateTrendDigest } from './trend-digest/lib/pagination'
+import { getAllArticles as getAllFutureDigestArticles } from './future-digest/lib/articles'
+import { paginate as paginateFutureDigest } from './future-digest/lib/pagination'
+import { getAllArticles as getAllResearchDigestArticles } from './research-digest/lib/articles'
+import { paginate as paginateResearchDigest } from './research-digest/lib/pagination'
 
 // Next.js固有の挙動差分: output: 'export'構成では、sitemap.tsのような特殊なRoute Handlerに
 // dynamic = 'force-static'を明示しないとビルドが失敗する(nextjs-notes.md参照)
@@ -30,6 +34,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/board-game-rules/favorites/`, lastModified: now, priority: 0.5 },
     { url: `${SITE_URL}/spotify-playlist/`, lastModified: now, priority: 0.8 },
     { url: `${SITE_URL}/trend-digest/`, lastModified: now, priority: 0.8 },
+    { url: `${SITE_URL}/future-digest/`, lastModified: now, priority: 0.8 },
+    { url: `${SITE_URL}/research-digest/`, lastModified: now, priority: 0.8 },
   ]
 
   const guidePages: MetadataRoute.Sitemap = GUIDE_ARTICLES.map((article) => ({
@@ -72,6 +78,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   )
 
+  const futureDigestArticles = getAllFutureDigestArticles()
+  const futureDigestArticlePages: MetadataRoute.Sitemap = futureDigestArticles.map((article) => ({
+    url: `${SITE_URL}/future-digest/${article.id}/`,
+    lastModified: article.date,
+    priority: 0.6,
+  }))
+
+  const { totalPages: futureDigestTotalPages } = paginateFutureDigest(futureDigestArticles, 1)
+  const futureDigestPaginationPages: MetadataRoute.Sitemap = Array.from(
+    { length: Math.max(0, futureDigestTotalPages - 1) },
+    (_, i) => ({
+      url: `${SITE_URL}/future-digest/page/${i + 2}/`,
+      lastModified: now,
+      priority: 0.4,
+    })
+  )
+
+  const researchDigestArticles = getAllResearchDigestArticles()
+  const researchDigestArticlePages: MetadataRoute.Sitemap = researchDigestArticles.map((article) => ({
+    url: `${SITE_URL}/research-digest/${article.id}/`,
+    lastModified: article.date,
+    priority: 0.6,
+  }))
+
+  const { totalPages: researchDigestTotalPages } = paginateResearchDigest(researchDigestArticles, 1)
+  const researchDigestPaginationPages: MetadataRoute.Sitemap = Array.from(
+    { length: Math.max(0, researchDigestTotalPages - 1) },
+    (_, i) => ({
+      url: `${SITE_URL}/research-digest/page/${i + 2}/`,
+      lastModified: now,
+      priority: 0.4,
+    })
+  )
+
   return [
     ...staticPages,
     ...guidePages,
@@ -79,5 +119,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...paginationPages,
     ...trendDigestArticlePages,
     ...trendDigestPaginationPages,
+    ...futureDigestArticlePages,
+    ...futureDigestPaginationPages,
+    ...researchDigestArticlePages,
+    ...researchDigestPaginationPages,
   ]
 }

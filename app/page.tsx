@@ -123,6 +123,36 @@ export default function HubPage() {
             </div>
           </div>
         </Link>
+        {/* 仕様: specs/hub-site/requirements.md#機能要件-2 */}
+        <Link
+          href="/future-digest"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">🔭</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">週刊未来予測</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                テクノロジー・医療・環境・経済・宇宙など10ジャンルの未来予測を毎週お届け
+              </p>
+            </div>
+          </div>
+        </Link>
+        {/* 仕様: specs/hub-site/requirements.md#機能要件-2 */}
+        <Link
+          href="/research-digest"
+          className="block rounded-2xl border border-gray-200 bg-white p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="flex items-start gap-4">
+            <span className="text-3xl">🔬</span>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">週刊研究発見</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                医療・栄養・心理・環境・AIなど10ジャンルの、暮らしに影響する研究・論文を毎週お届け
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* 関連記事(ツールではないためカードとは表示を区別する) */}

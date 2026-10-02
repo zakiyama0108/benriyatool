@@ -13,6 +13,8 @@
 | Spotifyプレイリスト作成 | `/spotify-playlist` | 曲名を入力するだけで、自分のSpotifyアカウントにプレイリストを作成する | [architecture.md](specs/spotify-playlist/architecture.md) |
 | 重要ニュースダイジェスト | `/news-digest` | 総合・経済/ビジネス・神奈川ローカル・育児の重要ニュースを毎週自動収集・要約し、ダイジェスト記事として公開する | [architecture.md](specs/news-digest/architecture.md) |
 | 週刊トレンド | `/trend-digest` | 音楽・映画・グルメなど様々なジャンルの流行を週2回自動収集・要約し、ダイジェスト記事として公開する | [architecture.md](specs/trend-digest/architecture.md) |
+| 週刊未来予測 | `/future-digest` | 10ジャンルの未来予測記事を時間軸(近未来〜超長期未来)ごとに影響度付きで毎週木曜に要約・公開する | [architecture.md](specs/future-digest/architecture.md) |
+| 週刊研究発見 | `/research-digest` | 10ジャンルから暮らしへの影響が大きい研究・論文を1本ずつ毎週月曜に要約・公開する | [architecture.md](specs/research-digest/architecture.md) |
 
 アプリごとの詳細(設計方針・システム構成・機能マップ)は各 `specs/<アプリ名>/architecture.md` を参照。新規アプリを追加したらこの表に1行追加する。
 
