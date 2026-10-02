@@ -1,6 +1,26 @@
 import { describe, it, expect } from 'vitest'
-import { assembleArticle, type GeneratedTopicInput } from '../../../app/trend-digest/lib/assembleArticle'
-import { GENRE_ORDER } from '../../../app/trend-digest/lib/types'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { assembleArticle, toTopicTrend, type GeneratedTopicInput } from '../../../app/trend-digest/lib/assembleArticle'
+import { parseArticle } from '../../../app/trend-digest/lib/articleSchema'
+import { collectPublishRecords } from '../../../app/trend-digest/lib/publishRecords'
+import { normalizeTitle } from '../../../app/trend-digest/lib/selection'
+import { GENRE_ORDER, type TopicTrend } from '../../../app/trend-digest/lib/types'
+import type { SelectedTopic } from '../../../app/trend-digest/lib/candidateTypes'
+
+function makeTrend(overrides: Partial<TopicTrend> = {}): TopicTrend {
+  return {
+    durationLabel: 'talked',
+    heatLabel: 'high',
+    continuationDays: 20,
+    continuationStartDate: '2026-08-26',
+    reportCount: 2,
+    originRegion: '日本',
+    currentRegions: ['日本', '北米'],
+    ...overrides,
+  }
+}
 
 // 160〜480字の範囲を満たすダミー本文を作る
 function makeBody(length = 250): string {
@@ -15,6 +35,7 @@ function makeTopicInput(overrides: Partial<GeneratedTopicInput> = {}): Generated
     sourceUrl: 'https://example.com/a',
     heading: '見出しA',
     body: makeBody(),
+    trend: makeTrend(),
     ...overrides,
   }
 }
@@ -82,5 +103,82 @@ describe('assembleArticle - 情報源から取得できなかったジャンル�
 
     const covered = new Set([...article.topics.map((t) => t.genre), ...(article.unavailableGenres ?? [])])
     expect(covered).toEqual(new Set(genres))
+  })
+})
+
+// 仕様: specs/trend-digest/article-detail/design.md「前提: 記事データの形式」(Topic.trend)、
+// specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-10
+describe('assembleArticle - 選定時の継続度・注目度の情報(trend)が記事のtopicに保存される', () => {
+  it('入力のtrend(継続度ラベル・注目度ラベル・継続日数・継続開始日・報告回数・地域)がそのままtopic.trendに入る', () => {
+    const trend = makeTrend({ durationLabel: 'highly-talked', heatLabel: 'low', reportCount: 3, originRegion: null, currentRegions: [] })
+    const article = assembleArticle('entertainment', '2026-09-15', [makeTopicInput({ trend })], [])
+    expect(article.topics[0].trend).toEqual(trend)
+  })
+
+  it('並び替え後も各topicが自分のtrendを保つ', () => {
+    const anime = makeTopicInput({ genre: 'anime', trend: makeTrend({ durationLabel: 'emerging' }) })
+    const music = makeTopicInput({ genre: 'music', trend: makeTrend({ durationLabel: 'pre-trend' }) })
+    const article = assembleArticle('entertainment', '2026-09-15', [anime, music], [])
+    expect(article.topics.map((t) => t.trend?.durationLabel)).toEqual(['pre-trend', 'emerging'])
+  })
+
+  it('組み立てた記事がparseArticleの検証(trendを含む)を通る', () => {
+    const article = assembleArticle('entertainment', '2026-09-15', [makeTopicInput()], GENRE_ORDER.entertainment.filter((g) => g !== 'music'))
+    expect(() => parseArticle(JSON.parse(JSON.stringify(article)), '2026-09-15-entertainment.json')).not.toThrow()
+  })
+})
+
+describe('toTopicTrend - 選定結果(SelectedTopic)から記事のtrendを取り出す', () => {
+  it('trend-historyの判定結果と地域情報だけを取り出す(掲載実績や本文など記事に不要な値は含めない)', () => {
+    const selected = {
+      genre: 'music',
+      title: '対象作品A',
+      sourceName: 'Oricon',
+      sourceUrl: 'https://example.com/a',
+      method: 'fixed-list',
+      strength: 90,
+      rank: 10,
+      originRegion: '日本',
+      currentRegions: ['日本'],
+      strengthJapan: null,
+      strengthOverseas: null,
+      meetsCriteria: true,
+      durationLabel: 'emerging',
+      heatLabel: 'normal',
+      continuationDays: 8,
+      continuationStartDate: '2026-09-07',
+      reportCount: 1,
+      lastPublishedDurationLabel: null,
+      lastPublishedBody: null,
+    } as SelectedTopic
+    expect(toTopicTrend(selected)).toEqual({
+      durationLabel: 'emerging',
+      heatLabel: 'normal',
+      continuationDays: 8,
+      continuationStartDate: '2026-09-07',
+      reportCount: 1,
+      originRegion: '日本',
+      currentRegions: ['日本'],
+    })
+  })
+})
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#掲載実績の追跡-14
+describe('assembleArticle - 実データの記事からtrend-historyの直近掲載時の継続度ラベルが埋まる', () => {
+  it('assembleArticleで組み立てた記事をarticlesDirに置くと、collectPublishRecordsのlastPublishedDurationLabelが記事のtrend.durationLabelになる', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'assemble-article-'))
+    try {
+      const article = assembleArticle(
+        'entertainment',
+        '2026-09-15',
+        [makeTopicInput({ title: '新曲A', trend: makeTrend({ durationLabel: 'emerging' }) })],
+        GENRE_ORDER.entertainment.filter((g) => g !== 'music')
+      )
+      fs.writeFileSync(path.join(dir, `${article.id}.json`), JSON.stringify(article))
+      const record = collectPublishRecords(dir).get(normalizeTitle('新曲A'))
+      expect(record?.lastPublishedDurationLabel).toBe('emerging')
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
