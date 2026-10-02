@@ -22,7 +22,7 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
 }
 
 // 仕様: specs/trend-digest/article-detail/requirements.md#記事本文表示-2、specs/trend-digest/article-detail/requirements.md#記事本文表示-3
-describe('ジャンル見出し+トピックカードの表示 - 各ジャンルから必ず1件を掲載する運用のため、対象編の全ジャンルの見出しは常に表示される', () => {
+describe('ジャンル見出し+トピックカードの表示 - トピックがあるジャンル、または取得できなかったジャンル(unavailable)は見出しが表示される', () => {
   it('ジャンル見出しの文言がGENRE_LABELSの日本語ラベル(例: musicなら「音楽」)と一致すること', () => {
     render(<GenreSection genre="music" topics={[makeTopic()]} unavailable={false} isAdmin={false} articleId="2026-09-15-entertainment" />)
     expect(screen.getByRole('heading', { name: GENRE_LABELS.music })).toBeTruthy()
@@ -38,7 +38,7 @@ describe('ジャンル見出し+トピックカードの表示 - 各ジャンル
       </>
     )
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
-    // secondはtopicがnullでも見出しは表示され続ける(ジャンルが記事から消えることはない)
+    // secondはtopicsが空でもunavailableなら見出しは表示され続ける(ジャンルが記事から消えることはない)
     expect(headings).toEqual([GENRE_LABELS[first], GENRE_LABELS[second], GENRE_LABELS[third]])
   })
 

@@ -39,9 +39,9 @@ flowchart LR
 
 ### 記事本文表示
 - [1] その回の記事タイトル・公開日を表示する
-- [2] その回の対象ジャンル(エンタメ編9ジャンル・カルチャー編10ジャンル)を、すべて見出しとして表示する。各ジャンルから必ず1件を掲載するため、ジャンルが回によって記事から消えることはない([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))
+- [2] その回の対象ジャンル(エンタメ編9ジャンル・カルチャー編10ジャンル)を、すべて見出しとして表示する。各ジャンルから必ず1件を掲載するため、ジャンルが回によって記事から消えることはない([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))(ただし、`unavailableGenres`を持たない公開済みの過去記事は、掲載のないジャンルを表示しない。[継続度・注目度の表示 17](#継続度・注目度の表示)参照)
 - [3] 各ジャンル見出しの下に、そのジャンルで選ばれたトピック1件を、見出し・本文・出典情報(情報源名・元URLへのリンク)とセットで表示する([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))
-- [4] 1つの記事に表示するトピックはその編のジャンル数と同じ件数(エンタメ編9件・カルチャー編10件)になる。合計件数の上限は設けない([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))
+- [4] 1つの記事に表示するトピックはその編のジャンル数と同じ件数(エンタメ編9件・カルチャー編10件)になる。合計件数の上限は設けない([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))(ただし、`unavailableGenres`を持たない公開済みの過去記事は対象外で、記録されているトピックをそのまま表示する。[継続度・注目度の表示 17](#継続度・注目度の表示)参照)
 
 ### 運営者向けフィードバック
 - [5] 各トピックの下に、フィードバック入力欄(自由記述のテキスト)を表示する

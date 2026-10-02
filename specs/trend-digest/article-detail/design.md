@@ -95,7 +95,7 @@ export type Article = {
   id: string // ファイル名と一致
   edition: Edition
   date: string // YYYY-MM-DD。発行日
-  topics: Topic[] // ジャンルの定義順(GENRE_ORDER)に並ぶ。各ジャンル1件
+  topics: Topic[] // ジャンルの定義順(GENRE_ORDER)に並ぶ。各ジャンル1件(unavailableGenresを持たない、新ルール導入前に公開済みの記事は例外で、同一ジャンルに複数件ある・掲載のないジャンルがありうる)
   // 情報源から話題を1件も取得できなかったジャンル(requirements.md#継続度・注目度の表示-17)。
   // 見出しは出したうえで取得できなかった旨を表示するため、topicsに入らないジャンルをここで持つ。
   // この機能より前に公開した記事は持たないため任意
@@ -120,11 +120,11 @@ export type Article = {
 - 手順:
   1. `buildArticleTitle(edition, date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
   2. `GENRE_ORDER[edition]`の順に、その編の全ジャンルを見出しとして表示する(requirements.md#記事本文表示-2)。見出しの文言は`Genre`から`GENRE_LABELS`を引いた日本語ラベルを使う
-  3. 各ジャンル見出しの下に、そのジャンルの`topics`(1件)を、見出し・本文・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
+  3. 各ジャンル見出しの下に、そのジャンルの`topics`(新ルールの記事は1件、`unavailableGenres`を持たない過去記事は複数件ありうる)を、見出し・本文・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
   4. `unavailableGenres`に含まれるジャンルは、見出しの下にトピックの代わりとして「今回は情報源から話題を取得できませんでした」と表示する。見出しだけが残る状態にはしない(requirements.md#継続度・注目度の表示-17)。`unavailableGenres`を持たない、新ルール導入前に公開済みの記事では、`topics`にないジャンルには見出しも含め何も表示しない(セクション自体を出さない。同一ジャンルに複数件のトピックがある場合は全件を表示する。公開済み記事を書き換えるとフィードバックの`topic_id`がずれるため、過去記事はそのまま表示する)
   5. 各トピックに`trend`がある場合は、見出しの隣に継続度ラベルのバッジと注目度ラベルのバッジを(いずれも日本語ラベル付きで)並べ、本文の上にトレンド情報の行を表示する。トレンド情報の行に出すのは、継続期間(継続の開始日と継続日数を組み合わせた読みやすい表記)・報告回数(2回目以降のみ)・発祥地域(判定できている場合のみ)・現在の主な流行地域(判定できている場合のみ)で、値が不明な項目は項目ごと表示しない(requirements.md#継続度・注目度の表示-10、同-12、同-14、同-15、同-16)
   6. `trend`を持たないトピックは、バッジ・トレンド情報の行をいずれも表示しない(requirements.md#継続度・注目度の表示-18)
-  7. 表示するトピック数は`topics`配列のとおりで、画面側で件数の絞り込みは行わない(その編のジャンル数と一致する。requirements.md#記事本文表示-4)
+  7. 表示するトピック数は`topics`配列のとおりで、画面側で件数の絞り込みは行わない(`unavailableGenres`を持つ記事ではその編のジャンル数と一致する。持たない過去記事は例外。requirements.md#記事本文表示-4、requirements.md#継続度・注目度の表示-17)
 - 関連するビジネスルール: requirements.md#記事本文表示-1、requirements.md#記事本文表示-2、requirements.md#記事本文表示-3、requirements.md#記事本文表示-4、requirements.md#継続度・注目度の表示-10、requirements.md#継続度・注目度の表示-11、requirements.md#継続度・注目度の表示-12、requirements.md#継続度・注目度の表示-13、requirements.md#継続度・注目度の表示-14、requirements.md#継続度・注目度の表示-15、requirements.md#継続度・注目度の表示-16、requirements.md#継続度・注目度の表示-17、requirements.md#継続度・注目度の表示-18、requirements.md#継続度・注目度の表示の扱い-6、requirements.md#継続度・注目度の表示の扱い-7
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
@@ -172,7 +172,7 @@ sequenceDiagram
 - `edition`: `entertainment`または`culture-lifestyle`であること
 - `date`: `YYYY-MM-DD`形式であること
 - `topics`: 配列長が1件以上で、`article.edition`のジャンル数(エンタメ編9・カルチャー編10)以下であること。`topics`のジャンルと`unavailableGenres`を合わせると`GENRE_ORDER[article.edition]`と過不足なく一致すること(各ジャンル1件を掲載する仕様どおりに記事が組み立てられているかをビルド時に検知するため。content-selection/requirements.md#掲載件数-1〜3)。同一ジャンルのトピックが2件以上ないこと(1ジャンル1件)の検証も同様に、`unavailableGenres`を持つ記事にだけ適用する。`unavailableGenres`を持たない、新ルール導入前に公開済みの記事には1ジャンル1件・全ジャンル一致の検証を適用せず従来どおり受け入れる(公開済み記事を書き換えるとフィードバックの`topic_id`がずれるため)
-- 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが2件以上存在しないこと(content-selection/requirements.md#掲載件数-1)
+- 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが2件以上存在しないこと(content-selection/requirements.md#掲載件数-1。ただし`unavailableGenres`を持つ記事にだけ適用し、持たない過去記事は適用しない。上記`topics`の項参照)
 - `unavailableGenres`は省略可。ある場合は、各要素が`GENRE_ORDER[article.edition]`に含まれるジャンルであること、重複がないこと、`topics`のジャンルと重ならないこと
 - 各`topic`の`trend`は省略可。ある場合は、`durationLabel`が定義済みの4段階のいずれかであること、`heatLabel`が定義済みの3段階のいずれかであること、`continuationDays`が0以上の整数であること、`continuationStartDate`が`YYYY-MM-DD`形式で記事の`date`以前であること、`reportCount`が1以上の整数であること、`originRegion`が文字列(空文字でなく50文字以内・制御文字を含まない)またはnullであること、`currentRegions`が文字列の配列(各要素は空文字でなく50文字以内・制御文字を含まない、10件以内)であること。地域情報は収集エージェントが生成した自由文字列のため、記事データに取り込む時点でも外部入力として検証する([trend-history/design.md](../trend-history/design.md)のバリデーションと同じ上限)
 - `body`の文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2、content-generation/design.md「本文の分量を検証する処理」)
