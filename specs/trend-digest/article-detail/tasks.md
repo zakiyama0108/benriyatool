@@ -27,7 +27,7 @@
 ## 記事表示
 
 - Task 5: ジャンル見出し+トピックカードの表示(仕様: requirements.md#記事本文表示-2〜4、requirements.md#継続度・注目度の表示-17)
-  - 🔴 その編の全ジャンルが`GENRE_ORDER`の順で見出し表示されること、ジャンル見出しの文言が`GENRE_LABELS`の日本語ラベルと一致すること、各トピックの見出し・本文・出典(発信者名・元URLリンク、新規タブで開く`target="_blank"`)が表示されることを確認するテストを書く
+  - 🔴 その編の全ジャンルが`GENRE_ORDER`の順で見出し表示されること(`unavailableGenres`を持たない過去記事は掲載のあるジャンルのみ。下記の過去記事のテスト項目参照)、ジャンル見出しの文言が`GENRE_LABELS`の日本語ラベルと一致すること、各トピックの見出し・本文・出典(発信者名・元URLリンク、新規タブで開く`target="_blank"`)が表示されることを確認するテストを書く
   - 🔴 **話題を取得できなかったジャンルのテストを書く**: `unavailableGenres`に含まれるジャンルも見出しが表示されること、その下に取得できなかった旨が表示されること、トピックカードが描画されないこと、見出しだけが残る状態にならないこと
   - 🔴 **過去記事(`unavailableGenres`を持たない記事)の表示のテストを書く**: 掲載のないジャンルは見出しも取得できなかった旨も表示しない(セクション自体を出さない)こと、同一ジャンルに複数件のトピックがあれば全件表示されること、`ArticleDetailView`で`unavailableGenres`に含まれるジャンルにだけ取得できなかった旨が出ること(requirements.md#継続度・注目度の表示-17)
   - 🟢 `app/trend-digest/components/GenreSection.tsx`・`app/trend-digest/components/TopicCard.tsx`を実装する
