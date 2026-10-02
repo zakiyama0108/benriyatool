@@ -142,7 +142,7 @@ export default function TrendDigestStyleguidePage() {
         </Section>
 
         <Section title="話題を取得できなかったジャンルの表示(GenreSection)">
-          <GenreSection genre="music" topic={null} isAdmin={false} articleId="styleguide-sample" />
+          <GenreSection genre="music" topics={[]} unavailable isAdmin={false} articleId="styleguide-sample" />
         </Section>
 
         <Section title="フッター(LoginStatus・未ログイン)">
