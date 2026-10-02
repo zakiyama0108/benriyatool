@@ -81,12 +81,22 @@ describe('記事データのバリデーション - JSONのスキーマを検証
     expect(() => parseArticle(makeArticle({ topics }), '2026-09-15-entertainment.json')).toThrow()
   })
 
-  it('同一ジャンルのトピックが2件以上存在する場合、失敗すること(各ジャンルから必ず1件掲載する仕様のため最大1件/ジャンル)', () => {
+  it('unavailableGenresを持つ記事で同一ジャンルのトピックが2件以上存在する場合、失敗すること(各ジャンルから必ず1件掲載する新ルールのため最大1件/ジャンル)', () => {
     const topics = [
       makeTopic({ id: 'topic-1', genre: 'music' }),
       makeTopic({ id: 'topic-2', genre: 'music' }),
     ]
-    expect(() => parseArticle(makeArticle({ topics }), '2026-09-15-entertainment.json')).toThrow()
+    const unavailableGenres = GENRE_ORDER.entertainment.filter((g) => g !== 'music')
+    expect(() => parseArticle(makeArticle({ topics, unavailableGenres }), '2026-09-15-entertainment.json')).toThrow()
+  })
+
+  it('unavailableGenresを持たない過去の記事は、同一ジャンルのトピックが2件あっても検証を通ること(新ルール導入前に公開済みの記事はそのまま受け入れる)', () => {
+    const topics = [
+      makeTopic({ id: 'topic-1', genre: 'music' }),
+      makeTopic({ id: 'topic-2', genre: 'music' }),
+    ]
+    const article = parseArticle(makeArticle({ topics }), '2026-09-15-entertainment.json')
+    expect(article.topics).toHaveLength(2)
   })
 
   it('genreが未定義値の場合、失敗すること', () => {

@@ -12,7 +12,8 @@ const EDITIONS: Edition[] = ['entertainment', 'culture-lifestyle']
 const ALL_GENRES: Genre[] = [...GENRE_ORDER.entertainment, ...GENRE_ORDER['culture-lifestyle']]
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 // 各ジャンルから必ず1件を掲載する仕様のため、同一ジャンルのトピックは1件までしか許容しない
-// (旧仕様は2件/ジャンルまで許容していたが、継続度・注目度対応の改訂で1件/ジャンルに変更された)
+// (旧仕様は2件/ジャンルまで許容していたが、継続度・注目度対応の改訂で1件/ジャンルに変更された。
+// ただしunavailableGenresを持たない過去の記事には適用しない)
 const MAX_TOPICS_PER_GENRE = 1
 const DURATION_LABELS: DurationLabel[] = ['pre-trend', 'emerging', 'talked', 'highly-talked']
 const HEAT_LABELS: HeatLabel[] = ['high', 'normal', 'low']
@@ -216,16 +217,6 @@ export function parseArticle(raw: unknown, filename: string): Article {
     throw new Error(`${filename}: topics内でidが重複しています`)
   }
 
-  const countByGenre = new Map<Genre, number>()
-  for (const topic of topics) {
-    countByGenre.set(topic.genre, (countByGenre.get(topic.genre) ?? 0) + 1)
-  }
-  for (const [genre, count] of countByGenre) {
-    if (count > MAX_TOPICS_PER_GENRE) {
-      throw new Error(`${filename}: ジャンル(${genre})のトピックが${MAX_TOPICS_PER_GENRE}件を超えています(実際: ${count}件)`)
-    }
-  }
-
   const topicGenres = new Set(topics.map((topic) => topic.genre))
   const unavailableGenres = parseUnavailableGenres(data.unavailableGenres, edition, topicGenres)
 
@@ -233,6 +224,18 @@ export function parseArticle(raw: unknown, filename: string): Article {
   // その編の全ジャンルと過不足なく一致することを検証する(requirements.md#継続度・注目度の表示-17)。
   // 持たない記事(過去の記事)は網羅の検証をしない
   if (unavailableGenres !== undefined) {
+    // 1ジャンル1件の検証も同様に、unavailableGenresを持つ記事にだけ適用する。持たない過去の記事は
+    // 公開後に書き換えるとフィードバックのtopic_idがずれるため、従来どおり同一ジャンル複数件を受け入れる
+    const countByGenre = new Map<Genre, number>()
+    for (const topic of topics) {
+      countByGenre.set(topic.genre, (countByGenre.get(topic.genre) ?? 0) + 1)
+    }
+    for (const [genre, count] of countByGenre) {
+      if (count > MAX_TOPICS_PER_GENRE) {
+        throw new Error(`${filename}: ジャンル(${genre})のトピックが${MAX_TOPICS_PER_GENRE}件を超えています(実際: ${count}件)`)
+      }
+    }
+
     const covered = new Set([...topicGenres, ...unavailableGenres])
     const missing = GENRE_ORDER[edition].filter((genre) => !covered.has(genre))
     if (missing.length > 0) {
