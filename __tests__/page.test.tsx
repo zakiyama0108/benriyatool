@@ -4,7 +4,7 @@ import HubPage from '../app/page'
 
 // 仕様: specs/hub-site/requirements.md#機能要件-2、specs/board-game-rules/game-list/requirements.md#メタ情報-11、specs/board-game-rules/game-list/design.md#トップページ掲載(hub-site)
 describe('【トップページ】ツールカード一覧 - 本番公開済みの全アプリへのリンクを掲載する', () => {
-  it('育休給付金シミュレーター(/ikukyu)・資産推移シミュレーター(/life-money-sim)・AI駆動開発ダイジェスト(/ai-dev-digest)・ボドゲのトリセツ(/board-game-rules)・曲名からプレイリスト作成(/spotify-playlist)・週刊トレンド(/trend-digest)・重要ニュースダイジェスト(/news-digest)・週刊未来予測(/future-digest)、すべてのカードが表示されること', () => {
+  it('育休給付金シミュレーター(/ikukyu)・資産推移シミュレーター(/life-money-sim)・AI駆動開発ダイジェスト(/ai-dev-digest)・ボドゲのトリセツ(/board-game-rules)・曲名からプレイリスト作成(/spotify-playlist)・週刊トレンド(/trend-digest)・重要ニュースダイジェスト(/news-digest)・週刊未来予測(/future-digest)・週刊研究発見(/research-digest)、すべてのカードが表示されること', () => {
     render(<HubPage />)
 
     const ikukyuLink = screen.getByRole('link', { name: /育休給付金シミュレーター/ })
@@ -30,6 +30,9 @@ describe('【トップページ】ツールカード一覧 - 本番公開済み�
 
     const futureDigestLink = screen.getByRole('link', { name: /週刊未来予測/ })
     expect(futureDigestLink.getAttribute('href')).toBe('/future-digest')
+
+    const researchDigestLink = screen.getByRole('link', { name: /週刊研究発見/ })
+    expect(researchDigestLink.getAttribute('href')).toBe('/research-digest')
   })
 })
 

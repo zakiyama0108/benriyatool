@@ -1,0 +1,12 @@
+[
+  { "id": "medical-health", "label": "医療・健康", "description": "病気の予防・診断・治療、公衆衛生、日常の健康管理に関わる研究", "active": true },
+  { "id": "nutrition-food", "label": "栄養・食", "description": "栄養・食事・食品の安全、食習慣と健康の関係、食料生産に関わる研究", "active": true },
+  { "id": "psychology-brain", "label": "心理・脳科学", "description": "心のはたらき・感情・記憶・意思決定・脳の仕組みに関わる研究", "active": true },
+  { "id": "sleep-exercise", "label": "睡眠・運動", "description": "睡眠の質・運動習慣・身体活動と心身への影響に関わる研究", "active": true },
+  { "id": "environment-climate", "label": "環境・気候", "description": "気候変動・自然環境・生態系・災害・環境汚染に関わる研究", "active": true },
+  { "id": "ai-it", "label": "AI・情報技術", "description": "人工知能・コンピューター・通信・情報セキュリティなど暮らしに関わる情報技術の研究", "active": true },
+  { "id": "economics-behavioral", "label": "経済・行動科学", "description": "経済・お金・働き方・人の行動や選択の傾向に関わる研究", "active": true },
+  { "id": "space-physics", "label": "宇宙・物理", "description": "宇宙・天文・物理学の発見や、暮らしに波及しうる基礎研究", "active": true },
+  { "id": "materials-energy", "label": "材料・エネルギー", "description": "新素材・電池・発電・省エネなど材料とエネルギーに関わる研究", "active": true },
+  { "id": "education-parenting", "label": "教育・子育て", "description": "学習・教育方法・子どもの発達・子育てに関わる研究", "active": true }
+]

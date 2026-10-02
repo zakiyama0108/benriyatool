@@ -32,7 +32,7 @@ const eslintConfig = defineConfig([
     // scripts/配下はCLI実行が前提のNodeスクリプトのため、console出力を許可する
     // (ai-dev-digest・news-digest・trend-digestの収集・公開スクリプトは実行ログとして
     // console出力を使う設計のため、.tsも対象に含める。design.md「ログ」参照)
-    files: ["scripts/**/*.mjs", "scripts/ai-dev-digest/**/*.ts", "scripts/news-digest/**/*.ts", "scripts/trend-digest/**/*.ts", "scripts/future-digest/**/*.ts"],
+    files: ["scripts/**/*.mjs", "scripts/ai-dev-digest/**/*.ts", "scripts/news-digest/**/*.ts", "scripts/trend-digest/**/*.ts", "scripts/future-digest/**/*.ts", "scripts/research-digest/**/*.ts"],
     rules: {
       "no-console": "off",
     },
@@ -51,12 +51,13 @@ const eslintConfig = defineConfig([
     // 独立した依存関係(pg/dotenv/@supabase/supabase-js)を持つ隔離パッケージのため、本体のtsconfigプロジェクトに含めない
     // (仕様: specs/ai-dev-digest/watchlist-review/design.md「関連するファイル」、specs/board-game-rules/admin/tasks.md T8、
     // specs/trend-digest/source-review/design.md「関連するファイル」、specs/news-digest/monthly-review/design.md「関連するファイル」、
-    // specs/future-digest/source-review/design.md「関連するファイル」)
+    // specs/future-digest/source-review/design.md「関連するファイル」、specs/research-digest/source-review/design.md「関連するファイル」)
     "scripts/ai-dev-digest/collect-review-data/**",
     "scripts/board-game-rules/**",
     "scripts/trend-digest/collect-review-data/**",
     "scripts/news-digest/collect-review-data/**",
     "scripts/future-digest/collect-review-data/**",
+    "scripts/research-digest/collect-review-data/**",
   ]),
 ]);
 

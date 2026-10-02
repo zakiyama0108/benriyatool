@@ -8,6 +8,8 @@ import { getAllArticles as getAllTrendDigestArticles } from '../app/trend-digest
 import { paginate as paginateTrendDigest } from '../app/trend-digest/lib/pagination'
 import { getAllArticles as getAllFutureDigestArticles } from '../app/future-digest/lib/articles'
 import { paginate as paginateFutureDigest } from '../app/future-digest/lib/pagination'
+import { getAllArticles as getAllResearchDigestArticles } from '../app/research-digest/lib/articles'
+import { paginate as paginateResearchDigest } from '../app/research-digest/lib/pagination'
 
 // 仕様: specs/hub-site/requirements.md#機能要件-5
 describe('サイトマップの動的生成 - ビルド時に公開中の全ページを自動列挙する', () => {
@@ -23,6 +25,7 @@ describe('サイトマップの動的生成 - ビルド時に公開中の全ペ�
     expect(urls).toContain(`${SITE_URL}/spotify-playlist/`)
     expect(urls).toContain(`${SITE_URL}/trend-digest/`)
     expect(urls).toContain(`${SITE_URL}/future-digest/`)
+    expect(urls).toContain(`${SITE_URL}/research-digest/`)
   })
 
   it('board-game-rulesの公開画面(register・favorites)が含まれること', () => {
@@ -84,6 +87,20 @@ describe('サイトマップの動的生成 - ビルド時に公開中の全ペ�
     expect(urls).not.toContain(`${SITE_URL}/future-digest/page/1/`)
   })
 
+  it('週刊研究発見の記事詳細が現存記事の件数分すべて含まれること', () => {
+    for (const article of getAllResearchDigestArticles()) {
+      expect(urls).toContain(`${SITE_URL}/research-digest/${article.id}/`)
+    }
+  })
+
+  it('週刊研究発見の2ページ目以降(存在する場合のみ)が含まれること', () => {
+    const { totalPages } = paginateResearchDigest(getAllResearchDigestArticles(), 1)
+    for (let page = 2; page <= totalPages; page++) {
+      expect(urls).toContain(`${SITE_URL}/research-digest/page/${page}/`)
+    }
+    expect(urls).not.toContain(`${SITE_URL}/research-digest/page/1/`)
+  })
+
   it('管理画面・styleguide・bookmarksは検索対象外のため含まれないこと', () => {
     expect(urls.some((url) => url.includes('/admin'))).toBe(false)
     expect(urls).not.toContain(`${SITE_URL}/board-game-rules/styleguide/`)
@@ -92,5 +109,7 @@ describe('サイトマップの動的生成 - ビルド時に公開中の全ペ�
     expect(urls).not.toContain(`${SITE_URL}/trend-digest/styleguide/`)
     expect(urls).not.toContain(`${SITE_URL}/future-digest/styleguide/`)
     expect(urls).not.toContain(`${SITE_URL}/future-digest/bookmarks/`)
+    expect(urls).not.toContain(`${SITE_URL}/research-digest/styleguide/`)
+    expect(urls).not.toContain(`${SITE_URL}/research-digest/bookmarks/`)
   })
 })
