@@ -26,8 +26,18 @@ export function excludeAlreadyPublishedTopics(candidates: Candidate[], published
 // ジャンル内の絞り込み(1ジャンル最大2件。requirements.md#機能要件-4、
 // requirements.md#ジャンル内の絞り込み(1ジャンル最大2件)-1〜2、design.md「ジャンル内の絞り込みを行う処理」)。
 // strength降順に並べ、3件以上あれば上位2件に絞る。0〜2件はそのまま採用する
-export function narrowGenreCandidates(candidates: Candidate[], perGenreMax: number): Candidate[] {
-  return [...candidates].sort((a, b) => b.strength - a.strength).slice(0, perGenreMax)
+// focusAreasを指定した場合は地域枠を設ける(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11)。
+// 上位に対象エリアの話題が1件もなく、候補の中にあるときは、最下位の枠をstrength最上位の対象エリアの話題に差し替える
+export function narrowGenreCandidates(candidates: Candidate[], perGenreMax: number, focusAreas: string[] = []): Candidate[] {
+  const sorted = [...candidates].sort((a, b) => b.strength - a.strength)
+  const picked = sorted.slice(0, perGenreMax)
+  if (focusAreas.length === 0 || perGenreMax < 1) return picked
+
+  const isFocus = (c: Candidate) => c.area !== undefined && focusAreas.includes(c.area)
+  if (picked.some(isFocus)) return picked
+  const regional = sorted.find(isFocus)
+  if (!regional) return picked
+  return [...picked.slice(0, perGenreMax - 1), regional]
 }
 
 // 編全体の絞り込みの入力単位。narrowGenreCandidates適用後(strength降順、最大2件)の

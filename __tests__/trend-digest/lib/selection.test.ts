@@ -149,3 +149,32 @@ describe('編全体の絞り込み - 1回の配信につき掲載する合計ト
     expect(result.topics.some((t) => t.genre === 'music')).toBe(false)
   })
 })
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11
+describe('地域枠(グルメ) - 上位の掲載枠に対象エリアの話題がなければ、最下位の枠を対象エリアの話題に差し替える', () => {
+  const focusAreas = ['小田原', '茅ヶ崎', '横浜']
+  const national1 = baseCandidate({ genre: 'gourmet', title: '全国A', method: 'websearch', strength: 5 })
+  const national2 = baseCandidate({ genre: 'gourmet', title: '全国B', method: 'websearch', strength: 4 })
+  const local = baseCandidate({ genre: 'gourmet', title: '茅ヶ崎の店', method: 'websearch', strength: 2, area: '茅ヶ崎' })
+
+  it('上位2件が全国の話題のみで対象エリアの候補が下位にある場合、2件目が対象エリアの話題に差し替わること', () => {
+    const result = narrowGenreCandidates([national1, national2, local], 2, focusAreas)
+    expect(result.map((c) => c.title)).toEqual(['全国A', '茅ヶ崎の店'])
+  })
+
+  it('上位に対象エリアの話題が既にある場合は強さ順のまま変わらないこと', () => {
+    const topLocal = baseCandidate({ genre: 'gourmet', title: '横浜の店', method: 'websearch', strength: 9, area: '横浜' })
+    const result = narrowGenreCandidates([national1, national2, topLocal], 2, focusAreas)
+    expect(result.map((c) => c.title)).toEqual(['横浜の店', '全国A'])
+  })
+
+  it('対象エリアの候補が1件もない場合や、focusAreas未指定の場合は従来どおり強さ順の上位のみ残ること', () => {
+    expect(narrowGenreCandidates([national1, national2], 2, focusAreas).map((c) => c.title)).toEqual(['全国A', '全国B'])
+    expect(narrowGenreCandidates([national1, national2, local], 2).map((c) => c.title)).toEqual(['全国A', '全国B'])
+  })
+
+  it('対象外の地域名の話題は地域枠として扱わないこと', () => {
+    const other = baseCandidate({ genre: 'gourmet', title: '札幌の店', method: 'websearch', strength: 2, area: '札幌' })
+    expect(narrowGenreCandidates([national1, national2, other], 2, focusAreas).map((c) => c.title)).toEqual(['全国A', '全国B'])
+  })
+})

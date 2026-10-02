@@ -18,6 +18,7 @@ type RawWebSearchTopic = {
   sourceName?: unknown
   sourceUrl?: unknown
   independentSourceCount?: unknown
+  area?: unknown
 }
 
 export type WebSearchTopic = {
@@ -25,6 +26,7 @@ export type WebSearchTopic = {
   sourceName: string
   sourceUrl: string
   independentSourceCount: number
+  area?: string // 地域に紐づく話題のみ。focusAreasの地域枠判定に使う
 }
 
 export type ClassifiedWebSearchResult =
@@ -84,6 +86,7 @@ export function classifyWebSearchResult(res: ClaudeCliResponse): ClassifiedWebSe
         sourceName: raw.sourceName,
         sourceUrl: raw.sourceUrl,
         independentSourceCount: raw.independentSourceCount,
+        ...(typeof raw.area === 'string' && raw.area.trim() !== '' ? { area: raw.area.trim() } : {}),
       })
     }
   }
@@ -118,6 +121,7 @@ export async function collectWebSearchCandidates(
       sourceUrl: topic.sourceUrl,
       method: 'websearch',
       strength: topic.independentSourceCount,
+      ...(topic.area !== undefined ? { area: topic.area } : {}),
       note: `独立情報源${topic.independentSourceCount}件`,
     }))
 

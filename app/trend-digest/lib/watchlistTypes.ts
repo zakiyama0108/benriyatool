@@ -27,6 +27,7 @@ export type FixedListGenreCriteria = {
 export type WebSearchGenreCriteria = {
   method: 'websearch'
   minIndependentSources: number // 「動きがあった」と判定する最低独立情報源数
+  focusAreas?: string[] // 地域枠の対象エリア(例: グルメの小田原・茅ヶ崎・横浜)。指定時は掲載枠に1件以上その地域の話題を含める
 }
 
 export type GenreCriteria = FixedListGenreCriteria | WebSearchGenreCriteria

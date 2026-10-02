@@ -9,9 +9,10 @@ const criteria = criteriaData as Criteria
 
 const FIXED_LIST_GENRES = [
   'music', 'japanese-movie', 'foreign-movie', 'foreign-drama', 'anime', 'streaming-video', 'books-comics',
-  'buzzwords', 'fashion', 'gadgets', 'games', 'travel',
+  'buzzwords', 'games', 'travel',
 ]
-const WEBSEARCH_GENRES = ['japanese-drama', 'variety', 'sns-buzz', 'gourmet', 'hobby', 'economy-money']
+// fashion・gadgetsは編集部キュレーションの記事しか情報源がなく客観データを持たないためWebSearchジャンル(requirements.md#選定方式-4)
+const WEBSEARCH_GENRES = ['japanese-drama', 'variety', 'sns-buzz', 'gourmet', 'hobby', 'fashion', 'gadgets', 'economy-money']
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#グループとジャンル-1、specs/trend-digest/content-selection/requirements.md#グループとジャンル-2、specs/trend-digest/content-selection/requirements.md#機能要件-1
 describe('対象ジャンルのデータ - 18ジャンルをエンタメ編(火曜配信・9ジャンル)とカルチャー・ライフスタイル編(金曜配信・9ジャンル)に固定リストで分ける', () => {
@@ -31,13 +32,13 @@ describe('対象ジャンルのデータ - 18ジャンルをエンタメ編(火�
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-2、specs/trend-digest/content-selection/requirements.md#選定方式-3
-describe('ジャンルの選定方式データ - 固定リストジャンル(12)とWebSearchジャンル(6)がrequirements.mdの記載と一致する', () => {
-  it('固定リストジャンル(method: fixed-list)がrequirements.mdに記載の12ジャンルと一致すること', () => {
+describe('ジャンルの選定方式データ - 固定リストジャンル(10)とWebSearchジャンル(8)がrequirements.mdの記載と一致する', () => {
+  it('固定リストジャンル(method: fixed-list)がrequirements.mdに記載の10ジャンルと一致すること', () => {
     const actual = watchlist.filter((e) => e.method === 'fixed-list').map((e) => e.genre).sort()
     expect(actual).toEqual([...FIXED_LIST_GENRES].sort())
   })
 
-  it('WebSearchジャンル(method: websearch)がrequirements.mdに記載の6ジャンルと一致すること', () => {
+  it('WebSearchジャンル(method: websearch)がrequirements.mdに記載の8ジャンルと一致すること', () => {
     const actual = watchlist.filter((e) => e.method === 'websearch').map((e) => e.genre).sort()
     expect(actual).toEqual([...WEBSEARCH_GENRES].sort())
   })

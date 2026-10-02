@@ -81,3 +81,21 @@ describe('WebSearchジャンルの応答分類 - 応答がJSON配列単体以外
     }
   })
 })
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11
+describe('地域枠(グルメ) - WebSearchの応答が申告した地域(area)を候補に引き継ぐ', () => {
+  it('areaを持つ話題は候補のareaに引き継がれ、独立情報源数の基準は地域の話題にも同じく適用されること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        { title: '小田原の海鮮丼', sourceName: '〇〇ニュース', sourceUrl: 'https://example.com/a', independentSourceCount: 2, area: '小田原' },
+        { title: '横浜の新店', sourceName: '△△メディア', sourceUrl: 'https://example.com/b', independentSourceCount: 1, area: '横浜' },
+        { title: '全国の話題', sourceName: '□□', sourceUrl: 'https://example.com/c', independentSourceCount: 3 },
+      ]),
+    })
+    const { candidates } = await collectWebSearchCandidates(entry, criteria, call)
+    expect(candidates.map((c) => [c.title, c.area])).toEqual([
+      ['小田原の海鮮丼', '小田原'],
+      ['全国の話題', undefined],
+    ])
+  })
+})
