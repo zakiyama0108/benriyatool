@@ -68,7 +68,7 @@ flowchart LR
 - [2] 出典(情報源名・元URLへのリンク)を必ず表示する(根拠: 同上、著作権配慮としての最低限の措置)
 
 ### フィードバックの保存・権限
-- [3] フィードバックの保存は、INSERT専用の最小権限パターン([docs/adr/0001-user-input-database.md](../../../docs/adr/0001-user-input-database.md))を踏襲する。この入力欄はログイン中のみ表示されるため、INSERTは`authenticated`ロールへ許可する(ai-dev-digestと同じ方針)。保存されるのは自由記述コメントのみで、`trend_digest_feedback`テーブル自体へのadmin_emails等を用いた追加のRLS設計は導入しない(ただし、`unavailableGenres`を持たない公開済みの過去記事は、記録されている複数件をそのまま表示する。[継続度・注目度の表示 17](#継続度・注目度の表示)参照)
+- [3] フィードバックの保存は、INSERT専用の最小権限パターン([docs/adr/0001-user-input-database.md](../../../docs/adr/0001-user-input-database.md))を踏襲する。この入力欄はログイン中のみ表示されるため、INSERTは`authenticated`ロールへ許可する(ai-dev-digestと同じ方針)。保存されるのは自由記述コメントのみで、`trend_digest_feedback`テーブル自体へのadmin_emails等を用いた追加のRLS設計は導入しない
 - [4] 入力欄の表示・非表示は、運営者本人かどうかの判定による画面側の出し分けで行う(フィードバック保存先テーブル自体のアクセス制御ではなく表示制御である点に注意する)。運営者判定は既存の`admin_emails`許可リスト([ADR-0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、`app/lib/adminAuth.ts`のisAuthorizedAdmin())を再利用する
 - [5] 保存されたフィードバックは、公開画面のどこにも表示・一覧化しない
 
