@@ -66,11 +66,6 @@ export type Criteria = {
   - ダイヤモンド・オンライン: `https://news.yahoo.co.jp/rss/media/diamond/all.xml`
   - BUSINESS INSIDER JAPAN: `https://news.yahoo.co.jp/rss/media/binsider/all.xml`
 - 時事通信・日本経済新聞(電子版)は固定リストに含めない。時事通信は日付がURLのクエリ文字列に埋め込まれ本文から抽出できず、日本経済新聞(電子版)はJS描画のSPA構造で静的HTML取得では記事一覧・日付とも取得できず公式RSSも存在しないため、いずれも技術的にスクレイピング不可能である(requirements.md#情報源(固定リスト)-2の注記)
-  - 産経新聞: `https://news.yahoo.co.jp/rss/media/san/all.xml`
-  - ANN(テレビ朝日系): `https://news.yahoo.co.jp/rss/media/ann/all.xml`
-  - FNNプライムオンライン: `https://news.yahoo.co.jp/rss/media/fnnprimev/all.xml`
-  - ダイヤモンド・オンライン: `https://news.yahoo.co.jp/rss/media/diamond/all.xml`
-  - BUSINESS INSIDER JAPAN: `https://news.yahoo.co.jp/rss/media/binsider/all.xml`
 
 ## 処理フロー
 
