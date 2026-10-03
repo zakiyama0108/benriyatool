@@ -8,8 +8,8 @@ const criteria: Criteria = criteriaData
 
 // requirements.md#情報源(固定リスト)-<カテゴリ名>の表セルをそのまま転記した期待値
 const EXPECTED_NAMES_BY_CATEGORY: Record<CategoryId, string[]> = {
-  general: ['NHK NEWS WEB(政治・国際)', '共同通信', '時事通信'],
-  business: ['日本経済新聞(電子版)', '東洋経済オンライン'],
+  general: ['NHK NEWS WEB(政治・国際)', '共同通信', '産経新聞', 'ANN(テレビ朝日系)', 'FNNプライムオンライン'],
+  business: ['東洋経済オンライン', 'ダイヤモンド・オンライン', 'BUSINESS INSIDER JAPAN'],
   kanagawa: ['神奈川県公式サイト(お知らせ)', '神奈川新聞(カナロコ)'],
   childcare: ['こども家庭庁', '厚生労働省(子育て支援関連)', 'NHK生活情報(子育て)'],
 }
@@ -23,23 +23,29 @@ describe('選定対象カテゴリ - 総合・経済/ビジネス・神奈川ロ
 })
 
 // 仕様: specs/news-digest/content-selection/requirements.md#情報源(固定リスト)-2
-describe('情報源の固定リストのデータ - requirements.mdの表と完全一致する10件の固定リストであること', () => {
-  it('ウォッチリストがちょうど10件であること(記載以外の発信者・組織をエージェントが自律的に追加しない固定リスト運用)', () => {
-    expect(watchlist).toHaveLength(10)
+describe('情報源の固定リストのデータ - requirements.mdの表と完全一致する13件の固定リストであること', () => {
+  it('ウォッチリストがちょうど13件であること(記載以外の発信者・組織をエージェントが自律的に追加しない固定リスト運用)', () => {
+    expect(watchlist).toHaveLength(13)
   })
 })
 
 // 仕様: specs/news-digest/content-selection/requirements.md#情報源(固定リスト)-2
 // 共同通信・東洋経済オンライン・神奈川新聞(カナロコ)は、robots.txtで直接サイトへのアクセスが
-// 禁止されているため、Yahoo!ニュースが公式配信する媒体別RSSフィード経由の取得に切り替えている
-// (design.md「データ設計(情報源・採用基準)」参照)
+// 禁止されているため、産経新聞・ANN(テレビ朝日系)・FNNプライムオンライン・ダイヤモンド・オンライン・
+// BUSINESS INSIDER JAPANは採用基準[4]を満たす候補の母数を増やすため、いずれもYahoo!ニュースが
+// 公式配信する媒体別RSSフィード経由の取得にしている(design.md「データ設計(情報源・採用基準)」参照)
 const EXPECTED_YAHOO_RSS_CHANNEL: Record<string, string> = {
   'kyodo-news': 'https://news.yahoo.co.jp/rss/media/kyodonews/all.xml',
+  sankei: 'https://news.yahoo.co.jp/rss/media/san/all.xml',
+  ann: 'https://news.yahoo.co.jp/rss/media/ann/all.xml',
+  fnnprime: 'https://news.yahoo.co.jp/rss/media/fnnprimev/all.xml',
   toyokeizai: 'https://news.yahoo.co.jp/rss/media/toyo/all.xml',
+  diamond: 'https://news.yahoo.co.jp/rss/media/diamond/all.xml',
+  businessinsider: 'https://news.yahoo.co.jp/rss/media/binsider/all.xml',
   kanaloco: 'https://news.yahoo.co.jp/rss/media/kana/all.xml',
 }
 
-describe('情報源の固定リストのデータ - 共同通信・東洋経済オンライン・神奈川新聞(カナロコ)はYahoo!ニュース公式RSS経由で取得すること', () => {
+describe('情報源の固定リストのデータ - 共同通信・産経新聞・ANN・FNNプライムオンライン・東洋経済オンライン・ダイヤモンド・オンライン・BUSINESS INSIDER JAPAN・神奈川新聞(カナロコ)はYahoo!ニュース公式RSS経由で取得すること', () => {
   for (const [id, feedUrl] of Object.entries(EXPECTED_YAHOO_RSS_CHANNEL)) {
     it(`「${id}」のchannelsがYahoo!ニュースのRSS(${feedUrl})のみであること`, () => {
       const entry = watchlist.find((e) => e.id === id)
@@ -53,6 +59,18 @@ describe('情報源の固定リストのデータ - 共同通信・東洋経済�
 describe('情報源の固定リストのデータ - Reuters Japan(ビジネス)は情報源リストに含まれないこと', () => {
   it('reuters-japan-businessのidを持つ情報源が存在しないこと', () => {
     expect(watchlist.find((e) => e.id === 'reuters-japan-business')).toBeUndefined()
+  })
+})
+
+// 仕様: specs/news-digest/content-selection/requirements.md#情報源(固定リスト)-2
+// 時事通信は日付が本文になくURLのクエリ文字列に埋め込まれているため安定した抽出ができず、
+// 日本経済新聞(電子版)はJS描画のSPA構造で静的HTML取得では記事一覧・日付が取得できず公式RSSも
+// 存在しないため、いずれも技術的にスクレイピング不可能と判断し情報源リストから削除した
+// (2026-10-03の本番運用で総合・経済/ビジネスが0件になったバグの原因調査で判明)
+describe('情報源の固定リストのデータ - 時事通信・日本経済新聞(電子版)はスクレイピング不可能のため情報源リストに含まれないこと', () => {
+  it('jiji-press・nikkeiのidを持つ情報源が存在しないこと', () => {
+    expect(watchlist.find((e) => e.id === 'jiji-press')).toBeUndefined()
+    expect(watchlist.find((e) => e.id === 'nikkei')).toBeUndefined()
   })
 })
 

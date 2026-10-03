@@ -51,22 +51,34 @@ export type Criteria = {
 }
 ```
 
-`watchlist.json`はrequirements.md#情報源(固定リスト)-2の10件(総合3・経済/ビジネス2・神奈川ローカル2・育児3)をそのまま構造化する。各情報源の実際のRSSフィードURL・公開ページURLは、tasks.mdの実装タスクで運営者と確認しながら確定する(設計時点では未確認のURLを推測で埋めない)。
+`watchlist.json`はrequirements.md#情報源(固定リスト)-2の13件(総合5・経済/ビジネス3・神奈川ローカル2・育児3)をそのまま構造化する。各情報源の実際のRSSフィードURL・公開ページURLは、tasks.mdの実装タスクで運営者と確認しながら確定する(設計時点では未確認のURLを推測で埋めない)。
 
 情報源ごとの取得経路(`channels`)は、各サイトのrobots.txtの実機確認結果に基づき次のとおりとする(requirements.md#情報源(固定リスト)-2の注記):
-- NHK NEWS WEB・時事通信・日本経済新聞(電子版)・神奈川県公式サイト・こども家庭庁・厚生労働省・NHK生活情報は、各社の公式RSSまたは公開ページを直接取得する(`type: 'rss'`または`type: 'official-page'`)
-- 共同通信・東洋経済オンライン・神奈川新聞(カナロコ)は、各社サイト自体がrobots.txtで直接アクセスを禁止している(または生成AIクローラーを名指しでブロックしている)ため、直接サイトへの`official-page`取得はせず、Yahoo!ニュースが公式配信する媒体別RSSフィード(`type: 'rss'`)から取得する
+- NHK NEWS WEB・神奈川県公式サイト・こども家庭庁・厚生労働省・NHK生活情報は、各社の公式RSSまたは公開ページを直接取得する(`type: 'rss'`または`type: 'official-page'`)
+  - NHK NEWS WEBのRSSは`https://www.nhk.or.jp/rss/news/cat4.xml`・`cat6.xml`(リダイレクト先は`news.web.nhk`)を使う(`www3.nhk.or.jp`配下の同名パスは配信が止まっているため使わない)
+- 共同通信・東洋経済オンライン・神奈川新聞(カナロコ)・産経新聞・ANN(テレビ朝日系)・FNNプライムオンライン(総合)、ダイヤモンド・オンライン・BUSINESS INSIDER JAPAN(経済/ビジネス)は、各社サイト自体がrobots.txtで直接アクセスを禁止している、生成AIクローラーを名指しでブロックしている、またはJS描画のSPA構造で静的HTML取得ができないため、直接サイトへの`official-page`取得はせず、Yahoo!ニュースが公式配信する媒体別RSSフィード(`type: 'rss'`)から取得する
   - 共同通信: `https://news.yahoo.co.jp/rss/media/kyodonews/all.xml`
   - 東洋経済オンライン: `https://news.yahoo.co.jp/rss/media/toyo/all.xml`
   - 神奈川新聞(カナロコ): `https://news.yahoo.co.jp/rss/media/kana/all.xml`
+  - 産経新聞: `https://news.yahoo.co.jp/rss/media/san/all.xml`
+  - ANN(テレビ朝日系): `https://news.yahoo.co.jp/rss/media/ann/all.xml`
+  - FNNプライムオンライン: `https://news.yahoo.co.jp/rss/media/fnnprimev/all.xml`
+  - ダイヤモンド・オンライン: `https://news.yahoo.co.jp/rss/media/diamond/all.xml`
+  - BUSINESS INSIDER JAPAN: `https://news.yahoo.co.jp/rss/media/binsider/all.xml`
+- 時事通信・日本経済新聞(電子版)は固定リストに含めない。時事通信は日付がURLのクエリ文字列に埋め込まれ本文から抽出できず、日本経済新聞(電子版)はJS描画のSPA構造で静的HTML取得では記事一覧・日付とも取得できず公式RSSも存在しないため、いずれも技術的にスクレイピング不可能である(requirements.md#情報源(固定リスト)-2の注記)
+  - 産経新聞: `https://news.yahoo.co.jp/rss/media/san/all.xml`
+  - ANN(テレビ朝日系): `https://news.yahoo.co.jp/rss/media/ann/all.xml`
+  - FNNプライムオンライン: `https://news.yahoo.co.jp/rss/media/fnnprimev/all.xml`
+  - ダイヤモンド・オンライン: `https://news.yahoo.co.jp/rss/media/diamond/all.xml`
+  - BUSINESS INSIDER JAPAN: `https://news.yahoo.co.jp/rss/media/binsider/all.xml`
 
 ## 処理フロー
 
 ### 情報源から候補を収集する処理(決定的なコード)
-- 対象: `watchlist.json`に登録された10件の情報源
+- 対象: `watchlist.json`に登録された13件の情報源
 - 手順:
   1. 公式RSSフィードを持つ情報源はフィードを取得し、直近1週間以内に公開された記事を候補として抽出する(requirements.md#データ取得方法-1)
-  2. 公式RSSがない情報源(神奈川県公式サイトのお知らせ等)は、公開ページを取得し、直近1週間以内の新着項目を候補として抽出する
+  2. 公式RSSがない情報源(神奈川県公式サイトのお知らせ等)は、公開ページを取得し、直近1週間以内の新着項目を候補として抽出する。HTML構造は`<li>`要素内に見出し(`<a>`)・日付が両方含まれるパターンに加え、`<dt>日付</dt><dd>...<a>見出し</a>...</dd>`の定義リスト形式にも対応する(神奈川県公式サイトのお知らせ一覧がこの形式のため)
   3. 取得できなかった情報源(一時的な障害等)は、その情報源だけを候補から除外して処理を続ける(1件の取得失敗で週次実行全体を止めない)
   4. 取得した各候補について、発信者名・見出し(原文タイトル)・元URL・公開日時・カテゴリを記録する
   5. 情報源ごとの収集件数(取得失敗・0件はその旨)を標準エラー出力に記録する(requirements.md#情報源の健全性監視-3)

@@ -4,8 +4,8 @@
     "category": "general",
     "name": "NHK NEWS WEB(政治・国際)",
     "channels": [
-      { "type": "rss", "feedUrl": "https://www3.nhk.or.jp/rss/news/cat4.xml" },
-      { "type": "rss", "feedUrl": "https://www3.nhk.or.jp/rss/news/cat6.xml" }
+      { "type": "rss", "feedUrl": "https://www.nhk.or.jp/rss/news/cat4.xml" },
+      { "type": "rss", "feedUrl": "https://www.nhk.or.jp/rss/news/cat6.xml" }
     ]
   },
   {
@@ -15,22 +15,40 @@
     "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/kyodonews/all.xml" }]
   },
   {
-    "id": "jiji-press",
+    "id": "sankei",
     "category": "general",
-    "name": "時事通信",
-    "channels": [{ "type": "official-page", "url": "https://www.jiji.com/" }]
+    "name": "産経新聞",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/san/all.xml" }]
   },
   {
-    "id": "nikkei",
-    "category": "business",
-    "name": "日本経済新聞(電子版)",
-    "channels": [{ "type": "official-page", "url": "https://www.nikkei.com/" }]
+    "id": "ann",
+    "category": "general",
+    "name": "ANN(テレビ朝日系)",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/ann/all.xml" }]
+  },
+  {
+    "id": "fnnprime",
+    "category": "general",
+    "name": "FNNプライムオンライン",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/fnnprimev/all.xml" }]
   },
   {
     "id": "toyokeizai",
     "category": "business",
     "name": "東洋経済オンライン",
     "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/toyo/all.xml" }]
+  },
+  {
+    "id": "diamond",
+    "category": "business",
+    "name": "ダイヤモンド・オンライン",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/diamond/all.xml" }]
+  },
+  {
+    "id": "businessinsider",
+    "category": "business",
+    "name": "BUSINESS INSIDER JAPAN",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/binsider/all.xml" }]
   },
   {
     "id": "kanagawa-pref",
