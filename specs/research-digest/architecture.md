@@ -1,13 +1,13 @@
 # アーキテクチャ: research-digest
 
 ## サマリ
-研究発見・論文の要約を毎週月曜に配信するアプリ。有効なジャンルの数(現在は10ジャンル)から、日々の生活への影響が大きい研究を1本ずつ選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなり、いずれもリリース済み。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
+研究発見・論文の要約を週2回(月曜のからだ・くらし編・土曜の科学・社会編)配信するアプリ。有効なジャンルの数(現在は10ジャンル、2編に5ジャンルずつ分かれる)から、日々の生活への影響が大きい研究を1本ずつ選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなり、いずれもリリース済み。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
 
 ## 1. 概要
-有効なジャンル(現在は10ジャンル)から、世の中に影響を与える研究の発見・論文を、日々の生活への影響度(大・中・小)の大きい順に1ジャンル1本ずつ選び、要約して毎週月曜に公開するアプリ。 URL: `/research-digest`
+有効なジャンル(現在は10ジャンル、からだ・くらし編/科学・社会編の2編に5ジャンルずつ分かれる)から、世の中に影響を与える研究の発見・論文を、日々の生活への影響度(大・中・小)の大きい順に1ジャンル1本ずつ選び、要約して週2回(月曜・土曜)公開するアプリ。編成は[content-selection/requirements.md#編成とジャンルの割り当て](content-selection/requirements.md)に従う。URL: `/research-digest`
 
 ## 2. アーキテクチャの目的
-- 既存のdigestアプリが配信していない月曜を埋め、trend-digestと同じ運用パターン(GitHub Actionsによる週次の自動生成・完全自動マージ、LINE配信、月次の人の承認込み見直し)をそのまま使い、新しい運用パターンを増やさない
+- 既存のdigestアプリが配信していない月曜・土曜を埋め、trend-digestと同じ運用パターン(GitHub Actionsによる週次の自動生成・完全自動マージ、LINE配信、月次の人の承認込み見直し)をそのまま使い、新しい運用パターンを増やさない。1回あたりの掲載件数を減らすため、trend-digestと同じ編成分割(ジャンルを2編に固定で分ける)を採用し、月曜(既存)+土曜(新規)の週2回配信にした(根拠: 運営者からの改修依頼)
 - 発表時期を問わず、過去に配信した研究とは重複させずに、生活への影響が大きい研究から順に届ける
 
 ## 3. 設計方針
@@ -57,7 +57,7 @@ flowchart LR
 この図の正となる文章は「[6. アーキテクチャ概要](#6-アーキテクチャ概要)」と各specの要件定義。
 
 ## 6. アーキテクチャ概要
-Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文は`content/research-digest/`配下のJSONとして管理する。対象は有効なジャンルの数(現在は10ジャンル)で、ジャンルごとに生活への影響度の最も大きい未配信の研究を1本選ぶ。毎週月曜の朝にGitHub Actionsが起動し、Claude Code CLIのヘッドレス実行でWebSearchによる収集・影響度の判定・配信済みとの重複除外・要約を行い([content-selection](content-selection/requirements.md)・[content-generation](content-generation/requirements.md))、記事JSONを追加するPRを作ってCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。このマージをきっかけに別のワークフローが起動し、記事ページが本番で開けることを確認してからLINEで配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は一覧・詳細ページ([article-list](article-list/requirements.md)・[article-detail](article-detail/requirements.md))を未ログインで閲覧でき、詳細ページでは影響度順・ジャンル順を切り替えられる。ログインした読者は記事ごとに付箋を貼れ([bookmark](bookmark/requirements.md))、運営者本人はフィードバックを残せる。月次のワークフローがフィードバックと収集状況から見直し案をPRで出し、運営者の承認を経て反映する([source-review](source-review/requirements.md))。
+Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文は`content/research-digest/`配下のJSONとして管理する。対象は編ごとの5ジャンルで、ジャンルごとに生活への影響度の最も大きい未配信の研究を1本選ぶ。月曜の朝(からだ・くらし編)・土曜の朝(科学・社会編)にそれぞれGitHub Actionsが起動し、Claude Code CLIのヘッドレス実行でWebSearchによる収集・影響度の判定・配信済みとの重複除外・要約を行い([content-selection](content-selection/requirements.md)・[content-generation](content-generation/requirements.md))、記事JSONを追加するPRを作ってCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。このマージをきっかけに別のワークフローが起動し、記事ページが本番で開けることを確認してからLINEで配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は一覧・詳細ページ([article-list](article-list/requirements.md)・[article-detail](article-detail/requirements.md))を未ログインで閲覧でき、詳細ページでは影響度順・ジャンル順を切り替えられる。ログインした読者は記事ごとに付箋を貼れ([bookmark](bookmark/requirements.md))、運営者本人はフィードバックを残せる。月次のワークフローがフィードバックと収集状況から見直し案をPRで出し、運営者の承認を経て反映する([source-review](source-review/requirements.md))。
 
 ## 7. 採用技術
 | 技術 | 用途 |
@@ -73,9 +73,9 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 8. 機能マップ
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
-| [content-selection](content-selection/requirements.md) | ジャンルごとに影響の大きい研究を選ぶ | 有効なジャンルの数だけ、生活への影響度が最も大きく未配信の研究・論文を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの運営者への警告判定(`shouldAlertOperator`)を呼ぶ | リリース済み |
+| [content-selection](content-selection/requirements.md) | ジャンルごとに影響の大きい研究を選ぶ | 対象編の5ジャンルだけ、生活への影響度が最も大きく未配信の研究・論文を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの運営者への警告判定(`shouldAlertOperator`)を呼ぶ | リリース済み |
 | [content-generation](content-generation/requirements.md) | 研究発見の要約を読む | 選ばれた記事の要約・影響度の根拠の執筆ルール(著作権への配慮を含む)を定める | content-selectionの選定結果を受け取る | リリース済み |
-| [weekly-publish](weekly-publish/requirements.md) | 毎週月曜に新しい記事が並ぶ | 毎週月曜の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | リリース済み |
+| [weekly-publish](weekly-publish/requirements.md) | 毎週月曜・土曜に新しい記事が並ぶ | 編ごとに週1回(月曜・土曜)の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | リリース済み |
 | [line-broadcast](line-broadcast/requirements.md) | LINEで新着記事の通知を受け取る | 記事ページの公開を確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング、article-detailの記事データに従う | リリース済み |
 | [article-list](article-list/requirements.md) | 過去の回を一覧で探す | 記事を日付リストで一覧表示し、影響度順の先頭3件の見出しを添える | article-detailの記事データを参照 | リリース済み |
 | [article-detail](article-detail/requirements.md) | 記事を読む・意見を残す | 記事を影響度順・ジャンル順で切り替えて表示し、運営者フィードバック欄を出す | content-selection・content-generationの結果に従う | リリース済み |
@@ -121,7 +121,7 @@ flowchart LR
 ## 10. ディレクトリ構成
 CLAUDE.mdの一般規約(`components/`,`lib/`)どおり。trend-digestと同じ考え方で、次のように置く(各ファイルの役割は各specのdesign.md「関連するファイル」参照)。
 - `content/research-digest/genres.json` — ジャンル設定(運営者が追記して増やす)
-- `content/research-digest/articles/<発行日>.json` — 1回分の記事データ(型は[article-detail/design.md](article-detail/design.md)で定義)
+- `content/research-digest/articles/<発行日>-<edition>.json` — 1回分の記事データ(型は[article-detail/design.md](article-detail/design.md)で定義。idの形式はtrend-digestと同じ)
 - `app/research-digest/` — 一覧・詳細・付箋一覧のページと`components/`・`lib/`
 - `scripts/research-digest/` — 収集・選定、生成、記事の書き出し、LINE配信、月次見直しの材料収集のCLI
 - `.github/workflows/research-digest-weekly.yml`・`research-digest-line-broadcast.yml`・`research-digest-monthly.yml` — 週次公開・配信・月次見直し
@@ -172,7 +172,8 @@ erDiagram
 ## 15. 用語集
 | 用語 | 説明 |
 |---|---|
+| 編 | 10ジャンルを5ジャンルずつ固定で分けた2グループ(からだ・くらし編・科学・社会編)。それぞれ独立した曜日(月曜・土曜)で週1回配信する。trend-digestの編成(エンタメ編/カルチャー編)と同じ考え方。[content-selection/requirements.md#編成とジャンルの割り当て](content-selection/requirements.md)で定義 |
 | 候補なし | 採用基準を満たし配信済みでない候補が0件だった状態(収集の処理自体は完了している)。[content-selection/requirements.md#候補が見つからないジャンル](content-selection/requirements.md)で定義 |
 | 収集失敗 | 情報収集の処理自体が完了しなかった状態(候補なしとは区別する)。[content-selection/requirements.md#収集失敗](content-selection/requirements.md)で定義 |
 | 運営者への警告 | 全ジャンルが収集失敗だった回に限り、記事は公開したうえで実行を失敗表示にすること(`shouldAlertOperator`が判定)。採用0件は公開をスキップする理由にならない。[weekly-publish/requirements.md#掲載件数の保証](weekly-publish/requirements.md)で定義 |
-| 利用上限への到達時の再実行 | Claude Code CLIの利用上限に到達してその回を打ち切った場合、本番の12時間後・24時間後・36時間後の最大3回、自動的に再試行する仕組み(`shouldSkipRetry`で冪等チェック)。再実行が翌日にまたがるため、記事の`date`は実行日ではなく本来の配信日(`getScheduledPublishDate`で求める、その週の月曜)を使う。[weekly-publish/requirements.md#利用上限への到達時の再実行](weekly-publish/requirements.md)で定義 |
+| 利用上限への到達時の再実行 | Claude Code CLIの利用上限に到達してその回を打ち切った場合、本番の12時間後・24時間後・36時間後の最大3回、自動的に再試行する仕組み(`shouldSkipRetry`で冪等チェック)。再実行が翌日にまたがるため、記事の`date`は実行日ではなく本来の配信日(`getScheduledPublishDate`で求める、対象編の配信曜日)を使う(編ごとに公開済みの最大値+1で決まる)。[weekly-publish/requirements.md#利用上限への到達時の再実行](weekly-publish/requirements.md)で定義 |

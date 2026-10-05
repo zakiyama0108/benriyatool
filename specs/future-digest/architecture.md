@@ -1,14 +1,14 @@
 # アーキテクチャ: future-digest
 
 ## サマリ
-未来予測記事を毎週木曜に配信するアプリ。有効なジャンル数×その回の時間軸2区分(現在は10ジャンル×2区分=20枠)ごとに、公開されている未来予測・考察記事を影響度付きで1本選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなり、いずれもリリース済み。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
+未来予測記事を週2回(木曜のサイエンス・テクノロジー編・日曜のくらし・社会編)配信するアプリ。対象編の5ジャンル×その回の時間軸2区分(現在は5ジャンル×2区分=10枠)ごとに、公開されている未来予測・考察記事を影響度付きで1本選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなり、いずれもリリース済み。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
 
 ## 1. 概要
-有効なジャンル(現在は10ジャンル)について、公開されている未来予測・考察記事を近未来・中期未来・長期未来・超長期未来の4つの時間軸ごとに選び、影響度(大・中・小)付きで要約して毎週木曜に公開するアプリ。時間軸の区分は[content-selection/requirements.md#時間軸](content-selection/requirements.md)に従う。URL: `/future-digest`
+有効なジャンル(現在は10ジャンル、サイエンス・テクノロジー編/くらし・社会編の2編に5ジャンルずつ分かれる)について、公開されている未来予測・考察記事を近未来・中期未来・長期未来・超長期未来の4つの時間軸ごとに選び、影響度(大・中・小)付きで要約して週2回(木曜・日曜)公開するアプリ。時間軸の区分は[content-selection/requirements.md#時間軸](content-selection/requirements.md)、編成は[content-selection/requirements.md#編成とジャンルの割り当て](content-selection/requirements.md)に従う。URL: `/future-digest`
 
 ## 2. アーキテクチャの目的
-- 既存のdigestアプリが配信していない木曜を埋め、trend-digestと同じ運用パターン(GitHub Actionsによる週次の自動生成・完全自動マージ、LINE配信、月次の人の承認込み見直し)をそのまま使い、新しい運用パターンを増やさない
-- 4つの時間軸を配信回ごとに2つずつ交互に扱い(奇数回=近未来+長期未来、偶数回=中期未来+超長期未来)、1回あたりの掲載件数を有効なジャンル数×2枠(現在は20枠)に抑える
+- 既存のdigestアプリが配信していない木曜・日曜を埋め、trend-digestと同じ運用パターン(GitHub Actionsによる週次の自動生成・完全自動マージ、LINE配信、月次の人の承認込み見直し)をそのまま使い、新しい運用パターンを増やさない。1回あたりの掲載件数を減らすため、trend-digestと同じ編成分割(ジャンルを2編に固定で分ける)を採用し、木曜(既存)+日曜(新規)の週2回配信にした(根拠: 運営者からの改修依頼)
+- 4つの時間軸を配信回ごとに2つずつ交互に扱い(奇数回=近未来+長期未来、偶数回=中期未来+超長期未来)、編ごとに1回あたりの掲載件数を対象編のジャンル数×2枠(現在は10枠)に抑える
 
 ## 3. 設計方針
 - 記事本文はDBに保存せず、ビルド時に取り込む静的コンテンツ(JSON)として管理する(ai-dev-digest・trend-digestと同じ)
@@ -57,7 +57,7 @@ flowchart LR
 この図の正となる文章は「[6. アーキテクチャ概要](#6-アーキテクチャ概要)」と各specの要件定義。
 
 ## 6. アーキテクチャ概要
-Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文は`content/future-digest/`配下のJSONとして管理する。対象は有効なジャンル数×その回の2時間軸(現在は20枠)で、枠ごとに影響度の最も大きい未配信の記事を1本選ぶ。毎週木曜の朝にGitHub Actionsが起動し、Claude Code CLIのヘッドレス実行でWebSearchによる収集・影響度の判定・配信済みとの重複除外・要約を行い([content-selection](content-selection/requirements.md)・[content-generation](content-generation/requirements.md))、記事JSONを追加するPRを作ってCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。このマージをきっかけに別のワークフローが起動し、記事ページが本番で開けることを確認してからLINEで配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は一覧・詳細ページ([article-list](article-list/requirements.md)・[article-detail](article-detail/requirements.md))を未ログインで閲覧でき、詳細ページでは影響度順・ジャンル順を切り替えられる。ログインした読者は記事ごとに付箋を貼れ([bookmark](bookmark/requirements.md))、運営者本人はフィードバックを残せる。月次のワークフローがフィードバックと収集状況から見直し案をPRで出し、運営者の承認を経て反映する([source-review](source-review/requirements.md))。
+Next.jsの静的エクスポートをCloudflare Workersで配信する構成は他アプリと同じ。記事本文は`content/future-digest/`配下のJSONとして管理する。対象は編ごとの5ジャンル×その回の2時間軸(現在は10枠)で、枠ごとに影響度の最も大きい未配信の記事を1本選ぶ。木曜の朝(サイエンス・テクノロジー編)・日曜の朝(くらし・社会編)にそれぞれGitHub Actionsが起動し、Claude Code CLIのヘッドレス実行でWebSearchによる収集・影響度の判定・配信済みとの重複除外・要約を行い([content-selection](content-selection/requirements.md)・[content-generation](content-generation/requirements.md))、記事JSONを追加するPRを作ってCI成功後に自動マージする([weekly-publish](weekly-publish/requirements.md))。このマージをきっかけに別のワークフローが起動し、記事ページが本番で開けることを確認してからLINEで配信する([line-broadcast](line-broadcast/requirements.md))。訪問者は一覧・詳細ページ([article-list](article-list/requirements.md)・[article-detail](article-detail/requirements.md))を未ログインで閲覧でき、詳細ページでは影響度順・ジャンル順を切り替えられる。ログインした読者は記事ごとに付箋を貼れ([bookmark](bookmark/requirements.md))、運営者本人はフィードバックを残せる。月次のワークフローがフィードバックと収集状況から見直し案をPRで出し、運営者の承認を経て反映する([source-review](source-review/requirements.md))。
 
 ## 7. 採用技術
 | 技術 | 用途 |
@@ -73,9 +73,9 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 8. 機能マップ
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
-| [content-selection](content-selection/requirements.md) | ジャンル・時間軸ごとに影響の大きい未来予測を選ぶ | 有効なジャンル数×その回の2時間軸の枠ごとに、影響度が最も大きく未配信の未来予測記事を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの運営者への警告判定(`shouldAlertOperator`)を呼ぶ | リリース済み |
+| [content-selection](content-selection/requirements.md) | ジャンル・時間軸ごとに影響の大きい未来予測を選ぶ | 対象編の5ジャンル×その回の2時間軸の枠ごとに、影響度が最も大きく未配信の未来予測記事を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの運営者への警告判定(`shouldAlertOperator`)を呼ぶ | リリース済み |
 | [content-generation](content-generation/requirements.md) | 予測の要約を読む | 選ばれた記事の要約・影響度の根拠の執筆ルール(著作権への配慮を含む)を定める | content-selectionの選定結果を受け取る | リリース済み |
-| [weekly-publish](weekly-publish/requirements.md) | 毎週木曜に新しい記事が並ぶ | 毎週木曜の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | リリース済み |
+| [weekly-publish](weekly-publish/requirements.md) | 毎週木曜・日曜に新しい記事が並ぶ | 編ごとに週1回(木曜・日曜)の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | リリース済み |
 | [line-broadcast](line-broadcast/requirements.md) | LINEで新着記事の通知を受け取る | 記事ページの公開を確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング、article-detailの記事データに従う | リリース済み |
 | [article-list](article-list/requirements.md) | 過去の回を一覧で探す | 記事を日付リストで一覧表示し、影響度順の先頭3件の見出しを添える | article-detailの記事データを参照 | リリース済み |
 | [article-detail](article-detail/requirements.md) | 記事を読む・意見を残す | 記事を影響度順・ジャンル順で切り替えて表示し、運営者フィードバック欄を出す | content-selection・content-generationの結果に従う | リリース済み |
@@ -121,7 +121,7 @@ flowchart LR
 ## 10. ディレクトリ構成
 CLAUDE.mdの一般規約(`components/`,`lib/`)どおり。trend-digestと同じ考え方で、次のように置く(各ファイルの役割は各specのdesign.md「関連するファイル」参照)。
 - `content/future-digest/genres.json` — ジャンル・個人的注目分野の設定(運営者が追記して増やす)
-- `content/future-digest/articles/<発行日>.json` — 1回分の記事データ(型は[article-detail/design.md](article-detail/design.md)で定義)
+- `content/future-digest/articles/<発行日>-<edition>.json` — 1回分の記事データ(型は[article-detail/design.md](article-detail/design.md)で定義。idの形式はtrend-digestと同じ)
 - `app/future-digest/` — 一覧・詳細・付箋一覧のページと`components/`・`lib/`
 - `scripts/future-digest/` — 収集・選定、生成、記事の書き出し、LINE配信、月次見直しの材料収集のCLI
 - `.github/workflows/future-digest-weekly.yml`・`future-digest-line-broadcast.yml`・`future-digest-monthly.yml` — 週次公開・配信・月次見直し
@@ -172,9 +172,10 @@ erDiagram
 ## 15. 用語集
 | 用語 | 説明 |
 |---|---|
+| 編 | 10ジャンルを5ジャンルずつ固定で分けた2グループ(サイエンス・テクノロジー編・くらし・社会編)。それぞれ独立した曜日(木曜・日曜)で週1回配信する。trend-digestの編成(エンタメ編/カルチャー編)と同じ考え方。[content-selection/requirements.md#編成とジャンルの割り当て](content-selection/requirements.md)で定義 |
 | 枠 | ジャンル×時間軸の組。1回の配信であてはめる記事1本の入れ物。[content-selection](content-selection/requirements.md)で定義 |
-| 近未来・中期未来・長期未来・超長期未来 | 本来の配信日(その週の木曜。再実行・手動復旧でも同じ)を基準点にした4つの時間軸区分。[content-selection/requirements.md#時間軸](content-selection/requirements.md)で定義 |
+| 近未来・中期未来・長期未来・超長期未来 | 本来の配信日(対象編の配信曜日。再実行・手動復旧でも同じ)を基準点にした4つの時間軸区分。[content-selection/requirements.md#時間軸](content-selection/requirements.md)で定義 |
 | 候補なし | 採用基準を満たし配信済みでない候補が0件だった状態(収集の処理自体は完了している)。[content-selection/requirements.md#候補が見つからない枠](content-selection/requirements.md)で定義 |
 | 収集失敗 | 情報収集の処理自体が完了しなかった状態(候補なしとは区別する)。[content-selection/requirements.md#収集失敗](content-selection/requirements.md)で定義 |
 | 運営者への警告 | 全枠が収集失敗だった回に限り、記事は公開したうえで実行を失敗表示にすること(`shouldAlertOperator`が判定)。採用0件は公開をスキップする理由にならない。[weekly-publish/requirements.md#掲載件数の保証](weekly-publish/requirements.md)で定義 |
-| 利用上限への到達時の再実行 | Claude Code CLIの利用上限に到達してその回を打ち切った場合、本番の12時間後・24時間後・36時間後の最大3回、自動的に再試行する仕組み(`shouldSkipRetry`で冪等チェック)。再実行が翌日にまたがるため、記事の`date`は実行日ではなく本来の配信日(`getScheduledPublishDate`で求める、その週の木曜)を使う(`issueNumber`は日付に依存せず公開済みの最大値+1で決まる)。[weekly-publish/requirements.md#利用上限への到達時の再実行](weekly-publish/requirements.md)で定義 |
+| 利用上限への到達時の再実行 | Claude Code CLIの利用上限に到達してその回を打ち切った場合、本番の12時間後・24時間後・36時間後の最大3回、自動的に再試行する仕組み(`shouldSkipRetry`で冪等チェック)。再実行が翌日にまたがるため、記事の`date`は実行日ではなく本来の配信日(`getScheduledPublishDate`で求める、対象編の配信曜日)を使う(`issueNumber`は日付に依存せず、編ごとに公開済みの最大値+1で決まる)。[weekly-publish/requirements.md#利用上限への到達時の再実行](weekly-publish/requirements.md)で定義 |
