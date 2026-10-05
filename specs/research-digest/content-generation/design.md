@@ -58,10 +58,10 @@ sequenceDiagram
 - 関連するビジネスルール: requirements.md#記事の構成-6
 
 ### 記事タイトルを導出する処理(決定的なコード)
-- 対象: 発行日
+- 対象: 発行日と編
 - 手順:
-  1. 「週刊研究発見 YYYY年M月D日号」の形にする(月・日はゼロ埋めしない。例:「週刊研究発見 2026年10月5日号」)(requirements.md#記事の構成-7)
-  2. タイトルは記事データに保存せず、発行日から常に導出する(Claudeには作らせない)
+  1. 「週刊研究発見 <編のラベル> YYYY年M月D日号」の形にする(月・日はゼロ埋めしない。例:「週刊研究発見 からだ・くらし編 2026年10月5日号」「週刊研究発見 科学・社会編 2026年10月10日号」。trend-digestの`buildArticleTitle(edition, date)`と同じ考え方)(requirements.md#記事の構成-7)
+  2. タイトルは記事データに保存せず、発行日・編から常に導出する(Claudeには作らせない)
 - 関連するビジネスルール: requirements.md#記事の構成-7
 
 ## エラーハンドリング
@@ -75,7 +75,7 @@ sequenceDiagram
 ```
 scripts/research-digest/generate-content.ts (新規: 採用された研究ごとにClaude Code CLIを起動して見出し・本文を生成するCLI)
 app/research-digest/lib/bodyValidation.ts (新規: isValidBodyLength・isValidHeading・mentionsPreprint)
-app/research-digest/lib/articleTitle.ts (新規: buildArticleTitle(date))
+app/research-digest/lib/articleTitle.ts (編成分割で変更: buildArticleTitle(date, edition))
 app/research-digest/lib/buildFinding.ts (新規: 選定時の値+生成結果からFindingを組み立てる)
 app/research-digest/lib/articleSchema.ts (article-detailで新規: 分量検証を組み込む)
 specs/legal/requirements.md (既存: 知的財産の条項の仕様リンクに本specを追加)
