@@ -32,7 +32,7 @@
 
 <details><summary>詳細を開く</summary>
 
-- Task 7: ジャンル設定ファイルのedition対応(仕様: requirements.md#編成とジャンル、requirements.md#編成とジャンルの割り当て-1〜3、design.md「データ設計」)
+- Task 7: ジャンル設定ファイルのedition対応(仕様: requirements.md#機能要件-5〜6、requirements.md#編成とジャンルの割り当て-1〜3、design.md「データ設計」)
   - 🔴 `genres.json`の各ジャンルが`edition`(`"body-life"`または`"science-society"`)を持つこと、値が2値以外・未指定なら例外になること、`EDITION_GENRES`(編ごとのジャンルID配列)が編成どおり(からだ・くらし編5件・科学・社会編5件)に分かれることを確認するテストを書く(Task 1のテストファイルに追記する)
   - 🟢 `content/research-digest/genres.json`の10ジャンルそれぞれに`edition`属性を追加する(requirements.md#編成とジャンルの割り当て-1〜2のとおり)。`app/research-digest/lib/genres.ts`に検証と`EDITION_GENRES`を追加する
 

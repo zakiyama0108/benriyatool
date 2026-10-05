@@ -36,7 +36,7 @@
 
 <details><summary>詳細を開く</summary>
 
-- Task 8: ジャンル設定ファイルのedition対応(仕様: requirements.md#編成とジャンル、requirements.md#編成とジャンルの割り当て-1〜3、design.md「データ設計」)
+- Task 8: ジャンル設定ファイルのedition対応(仕様: requirements.md#機能要件-6〜7、requirements.md#編成とジャンルの割り当て-1〜3、design.md「データ設計」)
   - 🔴 `genres.json`の各ジャンルが`edition`(`"science-tech"`または`"life-society"`)を持つこと、値が2値以外・未指定なら例外になること、`EDITION_GENRES`(編ごとのジャンルID配列)が編成どおり(サイエンス・テクノロジー編5件・くらし・社会編5件)に分かれることを確認するテストを書く(Task 1のテストファイルに追記する)
   - 🟢 `content/future-digest/genres.json`の10ジャンルそれぞれに`edition`属性を追加する(requirements.md#編成とジャンルの割り当て-1〜2のとおり)。`app/future-digest/lib/genres.ts`に検証と`EDITION_GENRES`を追加する
 
