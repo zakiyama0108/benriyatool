@@ -1,12 +1,13 @@
 # 設計: ジャンル・時間軸別の未来予測記事の選定
 
 ## サマリ
-その回の回数から扱う時間軸2区分を決め、有効なジャンルごとにClaude Code CLIのヘッドレス実行(WebSearch)で2時間軸分の候補を集めさせ、影響度の判定と順位付けまでを任せる。時間軸の基準点となる本来の配信日は、[weekly-publish](../weekly-publish/design.md)が`getScheduledPublishDate`で求めた値を`collect-and-select.ts`のCLI引数として受け取り、本specの内部で実行日時から独自に求めない(requirements.md#時間軸)。配信済みとの重複は、同じURLを決定的なコードで機械的に除き、実質同じ内容の予測は過去に配信した全予測の見出し・元記事タイトルの一覧をプロンプトに渡してClaudeに判定させる。最後に枠ごとの採用(影響度の最も大きい1本)と、候補が見つからなかった枠・収集の処理自体に失敗した枠(`collection-failed`)の記録を決定的なコードで行い、枠ごとの候補件数を実行ログに出す。利用上限への到達を検知した場合は、その時点で収集を打ち切る(公開はしない。再実行cron(最大3回)での再試行は[weekly-publish/design.md](../weekly-publish/design.md)が扱う)。
+対象編(サイエンス・テクノロジー編/くらし・社会編)のその回の回数から扱う時間軸2区分を決め、対象編の有効なジャンル(5)ごとにClaude Code CLIのヘッドレス実行(WebSearch)で2時間軸分の候補を集めさせ、影響度の判定と順位付けまでを任せる。編は`genres.json`の各ジャンルの`edition`属性で固定され、動的には切り替わらない(下記「[データ設計](#データ設計ジャンル注目テーマの設定ファイル)」、requirements.md#編成とジャンルの割り当て)。時間軸の基準点となる本来の配信日は、[weekly-publish](../weekly-publish/design.md)が`getScheduledPublishDate`で求めた値を`collect-and-select.ts`のCLI引数として受け取り、本specの内部で実行日時から独自に求めない(requirements.md#時間軸)。配信済みとの重複は、編を問わず全記事を対象に、同じURLを決定的なコードで機械的に除き、実質同じ内容の予測は過去に配信した全予測の見出し・元記事タイトルの一覧をプロンプトに渡してClaudeに判定させる。最後に枠ごとの採用(影響度の最も大きい1本)と、候補が見つからなかった枠・収集の処理自体に失敗した枠(`collection-failed`)の記録を決定的なコードで行い、枠ごとの候補件数を実行ログに出す。利用上限への到達を検知した場合は、その時点で収集を打ち切る(公開はしない。再実行cron(最大3回)での再試行は[weekly-publish/design.md](../weekly-publish/design.md)が扱う)。
 
 主要な設計判断:
 - 「記事を探す・時間軸と影響度を判定する・実質的な重複を見分ける」は意味の判断が必要なためClaudeに任せ、「同じURLの除外・枠ごとの採用・候補なしの記録・回数の数え方」は揺れてはいけないため決定的なコードで行う(trend-digestのWebSearchジャンルと同じ役割分担)
-- ジャンル・注目テーマは`content/future-digest/genres.json`に置き、運営者が追記するだけで増やせる
-- 回数は公開済み記事の`issueNumber`の最大値+1とする(利用上限への到達で打ち切られた回は記事ファイルがないため自然に数えない)
+- ジャンル・注目テーマ・編の割り当ては`content/future-digest/genres.json`に置き、運営者が追記するだけで増やせる(trend-digestのwatchlist.jsonと同じく、ジャンルごとに`edition`属性を持たせる)
+- 回数(`issueNumber`)はその編で公開済みの記事の最大値+1とする。編ごとに独立して数える(利用上限への到達で打ち切られた回は記事ファイルがないため自然に数えない)
+- 編の判定は、実行主体(weekly-publishのワークフロー)が起動元のcronから決定し、`collect-and-select.ts`にCLI引数として渡す。本spec自身はどのcronで起動されたかを判定しない(weekly-publish/design.md「編を判定する処理」参照)
 - 図: [ジャンルごとに候補を集める処理](#ジャンルごとに候補を集める処理エージェントの推論)のシーケンス図
 
 ## データ設計(ジャンル・注目テーマの設定ファイル)
@@ -18,6 +19,7 @@
     "id": "technology-ai",
     "label": "テクノロジー・AI",
     "description": "収集時にClaudeへ渡すジャンルの範囲の説明",
+    "edition": "science-tech", // どちらの編に属するか。requirements.md#編成とジャンルの割り当て
     "active": true,
     "lineExcluded": false
   },
@@ -26,6 +28,7 @@
     "id": "sexuality-romance",
     "label": "性・恋愛",
     "description": "収集時にClaudeへ渡すジャンルの範囲の説明",
+    "edition": "life-society",
     "active": true,
     "lineExcluded": true // LINE配信の代表見出しから除く(line-broadcast/requirements.md#配信内容-4)。ジャンルIDの直接比較ではなくこの属性で判定する(ジャンルの追加・IDの変更に強くするため)
   },
@@ -34,6 +37,7 @@
     "id": "personal-interest",
     "label": "個人的注目分野",
     "description": "運営者が指定したテーマの中から選ぶ",
+    "edition": "life-society",
     "themes": ["AR・VR", "若返り"], // 個人的注目分野のテーマ。追記で増やせる
     "active": true,
     "lineExcluded": false
@@ -42,6 +46,7 @@
 ```
 
 - `description`はrequirements.md#ジャンルの各項目の説明をそのまま書く(性・恋愛ジャンルは扱うテーマを列挙した説明文)
+- `edition`は`"science-tech"`(サイエンス・テクノロジー編)または`"life-society"`(くらし・社会編)の2値で、ジャンルごとに固定(requirements.md#編成とジャンルの割り当て)。ジャンルを新規追加する際はこの属性を必ず指定する。属性が2値以外・未指定の場合は読み込み時に例外を投げる(廃止ジャンルも`active: false`のまま編の属性は残す)
 - `active: false`のジャンルは収集の対象にしないが、過去記事の表示用にラベルを残す(ジャンルを廃止しても過去記事のページが壊れないようにするため)
 - `lineExcluded: true`のジャンルは、[line-broadcast/design.md](../line-broadcast/design.md)の代表見出し選定でLINE配信から除外する対象であることを示す(現時点では性・恋愛ジャンルのみ)。line-broadcastの判定はジャンルIDの直接比較ではなくこの属性を見て行う(ジャンルの追加・IDの変更に強くするため)。この属性が1つ以上`true`であることをテストで固定する
 - `genres.json`と`requirements.md#ジャンル`は二重管理になるため、[source-review](../source-review/design.md)の月次見直しでは両方を同じPRで更新する
@@ -72,12 +77,12 @@ export type SlotResult =
 ## 処理フロー
 
 ### その回の時間軸2区分を決める処理
-- 対象: 公開済みの全記事データ
+- 対象: 対象編(引数で渡される)の公開済みの全記事データ
 - 手順:
-  1. 公開済みの記事のうち最も大きい回数に1を足して、今回の回数とする。記事が1件もない場合は1回目とする
+  1. 公開済みの記事を`edition`で絞り込み、対象編の記事のうち最も大きい回数に1を足して、今回の回数とする。対象編の記事が1件もない場合は1回目とする
   2. 回数が奇数なら近未来と長期未来、偶数なら中期未来と超長期未来を今回の時間軸とする
-- 利用上限への到達で打ち切られた回は記事ファイルがないため、回数に数えられない(requirements.md#時間軸の切り替え-2)
-- 検討事項: CIが失敗した週次記事PRが自動マージされずに放置されたまま次週の実行を迎えると、次週も同じ回数(`issueNumber`)を採番してしまう(いずれのPRも`main`に未マージのため、mainの最大値は変わらない)。運営者が失敗したPRに気づいたら早めにクローズ・再実行する運用でこれを避ける(自動検証は設けない)
+- 利用上限への到達で打ち切られた回は記事ファイルがないため、回数に数えられない(requirements.md#時間軸の切り替え-2)。編ごとに独立して数えるため、もう一方の編の公開状況はこの回数に影響しない(requirements.md#編成とジャンル-2)
+- 検討事項: CIが失敗した週次記事PRが自動マージされずに放置されたまま次の実行を迎えると、次回も同じ回数(`issueNumber`)を採番してしまう(いずれのPRも`main`に未マージのため、mainの最大値は変わらない)。運営者が失敗したPRに気づいたら早めにクローズ・再実行する運用でこれを避ける(自動検証は設けない)
 - 関連するビジネスルール: requirements.md#時間軸の切り替え-1〜2
 
 ### 配信済みの一覧を作る処理
@@ -89,7 +94,7 @@ export type SlotResult =
 - 関連するビジネスルール: requirements.md#配信済みの記事・予測の除外-1〜2
 
 ### ジャンルごとに候補を集める処理(エージェントの推論)
-- 対象: 有効なジャンル1つと、今回の時間軸2区分
+- 対象: 対象編の有効なジャンル1つ(現在は編あたり5)と、今回の時間軸2区分
 - 手順:
   1. `requirements.md`を実行時に読み込み、その内容(採用基準・影響度の観点)をプロンプトに含める(content-generationと同じく、別ファイルにルール文を複製・転記しない)。あわせてジャンルの説明(個人的注目分野はテーマ一覧も)、今回の時間軸2区分とその年数の定義、配信済みの一覧もプロンプトに含め、Claude Code CLIをヘッドレス起動する(WebSearch・WebFetchを使わせる)
   2. Claudeは時間軸ごとに、採用基準を満たす未来予測記事を探す。予測の対象時期が明示・推定できない記事、対象時期が配信日から1年未満または配信日時点で既に過ぎている記事、噂・出典不明・根拠のない断定の記事、Claude自身の予測は候補にしない。この条件はプロンプトにも明示の指示として含める(requirements.md#時間軸-5〜6、requirements.md#採用基準-1〜2)
@@ -107,7 +112,7 @@ sequenceDiagram
     participant web as 公開Webページ
 
     script ->> script: 今回の時間軸2区分と配信済みの一覧を作る
-    loop 有効なジャンルごと
+    loop 対象編の有効なジャンルごと
         script ->> claude: ジャンル説明・時間軸・採用基準・配信済みの一覧を渡す
         claude ->> web: WebSearch・WebFetchで未来予測記事を探す
         web -->> claude: 検索結果・記事本文
@@ -161,10 +166,10 @@ Claudeが返した候補ごとに検証し、満たさない候補はその場�
 ## 関連するファイル(抜粋)
 
 ```
-content/future-digest/genres.json (新規: ジャンル・注目テーマの設定ファイル)
-app/future-digest/lib/genres.ts (新規: genres.jsonの読み込み・検証。types.tsのGENRE_ORDER/GENRE_LABELSの元)
+content/future-digest/genres.json (編成分割で変更: 各ジャンルにedition属性を追加)
+app/future-digest/lib/genres.ts (編成分割で変更: genres.jsonの読み込み・検証。types.tsのGENRE_ORDER/GENRE_LABELS/EDITION_GENRESの元)
 app/future-digest/lib/candidateTypes.ts (新規: Candidate/SlotResult)
-app/future-digest/lib/issue.ts (新規: 次の回数を求めるnextIssueNumber)
+app/future-digest/lib/issue.ts (編成分割で変更: 次の回数を編ごとに求めるnextIssueNumber(articles, edition))
 app/future-digest/lib/deliveredIndex.ts (新規: 配信済みURLの正規化と、配信済みの一覧の組み立て)
 app/future-digest/lib/candidateValidation.ts (新規: Claudeが返した候補の検証)
 app/future-digest/lib/selectSlots.ts (新規: 枠ごとの採用・候補なしの記録・収集失敗ジャンルの合流)

@@ -1,5 +1,6 @@
 # タスク分解: ジャンル別の研究発見・論文の選定
 
+> 全7件(Task 1〜Task 7)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: ジャンル設定ファイルの読み込み(仕様: requirements.md#機能要件-1、requirements.md#ジャンル-1〜10、design.md「データ設計」)
@@ -24,3 +25,15 @@
 
 - Task 6: 収集・選定のまとめCLI(仕様: design.md「収集状況を記録する処理」「ログ」、weekly-publish/design.md「1回分の記事を生成する処理」手順2〜3)(weekly-publish/tasks.mdのTask 1(`shouldAlertOperator`)の後に行う)(TDD対象外。Task 1〜5の関数を順に呼ぶだけで、ジャンルの合流・採用・検証ロジックはTask 3〜5でテスト済み、警告判定ロジックはweekly-publish/tasks.mdのTask 1でテスト済みのため)
   - `scripts/research-digest/collect-and-select.ts`を実装する。配信済みの一覧→ジャンルごとの収集(収集に失敗したジャンルの一覧を`collectionFailedGenres`として保持。検証は`collectForGenre`の内部で完了済み)→`selectGenres`によるジャンルごとの採用・候補なしの記録・収集失敗ジャンルの合流を行い、選定結果(採用した候補・候補なしのジャンル・収集失敗のジャンル)を標準出力にJSONで出す(採用0件でも非ゼロ終了しない)。ジャンルごとの候補件数・候補なしのジャンルの一覧・収集失敗のジャンルの一覧(分類ラベル別)を標準エラー出力に出す。最後に選定結果(`GenreResult`の一覧)を[weekly-publish](../weekly-publish/design.md)の`shouldAlertOperator`に渡し、判定結果を`GITHUB_OUTPUT`に`alert=true|false`として書き出す
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+編ごとに5ジャンルへ分割する変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 7: ジャンル設定ファイルのedition対応(仕様: requirements.md#編成とジャンル、requirements.md#編成とジャンルの割り当て-1〜3、design.md「データ設計」)
+  - 🔴 `genres.json`の各ジャンルが`edition`(`"body-life"`または`"science-society"`)を持つこと、値が2値以外・未指定なら例外になること、`EDITION_GENRES`(編ごとのジャンルID配列)が編成どおり(からだ・くらし編5件・科学・社会編5件)に分かれることを確認するテストを書く(Task 1のテストファイルに追記する)
+  - 🟢 `content/research-digest/genres.json`の10ジャンルそれぞれに`edition`属性を追加する(requirements.md#編成とジャンルの割り当て-1〜2のとおり)。`app/research-digest/lib/genres.ts`に検証と`EDITION_GENRES`を追加する
+
+</details>
