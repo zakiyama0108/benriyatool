@@ -1,0 +1,25 @@
+{
+  "id": "2026-10-06-entertainment",
+  "edition": "entertainment",
+  "date": "2026-10-06",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "music",
+      "heading": "Number_i「REBON」がBillboard JAPAN Hot 100で初登場1位",
+      "body": "Billboard JAPANの総合ソングチャート「Hot 100」で、Number_iの「REBON」が初登場にして首位に立ちました。新曲がチャートインと同時に頂点へ届く形で、リリース直後の勢いがそのまま順位に表れた週だったといえます。この指標はセールスだけでなく複数の指標を合算して決まるため、購入行動を中心にファンの熱量が一気に集まったことが読み取れます。前週にランク外だった曲が一気に1位へ上がる展開は、今週の音楽シーンでもひときわ目を引く動きです。今後は、2週目以降に順位をどこまで保てるかが注目されます。集計期間や詳しい内訳は、出典のBillboard JAPAN Hot 100(https://www.billboard-japan.com/charts/detail?a=hot100)で確認してください。",
+      "sourceTitle": "1 前回：- チャートイン：1 REBON Number_i 全国推定売上枚数 総合ポイント数 11,614 詳細・購入はこちら 1",
+      "sourceName": "Billboard JAPAN Hot 100",
+      "sourceUrl": "https://www.billboard-japan.com/charts/detail?a=hot100"
+    },
+    {
+      "id": "topic-2",
+      "genre": "music",
+      "heading": "【STARフェス】タイムテーブル発表とライブ配信決定が音楽ファンの注目を集める",
+      "body": "音楽フェス「STARフェス」について、タイムテーブルの発表とライブ配信の実施が決まったことが、今週の音楽シーンで話題になっている。Billboard JAPANのHot 100のページでは、このニュースがアクセスランキングの上位に入っており、読者の関心が高いことがうかがえる。タイムテーブルが出ると、観に行く人は当日の動き方を具体的に考えられる。配信が決まったことで、会場に行けない人も楽しめるようになった。そのため、現地参加を考える人と自宅で観たい人の両方が情報を探し、注目が集まったと考えられる。ただし、主催・日程・出演者・配信先といった詳細は今回の出典では確認できていない。正確な情報は、出典のBillboard JAPAN Hot 100(https://www.billboard-japan.com/charts/detail?a=hot100)と公式発表で確認してほしい。",
+      "sourceTitle": "【STARフェス】、タイムテーブル発表＆ライブ配信決定",
+      "sourceName": "Billboard JAPAN Hot 100",
+      "sourceUrl": "https://www.billboard-japan.com/charts/detail?a=hot100"
+    }
+  ]
+}
