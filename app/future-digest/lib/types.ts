@@ -3,7 +3,7 @@
 // ため、当初は型定義とhorizonsForIssueのみを最小限置いていた。article-detail実装(本ファイル)で
 // GENRE_ORDER/GENRE_LABELS/HORIZON_ORDER/HORIZON_LABELS/IMPACT_LABELS/COLLECTION_FAILURE_LABELSを追記する。
 
-import { loadGenres } from './genres'
+import { loadGenres, EDITION_GENRES as GENRES_EDITION_GENRES, type Edition } from './genres'
 
 export type Genre = string // genres.jsonのid(例: "technology-ai")
 
@@ -11,6 +11,16 @@ export type Genre = string // genres.jsonのid(例: "technology-ai")
 // 廃止したジャンルも過去記事の表示用に含む。design.md「前提: 記事データの形式」)
 export const GENRE_ORDER: Genre[] = loadGenres().map((g) => g.id)
 export const GENRE_LABELS: Record<Genre, string> = Object.fromEntries(loadGenres().map((g) => [g.id, g.label]))
+
+// 編(仕様: content-selection/requirements.md#編成とジャンルの割り当て-1〜2)。genres.jsonのedition
+// 属性(genres.tsが検証・集計済み)をそのまま再公開する。EDITION_LABELSは記事タイトル・一覧の編バッジ等、
+// 読者向け表示の日本語ラベル
+export type { Edition }
+export const EDITION_GENRES: Record<Edition, Genre[]> = GENRES_EDITION_GENRES
+export const EDITION_LABELS: Record<Edition, string> = {
+  'science-tech': 'サイエンス・テクノロジー編',
+  'life-society': 'くらし・社会編',
+}
 
 // 時間軸(content-selection/requirements.md#時間軸)。配列順=「時間軸の近い順」
 export type Horizon = 'near' | 'mid' | 'long' | 'ultra-long'
@@ -68,9 +78,10 @@ export const COLLECTION_FAILURE_LABELS: Record<NonNullable<EmptySlot['collection
 }
 
 export type Article = {
-  id: string // ファイル名と一致(= date)
+  id: string // ファイル名と一致(= `<date>-<edition>`。weekly-publish/design.md「決定事項」)
+  edition: Edition
   date: string // YYYY-MM-DD。発行日
-  issueNumber: number // 何回目の配信か(1始まり)
+  issueNumber: number // 何回目の配信か(編ごとに1始まりで独立してカウント)
   predictions: Prediction[]
   emptySlots: EmptySlot[]
 }

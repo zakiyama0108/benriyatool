@@ -21,7 +21,8 @@ function makePrediction(overrides: Partial<Prediction> = {}): Prediction {
   }
 }
 
-const ACTIVE_GENRES = ['technology-ai', 'medical-health']
+const EDITION = 'science-tech' as const
+const ACTIVE_GENRES = ['technology-ai', 'medical-health'] // いずれもサイエンス・テクノロジー編のジャンル
 
 // issueNumber=1は奇数回のため時間軸は near・long(types.ts horizonsForIssue)
 
@@ -35,9 +36,9 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
       makePrediction({ id: 'medical-health--long', genre: 'medical-health', horizon: 'long' }),
     ]
 
-    const article = assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, [], [], [])
+    const article = assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, [], [], [])
 
-    expect(article.id).toBe('2026-10-01')
+    expect(article.id).toBe('2026-10-01-science-tech')
     expect(article.date).toBe('2026-10-01')
     expect(article.issueNumber).toBe(1)
     expect(article.predictions).toEqual(predictions)
@@ -52,7 +53,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     ]
     const noCandidateSlots = [{ genre: 'medical-health', horizon: 'near' as const }]
 
-    const article = assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, noCandidateSlots, [], [])
+    const article = assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, noCandidateSlots, [], [])
 
     expect(article.emptySlots).toEqual([{ genre: 'medical-health', horizon: 'near', reason: 'no-candidate' }])
   })
@@ -65,7 +66,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     ]
     const collectionFailedSlots = [{ genre: 'medical-health', horizon: 'near' as const, collectionFailureReason: 'timeout' as const }]
 
-    const article = assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, [], collectionFailedSlots, [])
+    const article = assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, [], collectionFailedSlots, [])
 
     expect(article.emptySlots).toEqual([
       { genre: 'medical-health', horizon: 'near', reason: 'collection-failed', collectionFailureReason: 'timeout' },
@@ -80,7 +81,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     ]
     const failedSlots = [{ genre: 'medical-health', horizon: 'near' as const }]
 
-    const article = assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, [], [], failedSlots)
+    const article = assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, [], [], failedSlots)
 
     expect(article.emptySlots).toEqual([{ genre: 'medical-health', horizon: 'near', reason: 'generation-failed' }])
   })
@@ -94,7 +95,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     // collectionFailureReasonを持たない不正な収集失敗枠
     const collectionFailedSlots = [{ genre: 'medical-health', horizon: 'near' as const, collectionFailureReason: undefined as unknown as 'timeout' }]
 
-    expect(() => assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, [], collectionFailedSlots, [])).toThrow()
+    expect(() => assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, [], collectionFailedSlots, [])).toThrow()
   })
 
   it('候補なしの枠に分類ラベル(collectionFailureReason)がある場合は例外を投げること', () => {
@@ -105,7 +106,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     ]
     const noCandidateSlots = [{ genre: 'medical-health', horizon: 'near' as const, collectionFailureReason: 'timeout' }]
 
-    expect(() => assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, noCandidateSlots, [], [])).toThrow()
+    expect(() => assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, noCandidateSlots, [], [])).toThrow()
   })
 
   it('生成失敗の枠に分類ラベル(collectionFailureReason)がある場合は例外を投げること', () => {
@@ -116,7 +117,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     ]
     const failedSlots = [{ genre: 'medical-health', horizon: 'near' as const, collectionFailureReason: 'timeout' }]
 
-    expect(() => assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, [], [], failedSlots)).toThrow()
+    expect(() => assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, [], [], failedSlots)).toThrow()
   })
 
   it('予測とemptySlots(候補なし・収集失敗・生成失敗の3種の合計)を合わせると、有効な全ジャンル×その回の2時間軸の枠と過不足なく一致すること', () => {
@@ -127,7 +128,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
       makePrediction({ id: 'medical-health--long', genre: 'medical-health', horizon: 'long' }),
     ]
 
-    expect(() => assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, [], [], [])).toThrow()
+    expect(() => assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, [], [], [])).toThrow()
   })
 
   it('一致しない入力(枠が重複している)では例外を投げること', () => {
@@ -142,7 +143,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
       { genre: 'medical-health', horizon: 'near' as const },
     ]
 
-    expect(() => assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, noCandidateSlots, [], [])).toThrow()
+    expect(() => assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, noCandidateSlots, [], [])).toThrow()
   })
 
   it('予測が0件(全枠がno-candidate・collection-failed・generation-failedのいずれか)でも組み立てられること', () => {
@@ -153,7 +154,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
       { genre: 'medical-health', horizon: 'long' as const },
     ]
 
-    const article = assembleArticle('2026-10-01', 1, ACTIVE_GENRES, [], noCandidateSlots, collectionFailedSlots, failedSlots)
+    const article = assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, [], noCandidateSlots, collectionFailedSlots, failedSlots)
 
     expect(article.predictions).toEqual([])
     expect(article.emptySlots).toHaveLength(4)
@@ -167,8 +168,24 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     ]
     const noCandidateSlots = [{ genre: 'medical-health', horizon: 'near' as const }]
 
-    const article = assembleArticle('2026-10-01', 1, ACTIVE_GENRES, predictions, noCandidateSlots, [], [])
+    const article = assembleArticle('2026-10-01', EDITION, 1, ACTIVE_GENRES, predictions, noCandidateSlots, [], [])
 
     expect(() => parseArticle(article, `${article.id}.json`)).not.toThrow()
+  })
+
+  // 仕様: specs/future-digest/weekly-publish/requirements.md#配信スケジュール-1、specs/future-digest/weekly-publish/requirements.md#配信スケジュール-2、specs/future-digest/weekly-publish/requirements.md#配信スケジュール-3
+  it('idが<date>-<edition>になり、editionが記事データに入ること(くらし・社会編)', () => {
+    const lifeSocietyGenres = ['economy-work', 'society-population-life']
+    const predictions = [
+      makePrediction({ id: 'economy-work--near', genre: 'economy-work', horizon: 'near' }),
+      makePrediction({ id: 'economy-work--long', genre: 'economy-work', horizon: 'long' }),
+      makePrediction({ id: 'society-population-life--near', genre: 'society-population-life', horizon: 'near' }),
+      makePrediction({ id: 'society-population-life--long', genre: 'society-population-life', horizon: 'long' }),
+    ]
+
+    const article = assembleArticle('2026-10-04', 'life-society', 1, lifeSocietyGenres, predictions, [], [], [])
+
+    expect(article.id).toBe('2026-10-04-life-society')
+    expect(article.edition).toBe('life-society')
   })
 })

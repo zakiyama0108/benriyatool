@@ -25,7 +25,7 @@ function makeEmptySlot(overrides: Partial<EmptySlot>): EmptySlot {
 }
 
 function makeArticle(predictions: Prediction[], emptySlots: EmptySlot[] = []): Article {
-  return { id: '2026-09-24', date: '2026-09-24', issueNumber: 1, predictions, emptySlots }
+  return { id: '2026-09-24-science-tech', edition: 'science-tech', date: '2026-09-24', issueNumber: 1, predictions, emptySlots }
 }
 
 // 仕様: specs/future-digest/article-detail/requirements.md#並び順の切り替え-8

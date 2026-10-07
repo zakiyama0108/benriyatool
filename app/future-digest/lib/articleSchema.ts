@@ -1,6 +1,6 @@
-import type { Article, EmptySlot, Genre, Horizon, Impact, Prediction } from './types'
+import type { Article, Edition, EmptySlot, Genre, Horizon, Impact, Prediction } from './types'
 import { horizonsForIssue, IMPACT_ORDER } from './types'
-import { loadGenres } from './genres'
+import { EDITION_GENRES } from './genres'
 import { isValidBodyLength } from './bodyValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
@@ -10,6 +10,7 @@ import { isValidBodyLength } from './bodyValidation'
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const EMPTY_SLOT_REASONS: EmptySlot['reason'][] = ['no-candidate', 'collection-failed', 'generation-failed']
 const COLLECTION_FAILURE_REASONS: string[] = ['timeout', 'invalid-format', 'other']
+const EDITIONS: Edition[] = ['science-tech', 'life-society']
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -26,7 +27,7 @@ function isHttpUrl(value: unknown): value is string {
 }
 
 // predictions[index]1件を検証・パースする。horizonsはその回の時間軸2区分、genreIdsは
-// genres.jsonに存在するジャンルID一覧(廃止済みを含む)
+// 記事のedition(対象編)に属する5ジャンルのID一覧(廃止済みを含む。EDITION_GENRES[edition])
 function parsePrediction(
   raw: unknown,
   index: number,
@@ -39,7 +40,7 @@ function parsePrediction(
   const p = raw as Record<string, unknown>
 
   if (typeof p.genre !== 'string' || !genreIds.includes(p.genre)) {
-    throw new Error(`predictions[${index}].genreがgenres.jsonに存在しません: ${String(p.genre)}`)
+    throw new Error(`predictions[${index}].genreが記事のedition(対象編)に属するジャンルに含まれていません: ${String(p.genre)}`)
   }
   const genre = p.genre
 
@@ -94,7 +95,7 @@ function parseEmptySlot(raw: unknown, index: number, horizons: Horizon[], genreI
   const s = raw as Record<string, unknown>
 
   if (typeof s.genre !== 'string' || !genreIds.includes(s.genre)) {
-    throw new Error(`emptySlots[${index}].genreがgenres.jsonに存在しません: ${String(s.genre)}`)
+    throw new Error(`emptySlots[${index}].genreが記事のedition(対象編)に属するジャンルに含まれていません: ${String(s.genre)}`)
   }
   if (!horizons.includes(s.horizon as Horizon)) {
     throw new Error(`emptySlots[${index}].horizonがその回の時間軸2区分に含まれていません: ${String(s.horizon)}`)
@@ -132,12 +133,18 @@ export function parseArticle(raw: unknown, filename: string): Article {
   }
   const data = raw as Record<string, unknown>
 
+  if (typeof data.edition !== 'string' || !EDITIONS.includes(data.edition as Edition)) {
+    throw new Error(`${filename}: editionが不正です(science-techまたはlife-societyである必要があります): ${String(data.edition)}`)
+  }
+  const edition = data.edition as Edition
+
   if (!isNonEmptyString(data.date) || !DATE_FORMAT.test(data.date)) {
     throw new Error(`${filename}: dateがYYYY-MM-DD形式ではありません: ${String(data.date)}`)
   }
   if (!isNonEmptyString(data.id)) throw new Error(`${filename}: idが空文字です`)
-  if (data.id !== data.date) {
-    throw new Error(`${filename}: idがdateと一致しません(id: ${data.id}, date: ${data.date})`)
+  const expectedId = `${data.date}-${edition}`
+  if (data.id !== expectedId) {
+    throw new Error(`${filename}: idが<date>-<edition>形式と一致しません(id: ${data.id}, 期待値: ${expectedId})`)
   }
   const expectedFilename = `${data.id}.json`
   if (filename !== expectedFilename && filename !== data.id) {
@@ -150,7 +157,7 @@ export function parseArticle(raw: unknown, filename: string): Article {
   const issueNumber = data.issueNumber
   const horizons = horizonsForIssue(issueNumber)
 
-  const genreIds = loadGenres().map((g) => g.id)
+  const genreIds = EDITION_GENRES[edition]
 
   if (!Array.isArray(data.predictions)) {
     throw new Error(`${filename}: predictionsは配列である必要があります`)
@@ -182,5 +189,5 @@ export function parseArticle(raw: unknown, filename: string): Article {
     }
   }
 
-  return { id: data.id, date: data.date, issueNumber, predictions, emptySlots }
+  return { id: data.id, edition, date: data.date, issueNumber, predictions, emptySlots }
 }
