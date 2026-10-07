@@ -59,10 +59,10 @@ sequenceDiagram
 - 関連するビジネスルール: requirements.md#記事の構成-6
 
 ### 記事タイトルを導出する処理(決定的なコード)
-- 対象: 発行日
+- 対象: 発行日と編
 - 手順:
-  1. 「週刊未来予測 YYYY年M月D日号」の形にする(月・日はゼロ埋めしない。例:「週刊未来予測 2026年10月1日号」)(requirements.md#記事の構成-7)
-  2. タイトルは記事データに保存せず、発行日から常に導出する(Claudeには作らせない。表現の揺れ・誇張を避けるため)
+  1. 「週刊未来予測 <編のラベル> YYYY年M月D日号」の形にする(月・日はゼロ埋めしない。例:「週刊未来予測 サイエンス・テクノロジー編 2026年10月1日号」「週刊未来予測 くらし・社会編 2026年10月4日号」。trend-digestの`buildArticleTitle(edition, date)`と同じ考え方)(requirements.md#記事の構成-7)
+  2. タイトルは記事データに保存せず、発行日・編から常に導出する(Claudeには作らせない。表現の揺れ・誇張を避けるため)
 - 関連するビジネスルール: requirements.md#記事の構成-7
 
 ## エラーハンドリング
@@ -76,7 +76,7 @@ sequenceDiagram
 ```
 scripts/future-digest/generate-content.ts (新規: 採用された予測ごとにClaude Code CLIを起動して見出し・本文を生成するCLI)
 app/future-digest/lib/bodyValidation.ts (新規: isValidBodyLength・isValidHeading)
-app/future-digest/lib/articleTitle.ts (新規: buildArticleTitle(date))
+app/future-digest/lib/articleTitle.ts (編成分割で変更: buildArticleTitle(date, edition))
 app/future-digest/lib/buildPrediction.ts (新規: 選定時の値+生成結果からPredictionを組み立てる)
 app/future-digest/lib/articleSchema.ts (article-detailで新規: 分量検証を組み込む)
 specs/legal/requirements.md (既存: 知的財産の条項の仕様リンクに本specを追加)

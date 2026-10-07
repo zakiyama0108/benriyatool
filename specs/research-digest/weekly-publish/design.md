@@ -1,45 +1,59 @@
-# 設計: 毎週月曜の記事自動生成・公開
+# 設計: 週2回の記事自動生成・公開
 
 ## サマリ
-GitHub Actionsのスケジュール実行が毎週月曜07:43(日本時間)頃に起動し、[content-selection](../content-selection/design.md)の収集・選定→[content-generation](../content-generation/design.md)の見出し・本文生成→記事データの組み立て→PR作成・自動マージまでを行う。完全自動マージの対象はこの週次記事PR(`research-digest/articles/**`ブランチ)だけで、trend-digest・future-digestのweekly-publishと同じ例外運用とする。CIが失敗したPRはマージせず、失敗の概要をPRにコメントする。
+GitHub Actionsのスケジュール実行が、からだ・くらし編は毎週月曜07:43(日本時間)頃、科学・社会編は毎週土曜11:43(日本時間)頃に、それぞれ独立して起動し、[content-selection](../content-selection/design.md)の収集・選定→[content-generation](../content-generation/design.md)の見出し・本文生成→記事データの組み立て→PR作成・自動マージまでを行う。編の判定は、`github.event.schedule`(起動元のcron式)またはworkflow_dispatchの入力から行う(trend-digestの編成判定と同じ方法)。完全自動マージの対象はこの週次記事PR(`research-digest/articles/**`ブランチ)だけで、trend-digest・future-digestのweekly-publishと同じ例外運用とする。CIが失敗したPRはマージせず、失敗の概要をPRにコメントする。
 
 主要な設計判断:
-- 実行基盤・認証・自動マージの仕組みはtrend-digest・future-digestと同じ構成をそのまま使う(architecture.md#2)
+- 実行基盤・認証・自動マージの仕組みはtrend-digest・future-digestと同じ構成をそのまま使う(architecture.md#2)。編の判定方法(`github.event.schedule`の照合)もtrend-digestの実装をそのまま踏襲する
+- 2編目(科学・社会編)の時刻は、既存のからだ・くらし編(07:43 JST)と同じにせず、11:43 JSTにずらした(下記「実行環境の前提」)。根拠: 2026-10-03に、future-digest・research-digestを同じ07:43 JST系の時間帯で同時に手動実行した際、2本のClaude Code CLIが同じ利用枠を取り合いどちらも生成の途中で打ち切られる事故が実際に発生した。土曜・日曜に再実行が集中するfuture-digestのくらし・社会編(日曜09:43 JST、[future-digest/weekly-publish/design.md](../../future-digest/weekly-publish/design.md))の再実行グリッドとも重ならないよう、2時間差ではなく4時間差を付けている
 - 採用0件の回・生成が全件失敗した回も、公開をスキップせず候補なし・収集失敗・生成失敗の記載で記事を作成・公開する(根拠: /requirementでの決定)。公開するかどうかの分岐はなくなり、「その回の実行を運営者への警告付きにするか」だけを判定する。全ジャンルが収集失敗だった回は、公開はしたうえで実行を失敗表示にする(収集の仕組み自体の異常に運営者が気づけるようにするため)
 - 利用上限への到達は記事を作る材料が得られないため、その回はいったん打ち切るが、本番の12時間後・24時間後・36時間後の最大3回、自動的に再試行する(根拠: /requirementでの決定「12時間×3回くらいはリトライしてほしい」)。エラーメッセージから解除時刻を読み取って待つ方式は表示形式に依存し不安定なため採用しない
-- 再実行が翌日にまたがるため、記事の`date`は実行日ではなく「本来の配信日(その週の月曜)」から求める。これを純粋関数`getScheduledPublishDate(nowUtc)`(UTCの時点を受け取り、関数の内側でJSTに変換してから直近の月曜を求める。呼び出し側でJST変換はしない)で算出し、本番cron・再実行cron・手動`workflow_dispatch`のすべてで共通に使う
+- 再実行が翌日にまたがるため、記事の`date`は実行日ではなく「本来の配信日(対象編の配信曜日)」から求める。これを純粋関数`getScheduledPublishDate(nowUtc, edition)`(UTCの時点と編を受け取り、関数の内側でJSTに変換してから対象編の直近の配信曜日を求める。呼び出し側でJST変換はしない)で算出し、本番cron・再実行cron・手動`workflow_dispatch`のすべてで共通に使う
 - 図: [1回分の記事を生成する処理](#1回分の記事を生成する処理)・[利用上限への到達時に再実行する処理](#利用上限への到達時に再実行する処理)のシーケンス図
+
+## 決定事項
+
+| 論点 | 選んだ案 | 採らなかった案 | 理由 | 影響範囲 | 出所 |
+|---|---|---|---|---|---|
+| 科学・社会編の配信時刻 | 土曜11:43 JST(既存の07:43 JSTから4時間ずらす) | 既存と同じ07:43 JST、または2時間ずらし | 2026-10-03に実際に発生した「複数digestアプリの同時実行による利用枠の枯渇」の再発を防ぐため。土曜・日曜に再実行が集中するfuture-digestのくらし・社会編(日曜09:43 JST)の再実行グリッドとも重ならないよう、2時間差ではなく4時間差にした | 実行環境の前提 | 〔提案〕 |
+| 記事ID・ファイル名の形式 | `<date>-<edition>`(trend-digestと同じ形式) | `<date>`のまま(編は内部フィールドのみ) | 1日に2編の記事が存在しうる前提では日付だけでは一意にならない。trend-digestの既存実装と形式を揃え、新しい運用パターンを増やさない | article-detailの共有スキーマ・ブランチ名・公開パス全体 | 〔提案〕 |
+| 編の判定方法 | `github.event.schedule`(起動元cron式)またはworkflow_dispatch入力から判定(trend-digestと同じ) | 新しい判定方法を設計する | 既存の実装パターンをそのまま踏襲し、新しい運用パターンを増やさない | 実行環境の前提・1回分の記事を生成する処理 | 〔提案〕 |
 
 ## 実行環境の前提
 
-- ワークフロー本体は`.github/workflows/research-digest-weekly.yml`とし、`schedule`の`43 22 * * 0`(日曜22:43 UTC=月曜07:43 JST。本番cron)で起動する。0分を避け、ai-dev-digestの日次実行(06:43 JST)と1時間ずらす
-- 利用上限への到達時の再実行用に、同じワークフローに`schedule`を3本追加する(いずれもUTC表記。JSTは括弧内)。GitHub Actionsの1ワークフローに複数の`schedule`を並べる形でよい
-  - 1回目(本番の12時間後): `43 10 * * 1`(月曜10:43 UTC=月曜19:43 JST)
-  - 2回目(本番の24時間後): `43 22 * * 1`(月曜22:43 UTC=火曜07:43 JST)
-  - 3回目(本番の36時間後): `43 10 * * 2`(火曜10:43 UTC=火曜19:43 JST)
-  これら3本のcronで起動した実行は、いずれも「利用上限への到達時に再実行する処理」の冪等チェックを最初に行う(requirements.md#利用上限への到達時の再実行-1〜2)。3本を区別する回数管理は行わず、3本目のcronのぶんまで走って公開に至らなければ、それ以上自動で再試行する仕組み自体がないというだけで足りる(requirements.md#利用上限への到達時の再実行-3)
-- `workflow_dispatch`でも起動できるようにする。用途は(a) Secrets設定後の動作確認、(b) 上記3回の自動再実行でも公開できなかった回の復旧、の2つ(requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの2つを除く)。入力`scheduled_publish_date`(省略可、`YYYY-MM-DD`)で本来の配信日を指定できる。省略時は実行日時から`getScheduledPublishDate`で求める(下記「配信日を求める処理」)。入力がある場合は純粋関数`validateScheduledPublishDate(value)`で`^\d{4}-\d{2}-\d{2}$`の形かつ実在する月曜日(JST)であることを検証し、満たさなければワークフローを失敗させる(下記「セキュリティ」)
-- GitHubへの書き込みには、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を`RESEARCH_DIGEST_GH_PAT`としてActions Secretsに保存して使う。既定の`GITHUB_TOKEN`は使わない(後続の`ci.yml`が起動しないため)
+- ワークフロー本体は`.github/workflows/research-digest-weekly.yml`とし、編ごとに独立した`schedule`で起動する(いずれもUTC表記。JSTは括弧内)。0分を避ける
+  - からだ・くらし編(既存): 本番`43 22 * * 0`(日曜22:43 UTC=月曜07:43 JST)。ai-dev-digestの日次実行(06:43 JST)と1時間ずらす
+    - 再実行1回目(本番の12時間後): `43 10 * * 1`(月曜10:43 UTC=月曜19:43 JST)
+    - 再実行2回目(本番の24時間後): `43 22 * * 1`(月曜22:43 UTC=火曜07:43 JST)
+    - 再実行3回目(本番の36時間後): `43 10 * * 2`(火曜10:43 UTC=火曜19:43 JST)
+  - 科学・社会編(新規): 本番`43 2 * * 6`(土曜02:43 UTC=土曜11:43 JST)。からだ・くらし編と4時間ずらす(上記「主要な設計判断」参照)
+    - 再実行1回目(本番の12時間後): `43 14 * * 6`(土曜14:43 UTC=土曜23:43 JST)
+    - 再実行2回目(本番の24時間後): `43 2 * * 0`(日曜02:43 UTC=日曜11:43 JST)
+    - 再実行3回目(本番の36時間後): `43 14 * * 0`(日曜14:43 UTC=日曜23:43 JST)
+  これら8本のcronで起動した実行は、いずれも「利用上限への到達時に再実行する処理」の冪等チェックを最初に行う(requirements.md#利用上限への到達時の再実行-1〜2)。各編とも3本を区別する回数管理は行わず、その編の3本目の再実行cronのぶんまで走って公開に至らなければ、それ以上自動で再試行する仕組み自体がないというだけで足りる(requirements.md#利用上限への到達時の再実行-3)
+- 編の判定(`body-life`/`science-society`)は、`workflow_dispatch`起動時は入力`edition`をそのまま使い、`schedule`起動時は`github.event.schedule`(起動元のcron式の文字列)が上記のからだ・くらし編の4本のいずれかに一致すれば`body-life`、それ以外(科学・社会編の4本)なら`science-society`と判定する(trend-digestの編成判定と同じ方法)
+- `workflow_dispatch`でも起動できるようにする。用途は(a) Secrets設定後の動作確認、(b) 上記3回の自動再実行でも公開できなかった回の復旧、の2つ(requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの2つを除く)。入力は2つ: `edition`(必須。`body-life`または`science-society`のchoice。trend-digestのworkflow_dispatchと同じ形)と、`scheduled_publish_date`(省略可、`YYYY-MM-DD`)で本来の配信日を指定できる。省略時は実行日時から`getScheduledPublishDate(nowUtc, edition)`で求める(下記「配信日を求める処理」)。入力がある場合は純粋関数`validateScheduledPublishDate(value, edition)`で`^\d{4}-\d{2}-\d{2}$`の形かつ対象編の配信曜日(からだ・くらし編は月曜、科学・社会編は土曜。JST)であることを検証し、満たさなければワークフローを失敗させる(下記「セキュリティ」)
+- GitHubへの書き込みには、このリポジトリのみに範囲を限定したfine-grained PAT(Contents・Pull requestsのwrite権限)を`RESEARCH_DIGEST_GH_PAT`としてActions Secretsに保存して使う。既定の`GITHUB_TOKEN`は使わない(後続の`ci.yml`が起動しないため)。編成分割後もこのPATは2編共通で1つのまま使う
 - 収集・生成はClaude Code CLIのヘッドレス実行で行い、既存の`CLAUDE_CODE_OAUTH_TOKEN`(他のdigestと共用)をそのまま使う
 - 実行指示の根拠は本specと参照先specのrequirements.md/design.mdとし、専用のプロンプトファイルを複製しない
 
 ### 配信日を求める処理(決定的なコード)
-- 対象: 実行日時(UTCのまま受け取り、JSTへの変換は関数の内側で行う)
+- 対象: 実行日時(UTCのまま受け取り、JSTへの変換は関数の内側で行う)と対象編
 - 手順:
-  1. 純粋関数`getScheduledPublishDate(nowUtc)`(実行日時をUTCの`Date`で受け取り、関数の内側でJSTに変換する)で、実行日時と同じかそれより前で直近の月曜日(JST)の日付を返す(本番cronの実行日はそのまま月曜のため、この関数を通しても同じ値になる)
-  2. 記事データの`date`の算出は、この配信日を基準にする。本番cron・3本の再実行cron・手動`workflow_dispatch`のすべてでこの関数を通す(requirements.md#利用上限への到達時の再実行-5)
+  1. 純粋関数`getScheduledPublishDate(nowUtc, edition)`(実行日時をUTCの`Date`で受け取り、関数の内側でJSTに変換する)で、実行日時と同じかそれより前で直近の対象編の配信曜日(からだ・くらし編は月曜、科学・社会編は土曜。JST)の日付を返す(本番cronの実行日はそのまま対象曜日のため、この関数を通しても同じ値になる)
+  2. 記事データの`date`の算出は、この配信日を基準にする。本番cron・6本の再実行cron・手動`workflow_dispatch`のすべてでこの関数を通す(requirements.md#利用上限への到達時の再実行-5)
 - 関連するビジネスルール: requirements.md#利用上限への到達時の再実行-5
 
 ## 処理フロー
 
 ### 1回分の記事を生成する処理
-- 対象: 配信日(`getScheduledPublishDate`で求めた、本来の配信日。本番cronの実行日は常にこの配信日と一致する)
+- 対象: 対象編と配信日(`getScheduledPublishDate(nowUtc, edition)`で求めた、本来の配信日。本番cronの実行日は常にこの配信日と一致する)
 - 手順:
-  1. 作業用ブランチ`research-digest/articles/<配信日>`を作る
-  2. [content-selection](../content-selection/design.md)の収集・選定CLI(`collect-and-select.ts`)を、「配信日を求める処理」で求めた本来の配信日を引数に渡して実行する。このCLIは選定の最後に、採用した候補・候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)を選定結果として組み立て、それを本specの純粋関数`shouldAlertOperator(genreResults)`に渡して、全ジャンルが収集失敗かどうか(運営者への警告が必要か)を判定し(requirements.md#掲載件数の保証-3)、判定結果を`GITHUB_OUTPUT`に`alert=true|false`として書き出す。利用上限への到達を検知した場合はこの判定より前にCLIが非ゼロ終了で終わり、記事を作らない。この回は打ち切り、次の再実行cronに委ねる(requirements.md#掲載件数の保証-4、requirements.md#利用上限への到達時の再実行-1。下記「利用上限への到達時に再実行する処理」)。判定ロジック自体はcontent-selection側には持たせず、本specの`shouldAlertOperator`だけが持つ
+  1. 作業用ブランチ`research-digest/articles/<配信日>-<edition>`を作る(記事の`id`もこの`<配信日>-<edition>`の形にする。trend-digestと同じ形式)
+  2. [content-selection](../content-selection/design.md)の収集・選定CLI(`collect-and-select.ts`)を、対象編と「配信日を求める処理」で求めた本来の配信日を引数に渡して実行する。このCLIは選定の最後に、採用した候補・候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)を選定結果として組み立て、それを本specの純粋関数`shouldAlertOperator(genreResults)`に渡して、全ジャンルが収集失敗かどうか(運営者への警告が必要か)を判定し(requirements.md#掲載件数の保証-3)、判定結果を`GITHUB_OUTPUT`に`alert=true|false`として書き出す。利用上限への到達を検知した場合はこの判定より前にCLIが非ゼロ終了で終わり、記事を作らない。この回は打ち切り、次の再実行cronに委ねる(requirements.md#掲載件数の保証-4、requirements.md#利用上限への到達時の再実行-1。下記「利用上限への到達時に再実行する処理」)。判定ロジック自体はcontent-selection側には持たせず、本specの`shouldAlertOperator`だけが持つ
   3. ワークフローは採用件数にかかわらず(0件でも)常に次の生成ステップへ進む。公開をスキップする分岐はない
   4. 採用した候補ごとに[content-generation](../content-generation/design.md)の生成を行う。一時的な失敗は同じ候補を最大2回まで(初回+1回)起動し直し、それでも失敗した候補は「生成に失敗したジャンル」として除き、次に進む(requirements.md#掲載件数の保証-4)。採用した候補が0件の場合はこのステップを何も行わずに次へ進む。生成中に利用上限への到達を検知した場合は`generate-content.ts`が非ゼロ終了し、後続の`write-article.ts`(公開)には進まない。この回は打ち切り、次の再実行cronに委ねる(下記「利用上限への到達時に再実行する処理」)
-  5. 記事データ(発行日・研究・掲載できなかったジャンル)を、生成の成否にかかわらず常に組み立てる。`date`は配信日をそのまま使う(requirements.md#利用上限への到達時の再実行-5)。掲載できなかったジャンルには、候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)・生成に失敗したジャンルの3種を理由つきで入れ、その回に有効な全ジャンルが過不足なく記事に現れるようにする(研究が0件でもよい)。`content/research-digest/articles/<配信日>.json`に書き出す(requirements.md#掲載件数の保証-3・4)
+  5. 記事データ(編・発行日・研究・掲載できなかったジャンル)を、生成の成否にかかわらず常に組み立てる。`date`は配信日、`id`は`<配信日>-<edition>`、`edition`はそのまま使う(requirements.md#利用上限への到達時の再実行-5)。掲載できなかったジャンルには、候補なしのジャンル・収集失敗のジャンル(分類ラベルつき)・生成に失敗したジャンルの3種を理由つきで入れ、その回に対象編で有効な5ジャンルが過不足なく記事に現れるようにする(研究が0件でもよい)。`content/research-digest/articles/<配信日>-<edition>.json`に書き出す(requirements.md#掲載件数の保証-3・4)
   6. 記事ファイルをコミットしてブランチをpushする
 - シーケンス図(俯瞰用。正は上記の手順の文章):
 
@@ -67,10 +81,10 @@ sequenceDiagram
 - 関連するビジネスルール: requirements.md#実行-1〜3、requirements.md#掲載件数の保証-1〜4
 
 ### 利用上限への到達時に再実行する処理
-- 対象: 3本ある再実行cron(`43 10 * * 1`〈12時間後〉・`43 22 * * 1`〈24時間後〉・`43 10 * * 2`〈36時間後〉)のいずれかによる起動。この処理はどのcronで起動されても同じ手順で、何回目の再実行かを区別しない(3本のcronがそれぞれ独立に同じ判定を行うだけで、回数管理のコードは持たない)
+- 対象: 編ごとに3本ある再実行cron(本番の12時間後・24時間後・36時間後)のいずれかによる起動。この処理はどのcron・どの編で起動されても同じ手順で、何回目の再実行かを区別しない(6本のcronがそれぞれ独立に同じ判定を行うだけで、回数管理のコードは持たない)
 - 手順:
-  1. 起動直後に、純粋関数`getScheduledPublishDate(nowUtc)`で配信日を求める(本番cronと同じ月曜の日付になる)。この配信日の記事ファイルが既に存在するかを純粋関数`shouldSkipRetry(articles, scheduledPublishDate)`で確認する(requirements.md#利用上限への到達時の再実行-2)
-  2. 記事ファイルが存在しない場合でも、その配信日のブランチ(`research-digest/articles/<配信日>`)からのPRが既にあるかを`gh pr list`(オープン・マージ済み・クローズ済みのすべてを対象)で確認する(前回の実行がCLIの非ゼロ終了より後まで進んでいた場合に備える。マージ済みPRなら記事ファイルの存在確認〈手順1〉でも検出できるため、この確認は主にオープン・クローズ済みPRの検出用。TDD対象外の運用チェック)
+  1. 起動直後に、純粋関数`getScheduledPublishDate(nowUtc, edition)`で配信日を求める(本番cronと同じ対象曜日の日付になる)。その編・その配信日の記事ファイルが既に存在するかを純粋関数`shouldSkipRetry(articles, scheduledPublishDate, edition)`で確認する(requirements.md#利用上限への到達時の再実行-2)
+  2. 記事ファイルが存在しない場合でも、その配信日・編のブランチ(`research-digest/articles/<配信日>-<edition>`)からのPRが既にあるかを`gh pr list`(オープン・マージ済み・クローズ済みのすべてを対象)で確認する(前回の実行がCLIの非ゼロ終了より後まで進んでいた場合に備える。マージ済みPRなら記事ファイルの存在確認〈手順1〉でも検出できるため、この確認は主にオープン・クローズ済みPRの検出用。TDD対象外の運用チェック)
   3. いずれかが見つかった場合(公開済み、またはPRが存在する)は、何もせずジョブを成功として終える(requirements.md#利用上限への到達時の再実行-2)。打ち切りの理由が利用上限かどうかは問わない(利用上限以外の失敗でも同様に再実行される)
   4. いずれも見つからない場合は、「1回分の記事を生成する処理」を配信日を指定して最初からやり直す(前回の途中結果は使わない。requirements.md#利用上限への到達時の再実行-4)
   5. この再実行でも利用上限に到達した場合、または他の理由で公開に至らなかった場合は、公開せずに実行を失敗として終える。3本目(36時間後)の再実行cronでの失敗を最後に、それ以降は自動再実行するcron自体が存在しない(requirements.md#利用上限への到達時の再実行-3)
@@ -78,11 +92,11 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant cron as 再実行cron(12h/24h/36h後のいずれか)
+    participant cron as 再実行cron(編ごとの12h/24h/36h後のいずれか)
     participant check as 冪等チェック
     participant flow as 「1回分の記事を生成する処理」
 
-    cron ->> check: getScheduledPublishDateで配信日を求めshouldSkipRetry(articles, 配信日)・PRの有無を確認
+    cron ->> check: getScheduledPublishDate(nowUtc, edition)で配信日を求めshouldSkipRetry(articles, 配信日, edition)・PRの有無を確認
     alt 公開済みまたはPRあり
         check -->> cron: スキップ(成功で終了)
     else 未公開・PRなし
@@ -100,7 +114,7 @@ sequenceDiagram
 ### PRを作成しCIの結果を待つ処理
 - 対象: 上記で作ったブランチ
 - 手順:
-  1. `main`向けにPRを作る(タイトル例:「[research-digest] 2026-10-05を公開」。本文に採用件数・候補なしのジャンルの数・収集失敗のジャンルの数・査読前の論文の数を書く)
+  1. `main`向けにPRを作る(タイトル例:「[research-digest] からだ・くらし編 2026-10-05を公開」。本文に編・採用件数・候補なしのジャンルの数・収集失敗のジャンルの数・査読前の論文の数を書く)
   2. 既存の`ci.yml`がこのPRにも通常どおり走り、[article-detail/design.md](../article-detail/design.md)のビルド時検証で記事データを確かめる
   3. GitHub標準のauto-merge(`gh pr merge --auto --squash`)を有効にする
 - 関連するビジネスルール: requirements.md#公開フロー-4
@@ -143,12 +157,12 @@ sequenceDiagram
 ## 関連するファイル(抜粋)
 
 ```
-.github/workflows/research-digest-weekly.yml (新規: 月曜の本番cronと、月曜19:43・火曜07:43・火曜19:43(JST)の3本の再実行cronで起動するワークフロー本体。publishジョブとrecord-ci-failureジョブ)
+.github/workflows/research-digest-weekly.yml (編成分割で変更: からだ・くらし編〈月曜本番+3本の再実行〉・科学・社会編〈土曜本番+3本の再実行〉、計8本のcronで起動するワークフロー本体。publishジョブとrecord-ci-failureジョブ)
 scripts/research-digest/collect-and-select.ts (content-selectionで新規)
 scripts/research-digest/generate-content.ts (content-generationで新規)
 app/research-digest/lib/shouldAlertOperator.ts (新規: 選定結果から全ジャンル収集失敗かどうか〈運営者への警告が必要か〉を判定する純粋関数。content-selectionの`collect-and-select.ts`から呼ばれる)
-app/research-digest/lib/scheduledPublishDate.ts (新規: 実行日時〈UTC〉から本来の配信日〈直近の月曜、JST〉を求める純粋関数`getScheduledPublishDate`。内部でJSTに変換する。手動入力`scheduled_publish_date`を検証する純粋関数`validateScheduledPublishDate`も同じモジュールに置く)
-app/research-digest/lib/shouldSkipRetry.ts (新規: 再実行cronの冪等チェック。配信日の記事が既に存在するかを判定する純粋関数)
+app/research-digest/lib/scheduledPublishDate.ts (編成分割で変更: 実行日時〈UTC〉と編から本来の配信日〈直近の対象曜日、JST〉を求める純粋関数`getScheduledPublishDate(nowUtc, edition)`。内部でJSTに変換する。手動入力`scheduled_publish_date`を検証する純粋関数`validateScheduledPublishDate(value, edition)`も同じモジュールに置く)
+app/research-digest/lib/shouldSkipRetry.ts (編成分割で変更: 再実行cronの冪等チェック。`shouldSkipRetry(articles, scheduledPublishDate, edition)`で、対象編・配信日の記事が既に存在するかを判定する純粋関数)
 app/research-digest/lib/assembleArticle.ts (新規: 選定結果+生成結果から記事データを組み立てる純粋関数)
 scripts/research-digest/write-article.ts (新規: assembleArticleの結果をcontent/research-digest/articles/<date>.jsonへ書き出すCLI)
 content/research-digest/articles/<date>.json (新規: 生成される記事データ)
@@ -161,9 +175,9 @@ content/research-digest/articles/<date>.json (新規: 生成される記事デ�
 - `CLAUDE_CODE_OAUTH_TOKEN`は他のdigestと共用の運営者個人の認証情報。期限切れ時は再発行してSecretsを更新する
 - CI失敗の記録で失敗ジョブを調べる処理は読み取りだけのため、既定の`GITHUB_TOKEN`を使う
 - 記事内容の安全性はarticle-detailのビルド時検証で担保する
-- `workflow_dispatch`の入力`scheduled_publish_date`はワークフローファイルの`run:`に直接埋め込まず(シェルインジェクションを避けるため)、`env:`経由でステップに渡す。渡した値は`getScheduledPublishDate`ではなく純粋関数`validateScheduledPublishDate(value)`(`scheduledPublishDate.ts`と同じモジュール)で検証し、`^\d{4}-\d{2}-\d{2}$`の形かつ実在する月曜日(JST)でなければワークフローを非ゼロ終了で失敗させる
+- `workflow_dispatch`の入力`scheduled_publish_date`・`edition`はワークフローファイルの`run:`に直接埋め込まず(シェルインジェクションを避けるため)、`env:`経由でステップに渡す。渡した`scheduled_publish_date`は`getScheduledPublishDate`ではなく純粋関数`validateScheduledPublishDate(value, edition)`(`scheduledPublishDate.ts`と同じモジュール)で検証し、`^\d{4}-\d{2}-\d{2}$`の形かつ対象編の配信曜日(JST)でなければワークフローを非ゼロ終了で失敗させる。`edition`はworkflow_dispatchの`choice`型入力のため、スキーマの時点で`body-life`/`science-society`以外の値を受け付けない
 
 ## ログ
 
-- 実行ごとに、実行日・配信日・採用件数・候補なしのジャンルの数・収集失敗のジャンルの数(分類ラベル別)・生成に失敗したジャンルの数・査読前の論文の数・PRのURL・結果(公開/公開〈警告あり〉/失敗/再実行に委ねてスキップ)を実行ログに出す
+- 実行ごとに、編・実行日・配信日・採用件数・候補なしのジャンルの数・収集失敗のジャンルの数(分類ラベル別)・生成に失敗したジャンルの数・査読前の論文の数・PRのURL・結果(公開/公開〈警告あり〉/失敗/再実行に委ねてスキップ)を実行ログに出す
 - 失敗で終える場合は、理由(利用上限への到達〈次の再実行cronに委ねる旨を含む〉/過去記事の読み込み失敗/同じ配信日が既にある/3本目の再実行でも公開に至らなかった)をエラーとして出す。全ジャンル収集失敗による警告は、公開後の警告として理由(全ジャンル収集失敗)とともに出す

@@ -1,5 +1,6 @@
 # タスク分解: 研究発見の要約・記事執筆のルール
 
+> 全8件(Task 1〜Task 8)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 本文・見出しの検証(仕様: requirements.md#要約-2〜3、design.md「生成結果を検証する処理」)
@@ -27,3 +28,16 @@
 
 - Task 7: 利用規約への条項追記(仕様: requirements.md#利用規約への反映-2)(TDD対象外。静的な文言の変更のため)
   - [future-digest/content-generation/tasks.md](../../future-digest/content-generation/tasks.md)のTask 7と同じ1回の変更で、`app/legal/page.tsx`の「4. 知的財産」の条項を3アプリ対象の文面にする。`specs/legal/requirements.md`の知的財産の仕様リンクに本specを追加する
+
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+記事タイトルに編のラベルを追加する変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 8: 記事タイトルの導出を編対応にする(仕様: requirements.md#記事の構成-7)
+  - 🔴 Task 2の`buildArticleTitle`のテストを、第2引数`edition`を渡す形に書き直し、`body-life`なら「週刊研究発見 からだ・くらし編 2026年10月5日号」、`science-society`なら「週刊研究発見 科学・社会編 2026年10月10日号」になることを確認するケースに差し替える
+  - 🟢 `app/research-digest/lib/articleTitle.ts`の`buildArticleTitle(date, edition)`を実装する(呼び出し元のgenerate-content.ts・write-article.tsも合わせて更新する)
+
+</details>

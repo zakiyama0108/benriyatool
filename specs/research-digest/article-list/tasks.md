@@ -1,5 +1,6 @@
 # タスク分解: 記事一覧ページ
 
+> 全10件(Task 1〜Task 10)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: ページ分け(仕様: requirements.md#ビジネスルール・制約-2、design.md「記事一覧をページ分けする処理」)
@@ -39,3 +40,16 @@
 
 - Task 9: ファビコン(仕様: `specs/hub-site/requirements.md`のファビコンの項目)
   - `app/research-digest/icon.svg`を追加する
+
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+一覧カードに編のバッジを追加する変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 10: 一覧カードへの編バッジ追加(仕様: requirements.md#一覧表示-1〜2、design.md「画面設計」)
+  - 🔴 `ArticleCard`のテストに、記事の`edition`が`body-life`なら「からだ・くらし編」、`science-society`なら「科学・社会編」のバッジが表示されることを確認するケースを追加する(trend-digestの`EditionBadge`と同じ作り・表示文言のパターンを踏襲する。コードは共有せずコピーして実装する)
+  - 🟢 `app/research-digest/components/ArticleCard.tsx`に編バッジの表示を追加する(trend-digestの`EditionBadge`コンポーネントと同じ作りで、新規に実装する)
+
+</details>
