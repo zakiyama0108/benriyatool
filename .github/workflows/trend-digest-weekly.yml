@@ -1,12 +1,20 @@
 # トレンドダイジェストの週次記事生成・公開ワークフロー
 # (仕様: specs/trend-digest/weekly-publish/design.md「実行環境の前提」「1回分の記事を生成する処理」
-# 「PRを作成しCIの結果を待つ処理」「PRを自動マージする処理」「CI失敗時に記録する処理」)
+# 「PRを作成しCIの結果を待つ処理」「PRを自動マージする処理」「CI失敗時に記録する処理」
+# 「記事生成をスキップする処理」「エラーハンドリング」)
 #
 # publishジョブ: 火曜(エンタメ編)・金曜(カルチャー・ライフスタイル編)それぞれ独立したcronで起動し、
 # 候補収集・選定(content-selection)→見出し・本文生成(content-generation)→記事データ組み立て→
 # PR作成→auto-merge有効化までを行う。trend-digest/articles/**ブランチからのPRに限り、CIが成功すると
 # 人間の承認なしに自動マージされる(通常のfeatureブランチのレビュー必須運用の例外。
-# 根拠はrequirements.md#公開フロー-5参照)
+# 根拠はrequirements.md#公開フロー-6参照)。
+#
+# collect-and-select.tsは対象editionの全ジャンルの観測項目を必ずcontent/trend-digest/history/<id>.jsonへ
+# 書き出す(trend-history/design.md)。次の3パターンいずれでも、この観測ログだけは必ずコミット・push・PR作成・
+# 自動マージする(requirements.md#実行-5、requirements.md#自動マージの範囲-3):
+#   (a) 全ジャンルで候補0件の正常なスキップ → 観測ログのみのPRを作りジョブは成功(緑)のまま終える
+#   (b) 選定はできたが全候補の生成が失敗・利用枠が枯渇 → 観測ログのみのPRを作ったうえでジョブを失敗(赤)させる
+#   (c) 生成に成功した候補が1件以上 → 記事データ+観測ログをまとめてPRにする(通常の公開)
 #
 # record-ci-failureジョブ: 上記PRのCI(ci.yml)が失敗した場合、マージせず原因をPRコメントに記録する
 name: トレンドダイジェスト 週次記事公開
@@ -78,13 +86,18 @@ jobs:
           echo "id=$id" >> "$GITHUB_OUTPUT"
           git checkout -b "trend-digest/articles/$id"
 
+      # collect-and-select.tsは対象editionの全観測項目をcontent/trend-digest/history/<id>.jsonへ
+      # 書き出したうえで選定結果(SelectionResult)を標準出力する(trend-history/design.md「処理フロー」)。
+      # このステップ自体が失敗した場合(観測ログの書き出し前の中断等)は観測ログが残らず、
+      # ジョブはそのまま失敗する(design.md「エラーハンドリング」。その週は欠測として扱われる)
       - name: 候補収集・採用基準判定(content-selection)
         run: npx tsx scripts/trend-digest/collect-and-select.ts "${{ steps.edition.outputs.value }}" > /tmp/selection.json
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-      # 対象9ジャンルすべてで候補が0件の場合はブランチ・PRを作成せずスキップする
-      # (requirements.md#掲載件数の保証-1)
+      # 対象editionの全ジャンルで候補が0件の場合(観測ログは既に書き出し済み)は、
+      # 記事生成をスキップし観測ログのみのPRを作る(design.md「記事生成をスキップする処理」、
+      # requirements.md#掲載件数の保証-1)
       - name: 候補不足によるスキップ判定
         id: selection
         run: |
@@ -99,34 +112,83 @@ jobs:
           fi
 
       # Anthropic APIの従量課金ではなく、運営者個人のClaude Code Pro/Maxサブスクリプション認証
-      # (CLAUDE_CODE_OAUTH_TOKEN)でヘッドレス実行する。全候補失敗・利用枠枯渇時はこのステップが
-      # 非ゼロ終了し、後続ステップ(記事書き出し・commit・push・PR作成)は実行されない
-      # (requirements.md#掲載件数の保証-2、design.md「エラーハンドリング」)
+      # (CLAUDE_CODE_OAUTH_TOKEN)でヘッドレス実行する。全候補失敗・利用枠枯渇時はこのスクリプトが
+      # 非ゼロ終了する。continue-on-errorでジョブ全体を即失敗させず、後続で観測ログのみのPRを
+      # 作成してからジョブを失敗させる(requirements.md#掲載件数の保証-2、design.md「エラーハンドリング」)
       - name: 見出し・本文の生成(content-generation)
+        id: generate
         if: steps.selection.outputs.status == 'ok'
+        continue-on-error: true
         run: npx tsx scripts/trend-digest/generate-content.ts /tmp/selection.json > /tmp/topics.json
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
       - name: 記事データの組み立て・書き出し
-        if: steps.selection.outputs.status == 'ok'
-        run: npx tsx scripts/trend-digest/write-article.ts "${{ steps.edition.outputs.value }}" "${{ steps.date.outputs.value }}" /tmp/topics.json
+        if: steps.selection.outputs.status == 'ok' && steps.generate.outcome == 'success'
+        run: npx tsx scripts/trend-digest/write-article.ts "${{ steps.edition.outputs.value }}" "${{ steps.date.outputs.value }}" /tmp/selection.json /tmp/topics.json
 
-      - name: コミット・push・PR作成・自動マージ有効化
-        if: steps.selection.outputs.status == 'ok'
+      # (c) 生成に成功した候補が1件以上ある通常の公開: 記事データ+観測ログをまとめてPRにする
+      - name: コミット・push・PR作成・自動マージ有効化(記事を公開)
+        if: steps.selection.outputs.status == 'ok' && steps.generate.outcome == 'success'
         env:
           GH_TOKEN: ${{ secrets.TREND_DIGEST_GH_PAT }}
         run: |
           id="${{ steps.branch.outputs.id }}"
           git config user.name "trend-digest-bot"
           git config user.email "trend-digest-bot@users.noreply.github.com"
-          git add "content/trend-digest/articles/$id.json"
+          git add "content/trend-digest/articles/$id.json" "content/trend-digest/history/$id.json"
           git commit -m "content(trend-digest): ${id}を公開"
           git push origin "trend-digest/articles/$id"
           gh pr create --base main \
             --title "[trend-digest] ${id}を公開" \
             --body "週次自動生成PRです(edition: ${{ steps.edition.outputs.value }})。選定件数: ${{ steps.selection.outputs.topicsCount }}件。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/trend-digest/weekly-publish/design.md参照)。"
           gh pr merge --auto --squash "trend-digest/articles/$id"
+
+      # (a) 対象editionの全ジャンルで情報源から項目を1件も取得できなかった正常なスキップ:
+      # 記事は作らず観測ログのみのPRを作る(design.md「記事生成をスキップする処理」)。
+      # ジョブはここで失敗させない(正常なスキップは緑のまま終える)
+      - name: コミット・push・PR作成・自動マージ有効化(観測ログのみ・記事なし)
+        if: steps.selection.outputs.status == 'skipped'
+        env:
+          GH_TOKEN: ${{ secrets.TREND_DIGEST_GH_PAT }}
+        run: |
+          id="${{ steps.branch.outputs.id }}"
+          git config user.name "trend-digest-bot"
+          git config user.email "trend-digest-bot@users.noreply.github.com"
+          git add "content/trend-digest/history/$id.json"
+          git commit -m "content(trend-digest): ${id}の観測履歴を記録(記事なし)"
+          git push origin "trend-digest/articles/$id"
+          gh pr create --base main \
+            --title "[trend-digest] ${id}の観測履歴を記録(記事なし)" \
+            --body "週次自動生成PRです(edition: ${{ steps.edition.outputs.value }})。対象editionの全ジャンルで情報源から項目を取得できなかったため、この回は記事を公開せず観測ログのみを記録します(specs/trend-digest/weekly-publish/design.md「記事生成をスキップする処理」参照)。CIが成功すると人間の承認なしに自動的にmainへマージされます。"
+          gh pr merge --auto --squash "trend-digest/articles/$id"
+
+      # (b) 選定はできたが全候補の生成に失敗、または利用枠が枯渇: 観測ログのみのPRを作ったうえで
+      # ジョブを失敗(赤)させ、運営者がGitHub Actionsの失敗表示で異常に気づけるようにする
+      # (design.md「エラーハンドリング」、requirements.md#掲載件数の保証-2)
+      - name: コミット・push・PR作成・自動マージ有効化(観測ログのみ・記事生成失敗)
+        if: steps.selection.outputs.status == 'ok' && steps.generate.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.TREND_DIGEST_GH_PAT }}
+        run: |
+          id="${{ steps.branch.outputs.id }}"
+          git config user.name "trend-digest-bot"
+          git config user.email "trend-digest-bot@users.noreply.github.com"
+          git add "content/trend-digest/history/$id.json"
+          git commit -m "content(trend-digest): ${id}の観測履歴を記録(記事生成失敗)"
+          git push origin "trend-digest/articles/$id"
+          gh pr create --base main \
+            --title "[trend-digest] ${id}の観測履歴を記録(記事生成失敗)" \
+            --body "週次自動生成PRです(edition: ${{ steps.edition.outputs.value }})。選定された候補の見出し・本文生成に失敗した(または利用枠が枯渇した)ため、この回は記事を公開せず観測ログのみを記録します。この実行はGitHub Actions上で失敗として表示されます(specs/trend-digest/weekly-publish/design.md「エラーハンドリング」参照)。CIが成功すると人間の承認なしに自動的にmainへマージされます。"
+          gh pr merge --auto --squash "trend-digest/articles/$id"
+
+      # 上記(b)のケースでは観測ログのPR作成後もジョブ自体は失敗(赤)として残す
+      # (design.md「エラーハンドリング」。正常なスキップ(a)とは区別する)
+      - name: 記事生成の失敗をジョブの失敗として明示
+        if: steps.generate.outcome == 'failure'
+        run: |
+          echo "見出し・本文の生成に失敗したため、この実行を失敗として終えます(観測ログのみのPRは作成済みです)"
+          exit 1
 
   # publishが作成したPRのCI(ci.yml)が失敗した場合、マージせず原因をPRコメントに記録する
   # (design.md「CI失敗時に記録する処理」)。trend-digest/articles/**ブランチ由来のPR以外は対象外

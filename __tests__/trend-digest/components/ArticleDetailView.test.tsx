@@ -83,3 +83,19 @@ describe('記事詳細ページでの運営者判定 - セッション確立後�
     expect(screen.queryByRole('textbox')).toBeNull()
   })
 })
+
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-17、specs/trend-digest/article-detail/design.md「その回の記事本文を表示する処理」手順4
+describe('記事詳細ページの取得できなかったジャンルの表示 - unavailableGenresに含まれるジャンルにだけ表示する', () => {
+  it('unavailableGenresに含まれるジャンルには見出しと「取得できませんでした」が表示されること', () => {
+    render(<ArticleDetailView article={{ ...article, unavailableGenres: ['anime'] }} />)
+    expect(screen.getByRole('heading', { name: 'アニメ' })).toBeTruthy()
+    expect(screen.getAllByText('今回は情報源から話題を取得できませんでした')).toHaveLength(1)
+  })
+
+  it('unavailableGenresを持たない過去の記事では、掲載のないジャンルに見出しも「取得できませんでした」も表示されないこと', () => {
+    render(<ArticleDetailView article={article} />)
+    expect(screen.getByRole('heading', { name: '音楽' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'アニメ' })).toBeNull()
+    expect(screen.queryByText('今回は情報源から話題を取得できませんでした')).toBeNull()
+  })
+})

@@ -14,7 +14,7 @@
   - 🟢 `app/trend-digest/lib/types.ts`に`Edition`/`Genre`/`GENRE_ORDER`/`GENRE_LABELS`/`DURATION_LABELS`/`HEAT_LABELS`/`TopicTrend`/`Topic`/`Article`を定義する(`Genre`に`dev-trends`、`GENRE_ORDER['culture-lifestyle']`の末尾に`dev-trends`を追加する)。`TREND_STATUS_LABELS`は旧来の7段階の判定を廃止したため削除する
 
 - Task 3: 記事データのバリデーション(仕様: design.md「バリデーション」)
-  - 🔴 正常な記事データが検証を通ること、`topics`が0件で失敗すること、その編のジャンル数を超える件数で失敗すること、同一ジャンルのトピックが2件以上で失敗すること、`genre`が未定義値で失敗すること、`genre`は定義済みジャンルだが`article.edition`に対応するジャンル(`GENRE_ORDER[edition]`)に属さない場合(例: `edition: 'entertainment'`に`genre: 'gourmet'`)に失敗すること、`id`とファイル名不一致で失敗すること、`edition`が不正値で失敗すること、`sourceUrl`が`http`/`https`で始まらない場合に失敗すること、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字で失敗することを確認するテストを書く
+  - 🔴 正常な記事データが検証を通ること、`topics`が0件で失敗すること、その編のジャンル数を超える件数で失敗すること、`unavailableGenres`を持つ記事で同一ジャンルのトピックが2件以上で失敗すること(持たない過去記事は2件以上でも通ること)、`genre`が未定義値で失敗すること、`genre`は定義済みジャンルだが`article.edition`に対応するジャンル(`GENRE_ORDER[edition]`)に属さない場合(例: `edition: 'entertainment'`に`genre: 'gourmet'`)に失敗すること、`id`とファイル名不一致で失敗すること、`edition`が不正値で失敗すること、`sourceUrl`が`http`/`https`で始まらない場合に失敗すること、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字で失敗することを確認するテストを書く
   - 🔴 **全ジャンルが網羅されていることの検証のテストを書く**: `topics`のジャンルと`unavailableGenres`を合わせて`GENRE_ORDER[edition]`と一致する記事が検証を通ること、どちらにも現れないジャンルがある記事で失敗すること、`unavailableGenres`に`topics`と重複するジャンル・その編に属さないジャンル・重複した要素がある場合に失敗すること、`unavailableGenres`を持たない過去の記事は網羅の検証をせずに通ること(この機能より前に公開した記事のため)
   - 🔴 `trend`がないトピックが検証を通ること(この機能より前に公開した記事のため)、`durationLabel`/`heatLabel`が定義外の値で失敗すること、`continuationDays`が負数で失敗すること、`continuationStartDate`が`YYYY-MM-DD`形式でない場合と記事の`date`より後の場合に失敗すること、`reportCount`が0以下で失敗すること、**`durationLabel`が`pre-trend`のトピックも検証を通ること**(各ジャンル1件を掲載する仕様のため「流行前」が記事に載りうることの回帰テスト)を確認するテストを書く
   - 🟢 `app/trend-digest/lib/articleSchema.ts`に`parseArticle(raw: unknown, filename: string): Article`を実装する(違反時は例外を投げる)
@@ -27,8 +27,9 @@
 ## 記事表示
 
 - Task 5: ジャンル見出し+トピックカードの表示(仕様: requirements.md#記事本文表示-2〜4、requirements.md#継続度・注目度の表示-17)
-  - 🔴 その編の全ジャンルが`GENRE_ORDER`の順で見出し表示されること、ジャンル見出しの文言が`GENRE_LABELS`の日本語ラベルと一致すること、各トピックの見出し・本文・出典(発信者名・元URLリンク、新規タブで開く`target="_blank"`)が表示されることを確認するテストを書く
+  - 🔴 その編の全ジャンルが`GENRE_ORDER`の順で見出し表示されること(`unavailableGenres`を持たない過去記事は掲載のあるジャンルのみ。下記の過去記事のテスト項目参照)、ジャンル見出しの文言が`GENRE_LABELS`の日本語ラベルと一致すること、各トピックの見出し・本文・出典(発信者名・元URLリンク、新規タブで開く`target="_blank"`)が表示されることを確認するテストを書く
   - 🔴 **話題を取得できなかったジャンルのテストを書く**: `unavailableGenres`に含まれるジャンルも見出しが表示されること、その下に取得できなかった旨が表示されること、トピックカードが描画されないこと、見出しだけが残る状態にならないこと
+  - 🔴 **過去記事(`unavailableGenres`を持たない記事)の表示のテストを書く**: 掲載のないジャンルは見出しも取得できなかった旨も表示しない(セクション自体を出さない)こと、同一ジャンルに複数件のトピックがあれば全件表示されること、`ArticleDetailView`で`unavailableGenres`に含まれるジャンルにだけ取得できなかった旨が出ること(requirements.md#継続度・注目度の表示-17)
   - 🟢 `app/trend-digest/components/GenreSection.tsx`・`app/trend-digest/components/TopicCard.tsx`を実装する
 
 - Task 6: 継続度・注目度の表示(仕様: requirements.md#継続度・注目度の表示-10〜16・-18、requirements.md#継続度・注目度の表示の扱い-6〜8、design.md「画面設計」「コンポーネント設計」)

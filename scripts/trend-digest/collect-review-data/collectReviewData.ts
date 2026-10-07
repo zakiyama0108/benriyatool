@@ -11,6 +11,11 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import pg from 'pg'
 import { collectSkippedGenres } from '../../../app/trend-digest/lib/reviewRecords'
+import { computeGenreHistoryReviewStats } from '../../../app/trend-digest/lib/sourceReviewHistoryStats'
+import type { Criteria } from '../../../app/trend-digest/lib/watchlistTypes'
+import criteriaData from '../../../content/trend-digest/criteria.json' with { type: 'json' }
+
+const criteria = criteriaData as Criteria
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // 対話セッション向けの.env.local(docs/adr/0004。CIには含めない)を読み込む
@@ -69,14 +74,18 @@ async function main() {
   }
 
   const articlesDir = path.join(__dirname, '../../../content/trend-digest/articles')
+  const historyDir = path.join(__dirname, '../../../content/trend-digest/history')
   const skippedGenres = collectSkippedGenres(articlesDir, sinceDate)
+  // 観測ログからの継続度ラベル再集計・地域不明率の集計(design.md「見直しの材料を集める処理」
+  // 手順3。requirements.md#選定領域の見直し案の粒度・提示方法-9〜10の判断材料)
+  const genreHistoryStats = computeGenreHistoryReviewStats(historyDir, articlesDir, sinceDate, criteria.history)
   const { feedback, connectionError } = await collectFeedbackSafely(sinceDate)
 
   if (connectionError) {
     console.error(`trend_digest_feedbackへの接続に失敗したため、フィードバックなしで続行します: ${connectionError}`)
   }
 
-  console.log(JSON.stringify({ sinceDate, skippedGenres, feedback }, null, 2))
+  console.log(JSON.stringify({ sinceDate, skippedGenres, genreHistoryStats, feedback }, null, 2))
 }
 
 main().catch((error: unknown) => {

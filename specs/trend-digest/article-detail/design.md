@@ -1,7 +1,7 @@
 # 設計: 記事詳細ページ
 
 ## サマリ
-その回の記事本文を、対象ジャンル(エンタメ編9ジャンル・カルチャー編10ジャンル)すべてを見出しとして、各ジャンル1件のトピック・本文・出典・継続度ラベルと注目度ラベルのバッジ・継続期間・報告回数・地域をジャンル見出しの下に表示する。情報源から話題を取得できなかったジャンルは、見出しの下にその旨を表示する。運営者本人がログイン中の場合のみ、各トピック下にフィードバック入力欄を表示し、`trend_digest_feedback`テーブルへINSERT専用で保存する(ai-dev-digestと同じ`authenticated`ロールのINSERT専用パターン)。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。UI方針は「画面設計」参照(Step0は簡易実施)。
+その回の記事本文を、対象ジャンル(エンタメ編9ジャンル・カルチャー編10ジャンル)すべてを見出しとして、各ジャンル1件のトピック(`unavailableGenres`を持たない公開済みの過去記事は例外で、記録されているとおりに表示し、掲載のないジャンルは出さない)・本文・出典・継続度ラベルと注目度ラベルのバッジ・継続期間・報告回数・地域をジャンル見出しの下に表示する。情報源から話題を取得できなかったジャンルは、見出しの下にその旨を表示する。運営者本人がログイン中の場合のみ、各トピック下にフィードバック入力欄を表示し、`trend_digest_feedback`テーブルへINSERT専用で保存する(ai-dev-digestと同じ`authenticated`ロールのINSERT専用パターン)。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。UI方針は「画面設計」参照(Step0は簡易実施)。
 
 ## 前提: 記事データの形式(この機能が定義する共有スキーマ)
 
@@ -95,7 +95,7 @@ export type Article = {
   id: string // ファイル名と一致
   edition: Edition
   date: string // YYYY-MM-DD。発行日
-  topics: Topic[] // ジャンルの定義順(GENRE_ORDER)に並ぶ。各ジャンル1件
+  topics: Topic[] // ジャンルの定義順(GENRE_ORDER)に並ぶ。各ジャンル1件(unavailableGenresを持たない、新ルール導入前に公開済みの記事は例外で、同一ジャンルに複数件ある・掲載のないジャンルがありうる)
   // 情報源から話題を1件も取得できなかったジャンル(requirements.md#継続度・注目度の表示-17)。
   // 見出しは出したうえで取得できなかった旨を表示するため、topicsに入らないジャンルをここで持つ。
   // この機能より前に公開した記事は持たないため任意
@@ -119,12 +119,12 @@ export type Article = {
 - 対象: 読み込んだ記事データ
 - 手順:
   1. `buildArticleTitle(edition, date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
-  2. `GENRE_ORDER[edition]`の順に、その編の全ジャンルを見出しとして表示する(requirements.md#記事本文表示-2)。見出しの文言は`Genre`から`GENRE_LABELS`を引いた日本語ラベルを使う
-  3. 各ジャンル見出しの下に、そのジャンルの`topics`(1件)を、見出し・本文・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
-  4. `unavailableGenres`に含まれるジャンルは、見出しの下にトピックの代わりとして「今回は情報源から話題を取得できませんでした」と表示する。見出しだけが残る状態にはしない(requirements.md#継続度・注目度の表示-17)
+  2. `GENRE_ORDER[edition]`の順に、その編の全ジャンルを見出しとして表示する(requirements.md#記事本文表示-2。`unavailableGenres`を持たない公開済みの過去記事は、掲載のないジャンルの見出しを出さない。手順4参照)。見出しの文言は`Genre`から`GENRE_LABELS`を引いた日本語ラベルを使う
+  3. 各ジャンル見出しの下に、そのジャンルの`topics`(新ルールの記事は1件、`unavailableGenres`を持たない過去記事は複数件ありうる)を、見出し・本文・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
+  4. `unavailableGenres`に含まれるジャンルは、見出しの下にトピックの代わりとして「今回は情報源から話題を取得できませんでした」と表示する。見出しだけが残る状態にはしない(requirements.md#継続度・注目度の表示-17)。`unavailableGenres`を持たない、新ルール導入前に公開済みの記事では、`topics`にないジャンルには見出しも含め何も表示しない(セクション自体を出さない。同一ジャンルに複数件のトピックがある場合は全件を表示する。公開済み記事を書き換えるとフィードバックの`topic_id`がずれるため、過去記事はそのまま表示する)
   5. 各トピックに`trend`がある場合は、見出しの隣に継続度ラベルのバッジと注目度ラベルのバッジを(いずれも日本語ラベル付きで)並べ、本文の上にトレンド情報の行を表示する。トレンド情報の行に出すのは、継続期間(継続の開始日と継続日数を組み合わせた読みやすい表記)・報告回数(2回目以降のみ)・発祥地域(判定できている場合のみ)・現在の主な流行地域(判定できている場合のみ)で、値が不明な項目は項目ごと表示しない(requirements.md#継続度・注目度の表示-10、同-12、同-14、同-15、同-16)
   6. `trend`を持たないトピックは、バッジ・トレンド情報の行をいずれも表示しない(requirements.md#継続度・注目度の表示-18)
-  7. 表示するトピック数は`topics`配列のとおりで、画面側で件数の絞り込みは行わない(その編のジャンル数と一致する。requirements.md#記事本文表示-4)
+  7. 表示するトピック数は`topics`配列のとおりで、画面側で件数の絞り込みは行わない(`unavailableGenres`を持つ記事ではその編のジャンル数と一致する。持たない過去記事は例外。requirements.md#記事本文表示-4、requirements.md#継続度・注目度の表示-17)
 - 関連するビジネスルール: requirements.md#記事本文表示-1、requirements.md#記事本文表示-2、requirements.md#記事本文表示-3、requirements.md#記事本文表示-4、requirements.md#継続度・注目度の表示-10、requirements.md#継続度・注目度の表示-11、requirements.md#継続度・注目度の表示-12、requirements.md#継続度・注目度の表示-13、requirements.md#継続度・注目度の表示-14、requirements.md#継続度・注目度の表示-15、requirements.md#継続度・注目度の表示-16、requirements.md#継続度・注目度の表示-17、requirements.md#継続度・注目度の表示-18、requirements.md#継続度・注目度の表示の扱い-6、requirements.md#継続度・注目度の表示の扱い-7
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
@@ -171,8 +171,8 @@ sequenceDiagram
 - `id`: ファイル名と一致すること。`<date>-<edition>`の形式であること
 - `edition`: `entertainment`または`culture-lifestyle`であること
 - `date`: `YYYY-MM-DD`形式であること
-- `topics`: 配列長が1件以上で、`article.edition`のジャンル数(エンタメ編9・カルチャー編10)以下であること。`topics`のジャンルと`unavailableGenres`を合わせると`GENRE_ORDER[article.edition]`と過不足なく一致すること(各ジャンル1件を掲載する仕様どおりに記事が組み立てられているかをビルド時に検知するため。content-selection/requirements.md#掲載件数-1〜3)
-- 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが2件以上存在しないこと(content-selection/requirements.md#掲載件数-1)
+- `topics`: 配列長が1件以上で、`article.edition`のジャンル数(エンタメ編9・カルチャー編10)以下であること。`topics`のジャンルと`unavailableGenres`を合わせると`GENRE_ORDER[article.edition]`と過不足なく一致すること(各ジャンル1件を掲載する仕様どおりに記事が組み立てられているかをビルド時に検知するため。content-selection/requirements.md#掲載件数-1〜3)。同一ジャンルのトピックが2件以上ないこと(1ジャンル1件)の検証も同様に、`unavailableGenres`を持つ記事にだけ適用する。`unavailableGenres`を持たない、新ルール導入前に公開済みの記事には1ジャンル1件・全ジャンル一致の検証を適用せず従来どおり受け入れる(公開済み記事を書き換えるとフィードバックの`topic_id`がずれるため)
+- 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが2件以上存在しないこと(content-selection/requirements.md#掲載件数-1。ただし`unavailableGenres`を持つ記事にだけ適用し、持たない過去記事は適用しない。上記`topics`の項参照)
 - `unavailableGenres`は省略可。ある場合は、各要素が`GENRE_ORDER[article.edition]`に含まれるジャンルであること、重複がないこと、`topics`のジャンルと重ならないこと
 - 各`topic`の`trend`は省略可。ある場合は、`durationLabel`が定義済みの4段階のいずれかであること、`heatLabel`が定義済みの3段階のいずれかであること、`continuationDays`が0以上の整数であること、`continuationStartDate`が`YYYY-MM-DD`形式で記事の`date`以前であること、`reportCount`が1以上の整数であること、`originRegion`が文字列(空文字でなく50文字以内・制御文字を含まない)またはnullであること、`currentRegions`が文字列の配列(各要素は空文字でなく50文字以内・制御文字を含まない、10件以内)であること。地域情報は収集エージェントが生成した自由文字列のため、記事データに取り込む時点でも外部入力として検証する([trend-history/design.md](../trend-history/design.md)のバリデーションと同じ上限)
 - `body`の文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2、content-generation/design.md「本文の分量を検証する処理」)
@@ -249,7 +249,7 @@ Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の
 
 - パンくず(べんりやつーる › 週刊トレンド › 記事タイトル)
 - 記事タイトル(`buildArticleTitle(edition, date)`)・公開日
-- ジャンル見出し(その編の全ジャンル、GENRE_ORDER順)+配下にそのジャンルのトピックカード(1件): 見出し、継続度ラベルのバッジ、注目度ラベルのバッジ、トレンド情報の行、本文、出典(情報源名・元URLへのリンク、新規タブで開く)
+- ジャンル見出し(その編の全ジャンル、GENRE_ORDER順。`unavailableGenres`を持たない公開済みの過去記事は掲載のないジャンルを出さない)+配下にそのジャンルのトピックカード(1件。過去記事は複数件ありうる): 見出し、継続度ラベルのバッジ、注目度ラベルのバッジ、トレンド情報の行、本文、出典(情報源名・元URLへのリンク、新規タブで開く)
 - 継続度ラベルのバッジ: 見出しの隣に置き、日本語ラベル(流行前/注目され始め/話題/非常に話題)を必ず表示する。段階が進むほど濃くなる暖色系(流行前=最も淡い、非常に話題=最も濃い)で塗り分け、色だけに意味を持たせない(requirements.md#継続度・注目度の表示の扱い-7)。「流行前」は淡い配色に加えて、半月以上続いている話題という目安にまだ達していないことが文言で分かる表記にする(requirements.md#継続度・注目度の表示-11)。具体的な色コードは実装時にTailwindの既存パレットから選ぶ
 - 注目度ラベルのバッジ: 継続度ラベルのバッジの隣に、**形・配色の系統を変えて**置き、日本語ラベル(注目度 高い/普通/低い)を表示する。2つのバッジが同じ見た目だとどちらが時間の長さでどちらが今の強さか読者に伝わらないため(requirements.md#継続度・注目度の表示の扱い-8)。継続度が暖色系の塗りつぶしであるのに対し、注目度は枠線主体の寒色系とする
 - トレンド情報の行: 本文の上に1行で「◯月◯日から継続(◯日)」「◯回目の報告」「発祥: ◯◯」「主な流行地域: ◯◯」を並べる。報告回数は2回目以降のみ、地域は判定できている場合のみ出し、不明な項目は項目ごと省く(requirements.md#継続度・注目度の表示-14〜16)
@@ -279,7 +279,7 @@ Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の
 
 - フィードバックの`comment`はエスケープせずそのままDBに保存する(表示・一覧化を一切行わないため、XSS等の表示起因のリスクは発生しない。requirements.md#スコープ外を参照)
 - `article_id`・`topic_id`はブラウザから送信される値をそのまま信頼する。存在しない記事ID・トピックIDが送られても、フィードバックとして意味を持たないだけで実害はない(authenticatedロールでもINSERTのみで他データへの影響がないため、厳密なサーバー側検証は行わない)
-- `trend`の地域(`originRegion`・`currentRegions`)はエージェントが情報源から判定した文字列をそのまま表示するため、他のトピック本文と同じくReactのエスケープに委ねる。判定できなかった項目は表示自体を行わないため、推測で作られた地域名が画面に出ることはない([trend-history/requirements.md#地域情報-15](../trend-history/requirements.md))
+- `trend`の地域(`originRegion`・`currentRegions`)はエージェントが情報源から判定した文字列をそのまま表示するため、他のトピック本文と同じくReactのエスケープに委ねる。判定できなかった項目は表示自体を行わないため、推測で作られた地域名が画面に出ることはない([trend-history/requirements.md#地域情報-16](../trend-history/requirements.md))
 - 記事データ(JSONファイル)は開発者・エージェントが作成しリポジトリにコミットされるコンテンツであり、訪問者からの入力ではないため、XSS対策としてのサニタイズは不要(通常のReactレンダリングでエスケープされる)。ただし`sourceUrl`は`http`/`https`のみを許可し(バリデーション参照)、`javascript:`等のスキームを含むリンクが生成されないようにする
 - `isAuthorizedAdmin()`(`admin_emails`のSELECT)は同テーブルのRLS(「自分のメール行だけ見える」設計、ADR-0006)により、読者全員が呼び出しても他人のメールアドレス一覧が漏れることはない
 

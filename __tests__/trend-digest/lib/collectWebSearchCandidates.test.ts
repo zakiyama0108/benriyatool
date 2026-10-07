@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
-import { classifyWebSearchResult, collectWebSearchCandidates } from '../../../app/trend-digest/lib/collectWebSearchCandidates'
+import { classifyWebSearchResult, collectWebSearchCandidates, resolveWebSearchCriteria } from '../../../app/trend-digest/lib/collectWebSearchCandidates'
 import type { WebSearchCallFn } from '../../../app/trend-digest/lib/collectWebSearchCandidates'
-import type { WatchlistEntry, WebSearchGenreCriteria } from '../../../app/trend-digest/lib/watchlistTypes'
+import type { WatchlistEntry, WebSearchGenreCriteria, GenreCriteria } from '../../../app/trend-digest/lib/watchlistTypes'
+
+const MAX_OBSERVATIONS_PER_SOURCE = 30
 
 const entry: WatchlistEntry = {
   genre: 'gourmet',
@@ -12,42 +14,75 @@ const entry: WatchlistEntry = {
   searchHints: ['話題の飲食店'],
 }
 
-const criteria: WebSearchGenreCriteria = { method: 'websearch', minIndependentSources: 2 }
+const criteria: WebSearchGenreCriteria = { method: 'websearch', minIndependentSources: 3 }
 
-// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1
-describe('WebSearchジャンルの応答分類 - 複数の独立した情報源が同じ話題を報じている場合のみ「動きがあった」候補にする', () => {
-  it('JSON配列の応答から、独立情報源数がminIndependentSources以上の話題だけを候補にすること', async () => {
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1、specs/trend-digest/content-selection/requirements.md#機能要件-3
+describe('WebSearchジャンルの応答分類 - 独立情報源数がminIndependentSources未満の話題も観測項目として保持し、meetsCriteriaで候補かどうかを区別する', () => {
+  it('JSON配列の応答から、独立情報源数がminIndependentSources以上の話題はmeetsCriteria: trueになり、未満の話題はmeetsCriteria: falseとして観測項目に残ること', async () => {
     const call: WebSearchCallFn = vi.fn().mockResolvedValue({
       result: JSON.stringify([
         { title: '話題の店A', sourceName: '〇〇ニュース', sourceUrl: 'https://example.com/a', independentSourceCount: 3 },
         { title: '噂の店B', sourceName: '△△ブログ', sourceUrl: 'https://example.com/b', independentSourceCount: 1 },
       ]),
     })
-    const { candidates, ok } = await collectWebSearchCandidates(entry, criteria, call)
+    const { observations, ok } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
     expect(ok).toBe(true)
-    expect(candidates).toHaveLength(1)
-    expect(candidates[0]).toMatchObject({
+    expect(observations).toHaveLength(2)
+    expect(observations.find((o) => o.title === '話題の店A')).toMatchObject({
       genre: 'gourmet',
-      title: '話題の店A',
       sourceName: '〇〇ニュース',
       sourceUrl: 'https://example.com/a',
       method: 'websearch',
       strength: 3,
+      rank: null,
+      meetsCriteria: true,
     })
+    expect(observations.find((o) => o.title === '噂の店B')).toMatchObject({ strength: 1, meetsCriteria: false })
   })
 
-  it('応答が空配列(動きがなかった)のとき、候補0件でok:trueになること', async () => {
+  it('応答が空配列(動きがなかった)のとき、観測項目0件でok:trueになること', async () => {
     const call: WebSearchCallFn = vi.fn().mockResolvedValue({ result: '[]' })
-    const { candidates, ok } = await collectWebSearchCandidates(entry, criteria, call)
+    const { observations, ok } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
     expect(ok).toBe(true)
-    expect(candidates).toHaveLength(0)
+    expect(observations).toHaveLength(0)
   })
 
-  it('検索・判定自体が失敗(is_error)した場合、そのジャンルは候補0件・ok:falseとして扱われ、他のジャンルの処理を止めないこと', async () => {
+  it('検索・判定自体が失敗(is_error)した場合、そのジャンルは観測項目0件・ok:falseとして扱われ、他のジャンルの処理を止めないこと', async () => {
     const call: WebSearchCallFn = vi.fn().mockResolvedValue({ is_error: true, result: 'ヘッドレス実行エラー' })
-    const { candidates, ok } = await collectWebSearchCandidates(entry, criteria, call)
+    const { observations, ok } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
     expect(ok).toBe(false)
-    expect(candidates).toHaveLength(0)
+    expect(observations).toHaveLength(0)
+  })
+
+  it('言及元の内訳(breakdown)が応答に含まれる場合、観測項目のnoteとして使われること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        {
+          title: '話題の店C',
+          sourceName: '〇〇ニュース',
+          sourceUrl: 'https://example.com/c',
+          independentSourceCount: 3,
+          breakdown: 'ニュースメディア2件+SNS言及1件',
+        },
+      ]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].note).toBe('ニュースメディア2件+SNS言及1件')
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#機能要件-3
+describe('観測項目の記録上限 - 見つかった話題が多い場合でも上位maxObservationsPerSource件までを観測項目として記録する', () => {
+  it('応答の話題数がmaxObservationsPerSourceを超える場合、先頭から上限件数までだけが観測項目になること', async () => {
+    const topics = Array.from({ length: 5 }, (_, i) => ({
+      title: `話題${i + 1}`,
+      sourceName: '媒体',
+      sourceUrl: `https://example.com/${i + 1}`,
+      independentSourceCount: 3,
+    }))
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({ result: JSON.stringify(topics) })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, 2)
+    expect(observations.map((o) => o.title)).toEqual(['話題1', '話題2'])
   })
 })
 
@@ -79,5 +114,95 @@ describe('WebSearchジャンルの応答分類 - 応答がJSON配列単体以外
     if (classified.kind === 'ok') {
       expect(classified.topics.map((t) => t.title)).toEqual(['有効な話題3'])
     }
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-7
+describe('WebSearch側の採用基準の解決(resolveWebSearchCriteria) - 併用ジャンル(hybrid)はgenreCriteria.webSearchを、WebSearchジャンルはそのままの基準を使う', () => {
+  it('method: websearchのジャンルは、そのままの基準が返ること', () => {
+    const genreCriteria: GenreCriteria = { method: 'websearch', minIndependentSources: 3 }
+    expect(resolveWebSearchCriteria(genreCriteria, 'gourmet')).toEqual({ method: 'websearch', minIndependentSources: 3 })
+  })
+
+  it('method: hybridのジャンル(アニメ)は、genreCriteria.webSearchからmethod: websearchの基準が組み立てられること', () => {
+    const genreCriteria: GenreCriteria = {
+      method: 'hybrid',
+      fixedList: { newEntryOrRisingRank: true },
+      webSearch: { minIndependentSources: 3 },
+    }
+    expect(resolveWebSearchCriteria(genreCriteria, 'anime')).toEqual({ method: 'websearch', minIndependentSources: 3 })
+  })
+
+  it('method: fixed-listのジャンルはWebSearch側の基準を持たないため、例外を投げること(hybridでは例外を投げないこととの対比)', () => {
+    const genreCriteria: GenreCriteria = { method: 'fixed-list', rankThreshold: 5 }
+    expect(() => resolveWebSearchCriteria(genreCriteria, 'music')).toThrow()
+  })
+})
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#機能要件-2、specs/trend-digest/trend-history/design.md「その回の観測を履歴に記録する処理」手順3
+describe('WebSearchジャンルの観測保持(trend-history連携) - 独立言及元が少ない段階の話題も観測項目として残す(後に伸びたときの継続の開始日が実態とずれないための回帰テスト)', () => {
+  it('独立言及元が1件(minIndependentSources未満)の話題が、meetsCriteria: falseとして観測項目に残ること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([{ title: '言及が少ない話題', sourceName: '媒体', sourceUrl: 'https://example.com/z', independentSourceCount: 1 }]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations.map((o) => o.title)).toEqual(['言及が少ない話題'])
+    expect(observations[0].meetsCriteria).toBe(false)
+  })
+})
+
+// 仕様: specs/trend-digest/trend-history/requirements.md#地域情報-16、specs/trend-digest/trend-history/requirements.md#地域情報-17、specs/trend-digest/content-selection/requirements.md#情報源の地域区分-2
+describe('地域情報の収集(WebSearchジャンル側) - エージェントの応答から発祥地域・主な流行地域・日本/海外での言及数を取り込む', () => {
+  it('応答に地域情報が含まれる場合、observations側にそのまま反映されること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        {
+          title: '話題の店',
+          sourceName: '媒体',
+          sourceUrl: 'https://example.com/a',
+          independentSourceCount: 3,
+          originRegion: '日本',
+          currentRegions: ['日本', '韓国'],
+          strengthJapan: 2,
+          strengthOverseas: 1,
+        },
+      ]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0]).toMatchObject({
+      originRegion: '日本',
+      currentRegions: ['日本', '韓国'],
+      strengthJapan: 2,
+      strengthOverseas: 1,
+    })
+  })
+
+  it('応答に地域情報が含まれない場合、発祥地域はnull・主な流行地域は空配列(不明)になること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([{ title: '話題の店', sourceName: '媒体', sourceUrl: 'https://example.com/a', independentSourceCount: 3 }]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0]).toMatchObject({ originRegion: null, currentRegions: [], strengthJapan: null, strengthOverseas: null })
+  })
+
+  it('originRegionが空文字・型が不正な場合はnull(不明)として扱われ、話題自体は無効にならないこと', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        { title: '話題の店', sourceName: '媒体', sourceUrl: 'https://example.com/a', independentSourceCount: 3, originRegion: '', strengthJapan: 'たくさん' },
+      ]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].originRegion).toBeNull()
+    expect(observations[0].strengthJapan).toBeNull()
+  })
+
+  it('currentRegionsに文字列以外の要素が混ざる場合、その要素だけが除かれること', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        { title: '話題の店', sourceName: '媒体', sourceUrl: 'https://example.com/a', independentSourceCount: 3, currentRegions: ['日本', 123, ''] },
+      ]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].currentRegions).toEqual(['日本'])
   })
 })

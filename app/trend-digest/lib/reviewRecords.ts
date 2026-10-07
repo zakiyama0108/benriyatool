@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import type { Edition, Genre } from './types'
+import type { Article, Edition, Genre } from './types'
 import { GENRE_ORDER } from './types'
 import { parseArticle } from './articleSchema'
 
@@ -19,21 +19,34 @@ export type SkippedGenreRecord = {
   genre: Genre
 }
 
-// articlesDir配下の記事データのうち、sinceDate以降の日付を対象に、GENRE_ORDER上のジャンルで
-// topicsに現れなかったものを列挙する(design.md「見直しの材料を集める処理」手順1、
-// content-selection/requirements.md#情報源の健全性監視-1)。
-// 記事データがまだ1件もない運用開始直後は空配列を返す
-export function collectSkippedGenres(articlesDir: string, sinceDate: string): SkippedGenreRecord[] {
+// articlesDir配下の記事データのうち、sinceDate以降の日付のものだけを読み込む共通ヘルパー
+// (collectSkippedGenres・sourceReviewHistoryStats.tsの双方が使う。design.md「見直しの材料を
+// 集める処理」手順1)。記事データがまだ1件もない運用開始直後は空配列を返す
+export function readArticlesSince(articlesDir: string, sinceDate: string): Article[] {
   if (!fs.existsSync(articlesDir)) return []
 
   const filenames = fs.readdirSync(articlesDir).filter((name) => name.endsWith('.json'))
-  const records: SkippedGenreRecord[] = []
+  const articles: Article[] = []
 
   for (const filename of filenames) {
     const raw: unknown = JSON.parse(fs.readFileSync(path.join(articlesDir, filename), 'utf8'))
     const article = parseArticle(raw, filename)
     if (article.date < sinceDate) continue
+    articles.push(article)
+  }
 
+  return articles
+}
+
+// articlesDir配下の記事データのうち、sinceDate以降の日付を対象に、GENRE_ORDER上のジャンルで
+// topicsに現れなかったものを列挙する(design.md「見直しの材料を集める処理」手順1、
+// content-selection/requirements.md#情報源の健全性監視-1)。
+// 記事データがまだ1件もない運用開始直後は空配列を返す
+export function collectSkippedGenres(articlesDir: string, sinceDate: string): SkippedGenreRecord[] {
+  const articles = readArticlesSince(articlesDir, sinceDate)
+  const records: SkippedGenreRecord[] = []
+
+  for (const article of articles) {
     const coveredGenres = new Set(article.topics.map((topic) => topic.genre))
     for (const genre of GENRE_ORDER[article.edition]) {
       if (!coveredGenres.has(genre)) {

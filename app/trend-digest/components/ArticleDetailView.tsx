@@ -95,6 +95,7 @@ export default function ArticleDetailView({ article }: Props) {
               key={genre}
               genre={genre}
               topics={article.topics.filter((topic) => topic.genre === genre)}
+              unavailable={article.unavailableGenres?.includes(genre) ?? false}
               isAdmin={isAdmin}
               articleId={article.id}
             />
