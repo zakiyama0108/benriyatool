@@ -18,8 +18,8 @@
 
 ## ユーザーストーリー
 
-- サイト訪問者として、5つのダイジェストアプリがそれぞれ何曜日に配信されるかを1画面で把握し、読みたいアプリを選びたい
-- サイト運営者として、ジャンルごとの情報源・採用基準を確認したいときに、5アプリ分の情報源一覧ページへすぐ移動したい
+- サイト訪問者として、5つのダイジェストアプリがそれぞれ何曜日に配信されるかを1画面で把握し、読みたいアプリを選びたい〔合意〕
+- サイト運営者として、ジャンルごとの情報源・採用基準を確認したいときに、5アプリ分の情報源一覧ページへすぐ移動したい〔合意〕
 
 ## ユースケース図
 
@@ -49,12 +49,12 @@ flowchart LR
 
 - [1] 対象アプリは次の5つ: ai-dev-digest、news-digest、trend-digest、future-digest、research-digest
 - [2] 各カードには、アプリ名・1行概要・配信曜日・そのアプリの記事一覧への リンクを表示する
-- [3] 配信曜日の表示は各アプリの配信仕様に従う(二重管理しないため、カード一覧側で独自の曜日定義を持たない)。各アプリの配信曜日は次の通り
+- [3] 配信曜日の表示は各アプリの配信仕様に従う(二重管理しないため、カード一覧側で独自の曜日定義を持たない)。ただし表示するのは「現在本番で実際に配信されている曜日」とし、配信specが週2回化等を定義済みでも未実装の間は現行の曜日を使う(該当specが実装され本番の配信曜日が変わったら、本specも同じPRで追随して更新する)。この条件に基づく現時点の各アプリの配信曜日は次の通り
   - ai-dev-digest: 毎日([daily-publish/requirements.md](../../ai-dev-digest/daily-publish/requirements.md))
   - news-digest: 毎週水曜([weekly-publish/requirements.md](../../news-digest/weekly-publish/requirements.md))
   - trend-digest: 火・金(週2回。[weekly-publish/requirements.md](../../trend-digest/weekly-publish/requirements.md))
-  - future-digest: 毎週木曜([weekly-publish/requirements.md](../../future-digest/weekly-publish/requirements.md))
-  - research-digest: 毎週月曜([weekly-publish/requirements.md](../../research-digest/weekly-publish/requirements.md))
+  - future-digest: 毎週木曜(引用元の[weekly-publish/requirements.md](../../future-digest/weekly-publish/requirements.md)は木・日の週2回体制を定義済みだが、本番ではまだ実装されていないため現行の木曜のみを表示する)
+  - research-digest: 毎週月曜(引用元の[weekly-publish/requirements.md](../../research-digest/weekly-publish/requirements.md)は月・土の週2回体制を定義済みだが、本番ではまだ実装されていないため現行の月曜のみを表示する)
 - [4] カードの並び順は上記[1]の記載順とする
 
 </details>
@@ -72,15 +72,29 @@ flowchart LR
 
 ### メタ情報
 
-- [1] `/blog`のメタ情報(title/description)を設定する: title「週刊ダイジェスト一覧｜べんりやつーる」、description「AI駆動開発・ニュース・トレンド・未来予測・研究発見の5つのダイジェストアプリへの入口を、配信曜日付きでまとめています。」〔提案〕
+`/blog`のメタ情報(title/description)を設定する。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- [1] `/blog`のメタ情報(title/description)を設定する: title「週刊ダイジェスト一覧｜べんりやつーる」、description「AI駆動開発・ニュース・トレンド・未来予測・研究発見の5つのダイジェストアプリへの入口を、配信曜日付きでまとめています。」
+
+</details>
 
 ## ビジネスルール・制約
 
 ### カードの表示内容の出所
 
-- [1] カードの1行概要・アプリ名は、各アプリのトップページのメタ情報(title/description)またはREADME「アプリ一覧」の概要文を踏襲し、本spec側で新しい文言を作らない〔提案〕
+カードの1行概要・アプリ名は既存の文言を踏襲し、本spec側で新しい文言を作らない。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- [1] カードの1行概要・アプリ名は、各アプリのトップページのメタ情報(title/description)またはREADME「アプリ一覧」の概要文を踏襲し、本spec側で新しい文言を作らない
+
+</details>
 
 ## 依存関係
+
+配信曜日・情報源一覧の内容は各アプリ・各specの定義に従い、本specは導線(リンク)のみを持つ。〔提案〕
 
 <details><summary>詳細を開く</summary>
 

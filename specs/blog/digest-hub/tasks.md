@@ -13,7 +13,7 @@
 
 - 🔴 `__tests__/blog/lib/digestApps.test.ts`に、`DIGEST_APPS`の件数が5件であること・記載順がai-dev-digest→news-digest→trend-digest→future-digest→research-digestであること・各要素が`id`/`name`/`description`/`scheduleLabel`/`href`/`icon`を持つことを確認するテストを書く
 - 🟢 `app/blog/lib/digestApps.ts`に型`DigestApp`と定数`DIGEST_APPS`を実装する。`scheduleLabel`は「毎日」「毎週水曜」「火・金(週2回)」「毎週木曜」「毎週月曜」をそれぞれ設定する(design.md決定事項「配信曜日・1行概要の持ち方」)
-- 🔵 各アプリの1行概要は`app/page.tsx`(トップページ)が現在使っている文言をそのまま流用する(requirements.md#カードの表示内容の出所-1)
+- 🔵 各アプリの1行概要は、各アプリの既存メタ情報(title/descriptionから導出した短い概要)を踏襲する(requirements.md#カードの表示内容の出所-1)
 
 </details>
 
@@ -65,14 +65,16 @@ title/descriptionを設定する。
 
 </details>
 
-## 確認
+## sitemap
 
-### Task 6: 動作確認(sitemap・既存テストへの影響)
+### Task 6: sitemap.tsの`staticPages`に`/blog`を追加する(仕様: specs/hub-site/requirements.md#機能要件-5)
 
-sitemap.tsが`/blog`を自動的に含むこと、既存テストが壊れていないことを確認する。
+`app/sitemap.ts`の`staticPages`は完全な手書き配列のため、`/blog`のエントリを手動で追記する。
 
 <details><summary>詳細を開く</summary>
 
-- 🟢 `npm test`・`npm run lint`・`npm run build`を実行し、`app/sitemap.ts`が手動変更なしに`/blog`を列挙することを確認する(`app/**/admin/**`除外ルールの対象外であることも合わせて確認する)
+- 🔴 `__tests__/sitemap.test.ts`(あれば既存ファイルに追加)に、`sitemap()`の返り値に`${SITE_URL}/blog/`のURLが含まれることを確認するテストを書く
+- 🟢 `app/sitemap.ts`の`staticPages`配列に`{ url: \`${SITE_URL}/blog/\`, lastModified: now, priority: 0.8 }`を追加する(他アプリの個別ページと同じ優先度)
+- 🟢 `npm test`・`npm run lint`・`npm run build`を実行し、既存テストが壊れていないことを確認する
 
 </details>

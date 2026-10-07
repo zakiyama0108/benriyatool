@@ -82,6 +82,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [bookmark](bookmark/requirements.md) | 気になった予測を付箋で残す | ログインした読者が記事ごとにメモ付きの付箋を貼り、一覧で見返す | article-detailの記事識別子に従う | リリース済み |
 | [source-review](source-review/requirements.md) | (運営者専用)基準を月次で見直す | 月次でジャンル・採用基準・執筆ルールの見直し案を作り、人の承認を経て反映する | article-detailのフィードバック、content-selectionの収集状況を参照 | リリース済み |
 
+ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
+
 ### 実装順
 未実装のためこれから実装に着手する場合は、依存関係の浅い順に次の順で進める(spec間の依存は上表「依存」列が正):
 1. content-selection・content-generation(記事データの元となる選定・要約ルール)

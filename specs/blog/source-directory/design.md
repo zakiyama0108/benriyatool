@@ -51,7 +51,7 @@
 
 - 対象: 5アプリそれぞれのcontent-selection実データ
 - 手順:
-  1. ai-dev-digest: `content/ai-dev-digest/watchlist.json`の情報源を、公式組織/個人YouTube/個人ブログ/Qiita/Zennの5グループに分け、ジャンル列にはこのグループ名を表示する。`criteria.json`の値(採用基準)を日本語の文言に組み立てる(requirements.md#採用基準(種別ごとの定量判定)の内容をそのまま文言化する)
+  1. ai-dev-digest: `content/ai-dev-digest/watchlist.json`の情報源を、公式組織/個人YouTube/個人ブログ/Qiita/Zennの5グループに分け、ジャンル列にはこのグループ名を表示する。`criteria.json`の値(採用基準)を日本語の文言に組み立てる(`ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)`の内容をそのまま文言化する)
   2. news-digest: `content/news-digest/watchlist.json`の4カテゴリ(総合/経済・ビジネス/神奈川ローカル/育児)をそのままジャンル行とし、`criteria.json`の値から採用基準の文言を組み立てる
   3. trend-digest: 既存の`buildSourceDirectory`(`app/trend-digest/lib/buildSourceDirectory.ts`)を呼び出し、結果を共通の表示行型に変換するだけで、ロジック自体は再実装しない
   4. future-digest/research-digest: 各アプリの`loadGenres()`で取得した有効なジャンル(`active: true`)をジャンル行とする。選定方式は「WebSearch」固定とし、採用基準は決定事項「future-digest/research-digestの選定方式・採用基準の表示」の固定文言を表示する。情報源列には、ジャンルの`description`(future-digestの個人的注目分野ジャンルのみ`themes`)を検索の手がかりとして表示する
@@ -122,6 +122,7 @@ content/future-digest/genres.json, content/research-digest/genres.json (既存)
 - 表示可否の判定は既存の`app/lib/adminAuth.ts`(Google OIDC + `admin_emails`許可リスト)をそのまま使い、新しい認証方式・RLSは追加しない
 - 情報源のリンクはhttp/https以外のスキームを除外する(既存のtrend-digest実装の`isHttpUrl`ガードをそのまま踏襲)
 - 表示専用で入力欄を持たないため、入力由来のXSS等のリスクはない
+- 既存trend-digest実装を踏襲する構成上、ウォッチリスト等のJSON(`content/*/watchlist.json`等)はクライアントコンポーネントのモジュールスコープでimportされ、静的エクスポートのJSバンドルに同梱される。ログイン判定は表全体の表示切り替えのみを行い、データ配信自体は制限しない。このJSON群はそもそも公開リポジトリにコミットされているデータであり秘匿情報ではないため、バンドルへの同梱で未ログインの訪問者が内容を読めても実害はないとみなし許容する
 
 </details>
 
