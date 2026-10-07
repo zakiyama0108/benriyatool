@@ -1,5 +1,6 @@
 # タスク分解: 記事詳細ページ
 
+> 全13件(Task 1〜Task 13)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 ## データ基盤
@@ -59,3 +60,19 @@
 - Task 12: 記事詳細ページ(仕様: design.md「関連するファイル」「画面設計」)
   - `app/future-digest/[id]/page.tsx`を実装する(`generateStaticParams`で全記事IDを列挙し、記事タイトル・公開日・時間軸2区分を見出しに出して`ArticleDetailView`へ渡す)
   - page.tsxはカバレッジ計測対象外。Task 2〜11のテストで担保する
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+`Edition`型・`EDITION_GENRES`の追加と、`id`/`issueNumber`/記事タイトルの編対応。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 13: 型定義・スキーマ検証・読み込みの編対応(仕様: requirements.md#記事本文の表示-1〜2、design.md「前提: 記事データの形式」「バリデーション」)
+  - 🔴 Task 2のテストに、`Edition`型(`'science-tech'`/`'life-society'`)・`EDITION_LABELS`・`EDITION_GENRES`(genres.jsonのedition属性から編ごとのジャンルID配列を作る)を確認するケースを追加する
+  - 🟢 `app/future-digest/lib/types.ts`に`Edition`/`EDITION_LABELS`/`EDITION_GENRES`を追加する
+  - 🔴 Task 3の`parseArticle`のテストに、`id`が`<date>-<edition>`形式であること、`edition`が2値のいずれかであること、各予測・各掲載できなかった枠の`genre`が`EDITION_GENRES[edition]`に含まれない場合に例外になることを確認するケースを追加する
+  - 🟢 `app/future-digest/lib/articleSchema.ts`の`parseArticle`を上記の検証に対応させる
+  - 🔴 Task 12の`page.tsx`のテスト(または`generateStaticParams`相当の確認)に、IDが`<date>-<edition>`形式で列挙されることを確認するケースを追加する
+  - 🟢 `app/future-digest/[id]/page.tsx`を更新する
+
+</details>

@@ -1,10 +1,10 @@
 # 設計: 記事詳細ページ
 
 ## サマリ
-その回の未来予測記事(有効なジャンルの数×その回の2時間軸。現在は10ジャンル×2時間軸=20枠。ジャンル数は設定ファイルに従う)を、初期表示は影響度順、切り替えでジャンル順に並べて表示する。掲載できなかった枠も必ず表示し、有効な全枠(現在は20枠)がすべて画面に現れる状態を保つ。掲載できなかった理由は候補なし・収集失敗・生成失敗の3種があり、それぞれ「候補が見つかりませんでした」・分類ラベルを含む「今回は記事を収集できませんでした」・「今回は記事を用意できませんでした」の異なる文言で表示する。運営者本人がログイン中の場合のみ、各記事の下にフィードバック入力欄を出し、`future_digest_feedback`テーブルへINSERT専用で保存する(trend-digestと同じ`authenticated`ロールのINSERT専用パターン)。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。
+その回(編ごと)の未来予測記事(対象編の5ジャンル×その回の2時間軸。現在は5ジャンル×2時間軸=10枠。ジャンル数は設定ファイルに従う)を、初期表示は影響度順、切り替えでジャンル順に並べて表示する。掲載できなかった枠も必ず表示し、対象編の全枠(現在は10枠)がすべて画面に現れる状態を保つ。掲載できなかった理由は候補なし・収集失敗・生成失敗の3種があり、それぞれ「候補が見つかりませんでした」・分類ラベルを含む「今回は記事を収集できませんでした」・「今回は記事を用意できませんでした」の異なる文言で表示する。運営者本人がログイン中の場合のみ、各記事の下にフィードバック入力欄を出し、`future_digest_feedback`テーブルへINSERT専用で保存する(trend-digestと同じ`authenticated`ロールのINSERT専用パターン)。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。
 
 主要な設計判断:
-- 記事データは`content/future-digest/articles/<date>.json`の静的JSON。回数(何回目の配信か)を記事データに持たせ、時間軸の組み合わせ(奇数回=近未来+長期未来、偶数回=中期未来+超長期未来)との整合をビルド時に検証する
+- 記事データは`content/future-digest/articles/<date>-<edition>.json`の静的JSON。回数(編ごとに何回目の配信か)を記事データに持たせ、時間軸の組み合わせ(奇数回=近未来+長期未来、偶数回=中期未来+超長期未来)との整合をビルド時に検証する
 - 並び順の切り替えはURLを変えず画面内の状態(`useState`)で行う。並べ替えは決定的な純粋関数`sortSlots`で行う
 - UIはStep0を実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するため)。trend-digestの実装済みレイアウトを流用し、アクセントカラーのみインディゴ系に変える(下記「画面設計」)
 - 図: [フィードバックを送信する処理](#フィードバックを送信する処理)のシーケンス図、[状態管理](#状態管理)の状態遷移図
@@ -13,7 +13,7 @@
 
 記事本文はDBではなく、ビルド時に取り込む静的コンテンツファイルとして管理する(architecture.md#3-設計方針)。この記事データの型・置き場所は本specで定義し、[article-list](../article-list/design.md)・[content-selection](../content-selection/design.md)・[content-generation](../content-generation/design.md)・[weekly-publish](../weekly-publish/design.md)・[line-broadcast](../line-broadcast/design.md)・[bookmark](../bookmark/design.md)・[source-review](../source-review/design.md)は共通してこの形式に従う。
 
-- 格納場所: `content/future-digest/articles/<id>.json`(`<id>`は発行日`YYYY-MM-DD`。週1回の配信のため日付だけで一意になる。URLの`[id]`と一致させる)
+- 格納場所: `content/future-digest/articles/<id>.json`(`<id>`は`<発行日YYYY-MM-DD>-<edition>`。trend-digestと同じ形式。週1回・編ごとの配信のため日付+編で一意になる。URLの`[id]`と一致させる)
 - 1ファイル=1回分の記事。週次のGitHub Actionsワークフロー([weekly-publish](../weekly-publish/design.md))がこのファイルを新規追加する。採用0件の回も含め、実行を最後まで終えた回は必ずファイルを作る。利用上限への到達で実行を打ち切った回だけファイルを作らない
 - なぜJSONか: 枠ごとの予測(ジャンル・時間軸・影響度・出典など)を構造化フィールドとして持ち、フィールド単位でビルド時に検証するため(trend-digestと同じ考え方)
 
@@ -24,9 +24,15 @@
 // (content-selection/requirements.md#機能要件-1「設定ファイルへの追記だけで増やせる」。ファイルの形式は content-selection/design.md「データ設計」)
 export type Genre = string // genres.jsonのid(例: "technology-ai")
 
+// 編(content-selection/requirements.md#編成とジャンルの割り当て)。ジャンルごとに固定で属する
+export type Edition = 'science-tech' | 'life-society'
+export const EDITION_LABELS: Record<Edition, string> = { 'science-tech': 'サイエンス・テクノロジー編', 'life-society': 'くらし・社会編' }
+
 // ジャンル順の並び替え・LINE配信・一覧の見出し選びで共通に使う表示順(genres.jsonの記載順。廃止したジャンルも過去記事の表示用に含む)
 export const GENRE_ORDER: Genre[]
 export const GENRE_LABELS: Record<Genre, string> // 例: { "technology-ai": "テクノロジー・AI", ... }
+// 編ごとのジャンルID一覧(genres.jsonのedition属性から導出。記事データの検証〈あるジャンルが記事のeditionと矛盾しないか〉・収集ループの対象ジャンル決定に使う)
+export const EDITION_GENRES: Record<Edition, Genre[]>
 
 // 時間軸(content-selection/requirements.md#時間軸)。配列順=「時間軸の近い順」
 export type Horizon = 'near' | 'mid' | 'long' | 'ultra-long'
@@ -74,16 +80,18 @@ export const COLLECTION_FAILURE_LABELS: Record<NonNullable<EmptySlot['collection
 }
 
 export type Article = {
-  id: string // ファイル名と一致(= date)
+  id: string // ファイル名と一致(= `<date>-<edition>`。trend-digestと同じ形式)
   date: string // YYYY-MM-DD。発行日
-  issueNumber: number // 何回目の配信か(1始まり。利用上限への到達で打ち切られた回は数えない)
+  edition: Edition // どちらの編の記事か
+  issueNumber: number // 何回目の配信か(1始まり。その編の中で数える。利用上限への到達で打ち切られた回は数えない)
   predictions: Prediction[]
   emptySlots: EmptySlot[]
 }
 ```
 
-- 扱う時間軸2区分は記事データに別フィールドとして持たず、`horizonsForIssue(issueNumber)`で常に導出する(二重管理による食い違いを防ぐため)
-- 記事タイトルはJSONに保存せず、`date`から`buildArticleTitle(date)`([content-generation/design.md](../content-generation/design.md))で導出する
+- 扱う時間軸2区分は記事データに別フィールドとして持たず、`horizonsForIssue(issueNumber)`で常に導出する(二重管理による食い違いを防ぐため)。`issueNumber`は`edition`ごとに独立して数える([content-selection/design.md](../content-selection/design.md)「回数を数える処理」)
+- 記事タイトルはJSONに保存せず、`date`・`edition`から`buildArticleTitle(date, edition)`([content-generation/design.md](../content-generation/design.md))で導出する
+- `predictions`の各要素の`genre`は、記事の`edition`に対応する`EDITION_GENRES[edition]`に含まれるジャンルでなければならない(`parseArticle`のバリデーションで検証する。編とジャンルの矛盾を防ぐため)
 - `emptySlots`の`reason`は、候補が見つからなかった枠(requirements.md#記事本文の表示-3)・収集の処理自体が失敗した枠(requirements.md#記事本文の表示-4。分類ラベルは[content-selection/requirements.md#収集失敗](../content-selection/requirements.md)で定義)・候補はあったが要約の生成に失敗して除いた枠([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))の3つを区別するために持つ。表示文言もこの3つで異なる(requirements.md#記事本文の表示-3〜6)
 
 ## 処理フロー
@@ -153,12 +161,13 @@ sequenceDiagram
 ## バリデーション
 
 記事データ(JSONファイル)のスキーマ検証(`parseArticle`):
-- `id`がファイル名と一致し、`date`と同じ`YYYY-MM-DD`形式であること
+- `id`がファイル名と一致し、`<date>-<edition>`の形(`date`と同じ`YYYY-MM-DD`形式+編のid)であること
+- `edition`が`science-tech`/`life-society`のいずれかであること
 - `issueNumber`が1以上の整数であること
-- 各予測: `horizon`・`impact`が定義済みの値であること、`horizon`が`horizonsForIssue(issueNumber)`の2区分のどちらかであること、`id`が`<genre>--<horizon>`と一致すること、`heading`・`body`・`impactReason`・`targetPeriod`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`body`が160〜480字であること([content-generation/design.md](../content-generation/design.md)「生成結果を検証する処理」)
-- 各掲載できなかった枠: `genre`・`horizon`・`reason`が定義済みの値で、`horizon`がその回の2区分のどちらかであること
+- 各予測: `horizon`・`impact`が定義済みの値であること、`horizon`が`horizonsForIssue(issueNumber)`の2区分のどちらかであること、`id`が`<genre>--<horizon>`と一致すること、`genre`が`EDITION_GENRES[edition]`に含まれること(記事の`edition`と矛盾するジャンルを弾く)、`heading`・`body`・`impactReason`・`targetPeriod`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`body`が160〜480字であること([content-generation/design.md](../content-generation/design.md)「生成結果を検証する処理」)
+- 各掲載できなかった枠: `genre`・`horizon`・`reason`が定義済みの値で、`horizon`がその回の2区分のどちらかであること、`genre`が`EDITION_GENRES[edition]`に含まれること
 - `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること
-- 同じ枠(ジャンル×時間軸)が2回現れないこと。記事に現れるジャンルは、その回の2時間軸の両方が予測または掲載できなかった枠として揃っていること(枠が黙って消える事故をビルド時に検知するため。content-selection/requirements.md#機能要件-3)。その回に有効だった全ジャンルが揃っていることは、記事を組み立てる時点で[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルを後から追加・廃止しても過去記事の検証が壊れないよう、ビルド時の検証は「その記事の中での整合」に限る)
+- 同じ枠(ジャンル×時間軸)が2回現れないこと。記事に現れるジャンルは、対象編の5ジャンル×その回の2時間軸の両方が予測または掲載できなかった枠として揃っていること(枠が黙って消える事故をビルド時に検知するため。content-selection/requirements.md#機能要件-3)。対象編で有効だった全ジャンルが揃っていることは、記事を組み立てる時点で[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルを後から追加・廃止しても過去記事の検証が壊れないよう、ビルド時の検証は「その記事の中での整合」に限る)
 - 予測は0件でもよい(全枠で採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)
 - 各掲載できなかった枠: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)
 - フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない。requirements.md#運営者向けフィードバック-13)

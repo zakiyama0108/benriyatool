@@ -1,5 +1,6 @@
 # タスク分解: ジャンル・時間軸別の未来予測記事の選定
 
+> 全9件(Task 1〜Task 9)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: ジャンル設定ファイルの読み込み(仕様: requirements.md#機能要件-1、requirements.md#ジャンル-1〜10、design.md「データ設計」)
@@ -28,3 +29,20 @@
 
 - Task 7: 収集・選定のまとめCLI(仕様: design.md「収集状況を記録する処理」「ログ」、weekly-publish/design.md「1回分の記事を生成する処理」手順2〜3)(weekly-publish/tasks.mdのTask 1(`shouldAlertOperator`)の後に行う)(TDD対象外。Task 1〜6の関数を順に呼ぶだけで、ジャンルの合流・採用・検証ロジックはTask 4〜6でテスト済み、警告判定ロジックはweekly-publish/tasks.mdのTask 1でテスト済みのため)
   - `scripts/future-digest/collect-and-select.ts`を実装する。本来の配信日([weekly-publish](../weekly-publish/design.md)の`getScheduledPublishDate`で求めた値)をCLI引数として受け取り、時間軸の基準点に使う(本specの内部で実行日時から求めない)。回数・時間軸の決定→配信済みの一覧→ジャンルごとの収集(収集に失敗したジャンルの一覧を`collectionFailedGenres`として保持。検証は`collectForGenre`の内部で完了済み)→`selectSlots`による枠ごとの採用・候補なしの記録・収集失敗ジャンルの合流を行い、選定結果(回数・採用した候補・候補なしの枠・収集失敗の枠)を標準出力にJSONで出す(採用0件でも非ゼロ終了しない)。枠ごとの候補件数・候補なしの枠の一覧・収集失敗の枠の一覧(分類ラベル別)を標準エラー出力に出す。最後に選定結果(`SlotResult`の一覧)を[weekly-publish](../weekly-publish/design.md)の`shouldAlertOperator`に渡し、判定結果を`GITHUB_OUTPUT`に`alert=true|false`として書き出す
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+編ごとに5ジャンルへ分割し、回数・配信済み判定を編単位にする変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 8: ジャンル設定ファイルのedition対応(仕様: requirements.md#機能要件-6〜7、requirements.md#編成とジャンルの割り当て-1〜3、design.md「データ設計」)
+  - 🔴 `genres.json`の各ジャンルが`edition`(`"science-tech"`または`"life-society"`)を持つこと、値が2値以外・未指定なら例外になること、`EDITION_GENRES`(編ごとのジャンルID配列)が編成どおり(サイエンス・テクノロジー編5件・くらし・社会編5件)に分かれることを確認するテストを書く(Task 1のテストファイルに追記する)
+  - 🟢 `content/future-digest/genres.json`の10ジャンルそれぞれに`edition`属性を追加する(requirements.md#編成とジャンルの割り当て-1〜2のとおり)。`app/future-digest/lib/genres.ts`に検証と`EDITION_GENRES`を追加する
+
+- Task 9: 次の回数の決定を編ごとに行う(仕様: requirements.md#時間軸の切り替え-1〜2、design.md「その回の時間軸2区分を決める処理」)
+  - 🔴 Task 2の`nextIssueNumber`のテストを、第2引数に`edition`を渡す形に書き直し、対象編の記事だけで最大値+1を求めること(もう一方の編の記事は数えないこと)を確認するテストを追加する
+  - 🟢 `app/future-digest/lib/issue.ts`の`nextIssueNumber(articles, edition)`を、`articles.filter(a => a.edition === edition)`で絞り込んでから最大値を求める形に変更する(呼び出し元のTask 7も合わせて更新する)
+
+</details>
+
