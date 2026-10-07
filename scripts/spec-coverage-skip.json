@@ -4842,7 +4842,7 @@
   {
     "specFile": "trend-digest/content-selection/requirements.md",
     "item": "機能要件 [2]",
-    "reason": "エンタメ編・カルチャー編の実行タイミング(火曜・金曜)の説明で、実際のスケジュール実行はweekly-publish(仕様確認中)側の責務であり、本specのコードとして検証可能な振る舞いを持たないため"
+    "reason": "エンタメ編・カルチャー編の実行タイミング(火曜・金曜)の説明で、実際のスケジュール実行はweekly-publish側の責務であり、本specのコードとして検証可能な振る舞いを持たないため"
   },
   {
     "specFile": "trend-digest/content-selection/requirements.md",
