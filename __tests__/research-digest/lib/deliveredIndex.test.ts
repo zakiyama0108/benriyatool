@@ -21,7 +21,7 @@ function makeFinding(overrides: Partial<Finding> = {}): Finding {
 }
 
 function makeArticle(findings: Finding[]): Article {
-  return { id: '2026-10-05', date: '2026-10-05', findings, emptyGenres: [] }
+  return { id: '2026-10-05-body-life', edition: 'body-life', date: '2026-10-05', findings, emptyGenres: [] }
 }
 
 // 仕様: specs/research-digest/content-selection/requirements.md#配信済みの研究の除外-1

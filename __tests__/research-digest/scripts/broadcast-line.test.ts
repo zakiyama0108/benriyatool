@@ -5,7 +5,7 @@ import { broadcastArticle } from '../../../scripts/research-digest/broadcast-lin
 import { parseArticle } from '../../../app/research-digest/lib/articleSchema'
 import { buildArticleUrl } from '../../../app/research-digest/lib/articleUrl'
 
-const FIXTURE_PATH = path.join(process.cwd(), '__tests__/research-digest/fixtures/articles-valid/2026-10-05.json')
+const FIXTURE_PATH = path.join(process.cwd(), '__tests__/research-digest/fixtures/articles-valid/2026-10-05-body-life.json')
 
 // 公開確認のGET先URLが配信本文のURLと同一文字列であることを検証するための期待値
 // (design.md「配信する処理」手順1)。broadcastArticleと同じ導出関数(buildArticleUrl)から
@@ -103,7 +103,7 @@ describe('LINEブロードキャスト送信 - 記事ページの公開が確認
 // 仕様: specs/research-digest/line-broadcast/design.md#エラーハンドリング
 describe('LINEブロードキャスト送信 - 記事データのパースに失敗した場合は配信を行わない(防御的な検証)', () => {
   it('記事データのパースに失敗した場合、配信を行わず例外が投げられること', async () => {
-    const invalidPath = path.join(process.cwd(), '__tests__/research-digest/fixtures/articles-invalid/2026-10-19.json')
+    const invalidPath = path.join(process.cwd(), '__tests__/research-digest/fixtures/articles-invalid/2026-10-19-body-life.json')
     // フィクスチャの存在を前提とする(article-detailで用意済み)
     expect(fs.existsSync(invalidPath)).toBe(true)
 

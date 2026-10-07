@@ -4,7 +4,7 @@ import ArticleListView from '../../../app/research-digest/components/ArticleList
 import type { Article } from '../../../app/research-digest/lib/types'
 
 function buildArticle(date: string): Article {
-  return { id: date, date, findings: [], emptyGenres: [] }
+  return { id: `${date}-body-life`, edition: 'body-life', date, findings: [], emptyGenres: [] }
 }
 
 // 仕様: specs/research-digest/article-list/requirements.md#一覧表示-1、specs/research-digest/article-list/requirements.md#一覧表示-4

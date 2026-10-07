@@ -101,7 +101,7 @@ export default function ArticleDetailView({ article }: Props) {
     })
   }
 
-  const title = buildArticleTitle(article.date)
+  const title = buildArticleTitle(article.date, article.edition)
   const entries = sortGenres(article, order)
 
   return (
