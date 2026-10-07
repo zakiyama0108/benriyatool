@@ -43,7 +43,7 @@ flowchart LR
 
 ### ダイジェストカード一覧
 
-`/blog`に、対象5アプリ分のカードを一覧表示する。
+`/blog`に、対象5アプリ分のカードを一覧表示する。〔合意〕
 
 <details><summary>詳細を開く</summary>
 
@@ -61,7 +61,7 @@ flowchart LR
 
 ### 情報源一覧への導線
 
-カード一覧の下に、情報源一覧ページ([source-directory](../source-directory/requirements.md))への軽量なテキストリンクを1つ置く。
+カード一覧の下に、情報源一覧ページ([source-directory](../source-directory/requirements.md))への軽量なテキストリンクを1つ置く。〔合意〕
 
 <details><summary>詳細を開く</summary>
 
