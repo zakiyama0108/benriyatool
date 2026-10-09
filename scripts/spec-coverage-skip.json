@@ -9043,5 +9043,215 @@
     "specFile": "research-digest/bookmark/design.md",
     "item": "research_digest_bookmarks(新規) > finding_id",
     "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task 1の実機確認事項)"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図で、正となる文章(ユーザーストーリー・機能要件)はrequirements.md#ダイジェストカード一覧・#情報源一覧への導線の各テストで担保済みのため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "決定事項",
+    "reason": "決定事項の表を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため(各論点は個別の「決定事項 > ...」項目で扱う)"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "ダイジェストカード一覧を表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ダイジェストカード一覧、requirements.md#情報源一覧への導線でdigestApps.test.ts・page.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "エラーハンドリング",
+    "reason": "実行時エラーは発生しない想定(全データがビルド時に確定した定数)という記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "コンポーネント設計 > `DigestAppCard`",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDigestAppCard.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "セキュリティ",
+    "reason": "外部入力を扱わない静的ページで新たなリスクはないという記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "ログ",
+    "reason": "完全に静的なページで独自のログ出力は設けないという記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "画面設計",
+    "reason": "UIレイアウトの説明見出しで、個別の表示要件はrequirements.md#ダイジェストカード一覧・#情報源一覧への導線の各テストで担保済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図で、正となる文章(機能要件・ビジネスルール・制約)は各テストで担保済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "決定事項",
+    "reason": "決定事項の表を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため(各論点は個別の「決定事項 > ...」項目で扱う)"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "決定事項 > 5アプリのデータ形状差への対応",
+    "reason": "5アプリそれぞれ個別の変換関数を持つという設計判断の記録で、各変換関数自体の振る舞いはbuildAiDevDigestSources.test.ts・buildNewsDigestSources.test.ts・buildTrendDigestSources.test.ts・buildFutureDigestSources.test.ts・buildResearchDigestSources.test.tsの個別テストでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "ログイン状態に応じて表示を切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#閲覧できる人でpage.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "アプリごとの表示行を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ジャンルごとの情報源・採用基準の表でbuildAiDevDigestSources.test.ts等の各build*.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "タブを切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#アプリ切り替えタブでSourceTabs.test.tsx・page.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "エラーハンドリング",
+    "reason": "権限確認の失敗時の表示方針・実データ破損時はビルド時検知という記述で、個別の振る舞いはpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "セキュリティ",
+    "reason": "既存の運営者専用ページと同じ認証を使うという方針の記述で、権限確認自体の振る舞いはpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "ログ",
+    "reason": "権限確認の失敗だけをconsole.errorに記録するという記述で、対応する振る舞いはpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "画面設計",
+    "reason": "UIレイアウトの説明見出しで、個別の表示要件はrequirements.md#アプリ切り替えタブ・#ジャンルごとの情報源・採用基準の表の各テストで担保済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "コンポーネント設計 > `SourceTabs`",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはSourceTabs.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "コンポーネント設計 > `SourceTable`",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはSourceTable.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "状態管理",
+    "reason": "ページの状態設計(useStateの持ち方)の説明で、phaseの遷移はpage.test.tsx、selectedAppIdの遷移はpage.test.tsx・SourceTabs.test.tsxでテスト済みのため"
   }
 ]

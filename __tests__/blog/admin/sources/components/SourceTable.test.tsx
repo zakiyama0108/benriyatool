@@ -1,27 +1,34 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import SourceTable from '../../../../../app/trend-digest/admin/sources/components/SourceTable'
-import type { SourceDirectoryRow } from '../../../../../app/trend-digest/lib/buildSourceDirectory'
+import SourceTable from '../../../../../app/blog/admin/sources/components/SourceTable'
+import type { SourceDirectoryRow } from '../../../../../app/blog/lib/sourceDirectory/types'
 
 function makeRow(overrides: Partial<SourceDirectoryRow> = {}): SourceDirectoryRow {
   return {
     genreLabel: '音楽',
-    editionLabel: 'エンタメ編',
     methodLabel: '固定リスト',
     criteriaText: '新規ランクイン、または順位が10位以上上昇',
-    sources: [
-      { name: 'Billboard JAPAN Hot 100', url: 'https://www.billboard-japan.com/charts/detail?a=hot100', regionLabel: '日本' },
-    ],
+    sources: [{ name: 'Billboard JAPAN Hot 100', url: 'https://www.billboard-japan.com/charts/detail?a=hot100', regionLabel: '日本' }],
     searchHints: [],
     ...overrides,
   }
 }
 
-// 仕様: specs/trend-digest/source-directory/requirements.md#機能要件-1、specs/trend-digest/source-directory/requirements.md#機能要件-2、specs/trend-digest/source-directory/requirements.md#機能要件-3、specs/trend-digest/source-directory/requirements.md#機能要件-6、specs/trend-digest/source-directory/design.md「画面設計」
-describe('情報源一覧の表の描画 - 行データを渡すと、ジャンルごとの情報源・採用基準を1枚の表として描画する', () => {
-  it('5つの列見出し(ジャンル/編/選定方式/採用基準/情報源)が表示されること', () => {
+// 仕様: specs/blog/source-directory/requirements.md#ジャンルごとの情報源・採用基準の表-1、specs/blog/source-directory/requirements.md#ジャンルごとの情報源・採用基準の表-2、specs/blog/source-directory/requirements.md#ジャンルごとの情報源・採用基準の表-3、specs/blog/source-directory/design.md#決定事項-編(edition)列の表示判定
+describe('SourceTableの表の描画 - 行データを渡すと、ジャンルごとの情報源・採用基準を1枚の表として描画する', () => {
+  it('編の区別を持つ行(editionLabel)が1件もない場合、編列自体が表示されないこと', () => {
+    render(<SourceTable rows={[makeRow(), makeRow({ genreLabel: '日本映画' })]} />)
+    expect(screen.queryByRole('columnheader', { name: '編' })).toBeNull()
+  })
+
+  it('編の区別を持つ行が1件でもある場合、編列が表示されること', () => {
+    render(<SourceTable rows={[makeRow({ editionLabel: 'エンタメ編' })]} />)
+    expect(screen.getByRole('columnheader', { name: '編' })).toBeTruthy()
+  })
+
+  it('ジャンル/選定方式/採用基準/情報源の4つの列見出しは常に表示されること', () => {
     render(<SourceTable rows={[makeRow()]} />)
-    for (const header of ['ジャンル', '編', '選定方式', '採用基準', '情報源']) {
+    for (const header of ['ジャンル', '選定方式', '採用基準', '情報源']) {
       expect(screen.getByRole('columnheader', { name: header })).toBeTruthy()
     }
   })
@@ -41,25 +48,29 @@ describe('情報源一覧の表の描画 - 行データを渡すと、ジャン�
     expect(screen.getByText(/日本/)).toBeTruthy()
   })
 
+  it('地域区分(regionLabel)を持たない情報源は、地域区分を表示しないこと', () => {
+    render(<SourceTable rows={[makeRow({ sources: [{ name: 'Anthropic', url: 'https://www.anthropic.com/rss.xml' }] })]} />)
+    const link = screen.getByRole('link', { name: 'Anthropic' })
+    expect(link).toBeTruthy()
+    expect(screen.queryByText(/日本|海外/)).toBeNull()
+  })
+
   it('複数の情報源を持つジャンルは、情報源がすべて表示されること', () => {
     const row = makeRow({
       genreLabel: '日本映画',
       sources: [
         { name: '興行通信社CINEMAランキング通信(国内)', url: 'https://www.kogyotsushin.com/archives/weekend/', regionLabel: '日本' },
         { name: '映画.com国内ランキング', url: 'https://eiga.com/ranking/jp/', regionLabel: '日本' },
-        { name: 'Filmarks上映中ランキング', url: 'https://filmarks.com/list/now', regionLabel: '日本' },
       ],
     })
     render(<SourceTable rows={[row]} />)
     expect(screen.getByRole('link', { name: '興行通信社CINEMAランキング通信(国内)' })).toBeTruthy()
     expect(screen.getByRole('link', { name: '映画.com国内ランキング' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'Filmarks上映中ランキング' })).toBeTruthy()
   })
 
   it('WebSearchジャンルの行に検索の手がかりが表示されること', () => {
     const row = makeRow({
       genreLabel: 'SNSバズり',
-      editionLabel: 'カルチャー・ライフスタイル編',
       methodLabel: 'WebSearch',
       criteriaText: '独立した言及元が3件以上',
       sources: [],
@@ -70,25 +81,6 @@ describe('情報源一覧の表の描画 - 行データを渡すと、ジャン�
     expect(screen.getByText(/TikTok 投稿 話題 反響/)).toBeTruthy()
   })
 
-  // 仕様: specs/trend-digest/source-directory/requirements.md#機能要件-6
-  it('併用ジャンルの行で、情報源の一覧と検索の手がかりの両方が表示されること', () => {
-    const row = makeRow({
-      genreLabel: 'アニメ',
-      methodLabel: '固定リスト+WebSearch',
-      criteriaText: '新規ランクイン、または順位上昇、またはWebSearchで独立した言及元が3件以上',
-      sources: [
-        { name: 'Filmarksアニメ 話題のおすすめアニメ', url: 'https://filmarks.com/list-anime/trend', regionLabel: '日本' },
-        { name: 'AniLab 日本ウィークリーアニメランキング', url: 'https://anilabb.com/rate/anime?region=japan', regionLabel: '日本' },
-      ],
-      searchHints: ['SNS 話題 アニメ 反響'],
-    })
-    render(<SourceTable rows={[row]} />)
-    expect(screen.getByRole('link', { name: 'Filmarksアニメ 話題のおすすめアニメ' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: 'AniLab 日本ウィークリーアニメランキング' })).toBeTruthy()
-    expect(screen.getByText(/SNS 話題 アニメ 反響/)).toBeTruthy()
-  })
-
-  // 仕様: specs/trend-digest/source-directory/design.md「セキュリティ」
   it('http/https以外のスキームのURLはリンクにならず、名前のみがテキストとして表示されること', () => {
     const row = makeRow({
       sources: [{ name: '不正なリンクの情報源', url: 'javascript:alert(1)', regionLabel: '日本' }],
@@ -99,8 +91,8 @@ describe('情報源一覧の表の描画 - 行データを渡すと、ジャン�
   })
 })
 
-// 仕様: specs/trend-digest/source-directory/requirements.md#表示する内容の範囲-5
-describe('情報源一覧の表は表示専用 - 入力欄・保存ボタン・削除ボタンを一切持たない', () => {
+// 仕様: specs/blog/source-directory/requirements.md#表示する内容の範囲-1、specs/blog/source-directory/requirements.md#表示する内容の範囲-2
+describe('SourceTableの表は表示専用 - 入力欄・保存ボタン・削除ボタンを一切持たない。情報源・採用基準の構成以外(掲載結果・継続度・注目度・収集ログ)は表示しない', () => {
   it('表に入力欄(input/textarea)が存在しないこと', () => {
     render(<SourceTable rows={[makeRow()]} />)
     expect(screen.queryAllByRole('textbox')).toHaveLength(0)
@@ -109,5 +101,11 @@ describe('情報源一覧の表は表示専用 - 入力欄・保存ボタン・�
   it('表に保存・削除・編集のボタンが存在しないこと', () => {
     render(<SourceTable rows={[makeRow()]} />)
     expect(screen.queryAllByRole('button')).toHaveLength(0)
+  })
+
+  it('列見出しがジャンル/選定方式/採用基準/情報源(+編)のみで、掲載結果・継続度・注目度・収集ログの列を持たないこと', () => {
+    render(<SourceTable rows={[makeRow({ editionLabel: 'エンタメ編' })]} />)
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent)
+    expect(headers).toEqual(['ジャンル', '編', '選定方式', '採用基準', '情報源'])
   })
 })

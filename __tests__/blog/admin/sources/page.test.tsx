@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Session } from '@supabase/supabase-js'
-import SourceDirectoryPage from '../../../../app/trend-digest/admin/sources/page'
+import SourceDirectoryPage from '../../../../app/blog/admin/sources/page'
 import { getSession, onAuthChange, isAuthorizedAdmin } from '../../../../app/lib/adminAuth'
 
 vi.mock('../../../../app/lib/adminAuth', () => ({
@@ -20,7 +20,6 @@ function makeSession(email: string): Session {
   return { user: { email } } as Session
 }
 
-// getSessionを未解決のまま止め、「確認中」状態を検証するための制御可能なPromiseを作る
 function deferred<T>() {
   let resolve!: (value: T) => void
   const promise = new Promise<T>((r) => {
@@ -38,8 +37,8 @@ beforeEach(() => {
   consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
-// 仕様: specs/trend-digest/source-directory/requirements.md#閲覧できる人-1、specs/trend-digest/source-directory/requirements.md#閲覧できる人-3、specs/trend-digest/source-directory/design.md「ログイン状態に応じて表示を切り替える処理」
-describe('情報源一覧ページのログイン判定 - 運営者本人と判定できた場合のみ表を表示する', () => {
+// 仕様: specs/blog/source-directory/requirements.md#閲覧できる人-1、specs/blog/source-directory/requirements.md#閲覧できる人-3、specs/blog/digest-hub/requirements.md#情報源一覧への導線-2
+describe('情報源一覧ページ(5アプリ共通)のログイン判定 - 運営者本人と判定できた場合のみ表を表示する', () => {
   it('確認中(getSession解決前)は表が描画されないこと', () => {
     const { promise } = deferred<Session | null>()
     getSessionMock.mockReturnValue(promise)
@@ -92,11 +91,37 @@ describe('情報源一覧ページのログイン判定 - 運営者本人と判�
     render(<SourceDirectoryPage />)
     await waitFor(() => expect(screen.getByRole('table')).toBeTruthy())
 
-    // ログアウトが起きるとonAuthChangeのコールバックが呼ばれ、再度getSessionを確認する想定
     getSessionMock.mockResolvedValueOnce(null)
     authChangeCallback()
 
     await waitFor(() => expect(screen.queryByRole('table')).toBeNull())
     expect(screen.getByRole('button', { name: /ログイン/ })).toBeTruthy()
+  })
+})
+
+// 仕様: specs/blog/source-directory/requirements.md#アプリ切り替えタブ-3、specs/blog/source-directory/requirements.md#アプリ切り替えタブ-1、specs/blog/source-directory/design.md#決定事項-タブの実装方式
+describe('情報源一覧ページのタブ切り替え - 初期表示はai-dev-digestで、タブ操作で表示アプリが変わる', () => {
+  beforeEach(() => {
+    getSessionMock.mockResolvedValue(makeSession('admin@example.com'))
+    isAuthorizedAdminMock.mockResolvedValue(true)
+  })
+
+  // 仕様: specs/blog/source-directory/requirements.md#ジャンルごとの情報源・採用基準の表-5
+  it('許可対象は初期表示でai-dev-digestのタブが選択され、公式組織の行が表示されること(実際のcontent/ai-dev-digest/watchlist.jsonから組み立てた行)', async () => {
+    render(<SourceDirectoryPage />)
+    await waitFor(() => expect(screen.getByRole('table')).toBeTruthy())
+
+    expect(screen.getByRole('tab', { name: /AI駆動開発ダイジェスト/ }).getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByText('公式組織')).toBeTruthy()
+  })
+
+  it('週刊トレンドのタブへ切り替えると、週刊トレンドのジャンル(音楽)の表に変わること', async () => {
+    render(<SourceDirectoryPage />)
+    await waitFor(() => expect(screen.getByRole('table')).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('tab', { name: /週刊トレンド/ }))
+
+    await waitFor(() => expect(screen.getByText('音楽')).toBeTruthy())
+    expect(screen.queryByText('公式組織')).toBeNull()
   })
 })
