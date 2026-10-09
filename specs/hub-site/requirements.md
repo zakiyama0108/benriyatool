@@ -16,7 +16,7 @@
 - `/legal`(利用規約・プライバシーポリシー)は変更しない
 - 将来 `/kakeibo`, `/blog/[slug]` などのツールを追加していく
 - [1] トップページに`WebSite`構造化データ(JSON-LD)を設置し、Google検索結果のサイト名として「べんりやつーる」を提示する(`og:site_name`だけではGoogleがサイト名を認識せずドメイン名「benriyatool.com」が表示されるため)
-- [2] トップページのツールカード一覧には、本番公開済みの全アプリを掲載する。新しいアプリを初めて本番公開する実装PRでは、同じPRでこのカード一覧にもツールカードを追加する(README「アプリ一覧」表とは別に、公開中のツールのみを載せるハブページ側の掲載漏れを防ぐため)
+- [2] トップページのツールカード一覧には、本番公開済みの全アプリを掲載する。新しいアプリを初めて本番公開する実装PRでは、同じPRでこのカード一覧にもツールカードを追加する(README「アプリ一覧」表とは別に、公開中のツールのみを載せるハブページ側の掲載漏れを防ぐため)。ただしai-dev-digest/news-digest/trend-digest/future-digest/research-digestの5アプリは個別カードを持たず、代わりに`/blog`への1枚のカード([blog/digest-hub/requirements.md](../blog/digest-hub/requirements.md))でまとめて表す(5アプリ分の個別カードでトップページの情報量が埋まることを避けるため)
 - [3] ツールカード一覧の下に、育休給付金ガイド記事一覧(`/ikukyu/guide`)への導線(軽量なテキストリンク)を設置する。記事は個別アプリ(ikukyu)の補足コンテンツであり独立したツールではないため、ツールカードとは表示を区別する(詳細: `specs/ikukyu/guide/requirements.md#記事ページ共通-12`)
 - 各ページのメタ情報(title/description)を設定する。原則として各アプリの機能要件側で定義し(重複管理によるずれを防ぐため)、本specでは参照リンクのみ持つ。ただしオーナーとなる機能specがまだ実装されていないアプリは、本specに直接定義する暫定運用とする
   - `/`: title「べんりやつーる | 暮らしのお金・手続きに役立つ無料ツール集」、description「暮らしのお金や手続きに関する無料ツールを提供しています。育休給付金シミュレーターをはじめ、今後も便利なツールを追加していきます。」
@@ -28,6 +28,7 @@
   - `/trend-digest`: specs/trend-digest/article-list/requirements.md#メタ情報-1 で定義する
   - `/future-digest`: specs/future-digest/article-list/requirements.md#メタ情報-6 で定義する
   - `/research-digest`: specs/research-digest/article-list/requirements.md#メタ情報-5 で定義する
+  - `/blog`: specs/blog/digest-hub/requirements.md#メタ情報 で定義する
 - [4] ファビコンを設定する。Next.jsのファイルベースアイコン規約(`app/icon.*`)により、ルートセグメント(`app/`)に置いたアイコンはドメイン全体のデフォルトになり、各アプリのセグメント(`app/<アプリ名>/`)に置いたアイコンはそのアプリ配下のページにだけ上書き適用される。デザインはGoogle Stitch(プロジェクト`2502647761156519613`)で作成し、各アプリの既存配色トークン(life-money-simの「オーシャンミント」、board-game-rulesの「Analog Hearth」等)またはハブページのツールカードで使っている絵文字のモチーフに合わせている
   - サイト全体(`/`): オレンジ背景+道具箱モチーフ
   - `/ikukyu`: オレンジ背景+電卓モチーフ
@@ -38,6 +39,7 @@
   - `/trend-digest`: 暖色系(アンバー/オレンジ)背景+上昇トレンドを示す矢印/グラフモチーフ([article-detail/design.md#画面設計](../trend-digest/article-detail/design.md#画面設計)のアンバー/オレンジ系アクセントに合わせる)。具体的な色コードは実装時にStitchで作成する
   - `/future-digest`: インディゴ系背景+時間軸を表す矢印モチーフ([article-detail/design.md#画面設計](../future-digest/article-detail/design.md#画面設計)のインディゴ系アクセントに合わせる)
   - `/research-digest`: ティール系背景+フラスコモチーフ([article-detail/design.md#画面設計](../research-digest/article-detail/design.md#画面設計)のティール系アクセントに合わせる)
+  - `/blog`: 5アプリへの入口であることが分かるモチーフ(具体的な配色・モチーフは実装時にStitchで作成する)
 - [5] `sitemap.xml`はNext.jsの動的サイトマップ生成(`app/sitemap.ts`)で作成し、ビルド時に公開中の全ページを自動列挙する(手動でのURL追記を不要にするため。根拠: `public/sitemap.xml`が手動生成のまま更新漏れとなり、新規追加した3アプリのページが1件も載っていなかった問題への対応)。以下は対象外とする
   - 管理画面(`/**/admin/**`。ログイン必須・運営者専用のため)
   - `/board-game-rules/styleguide`(開発者向け確認用ページのため。根拠: [specs/board-game-rules/design-system/requirements.md](../board-game-rules/design-system/requirements.md)「依存関係・非機能要件」と同じ理由)
@@ -58,4 +60,4 @@
 - 特になし(静的なルーティング変更のみのため)
 
 ## スコープ外(今回)
-- `/about`, `/contact`, `/blog` は別フェーズで追加
+- `/about`, `/contact` は別フェーズで追加
