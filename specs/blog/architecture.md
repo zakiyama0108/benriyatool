@@ -62,8 +62,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 ## 8. 機能一覧表(機能マップ)
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
-| [digest-hub](digest-hub/requirements.md) | 5つのダイジェストアプリへの入口を、配信曜日付きのカード一覧で見る | 各アプリの配信specから配信曜日を取得して表示する | 各アプリの配信spec、[source-directory](source-directory/requirements.md)(情報源リンク先) | 仕様のみ(未実装) |
-| [source-directory](source-directory/requirements.md) | 5アプリ分のジャンルごとの情報源・採用基準を、タブ切り替えで確認する(運営者専用) | 各アプリのcontent-selectionが持つ定義を読み込んで表示する | 各アプリの`content-selection/requirements.md` | 仕様のみ(未実装) |
+| [digest-hub](digest-hub/requirements.md) | 5つのダイジェストアプリへの入口を、配信曜日付きのカード一覧で見る | 各アプリの配信specから配信曜日を取得して表示する | 各アプリの配信spec、[source-directory](source-directory/requirements.md)(情報源リンク先) | 実装中 |
+| [source-directory](source-directory/requirements.md) | 5アプリ分のジャンルごとの情報源・採用基準を、タブ切り替えで確認する(運営者専用) | 各アプリのcontent-selectionが持つ定義を読み込んで表示する | 各アプリの`content-selection/requirements.md` | 実装中 |
 
 ## 9. ディレクトリ構成
 CLAUDE.mdの一般規約(`components/`,`lib/`)通りで、逸脱なし。`blog`は記事本文・コンテンツデータを持たないため`content/blog/`は作らない。
