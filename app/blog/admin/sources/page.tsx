@@ -1,21 +1,50 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getSession, onAuthChange, signInWithGoogle, signOut, isAuthorizedAdmin } from '../../../lib/adminAuth'
-import { buildSourceDirectory } from '../../lib/buildSourceDirectory'
-import type { WatchlistEntry, Criteria } from '../../lib/watchlistTypes'
-import watchlistData from '../../../../content/trend-digest/watchlist.json'
-import criteriaData from '../../../../content/trend-digest/criteria.json'
+import { DIGEST_APPS } from '../../lib/digestApps'
+import type { SourceDirectoryRow } from '../../lib/sourceDirectory/types'
+import { buildAiDevDigestSources } from '../../lib/sourceDirectory/buildAiDevDigestSources'
+import { buildNewsDigestSources } from '../../lib/sourceDirectory/buildNewsDigestSources'
+import { buildTrendDigestSources } from '../../lib/sourceDirectory/buildTrendDigestSources'
+import { buildFutureDigestSources } from '../../lib/sourceDirectory/buildFutureDigestSources'
+import { buildResearchDigestSources } from '../../lib/sourceDirectory/buildResearchDigestSources'
+import SourceTabs from './components/SourceTabs'
 import SourceTable from './components/SourceTable'
 
-// 情報源一覧(運営者専用)ページ(仕様: design.md「表示する行を組み立てる処理」「ログイン状態に
-// 応じて表示を切り替える処理」)。watchlist.json・criteria.jsonをビルド時に読み込んで表示行を
-// 組み立てる(実行時にファイルを読み直したり、APIへ問い合わせたりはしない。requirements.md#
-// 機能要件-5)。ジャンル定義の妥当性は__tests__/trend-digest/lib/watchlistData.test.tsが担うため、
-// ここではbuildSourceDirectory自体が持つ最小限のガード(未定義ジャンルなどは例外)に委ねる
-const watchlist = watchlistData.genres as WatchlistEntry[]
-const criteria = criteriaData as Criteria
-const rows = buildSourceDirectory(watchlist, criteria)
+import type { WatchlistEntry as AiDevDigestWatchlistEntry, Criteria as AiDevDigestCriteria } from '../../../ai-dev-digest/lib/watchlistTypes'
+import aiDevDigestWatchlistData from '../../../../content/ai-dev-digest/watchlist.json'
+import aiDevDigestCriteriaData from '../../../../content/ai-dev-digest/criteria.json'
+
+import type { WatchlistEntry as NewsDigestWatchlistEntry } from '../../../news-digest/lib/watchlistTypes'
+import newsDigestWatchlistData from '../../../../content/news-digest/watchlist.json'
+import newsDigestCriteriaData from '../../../../content/news-digest/criteria.json'
+
+import type { WatchlistEntry as TrendDigestWatchlistEntry, Criteria as TrendDigestCriteria } from '../../../trend-digest/lib/watchlistTypes'
+import trendDigestWatchlistData from '../../../../content/trend-digest/watchlist.json'
+import trendDigestCriteriaData from '../../../../content/trend-digest/criteria.json'
+
+import { loadGenres as loadFutureDigestGenres } from '../../../future-digest/lib/genres'
+import { loadGenres as loadResearchDigestGenres } from '../../../research-digest/lib/genres'
+
+// 情報源一覧(運営者専用・5アプリ共通)ページ(仕様: design.md「表示する行を組み立てる処理」
+// 「ログイン状態に応じて表示を切り替える処理」「タブを切り替える処理」)。各アプリの実データ
+// (watchlist.json・criteria.json・genres.json)はビルド時に読み込んで表示行を組み立てるだけで、
+// 実行時にファイルを読み直したり、APIへ問い合わせたりはしない(requirements.md#ジャンルごとの
+// 情報源・採用基準の表-5)
+const ROWS_BY_APP_ID: Record<string, SourceDirectoryRow[]> = {
+  'ai-dev-digest': buildAiDevDigestSources(
+    aiDevDigestWatchlistData as AiDevDigestWatchlistEntry[],
+    aiDevDigestCriteriaData as AiDevDigestCriteria
+  ),
+  'news-digest': buildNewsDigestSources(newsDigestWatchlistData as NewsDigestWatchlistEntry[], newsDigestCriteriaData),
+  'trend-digest': buildTrendDigestSources(
+    trendDigestWatchlistData.genres as TrendDigestWatchlistEntry[],
+    trendDigestCriteriaData as TrendDigestCriteria
+  ),
+  'future-digest': buildFutureDigestSources(loadFutureDigestGenres()),
+  'research-digest': buildResearchDigestSources(loadResearchDigestGenres()),
+}
 
 // 画面の状態。確認中 / 未ログイン / 権限なし / 権限あり(閲覧可) / 確認自体の失敗
 type Phase = 'loading' | 'login' | 'denied' | 'authorized' | 'authError'
@@ -23,9 +52,11 @@ type Phase = 'loading' | 'login' | 'denied' | 'authorized' | 'authError'
 export default function SourceDirectoryPage() {
   const [phase, setPhase] = useState<Phase>('loading')
   const [email, setEmail] = useState<string | null>(null)
+  // 選択中のアプリ(design.md「状態管理」。初期値はDIGEST_APPSの先頭=ai-dev-digest)
+  const [selectedAppId, setSelectedAppId] = useState<string>(DIGEST_APPS[0].id)
 
   // ログイン状態と閲覧権限を判定する。ログイン完了・ログアウトのたびに再実行する
-  // (design.md「ログイン状態に応じて表示を切り替える処理」手順1〜5)
+  // (design.md「ログイン状態に応じて表示を切り替える処理」手順1〜4)
   useEffect(() => {
     let active = true
     async function checkAuth() {
@@ -54,6 +85,8 @@ export default function SourceDirectoryPage() {
       unsubscribe()
     }
   }, [])
+
+  const selectedRows = useMemo(() => ROWS_BY_APP_ID[selectedAppId] ?? [], [selectedAppId])
 
   if (phase === 'loading') {
     return <p className="px-4 py-16 text-center text-sm text-gray-400">読み込み中…</p>
@@ -109,7 +142,7 @@ export default function SourceDirectoryPage() {
         <div>
           <h1 className="text-xl font-bold">情報源一覧</h1>
           <p className="mt-1 text-xs text-gray-500">
-            このページは表示専用です。変更は月次見直しのPRで行ってください。
+            このページは表示専用です。変更は各アプリの月次見直しのPRで行ってください。
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm text-gray-500">
@@ -120,7 +153,9 @@ export default function SourceDirectoryPage() {
         </div>
       </div>
 
-      <SourceTable rows={rows} />
+      <SourceTabs apps={DIGEST_APPS} selectedId={selectedAppId} onSelect={setSelectedAppId} />
+
+      <SourceTable rows={selectedRows} />
     </div>
   )
 }

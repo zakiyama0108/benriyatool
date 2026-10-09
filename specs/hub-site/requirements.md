@@ -28,7 +28,7 @@
   - `/trend-digest`: specs/trend-digest/article-list/requirements.md#メタ情報-1 で定義する
   - `/future-digest`: specs/future-digest/article-list/requirements.md#メタ情報-6 で定義する
   - `/research-digest`: specs/research-digest/article-list/requirements.md#メタ情報-5 で定義する
-  - `/blog`: specs/blog/digest-hub/requirements.md#メタ情報 で定義する
+  - `/blog`: specs/blog/digest-hub/requirements.md#メタ情報-1 で定義する
 - [4] ファビコンを設定する。Next.jsのファイルベースアイコン規約(`app/icon.*`)により、ルートセグメント(`app/`)に置いたアイコンはドメイン全体のデフォルトになり、各アプリのセグメント(`app/<アプリ名>/`)に置いたアイコンはそのアプリ配下のページにだけ上書き適用される。デザインはGoogle Stitch(プロジェクト`2502647761156519613`)で作成し、各アプリの既存配色トークン(life-money-simの「オーシャンミント」、board-game-rulesの「Analog Hearth」等)またはハブページのツールカードで使っている絵文字のモチーフに合わせている
   - サイト全体(`/`): オレンジ背景+道具箱モチーフ
   - `/ikukyu`: オレンジ背景+電卓モチーフ
@@ -39,7 +39,7 @@
   - `/trend-digest`: 暖色系(アンバー/オレンジ)背景+上昇トレンドを示す矢印/グラフモチーフ([article-detail/design.md#画面設計](../trend-digest/article-detail/design.md#画面設計)のアンバー/オレンジ系アクセントに合わせる)。具体的な色コードは実装時にStitchで作成する
   - `/future-digest`: インディゴ系背景+時間軸を表す矢印モチーフ([article-detail/design.md#画面設計](../future-digest/article-detail/design.md#画面設計)のインディゴ系アクセントに合わせる)
   - `/research-digest`: ティール系背景+フラスコモチーフ([article-detail/design.md#画面設計](../research-digest/article-detail/design.md#画面設計)のティール系アクセントに合わせる)
-  - `/blog`: 5アプリへの入口であることが分かるモチーフ(具体的な配色・モチーフは実装時にStitchで作成する)
+  - `/blog`: 5アプリへの入口であることが分かるモチーフ(具体的な配色・モチーフは実装時にStitchで作成する)。ファビコンは本PRのスコープ外とし、別タスクで後日追加する〔提案〕
 - [5] `sitemap.xml`はNext.jsの動的サイトマップ生成(`app/sitemap.ts`)で作成し、ビルド時に公開中の全ページを自動列挙する(手動でのURL追記を不要にするため。根拠: `public/sitemap.xml`が手動生成のまま更新漏れとなり、新規追加した3アプリのページが1件も載っていなかった問題への対応)。以下は対象外とする
   - 管理画面(`/**/admin/**`。ログイン必須・運営者専用のため)
   - `/board-game-rules/styleguide`(開発者向け確認用ページのため。根拠: [specs/board-game-rules/design-system/requirements.md](../board-game-rules/design-system/requirements.md)「依存関係・非機能要件」と同じ理由)
