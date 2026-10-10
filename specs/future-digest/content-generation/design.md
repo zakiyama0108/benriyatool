@@ -1,7 +1,7 @@
 # 設計: 未来予測記事の要約・記事執筆のルール
 
 ## サマリ
-[content-selection](../content-selection/design.md)で採用された予測1本ごとに、Claude Code CLIのヘッドレス実行で元記事をWebFetchで読み、見出し・本文(200〜400字程度)を書かせる。影響度・その根拠・対象時期・出典は選定時の値をそのまま使い、執筆時に書き換えさせない。本文の分量の検証と記事タイトルの導出は決定的なコードで行う。性・恋愛ジャンルは専用のガードレール文言をプロンプトに加え、率直に書きつつ官能的な描写・利用の手助け・未成年に関わる内容を書かせない。
+[content-selection](../content-selection/design.md)で採用された予測1本ごとに、Claude Code CLIのヘッドレス実行で元記事をWebFetchで読み、見出しと固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響、合計200〜400字程度)を書かせる。あわせて、理解の助けになる場合はMermaid図・生成画像(Nano Banana)による図解を作らせる。影響度・その根拠・対象時期・出典は選定時の値をそのまま使い、執筆時に書き換えさせない。本文の分量の検証と記事タイトルの導出は決定的なコードで行う。性・恋愛ジャンルは専用のガードレール文言をプロンプトに加え、率直に書きつつ官能的な描写・利用の手助け・未成年に関わる内容を書かせない。
 
 主要な設計判断:
 - 「本文を書く」ことだけをClaudeに任せ、分量の検証・タイトル・影響度などの値は決定的なコードで扱う(trend-digestと同じ役割分担)
@@ -11,17 +11,33 @@
 
 ## 処理フロー
 
-### 見出し・本文を書く処理(エージェントの推論)
+### 見出し・固定3観点を書く処理(エージェントの推論)
 - 対象: 採用された予測1本(ジャンル・時間軸・影響度・影響度の根拠・対象時期・出典)
 - 手順:
   1. 元記事のURLの内容をWebFetchで把握する
   2. 見出しは、何が起こると考えられているかが一目で分かる1文にする
-  3. 本文には、予測が対象とする時期、何が起こると考えられているか、その根拠、暮らし・社会への影響を書く(requirements.md#要約-2)。分量は200〜400字程度にする(requirements.md#要約-3)
-  4. 元記事の構成・表現をなぞらず独自に書き直し、数値・全文を網羅的に転記しない(requirements.md#要約-4)
-  5. 「〜と考えられている」「〜と予測している」のように予測であることが分かる書き方にし、確定した未来として断定しない(requirements.md#要約-5)
-  6. 元記事に書かれている範囲にとどめ、書かれていない内容を推測で断定しない。Claude独自の予測・考察は加えない(requirements.md#内容の逸脱防止-8)
-  7. 影響度・その根拠・対象時期・出典は渡された値を事実として扱い、本文でそれと食い違うことを書かない
-  8. 応答は`{ "heading": "...", "body": "..." }`のJSONだけを返させる。元記事を読めなかった場合は、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書き、それも難しい場合は`heading`を`null`にして返させる(聞き返しはさせない)
+  3. 固定3観点(`when`/`basis`/`impact`、この順序で固定。requirements.md#要約-3)それぞれについて、短い結論文(`heading`)と本文(`text`)を書く
+  4. `when`(いつ・何が起こると予測されているか)は、予測が対象とする時期と、何が起こると考えられているかを書く
+  5. `basis`(誰が・どんな根拠で示しているか)は、出典(渡された情報源名・対象時期・影響度の根拠)に基づき、誰がどんな根拠で予測しているかを書く
+  6. `impact`(暮らし・社会への影響)は、予測が実現した場合の暮らし・社会への影響を書く
+  7. 3観点合計の本文(`text`を連結した文字数)は200〜400字程度にする(requirements.md#要約-2)
+  8. 元記事の構成・表現をなぞらず独自に書き直し、数値・全文を網羅的に転記しない(requirements.md#要約-4)
+  9. 「〜と考えられている」「〜と予測している」のように予測であることが分かる書き方にし、確定した未来として断定しない(requirements.md#要約-5)
+  10. 元記事に書かれている範囲にとどめ、書かれていない内容を推測で断定しない。Claude独自の予測・考察は加えない(requirements.md#内容の逸脱防止-8)
+  11. 影響度・その根拠・対象時期・出典は渡された値を事実として扱い、本文でそれと食い違うことを書かない
+  12. 観点ごと、または記事全体について図解が理解の助けになるかを判断する(requirements.md#図解-6)。[news-digest/content-generation/design.md「図解を生成する処理」](../../news-digest/content-generation/design.md)と同じ形式で`diagram`を返す
+  13. 応答は`{ "heading": "...", "sections": { "when": {...}, "basis": {...}, "impact": {...} } }`のJSONだけを返させる。元記事を読めなかった場合は、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書き、それも難しい場合は`heading`を`null`にして返させる(聞き返しはさせない)
+- 応答JSONの形式:
+  ```json
+  {
+    "heading": "何が起こると考えられているかが一目で分かる見出し",
+    "sections": {
+      "when": { "heading": "...", "text": "...", "diagram": null },
+      "basis": { "heading": "...", "text": "...", "diagram": { "type": "mermaid", "code": "flowchart LR\n..." } },
+      "impact": { "heading": "...", "text": "...", "diagram": null }
+    }
+  }
+  ```
 - シーケンス図(俯瞰用。正は上記の手順の文章):
 
 ```mermaid
@@ -33,37 +49,38 @@ sequenceDiagram
     script ->> claude: requirements.md・design.mdとガードレール文言、採用された予測1本の情報を渡す
     claude ->> source: WebFetchで内容を把握する
     source -->> claude: 本文等
-    claude -->> script: 見出し・本文のJSON(または heading: null)
+    claude -->> script: 見出し・固定3観点のJSON(または heading: null)
     script ->> script: 生成結果を検証し、記事データの1本分を組み立てる
 ```
 - 性・恋愛ジャンルの場合は、上記に加えて次のガードレール文言をプロンプトに含める(requirements.md#性・恋愛ジャンルの書き方-4〜7の具体化):
   > このジャンルのテーマ(自慰の新しいやり方・セルフプレジャーのテクノロジー、恋愛・結婚・性交・性生活の動向、出会い系・立ちんぼ・風俗など性産業の動向)は、避けたりぼかしたりせず、行為・製品・サービスの内容も報道・解説の文体で率直かつ具体的に書く。ただし、読者の性的興奮を目的とする官能的・扇情的な描写はしない。性産業については動向と社会・法制度の変化を書き、特定の店舗・場所・相手の探し方など利用や違法行為を手助けする情報は書かない。未成年が関わる性的な内容は一切扱わない。
 - 全ジャンル共通のガードレール文言(プロンプトに必ず含める):
-  > この記事で扱ってよいのは、渡された元記事に書かれている予測だけである。元記事の構成・表現の順序をなぞらず独自に書き直し、数値・全文を網羅的に転記しない。予測を確定した未来として断定せず、元記事にない内容や自分の予測を加えない。渡された影響度・その根拠・対象時期は事実として扱い、それと異なることを書かない。
-- 関連するビジネスルール: requirements.md#要約-1〜5、requirements.md#記事の構成-6、requirements.md#著作権への配慮-1〜2、requirements.md#性・恋愛ジャンルの書き方-4〜7、requirements.md#内容の逸脱防止-8
+  > この記事で扱ってよいのは、渡された元記事に書かれている予測だけである。各観点の本文は元記事の構成・表現の順序をなぞらず独自に書き直し、数値・全文を網羅的に転記しない。予測を確定した未来として断定せず、元記事にない内容や自分の予測を加えない。渡された影響度・その根拠・対象時期は事実として扱い、それと異なることを書かない。
+- 関連するビジネスルール: requirements.md#要約-1〜5、requirements.md#図解-6、requirements.md#記事の構成-7、requirements.md#著作権への配慮-1〜2、requirements.md#性・恋愛ジャンルの書き方-4〜7、requirements.md#内容の逸脱防止-8
 
 ### 生成結果を検証する処理(決定的なコード)
-- 対象: Claudeが返した見出し・本文
+- 対象: Claudeが返した見出し・`sections`(`when`/`basis`/`impact`の組)
 - 手順:
-  1. 見出し・本文が`null`または空の場合は不正とする
-  2. 本文が160字未満、または480字を超える場合は不正とする(「200〜400字程度」の「程度」を、trend-digestと同じく目安の約±20%と解釈する)
+  1. 見出し・`sections`が`null`、またはいずれかの観点の`heading`/`text`が空の場合は不正とする
+  2. 3観点の`text`を連結した文字数が160字未満、または480字を超える場合は不正とする(「200〜400字程度」の「程度」を、trend-digestと同じく目安の約±20%と解釈する)
   3. 見出しが100字を超える場合は不正とする(見出しとして読める長さに抑えるため)
-  4. 不正な場合は、その1本の生成失敗として[weekly-publish/design.md](../weekly-publish/design.md)のやり直し・除外の流れに乗せる
-- 関連するビジネスルール: requirements.md#要約-3
+  4. 各観点の`diagram`は[news-digest/content-generation/design.md](../../news-digest/content-generation/design.md)「図解を生成する処理」と同じ検証・保存処理を行う
+  5. 不正な場合は、その1本の生成失敗として[weekly-publish/design.md](../weekly-publish/design.md)のやり直し・除外の流れに乗せる
+- 関連するビジネスルール: requirements.md#要約-2、requirements.md#図解の生成(Nano Banana)-9
 
 ### 記事データの1本分を組み立てる処理(決定的なコード)
-- 対象: 検証を通った見出し・本文と、選定時の値
+- 対象: 検証を通った見出し・`sections`と、選定時の値
 - 手順:
-  1. ジャンル・時間軸・影響度・影響度の根拠・対象時期・元記事タイトル・情報源名・元URLは選定時の値をそのまま使い、見出し・本文だけを生成結果から取る(requirements.md#記事の構成-6)
+  1. ジャンル・時間軸・影響度・影響度の根拠・対象時期・元記事タイトル・情報源名・元URLは選定時の値をそのまま使い、見出し・`sections`だけを生成結果から取る(requirements.md#記事の構成-7)
   2. 予測IDは`<ジャンル>--<時間軸>`とする([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」)
-- 関連するビジネスルール: requirements.md#記事の構成-6
+- 関連するビジネスルール: requirements.md#記事の構成-7
 
 ### 記事タイトルを導出する処理(決定的なコード)
 - 対象: 発行日と編
 - 手順:
-  1. 「週刊未来予測 <編のラベル> YYYY年M月D日号」の形にする(月・日はゼロ埋めしない。例:「週刊未来予測 サイエンス・テクノロジー編 2026年10月1日号」「週刊未来予測 くらし・社会編 2026年10月4日号」。trend-digestの`buildArticleTitle(edition, date)`と同じ考え方)(requirements.md#記事の構成-7)
+  1. 「週刊未来予測 <編のラベル> YYYY年M月D日号」の形にする(月・日はゼロ埋めしない。例:「週刊未来予測 サイエンス・テクノロジー編 2026年10月1日号」「週刊未来予測 くらし・社会編 2026年10月4日号」。trend-digestの`buildArticleTitle(edition, date)`と同じ考え方)(requirements.md#記事の構成-8)
   2. タイトルは記事データに保存せず、発行日・編から常に導出する(Claudeには作らせない。表現の揺れ・誇張を避けるため)
-- 関連するビジネスルール: requirements.md#記事の構成-7
+- 関連するビジネスルール: requirements.md#記事の構成-8
 
 ## エラーハンドリング
 
@@ -74,11 +91,14 @@ sequenceDiagram
 ## 関連するファイル(抜粋)
 
 ```
-scripts/future-digest/generate-content.ts (新規: 採用された予測ごとにClaude Code CLIを起動して見出し・本文を生成するCLI)
-app/future-digest/lib/bodyValidation.ts (新規: isValidBodyLength・isValidHeading)
+scripts/future-digest/generate-content.ts (新規: 採用された予測ごとにClaude Code CLIを起動して見出し・固定3観点を生成するCLI)
+app/future-digest/lib/bodyValidation.ts (新規: isValidSectionsLength・isValidHeading)
 app/future-digest/lib/articleTitle.ts (編成分割で変更: buildArticleTitle(date, edition))
 app/future-digest/lib/buildPrediction.ts (新規: 選定時の値+生成結果からPredictionを組み立てる)
 app/future-digest/lib/articleSchema.ts (article-detailで新規: 分量検証を組み込む)
+app/future-digest/lib/diagramValidation.ts (新規: news-digestと同じisValidAgentDiagram)
+scripts/future-digest/generateDiagram.ts (新規: news-digestのgenerateDiagram.tsと同じロジック。保存先のみcontent/future-digest/articles/images/に変更)
+app/future-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 specs/legal/requirements.md (既存: 知的財産の条項の仕様リンクに本specを追加)
 app/legal/page.tsx (既存: 「4. 知的財産」に週刊未来予測の条項を追記)
 ```
@@ -89,11 +109,13 @@ app/legal/page.tsx (既存: 「4. 知的財産」に週刊未来予測の条項�
 - 生成用のClaude CLIに許可するツールはWebFetchに限る(外部のページに書かれた指示でファイル編集・シェル実行をさせないため)
 - 著作権リスクへの対応は、分量の上限(コードで強制)・独自の書き直し(ガードレール文言)・出典の明記(スキーマで必須)・利用規約への条項追記の4点で構成する(requirements.md#著作権への配慮-1〜2、requirements.md#利用規約への反映-3)
 - 性・恋愛ジャンルの安全性は、上記の専用ガードレール文言(収集時は[content-selection/design.md](../content-selection/design.md#セキュリティ)でも同じ制約をかける)と、月次見直しで制約を弱める提案をしないルール([source-review/requirements.md](../source-review/requirements.md)ビジネスルール[3])で守る
+- Mermaid/生成画像の扱いは[news-digest/content-generation/design.md#セキュリティ](../../news-digest/content-generation/design.md)と同一の方針を踏襲する
 
 ## ログ
 
 - 1本ごとに、生成の成否・本文の文字数・失敗時の理由(検証エラーの内容/JSONを取り出せない/拒否)を実行ログに出す(本文そのものはログに出さない)
 - 記事データの分量違反は、ビルド時の例外としてCIログに出る
+- 図解の生成成否はGitHub Actionsのワークフロー実行ログに出力する(news-digestと同じ)
 
 ## 利用規約への反映
 
