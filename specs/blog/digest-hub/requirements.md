@@ -51,8 +51,8 @@ flowchart LR
   - ai-dev-digest: 毎日([daily-publish/requirements.md](../../ai-dev-digest/daily-publish/requirements.md))
   - news-digest: 毎週水曜([weekly-publish/requirements.md](../../news-digest/weekly-publish/requirements.md))
   - trend-digest: 火・金(週2回。[weekly-publish/requirements.md](../../trend-digest/weekly-publish/requirements.md))
-  - future-digest: 毎週木曜(引用元の[weekly-publish/requirements.md](../../future-digest/weekly-publish/requirements.md)は木・日の週2回体制を定義済みだが、本番ではまだ実装されていないため現行の木曜のみを表示する)
-  - research-digest: 毎週月曜(引用元の[weekly-publish/requirements.md](../../research-digest/weekly-publish/requirements.md)は月・土の週2回体制を定義済みだが、本番ではまだ実装されていないため現行の月曜のみを表示する)
+  - future-digest: 木・日(週2回。[weekly-publish/requirements.md](../../future-digest/weekly-publish/requirements.md))
+  - research-digest: 月・土(週2回。[weekly-publish/requirements.md](../../research-digest/weekly-publish/requirements.md))
 - [4] カードの並び順は上記[1]の記載順とする
 
 </details>

@@ -45,20 +45,16 @@ export const DIGEST_APPS: DigestApp[] = [
   {
     id: 'future-digest',
     name: '週刊未来予測',
-    description: '10ジャンルの未来予測記事を時間軸(近未来〜超長期未来)ごとに影響度付きで毎週木曜に要約・公開する',
-    // 引用元のweekly-publish/requirements.mdは木・日の週2回体制を定義済みだが、本番で未実装のため
-    // 現行の木曜のみを表示する(requirements.md#ダイジェストカード一覧-3)
-    scheduleLabel: '毎週木曜',
+    description: '10ジャンルを2編に分け、未来予測記事を時間軸(近未来〜超長期未来)ごとに影響度付きで週2回要約・公開する',
+    scheduleLabel: '木・日(週2回)', // specs/future-digest/weekly-publish/requirements.md
     href: '/future-digest',
     icon: '🔭',
   },
   {
     id: 'research-digest',
     name: '週刊研究発見',
-    description: '10ジャンルから暮らしへの影響が大きい研究・論文を1本ずつ毎週月曜に要約・公開する',
-    // 引用元のweekly-publish/requirements.mdは月・土の週2回体制を定義済みだが、本番で未実装のため
-    // 現行の月曜のみを表示する(requirements.md#ダイジェストカード一覧-3)
-    scheduleLabel: '毎週月曜',
+    description: '10ジャンルを2編に分け、暮らしへの影響が大きい研究・論文を1本ずつ週2回要約・公開する',
+    scheduleLabel: '月・土(週2回)', // specs/research-digest/weekly-publish/requirements.md
     href: '/research-digest',
     icon: '🔬',
   },
