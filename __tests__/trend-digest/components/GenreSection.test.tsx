@@ -21,24 +21,10 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
   }
 }
 
-// 仕様: specs/trend-digest/article-detail/requirements.md#記事本文表示-2、specs/trend-digest/article-detail/requirements.md#記事本文表示-3、specs/trend-digest/article-detail/requirements.md#表示分量・著作権配慮-2
-describe('ジャンル見出し+トピックカードの表示 - 動きがあったジャンルだけを見出しとして、配下にトピックカードを表示する', () => {
-  it('該当ジャンルのトピックが1件もない場合、見出し自体が表示されないこと(動きがなかったジャンル)', () => {
-    const { container } = render(
-      <GenreSection genre="music" topics={[]} isAdmin={false} articleId="2026-09-15-entertainment" />
-    )
-    expect(container.firstChild).toBeNull()
-  })
-
+// 仕様: specs/trend-digest/article-detail/requirements.md#記事本文表示-2、specs/trend-digest/article-detail/requirements.md#記事本文表示-3
+describe('ジャンル見出し+トピックカードの表示 - トピックがあるジャンル、または取得できなかったジャンル(unavailable)は見出しが表示される', () => {
   it('ジャンル見出しの文言がGENRE_LABELSの日本語ラベル(例: musicなら「音楽」)と一致すること', () => {
-    render(
-      <GenreSection
-        genre="music"
-        topics={[makeTopic()]}
-        isAdmin={false}
-        articleId="2026-09-15-entertainment"
-      />
-    )
+    render(<GenreSection genre="music" topics={[makeTopic()]} unavailable={false} isAdmin={false} articleId="2026-09-15-entertainment" />)
     expect(screen.getByRole('heading', { name: GENRE_LABELS.music })).toBeTruthy()
   })
 
@@ -46,29 +32,70 @@ describe('ジャンル見出し+トピックカードの表示 - 動きがあっ
     const [first, second, third] = GENRE_ORDER.entertainment
     render(
       <>
-        <GenreSection genre={first} topics={[makeTopic({ genre: first })]} isAdmin={false} articleId="a" />
-        <GenreSection genre={second} topics={[]} isAdmin={false} articleId="a" />
-        <GenreSection genre={third} topics={[makeTopic({ genre: third })]} isAdmin={false} articleId="a" />
+        <GenreSection genre={first} topics={[makeTopic({ genre: first })]} unavailable={false} isAdmin={false} articleId="a" />
+        <GenreSection genre={second} topics={[]} unavailable isAdmin={false} articleId="a" />
+        <GenreSection genre={third} topics={[makeTopic({ genre: third })]} unavailable={false} isAdmin={false} articleId="a" />
       </>
     )
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
-    // secondは動きがなかった扱い(topics: [])のため見出しに現れず、first→thirdの順のみ現れる
-    expect(headings).toEqual([GENRE_LABELS[first], GENRE_LABELS[third]])
+    // secondはtopicsが空でもunavailableなら見出しは表示され続ける(ジャンルが記事から消えることはない)
+    expect(headings).toEqual([GENRE_LABELS[first], GENRE_LABELS[second], GENRE_LABELS[third]])
   })
 
   it('各トピックの見出し・本文・出典(情報源名・元URLへのリンク、新規タブで開く)が表示されること', () => {
-    render(
-      <GenreSection
-        genre="music"
-        topics={[makeTopic()]}
-        isAdmin={false}
-        articleId="2026-09-15-entertainment"
-      />
-    )
+    render(<GenreSection genre="music" topics={[makeTopic()]} unavailable={false} isAdmin={false} articleId="2026-09-15-entertainment" />)
     expect(screen.getByText('新曲がストリーミングで急上昇')).toBeTruthy()
     expect(screen.getByText('あるアーティストの新曲がストリーミングサービスの週間ランキングで急上昇した。')).toBeTruthy()
     const link = screen.getByRole('link', { name: 'Oricon' })
     expect(link.href).toBe('https://example.com/oricon/a')
     expect(link.target).toBe('_blank')
+  })
+})
+
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-17、specs/trend-digest/content-selection/requirements.md#掲載件数-3
+describe('話題を取得できなかったジャンルの表示 - 見出しは出したうえで、取得できなかった旨をトピックカードの代わりに表示する', () => {
+  it('topicsが空でunavailableの場合、見出しは表示されつつ、取得できなかった旨がトピックカードの代わりに表示されること', () => {
+    render(<GenreSection genre="music" topics={[]} unavailable isAdmin={false} articleId="2026-09-15-entertainment" />)
+    expect(screen.getByRole('heading', { name: GENRE_LABELS.music })).toBeTruthy()
+    expect(screen.getByText('今回は情報源から話題を取得できませんでした')).toBeTruthy()
+  })
+
+  it('topicsが空でunavailableの場合、トピックカード(見出し・本文等)が描画されないこと', () => {
+    render(<GenreSection genre="music" topics={[]} unavailable isAdmin={false} articleId="2026-09-15-entertainment" />)
+    expect(screen.queryByRole('link')).toBeNull()
+  })
+
+  it('見出しだけが残る状態(取得できなかった旨も表示されない状態)にはならないこと', () => {
+    const { container } = render(
+      <GenreSection genre="music" topics={[]} unavailable isAdmin={false} articleId="2026-09-15-entertainment" />
+    )
+    // 見出し以外に何らかのテキスト(取得できなかった旨)が必ず存在する
+    expect(container.textContent).not.toBe(GENRE_LABELS.music)
+  })
+})
+
+// 仕様: specs/trend-digest/article-detail/design.md「その回の記事本文を表示する処理」手順4
+// (unavailableGenresを持たない過去の記事は、掲載のないジャンルに何も表示しない)
+describe('過去の記事(unavailableGenresを持たない)の表示 - 掲載のないジャンルにはセクション自体を出さない', () => {
+  it('topicsが空でunavailableでない場合、見出しも「取得できませんでした」も表示されないこと', () => {
+    const { container } = render(
+      <GenreSection genre="music" topics={[]} unavailable={false} isAdmin={false} articleId="a" />
+    )
+    expect(container.textContent).toBe('')
+    expect(screen.queryByText('今回は情報源から話題を取得できませんでした')).toBeNull()
+  })
+
+  it('同一ジャンルに複数トピックがある過去の記事では、すべてのトピックが表示されること', () => {
+    render(
+      <GenreSection
+        genre="music"
+        topics={[makeTopic({ id: 'topic-1', heading: '見出し1' }), makeTopic({ id: 'topic-2', heading: '見出し2' })]}
+        unavailable={false}
+        isAdmin={false}
+        articleId="a"
+      />
+    )
+    expect(screen.getByText('見出し1')).toBeTruthy()
+    expect(screen.getByText('見出し2')).toBeTruthy()
   })
 })

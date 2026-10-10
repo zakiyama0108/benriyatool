@@ -1,75 +1,133 @@
-import type { Genre } from './types'
+import type { Edition, Genre } from './types'
 import { GENRE_ORDER } from './types'
-import type { Candidate, SelectionResult } from './candidateTypes'
-import type { Criteria } from './watchlistTypes'
+import type { Candidate, SelectedTopic, SelectionResult } from './candidateTypes'
+import type { HistoryJudgement } from './historyTypes'
+import { DURATION_LABEL_ORDER, HEAT_LABEL_ORDER } from './historyTypes'
 
-// 掲載済み話題の除外・ジャンル内の絞り込み・編全体の絞り込み(仕様: requirements.md#掲載済み話題の再掲抑制-1、
-// requirements.md#機能要件-4、requirements.md#機能要件-5、design.md「掲載済み話題を除外する処理」
-// 「ジャンル内の絞り込みを行う処理」「編全体の絞り込みを行う処理」)。入出力が純粋なデータのみのため
-// 通常のvitestで完全にテストできる
+// 掲載する話題の並べ替え・各ジャンル1件の選定(仕様: requirements.md#掲載する話題の選び方-4〜8、
+// design.md「掲載する話題を選ぶ処理」)。入出力が純粋なデータのみのため通常のvitestで完全にテストできる
 
-// 掲載済み話題の再掲抑制用にタイトルを正規化する(design.md「掲載済み話題を除外する処理」手順2)。
+// 同一話題かどうかの判定・タイトルの表示用突合キーとしてタイトルを正規化する
+// (requirements.md#掲載する話題の選び方-8、design.md「掲載する話題を選ぶ処理」手順8)。
+// trend-history(aggregateHistory.ts)と同じ正規化ルールを共用する(二重に持たない)。
 // 前後の空白除去・全角/半角の統一(NFKC正規化)・英字の大文字小文字統一を行う
 export function normalizeTitle(title: string): string {
   return title.trim().normalize('NFKC').toLowerCase()
 }
 
-// 過去に掲載済みのトピック(同一作品名・同一話題)を、採用基準を満たしていても候補から除外する
-// (requirements.md#掲載済み話題の再掲抑制-1)。publishedTitlesは呼び出し元
-// (scripts/trend-digest/collect-and-select.ts)がcontent/trend-digest/articles/*.jsonの
-// 全記事のsourceTitleを集めたもの(期間で絞らない)
-export function excludeAlreadyPublishedTopics(candidates: Candidate[], publishedTitles: Set<string>): Candidate[] {
-  const normalizedPublished = new Set([...publishedTitles].map(normalizeTitle))
-  return candidates.filter((candidate) => !normalizedPublished.has(normalizeTitle(candidate.title)))
+// trend-historyが判定した継続度ラベル・注目度ラベル・掲載実績を添えた候補(design.md「掲載する話題を選ぶ処理」)。
+// ラベルの判定自体はtrend-history(Task6〜8)が行い、ここでは受け取った結果を比較するだけ
+export type CandidateWithJudgement = Candidate & { judgement: HistoryJudgement }
+
+// 掲載する話題の並べ替え(requirements.md#掲載する話題の選び方-4〜6・-8、design.md「掲載する話題を選ぶ処理」手順4)。
+// 昇順の比較関数として使う(戻り値が負ならaを先にする)。次の3階層+タイブレークで比較する:
+//   1. 過去に一度も掲載したことがない話題(publishedCount=0)を、掲載したことがある話題より先にする
+//   2. 未掲載どうしは継続度ラベルが高い順→注目度ラベルが高い順→その回の強さ(strength)が大きい順
+//   3. 掲載済みどうしは注目度ラベルが高い順→継続度ラベルが高い順→掲載回数(publishedCount)が少ない順
+//   4. ここまで同値なら正規化タイトルの昇順(同点のときに選ばれる話題が実行のたびに変わらないようにするため)
+export function compareCandidates(a: CandidateWithJudgement, b: CandidateWithJudgement): number {
+  const aPublished = a.judgement.publishedCount > 0
+  const bPublished = b.judgement.publishedCount > 0
+  if (aPublished !== bPublished) return aPublished ? 1 : -1
+
+  let diff: number
+  if (!aPublished) {
+    diff = DURATION_LABEL_ORDER[b.judgement.durationLabel] - DURATION_LABEL_ORDER[a.judgement.durationLabel]
+    if (diff !== 0) return diff
+    diff = HEAT_LABEL_ORDER[b.judgement.heatLabel] - HEAT_LABEL_ORDER[a.judgement.heatLabel]
+    if (diff !== 0) return diff
+    diff = b.strength - a.strength
+    if (diff !== 0) return diff
+  } else {
+    diff = HEAT_LABEL_ORDER[b.judgement.heatLabel] - HEAT_LABEL_ORDER[a.judgement.heatLabel]
+    if (diff !== 0) return diff
+    diff = DURATION_LABEL_ORDER[b.judgement.durationLabel] - DURATION_LABEL_ORDER[a.judgement.durationLabel]
+    if (diff !== 0) return diff
+    diff = a.judgement.publishedCount - b.judgement.publishedCount
+    if (diff !== 0) return diff
+  }
+
+  return normalizeTitle(a.title).localeCompare(normalizeTitle(b.title))
 }
 
-// ジャンル内の絞り込み(1ジャンル最大2件。requirements.md#機能要件-4、
-// requirements.md#ジャンル内の絞り込み(1ジャンル最大2件)-1〜2、design.md「ジャンル内の絞り込みを行う処理」)。
-// strength降順に並べ、3件以上あれば上位2件に絞る。0〜2件はそのまま採用する
-export function narrowGenreCandidates(candidates: Candidate[], perGenreMax: number): Candidate[] {
-  return [...candidates].sort((a, b) => b.strength - a.strength).slice(0, perGenreMax)
-}
-
-// 編全体の絞り込みの入力単位。narrowGenreCandidates適用後(strength降順、最大2件)の
-// 1ジャンル分の候補と、絞り込みの優先順位付け(design.md#編全体の絞り込みを行う処理-手順2)に使うmethodを持つ
-export type GenreCandidateEntry = {
+// 1ジャンル分のその回の観測項目(採用基準の判定前の全件。design.md「掲載する話題を選ぶ処理」対象)。
+// 候補(meetsCriteria: true)と候補にならなかった項目の両方を持つ
+export type GenreObservations = {
   genre: Genre
-  method: 'fixed-list' | 'websearch'
-  candidates: Candidate[]
+  observations: Candidate[]
 }
 
-// 編全体の絞り込み(1回最大10件。requirements.md#機能要件-5、
-// requirements.md#配信全体の絞り込み(1回最大10件)-1、design.md「編全体の絞り込みを行う処理」)。
-// genreEntriesはwatchlist.json登録順(手順2の「固定リストジャンル→WebSearchジャンル」の順序決定に使う)で渡す
+// 観測項目1件ぶんのtrend-history判定結果を引くための辞書。キーはnormalizeTitle済みのタイトル
+// (trend-historyがその回の全観測項目について判定結果を返す前提。design.md「全観測項目を履歴へ記録する処理」手順3)
+export type JudgementLookup = Map<string, HistoryJudgement>
+
+function attachJudgement(candidate: Candidate, judgements: JudgementLookup): CandidateWithJudgement {
+  const judgement = judgements.get(normalizeTitle(candidate.title))
+  if (!judgement) {
+    // trend-historyはその回にcontent-selectionから渡された全観測項目の判定結果を返す前提であり、
+    // ここに来る場合はパイプラインの不具合(観測項目の記録漏れ等)を示す
+    throw new Error(
+      `観測項目「${candidate.title}」(ジャンル: ${candidate.genre})の判定結果が見つかりません。` +
+        'trend-historyがこの回の全観測項目分の判定結果を返しているか確認してください'
+    )
+  }
+  return { ...candidate, judgement }
+}
+
+// CandidateWithJudgementから、記事に載せる1件分のSelectedTopicを組み立てる
+function toSelectedTopic(candidate: CandidateWithJudgement): SelectedTopic {
+  const { judgement, ...rest } = candidate
+  return {
+    ...rest,
+    durationLabel: judgement.durationLabel,
+    heatLabel: judgement.heatLabel,
+    continuationDays: judgement.continuationDays,
+    continuationStartDate: judgement.continuationStartDate,
+    reportCount: judgement.reportCount,
+    lastPublishedDurationLabel: judgement.lastPublishedDurationLabel,
+    lastPublishedBody: judgement.lastPublishedBody,
+  }
+}
+
+// 対象editionの各ジャンルから1件を選ぶ(requirements.md#機能要件-5、requirements.md#掲載件数-1〜3、
+// design.md「掲載する話題を選ぶ処理」)。genreObservationsに含まれないジャンル、または
+// observationsが空のジャンルは、情報源から項目を1件も取得できなかったジャンルとしてunavailableGenresに入る
 export function selectEditionTopics(
-  genreEntries: GenreCandidateEntry[],
-  criteria: Criteria,
-  edition: 'entertainment' | 'culture-lifestyle'
+  genreObservations: GenreObservations[],
+  judgements: JudgementLookup,
+  edition: Edition
 ): SelectionResult {
-  // 手順1: 各ジャンルの1件目(最有力候補)をすべて先に採用する
-  const firstPlace = genreEntries.map((entry) => entry.candidates[0]).filter((c): c is Candidate => Boolean(c))
-  const selected: Candidate[] = [...firstPlace]
-
-  // 手順2: 採用件数がperEditionMaxを超えない範囲で、各ジャンルの2件目を
-  // 「固定リストジャンル→WebSearchジャンル」の順(ジャンルはwatchlist.json登録順)に1件ずつ追加する
-  const secondPlaceOrder = [
-    ...genreEntries.filter((entry) => entry.method === 'fixed-list'),
-    ...genreEntries.filter((entry) => entry.method === 'websearch'),
-  ]
-  for (const entry of secondPlaceOrder) {
-    if (selected.length >= criteria.perEditionMax) break
-    const second = entry.candidates[1]
-    if (second) selected.push(second)
-  }
-
-  // 手順4: 対象9ジャンルすべてで候補が1件も残らなかった場合のみスキップとする
-  if (selected.length === 0) {
-    return { status: 'skipped', edition, reason: '対象9ジャンルすべてで候補が0件でした' }
-  }
-
-  // 手順3: 採用された候補を、そのeditionの9ジャンルの定義順(GENRE_ORDER)に並べ替える
   const order = GENRE_ORDER[edition]
-  const topics = [...selected].sort((a, b) => order.indexOf(a.genre) - order.indexOf(b.genre))
+  const topics: SelectedTopic[] = []
+  const unavailableGenres: Genre[] = []
 
-  return { status: 'ok', edition, topics }
+  for (const genre of order) {
+    const observations = genreObservations.find((g) => g.genre === genre)?.observations ?? []
+    if (observations.length === 0) {
+      // 情報源から項目を1件も取得できなかったジャンル(requirements.md#掲載件数-3)。架空の話題は作らない
+      unavailableGenres.push(genre)
+      continue
+    }
+
+    const withJudgement = observations.map((candidate) => attachJudgement(candidate, judgements))
+    // 手順1: 採用基準を満たした項目(候補)があれば候補だけから選ぶ。候補が0件なら観測項目全体から選ぶ
+    // (各ジャンルから必ず1件を掲載するため。requirements.md#掲載件数-1)
+    const candidatesOnly = withJudgement.filter((candidate) => candidate.meetsCriteria)
+    const pool = candidatesOnly.length > 0 ? candidatesOnly : withJudgement
+
+    const [best] = [...pool].sort(compareCandidates)
+    topics.push(toSelectedTopic(best))
+  }
+
+  // 手順7: 対象editionのすべてのジャンルで項目を1件も取得できなかった場合のみスキップとする
+  if (topics.length === 0) {
+    return {
+      status: 'skipped',
+      edition,
+      reason: `対象edition(${edition})の全${order.length}ジャンルで情報源から項目を1件も取得できませんでした`,
+    }
+  }
+
+  // topicsは手順6のとおりGENRE_ORDER順(このforループの反復順)にすでに並んでいる
+  return { status: 'ok', edition, topics, unavailableGenres }
 }

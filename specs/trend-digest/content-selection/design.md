@@ -24,7 +24,7 @@ architecture.mdが定める2つの選定方式を、実装形態として次の�
 import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
 import type { HistoryCriteria } from './historyTypes' // trend-history/design.mdが定義する継続度・注目度の判定に使う値
 
-export type SelectionMethod = 'fixed-list' | 'websearch'
+export type SelectionMethod = 'fixed-list' | 'websearch' | 'hybrid' // hybridは固定リストとWebSearchを併用するジャンル専用(requirements.md#選定方式-7。現時点ではアニメのみ)
 
 // 固定リストジャンルの情報源が、どの取得・パース処理を使うかを表す
 // (初回配信で汎用の正規表現1パターンが実際のサイト構造に対応しきれなかった反省から、
@@ -68,16 +68,26 @@ export type WebSearchGenreCriteria = {
   minIndependentSources: number // 「独立した言及が広がっている」と判定する最低独立言及元数(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-2)
 }
 
+// 併用ジャンルの採用基準(requirements.md#選定方式-7)。固定リスト側・WebSearch側それぞれの基準を持ち、
+// いずれか一方を満たせば候補にする(OR条件)。現時点ではアニメのみが対象
+export type HybridGenreCriteria = {
+  method: 'hybrid'
+  fixedList: Omit<FixedListGenreCriteria, 'method'>
+  webSearch: Omit<WebSearchGenreCriteria, 'method'>
+}
+
+export type GenreCriteria = FixedListGenreCriteria | WebSearchGenreCriteria | HybridGenreCriteria
+
 export type Criteria = {
   newEntryLookbackWeeks: number // 「新規ランクイン」を判定する際、何週間分の過去記事の掲載トピックを参照するか
-  genreCriteria: Record<Genre, FixedListGenreCriteria | WebSearchGenreCriteria>
+  genreCriteria: Record<Genre, GenreCriteria>
   history: HistoryCriteria // 継続度ラベル・注目度ラベルの判定に使う値(trend-history/design.md「履歴データの形式」)
 }
 
 1ジャンルあたり・1回あたりの掲載件数の上限は持たない。掲載件数は「その編のジャンル数と同じ(各ジャンル1件)」に固定されており(requirements.md#掲載件数-1〜2)、調整できる値ではないため。
 ```
 
-`watchlist.json`の初期値(全19ジャンル。sourcesはrequirements.mdの各ジャンル節の情報源をそのまま構造化したもの。URLは実際にアクセスして生存確認済み[2026-09-19時点]。`region`はその情報源が日本の流行と海外の流行のどちらを映すかの区分):
+`watchlist.json`の初期値(全19ジャンル。sourcesはrequirements.mdの各ジャンル節の情報源をそのまま構造化したもの。URLは実際にアクセスし、対象の順位付き一覧が実際にそのページに存在することを確認済み。`region`はその情報源が日本の流行と海外の流行のどちらを映すかの区分):
 
 ```json
 {
@@ -88,7 +98,7 @@ export type Criteria = {
       ] },
     { "genre": "japanese-movie", "edition": "entertainment", "label": "日本映画", "method": "fixed-list",
       "sources": [
-        { "name": "興行通信社CINEMAランキング通信(国内)", "url": "https://www.kogyotsushin.com/", "format": "site-specific-html", "parserId": "kogyoTsushin", "region": "japan" },
+        { "name": "興行通信社CINEMAランキング通信(国内)", "url": "https://www.kogyotsushin.com/archives/weekend/", "format": "site-specific-html", "parserId": "kogyoTsushin", "region": "japan" },
         { "name": "映画.com国内ランキング", "url": "https://eiga.com/ranking/jp/", "format": "site-specific-html", "parserId": "eigaCom", "region": "japan" },
         { "name": "Filmarks上映中ランキング", "url": "https://filmarks.com/list/now", "format": "site-specific-html", "parserId": "filmarks", "region": "japan" }
       ] },
@@ -98,13 +108,17 @@ export type Criteria = {
         { "name": "Filmarks上映中ランキング", "url": "https://filmarks.com/list/now", "format": "site-specific-html", "parserId": "filmarks", "region": "japan" }
       ] },
     { "genre": "japanese-drama", "edition": "entertainment", "label": "日本ドラマ", "method": "fixed-list",
-      "sources": [{ "name": "ビデオリサーチ ドラマ視聴率速報", "url": "https://www.videor.co.jp/tvrating/daily/drama/", "format": "site-specific-html", "parserId": "videoResearch", "region": "japan" }] },
+      "sources": [{ "name": "ビデオリサーチ 視聴人数ランキング(ドラマ)", "url": "https://www.videor.co.jp/audience/", "format": "site-specific-html", "parserId": "videoResearchDrama", "region": "japan" }] },
     { "genre": "foreign-drama", "edition": "entertainment", "label": "海外ドラマ", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(シリーズ・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
-    { "genre": "anime", "edition": "entertainment", "label": "アニメ", "method": "fixed-list",
-      "sources": [{ "name": "Netflix公式Top10データ(日本のTOP10)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
+    { "genre": "anime", "edition": "entertainment", "label": "アニメ", "method": "hybrid",
+      "sources": [
+        { "name": "Filmarksアニメ 話題のおすすめアニメ", "url": "https://filmarks.com/list-anime/trend", "format": "site-specific-html", "parserId": "filmarksAnimeTrend", "region": "japan" },
+        { "name": "AniLab 日本ウィークリーアニメランキング", "url": "https://anilabb.com/rate/anime?region=japan", "format": "site-specific-html", "parserId": "anilabJapanWeekly", "region": "japan" }
+      ],
+      "searchHints": ["SNS 話題 アニメ 反響", "アニメ 配信 視聴 増加 ニュース", "アニメ 続編 発表 反応"] },
     { "genre": "variety", "edition": "entertainment", "label": "バラエティ", "method": "fixed-list",
-      "sources": [{ "name": "ビデオリサーチ バラエティ視聴率速報", "url": "https://www.videor.co.jp/tvrating/past_tvrating/variety/", "format": "site-specific-html", "parserId": "videoResearch", "region": "japan" }] },
+      "sources": [{ "name": "ビデオリサーチ 視聴人数ランキング(バラエティ)", "url": "https://www.videor.co.jp/audience/", "format": "site-specific-html", "parserId": "videoResearchVariety", "region": "japan" }] },
     { "genre": "streaming-video", "edition": "entertainment", "label": "サブスク動画", "method": "fixed-list",
       "sources": [{ "name": "Netflix公式Top10データ(映画・日本)", "url": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", "format": "structured-tsv", "region": "japan" }] },
     { "genre": "books-comics", "edition": "entertainment", "label": "書籍・漫画", "method": "fixed-list",
@@ -126,7 +140,7 @@ export type Criteria = {
     { "genre": "games", "edition": "culture-lifestyle", "label": "ゲーム", "method": "fixed-list",
       "sources": [
         { "name": "Steam公式Web API(プレイヤー数)", "url": "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/", "format": "structured-json-api", "region": "overseas" },
-        { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/game-sales/", "format": "site-specific-html", "parserId": "famitsu", "region": "japan" }
+        { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/game-sales", "format": "site-specific-html", "parserId": "famitsu", "region": "japan" }
       ] },
     { "genre": "travel", "edition": "culture-lifestyle", "label": "旅行・観光", "method": "fixed-list",
       "sources": [{ "name": "じゃらんnet人気ランキング", "url": "https://www.jalan.net/news/", "format": "site-specific-html", "parserId": "jalan", "region": "japan" }] },
@@ -140,6 +154,12 @@ export type Criteria = {
 
 補足(情報源から外したサイト): Oricon週間チャート・ZOZOTOWN人気ランキング・Engadget日本版(2022年サイト閉鎖)・るるぶ&more!トップページ・Googleトレンド急上昇ワードページ・Yahoo!検索急上昇ワードページは、いずれもJS描画・Bot対策・サイト閉鎖のいずれかで機械的な取得ができないため情報源から外した。旅行・観光のるるぶ&more!は記事一覧ページ(`rurubu.jp/andmore/article`)であれば取得できる可能性があるため、[source-review](../source-review/requirements.md)で追加候補として再検証する。
 
+補足(ビデオリサーチのURL): ビデオリサーチが提供する「最新ドラマ視聴データ速報」ミニサイト(`tvrating/daily/drama/`)はドラマ専用で、バラエティに対応する同形式のページは存在しない。日本ドラマ・バラエティの両ジャンルとも、ジャンルごとのセクション(見出し「ドラマ」「バラエティ」)を持つ「視聴人数ランキング」ページ(`videor.co.jp/audience/`)を情報源とする(視聴率(%)ではなく視聴人数(万人)の順位だが、同じくビデオリサーチが集計する実視聴に基づく客観データであり、上位何位以内という判定方法は変わらない)。
+
+補足(じゃらんnet人気ランキングの限界): `jalan.net/news/`の「ランキング」タブは、jalanニュース内の人気記事(季節の解説記事等)のランキングであり、観光スポットそのものの人気ランキングではない。じゃらんnet本体に観光スポット単位の機械的に取得できる人気ランキングページが見つからなかったため、次善の情報源として人気記事ランキングを使う。取得した項目が観光スポット名ではなく記事タイトルになる点は、[source-review](../source-review/requirements.md)で情報源の妥当性を再検証する対象とする。
+
+補足(アニメが併用ジャンルになった経緯): Netflix公式Top10データ(`structured-tsv`)のカテゴリはFilms/TVの2種類のみで、アニメと実写作品を区別する基準が存在しない。架空の区別基準を作らず、アニメの固定リスト情報源をFilmarksアニメ・AniLabという専用のアニメランキングに差し替え、精度を補うためWebSearchも併用する(requirements.md#選定方式-7)。
+
 `criteria.json`の初期値(妥当性は運用実績を見て[source-review](../source-review/requirements.md)で見直す。`history`の各値の意味は[trend-history/design.md](../trend-history/design.md)「履歴データの形式」参照):
 ```json
 {
@@ -150,7 +170,7 @@ export type Criteria = {
     "foreign-movie": { "method": "fixed-list", "rankThreshold": 5 },
     "japanese-drama": { "method": "fixed-list", "rankThreshold": 5 },
     "foreign-drama": { "method": "fixed-list", "newEntryOrRisingRank": true },
-    "anime": { "method": "fixed-list", "newEntryOrRisingRank": true },
+    "anime": { "method": "hybrid", "fixedList": { "newEntryOrRisingRank": true }, "webSearch": { "minIndependentSources": 3 } },
     "variety": { "method": "fixed-list", "rankThreshold": 5 },
     "streaming-video": { "method": "fixed-list", "newEntryOrRisingRank": true },
     "books-comics": { "method": "fixed-list", "rankThreshold": 5, "newEntryOrRisingRank": true },
@@ -207,6 +227,7 @@ export type SelectedTopic = Candidate & {
   continuationStartDate: string // 途切れずに検知され続けている期間の開始日(trend-history/design.md)
   reportCount: number // 今回掲載した場合に通算何回目の報告になるか(requirements.md#掲載する話題の選び方-7)
   lastPublishedDurationLabel: DurationLabel | null // 直近掲載時の継続度ラベル。未掲載・判定不能はnull。content-generationが続報の本文を書くために使う
+  lastPublishedBody: string | null // 直近掲載時の本文。未掲載はnull。content-generationが続報の重複執筆を防ぐ検証に使う([trend-history/design.md](../trend-history/design.md)「掲載実績を求める処理」)
 }
 
 export type SelectionResult =
@@ -222,7 +243,7 @@ export type SelectionResult =
 ```
 
 ### 固定リストジャンルの候補を収集・判定する処理(決定的なコード)
-- 対象: `watchlist.json`の`method: 'fixed-list'`の12ジャンル(実行対象のeditionのジャンルのうち該当するもの)
+- 対象: `watchlist.json`の`method: 'fixed-list'`の11ジャンルと、`method: 'hybrid'`の1ジャンル(アニメ)の固定リスト側(実行対象のeditionのジャンルのうち該当するもの)。アニメの採用基準は`criteria.json`の`genreCriteria.anime.fixedList`を使う(下記「併用ジャンル(アニメ)の候補を収集・判定する処理」参照)
 - 手順:
   1. ジャンルごとに登録された各情報源を、`format`に応じた取得処理で取得する。取得・パースに失敗した場合はその情報源だけを除外して処理を続ける(1件の取得失敗で編全体の収集を止めない)
      - `structured-tsv`/`structured-rss`/`structured-json-api`: 公式の構造化データをそのまま取得しパースする(HTML解析を要さないため最も安定している)
@@ -238,12 +259,21 @@ export type SelectionResult =
 - 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜8、requirements.md#情報源の地域区分-1、requirements.md#データ取得方法-1〜2、requirements.md#情報源の健全性監視-1
 
 ### サイトごとの専用パーサー(`scripts/trend-digest/sourceParsers/`)
-- 初回配信の実運用で、1つの正規表現パーサーで全HTML情報源を解析する方式は、サイトごとに異なる順位表現(プレーンテキスト・CSSクラス名・画像スプライト等)に対応できず機能しなかった。このためサイトごとに専用のパース関数を用意する(`billboardJapan.ts`/`kogyoTsushin.ts`/`eigaCom.ts`/`filmarks.ts`/`videoResearch.ts`/`tohan.ts`/`nippan.ts`/`famitsu.ts`/`jalan.ts`の9ファイル)
-- 各パーサーは`(html: string) => RankedItem[]`の形の純粋関数とし、そのサイトのHTML構造(セレクタ・CSSクラス名等)に関する実装コメントを関数ごとに残す(トーハン・日販は順位がCSSクラス名(`rank-1st`等)で表現されている点など、サイト固有の癖はコメントで明示する)。実際のHTML構造検証は疎通確認(週次実行結果)で代替する方針は維持する(`fetchSourcePage.ts`の既存コメント参照)
+- 初回配信の実運用で、1つの正規表現パーサーで全HTML情報源を解析する方式は、サイトごとに異なる順位表現(プレーンテキスト・CSSクラス名・画像スプライト等)に対応できず機能しなかった。このためサイトごとに専用のパース関数を用意する(`billboardJapan.ts`/`kogyoTsushin.ts`/`eigaCom.ts`/`filmarks.ts`/`videoResearch.ts`(videoResearchDrama/videoResearchVarietyの2関数を持つ)/`tohan.ts`/`nippan.ts`/`famitsu.ts`/`jalan.ts`/`filmarksAnimeTrend.ts`/`anilabJapanWeekly.ts`の11ファイル)
+- 各パーサーは`(html: string) => RankedItem[]`の形の純粋関数とし、そのサイトのHTML構造(セレクタ・CSSクラス名等)に関する実装コメントを関数ごとに残す(トーハンは順位がCSSクラス名(`rank-1st`等)で、日販は順位が数値テキスト+前週比の方向を表すCSSクラス名(`is-new`/`is-up`/`is-down`/`is-stay`)の組で表現されている点、AniLabは前週比の順位変動が「順位を◯上げて」のような文中表記である点など、サイト固有の癖はコメントで明示する)。実際のHTML構造検証は疎通確認(週次実行結果)で代替する方針は維持する(`fetchSourcePage.ts`の既存コメント参照)
 - サイト構造が変わりパーサーが機能しなくなった場合は、そのパーサーだけを[source-review](../source-review/requirements.md)の月次見直しで修正する(1サイトの構造変更が他ジャンルに波及しない)
 
+### 併用ジャンル(アニメ)の候補を収集・判定する処理(決定的なコード)
+- 対象: `watchlist.json`の`method: 'hybrid'`のジャンル(アニメ)
+- 手順:
+  1. 上記「固定リストジャンルの候補を収集・判定する処理」を、アニメの`sources`(Filmarksアニメ・AniLab)と`genreCriteria.anime.fixedList`だけを対象に実行する
+  2. 下記「WebSearchジャンルの候補を収集・判定する処理」を、アニメの`searchHints`と`genreCriteria.anime.webSearch`だけを対象に実行する
+  3. 手順1・2で得た観測項目をそのまま1つの配列に結合する(いずれかの手順で採用基準を満たした項目は候補として扱う。OR条件。requirements.md#選定方式-7)。結合後の配列は他の固定リストジャンル・WebSearchジャンルの観測項目と同じ形(`method`が項目ごとに`fixed-list`/`websearch`のいずれかを持つ)のため、後続の「掲載する話題を選ぶ処理」・trend-historyの観測ログ記録は変更を要しない
+  4. 同じ正規化タイトルの話題が固定リスト側・WebSearch側の両方で見つかった場合も、重複を除かずそのまま2件の観測として保持する(trend-history側が選定方式ごとに1件へ寄せる。[trend-history/design.md](../trend-history/design.md)「その回の観測を履歴に記録する処理」手順3)
+- 関連するビジネスルール: requirements.md#選定方式-7、requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-9、requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11
+
 ### WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)
-- 対象: `watchlist.json`の`method: 'websearch'`の7ジャンル(実行対象のeditionのジャンルのうち該当するもの)
+- 対象: `watchlist.json`の`method: 'websearch'`の7ジャンルと、`method: 'hybrid'`の1ジャンル(アニメ)のWebSearch側(実行対象のeditionのジャンルのうち該当するもの)。アニメの採用基準は`criteria.json`の`genreCriteria.anime.webSearch`を使う(上記「併用ジャンル(アニメ)の候補を収集・判定する処理」参照)
 - 手順:
   1. ジャンルごとの`searchHints`を手がかりに、Claude Code CLIのヘッドレス実行(WebSearchツール)で話題を検索する。検索の切り口は固定の少数サイトに限定せず、複数の異なる角度(ニュースメディア・まとめメディア・SNS上の言及・口コミ)から広く探索する(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-3)
   2. **採用基準の判定を行う前に、検索で見つかった話題を上位`maxObservationsPerSource`件まで「その回の観測」として保持する**(話題の名称・独立言及元の数)。以降の手順で`minIndependentSources`未満として候補から外れた話題も含め、これらはすべて[trend-history](../trend-history/design.md)の観測ログへ記録する(requirements.md#機能要件-3、[trend-history/requirements.md#機能要件](../trend-history/requirements.md)-1〜4)。言及元が1件しかない段階の話題を記録しないと、後に3件へ伸びたときの初回検知日が実態より後ろにずれ、継続日数が過小評価されるため
@@ -295,16 +325,16 @@ export type SelectionResult =
 content/trend-digest/watchlist.json (既存: 情報源をformat/parserId付きに刷新・dev-trendsジャンルの追加・各情報源へのregion付与)
 content/trend-digest/criteria.json (既存: perGenreMax・perEditionMaxの削除、genreCriteria・minIndependentSourcesの更新、historyの値を追加)
 app/trend-digest/lib/types.ts (既存: Genreにdev-trendsを追加、GENRE_ORDER・GENRE_LABELSも更新)
-app/trend-digest/lib/watchlistTypes.ts (既存: FixedListSourceFormat・SourceRegionの追加、CriteriaからのperGenreMax・perEditionMaxの削除とhistoryの追加、WatchlistEntryのsourcesへのregion追加)
+app/trend-digest/lib/watchlistTypes.ts (既存: FixedListSourceFormat・SourceRegionの追加、CriteriaからのperGenreMax・perEditionMaxの削除とhistoryの追加、WatchlistEntryのsourcesへのregion追加、SelectionMethodへのhybrid追加とHybridGenreCriteriaの追加)
 app/trend-digest/lib/candidateTypes.ts (既存: Candidateへの順位・採用基準の判定結果・地域情報の追加、PublishableCandidateのSelectedTopicへの置き換え)
 app/trend-digest/lib/historyTypes.ts (trend-historyで新規作成: 継続度ラベル・注目度ラベルの型と並び順を利用)
 app/trend-digest/lib/selection.ts (既存: 掲載する話題の選び方を3階層の並べ替え+各ジャンル1件に書き換え。normalizeTitleはtrend-historyと共用)
 app/trend-digest/lib/fetchFixedListCandidates.ts (既存: format別のディスパッチ・順位の保持・regionからの地域強度の集計)
 scripts/trend-digest/fetchSourcePage.ts (既存: HTTP取得・文字コード変換・User-Agent付与。サイト固有パースはsourceParsers/へ委譲するよう更新)
-scripts/trend-digest/sourceParsers/billboardJapan.ts, kogyoTsushin.ts, eigaCom.ts, filmarks.ts, videoResearch.ts, tohan.ts, nippan.ts, famitsu.ts, jalan.ts (新規: サイトごとの専用パーサー)
+scripts/trend-digest/sourceParsers/billboardJapan.ts, kogyoTsushin.ts, eigaCom.ts, filmarks.ts, videoResearch.ts, tohan.ts, nippan.ts, famitsu.ts, jalan.ts, filmarksAnimeTrend.ts, anilabJapanWeekly.ts (新規: サイトごとの専用パーサー)
 scripts/trend-digest/fetchStructuredSource.ts (新規: structured-tsv/structured-rss/structured-json-apiの取得・パース)
-scripts/trend-digest/collect-websearch-candidates.ts (既存: 独立言及元の定義・minIndependentSources引き上げ・観測項目の保持・地域情報の収集をプロンプト/応答形式に反映)
-scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出しと、継続度・注目度にもとづく選定の呼び出しを追加)
+scripts/trend-digest/collect-websearch-candidates.ts (既存: 独立言及元の定義・minIndependentSources引き上げ・観測項目の保持・地域情報の収集をプロンプト/応答形式に反映。collectWebSearchGenreはhybridジャンルのwebSearch側も扱う)
+scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出しと、継続度・注目度にもとづく選定の呼び出しを追加。collectGenreObservationsはhybridジャンルで固定リスト側・WebSearch側の両方を呼び出し結合する)
 ```
 
 `selection.ts`は入出力が純粋なデータ(候補配列・判定結果→選定結果)のみのため、通常のvitestで完全にテストできる。`sourceParsers/`配下の各パーサーは、実際に取得したHTMLをテストフィクスチャとして保存し(`__tests__/trend-digest/fixtures/sourceParsers/`)、それを入力とした純粋関数のテストとして書く(サイトごとに構造が異なるため、パーサー単位で決定的にテストできる)。`fetchSourcePage.ts`・`fetchStructuredSource.ts`は外部ページ・APIへのHTTP呼び出しを伴うため、レスポンス形状のパース・エラー処理・文字コード変換のみをモックしたテストの対象とし、実際の外部通信を伴う疎通確認は週次実行結果([weekly-publish](../weekly-publish/design.md))で代替する。`collect-websearch-candidates.ts`はClaude Code CLIのヘッドレス起動そのものであり、決定的なテストは書かず(ai-dev-digestのcontent-generationと同じ考え方)、応答形式の分類ロジックのみをテスト対象にする。

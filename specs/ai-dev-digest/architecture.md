@@ -126,6 +126,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [line-broadcast](line-broadcast/requirements.md) | daily-publishの日次記事PRがmainへ自動マージされた後、記事ページが本番で閲覧可能になったことを確認してから、新着記事をLINE公式アカウントの友だち全員へ自動配信する | daily-publishのマージタイミング([daily-publish/requirements.md#実行](daily-publish/requirements.md))、article-detailの記事データ構造([article-detail/design.md](article-detail/design.md))、content-generationのタイトル導出処理([content-generation/design.md](content-generation/design.md))に従う |
 | [watchlist-review](watchlist-review/requirements.md) | 月次でウォッチリスト・採用基準(選定領域)と翻訳・要約・記事執筆ルール(生成領域)の見直し案を作成し、人間承認を経て反映する | article-detailのフィードバック([article-detail/requirements.md#運営者向けフィードバック](article-detail/requirements.md))、content-selectionの掲載実績([content-selection/requirements.md#1日の掲載件数](content-selection/requirements.md))、生成領域の変更対象として[content-generation/requirements.md](content-generation/requirements.md)を参照 |
 
+ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
+
 ## 8. コンポーネント図
 ```mermaid
 flowchart LR

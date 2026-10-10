@@ -5,7 +5,8 @@
 // article-detail/design.mdのArticleスキーマに従う記事データを組み立てる純粋関数。
 // ファイル入出力はscripts/trend-digest/write-article.ts(Task2)が担う
 
-import type { Article, Edition, Genre, Topic } from './types'
+import type { Article, Edition, Genre, Topic, TopicTrend } from './types'
+import type { SelectedTopic } from './candidateTypes'
 import { GENRE_ORDER } from './types'
 
 // generate-content.tsの出力(generateTopicsの返り値)と同じ形。titleはCandidate.titleを
@@ -17,12 +18,35 @@ export type GeneratedTopicInput = {
   sourceUrl: string
   heading: string
   body: string
+  trend: TopicTrend // 選定時のtrend-historyの判定結果。記事のtopic.trendとして保存する(article-detail/design.md「前提: 記事データの形式」)
 }
 
-// edition・発行日・生成済みトピック(生成に成功した候補のみ)からArticleを組み立てる。
+// 選定結果(SelectedTopic)から、記事に保存する継続度・注目度の情報を取り出す。
+// 掲載実績(lastPublished*)など記事に不要な値は含めない
+export function toTopicTrend(selected: SelectedTopic): TopicTrend {
+  return {
+    durationLabel: selected.durationLabel,
+    heatLabel: selected.heatLabel,
+    continuationDays: selected.continuationDays,
+    continuationStartDate: selected.continuationStartDate,
+    reportCount: selected.reportCount,
+    originRegion: selected.originRegion,
+    currentRegions: selected.currentRegions,
+  }
+}
+
+// edition・発行日・生成済みトピック(生成に成功した候補のみ)・unavailableGenres
+// (情報源から取得できなかったジャンル+生成に失敗して除外したジャンル)からArticleを組み立てる。
 // topicsはGENRE_ORDER(ジャンル定義順)に並び替え、並び替え後の位置に応じて
-// id(topic-1, topic-2, ...)を採番する
-export function assembleArticle(edition: Edition, date: string, topics: GeneratedTopicInput[]): Article {
+// id(topic-1, topic-2, ...)を採番する。unavailableGenresはtopicsのジャンルと重複しない前提で
+// そのまま持たせる(全ジャンルがtopics+unavailableGenresのいずれかに現れる状態を保つ。
+// requirements.md#掲載件数の保証-1〜2。網羅性の検証自体はwrite-article.tsが呼ぶparseArticleが担う)
+export function assembleArticle(
+  edition: Edition,
+  date: string,
+  topics: GeneratedTopicInput[],
+  unavailableGenres: Genre[]
+): Article {
   const order = GENRE_ORDER[edition]
   const sorted = [...topics].sort((a, b) => order.indexOf(a.genre) - order.indexOf(b.genre))
 
@@ -34,6 +58,7 @@ export function assembleArticle(edition: Edition, date: string, topics: Generate
     sourceTitle: topic.title,
     sourceName: topic.sourceName,
     sourceUrl: topic.sourceUrl,
+    trend: topic.trend,
   }))
 
   return {
@@ -41,5 +66,6 @@ export function assembleArticle(edition: Edition, date: string, topics: Generate
     edition,
     date,
     topics: sortedTopics,
+    unavailableGenres,
   }
 }

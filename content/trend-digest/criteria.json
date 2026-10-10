@@ -1,25 +1,35 @@
 {
-  "perGenreMax": 2,
-  "perEditionMax": 10,
   "newEntryLookbackWeeks": 4,
   "genreCriteria": {
     "music": { "method": "fixed-list", "newEntryOrRisingRank": true, "risingRankMinImprovement": 10 },
     "japanese-movie": { "method": "fixed-list", "rankThreshold": 5 },
     "foreign-movie": { "method": "fixed-list", "rankThreshold": 5 },
-    "japanese-drama": { "method": "websearch", "minIndependentSources": 2 },
+    "japanese-drama": { "method": "fixed-list", "rankThreshold": 5 },
     "foreign-drama": { "method": "fixed-list", "newEntryOrRisingRank": true },
-    "anime": { "method": "fixed-list", "newEntryOrRisingRank": true },
-    "variety": { "method": "websearch", "minIndependentSources": 2 },
+    "anime": { "method": "hybrid", "fixedList": { "newEntryOrRisingRank": true }, "webSearch": { "minIndependentSources": 3 } },
+    "variety": { "method": "fixed-list", "rankThreshold": 5 },
     "streaming-video": { "method": "fixed-list", "newEntryOrRisingRank": true },
     "books-comics": { "method": "fixed-list", "rankThreshold": 5, "newEntryOrRisingRank": true },
-    "sns-buzz": { "method": "websearch", "minIndependentSources": 2 },
+    "sns-buzz": { "method": "websearch", "minIndependentSources": 3 },
     "buzzwords": { "method": "fixed-list", "rankThreshold": 10 },
-    "gourmet": { "method": "websearch", "minIndependentSources": 2 },
-    "hobby": { "method": "websearch", "minIndependentSources": 2 },
-    "fashion": { "method": "fixed-list", "rankThreshold": 10 },
-    "gadgets": { "method": "fixed-list", "rankThreshold": 10 },
+    "gourmet": { "method": "websearch", "minIndependentSources": 3 },
+    "hobby": { "method": "websearch", "minIndependentSources": 3 },
+    "fashion": { "method": "websearch", "minIndependentSources": 3 },
+    "gadgets": { "method": "websearch", "minIndependentSources": 3 },
     "games": { "method": "fixed-list", "rankThreshold": 10 },
     "travel": { "method": "fixed-list", "rankThreshold": 10 },
-    "economy-money": { "method": "websearch", "minIndependentSources": 2 }
+    "economy-money": { "method": "websearch", "minIndependentSources": 3 },
+    "dev-trends": { "method": "websearch", "minIndependentSources": 3 }
+  },
+  "history": {
+    "emergingMinDays": 14,
+    "talkedMinDays": 30,
+    "highlyTalkedMinDays": 90,
+    "maxObservationsPerSource": 30,
+    "heatMinObservationRuns": 12,
+    "heatRankHigh": 3,
+    "heatRankNormal": 10,
+    "heatSourcesHigh": 5,
+    "heatSourcesNormal": 3
   }
 }
