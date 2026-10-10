@@ -28,6 +28,10 @@ describe('サイトマップの動的生成 - ビルド時に公開中の全ペ�
     expect(urls).toContain(`${SITE_URL}/research-digest/`)
   })
 
+  it('ブログダイジェストハブページ(/blog)が含まれること', () => {
+    expect(urls).toContain(`${SITE_URL}/blog/`)
+  })
+
   it('board-game-rulesの公開画面(register・favorites)が含まれること', () => {
     expect(urls).toContain(`${SITE_URL}/board-game-rules/register/`)
     expect(urls).toContain(`${SITE_URL}/board-game-rules/favorites/`)
@@ -113,8 +117,8 @@ describe('サイトマップの動的生成 - ビルド時に公開中の全ペ�
     expect(urls).not.toContain(`${SITE_URL}/research-digest/bookmarks/`)
   })
 
-  // 仕様: specs/trend-digest/source-directory/requirements.md#閲覧できる人-2
-  it('週刊トレンドの情報源一覧(運営者専用)は検索対象外のため含まれないこと(既存の/**/admin/**除外ルールが効いている)', () => {
-    expect(urls).not.toContain(`${SITE_URL}/trend-digest/admin/sources/`)
+  // 仕様: specs/blog/source-directory/requirements.md#閲覧できる人-2
+  it('5アプリ共通の情報源一覧(運営者専用)は検索対象外のため含まれないこと(既存の/**/admin/**除外ルールが効いている)', () => {
+    expect(urls).not.toContain(`${SITE_URL}/blog/admin/sources/`)
   })
 })

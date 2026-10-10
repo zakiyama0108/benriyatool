@@ -3,9 +3,9 @@
 # 「1回分の記事を生成する処理」「利用上限への到達時に再実行する処理」「PRを作成しCIの結果を待つ処理」
 # 「PRを自動マージする処理」「CI失敗時に記録する処理」「収集失敗を運営者に警告する処理」「セキュリティ」)
 #
-# publishジョブ: 木曜07:43 JST(本番cron)、または利用上限への到達で打ち切られた回を最大3回まで
-# 自動的に再試行する再実行cron(木曜19:43・金曜07:43・金曜19:43 JST)、もしくは手動のworkflow_dispatchで
-# 起動する。候補収集・選定(content-selection)→見出し・本文生成(content-generation)→記事データ組み立て→
+# publishジョブ: サイエンス・テクノロジー編(木曜07:43 JST本番+再実行3本)・くらし・社会編
+# (日曜09:43 JST本番+再実行3本)のいずれかのcron、もしくは手動のworkflow_dispatchで起動する。
+# 候補収集・選定(content-selection)→見出し・本文生成(content-generation)→記事データ組み立て→
 # PR作成→auto-merge有効化までを行う。future-digest/articles/**ブランチからのPRに限り、CIが成功すると
 # 人間の承認なしに自動マージされる(trend-digestのweekly-publishと同じ例外運用)
 #
@@ -16,14 +16,25 @@ on:
   schedule:
     # 毎時0分は世界中のscheduled workflowが集中し起動遅延が大きくなるため、0分を避けた43分に設定する
     # (ai-dev-digest・trend-digestと同じ)。ai-dev-digestの日次実行(06:43 JST)と1時間ずらす
-    - cron: '43 22 * * 3' # 水曜22:43 UTC = 木曜07:43 JST(本番)
-    - cron: '43 10 * * 4' # 木曜10:43 UTC = 木曜19:43 JST(本番の12時間後の再実行)
-    - cron: '43 22 * * 4' # 木曜22:43 UTC = 金曜07:43 JST(本番の24時間後の再実行)
-    - cron: '43 10 * * 5' # 金曜10:43 UTC = 金曜19:43 JST(本番の36時間後の再実行)
+    - cron: '43 22 * * 3' # 水曜22:43 UTC = 木曜07:43 JST(サイエンス・テクノロジー編 本番)
+    - cron: '43 10 * * 4' # 木曜10:43 UTC = 木曜19:43 JST(サイエンス・テクノロジー編 本番の12時間後の再実行)
+    - cron: '43 22 * * 4' # 木曜22:43 UTC = 金曜07:43 JST(サイエンス・テクノロジー編 本番の24時間後の再実行)
+    - cron: '43 10 * * 5' # 金曜10:43 UTC = 金曜19:43 JST(サイエンス・テクノロジー編 本番の36時間後の再実行)
+    - cron: '43 0 * * 0' # 日曜00:43 UTC = 日曜09:43 JST(くらし・社会編 本番。既存のサイエンス・テクノロジー編と2時間ずらす。design.md「主要な設計判断」)
+    - cron: '43 12 * * 0' # 日曜12:43 UTC = 日曜21:43 JST(くらし・社会編 本番の12時間後の再実行)
+    - cron: '43 0 * * 1' # 月曜00:43 UTC = 月曜09:43 JST(くらし・社会編 本番の24時間後の再実行)
+    - cron: '43 12 * * 1' # 月曜12:43 UTC = 月曜21:43 JST(くらし・社会編 本番の36時間後の再実行)
   workflow_dispatch: # (a) Secrets設定後の動作確認、(b) 3回の自動再実行でも公開できなかった回の復旧、の2用途
     inputs:
+      edition:
+        description: '実行する編'
+        required: true
+        type: choice
+        options:
+          - science-tech
+          - life-society
       scheduled_publish_date:
-        description: '本来の配信日(YYYY-MM-DD、木曜、JST)。省略時は実行日時から自動算出する'
+        description: '本来の配信日(YYYY-MM-DD、対象編の配信曜日、JST)。省略時は実行日時から自動算出する'
         required: false
         type: string
   workflow_run:
@@ -52,6 +63,20 @@ jobs:
 
       - run: npm ci
 
+      # schedule起動時はgithub.event.schedule(起動元のcron式)からeditionを判定し、
+      # workflow_dispatch起動時は入力パラメータをそのまま使う(design.md「実行環境の前提」。
+      # trend-digest-weekly.ymlの編成判定ステップと同じ書き方)
+      - name: edition(science-tech/life-society)を算出
+        id: edition
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ github.event.inputs.edition }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "43 22 * * 3" ] || [ "${{ github.event.schedule }}" = "43 10 * * 4" ] || [ "${{ github.event.schedule }}" = "43 22 * * 4" ] || [ "${{ github.event.schedule }}" = "43 10 * * 5" ]; then
+            echo "value=science-tech" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=life-society" >> "$GITHUB_OUTPUT"
+          fi
+
       # workflow_dispatchの入力がシェルインジェクションに使われないよう、run:に直接埋め込まず
       # env:経由でステップに渡す(design.md「セキュリティ」)。入力があればvalidateScheduledPublishDateで
       # 検証したうえで優先し、なければgetScheduledPublishDateで実行日時(UTC)から求める
@@ -60,32 +85,36 @@ jobs:
         id: date
         env:
           SCHEDULED_PUBLISH_DATE_INPUT: ${{ github.event.inputs.scheduled_publish_date }}
+          EDITION: ${{ steps.edition.outputs.value }}
         run: |
           value=$(npx tsx -e "
             import { getScheduledPublishDate, validateScheduledPublishDate } from './app/future-digest/lib/scheduledPublishDate'
+            const edition = process.env.EDITION as 'science-tech' | 'life-society'
             const input = process.env.SCHEDULED_PUBLISH_DATE_INPUT
             if (input) {
-              if (!validateScheduledPublishDate(input)) {
-                console.error('scheduled_publish_dateの形式(YYYY-MM-DD)が不正、または実在する木曜日(JST)ではありません: ' + input)
+              if (!validateScheduledPublishDate(input, edition)) {
+                console.error('scheduled_publish_dateの形式(YYYY-MM-DD)が不正、または対象編の配信曜日(JST)ではありません: ' + input)
                 process.exit(1)
               }
               console.log(input)
             } else {
-              console.log(getScheduledPublishDate(new Date()))
+              console.log(getScheduledPublishDate(new Date(), edition))
             }
           ")
           echo "value=$value" >> "$GITHUB_OUTPUT"
 
-      # 3本の再実行cronのいずれかで起動された場合のみ、公開済み・PR存在の冪等チェックを行う
+      # 編ごとに3本ある再実行cronのいずれかで起動された場合のみ、公開済み・PR存在の冪等チェックを行う
       # (design.md「利用上限への到達時に再実行する処理」手順1〜3)。本番cron・workflow_dispatchは
       # github.event.scheduleが再実行cron式と一致しないため素通りする
       - name: 再実行時の冪等チェック(公開済み・PRの有無を確認)
         id: idempotency
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # 読み取りだけのため既定トークンで足りる
+          EDITION: ${{ steps.edition.outputs.value }}
         run: |
           schedule="${{ github.event.schedule }}"
-          if [ "$schedule" = "43 10 * * 4" ] || [ "$schedule" = "43 22 * * 4" ] || [ "$schedule" = "43 10 * * 5" ]; then
+          if [ "$schedule" = "43 10 * * 4" ] || [ "$schedule" = "43 22 * * 4" ] || [ "$schedule" = "43 10 * * 5" ] \
+            || [ "$schedule" = "43 12 * * 0" ] || [ "$schedule" = "43 0 * * 1" ] || [ "$schedule" = "43 12 * * 1" ]; then
             is_retry=true
           else
             is_retry=false
@@ -97,23 +126,24 @@ jobs:
           fi
 
           date="${{ steps.date.outputs.value }}"
+          id="${date}-${EDITION}"
 
           published=$(npx tsx -e "
             import { getAllArticles } from './app/future-digest/lib/articles'
             import { shouldSkipRetry } from './app/future-digest/lib/shouldSkipRetry'
-            console.log(shouldSkipRetry(getAllArticles(), '$date'))
+            console.log(shouldSkipRetry(getAllArticles(), '$date', '$EDITION' as 'science-tech' | 'life-society'))
           ")
           if [ "$published" = "true" ]; then
-            echo "配信日 $date の記事は既に公開済みのため、この再実行はスキップします"
+            echo "配信日 $date(編: $EDITION)の記事は既に公開済みのため、この再実行はスキップします"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           pr_count=$(gh pr list --repo "${{ github.repository }}" \
-            --head "future-digest/articles/$date" \
+            --head "future-digest/articles/$id" \
             --state all --json number --jq 'length')
           if [ "$pr_count" -gt 0 ]; then
-            echo "配信日 $date のPRが既に存在するため、この再実行はスキップします"
+            echo "配信日 $date(編: $EDITION)のPRが既に存在するため、この再実行はスキップします"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -128,7 +158,7 @@ jobs:
 
       - name: 作業用ブランチを作成
         if: steps.idempotency.outputs.skip != 'true'
-        run: git checkout -b "future-digest/articles/${{ steps.date.outputs.value }}"
+        run: git checkout -b "future-digest/articles/${{ steps.date.outputs.value }}-${{ steps.edition.outputs.value }}"
 
       # 選定の最後にshouldAlertOperatorの判定結果をGITHUB_OUTPUTのalertへ書き出す(design.md
       # 「1回分の記事を生成する処理」手順2)。利用上限への到達を検知した場合はこのステップが
@@ -136,7 +166,7 @@ jobs:
       - name: 候補収集・選定(content-selection)
         if: steps.idempotency.outputs.skip != 'true'
         id: selection
-        run: npx tsx scripts/future-digest/collect-and-select.ts "${{ steps.date.outputs.value }}" > /tmp/selection.json
+        run: npx tsx scripts/future-digest/collect-and-select.ts "${{ steps.edition.outputs.value }}" "${{ steps.date.outputs.value }}" > /tmp/selection.json
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
@@ -180,7 +210,7 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_OUTPUT, 'generationFailedCount=' + g.failedCandidates.length + '\n');
           "
 
-      # 同じ配信日の記事ファイルが既にある場合は上書きせず非ゼロ終了する(write-article.ts)
+      # 同じ配信日・編の記事ファイルが既にある場合は上書きせず非ゼロ終了する(write-article.ts)
       - name: 記事データの組み立て・書き出し
         if: steps.idempotency.outputs.skip != 'true'
         run: npx tsx scripts/future-digest/write-article.ts /tmp/selection.json /tmp/generation.json
@@ -189,20 +219,22 @@ jobs:
         if: steps.idempotency.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.FUTURE_DIGEST_GH_PAT }}
+          EDITION: ${{ steps.edition.outputs.value }}
         run: |
           # checkoutではPATを永続化していないため、ここでgit操作用にPATを設定する
           # (このステップ内でのみGH_TOKENが使われ、以降のステップの.git/configには残らない)
           gh auth setup-git
           date="${{ steps.date.outputs.value }}"
+          id="${date}-${EDITION}"
           git config user.name "future-digest-bot"
           git config user.email "future-digest-bot@users.noreply.github.com"
-          git add "content/future-digest/articles/$date.json"
-          git commit -m "content(future-digest): ${date}を公開"
-          git push origin "future-digest/articles/$date"
+          git add "content/future-digest/articles/$id.json"
+          git commit -m "content(future-digest): ${id}を公開"
+          git push origin "future-digest/articles/$id"
           gh pr create --base main \
-            --title "[future-digest] ${date}を公開" \
-            --body "週次自動生成PRです(回数: ${{ steps.selection-summary.outputs.issueNumber }} / 時間軸: ${{ steps.selection-summary.outputs.horizons }})。採用件数: ${{ steps.selection-summary.outputs.selectedCount }}件 / 候補なし: ${{ steps.selection-summary.outputs.noCandidateCount }}件 / 収集失敗: ${{ steps.selection-summary.outputs.collectionFailedCount }}件 / 生成失敗: ${{ steps.generation-summary.outputs.generationFailedCount }}件。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/future-digest/weekly-publish/design.md参照)。"
-          gh pr merge --auto --squash "future-digest/articles/$date"
+            --title "[future-digest] ${EDITION} ${date}を公開" \
+            --body "週次自動生成PRです(編: ${EDITION} / 回数: ${{ steps.selection-summary.outputs.issueNumber }} / 時間軸: ${{ steps.selection-summary.outputs.horizons }})。採用件数: ${{ steps.selection-summary.outputs.selectedCount }}件 / 候補なし: ${{ steps.selection-summary.outputs.noCandidateCount }}件 / 収集失敗: ${{ steps.selection-summary.outputs.collectionFailedCount }}件 / 生成失敗: ${{ steps.generation-summary.outputs.generationFailedCount }}件。CIが成功すると人間の承認なしに自動的にmainへマージされます(specs/future-digest/weekly-publish/design.md参照)。"
+          gh pr merge --auto --squash "future-digest/articles/$id"
 
       # 全枠(有効なジャンル数×2時間軸)が収集失敗だった回は、記事は公開したうえでこのジョブを
       # 失敗表示にする(design.md「収集失敗を運営者に警告する処理」)

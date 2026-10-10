@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { parseArticle } from '../../../app/future-digest/lib/articleSchema'
-import genresData from '../../../content/future-digest/genres.json'
+import { EDITION_GENRES } from '../../../app/future-digest/lib/genres'
 
-const GENRE_IDS = (genresData as { id: string }[]).map((g) => g.id)
+const EDITION = 'science-tech' as const
+const GENRE_IDS = EDITION_GENRES[EDITION]
 // issueNumber=1(奇数回)は近未来・長期未来を扱う(article-detail/design.md「前提: 記事データの形式」)
 const HORIZONS = ['near', 'long'] as const
 
@@ -27,8 +28,8 @@ function makePrediction(genre: string, horizon: string, overrides: Partial<Recor
   }
 }
 
-// 10ジャンル×2時間軸=20枠のうち、末尾2ジャンルのnear枠だけをemptySlot(collection-failed/no-candidate)にし、
-// 予測18件+掲載できなかった枠2件の正常な記事データを組み立てる
+// 対象編(サイエンス・テクノロジー編)5ジャンル×2時間軸=10枠のうち、末尾2ジャンルのnear枠だけを
+// emptySlot(collection-failed/no-candidate)にし、予測8件+掲載できなかった枠2件の正常な記事データを組み立てる
 function makeValidArticleData(overrides: Partial<Record<string, unknown>> = {}) {
   const predictions: Record<string, unknown>[] = []
   const emptySlots: Record<string, unknown>[] = []
@@ -49,7 +50,8 @@ function makeValidArticleData(overrides: Partial<Record<string, unknown>> = {}) 
   })
 
   return {
-    id: '2026-09-24',
+    id: `2026-09-24-${EDITION}`,
+    edition: EDITION,
     date: '2026-09-24',
     issueNumber: 1,
     predictions,
@@ -58,7 +60,7 @@ function makeValidArticleData(overrides: Partial<Record<string, unknown>> = {}) 
   }
 }
 
-// 全枠(20枠)をemptySlotだけにした記事データ(予測0件)を組み立てる
+// 全枠(10枠)をemptySlotだけにした記事データ(予測0件)を組み立てる
 function makeAllEmptyArticleData() {
   const reasons: Array<{ reason: string; collectionFailureReason?: string }> = [
     { reason: 'no-candidate' },
@@ -71,19 +73,19 @@ function makeAllEmptyArticleData() {
       emptySlots.push({ genre, horizon, ...reasons[i % reasons.length] })
     })
   })
-  return { id: '2026-09-24', date: '2026-09-24', issueNumber: 1, predictions: [], emptySlots }
+  return { id: `2026-09-24-${EDITION}`, edition: EDITION, date: '2026-09-24', issueNumber: 1, predictions: [], emptySlots }
 }
 
 // 仕様: specs/future-digest/article-detail/design.md「バリデーション」
 describe('記事データ(JSON)のスキーマ検証 - 違反時は例外を投げる', () => {
-  it('正常な記事データ(予測18件+掲載できなかった枠2件)を受け付けること', () => {
-    const article = parseArticle(makeValidArticleData(), '2026-09-24.json')
-    expect(article.predictions).toHaveLength(18)
+  it('正常な記事データ(予測8件+掲載できなかった枠2件)を受け付けること', () => {
+    const article = parseArticle(makeValidArticleData(), `2026-09-24-${EDITION}.json`)
+    expect(article.predictions).toHaveLength(GENRE_IDS.length * 2 - 2)
     expect(article.emptySlots).toHaveLength(2)
   })
 
   it('予測が0件で、掲載できなかった枠だけ(候補なし・収集失敗・生成失敗のいずれか)の記事も受け付けること', () => {
-    const article = parseArticle(makeAllEmptyArticleData(), '2026-09-24.json')
+    const article = parseArticle(makeAllEmptyArticleData(), `2026-09-24-${EDITION}.json`)
     expect(article.predictions).toHaveLength(0)
     expect(article.emptySlots).toHaveLength(GENRE_IDS.length * 2)
   })
@@ -94,35 +96,35 @@ describe('記事データ(JSON)のスキーマ検証 - 違反時は例外を投�
     data.predictions = (data.predictions).filter(
       (p) => !(p.genre === GENRE_IDS[0] && p.horizon === 'long')
     )
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('同じ枠(ジャンル×時間軸)が重複する場合に拒否すること', () => {
     const data = makeValidArticleData()
     const predictions = data.predictions
     predictions.push(makePrediction(GENRE_IDS[0], 'near'))
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('genres.jsonにないジャンルの場合に拒否すること', () => {
     const data = makeValidArticleData()
     const predictions = data.predictions
     predictions[0] = { ...predictions[0], genre: 'unknown-genre' }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('その回の時間軸(near/long)以外のhorizonを持つ予測を拒否すること', () => {
     const data = makeValidArticleData()
     const predictions = data.predictions
     predictions[0] = { ...predictions[0], horizon: 'mid', id: `${GENRE_IDS[0]}--mid` }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('idが<genre>--<horizon>と一致しない予測を拒否すること', () => {
     const data = makeValidArticleData()
     const predictions = data.predictions
     predictions[0] = { ...predictions[0], id: '不正なid' }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it.each(['heading', 'body', 'impactReason', 'targetPeriod', 'sourceTitle', 'sourceName', 'sourceUrl'])(
@@ -131,7 +133,7 @@ describe('記事データ(JSON)のスキーマ検証 - 違反時は例外を投�
       const data = makeValidArticleData()
       const predictions = data.predictions
       predictions[0] = { ...predictions[0], [field]: '' }
-      expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+      expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
     }
   )
 
@@ -139,47 +141,47 @@ describe('記事データ(JSON)のスキーマ検証 - 違反時は例外を投�
     const data = makeValidArticleData()
     const predictions = data.predictions
     predictions[0] = { ...predictions[0], sourceUrl: 'javascript:alert(1)' }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('本文が160字未満の予測を拒否すること', () => {
     const data = makeValidArticleData()
     const predictions = data.predictions
     predictions[0] = { ...predictions[0], body: makeBody(159) }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('本文が480字を超える予測を拒否すること', () => {
     const data = makeValidArticleData()
     const predictions = data.predictions
     predictions[0] = { ...predictions[0], body: makeBody(481) }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('issueNumberが1未満の記事データを拒否すること', () => {
     const data = makeValidArticleData({ issueNumber: 0 })
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('reasonが定義外の値の掲載できなかった枠を拒否すること', () => {
     const data = makeValidArticleData()
     const emptySlots = data.emptySlots
     emptySlots[0] = { ...emptySlots[0], reason: 'unknown-reason' }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('reasonがcollection-failedで、collectionFailureReasonが欠けている場合に拒否すること', () => {
     const data = makeValidArticleData()
     const emptySlots = data.emptySlots
     emptySlots[0] = { genre: emptySlots[0].genre, horizon: emptySlots[0].horizon, reason: 'collection-failed' }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('reasonがcollection-failedで、collectionFailureReasonが定義外の値の場合に拒否すること', () => {
     const data = makeValidArticleData()
     const emptySlots = data.emptySlots
     emptySlots[0] = { ...emptySlots[0], reason: 'collection-failed', collectionFailureReason: 'unknown' }
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('reasonがno-candidateで、collectionFailureReasonを持つ場合に拒否すること', () => {
@@ -187,23 +189,47 @@ describe('記事データ(JSON)のスキーマ検証 - 違反時は例外を投�
     const emptySlots = data.emptySlots
     const noCandidate = emptySlots.find((s) => s.reason === 'no-candidate')!
     Object.assign(noCandidate, { collectionFailureReason: 'timeout' })
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('reasonがgeneration-failedで、collectionFailureReasonを持つ場合に拒否すること', () => {
     const data = makeAllEmptyArticleData()
     const generationFailed = data.emptySlots.find((s) => s.reason === 'generation-failed')!
     Object.assign(generationFailed, { collectionFailureReason: 'timeout' })
-    expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('idがファイル名(拡張子除く)と一致しない場合に拒否すること', () => {
     const data = makeValidArticleData()
-    expect(() => parseArticle(data, '2026-09-25.json')).toThrow()
+    expect(() => parseArticle(data, `2026-09-25-${EDITION}.json`)).toThrow()
   })
 
   it('dateがYYYY-MM-DD形式でない場合に拒否すること', () => {
     const data = makeValidArticleData({ date: '2026/09/24' })
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
+  })
+
+  it('editionが定義外の値の場合に拒否すること', () => {
+    const data = makeValidArticleData({ edition: 'other-edition' })
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
+  })
+
+  it('idが<date>-<edition>形式と一致しない場合に拒否すること(日付のみのid)', () => {
+    const data = makeValidArticleData({ id: '2026-09-24' })
     expect(() => parseArticle(data, '2026-09-24.json')).toThrow()
+  })
+
+  it('予測のgenreが記事のedition(対象編)に属さないジャンルの場合に拒否すること(他編のジャンルを混入)', () => {
+    const data = makeValidArticleData()
+    const predictions = data.predictions
+    predictions[0] = { ...predictions[0], genre: 'economy-work' } // life-society編のジャンル
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
+  })
+
+  it('掲載できなかった枠のgenreが記事のedition(対象編)に属さないジャンルの場合に拒否すること(他編のジャンルを混入)', () => {
+    const data = makeValidArticleData()
+    const emptySlots = data.emptySlots
+    emptySlots[0] = { ...emptySlots[0], genre: 'economy-work' } // life-society編のジャンル
+    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 })

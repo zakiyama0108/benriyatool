@@ -1,5 +1,5 @@
-import type { Article, Genre, Impact } from './types'
-import { GENRE_LABELS, GENRE_ORDER, HORIZON_LABELS, HORIZON_ORDER, IMPACT_LABELS, IMPACT_ORDER, horizonsForIssue } from './types'
+import type { Article, Edition, Genre, Impact } from './types'
+import { EDITION_LABELS, GENRE_LABELS, GENRE_ORDER, HORIZON_LABELS, HORIZON_ORDER, IMPACT_LABELS, IMPACT_ORDER, horizonsForIssue } from './types'
 import { loadGenres } from './genres'
 import { buildArticleUrl } from './articleUrl'
 
@@ -52,9 +52,9 @@ export function selectRepresentatives(article: Article): Representative[] {
 
 // LINE配信メッセージ専用の見出し(仕様: requirements.md#配信内容-2、
 // design.md「配信メッセージを組み立てる処理」手順1)
-export function buildBroadcastTitle(date: string): string {
+export function buildBroadcastTitle(date: string, edition: Edition): string {
   const [year, month, day] = date.split('-').map((part) => Number(part))
-  return `【週刊未来予測】${year}年${month}月${day}日号`
+  return `【週刊未来予測】${EDITION_LABELS[edition]} ${year}年${month}月${day}日号`
 }
 
 // LINEブロードキャストメッセージの本文を組み立てる(仕様: requirements.md#配信内容-1〜2・6〜7、
@@ -62,7 +62,7 @@ export function buildBroadcastTitle(date: string): string {
 // 一覧(影響度・ジャンル名付き)・記事詳細ページリンクの4要素で構成し、予測ごとの出典URL
 // (sourceUrl)は含めない。予測が0件(採用0件の回)は代表見出しの行の代わりに固定文言を入れる
 export function buildBroadcastMessage(article: Article): string {
-  const title = buildBroadcastTitle(article.date)
+  const title = buildBroadcastTitle(article.date, article.edition)
   const horizons = horizonsForIssue(article.issueNumber)
   const horizonLine = `今回の時間軸: ${HORIZON_LABELS[horizons[0]]}・${HORIZON_LABELS[horizons[1]]}`
   const url = buildArticleUrl(article)

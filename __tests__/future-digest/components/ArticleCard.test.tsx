@@ -5,7 +5,8 @@ import type { Article } from '../../../app/future-digest/lib/types'
 
 function buildArticle(overrides: Partial<Article> = {}): Article {
   return {
-    id: '2026-09-17',
+    id: '2026-09-17-science-tech',
+    edition: 'science-tech',
     date: '2026-09-17',
     issueNumber: 1,
     predictions: [],
@@ -28,7 +29,7 @@ describe('記事一覧の1回分のカード表示 - 公開日・タイトル・
     )
 
     expect(screen.getByText('2026-09-17')).toBeTruthy()
-    expect(screen.getByText('週刊未来予測 2026年9月17日号')).toBeTruthy()
+    expect(screen.getByText('週刊未来予測 サイエンス・テクノロジー編 2026年9月17日号')).toBeTruthy()
     expect(screen.getByText('近未来')).toBeTruthy()
     expect(screen.getByText('長期未来')).toBeTruthy()
     expect(screen.getByText('見出しA')).toBeTruthy()
@@ -37,7 +38,7 @@ describe('記事一覧の1回分のカード表示 - 公開日・タイトル・
     expect(screen.getByText('中')).toBeTruthy()
 
     const link = screen.getByRole('link')
-    expect(link.getAttribute('href')).toBe('/future-digest/2026-09-17')
+    expect(link.getAttribute('href')).toBe('/future-digest/2026-09-17-science-tech')
   })
 
   it('見出しが0件(採用0件の回)のときは見出し欄を表示せず、他の要素だけが表示されること', () => {
@@ -45,5 +46,21 @@ describe('記事一覧の1回分のカード表示 - 公開日・タイトル・
 
     expect(screen.getByText('2026-09-17')).toBeTruthy()
     expect(screen.queryByRole('list')).toBeNull()
+  })
+
+  // 仕様: specs/future-digest/article-list/requirements.md#一覧表示-1、specs/future-digest/article-list/requirements.md#一覧表示-2
+  it('editionがscience-techのとき「サイエンス・テクノロジー編」のバッジが表示されること', () => {
+    render(<ArticleCard article={buildArticle({ edition: 'science-tech' })} headings={[]} />)
+    expect(screen.getByText('サイエンス・テクノロジー編')).toBeTruthy()
+  })
+
+  it('editionがlife-societyのとき「くらし・社会編」のバッジが表示されること', () => {
+    render(
+      <ArticleCard
+        article={buildArticle({ id: '2026-10-04-life-society', edition: 'life-society', date: '2026-10-04' })}
+        headings={[]}
+      />
+    )
+    expect(screen.getByText('くらし・社会編')).toBeTruthy()
   })
 })

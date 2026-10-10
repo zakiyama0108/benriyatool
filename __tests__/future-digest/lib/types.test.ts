@@ -5,6 +5,8 @@ import {
   GENRE_ORDER,
   GENRE_LABELS,
   COLLECTION_FAILURE_LABELS,
+  EDITION_GENRES,
+  EDITION_LABELS,
 } from '../../../app/future-digest/lib/types'
 import type { GenreConfig } from '../../../app/future-digest/lib/genres'
 
@@ -42,6 +44,23 @@ describe('ジャンルの並び順・日本語ラベル - genres.jsonの記載�
     for (const genre of genresData as GenreConfig[]) {
       expect(GENRE_LABELS[genre.id]).toBe(genre.label)
     }
+  })
+})
+
+// 仕様: specs/future-digest/article-detail/design.md「前提: 記事データの形式」、specs/future-digest/article-detail/design.md「バリデーション」
+describe('編(Edition)の定義 - genres.jsonのedition属性から編ごとのジャンルID配列・日本語ラベルを組み立てる', () => {
+  it('EDITION_GENRESがgenres.jsonのedition属性から編ごとのジャンルID配列を作ること', () => {
+    const expected: Record<string, string[]> = { 'science-tech': [], 'life-society': [] }
+    for (const genre of genresData as GenreConfig[]) {
+      expected[genre.edition].push(genre.id)
+    }
+    expect(EDITION_GENRES['science-tech']).toEqual(expected['science-tech'])
+    expect(EDITION_GENRES['life-society']).toEqual(expected['life-society'])
+  })
+
+  it('EDITION_LABELSでscience-techが「サイエンス・テクノロジー編」、life-societyが「くらし・社会編」になること', () => {
+    expect(EDITION_LABELS['science-tech']).toBe('サイエンス・テクノロジー編')
+    expect(EDITION_LABELS['life-society']).toBe('くらし・社会編')
   })
 })
 

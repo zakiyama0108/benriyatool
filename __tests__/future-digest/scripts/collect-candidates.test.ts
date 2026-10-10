@@ -13,6 +13,7 @@ const GENRE: GenreConfig = {
   id: 'technology-ai',
   label: 'テクノロジー・AI',
   description: '説明',
+  edition: 'science-tech',
   active: true,
   lineExcluded: false,
 }

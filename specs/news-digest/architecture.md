@@ -131,6 +131,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [article-detail](article-detail/requirements.md) | 記事本文(トピックごとの見出し・要約・出典)と、運営者本人向けフィードバック入力欄を表示する | リリース済み | content-selectionの選定結果、content-generationの生成ルールに従う |
 | [bookmark](bookmark/requirements.md) | ログイン中の読者がトピックへ自由記述メモ付きの付箋を貼り、一覧から振り返れるようにする | リリース済み | article-detailのトピック識別子・記事データ構造に従う |
 
+ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
+
 ## 9. コンポーネント図
 ```mermaid
 flowchart LR
