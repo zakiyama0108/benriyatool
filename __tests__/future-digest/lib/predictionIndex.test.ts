@@ -8,6 +8,7 @@ describe('予測の索引の作成 - 全記事から「記事ID:予測ID」→�
     const articles: Article[] = [
       {
         id: '2026-09-17',
+        edition: 'science-tech',
         date: '2026-09-17',
         issueNumber: 1,
         predictions: [
@@ -42,6 +43,7 @@ describe('予測の索引の作成 - 全記事から「記事ID:予測ID」→�
     const articles: Article[] = [
       {
         id: '2026-09-17',
+        edition: 'science-tech',
         date: '2026-09-17',
         issueNumber: 1,
         predictions: [],

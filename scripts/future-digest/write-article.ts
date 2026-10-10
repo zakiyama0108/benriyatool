@@ -11,11 +11,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { assembleArticle } from '../../app/future-digest/lib/assembleArticle'
 import { parseArticle } from '../../app/future-digest/lib/articleSchema'
-import { loadGenres, getActiveGenres } from '../../app/future-digest/lib/genres'
+import { loadGenres, getActiveGenres, EDITION_GENRES } from '../../app/future-digest/lib/genres'
 import type { SlotResult } from '../../app/future-digest/lib/candidateTypes'
-import type { Genre, Horizon, Prediction } from '../../app/future-digest/lib/types'
+import type { Edition, Genre, Horizon, Prediction } from '../../app/future-digest/lib/types'
 
 type SelectionOutput = {
+  edition: Edition
   scheduledPublishDate: string
   issueNumber: number
   slots: SlotResult[]
@@ -44,10 +45,14 @@ function main() {
     .filter((s): s is Extract<SlotResult, { status: 'collection-failed' }> => s.status === 'collection-failed')
     .map((s) => ({ genre: s.genre, horizon: s.horizon, collectionFailureReason: s.reason }))
 
-  const activeGenres = getActiveGenres(loadGenres()).map((g) => g.id)
+  const editionGenreIds = new Set(EDITION_GENRES[selection.edition])
+  const activeGenres = getActiveGenres(loadGenres())
+    .filter((g) => editionGenreIds.has(g.id))
+    .map((g) => g.id)
 
   const article = assembleArticle(
     selection.scheduledPublishDate,
+    selection.edition,
     selection.issueNumber,
     activeGenres,
     generation.predictions,

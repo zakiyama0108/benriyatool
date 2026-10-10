@@ -105,13 +105,30 @@ export default function FutureDigestStyleguidePage() {
         <Section title="記事カード(ArticleCard)">
           <div className="space-y-3">
             <ArticleCard
-              article={{ id: '2026-10-01', date: '2026-10-01', issueNumber: 1, predictions: [], emptySlots: [] }}
+              article={{
+                id: '2026-10-01-science-tech',
+                edition: 'science-tech',
+                date: '2026-10-01',
+                issueNumber: 1,
+                predictions: [],
+                emptySlots: [],
+              }}
               headings={[
                 { heading: '自律走行がさらに普及する', impact: 'high' },
                 { heading: '再生医療の適用範囲が広がる', impact: 'medium' },
               ]}
             />
-            <ArticleCard article={{ id: '2026-09-24', date: '2026-09-24', issueNumber: 2, predictions: [], emptySlots: [] }} headings={[]} />
+            <ArticleCard
+              article={{
+                id: '2026-09-27-life-society',
+                edition: 'life-society',
+                date: '2026-09-27',
+                issueNumber: 2,
+                predictions: [],
+                emptySlots: [],
+              }}
+              headings={[]}
+            />
           </div>
         </Section>
 

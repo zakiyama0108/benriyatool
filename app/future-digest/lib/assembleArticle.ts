@@ -1,4 +1,4 @@
-import type { Article, EmptySlot, Genre, Horizon, Prediction } from './types'
+import type { Article, Edition, EmptySlot, Genre, Horizon, Prediction } from './types'
 import { horizonsForIssue } from './types'
 import type { CollectionFailureReason } from './candidateTypes'
 
@@ -42,6 +42,7 @@ function slotKey(genre: Genre, horizon: Horizon): string {
 
 export function assembleArticle(
   date: string,
+  edition: Edition,
   issueNumber: number,
   activeGenres: Genre[],
   predictions: Prediction[],
@@ -82,5 +83,7 @@ export function assembleArticle(
     )
   }
 
-  return { id: date, date, issueNumber, predictions, emptySlots }
+  // 記事IDは<配信日>-<edition>の形式にする(trend-digestと同じ形式。
+  // weekly-publish/design.md「決定事項」。1日に2編の記事が存在しうるため日付だけでは一意にならない)
+  return { id: `${date}-${edition}`, edition, date, issueNumber, predictions, emptySlots }
 }

@@ -6751,6 +6751,16 @@
   },
   {
     "specFile": "future-digest/content-selection/requirements.md",
+    "item": "機能要件 [7]",
+    "reason": "サイエンス・テクノロジー編は木曜、くらし・社会編は日曜にそれぞれ独立して実行するという実行タイミングの要件で、「実行タイミングはweekly-publish/requirements.mdに従う」と本文中に明記されているとおり、実際のcron設定・配信曜日の算出はweekly-publish側の責務(.github/workflows/future-digest-weekly.yml、scheduledPublishDate.test.ts)であり、本specのコードとして検証可能な振る舞いを持たない"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "編成とジャンルの割り当て [3]",
+    "reason": "くらし・社会編を日曜に割り当てた理由(木曜からの間隔の均等さ)の説明文で、曜日の割り当て自体(日曜)はweekly-publish/design.md「実行環境の前提」のcron設定・scheduledPublishDate.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
     "item": "機能要件 [2]",
     "reason": "時間軸4区分のうち2区分を毎回扱うという定義の記述で、実際の2区分の決定はhorizonsForIssue(article-detail/design.mdが定義し、article-detail実装時に専用テストを書く。tasks.mdの実装順により本specでは最小限の実装のみ先行させている)が担うため、本specのコードとして検証可能な振る舞いを持たない"
   },
@@ -6838,6 +6848,36 @@
     "specFile": "future-digest/content-selection/design.md",
     "item": "サマリ",
     "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項",
+    "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 編成の分け方",
+    "reason": "genres.jsonのedition属性で編成を固定2分割する方式を選んだ理由を記録した設計判断の表の1行で、採用した案(edition属性による固定分割)自体はgenres.test.ts・types.test.tsのEDITION_GENRESのテストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 編ごとのジャンル割り当て",
+    "reason": "10ジャンルを5ジャンルずつ2編に振り分けた具体的な組み合わせを選んだ理由を記録した設計判断の表の1行で、実際の割り当て(content/future-digest/genres.jsonのedition属性)自体はgenres.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 配信済み判定の対象範囲",
+    "reason": "配信済み判定を編をまたいで全記事対象に行う方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はdeliveredIndex.test.ts(buildDeliveredIndexに渡す記事一覧がgetAllArticles()の全記事であること)・collect-and-select.ts(TDD対象外)で担保されているため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > `issueNumber`(回数)の数え方",
+    "reason": "回数を編ごとに独立してカウントする方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はissue.test.tsのnextIssueNumber(articles, edition)のテストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 編の判定方法",
+    "reason": "編の判定をweekly-publishのワークフロー側で行いCLI引数で渡す方式を選んだ理由を記録した設計判断の表の1行で、実際の判定処理は.github/workflows/future-digest-weekly.yml(TDD対象外。tasks.md「週1回配信を週2回に分割する追加タスク」Task8)が担うため、本specのコードとしてテスト対象を持たない"
   },
   {
     "specFile": "future-digest/content-selection/design.md",
@@ -7262,21 +7302,26 @@
   {
     "specFile": "future-digest/weekly-publish/requirements.md",
     "item": "実行 [2]",
-    "reason": "実行主体がGitHub Actionsであり、収集・選定・要約をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+    "reason": "くらし・社会編のバッチを毎週日曜に1回実行するという運用スケジュールの要件(編成分割で追加)で、.github/workflows/future-digest-weekly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md「週1回配信を週2回に分割する追加タスク」Task8参照。実行 [1]と同じ理由)"
   },
   {
     "specFile": "future-digest/weekly-publish/requirements.md",
     "item": "実行 [3]",
+    "reason": "実行主体がGitHub Actionsであり、収集・選定・要約をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/requirements.md",
+    "item": "実行 [4]",
     "reason": "作った記事をJSONのコンテンツファイルとしてリポジトリに追加しビルド時に取り込むという静的サイト構成の要件で、write-article.ts(TDD対象外のCLI。tasks.md Task3)がファイル書き出しを担うためユニットテスト対象を持たないため"
   },
   {
     "specFile": "future-digest/weekly-publish/requirements.md",
-    "item": "公開フロー [4]",
+    "item": "公開フロー [5]",
     "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、`gh pr create`/`gh pr merge --auto`の呼び出し自体はユニットテスト対象を持たないため(tasks.md Task5のワークフロー本体に該当。実際の疎通確認はTask6のSecrets設定後の初回実行で行う)"
   },
   {
     "specFile": "future-digest/weekly-publish/requirements.md",
-    "item": "公開フロー [5]",
+    "item": "公開フロー [6]",
     "reason": "CI失敗時にマージせず原因を記録するという運用フローの要件で、GitHub標準の仕組み(PRコメント)に委ねるためこのリポジトリのコードとして実装しないため"
   },
   {
@@ -7318,6 +7363,26 @@
     "specFile": "future-digest/weekly-publish/design.md",
     "item": "サマリ",
     "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/design.md",
+    "item": "決定事項",
+    "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/design.md",
+    "item": "決定事項 > くらし・社会編の配信時刻",
+    "reason": "日曜09:43 JSTを選んだ理由を記録した設計判断の表の1行で、採用した案(編ごとに異なる配信曜日・時刻)自体はscheduledPublishDate.test.ts(getScheduledPublishDateのscience-tech/life-society別テストケース)でテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/design.md",
+    "item": "決定事項 > 記事ID・ファイル名の形式",
+    "reason": "`<date>-<edition>`形式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はassembleArticle.test.ts・articleSchema.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/design.md",
+    "item": "決定事項 > 編の判定方法",
+    "reason": "github.event.scheduleから編を判定する方法を選んだ理由を記録した設計判断の表の1行で、実際の判定処理は.github/workflows/future-digest-weekly.yml(TDD対象外。tasks.md「週1回配信を週2回に分割する追加タスク」Task8)が担うため、ユニットテスト対象を持たない"
   },
   {
     "specFile": "future-digest/weekly-publish/design.md",

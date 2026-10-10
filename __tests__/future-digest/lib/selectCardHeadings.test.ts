@@ -18,7 +18,7 @@ function buildPrediction(overrides: Partial<Prediction> & Pick<Prediction, 'genr
 }
 
 function buildArticle(predictions: Prediction[]): Article {
-  return { id: '2026-09-17', date: '2026-09-17', issueNumber: 1, predictions, emptySlots: [] }
+  return { id: '2026-09-17-science-tech', edition: 'science-tech', date: '2026-09-17', issueNumber: 1, predictions, emptySlots: [] }
 }
 
 // 仕様: specs/future-digest/article-list/requirements.md#一覧表示-2、specs/future-digest/article-list/requirements.md#一覧表示-3、specs/future-digest/article-list/requirements.md#一覧表示-4
@@ -35,10 +35,12 @@ describe('各回に載せる見出しの選択 - 影響度順(大→中→小)�
 
     expect(headings).toHaveLength(3)
     expect(headings.map((h) => h.impact)).toEqual(['high', 'high', 'high'])
+    // genres.jsonの記載順(GENRE_ORDER)はサイエンス・テクノロジー編5ジャンル→くらし・社会編5ジャンルの
+    // 順になるため、geopolitics(サイエンス・テクノロジー編)はeconomy-work(くらし・社会編)より先に並ぶ
     expect(headings.map((h) => h.heading)).toEqual([
       '見出し:technology-ai--near',
       '見出し:medical-health--near',
-      '見出し:economy-work--near',
+      '見出し:geopolitics--near',
     ])
   })
 
@@ -83,7 +85,8 @@ describe('各回に載せる見出しの選択 - 影響度順(大→中→小)�
 
   it('掲載できなかった枠(emptySlots)は選ばれないこと', () => {
     const article: Article = {
-      id: '2026-09-17',
+      id: '2026-09-17-science-tech',
+      edition: 'science-tech',
       date: '2026-09-17',
       issueNumber: 1,
       predictions: [buildPrediction({ genre: 'technology-ai', horizon: 'near', impact: 'high' })],

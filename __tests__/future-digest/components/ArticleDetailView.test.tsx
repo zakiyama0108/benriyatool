@@ -54,7 +54,8 @@ function makePrediction(overrides: Partial<Prediction>): Prediction {
 }
 
 const article: Article = {
-  id: '2026-09-24',
+  id: '2026-09-24-science-tech',
+  edition: 'science-tech',
   date: '2026-09-24',
   issueNumber: 1,
   predictions: [

@@ -4,7 +4,7 @@ import {
   buildBroadcastTitle,
   buildBroadcastMessage,
 } from '../../../app/future-digest/lib/buildBroadcastMessage'
-import type { Article, Prediction } from '../../../app/future-digest/lib/types'
+import type { Article, Edition, Prediction } from '../../../app/future-digest/lib/types'
 
 function buildPrediction(overrides: Partial<Prediction> & Pick<Prediction, 'genre' | 'horizon' | 'impact'>): Prediction {
   const id = `${overrides.genre}--${overrides.horizon}`
@@ -21,8 +21,10 @@ function buildPrediction(overrides: Partial<Prediction> & Pick<Prediction, 'genr
   }
 }
 
+const EDITION: Edition = 'science-tech'
+
 function buildArticle(predictions: Prediction[], issueNumber = 1): Article {
-  return { id: '2026-10-01', date: '2026-10-01', issueNumber, predictions, emptySlots: [] }
+  return { id: `2026-10-01-${EDITION}`, edition: EDITION, date: '2026-10-01', issueNumber, predictions, emptySlots: [] }
 }
 
 // 仕様: specs/future-digest/line-broadcast/requirements.md#配信内容-3、specs/future-digest/line-broadcast/requirements.md#配信内容-4、specs/future-digest/line-broadcast/requirements.md#配信内容-5
@@ -56,7 +58,8 @@ describe('代表見出しの選択 - ジャンルごとに影響度が最も大�
 
   it('掲載した予測が1本もないジャンル(両枠が候補なし・収集失敗・生成失敗)は代表見出しに含まれないこと', () => {
     const article: Article = {
-      id: '2026-10-01',
+      id: `2026-10-01-${EDITION}`,
+      edition: EDITION,
       date: '2026-10-01',
       issueNumber: 1,
       predictions: [],
@@ -81,9 +84,13 @@ describe('代表見出しの選択 - ジャンルごとに影響度が最も大�
 })
 
 // 仕様: specs/future-digest/line-broadcast/requirements.md#配信内容-2
-describe('LINE配信メッセージ専用タイトルの組み立て - 「【週刊未来予測】」+日付から配信専用の見出しを組み立てる', () => {
-  it('日付2026-10-01から「【週刊未来予測】2026年10月1日号」が生成されること', () => {
-    expect(buildBroadcastTitle('2026-10-01')).toBe('【週刊未来予測】2026年10月1日号')
+describe('LINE配信メッセージ専用タイトルの組み立て - 「【週刊未来予測】」+編のラベル+日付から配信専用の見出しを組み立てる', () => {
+  it('science-techの場合、日付2026-10-01から「【週刊未来予測】サイエンス・テクノロジー編 2026年10月1日号」が生成されること', () => {
+    expect(buildBroadcastTitle('2026-10-01', 'science-tech')).toBe('【週刊未来予測】サイエンス・テクノロジー編 2026年10月1日号')
+  })
+
+  it('life-societyの場合、日付2026-10-04から「【週刊未来予測】くらし・社会編 2026年10月4日号」が生成されること', () => {
+    expect(buildBroadcastTitle('2026-10-04', 'life-society')).toBe('【週刊未来予測】くらし・社会編 2026年10月4日号')
   })
 })
 
@@ -96,13 +103,13 @@ describe('配信メッセージの組み立て - タイトル・時間軸・代�
 
     expect(message).toBe(
       [
-        '【週刊未来予測】2026年10月1日号',
+        '【週刊未来予測】サイエンス・テクノロジー編 2026年10月1日号',
         '今回の時間軸: 近未来・長期未来',
         '',
         '・【影響度 大/テクノロジー・AI】見出し:technology-ai--near',
         '',
         '記事を読む',
-        'https://benriyatool.com/future-digest/2026-10-01',
+        `https://benriyatool.com/future-digest/2026-10-01-${EDITION}`,
       ].join('\n')
     )
   })
@@ -129,11 +136,11 @@ describe('配信メッセージの組み立て - タイトル・時間軸・代�
 
     expect(message).toBe(
       [
-        '【週刊未来予測】2026年10月1日号',
+        '【週刊未来予測】サイエンス・テクノロジー編 2026年10月1日号',
         '今回の時間軸: 近未来・長期未来',
         '',
         '記事を読む',
-        'https://benriyatool.com/future-digest/2026-10-01',
+        `https://benriyatool.com/future-digest/2026-10-01-${EDITION}`,
       ].join('\n')
     )
   })
@@ -145,13 +152,13 @@ describe('配信メッセージの組み立て - タイトル・時間軸・代�
 
     expect(message).toBe(
       [
-        '【週刊未来予測】2026年10月1日号',
+        '【週刊未来予測】サイエンス・テクノロジー編 2026年10月1日号',
         '今回の時間軸: 近未来・長期未来',
         '',
         '今週は掲載できる予測がありませんでした',
         '',
         '記事を読む',
-        'https://benriyatool.com/future-digest/2026-10-01',
+        `https://benriyatool.com/future-digest/2026-10-01-${EDITION}`,
       ].join('\n')
     )
   })

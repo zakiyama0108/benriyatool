@@ -1,7 +1,7 @@
 # アーキテクチャ: future-digest
 
 ## サマリ
-未来予測記事を週2回(木曜のサイエンス・テクノロジー編・日曜のくらし・社会編)配信するアプリ。対象編の5ジャンル×その回の時間軸2区分(現在は5ジャンル×2区分=10枠)ごとに、公開されている未来予測・考察記事を影響度付きで1本選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなり、いずれもリリース済み。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
+未来予測記事を週2回(木曜のサイエンス・テクノロジー編・日曜のくらし・社会編)配信するアプリ。対象編の5ジャンル×その回の時間軸2区分(現在は5ジャンル×2区分=10枠)ごとに、公開されている未来予測・考察記事を影響度付きで1本選び、GitHub Actionsが収集・選定・要約・公開・LINE配信を自動で行う。8つのspec(content-selection・content-generation・weekly-publish・line-broadcast・article-list・article-detail・bookmark・source-review)からなる。運用パターンはtrend-digestを踏襲する(下記「コンテキスト図」「システム構成図」参照)。
 
 ## 1. 概要
 有効なジャンル(現在は10ジャンル、サイエンス・テクノロジー編/くらし・社会編の2編に5ジャンルずつ分かれる)について、公開されている未来予測・考察記事を近未来・中期未来・長期未来・超長期未来の4つの時間軸ごとに選び、影響度(大・中・小)付きで要約して週2回(木曜・日曜)公開するアプリ。時間軸の区分は[content-selection/requirements.md#時間軸](content-selection/requirements.md)、編成は[content-selection/requirements.md#編成とジャンルの割り当て](content-selection/requirements.md)に従う。URL: `/future-digest`
@@ -83,14 +83,6 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [source-review](source-review/requirements.md) | (運営者専用)基準を月次で見直す | 月次でジャンル・採用基準・執筆ルールの見直し案を作り、人の承認を経て反映する | article-detailのフィードバック、content-selectionの収集状況を参照 | リリース済み |
 
 ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
-
-### 実装順
-未実装のためこれから実装に着手する場合は、依存関係の浅い順に次の順で進める(spec間の依存は上表「依存」列が正):
-1. content-selection・content-generation(記事データの元となる選定・要約ルール)
-2. article-detail(記事データの共有スキーマを定義するspec。他のUI specはこのスキーマに依存する)
-3. weekly-publish(選定・生成・公開の自動実行)。ただし運営者への警告判定の純粋関数`shouldAlertOperator`(weekly-publish/tasks.md Task 1)はcontent-selectionのまとめCLIから呼ばれるため、content-selectionのまとめCLIより先に実装する
-4. article-list・bookmark・line-broadcast(article-detailのデータ構造を使う周辺機能。この3つの間に依存はなく並行できる)
-5. source-review(記事データ・フィードバックの蓄積を前提とする月次見直し)
 
 ## 9. コンポーネント図
 ```mermaid
