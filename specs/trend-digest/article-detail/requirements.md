@@ -1,5 +1,7 @@
 # 要件定義: 記事詳細ページ
 
+> ステータス: 仕様確認中(未実装)(今回追加した固定ラベル・固定3観点・図解機能のみ。既存部分は実装済み)
+
 ## サマリ
 その回のトレンド記事本文を、その編の全ジャンルの見出しごとに区切って、各ジャンル1件のトピック(`unavailableGenres`を持たない公開済みの過去記事は例外で、記録されているとおりに表示する)・要約・出典リンクを表示する。各トピックには、その話題がどれだけ続いているか(継続度ラベル)・今どれくらい強いか(注目度ラベル)・継続期間・何回目の報告か・どの地域で流行しているかをあわせて表示する。情報源から話題を取得できなかったジャンルは、見出しを出したうえでその旨を表示する。あわせて、運営者本人がその場でフィードバックを残せるようにする。
 
@@ -40,7 +42,7 @@ flowchart LR
 ### 記事本文表示
 - [1] その回の記事タイトル・公開日を表示する
 - [2] その回の対象ジャンル(エンタメ編9ジャンル・カルチャー編10ジャンル)を、すべて見出しとして表示する。各ジャンルから必ず1件を掲載するため、ジャンルが回によって記事から消えることはない([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))(ただし、`unavailableGenres`を持たない公開済みの過去記事は、掲載のないジャンルを表示しない。[継続度・注目度の表示 17](#継続度・注目度の表示)参照)
-- [3] 各ジャンル見出しの下に、そのジャンルで選ばれたトピック1件を、見出し・本文・出典情報(情報源名・元URLへのリンク)とセットで表示する([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))(ただし、`unavailableGenres`を持たない公開済みの過去記事は、記録されている複数件をそのまま表示する。[継続度・注目度の表示 17](#継続度・注目度の表示)参照)
+- [3] 各ジャンル見出しの下に、そのジャンルで選ばれたトピック1件を、見出し・要約・出典情報(情報源名・元URLへのリンク)とセットで表示する([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))(ただし、`unavailableGenres`を持たない公開済みの過去記事は、記録されている複数件をそのまま表示する。[継続度・注目度の表示 17](#継続度・注目度の表示)参照)
 - [4] 1つの記事に表示するトピックはその編のジャンル数と同じ件数(エンタメ編9件・カルチャー編10件)になる。合計件数の上限は設けない([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))(ただし、`unavailableGenres`を持たない公開済みの過去記事は対象外で、記録されているトピックをそのまま表示する。[継続度・注目度の表示 17](#継続度・注目度の表示)参照)
 
 ### 運営者向けフィードバック
@@ -60,6 +62,8 @@ flowchart LR
 - [16] 各トピックに、判定できている場合のみ発祥地域・現在の主な流行地域を表示する。判定できていない(不明の)項目は表示しない(「不明」という表示自体を出さない。情報がないことを強調しても読者の役に立たないため)
 - [17] 情報源から話題を取得できなかったジャンルは、ジャンルの見出しを出したうえで、取得できなかった旨を表示する([content-selection/requirements.md#掲載件数](../content-selection/requirements.md))。トピックのない見出しだけが残る状態にはしない。取得できなかった旨の表示は`unavailableGenres`を持つ記事(この機能以降に生成した記事)だけに適用し、`unavailableGenres`を持たない、公開済みの過去の記事は書き換えずそのまま表示する(掲載のないジャンルには何も表示しない)
 - [18] 継続度ラベル・注目度ラベル・継続日数・報告回数・地域を持たないトピックは、その部分を表示しない(この機能より前に公開した記事が該当する)
+- [19] トピックの要約が固定3観点(急上昇の事実・なぜ注目されたか・確からしさ/注意点、この順序で固定。[content-generation/requirements.md#要約](../content-generation/requirements.md))で構成される記事は、観点ごとに固定ラベル(観点名そのもの)・結論文(見出し)・本文を常時表示する(展開操作は設けない)。この機能より前に公開した記事(単一の`body`文字列のみを持つ記事)は、従来どおり本文をそのまま1つの段落として表示する(過去記事を書き換えない。[18]と同じ考え方)
+- [20] 観点、または記事全体について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、対応する本文の近くに表示する。生成されていない場合は何も表示しない
 
 ## ビジネスルール・制約
 
@@ -77,12 +81,16 @@ flowchart LR
 - [7] ラベルのバッジは、段階ごとに色で見分けが付くようにする。ただし色だけに意味を持たせず、必ず文字のラベルも併記する(色の識別が難しい利用者にも伝わるようにするため)
 - [8] 継続度ラベルと注目度ラベルは見た目で区別が付くようにし、どちらが時間の長さでどちらが今の強さかが読者に伝わるようにする
 
+### 表示分量・著作権配慮(図解)
+- [9] 固定3観点の本文は、3観点合計で200〜400字程度とする([content-generation/requirements.md#要約](../content-generation/requirements.md))。従来([1])の「各トピックの本文」も同じ分量を指す(旧形式の`body`・新形式の3観点合計のいずれも200〜400字程度)
+
 ## 依存関係
 - 表示するトピックの選定結果は[content-selection/requirements.md#掲載する話題の選び方](../content-selection/requirements.md)に従って決まる
 - 表示する継続度ラベル・注目度ラベル・継続日数・報告回数・地域は[trend-history/requirements.md](../trend-history/requirements.md)が判定した結果を、content-selectionを経て受け取る
 - 要約の生成ルールは[content-generation/requirements.md](../content-generation/requirements.md)に従う
 - ログイン状態・運営者判定は既存の管理画面と同じGoogle OIDC + `admin_emails`許可リスト([docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、`app/lib/adminAuth.ts`のisAuthorizedAdmin())を利用する。`admin_emails`テーブル・そのRLSポリシーは複数アプリ共有の既存資産であり、本specのための新しいテーブル・マイグレーションは不要
 - 蓄積されたフィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで参照される
+- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示
