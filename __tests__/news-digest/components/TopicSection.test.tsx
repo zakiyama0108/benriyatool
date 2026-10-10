@@ -98,6 +98,46 @@ describe('トピック表示 - 固定4観点(何が起きたか→なぜ重要�
   })
 })
 
+// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-3
+describe('トピック表示 - 観点ごとの固定ラベル(PERSPECTIVE_LABELS)を結論文(見出し)より前に常時表示する', () => {
+  it('固定ラベル(何が起きたか→なぜ重要か(影響)→背景→今後の見通し)が、この順序で結論文の前に表示されること', () => {
+    const { container } = render(<TopicSection topic={makeTopic()} {...noop} />)
+    const kickers = Array.from(container.querySelectorAll('[data-testid="perspective-kicker"]')).map((el) => el.textContent)
+    expect(kickers).toEqual(['何が起きたか', 'なぜ重要か(影響)', '背景', '今後の見通し'])
+
+    // 固定ラベルが見出し(h3)より前(DOM順で先)に配置されていることを確認する
+    const firstKicker = container.querySelector('[data-testid="perspective-kicker"]')
+    const firstHeading = container.querySelector('h3')
+    expect(firstKicker?.compareDocumentPosition(firstHeading!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+})
+
+// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-13
+describe('トピック表示 - 観点ごとの図解(diagram)をDiagramView経由で表示する', () => {
+  it('diagramが{type: "image", path}の観点を含むとき、<img>がそのpathで表示されること', () => {
+    const topic = makeTopic({
+      summary: {
+        ...makeTopic().summary,
+        whatHappened: {
+          heading: '何が起きたか',
+          teaser: 'あ'.repeat(60),
+          detail: 'あ'.repeat(250),
+          diagram: { type: 'image', path: 'content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png' },
+        },
+      },
+    })
+    render(<TopicSection topic={topic} {...noop} />)
+    const img = screen.getByRole('img')
+    expect(img.getAttribute('src')).toBe('content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png')
+  })
+
+  it('いずれの観点もdiagramがnull・未指定のとき、画像・Mermaidコンテナのいずれも表示されないこと', () => {
+    const { container } = render(<TopicSection topic={makeTopic()} {...noop} />)
+    expect(screen.queryByRole('img', { name: '図解' })).toBeNull()
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).toBeNull()
+  })
+})
+
 // 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-4、specs/news-digest/content-generation/requirements.md#要約-1
 describe('トピック表示 - 各観点の詳細文はHTML標準の<details>要素で展開表示する', () => {
   it('4観点分の<details>要素が初期状態で閉じており、各観点の詳細文を含んでいること', () => {

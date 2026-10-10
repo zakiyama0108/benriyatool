@@ -6131,6 +6131,36 @@
   },
   {
     "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解 [12]",
+    "reason": "図解が理解の助けになるかをエージェントが判断するという執筆内容の質に関する要件で、コードで自動検証できないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解 [13]",
+    "reason": "内容に応じてMermaid/生成画像のどちらの形式にするかをエージェントが判断するという執筆内容の質に関する要件で、コードで自動検証できないため(diagramがnull・mermaid・imageのいずれかの正しい形であることはapp/news-digest/lib/diagramValidation.tsのisValidAgentDiagramでテスト済み)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解 [14]",
+    "reason": "Nano Banana呼び出しの失敗時フォールバックで、scripts/news-digest/generateDiagram.tsはTDD対象外のため(tasks.md Task8。外部API呼び出し・ファイル書き込みのオーケストレーションで、失敗時にdiagramをnullに差し替えるtry/catchとして実装するのみ)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解の生成(Nano Banana) [8]",
+    "reason": "生成画像にGemini 2.5 Flash Image APIを使うというアーキテクチャ上の決定の記述で、scripts/news-digest/generateDiagram.tsに実装するのみでテスト対象を持たないため(tasks.md Task8、TDD対象外)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解の生成(Nano Banana) [9]",
+    "reason": "Nano Banana無料枠の利用上の制約(商用利用不可の地域・学習データ利用)を把握しておくという運用上の注意事項で、コードとして実装・検証する対象を持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解の生成(Nano Banana) [10]",
+    "reason": "正確な文章再現を要する図は生成画像にしないという、画像生成プロンプトを書く際の執筆内容の質に関する要件で、コードで自動検証できないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
     "item": "ビジネスルール・制約",
     "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },

@@ -80,15 +80,57 @@ export type TopicTrend = {
   currentRegions: string[] // 現在の主な流行地域。不明は空配列(表示しない)
 }
 
-export type Topic = {
+// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形。アプリごとに型定義は独立して持つ)
+export type Diagram =
+  | { type: 'mermaid'; code: string }
+  | { type: 'image'; path: string }
+
+export type TopicSection = {
+  heading: string // 結論文(短い見出し)
+  text: string // 本文
+  diagram: Diagram | null // 図解(requirements.md#記事本文表示-20)。不要な観点はnull
+}
+
+// 固定3観点。この3キー・この順序で固定(content-generation/requirements.md#要約-3)。
+// 各キーの固定ラベル(画面に常時表示する観点名そのもの。requirements.md#記事本文表示-19)はコード側の定数として持つ
+export type TopicSections = {
+  fact: TopicSection // 急上昇の事実
+  reason: TopicSection // なぜ注目されたか
+  caveat: TopicSection // 確からしさ・注意点
+}
+
+export const SECTION_LABELS: Record<keyof TopicSections, string> = {
+  fact: '急上昇の事実',
+  reason: 'なぜ注目されたか',
+  caveat: '確からしさ・注意点',
+}
+
+type TopicBase = {
   id: string // 記事内で一意。フィードバックの紐付けに使う(例: "topic-1")
   genre: Genre
   heading: string // content-generationが生成する見出し
-  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
   sourceTitle: string // 対象作品・話題の原題(content-selectionのCandidate.titleをそのまま引き継ぐ。掲載実績・履歴の突合キーとして使う。表示はしない)
   sourceName: string // 出典の情報源名
   sourceUrl: string // 出典の元URL
   trend?: TopicTrend // 継続度・注目度の情報。この機能より前に公開した記事は持たないため任意(requirements.md#継続度・注目度の表示-18)
+}
+
+// この機能(固定3観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#記事本文表示-19、ai-dev-digestのLegacyTopicと同じ設計判断)
+export type LegacyTopic = TopicBase & {
+  body: string // 160〜480字、目安200〜400字
+}
+
+// この機能以降に生成する記事が持つ形
+export type CurrentTopic = TopicBase & {
+  sections: TopicSections
+}
+
+export type Topic = LegacyTopic | CurrentTopic
+
+// bodyを持つかどうかで新旧を判定する(ai-dev-digest/lib/types.tsのisLegacyTopicと同じパターン)
+export function isLegacyTopic(topic: Topic): topic is LegacyTopic {
+  return 'body' in topic
 }
 
 export type Article = {
@@ -120,12 +162,14 @@ export type Article = {
 - 手順:
   1. `buildArticleTitle(edition, date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
   2. `GENRE_ORDER[edition]`の順に、その編の全ジャンルを見出しとして表示する(requirements.md#記事本文表示-2。`unavailableGenres`を持たない公開済みの過去記事は、掲載のないジャンルの見出しを出さない。手順4参照)。見出しの文言は`Genre`から`GENRE_LABELS`を引いた日本語ラベルを使う
-  3. 各ジャンル見出しの下に、そのジャンルの`topics`(新ルールの記事は1件、`unavailableGenres`を持たない過去記事は複数件ありうる)を、見出し・本文・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
+  3. 各ジャンル見出しの下に、そのジャンルの`topics`(新ルールの記事は1件、`unavailableGenres`を持たない過去記事は複数件ありうる)を、見出し・要約・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
+  3-1. 要約の表示は`isLegacyTopic(topic)`で分岐する。`true`(旧形式)の場合は`body`をそのまま1つの段落として表示する。`false`(新形式)の場合は`sections`を`fact`→`reason`→`caveat`の順(この順序で固定)に、`SECTION_LABELS`の固定ラベル→`heading`(結論文)→`text`(本文)の順で常時表示する(requirements.md#記事本文表示-19)
+  3-2. 新形式の各観点で`diagram`が`null`でない場合、`text`の下に`DiagramView`を表示する(requirements.md#記事本文表示-20)
   4. `unavailableGenres`に含まれるジャンルは、見出しの下にトピックの代わりとして「今回は情報源から話題を取得できませんでした」と表示する。見出しだけが残る状態にはしない(requirements.md#継続度・注目度の表示-17)。`unavailableGenres`を持たない、新ルール導入前に公開済みの記事では、`topics`にないジャンルには見出しも含め何も表示しない(セクション自体を出さない。同一ジャンルに複数件のトピックがある場合は全件を表示する。公開済み記事を書き換えるとフィードバックの`topic_id`がずれるため、過去記事はそのまま表示する)
   5. 各トピックに`trend`がある場合は、見出しの隣に継続度ラベルのバッジと注目度ラベルのバッジを(いずれも日本語ラベル付きで)並べ、本文の上にトレンド情報の行を表示する。トレンド情報の行に出すのは、継続期間(継続の開始日と継続日数を組み合わせた読みやすい表記)・報告回数(2回目以降のみ)・発祥地域(判定できている場合のみ)・現在の主な流行地域(判定できている場合のみ)で、値が不明な項目は項目ごと表示しない(requirements.md#継続度・注目度の表示-10、同-12、同-14、同-15、同-16)
   6. `trend`を持たないトピックは、バッジ・トレンド情報の行をいずれも表示しない(requirements.md#継続度・注目度の表示-18)
   7. 表示するトピック数は`topics`配列のとおりで、画面側で件数の絞り込みは行わない(`unavailableGenres`を持つ記事ではその編のジャンル数と一致する。持たない過去記事は例外。requirements.md#記事本文表示-4、requirements.md#継続度・注目度の表示-17)
-- 関連するビジネスルール: requirements.md#記事本文表示-1、requirements.md#記事本文表示-2、requirements.md#記事本文表示-3、requirements.md#記事本文表示-4、requirements.md#継続度・注目度の表示-10、requirements.md#継続度・注目度の表示-11、requirements.md#継続度・注目度の表示-12、requirements.md#継続度・注目度の表示-13、requirements.md#継続度・注目度の表示-14、requirements.md#継続度・注目度の表示-15、requirements.md#継続度・注目度の表示-16、requirements.md#継続度・注目度の表示-17、requirements.md#継続度・注目度の表示-18、requirements.md#継続度・注目度の表示の扱い-6、requirements.md#継続度・注目度の表示の扱い-7
+- 関連するビジネスルール: requirements.md#記事本文表示-1、requirements.md#記事本文表示-2、requirements.md#記事本文表示-3、requirements.md#記事本文表示-4、requirements.md#記事本文表示-19、requirements.md#記事本文表示-20、requirements.md#継続度・注目度の表示-10、requirements.md#継続度・注目度の表示-11、requirements.md#継続度・注目度の表示-12、requirements.md#継続度・注目度の表示-13、requirements.md#継続度・注目度の表示-14、requirements.md#継続度・注目度の表示-15、requirements.md#継続度・注目度の表示-16、requirements.md#継続度・注目度の表示-17、requirements.md#継続度・注目度の表示-18、requirements.md#継続度・注目度の表示の扱い-6、requirements.md#継続度・注目度の表示の扱い-7
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
@@ -175,7 +219,8 @@ sequenceDiagram
 - 各`topic`: `id`が記事内で重複しないこと、`genre`が定義済みジャンルのいずれかであること、かつ`article.edition`に対応するジャンル(`GENRE_ORDER[article.edition]`)に含まれること(エンタメ編の記事にカルチャー編のジャンルが混入するような不整合をビルド時に検知するため)、`heading`/`body`/`sourceTitle`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、同一ジャンルのトピックが2件以上存在しないこと(content-selection/requirements.md#掲載件数-1。ただし`unavailableGenres`を持つ記事にだけ適用し、持たない過去記事は適用しない。上記`topics`の項参照)
 - `unavailableGenres`は省略可。ある場合は、各要素が`GENRE_ORDER[article.edition]`に含まれるジャンルであること、重複がないこと、`topics`のジャンルと重ならないこと
 - 各`topic`の`trend`は省略可。ある場合は、`durationLabel`が定義済みの4段階のいずれかであること、`heatLabel`が定義済みの3段階のいずれかであること、`continuationDays`が0以上の整数であること、`continuationStartDate`が`YYYY-MM-DD`形式で記事の`date`以前であること、`reportCount`が1以上の整数であること、`originRegion`が文字列(空文字でなく50文字以内・制御文字を含まない)またはnullであること、`currentRegions`が文字列の配列(各要素は空文字でなく50文字以内・制御文字を含まない、10件以内)であること。地域情報は収集エージェントが生成した自由文字列のため、記事データに取り込む時点でも外部入力として検証する([trend-history/design.md](../trend-history/design.md)のバリデーションと同じ上限)
-- `body`の文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2、content-generation/design.md「本文の分量を検証する処理」)
+- 旧形式(`body`を持つ)の場合: `body`の文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2、content-generation/design.md「本文の分量を検証する処理」)
+- 新形式(`sections`を持つ)の場合: `fact`/`reason`/`caveat`の3キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。3観点の`text`を連結した文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2)。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`content/trend-digest/articles/images/`配下を指す)のいずれかであること
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(requirements.md#運営者向けフィードバック-9)
 
 ## エラーハンドリング
@@ -198,9 +243,11 @@ app/trend-digest/components/DurationBadge.tsx (新規: 継続度ラベルの日�
 app/trend-digest/components/HeatBadge.tsx (新規: 注目度ラベルの日本語ラベル付きバッジ)
 app/trend-digest/components/TrendMeta.tsx (新規: 継続期間・報告回数・地域の1行表示)
 app/trend-digest/components/FeedbackForm.tsx (新規)
+app/trend-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/trend-digest/articles/*.json (新規: 記事本文データ。コード資産ではないためapp/配下に置かない)
+content/trend-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
 ```
 
 ## データベース設計
@@ -269,6 +316,7 @@ Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/[date]/page.tsx`の
 | HeatBadge | `label: HeatLabel` | 注目度ラベルの日本語ラベル付きバッジ表示(寒色系の枠線) |
 | TrendMeta | `trend: TopicTrend` | 継続期間・報告回数・地域の1行表示(不明な項目は省く。ラベルのバッジは含まない) |
 | FeedbackForm | `articleId: string`, `topicId: string` | 自由記述の入力欄・送信・送信結果表示 |
+| DiagramView | `diagram: Diagram \| null` | 図解の表示。`null`は何もレンダリングしない(news-digestと共通の実装) |
 
 ## 状態管理
 

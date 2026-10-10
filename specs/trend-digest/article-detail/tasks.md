@@ -64,3 +64,19 @@
   - `app/trend-digest/[id]/page.tsx`を実装する。`generateStaticParams`で`getAllArticles()`の全IDを列挙し、`getArticleById`で本文を取得して`GenreSection`を並べる
   - ページ下部にログイン状態表示を配置し、`getSession`/`onAuthChange`/`signInWithGoogle`/`signOut`を配線する
   - page.tsx自体はNext.jsのルーティング用ファイルのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定に従う)。新規テストは追加せず、Task 4〜10のユニットテストで担保する
+
+## 固定3観点・図解
+
+- Task 12: 固定3観点の型と表示(仕様: requirements.md#記事本文表示-19、design.md「前提: 記事データの形式」「その回の記事本文を表示する処理」手順3-1)
+  - 🔴 `isLegacyTopic`が`body`を持つトピックで`true`、`sections`を持つトピックで`false`を返すことを確認するテストを書く
+  - 🟢 `app/trend-digest/lib/types.ts`に`Diagram`/`TopicSection`/`TopicSections`/`SECTION_LABELS`/`LegacyTopic`/`CurrentTopic`/`isLegacyTopic`を追加する
+  - 🔴 `isLegacyTopic(topic)`が`true`の場合は`body`がそのまま1段落で表示されること、`false`の場合は`fact`→`reason`→`caveat`の順に`SECTION_LABELS`の固定ラベル→`heading`→`text`が表示されることを確認するテストを書く(Task 5のテストに追加する形でよい)
+  - 🟢 `app/trend-digest/components/TopicCard.tsx`を修正し、`isLegacyTopic`で表示を分岐する
+
+- Task 13: 図解の表示(仕様: requirements.md#記事本文表示-20、design.md「その回の記事本文を表示する処理」手順3-2)
+  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されること、`{type:'image'}`の場合は`<img>`の`src`が`path`と一致することを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
+  - 🟢 `app/trend-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用。本アプリでの新規導入は不要)。`TopicCard.tsx`から新形式の各観点の`diagram`を渡して配置する
+
+- Task 14: styleguideページへの追加(仕様: design.md「画面設計」)
+  - `app/trend-digest/styleguide/page.tsx`に、固定3観点表示(新形式)・旧形式(単一本文)・図解あり(mermaid/image)の各状態を並べる
+  - 同じコミットで`app/trend-digest/styleguide/styleguide.png`を撮り直す
