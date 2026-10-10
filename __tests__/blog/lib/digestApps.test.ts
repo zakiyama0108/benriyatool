@@ -32,14 +32,14 @@ describe('5アプリの定数(DIGEST_APPS) - /blogのカード一覧・情報源
 })
 
 // 仕様: specs/blog/digest-hub/requirements.md#ダイジェストカード一覧-3
-describe('配信曜日ラベル(scheduleLabel) - 本番で実際に配信されている曜日(未実装の週2回化spec等は反映しない)', () => {
-  it('ai-dev-digestは「毎日」、news-digestは「毎週水曜」、trend-digestは「火・金(週2回)」、future-digestは「毎週木曜」、research-digestは「毎週月曜」であること', () => {
+describe('配信曜日ラベル(scheduleLabel) - 本番で実際に配信されている曜日', () => {
+  it('ai-dev-digestは「毎日」、news-digestは「毎週水曜」、trend-digestは「火・金(週2回)」、future-digestは「木・日(週2回)」、research-digestは「月・土(週2回)」であること', () => {
     const byId = Object.fromEntries(DIGEST_APPS.map((app) => [app.id, app]))
     expect(byId['ai-dev-digest'].scheduleLabel).toBe('毎日')
     expect(byId['news-digest'].scheduleLabel).toBe('毎週水曜')
     expect(byId['trend-digest'].scheduleLabel).toBe('火・金(週2回)')
-    expect(byId['future-digest'].scheduleLabel).toBe('毎週木曜')
-    expect(byId['research-digest'].scheduleLabel).toBe('毎週月曜')
+    expect(byId['future-digest'].scheduleLabel).toBe('木・日(週2回)')
+    expect(byId['research-digest'].scheduleLabel).toBe('月・土(週2回)')
   })
 
   it('各アプリのhrefがそのアプリのトップページを指すこと', () => {
@@ -66,10 +66,10 @@ describe('1行概要(description) - README「アプリ一覧」の概要文を�
       '音楽・映画・グルメなど様々なジャンルの流行を週2回自動収集・要約し、ダイジェスト記事として公開する'
     )
     expect(byId['future-digest'].description).toBe(
-      '10ジャンルの未来予測記事を時間軸(近未来〜超長期未来)ごとに影響度付きで毎週木曜に要約・公開する'
+      '10ジャンルを2編に分け、未来予測記事を時間軸(近未来〜超長期未来)ごとに影響度付きで週2回要約・公開する'
     )
     expect(byId['research-digest'].description).toBe(
-      '10ジャンルから暮らしへの影響が大きい研究・論文を1本ずつ毎週月曜に要約・公開する'
+      '10ジャンルを2編に分け、暮らしへの影響が大きい研究・論文を1本ずつ週2回要約・公開する'
     )
   })
 })

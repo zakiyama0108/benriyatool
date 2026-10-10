@@ -15,7 +15,7 @@ export default function ArticleListPage() {
         <header>
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl">週刊未来予測</h1>
           <p className="mt-1 text-sm leading-relaxed text-gray-500">
-            テクノロジー・医療・環境・経済・宇宙など10ジャンルについて、近未来から50年後以降までの未来予測記事を毎週木曜に要約してお届け。
+            テクノロジー・医療・環境・経済・宇宙など10ジャンルについて、近未来から50年後以降までの未来予測記事を要約してお届け。サイエンス・テクノロジー編は木曜、くらし・社会編は日曜に公開。
           </p>
         </header>
         <ArticleListView articles={items} currentPage={1} totalPages={totalPages} />
