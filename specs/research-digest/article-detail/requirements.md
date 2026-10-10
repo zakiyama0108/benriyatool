@@ -1,5 +1,7 @@
 # 要件定義: 記事詳細ページ
 
+> ステータス: 仕様確認中(未実装)(今回追加した固定4観点・図解機能のみ。既存部分は実装済み)
+
 ## サマリ
 その回(編ごと)の研究発見の記事(1ジャンル1本、対象編の5ジャンルだけ。現在は最大5本)を表示する。各記事には、ジャンル・影響度(大・中・小)のバッジ、要約、影響度の根拠、出典リンクを付ける。並び順は「影響度順」と「ジャンル順」を読者が切り替えられる(future-digestと同じ)。ログイン中の運営者本人は、記事ごとにフィードバックを残せる。
 
@@ -52,6 +54,8 @@ flowchart LR
 - [11] 各記事の下に、フィードバック入力欄(自由記述。1000字まで)を表示する。入力欄は、運営者本人がGoogle OIDCでログインしている場合だけ表示する
 - [12] 送信すると、対象の記事(回のID・記事の識別子)と入力内容を紐づけてデータベースに保存し、保存できたことが分かる表示にする
 - [13] 入力欄が空、または空白文字だけの場合は送信できない。1000字を超える場合も送信できない
+- [14] 要約が固定4観点(何が分かったか/なぜそう結論づけられたのか/暮らしへの関わり/注意点、この順序で固定。[content-generation/requirements.md#要約](../content-generation/requirements.md))で構成される記事は、観点ごとに固定ラベル(観点名そのもの)・結論文(見出し)・本文を常時表示する(展開操作は設けない)。この機能より前に公開した記事(単一の`body`文字列のみを持つ記事)は、従来どおり本文をそのまま1つの段落として表示する(過去記事を書き換えない)
+- [15] 観点、または記事全体について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、対応する本文の近くに表示する。生成されていない場合は何も表示しない
 
 ## ビジネスルール・制約
 
@@ -67,8 +71,10 @@ flowchart LR
 - 表示する記事は[content-selection/requirements.md](../content-selection/requirements.md)で選ばれ、[content-generation/requirements.md](../content-generation/requirements.md)のルールで書かれる
 - 読者の付箋は[bookmark/requirements.md](../bookmark/requirements.md)で定める
 - フィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで使われる
+- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示、訪問者向けのコメント欄
 - フィードバックの一覧・検索画面(運営者はデータベースを直接確認する)
 - 影響度順・ジャンル順以外の並び順、ジャンルでの絞り込み
+- 図解の有無・内容に関する運営者フィードバックへの個別対応(他の要約内容と同じく、月次見直しでまとめて調整する)

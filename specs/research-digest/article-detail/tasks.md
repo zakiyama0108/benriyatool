@@ -74,3 +74,21 @@
   - 🟢 `app/research-digest/[id]/page.tsx`を更新する
 
 </details>
+
+## 固定4観点・図解への移行
+
+〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 14: 固定4観点の型と表示(仕様: requirements.md#記事本文の表示-14、design.md「前提: 記事データの形式」「その回の記事本文を表示する処理」手順3-1)
+  - 🔴 `isLegacyFinding`が`body`を持つ研究で`true`、`sections`を持つ研究で`false`を返すことを確認するテストを書く
+  - 🟢 `app/research-digest/lib/types.ts`に`Diagram`/`FindingSection`/`FindingSections`/`SECTION_LABELS`/`LegacyFinding`/`CurrentFinding`/`isLegacyFinding`を追加する
+  - 🔴 `isLegacyFinding(finding)`が`true`の場合は`body`がそのまま1段落で表示されること、`false`の場合は`finding`→`basis`→`relevance`→`caveat`の順に`SECTION_LABELS`の固定ラベル→`heading`→`text`が表示されることを確認するテストを書く
+  - 🟢 `app/research-digest/components/FindingCard.tsx`を修正し、`isLegacyFinding`で表示を分岐する
+
+- Task 15: 図解の表示(仕様: requirements.md#記事本文の表示-15、design.md「その回の記事本文を表示する処理」手順3-2)
+  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されること、`{type:'image'}`の場合は`<img>`の`src`が`path`と一致することを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
+  - 🟢 `app/research-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`FindingCard.tsx`から新形式の各観点の`diagram`を渡して配置する
+
+</details>
