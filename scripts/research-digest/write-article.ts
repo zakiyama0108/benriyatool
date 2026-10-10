@@ -11,11 +11,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { assembleArticle } from '../../app/research-digest/lib/assembleArticle'
 import { parseArticle } from '../../app/research-digest/lib/articleSchema'
-import { loadGenres, getActiveGenres } from '../../app/research-digest/lib/genres'
+import { loadGenres, getActiveGenres, EDITION_GENRES } from '../../app/research-digest/lib/genres'
 import type { GenreResult } from '../../app/research-digest/lib/candidateTypes'
-import type { Finding, Genre } from '../../app/research-digest/lib/types'
+import type { Edition, Finding, Genre } from '../../app/research-digest/lib/types'
 
 type SelectionOutput = {
+  edition: Edition
   scheduledPublishDate: string
   genreResults: GenreResult[]
 }
@@ -43,10 +44,14 @@ function main() {
     .filter((g): g is Extract<GenreResult, { status: 'collection-failed' }> => g.status === 'collection-failed')
     .map((g) => ({ genre: g.genre, collectionFailureReason: g.reason }))
 
-  const activeGenres = getActiveGenres(loadGenres()).map((g) => g.id)
+  const editionGenreIds = new Set(EDITION_GENRES[selection.edition])
+  const activeGenres = getActiveGenres(loadGenres())
+    .filter((g) => editionGenreIds.has(g.id))
+    .map((g) => g.id)
 
   const article = assembleArticle(
     selection.scheduledPublishDate,
+    selection.edition,
     activeGenres,
     generation.findings,
     noCandidateGenres,

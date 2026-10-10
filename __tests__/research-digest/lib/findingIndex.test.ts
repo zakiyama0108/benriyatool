@@ -7,7 +7,8 @@ describe('研究の索引の作成 - 全記事から「記事ID:研究ID」→�
   it('研究1件から「記事ID:研究ID」をキーに見出し・ジャンルが引けること', () => {
     const articles: Article[] = [
       {
-        id: '2026-10-05',
+        id: '2026-10-05-science-society',
+        edition: 'science-society',
         date: '2026-10-05',
         findings: [
           {
@@ -31,13 +32,14 @@ describe('研究の索引の作成 - 全記事から「記事ID:研究ID」→�
 
     const index = buildFindingIndex(articles)
 
-    expect(index['2026-10-05:ai-it']).toEqual({ heading: '見出しA', genre: 'ai-it' })
+    expect(index['2026-10-05-science-society:ai-it']).toEqual({ heading: '見出しA', genre: 'ai-it' })
   })
 
   it('掲載できなかったジャンルは索引に含まれないこと', () => {
     const articles: Article[] = [
       {
-        id: '2026-10-05',
+        id: '2026-10-05-body-life',
+        edition: 'body-life',
         date: '2026-10-05',
         findings: [],
         emptyGenres: [{ genre: 'medical-health', reason: 'no-candidate' }],

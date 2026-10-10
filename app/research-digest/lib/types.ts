@@ -3,13 +3,23 @@
 // 先行して依存するため、article-detail実装に先立って、その定義どおりの型・定数を置いている
 // (article-detail側で追記が必要になった場合は本ファイルに足す)
 
-import { loadGenres } from './genres'
+import { loadGenres, EDITION_GENRES as GENRES_EDITION_GENRES, type Edition } from './genres'
 
 export type Genre = string // genres.jsonのid(例: "medical-health")
 
 // ジャンル順の並び替え・一覧の表示順(genres.jsonの記載順。廃止したジャンルも過去記事の表示用に含む)
 export const GENRE_ORDER: Genre[] = loadGenres().map((g) => g.id)
 export const GENRE_LABELS: Record<Genre, string> = Object.fromEntries(loadGenres().map((g) => [g.id, g.label]))
+
+// 編(仕様: content-selection/requirements.md#編成とジャンルの割り当て-1〜2)。genres.jsonのedition
+// 属性(genres.tsが検証・集計済み)をそのまま再公開する。EDITION_LABELSは記事タイトル・一覧の編バッジ等、
+// 読者向け表示の日本語ラベル
+export type { Edition }
+export const EDITION_GENRES: Record<Edition, Genre[]> = GENRES_EDITION_GENRES
+export const EDITION_LABELS: Record<Edition, string> = {
+  'body-life': 'からだ・くらし編',
+  'science-society': '科学・社会編',
+}
 
 // 影響度(content-selection/requirements.md#影響度-1)。配列順=影響度の大きい順。
 // 値はプロンプトで指定する値・検証側が受け付ける値と共通で、ここを唯一の正とする
@@ -47,7 +57,8 @@ export const COLLECTION_FAILURE_LABELS: Record<NonNullable<EmptyGenre['collectio
 }
 
 export type Article = {
-  id: string // ファイル名と一致(= date)
+  id: string // ファイル名と一致(= `<date>-<edition>`。trend-digestと同じ形式。weekly-publish/design.md「決定事項」)
+  edition: Edition // どちらの編の記事か
   date: string // YYYY-MM-DD。発行日
   findings: Finding[]
   emptyGenres: EmptyGenre[]

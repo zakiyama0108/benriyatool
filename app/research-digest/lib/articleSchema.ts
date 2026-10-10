@@ -1,6 +1,6 @@
-import type { Article, EmptyGenre, Finding, Genre, Impact } from './types'
+import type { Article, Edition, EmptyGenre, Finding, Genre, Impact } from './types'
 import { IMPACT_ORDER } from './types'
-import { loadGenres } from './genres'
+import { EDITION_GENRES } from './genres'
 import { isValidBodyLength } from './bodyValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: article-detail/design.md「バリデーション」)。
@@ -12,6 +12,7 @@ const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const EMPTY_GENRE_REASONS: EmptyGenre['reason'][] = ['no-candidate', 'collection-failed', 'generation-failed']
 const COLLECTION_FAILURE_REASONS: string[] = ['timeout', 'invalid-format', 'other']
 const MIN_PUBLISHED_YEAR = 1900
+const EDITIONS: Edition[] = ['body-life', 'science-society']
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -34,7 +35,7 @@ function parseFinding(raw: unknown, index: number, genreIds: Genre[], issueYear:
   const f = raw as Record<string, unknown>
 
   if (typeof f.genre !== 'string' || !genreIds.includes(f.genre)) {
-    throw new Error(`findings[${index}].genreがgenres.jsonに存在しません: ${String(f.genre)}`)
+    throw new Error(`findings[${index}].genreが記事のedition(対象編)に属するジャンルに含まれていません: ${String(f.genre)}`)
   }
   if (f.id !== f.genre) {
     throw new Error(`findings[${index}].idがgenreと一致しません(id: ${String(f.id)}, 期待値: ${f.genre})`)
@@ -90,7 +91,7 @@ function parseEmptyGenre(raw: unknown, index: number, genreIds: Genre[]): EmptyG
   const e = raw as Record<string, unknown>
 
   if (typeof e.genre !== 'string' || !genreIds.includes(e.genre)) {
-    throw new Error(`emptyGenres[${index}].genreがgenres.jsonに存在しません: ${String(e.genre)}`)
+    throw new Error(`emptyGenres[${index}].genreが記事のedition(対象編)に属するジャンルに含まれていません: ${String(e.genre)}`)
   }
   if (!EMPTY_GENRE_REASONS.includes(e.reason as EmptyGenre['reason'])) {
     throw new Error(`emptyGenres[${index}].reasonが定義済みの値ではありません: ${String(e.reason)}`)
@@ -119,11 +120,17 @@ export function parseArticle(raw: unknown, filename: string): Article {
   }
   const data = raw as Record<string, unknown>
 
+  if (typeof data.edition !== 'string' || !EDITIONS.includes(data.edition as Edition)) {
+    throw new Error(`${filename}: editionが不正です(body-lifeまたはscience-societyである必要があります): ${String(data.edition)}`)
+  }
+  const edition = data.edition as Edition
+
   if (!isNonEmptyString(data.date) || !DATE_FORMAT.test(data.date)) {
     throw new Error(`${filename}: dateがYYYY-MM-DD形式ではありません: ${String(data.date)}`)
   }
-  if (data.id !== data.date) {
-    throw new Error(`${filename}: idがdateと一致しません(id: ${String(data.id)}, date: ${data.date})`)
+  const expectedId = `${data.date}-${edition}`
+  if (data.id !== expectedId) {
+    throw new Error(`${filename}: idが<date>-<edition>形式と一致しません(id: ${String(data.id)}, 期待値: ${expectedId})`)
   }
   if (filename !== `${data.id}.json` && filename !== data.id) {
     throw new Error(`${filename}: idとファイル名が一致しません(id: ${data.id})`)
@@ -131,7 +138,7 @@ export function parseArticle(raw: unknown, filename: string): Article {
   if (!Array.isArray(data.findings)) throw new Error(`${filename}: findingsは配列である必要があります`)
   if (!Array.isArray(data.emptyGenres)) throw new Error(`${filename}: emptyGenresは配列である必要があります`)
 
-  const genreIds = loadGenres().map((g) => g.id)
+  const genreIds = EDITION_GENRES[edition]
   const issueYear = Number(data.date.slice(0, 4))
   const findings = data.findings.map((f, i) => parseFinding(f, i, genreIds, issueYear))
   const emptyGenres = data.emptyGenres.map((e, i) => parseEmptyGenre(e, i, genreIds))
@@ -143,5 +150,5 @@ export function parseArticle(raw: unknown, filename: string): Article {
     throw new Error(`${filename}: 同じジャンルが重複しています`)
   }
 
-  return { id: data.id, date: data.date, findings, emptyGenres }
+  return { id: data.id, edition, date: data.date, findings, emptyGenres }
 }

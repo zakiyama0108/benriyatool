@@ -21,7 +21,8 @@ function finding(genre: string, overrides: Record<string, unknown> = {}) {
 
 function article(overrides: Record<string, unknown> = {}) {
   return {
-    id: '2026-10-05',
+    id: '2026-10-05-body-life',
+    edition: 'body-life',
     date: '2026-10-05',
     findings: [finding('medical-health')],
     emptyGenres: [{ genre: 'nutrition-food', reason: 'no-candidate' }],
@@ -29,7 +30,7 @@ function article(overrides: Record<string, unknown> = {}) {
   }
 }
 
-const parse = (raw: unknown) => parseArticle(raw, '2026-10-05.json')
+const parse = (raw: unknown) => parseArticle(raw, '2026-10-05-body-life.json')
 
 // 仕様: specs/research-digest/article-detail/design.md「バリデーション」
 describe('記事データの検証 - 過去記事の読み込み時に壊れた記事データを例外で検知する', () => {
@@ -44,7 +45,7 @@ describe('記事データの検証 - 過去記事の読み込み時に壊れた�
         emptyGenres: [
           { genre: 'medical-health', reason: 'no-candidate' },
           { genre: 'nutrition-food', reason: 'generation-failed' },
-          { genre: 'ai-it', reason: 'collection-failed', collectionFailureReason: 'invalid-format' },
+          { genre: 'sleep-exercise', reason: 'collection-failed', collectionFailureReason: 'invalid-format' },
         ],
       }),
     )
@@ -106,5 +107,39 @@ describe('記事データの検証 - 過去記事の読み込み時に壊れた�
         parse(article({ emptyGenres: [{ genre: 'nutrition-food', reason, collectionFailureReason: 'timeout' }] })),
       ).toThrow()
     }
+  })
+})
+
+// 仕様: specs/research-digest/article-detail/design.md「前提: 記事データの形式」「バリデーション」
+describe('記事データの検証(edition) - idの形式・editionの値・ジャンルが対象編に属するかを検証する', () => {
+  it('idが<date>-<edition>形式でidが不正なら拒否すること', () => {
+    expect(() => parseArticle(article({ id: '2026-10-05' }), '2026-10-05.json')).toThrow()
+    expect(() => parseArticle(article({ id: '2026-10-05-science-society' }), '2026-10-05-science-society.json')).toThrow()
+  })
+
+  it('editionが2値以外・未指定なら拒否すること', () => {
+    expect(() => parse(article({ edition: 'other' }))).toThrow()
+    expect(() => parse(article({ edition: undefined }))).toThrow()
+  })
+
+  it('研究のジャンルが記事のedition(対象編)に属していない場合は拒否すること(科学・社会編のジャンルをからだ・くらし編の記事に含める)', () => {
+    expect(() => parse(article({ findings: [finding('ai-it')] }))).toThrow()
+  })
+
+  it('掲載できなかったジャンルが記事のedition(対象編)に属していない場合は拒否すること', () => {
+    expect(() => parse(article({ emptyGenres: [{ genre: 'space-physics', reason: 'no-candidate' }] }))).toThrow()
+  })
+
+  it('科学・社会編のジャンルで構成された記事は受け付けること', () => {
+    const result = parseArticle(
+      article({
+        id: '2026-10-05-science-society',
+        edition: 'science-society',
+        findings: [finding('ai-it')],
+        emptyGenres: [{ genre: 'space-physics', reason: 'no-candidate' }],
+      }),
+      '2026-10-05-science-society.json',
+    )
+    expect(result.edition).toBe('science-society')
   })
 })

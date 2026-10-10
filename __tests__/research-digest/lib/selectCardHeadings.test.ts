@@ -24,7 +24,7 @@ function buildFinding(genreIndex: number, impact: Impact, overrides: Partial<Fin
 }
 
 function buildArticle(findings: Finding[]): Article {
-  return { id: '2026-10-05', date: '2026-10-05', findings, emptyGenres: [] }
+  return { id: '2026-10-05-body-life', edition: 'body-life', date: '2026-10-05', findings, emptyGenres: [] }
 }
 
 // 仕様: specs/research-digest/article-list/requirements.md#一覧表示-2、specs/research-digest/article-list/requirements.md#一覧表示-3

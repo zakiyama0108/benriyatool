@@ -55,7 +55,8 @@ function makeFinding(overrides: Partial<Finding>): Finding {
 }
 
 const article: Article = {
-  id: '2026-10-05',
+  id: '2026-10-05-body-life',
+  edition: 'body-life',
   date: '2026-10-05',
   findings: [
     makeFinding({ genre: GENRE_ORDER[1], impact: 'low', heading: 'ジャンル2の研究' }),
@@ -81,7 +82,7 @@ const headings = () => screen.getAllByRole('heading', { level: 3 }).map((h) => h
 describe('記事詳細ページの見出し - 記事タイトルと公開日を表示する', () => {
   it('記事タイトルと公開日が表示されること', () => {
     render(<ArticleDetailView article={article} />)
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('週刊研究発見 2026年10月5日号')
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('週刊研究発見 からだ・くらし編 2026年10月5日号')
     expect(screen.getByText('2026-10-05')).toBeTruthy()
   })
 })

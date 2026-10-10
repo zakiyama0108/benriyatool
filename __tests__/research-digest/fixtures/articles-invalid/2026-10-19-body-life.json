@@ -1,0 +1,40 @@
+{
+  "id": "2026-10-19-body-life",
+  "edition": "body-life",
+  "date": "2026-10-19",
+  "findings": [
+    {
+      "id": "medical-health",
+      "genre": "medical-health",
+      "heading": "医療・健康の研究の見出し",
+      "body": "短い",
+      "impact": "high",
+      "impactReason": "多くの人の日常に関わるため",
+      "sourceTitle": "サンプル論文 medical-health",
+      "sourceName": "サンプル学術誌",
+      "sourceUrl": "https://example.com/2026-10-19/medical-health",
+      "doi": "10.1000/medical-health",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "nutrition-food",
+      "genre": "nutrition-food",
+      "heading": "栄養・食の研究の見出し",
+      "body": "ああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ",
+      "impact": "medium",
+      "impactReason": "多くの人の日常に関わるため",
+      "sourceTitle": "サンプル論文 nutrition-food",
+      "sourceName": "サンプル学術誌",
+      "sourceUrl": "https://example.com/2026-10-19/nutrition-food",
+      "doi": null,
+      "publishedYear": 2025,
+      "isPreprint": true
+    }
+  ],
+  "emptyGenres": [
+    { "genre": "psychology-brain", "reason": "no-candidate" },
+    { "genre": "sleep-exercise", "reason": "no-candidate" },
+    { "genre": "education-parenting", "reason": "no-candidate" }
+  ]
+}

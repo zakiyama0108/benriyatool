@@ -2,19 +2,22 @@
 // weekly-publish/design.md「1回分の記事を生成する処理」手順2〜3)。TDD対象外
 // (関数を順に呼ぶだけで、ジャンルの合流・採用・検証ロジックはselectGenres・collectForGenre等で、
 // 警告判定ロジックはshouldAlertOperatorでテスト済みのため。tasks.md Task 6参照)。
-// GitHub Actions(weekly-publish)が本来の配信日を引数に渡してこのスクリプトを呼び出す。
+// GitHub Actions(weekly-publish)が対象編・本来の配信日を引数に渡してこのスクリプトを呼び出す。
 // 標準出力は選定結果のJSONのみとし、実行状況のログは標準エラー出力に出す
 //
-// 実行方法: npx tsx scripts/research-digest/collect-and-select.ts <配信日 YYYY-MM-DD>
+// 実行方法: npx tsx scripts/research-digest/collect-and-select.ts <body-life|science-society> <配信日 YYYY-MM-DD>
 import fs from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { loadGenres, getActiveGenres } from '../../app/research-digest/lib/genres'
+import { loadGenres, getActiveGenres, EDITION_GENRES } from '../../app/research-digest/lib/genres'
 import { buildDeliveredIndex } from '../../app/research-digest/lib/deliveredIndex'
 import { selectGenres, type CollectionFailedGenre } from '../../app/research-digest/lib/selectGenres'
 import { shouldAlertOperator } from '../../app/research-digest/lib/shouldAlertOperator'
 import { getAllArticles } from '../../app/research-digest/lib/articles'
 import type { Candidate, GenreResult } from '../../app/research-digest/lib/candidateTypes'
+import type { Edition } from '../../app/research-digest/lib/types'
 import { collectGenre } from './collect-candidates'
+
+const EDITIONS: Edition[] = ['body-life', 'science-society']
 
 function writeGithubOutput(name: string, value: string) {
   const outputPath = process.env.GITHUB_OUTPUT
@@ -26,18 +29,22 @@ function writeGithubOutput(name: string, value: string) {
 }
 
 async function main() {
-  const scheduledPublishDate = process.argv[2]
-  if (!scheduledPublishDate || !/^\d{4}-\d{2}-\d{2}$/.test(scheduledPublishDate)) {
-    console.error('使い方: collect-and-select.ts <配信日 YYYY-MM-DD>')
+  const edition = process.argv[2] as Edition | undefined
+  const scheduledPublishDate = process.argv[3]
+  if (!edition || !EDITIONS.includes(edition) || !scheduledPublishDate || !/^\d{4}-\d{2}-\d{2}$/.test(scheduledPublishDate)) {
+    console.error('使い方: collect-and-select.ts <body-life|science-society> <配信日 YYYY-MM-DD>')
     process.exit(1)
+    return
   }
 
   // 過去記事は検証付きで読み込む。壊れた記事があると配信済みの判定ができないため例外のまま処理を失敗させる
   const articles = getAllArticles()
+  // 配信済み判定は編をまたいで全記事を対象にする(content-selection/requirements.md#配信済みの研究の除外-1)
   const deliveredIndex = buildDeliveredIndex(articles)
-  const genres = getActiveGenres(loadGenres())
+  const editionGenreIds = new Set(EDITION_GENRES[edition])
+  const genres = getActiveGenres(loadGenres()).filter((g) => editionGenreIds.has(g.id))
 
-  console.error(`配信日: ${scheduledPublishDate} / 有効ジャンル数: ${genres.length}`)
+  console.error(`編: ${edition} / 配信日: ${scheduledPublishDate} / 有効ジャンル数: ${genres.length}`)
 
   const candidatesByGenre: Record<string, Candidate[]> = {}
   const collectionFailedGenres: CollectionFailedGenre[] = []
@@ -63,7 +70,7 @@ async function main() {
   }
   writeGithubOutput('alert', String(alert))
 
-  process.stdout.write(JSON.stringify({ scheduledPublishDate, genreResults: results }, null, 2) + '\n')
+  process.stdout.write(JSON.stringify({ edition, scheduledPublishDate, genreResults: results }, null, 2) + '\n')
 }
 
 // 収集状況を実行ログに出す(content-selection/design.md「収集状況を記録する処理」手順1・2)。

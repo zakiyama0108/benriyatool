@@ -27,7 +27,7 @@ function makeEmpty(overrides: Partial<EmptyGenre>): EmptyGenre {
 }
 
 function makeArticle(findings: Finding[], emptyGenres: EmptyGenre[] = []): Article {
-  return { id: '2026-10-05', date: '2026-10-05', findings, emptyGenres }
+  return { id: '2026-10-05-body-life', edition: 'body-life', date: '2026-10-05', findings, emptyGenres }
 }
 
 const genres = (entries: GenreEntry[]) => entries.map((e) => e.genre)

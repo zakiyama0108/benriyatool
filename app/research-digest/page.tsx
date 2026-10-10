@@ -16,7 +16,7 @@ export default function ArticleListPage() {
         <header>
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl">週刊研究発見</h1>
           <p className="mt-1 text-sm leading-relaxed text-gray-500">
-            医療・栄養・心理・環境・AIなど10ジャンルから、日々の生活に影響の大きい研究の発見・論文を毎週月曜に1本ずつ要約してお届け。
+            医療・栄養・心理・環境・AIなど10ジャンルから、日々の生活に影響の大きい研究の発見・論文を1本ずつ要約してお届け。からだ・くらし編は月曜、科学・社会編は土曜に公開。
           </p>
         </header>
         <ArticleListView articles={items} currentPage={1} totalPages={totalPages} />
