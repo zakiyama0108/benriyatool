@@ -23,7 +23,8 @@ export type SummaryPerspective = {
   heading: string // 結論・要点を含む見出し(テーマ名にしない。requirements.md#要約-6)
   teaser: string // 常時表示する導入文。40〜140字(目安60〜120字)
   detail: string // 「詳細を見る」操作で展開表示する詳細文
-  diagram: Diagram | null // 図解(requirements.md#図解-12〜14)。不要な観点はnull
+  diagram?: Diagram | null // 図解(requirements.md#図解-12〜14)。不要な観点はnull
+  // ↑既存の公開済み記事データ(diagramキーを持たない)との後方互換のため、省略可能(`?`)にしている
 }
 
 // 固定4観点。この4キー・この順序で固定(requirements.md#要約-4)。
@@ -84,7 +85,7 @@ export type Article = {
   3. 見出しの近くに重要度(`importance`、★1〜★5)とカテゴリバッジを表示する(requirements.md#記事本文表示-5・7)
   4. `summary`の`whatHappened`→`whyItMatters`→`background`→`outlook`の順(この順序で固定)に、`PERSPECTIVE_LABELS`の固定ラベル(`p`相当・小さく)→各観点の見出し(`h3`相当)→導入文(`teaser`)の順で常時表示する(requirements.md#記事本文表示-3)
   5. 各観点の導入文の下に、HTML標準の`<details><summary>詳細を見る</summary>…</details>`要素を配置し、`<summary>`を操作すると詳細文(`detail`)が展開表示されるようにする(ai-dev-digestと同じ実装方式。ブラウザ標準機能のため開閉状態を自前で管理する必要がない)
-  5-1. `diagram`が`null`でない観点は、詳細文の下に`DiagramView`を表示する。`type: 'mermaid'`ならMermaidライブラリでレンダリング、`type: 'image'`なら`<img>`で`path`を表示する(requirements.md#記事本文表示-4-1)
+  5-1. `diagram`が`null`でない観点は、詳細文の下に`DiagramView`を表示する。`type: 'mermaid'`ならMermaidライブラリでレンダリング、`type: 'image'`なら`<img>`で`path`を表示する(requirements.md#記事本文表示-13)
   6. `belowCriteria`が`true`のトピックには「専用枠(基準未達)」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「神奈川ローカル・育児は、全国規模の基準を満たさない場合も優先的に掲載しています」という注記を1回だけ表示する(requirements.md#記事本文表示-6)
 - 関連するビジネスルール: requirements.md#記事本文表示-1〜7
 

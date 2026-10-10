@@ -213,3 +213,88 @@ describe('記事スキーマへの重要度(importance)検証の組み込み - 1
     expect(article.topics[0].importance).toBe(1)
   })
 })
+
+// 仕様: specs/news-digest/article-detail/design.md#バリデーション
+describe('記事スキーマへの図解(diagram)検証の組み込み - null・mermaid・imageいずれかの正しい形のみ許可する', () => {
+  it('この機能追加前に公開された記事データのようにdiagramキー自体が無い場合でも、検証を通ること(後方互換)', () => {
+    const topics = [validTopic()]
+    const article = parseArticle(validArticle({ topics }), '2026-09-09.json')
+    expect(article.topics[0].summary.whatHappened.diagram).toBeUndefined()
+  })
+
+  it('diagramがnullのとき、検証を通ること(図解が不要な観点)', () => {
+    const topics = [validTopic({ summary: validSummary({ whatHappened: { heading: '見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), diagram: null } }) })]
+    const article = parseArticle(validArticle({ topics }), '2026-09-09.json')
+    expect(article.topics[0].summary.whatHappened.diagram).toBeNull()
+  })
+
+  it('diagramが{type: "mermaid", code: 非空文字}のとき、検証を通りcodeが保持されること', () => {
+    const topics = [
+      validTopic({
+        summary: validSummary({
+          whatHappened: {
+            heading: '見出し',
+            teaser: 'あ'.repeat(60),
+            detail: 'あ'.repeat(250),
+            diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' },
+          },
+        }),
+      }),
+    ]
+    const article = parseArticle(validArticle({ topics }), '2026-09-09.json')
+    expect(article.topics[0].summary.whatHappened.diagram).toEqual({ type: 'mermaid', code: 'flowchart LR\nA-->B' })
+  })
+
+  it('diagramが{type: "mermaid", code: 空文字}のとき、検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        summary: validSummary({
+          whatHappened: { heading: '見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), diagram: { type: 'mermaid', code: '' } },
+        }),
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-09-09.json')).toThrow()
+  })
+
+  it('diagramが{type: "image", path: "content/news-digest/articles/images/"配下}のとき、検証を通ること', () => {
+    const topics = [
+      validTopic({
+        summary: validSummary({
+          whatHappened: {
+            heading: '見出し',
+            teaser: 'あ'.repeat(60),
+            detail: 'あ'.repeat(250),
+            diagram: { type: 'image', path: 'content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png' },
+          },
+        }),
+      }),
+    ]
+    const article = parseArticle(validArticle({ topics }), '2026-09-09.json')
+    expect(article.topics[0].summary.whatHappened.diagram).toEqual({
+      type: 'image',
+      path: 'content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png',
+    })
+  })
+
+  it('diagramが{type: "image", path: "content/news-digest/articles/images/"配下以外}のとき、検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        summary: validSummary({
+          whatHappened: { heading: '見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), diagram: { type: 'image', path: 'public/other.png' } },
+        }),
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-09-09.json')).toThrow()
+  })
+
+  it('diagramのtypeが未定義の値("chart"等)のとき、検証エラーになること', () => {
+    const topics = [
+      validTopic({
+        summary: validSummary({
+          whatHappened: { heading: '見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), diagram: { type: 'chart', code: 'x' } },
+        }),
+      }),
+    ]
+    expect(() => parseArticle(validArticle({ topics }), '2026-09-09.json')).toThrow()
+  })
+})
