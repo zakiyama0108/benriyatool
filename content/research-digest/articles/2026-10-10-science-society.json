@@ -1,0 +1,78 @@
+{
+  "id": "2026-10-10-science-society",
+  "edition": "science-society",
+  "date": "2026-10-10",
+  "findings": [
+    {
+      "id": "environment-climate",
+      "genre": "environment-climate",
+      "heading": "気候変動が健康に及ぼす影響を57の指標で追う国際報告、2025年版が公表され、猛暑の影響が焦点に",
+      "body": "世界の研究者が、気候変動が人の健康に与える影響を57の指標で毎年点検している国際報告の2025年版が、医学誌The Lancetで公表された。猛暑による死亡、暑さによる労働の損失、食料不安などを、過去の版から続く同じ枠組みで追跡している。猛暑は世界のほぼ全ての人に関わるため、暑さへの備えや職場・地域の暑さ対策を考える材料になる。ただし今回は有料で全文を確認できず、公開されている範囲での紹介にとどまる。個々の数値や地域ごとの差は原報告で確かめてほしい。指標の推計には不確かさも伴うため、個人の健康に関する判断をこの報告だけで決めることはできない。",
+      "impact": "high",
+      "impactReason": "世界中のほぼ全ての人が受ける猛暑による死亡・労働損失・食料不安などの健康への影響を、57の指標で毎年追跡している国際的な報告で、過去の版からの継続的な裏付けもあるため。",
+      "sourceTitle": "The 2025 report of the Lancet Countdown on health and climate change",
+      "sourceName": "The Lancet(WHO公式発表で確認)",
+      "sourceUrl": "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(25)01919-1/abstract",
+      "doi": "10.1016/s0140-6736(25)01919-1",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "ai-it",
+      "genre": "ai-it",
+      "heading": "乳がん検診にAIを併用すると、検診の間に見つかる中間期がんが約12%少なかった",
+      "body": "スウェーデンで検診に招かれた40〜74歳の女性約10万6千人を、AI支援の読影と従来の放射線科医2人による読影にランダムに分けて比べた試験です。AIは疑わしい所見への印付けや、リスクに応じた読影体制の振り分けに使われました。2年間の追跡で、次の検診までに見つかる中間期がんはAI支援群のほうが約12%少なく、偽陽性は増えませんでした。読影の作業量も減ったと報告されています。将来、検診の見落としが減り、医師の負担も軽くなる可能性があります。ただし対象はスウェーデンの住民で、2人読影の体制が前提です。体制の異なる国や地域で同じ結果になるかは分かりません。また、すでに受けられる検診が変わるわけではありません。詳しくは元の発表と論文をご確認ください。",
+      "impact": "high",
+      "impactReason": "乳がん検診を受ける多くの女性に関わる研究で、約10万6千人のランダム化試験で、AIを併用した読影は検診の間に見つかる中間期がんを約12%減らし、偽陽性は増えなかったため、規模と確からしさが十分で生活への影響が大きい。",
+      "sourceTitle": "Interval cancer, sensitivity, and specificity comparing AI-supported mammography screening with standard double reading without AI in the MASAI study: a randomised, controlled, non-inferiority, single-blinded, population-based, screening-accuracy trial",
+      "sourceName": "ルンド大学(公式発表)/ The Lancet",
+      "sourceUrl": "https://www.lunduniversity.lu.se/article/ai-support-breast-cancer-screening-fewer-missed-cancer-cases",
+      "doi": "10.1016/s0140-6736(25)02464-x",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "economics-behavioral",
+      "genre": "economics-behavioral",
+      "heading": "年金の「自動加入」にするだけで加入率が上がり、初期設定のまま続ける人が多いと分かった",
+      "body": "職場の年金制度(米国の401(k))で、辞退しない限り加入する「自動加入」を導入すると、加入率が大きく高まることを示した研究です。ある企業の従業員を対象に、制度の導入前と導入後に入社した人の行動を比べて分析しています。自動加入で入社した人の多くは、あらかじめ決められた拠出率や資産の配分をそのまま変えませんでした。著者らは、手続きを先延ばしにしてしまう惰性や、初期設定を助言のように受け取る心理が背景にあると考えています。手続きの設計しだいで、貯蓄の習慣が大きく変わりうることを示す結果です。注意点は、要旨で確認できた範囲では対象者数などの詳しい規模が分からないことです。結果は米国の制度が前提なので、日本の制度にそのまま当てはまるとは限りません。詳しくは元の論文をご覧ください。",
+      "impact": "high",
+      "impactReason": "年金の加入手続きを「自動加入(辞退しなければ加入)」にするだけで、大半の働く人の貯蓄行動が大きく変わることを示した研究で、対象は職場の年金制度に入るほぼ全員にあたる。",
+      "sourceTitle": "Power of Suggestion: Inertia in 401(k) Participation and Savings Behavior",
+      "sourceName": "The Quarterly Journal of Economics",
+      "sourceUrl": "https://academic.oup.com/qje/article/116/4/1149/1904593",
+      "doi": "10.1162/003355301753265543",
+      "publishedYear": 2001,
+      "isPreprint": false
+    },
+    {
+      "id": "space-physics",
+      "genre": "space-physics",
+      "heading": "光時計は数年内に「1秒」の新しい基準となる可能性があり、衛星の障害時の予備の時刻源にもなりうる",
+      "body": "アデレード大学などの研究者が、光を使う原子時計の過去10年ほどの進展と課題を整理した総説です。新しい実験ではなく既存の成果のまとめで、光時計は従来のマイクロ波式より正確とされ、国際標準時の調整に使える時計も増えています。太陽嵐や攻撃で衛星測位が止まったときの予備の時刻源になれば、通信や金融取引などの基盤を支えると期待されます。ただし、断続的にしか動かない装置が多く、部品の供給網も未成熟でコストが高いなど課題が残ります。秒の再定義の方式も未決定です。「数年内」という見通しは課題の解決が前提で、発表は大学の広報資料です。日常生活への直接の影響は今のところ限られます。",
+      "impact": "medium",
+      "impactReason": "光時計は衛星の障害時にも使える予備の時刻源になりえ、GPSや通信、金融取引など多くの人が使う時刻の基盤に関わるが、実用化にはまだ課題が残るため中程度とした。",
+      "sourceTitle": "Optical atomic clocks: defining the future of time and frequency metrology",
+      "sourceName": "Optica(Adelaide大学の公式発表で内容を確認)",
+      "sourceUrl": "https://adelaide.edu.au/about/news/2026/taking-a-second-to-change-the-time/",
+      "doi": "10.1364/optica.575770",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "materials-energy",
+      "genre": "materials-energy",
+      "heading": "ナトリウムイオン電池は、技術が進めば2030年代にリチウムイオン電池と価格で並ぶ可能性がある",
+      "body": "安価なリチウムイオン電池に、ナトリウムイオン電池が価格で対抗できるのかを調べた分析です。各社の技術ロードマップを批判的に検討し、6,000を超えるシナリオで将来のコストを比べました。その結果、2030年代に価格が並ぶ道筋が示されました。実現すれば、電気自動車や家庭用・電力用の蓄電池の価格に影響するかもしれません。ただし、エネルギー密度の向上などの技術進展が前提です。シナリオ分析は将来を保証するものではなく、暮らしに影響が出るのは先になります。なお、今回は公式ページの全文を読めず、渡された情報の範囲でまとめています。詳しくは元の論文をご覧ください。",
+      "impact": "medium",
+      "impactReason": "電気自動車や家庭用・電力用の蓄電池の価格に広く関わる分析で、2030年代にナトリウムイオン電池が安価なリチウムイオン電池と価格で並ぶ道筋を6,000以上のシナリオで示したが、実現にはエネルギー密度の向上などの技術進展が前提で、生活への影響が出るのは先になる。",
+      "sourceTitle": "Critically assessing sodium-ion technology roadmaps and scenarios for techno-economic competitiveness against lithium-ion batteries",
+      "sourceName": "Nature Energy",
+      "sourceUrl": "https://www.nature.com/articles/s41560-024-01701-9",
+      "doi": "10.1038/s41560-024-01701-9",
+      "publishedYear": 2025,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}
