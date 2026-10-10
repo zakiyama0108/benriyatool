@@ -86,3 +86,28 @@
 - Task 17: トピック表示の新旧フォーマット出し分け(仕様: requirements.md#記事本文表示-2〜3・12〜13、design.md「その日の記事本文を表示する処理」手順3〜5)
   - 🔴 `CurrentTopic`(`summary`あり)を渡した場合、`benefit`→`whatsNew`→`how`→`howToUse`の順に各観点の見出し・導入文が常時表示され、詳細文が`<details>`で展開表示されること、ImportanceStarsが表示されることを確認するテストを書く。`LegacyTopic`(`sections`あり)を渡した場合、従来通り`sections`配列の順に表示され、ImportanceStarsは表示されないことを確認するテストを書く(Task 7の既存テストを新旧両方のfixtureに対して実行する形に拡張する)
   - 🟢 `TopicSection.tsx`に`isLegacyTopic(topic)`による分岐を実装する
+
+## 開発領域観点・固定ラベル・図解への移行
+
+💡新規性を廃止し🧭開発領域を追加、観点の固定ラベル(kicker)表示、図解機能(Mermaid/Nano Banana)を追加する変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 18: `TopicSummaryWithDomain`/`TopicSummaryWithWhatsNew`判別用の型・型ガード(仕様: design.md「前提: 記事データの形式」)
+  - 🔴 `domain`キーを持つ`summary`に対し`hasDomainPerspective`が`true`を、`whatsNew`キーを持つ`summary`に対し`false`を返すことを確認するテストを書く
+  - 🟢 `app/ai-dev-digest/lib/types.ts`に`Diagram`/`Domain`/`DOMAIN_LABELS`/`DomainPerspective`/`TopicSummaryWithDomain`/`TopicSummaryWithWhatsNew`/`hasDomainPerspective`を追加し、`SummaryPerspective`に`diagram?: Diagram | null`を追加する(`TopicSummary`を`TopicSummaryWithDomain | TopicSummaryWithWhatsNew`のユニオン型に変更する)
+
+- Task 19: 記事スキーマへのdomain/diagram検証の組み込み(仕様: design.md「バリデーション」)
+  - 🔴 `parseArticle`が、`summary`が(a)`domain`/`benefit`/`how`/`howToUse`、(b)`benefit`/`whatsNew`/`how`/`howToUse`のいずれか一方の4キー構成であれば受理すること、両方・どちらも満たさない場合は拒否すること、`domain`がある場合は`domains`が1件以上かつ定義済み値のみであることを確認するテストを、Task 15の既存テストに追加する
+  - 🔴 各観点の`diagram`が省略されている場合(既存の公開済み記事データ相当)・`null`・`{type:'mermaid',code}`・`{type:'image',path}`のいずれでも受理し、`path`が`content/ai-dev-digest/articles/images/`配下を指さない場合は拒否することを確認するテストを書く
+  - 🟢 `app/ai-dev-digest/lib/articleSchema.ts`の`parseTopic`を上記の検証に対応させる
+
+- Task 20: 固定ラベル(kicker)・開発領域タグの表示(仕様: requirements.md#記事本文表示-3、design.md「その日の記事本文を表示する処理」手順4)
+  - 🔴 `hasDomainPerspective(summary)`が`true`の場合、`domain`→`benefit`→`how`→`howToUse`の順で各観点に固定ラベル(観点名)が見出しの上に表示され、`domain`観点にのみ`domains`の開発領域タグ(日本語ラベル)が表示されること、`false`の場合は`benefit`→`whatsNew`→`how`→`howToUse`の順で固定ラベルが表示され開発領域タグは表示されないこと、`LegacyTopic`(`sections`)の場合は固定ラベル・開発領域タグのいずれも表示されないことを確認するテストを、Task 17のテストに追加する
+  - 🟢 `TopicSection.tsx`を修正し、`hasDomainPerspective`で観点の並び順・固定ラベルを分岐する
+
+- Task 21: 図解の表示(仕様: requirements.md#記事本文表示-14、design.md「その日の記事本文を表示する処理」手順5-1)
+  - 🔴 `diagram`が`null`または`undefined`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されること、`{type:'image'}`の場合は`<img>`の`src`が`path`と一致することを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
+  - 🟢 `app/ai-dev-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`TopicSection.tsx`から各観点の`diagram`を渡して配置する
+
+</details>
