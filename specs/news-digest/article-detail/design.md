@@ -15,13 +15,27 @@
 // app/news-digest/lib/types.ts
 export type Category = 'general' | 'business' | 'kanagawa' | 'childcare'
 
+export type Diagram =
+  | { type: 'mermaid'; code: string } // Mermaid記法の文字列。レンダリングはクライアント側のMermaidライブラリに委ねる
+  | { type: 'image'; path: string } // content/news-digest/articles/images/配下の相対パス(ビルド時にNano Bananaで生成・保存済み)
+
 export type SummaryPerspective = {
   heading: string // 結論・要点を含む見出し(テーマ名にしない。requirements.md#要約-6)
   teaser: string // 常時表示する導入文。40〜140字(目安60〜120字)
   detail: string // 「詳細を見る」操作で展開表示する詳細文
+  diagram: Diagram | null // 図解(requirements.md#図解-12〜14)。不要な観点はnull
 }
 
-// 固定4観点。この4キー・この順序で固定(requirements.md#要約-4)
+// 固定4観点。この4キー・この順序で固定(requirements.md#要約-4)。
+// 各キーの固定ラベル(画面に常時表示する観点名そのもの。requirements.md#記事本文表示-3)はコード側の定数として持ち、
+// 記事データには含めない(トピックごとに変わらない固定文言のため)
+export const PERSPECTIVE_LABELS: Record<keyof TopicSummary, string> = {
+  whatHappened: '何が起きたか',
+  whyItMatters: 'なぜ重要か(影響)',
+  background: '背景',
+  outlook: '今後の見通し',
+}
+
 export type TopicSummary = {
   whatHappened: SummaryPerspective // 何が起きたか
   whyItMatters: SummaryPerspective // なぜ重要か(影響)
@@ -68,8 +82,9 @@ export type Article = {
   1. `buildArticleTitle(date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
   2. `topics`配列の順に、各トピックの見出し・出典(発信者名・元URLへのリンク)を表示する。`sourcePublishedAt`が存在する場合のみ`YYYY年M月D日`形式で併記する
   3. 見出しの近くに重要度(`importance`、★1〜★5)とカテゴリバッジを表示する(requirements.md#記事本文表示-5・7)
-  4. `summary`の`whatHappened`→`whyItMatters`→`background`→`outlook`の順(この順序で固定)に、各観点の見出し(`h3`相当)と導入文(`teaser`)を常時表示する
+  4. `summary`の`whatHappened`→`whyItMatters`→`background`→`outlook`の順(この順序で固定)に、`PERSPECTIVE_LABELS`の固定ラベル(`p`相当・小さく)→各観点の見出し(`h3`相当)→導入文(`teaser`)の順で常時表示する(requirements.md#記事本文表示-3)
   5. 各観点の導入文の下に、HTML標準の`<details><summary>詳細を見る</summary>…</details>`要素を配置し、`<summary>`を操作すると詳細文(`detail`)が展開表示されるようにする(ai-dev-digestと同じ実装方式。ブラウザ標準機能のため開閉状態を自前で管理する必要がない)
+  5-1. `diagram`が`null`でない観点は、詳細文の下に`DiagramView`を表示する。`type: 'mermaid'`ならMermaidライブラリでレンダリング、`type: 'image'`なら`<img>`で`path`を表示する(requirements.md#記事本文表示-4-1)
   6. `belowCriteria`が`true`のトピックには「専用枠(基準未達)」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「神奈川ローカル・育児は、全国規模の基準を満たさない場合も優先的に掲載しています」という注記を1回だけ表示する(requirements.md#記事本文表示-6)
 - 関連するビジネスルール: requirements.md#記事本文表示-1〜7
 
@@ -112,7 +127,7 @@ sequenceDiagram
 - `date`: `YYYY-MM-DD`形式で、ファイル名と一致すること
 - `topics`: 配列長が1件以上7件以下であること(content-selection/requirements.md#1週あたりの掲載件数-6〜7)
 - 各`topic`: `id`が記事内で重複しないこと、`heading`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`category`が定義済みカテゴリのいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須
-- `summary`: `whatHappened`/`whyItMatters`/`background`/`outlook`の4キーをすべて持つこと。各観点の`heading`/`teaser`/`detail`が空文字でないこと。各観点の`teaser`が40〜140字の範囲であること。4観点の`detail`を連結した文字数が800〜1700字の範囲であること
+- `summary`: `whatHappened`/`whyItMatters`/`background`/`outlook`の4キーをすべて持つこと。各観点の`heading`/`teaser`/`detail`が空文字でないこと。各観点の`teaser`が40〜140字の範囲であること。4観点の`detail`を連結した文字数が800〜1700字の範囲であること。各観点の`diagram`は`null`、または`{ type: 'mermaid', code: string }`(`code`が空文字でない)、または`{ type: 'image', path: string }`(`path`が`content/news-digest/articles/images/`配下を指す)のいずれかであること
 - `importance`が1〜5の整数であること
 - 上記を満たさない場合は例外を投げる。フィードバック送信の入力内容自体は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない
 
@@ -134,10 +149,14 @@ app/news-digest/components/TopicSection.tsx (新規: 1トピック分の表示�
 app/news-digest/components/ImportanceStars.tsx (新規: ai-dev-digestのImportanceStars.tsxと同一の実装)
 app/news-digest/components/CategoryBadge.tsx (新規: ai-dev-digestのSourceBadge.tsxと同じパターンでカテゴリラベルをバッジ表示)
 app/news-digest/components/FeedbackForm.tsx (新規: ai-dev-digestのFeedbackForm.tsxと同一の実装。プレースホルダ文言のみ「採用基準へのフィードバックを入力」に変更)
+app/news-digest/components/DiagramView.tsx (新規: Diagramを受け取り、mermaidならMermaidレンダリング・imageなら<img>表示。nullはレンダリングしない)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/news-digest/articles/*.json (新規: 記事本文データ)
+content/news-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
 ```
+
+図解のレンダリングには`mermaid`パッケージ(クライアント側・静的書き出し可)を新規に採用する(本アプリ初導入。他の4アプリと共通化する)。
 
 ## データベース設計
 
@@ -193,7 +212,7 @@ Step0の決定(/consult)により、ai-dev-digestの実装済みビジュアル�
 - パンくず(べんりやつーる › 重要ニュースダイジェスト › 記事タイトル)
 - デスクトップ幅(md以上)では本文の右側に目次(各トピック見出しへのアンカーリンク)を表示する。モバイル幅では非表示
 - 記事タイトル・公開日
-- トピックごとのカード: カテゴリバッジ、重要度(★1〜★5)、見出し、要約(固定4観点をこの順に常時表示、「詳細を見る」で展開)、出典(発信者名・元URLへのリンク、新規タブで開く。該当時は投稿日時を併記)、(該当時)「専用枠(基準未達)」バッジ+理由の小さな注記
+- トピックごとのカード: カテゴリバッジ、重要度(★1〜★5)、見出し、要約(固定4観点をこの順に常時表示、観点ごとに固定ラベル→結論文(見出し)→導入文、「詳細を見る」で展開。図解がある観点は詳細文の下にMermaid図または生成画像を表示)、出典(発信者名・元URLへのリンク、新規タブで開く。該当時は投稿日時を併記)、(該当時)「専用枠(基準未達)」バッジ+理由の小さな注記
 - 専用枠の基準未達トピックが1件以上ある場合、記事冒頭に注記文を1回表示
 - 各トピックの下: 運営者本人がログイン中の場合のみフィードバック入力欄(テキストエリア+送信ボタン)を表示する
 - ページ下部: ログイン状態表示(未ログイン時は「ログイン」ボタン、ログイン中はメールアドレス+付箋一覧リンク+ログアウトボタン)
@@ -206,6 +225,7 @@ Step0の決定(/consult)により、ai-dev-digestの実装済みビジュアル�
 | ImportanceStars | `importance: Importance` | 重要度(★1〜★5)をアイコン表示する |
 | CategoryBadge | `category: Category` | カテゴリを日本語ラベルのバッジで表示 |
 | FeedbackForm | `articleDate: string`, `topicId: string` | 自由記述の入力欄・送信・送信結果表示 |
+| DiagramView | `diagram: Diagram \| null` | 図解の表示。`null`は何もレンダリングしない |
 
 ## 状態管理
 

@@ -25,3 +25,15 @@
   - TDD対象外(静的な文言追記のため)
   - `specs/legal/requirements.md`の知的財産の項目に条項を追記する
   - `app/legal/page.tsx`の「4. 知的財産」セクションに条項本文を追記する
+
+## 図解
+
+- Task 7: 図解データの検証(仕様: requirements.md#図解-12〜14、design.md「図解を生成する処理」)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く
+  - 🟢 `app/news-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
+
+- Task 8: Nano Banana呼び出しと保存(仕様: requirements.md#図解の生成(Nano Banana)-8〜10、design.md「図解を生成する処理」)
+  - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 7でテスト済み)
+  - `scripts/news-digest/generateDiagram.ts`を実装する。`type: 'image'`の`diagram`に対してのみGemini 2.5 Flash Image APIを呼び出し、成功時は`content/news-digest/articles/images/<date>-<topicId>-<observationKey>.png`に保存して記事データの`diagram`を`{type:'image', path}`に差し替える。失敗時は`diagram`を`null`に差し替える(記事全体の生成は継続する)
+  - `scripts/news-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する(`type: 'mermaid'`はそのまま保存するだけで呼び出し不要)
+  - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)Task 12〜13を参照

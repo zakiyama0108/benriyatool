@@ -1,7 +1,7 @@
 # 設計: 要約・記事執筆のルール
 
 ## サマリ
-content-selectionが選定した候補ごとに、固定4観点(何が起きたか/なぜ重要か(影響)/背景/今後の見通し)の要約と重要度(★1〜5)をClaude Code CLIのヘッドレス実行(エージェントの推論)で生成する。要約の分量チェック・記事タイトルの導出は決定的なコードで行う。情報源はすべて日本語のため翻訳処理は持たない(ai-dev-digestとの主な差分)。
+content-selectionが選定した候補ごとに、固定4観点(何が起きたか/なぜ重要か(影響)/背景/今後の見通し)の要約と重要度(★1〜5)をClaude Code CLIのヘッドレス実行(エージェントの推論)で生成する。あわせて、理解の助けになる場合はMermaid図・生成画像(Nano Banana)による図解を作る。要約の分量チェック・記事タイトルの導出は決定的なコードで行う。情報源はすべて日本語のため翻訳処理は持たない(ai-dev-digestとの主な差分)。
 
 ## 設計の前提(エージェントの推論とコードの役割分担)
 
@@ -33,17 +33,27 @@ content-selectionが選定した候補ごとに、固定4観点(何が起きた�
     "heading": "この記事から何が得られるか(結論・要点)が伝わる見出し",
     "importance": 4,
     "summary": {
-      "whatHappened": { "heading": "...", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文" },
-      "whyItMatters": { "heading": "...", "teaser": "...", "detail": "..." },
-      "background": { "heading": "...", "teaser": "...", "detail": "..." },
-      "outlook": { "heading": "...", "teaser": "...", "detail": "..." }
+      "whatHappened": { "heading": "...", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "diagram": { "type": "mermaid", "code": "flowchart LR\n..." } },
+      "whyItMatters": { "heading": "...", "teaser": "...", "detail": "...", "diagram": null },
+      "background": { "heading": "...", "teaser": "...", "detail": "...", "diagram": null },
+      "outlook": { "heading": "...", "teaser": "...", "detail": "...", "diagram": null }
     }
   }
   ```
+  `diagram`は観点ごとに持たせ、不要な観点は`null`にする(下記「図解を生成する処理」参照)。`type: "mermaid"`は`code`にMermaid記法の文字列を持つ。`type: "image"`(Nano Banana生成)の場合は`code`の代わりに後続処理が埋める`url`を持つ(エージェントは`type: "image"`と、画像生成に使うプロンプト文を`prompt`キーで返す。実際の画像取得は下記「図解を生成する処理」のコード側が行う)
   取得困難な場合は`"summary": null`を返す(下記「要約の分量を検証する処理」が判定する失敗シグナル)
 - 適用するガードレール文言(weekly-publishの実行指示に必ず含める。requirements.md#エージェントの逸脱防止-6の具体化):
   > この記事で扱ってよい話題は、content-selectionの採用基準に基づき選定された候補のみである。要約(導入文・詳細文とも)は独自の章立てで再構成した解説とし、原文の段落構成・表現の順序をそのままなぞってはならない。原文の詳細な数値・結論を網羅的に転記してはならない。
-- 関連するビジネスルール: requirements.md#要約-2〜7、requirements.md#重要度-8〜9、requirements.md#記事の構成-10、requirements.md#著作権への配慮-1〜4、requirements.md#エージェントの逸脱防止-6〜7
+- 関連するビジネスルール: requirements.md#要約-2〜7、requirements.md#重要度-8〜9、requirements.md#記事の構成-10、requirements.md#著作権への配慮-1〜4、requirements.md#エージェントの逸脱防止-6〜7、requirements.md#図解-12〜14
+
+### 図解を生成する処理(エージェントの推論 + 決定的なコード)
+- 対象: エージェントが`summary`の各観点に添えた`diagram`(`{ type: 'mermaid', code }` / `{ type: 'image', prompt }` / `null`)
+- 手順:
+  1. `type: 'mermaid'`の場合、`code`をそのまま記事データの`diagram`として保存する(レンダリング時にMermaidライブラリが解釈するため、生成時点での構文検証はしない。壊れたMermaid記法だった場合はarticle-detail側の表示が崩れるのみで、記事全体のビルド失敗にはしない)
+  2. `type: 'image'`の場合、`prompt`を使ってGemini 2.5 Flash Image("Nano Banana")のAPIを1回呼び出し、画像データを取得する(requirements.md#図解の生成(Nano Banana)-8)
+  3. 取得できた画像を`content/<アプリ名>/articles/images/<記事の公開日>-<トピックID>-<観点キー>.png`に保存し、記事データの`diagram`を`{ type: 'image', path: '<保存先の相対パス>' }`に差し替える
+  4. API呼び出しが失敗した場合(ネットワークエラー・利用上限到達など)、その観点の`diagram`を`null`に差し替えて記事の生成を続行する(requirements.md#図解-14。1観点の画像生成失敗でその週全体・そのトピック全体の生成を失敗させない)
+- 関連するビジネスルール: requirements.md#図解-12〜14、requirements.md#図解の生成(Nano Banana)-8〜10
 
 ### 要約の分量を検証する処理(決定的なコード)
 - 対象: エージェントが書いた`summary`(固定4観点`whatHappened`/`whyItMatters`/`background`/`outlook`の組)・`importance`
@@ -75,6 +85,8 @@ app/news-digest/lib/summaryValidation.ts (新規: 固定4観点の分量検証)
 app/news-digest/lib/articleTitle.ts (新規: buildArticleTitle(date))
 app/news-digest/lib/articleSchema.ts (新規: article-detailで定義するスキーマ検証)
 app/news-digest/lib/generateContent.ts (新規: isUsableContentの判定)
+scripts/news-digest/generateDiagram.ts (新規: Nano Banana API呼び出し・画像保存。generate-content.tsから呼び出す)
+app/news-digest/components/DiagramView.tsx (新規: diagramがmermaidならMermaidレンダリング、imageなら<img>表示。nullなら何も描画しない)
 specs/legal/requirements.md (既存: 知的財産の条項に第三者コンテンツ紹介の条項を追記)
 app/legal/page.tsx (既存: 「4. 知的財産」セクションに条項本文を追記)
 ```
@@ -83,11 +95,13 @@ app/legal/page.tsx (既存: 「4. 知的財産」セクションに条項本文�
 
 - 生成される要約・見出しは訪問者に表示される文章のため、通常のReactレンダリングでエスケープされる(追加のサニタイズは不要)
 - 著作権リスクへの対応は、分量の上下限(コードで強制)・独自の章立て構成(ガードレール文言で指示)・出典明記(スキーマで必須化)・利用規約への条項追記の4点で構成する(requirements.md#著作権への配慮-1〜4)。翻訳・要約の「質」(本当に独自の解説として再構成されているか)はコードで保証できない限界がある点を明記しておく
+- Mermaidの`code`はライブラリの標準レンダリングにそのまま渡す(Mermaid自体がHTML注入を防ぐ設計のため追加のサニタイズは不要。壊れた記法は表示が崩れるのみで実害はない)。生成画像はビルド時にサーバー側(GitHub Actions)でNano Bananaから取得し静的ファイルとして保存したものを配信するだけで、訪問者の入力やクライアント側の任意URLを描画することはない
 
 ## ログ
 
 - 導入文・詳細文の分量検証結果(合否・実際の文字数)は、article-detailのビルド時バリデーションのエラーメッセージとしてCIログに出力される
 - 要約の生成過程自体(エージェントの推論内容)は本アプリのログ設計の対象外とする(GitHub Actionsのワークフロー実行ログとして別途残る運用上の記録)
+- 図解の生成成否(mermaid/image/なしの内訳、image生成の失敗件数)は、GitHub Actionsのワークフロー実行ログに出力する
 
 ## 利用規約への反映
 
