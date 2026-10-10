@@ -27,7 +27,7 @@ type Props = {
 // (whatHappened→whyItMatters→background→outlook)で常時、固定ラベル(PERSPECTIVE_LABELS。
 // requirements.md#記事本文表示-3)→見出し(h3、結論文)→導入文(teaser)を表示し、
 // <details><summary>詳細を見る</summary>詳細文(detail)+図解(DiagramView)</details>で展開表示する
-// (requirements.md#記事本文表示-4-1)。
+// (requirements.md#記事本文表示-13)。
 // **DBの読み取り(SELECT)は一切行わない**。isAuthorizedAdmin(admin_emailsのSELECT)の呼び出しは
 // ArticleDetailView側の責務とし、ここでは渡されたisAdminの値だけでフィードバック欄の表示を切り替える。
 // 付箋操作(BookmarkPanel)はセッションの有無だけで表示を切り替える

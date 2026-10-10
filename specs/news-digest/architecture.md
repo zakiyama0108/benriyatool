@@ -123,12 +123,12 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | spec | 役割 | 状態 | 依存 |
 |---|---|---|---|
 | [content-selection](content-selection/requirements.md) | カテゴリ・情報源(固定リスト)を定義し、週次のトピックを選び出す。神奈川ローカル・育児は専用枠として基準未達でも拾う | リリース済み | 週次の実行タイミングは[weekly-publish/requirements.md](weekly-publish/requirements.md)に従う |
-| [content-generation](content-generation/requirements.md) | 選定されたトピックの要約・記事執筆のルールを定める(図解機能を実装中) | 実装中 | content-selectionの選定結果を受け取る |
+| [content-generation](content-generation/requirements.md) | 選定されたトピックの要約・記事執筆のルールを定める(図解機能を含む) | リリース済み | content-selectionの選定結果を受け取る |
 | [weekly-publish](weekly-publish/requirements.md) | 収集・要約・記事公開を週1回(毎週水曜)自動実行し、完全自動マージする | リリース済み | content-selection・content-generationの結果を公開する |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの週次記事PRがmainへ自動マージされた後、記事ページが本番で閲覧可能になったことを確認してから、新着記事をLINE公式アカウント(ai-dev-digest・trend-digestと共通)の友だち全員へ自動配信する | リリース済み | weekly-publishのマージタイミング、article-detailの記事データ構造に従う |
 | [monthly-review](monthly-review/requirements.md) | 月次で情報源・採用基準・専用枠の運用(選定領域)と要約・記事執筆ルール(生成領域)の見直し案を作成し、人間承認を経て反映する | リリース済み | article-detailのフィードバック、content-selectionの掲載実績を参照 |
 | [article-list](article-list/requirements.md) | 週ごとのダイジェスト記事をカード一覧で表示する | リリース済み | article-detailの記事構造を参照 |
-| [article-detail](article-detail/requirements.md) | 記事本文(トピックごとの見出し・要約・出典)と、運営者本人向けフィードバック入力欄を表示する(固定ラベル・図解表示を実装中) | 実装中 | content-selectionの選定結果、content-generationの生成ルールに従う |
+| [article-detail](article-detail/requirements.md) | 記事本文(トピックごとの見出し・要約・出典)と、運営者本人向けフィードバック入力欄を表示する(固定ラベル・図解表示を含む) | リリース済み | content-selectionの選定結果、content-generationの生成ルールに従う |
 | [bookmark](bookmark/requirements.md) | ログイン中の読者がトピックへ自由記述メモ付きの付箋を貼り、一覧から振り返れるようにする | リリース済み | article-detailのトピック識別子・記事データ構造に従う |
 
 ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。

@@ -7,7 +7,7 @@ type Props = {
   diagram: Diagram | null | undefined
 }
 
-// 図解(観点ごとのdiagram)の表示(仕様: requirements.md#記事本文表示-8、design.md「その週の記事本文を
+// 図解(観点ごとのdiagram)の表示(仕様: requirements.md#記事本文表示-13、design.md「その週の記事本文を
 // 表示する処理」手順5-1)。diagramがnull・undefined(この機能追加前の記事データとの後方互換)のときは
 // 何も描画しない。type: 'mermaid'はMermaidライブラリで描画、type: 'image'は<img>で表示する。
 // mermaidは静的エクスポート(output: 'export')のSSR時にモジュール評価でDOM/windowへアクセスしうるため、

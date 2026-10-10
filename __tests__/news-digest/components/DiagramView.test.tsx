@@ -23,7 +23,7 @@ beforeEach(() => {
   renderMock.mockResolvedValue({ svg: '<svg data-testid="rendered-mermaid-svg"></svg>' })
 })
 
-// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-8、specs/news-digest/article-detail/design.md#コンポーネント設計-DiagramView
+// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-13、specs/news-digest/article-detail/design.md#コンポーネント設計-DiagramView
 describe('図解の表示(DiagramView) - diagramの形式(null/mermaid/image)に応じて表示を切り替える', () => {
   it('diagramがnullのとき、何も描画されないこと', () => {
     const { container } = render(<DiagramView diagram={null} />)

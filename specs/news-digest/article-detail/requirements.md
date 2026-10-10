@@ -40,7 +40,7 @@ flowchart LR
 - [5] 各トピックのカテゴリ(総合/経済・ビジネス/神奈川ローカル/育児)が分かるように表示する
 - [6] 神奈川ローカル・育児カテゴリの専用枠により、採用基準未達で掲載されたトピックには、その旨を分かりやすく示す([content-selection/requirements.md#採用基準(カテゴリごとの定量判定)-5](../content-selection/requirements.md))
 - [7] 各トピックの重要度(★1〜★5)を見出しの近くに表示する([content-generation/requirements.md#重要度](../content-generation/requirements.md))
-- [8] 観点、または記事全体について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、[4]の詳細文の近くに表示する。生成されていない場合は何も表示しない
+- [13] 観点、または記事全体について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、[4]の詳細文の近くに表示する。生成されていない場合は何も表示しない〔合意〕
 
 ### 運営者向けフィードバック
 - [8] 各トピックの下に、フィードバック入力欄(自由記述のテキスト)を表示する

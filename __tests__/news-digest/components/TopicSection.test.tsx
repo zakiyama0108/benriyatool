@@ -112,7 +112,7 @@ describe('トピック表示 - 観点ごとの固定ラベル(PERSPECTIVE_LABELS
   })
 })
 
-// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-8
+// 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-13
 describe('トピック表示 - 観点ごとの図解(diagram)をDiagramView経由で表示する', () => {
   it('diagramが{type: "image", path}の観点を含むとき、<img>がそのpathで表示されること', () => {
     const topic = makeTopic({
