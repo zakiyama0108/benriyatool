@@ -84,7 +84,7 @@ export type Article = {
   3. 見出しの近くに重要度(`importance`、★1〜★5)とカテゴリバッジを表示する(requirements.md#記事本文表示-5・7)
   4. `summary`の`whatHappened`→`whyItMatters`→`background`→`outlook`の順(この順序で固定)に、`PERSPECTIVE_LABELS`の固定ラベル(`p`相当・小さく)→各観点の見出し(`h3`相当)→導入文(`teaser`)の順で常時表示する(requirements.md#記事本文表示-3)
   5. 各観点の導入文の下に、HTML標準の`<details><summary>詳細を見る</summary>…</details>`要素を配置し、`<summary>`を操作すると詳細文(`detail`)が展開表示されるようにする(ai-dev-digestと同じ実装方式。ブラウザ標準機能のため開閉状態を自前で管理する必要がない)
-  5-1. `diagram`が`null`でない観点は、詳細文の下に`DiagramView`を表示する。`type: 'mermaid'`ならMermaidライブラリでレンダリング、`type: 'image'`なら`<img>`で`path`を表示する(requirements.md#記事本文表示-4-1)
+  5-1. `diagram`が`null`でない観点は、詳細文の下に`DiagramView`を表示する。`type: 'mermaid'`ならMermaidライブラリでレンダリング、`type: 'image'`なら`<img>`で`path`を表示する(requirements.md#記事本文表示-8)
   6. `belowCriteria`が`true`のトピックには「専用枠(基準未達)」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「神奈川ローカル・育児は、全国規模の基準を満たさない場合も優先的に掲載しています」という注記を1回だけ表示する(requirements.md#記事本文表示-6)
 - 関連するビジネスルール: requirements.md#記事本文表示-1〜7
 
