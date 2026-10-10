@@ -49,18 +49,58 @@ export type Impact = 'high' | 'medium' | 'low'
 export const IMPACT_ORDER: Impact[] = ['high', 'medium', 'low']
 export const IMPACT_LABELS: Record<Impact, string> = { high: '大', medium: '中', low: '小' }
 
-export type Prediction = {
+// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形)
+export type Diagram =
+  | { type: 'mermaid'; code: string }
+  | { type: 'image'; path: string }
+
+export type PredictionSection = {
+  heading: string // 結論文(短い見出し)
+  text: string // 本文
+  diagram: Diagram | null
+}
+
+// 固定3観点。この3キー・この順序で固定(content-generation/requirements.md#要約-3)
+export type PredictionSections = {
+  when: PredictionSection // いつ・何が起こると予測されているか
+  basis: PredictionSection // 誰が・どんな根拠で示しているか
+  impact: PredictionSection // 暮らし・社会への影響
+}
+
+export const SECTION_LABELS: Record<keyof PredictionSections, string> = {
+  when: 'いつ・何が起こると予測されているか',
+  basis: '誰が・どんな根拠で示しているか',
+  impact: '暮らし・社会への影響',
+}
+
+type PredictionBase = {
   id: string // 記事内で一意。`<genre>--<horizon>`(例: "technology-ai--near")。フィードバック・付箋の紐付けに使う
   genre: Genre
   horizon: Horizon
   heading: string // content-generationが生成する見出し
-  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
   impact: Impact
   impactReason: string // 影響度の根拠(1文)
   targetPeriod: string // 予測が対象とする時期(例: "2030年まで")。時間軸判定の根拠として保存し、画面ではバッジの横に小さく出す
   sourceTitle: string // 元記事のタイトル(配信済み判定の突合に使う。画面では出典リンクの文言として使う)
   sourceName: string // 情報源名
   sourceUrl: string // 元記事のURL
+}
+
+// この機能(固定3観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#記事本文の表示-14、trend-digestと同じ設計判断)
+export type LegacyPrediction = PredictionBase & {
+  body: string // 160〜480字、目安200〜400字
+}
+
+// この機能以降に生成する記事が持つ形
+export type CurrentPrediction = PredictionBase & {
+  sections: PredictionSections
+}
+
+export type Prediction = LegacyPrediction | CurrentPrediction
+
+export function isLegacyPrediction(prediction: Prediction): prediction is LegacyPrediction {
+  return 'body' in prediction
 }
 
 // 掲載できなかった枠。reasonで表示文言を出し分ける
@@ -117,10 +157,12 @@ export type Article = {
 - 手順:
   1. 記事タイトル・公開日・その回の時間軸2区分(例:「近未来/長期未来」)を見出しとして表示する(requirements.md#記事本文の表示-1)
   2. ページを開いた時点では影響度順で表示する(requirements.md#並び順の切り替え-10)
-  3. 予測がある枠は、ジャンル・時間軸・影響度のバッジ、見出し、本文、影響度の根拠、出典(情報源名・元記事タイトル・元URLへのリンク。新規タブで開く)を表示する(requirements.md#記事本文の表示-2)
+  3. 予測がある枠は、ジャンル・時間軸・影響度のバッジ、見出し、要約、影響度の根拠、出典(情報源名・元記事タイトル・元URLへのリンク。新規タブで開く)を表示する(requirements.md#記事本文の表示-2)
+  3-1. 要約の表示は`isLegacyPrediction(prediction)`で分岐する。`true`(旧形式)の場合は`body`をそのまま1つの段落として表示する。`false`(新形式)の場合は`sections`を`when`→`basis`→`impact`の順(この順序で固定)に、`SECTION_LABELS`の固定ラベル→`heading`(結論文)→`text`(本文)の順で常時表示する(requirements.md#記事本文の表示-14)
+  3-2. 新形式の各観点で`diagram`が`null`でない場合、`text`の下に`DiagramView`を表示する(requirements.md#記事本文の表示-15)
   4. 候補が見つからなかった枠は、ジャンル・時間軸のバッジと「候補が見つかりませんでした」を表示する(requirements.md#記事本文の表示-3)。収集の処理自体が失敗した枠は、同じバッジと分類ラベルを含む「今回は記事を収集できませんでした」を表示する(requirements.md#記事本文の表示-4)。生成に失敗した枠は、同じバッジと「今回は記事を用意できませんでした」を表示する(requirements.md#記事本文の表示-5)
   5. 並び順の切り替え操作が行われたら、同じ記事データから枠の一覧を組み立て直して表示し直す。スクロール位置は先頭に戻さない(requirements.md#並び順の切り替え-7)
-- 関連するビジネスルール: requirements.md#記事本文の表示-1〜6、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
+- 関連するビジネスルール: requirements.md#記事本文の表示-1〜6、requirements.md#記事本文の表示-14〜15、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
@@ -164,7 +206,9 @@ sequenceDiagram
 - `id`がファイル名と一致し、`<date>-<edition>`の形(`date`と同じ`YYYY-MM-DD`形式+編のid)であること
 - `edition`が`science-tech`/`life-society`のいずれかであること
 - `issueNumber`が1以上の整数であること
-- 各予測: `horizon`・`impact`が定義済みの値であること、`horizon`が`horizonsForIssue(issueNumber)`の2区分のどちらかであること、`id`が`<genre>--<horizon>`と一致すること、`genre`が`EDITION_GENRES[edition]`に含まれること(記事の`edition`と矛盾するジャンルを弾く)、`heading`・`body`・`impactReason`・`targetPeriod`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`body`が160〜480字であること([content-generation/design.md](../content-generation/design.md)「生成結果を検証する処理」)
+- 各予測: `horizon`・`impact`が定義済みの値であること、`horizon`が`horizonsForIssue(issueNumber)`の2区分のどちらかであること、`id`が`<genre>--<horizon>`と一致すること、`genre`が`EDITION_GENRES[edition]`に含まれること(記事の`edition`と矛盾するジャンルを弾く)、`heading`・`impactReason`・`targetPeriod`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること
+- 旧形式(`body`を持つ)の場合: `body`が160〜480字であること([content-generation/design.md](../content-generation/design.md)「生成結果を検証する処理」)
+- 新形式(`sections`を持つ)の場合: `when`/`basis`/`impact`の3キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。3観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`content/future-digest/articles/images/`配下を指す)のいずれかであること
 - 各掲載できなかった枠: `genre`・`horizon`・`reason`が定義済みの値で、`horizon`がその回の2区分のどちらかであること、`genre`が`EDITION_GENRES[edition]`に含まれること
 - `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること
 - 同じ枠(ジャンル×時間軸)が2回現れないこと。記事に現れるジャンルは、対象編の5ジャンル×その回の2時間軸の両方が予測または掲載できなかった枠として揃っていること(枠が黙って消える事故をビルド時に検知するため。content-selection/requirements.md#機能要件-3)。対象編で有効だった全ジャンルが揃っていることは、記事を組み立てる時点で[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルを後から追加・廃止しても過去記事の検証が壊れないよう、ビルド時の検証は「その記事の中での整合」に限る)
@@ -194,10 +238,12 @@ app/future-digest/components/PredictionCard.tsx (新規: 1枠分の表示)
 app/future-digest/components/SlotBadges.tsx (新規: ジャンル・時間軸・影響度のバッジ)
 app/future-digest/components/FeedbackForm.tsx (新規)
 app/future-digest/components/LoginStatus.tsx (新規: bookmarkで付箋一覧リンクを持つ)
+app/future-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 supabase/migrations/<timestamp>_create_future_digest_feedback.sql (新規)
 content/future-digest/articles/*.json (新規: 記事本文データ)
+content/future-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
 ```
 
 ## データベース設計
@@ -246,7 +292,7 @@ Step0: 実施しない(週刊トレンドの確定済みデザインを流用し
 - 記事タイトル・公開日・その回の時間軸2区分(例:「今回の時間軸: 近未来(1〜5年後)/長期未来(20〜50年後)」)
 - 並び順の切り替え(「影響度順」「ジャンル順」の2つのボタン。選択中のものが分かる表示。初期は影響度順)
 - 枠のカード一覧(ジャンル数×2枠。現在は20枠):
-  - 予測がある枠: ジャンル・時間軸・影響度のバッジ(影響度は大・中・小を文字でも表示し、色だけに意味を持たせない)、対象時期、見出し、本文、「影響度の根拠: 〜」、出典(「詳しくは元記事を読む」の文言を添えた、情報源名・元記事タイトルを文言にした元URLへのリンク。新規タブで開く。requirements.md#表示分量・著作権への配慮-1、content-generation/requirements.md#著作権への配慮-2)
+  - 予測がある枠: ジャンル・時間軸・影響度のバッジ(影響度は大・中・小を文字でも表示し、色だけに意味を持たせない)、対象時期、見出し、要約(新形式は固定3観点を固定ラベル付きで常時表示、旧形式は単一本文)、「影響度の根拠: 〜」、出典(「詳しくは元記事を読む」の文言を添えた、情報源名・元記事タイトルを文言にした元URLへのリンク。新規タブで開く。requirements.md#表示分量・著作権への配慮-1、content-generation/requirements.md#著作権への配慮-2)
   - 候補が見つからなかった枠: ジャンル・時間軸のバッジと「候補が見つかりませんでした」(カードは淡い配色にして、予測がある枠と区別する)
   - 収集の処理自体が失敗した枠: 同じバッジと分類ラベルを含む「今回は記事を収集できませんでした」
   - 生成に失敗した枠: 同じバッジと「今回は記事を用意できませんでした」
@@ -263,6 +309,7 @@ Step0: 実施しない(週刊トレンドの確定済みデザインを流用し
 | SortToggle | `order: 'impact' \| 'genre'`, `onChange: (order) => void` | 並び順の切り替えボタン |
 | PredictionCard | `slot: Slot`, `articleId: string`, `isAdmin: boolean`, `session: Session \| null`, `bookmark` | 1枠分の表示。予測がない枠は理由の文言だけを出す |
 | SlotBadges | `genre: Genre`, `horizon: Horizon`, `impact?: Impact` | ジャンル・時間軸・影響度のバッジ |
+| DiagramView | `diagram: Diagram \| null` | 図解の表示。`null`は何もレンダリングしない(news-digestと共通の実装) |
 | FeedbackForm | `articleId: string`, `predictionId: string` | フィードバックの入力・送信・結果表示 |
 
 ## 状態管理
