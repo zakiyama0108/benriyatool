@@ -1,4 +1,4 @@
-import type { Article, Category, SummaryPerspective, Topic, TopicSummary } from './types'
+import type { Article, Category, Diagram, SummaryPerspective, Topic, TopicSummary } from './types'
 import {
   TEASER_MIN_LENGTH,
   TEASER_MAX_LENGTH,
@@ -18,6 +18,10 @@ const CATEGORIES: Category[] = ['general', 'business', 'kanagawa', 'childcare']
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const MIN_TOPICS = 1
 const MAX_TOPICS = 7
+
+// 図解の生成画像が保存されるディレクトリ(content-generation/design.md「図解を生成する処理」手順3)。
+// diagram.pathはこの配下を指す絶対URLではない相対パスである必要がある
+const DIAGRAM_IMAGES_DIR = 'content/news-digest/articles/images/'
 
 // 固定4観点。この4キー・この順序で固定(content-generation/requirements.md#要約-4)
 const SUMMARY_KEYS = ['whatHappened', 'whyItMatters', 'background', 'outlook'] as const
@@ -40,6 +44,36 @@ function isIsoDateTime(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0 && !Number.isNaN(Date.parse(value))
 }
 
+// topics[index].summary.<key>.diagram(観点ごとの図解)を検証・パースする(仕様: design.md
+// 「バリデーション」、requirements.md#図解-12〜14)。この機能の追加前に公開済みの記事データには
+// キー自体が存在しないため、undefinedはそのまま通す(後方互換。app/news-digest/lib/types.tsの
+// SummaryPerspective.diagramが省略可能なことに合わせる)。存在する場合はnull、または
+// {type:'mermaid', code: 空文字でない}、または{type:'image', path: DIAGRAM_IMAGES_DIR配下}
+// のいずれかであることを確認する
+function parseDiagram(raw: unknown, index: number, key: string): Diagram | null | undefined {
+  if (raw === undefined) return undefined
+  if (raw === null) return null
+  if (typeof raw !== 'object') {
+    throw new Error(`topics[${index}].summary.${key}.diagramがオブジェクトでも null でもありません`)
+  }
+  const record = raw as Record<string, unknown>
+  if (record.type === 'mermaid') {
+    if (!isNonEmptyString(record.code)) {
+      throw new Error(`topics[${index}].summary.${key}.diagram.codeが空文字です`)
+    }
+    return { type: 'mermaid', code: record.code }
+  }
+  if (record.type === 'image') {
+    if (!isNonEmptyString(record.path) || !record.path.startsWith(DIAGRAM_IMAGES_DIR)) {
+      throw new Error(
+        `topics[${index}].summary.${key}.diagram.pathが${DIAGRAM_IMAGES_DIR}配下のパスではありません: ${String(record.path)}`
+      )
+    }
+    return { type: 'image', path: record.path }
+  }
+  throw new Error(`topics[${index}].summary.${key}.diagram.typeが不正です(mermaid/imageのみ許可): ${String(record.type)}`)
+}
+
 // topics[index].summary.<key>(固定4観点1つ分)を検証・パースする(仕様: design.md「バリデーション」)。
 // heading/teaser/detailが空文字でないこと、teaserがTEASER_MIN_LENGTH〜TEASER_MAX_LENGTHの
 // 範囲内であることを確認する
@@ -56,7 +90,13 @@ function parsePerspective(raw: unknown, index: number, key: string): SummaryPers
       `topics[${index}].summary.${key}.teaserが不正です(${TEASER_MIN_LENGTH}〜${TEASER_MAX_LENGTH}字である必要があります): ${record.teaser.length}字`
     )
   }
-  return { heading: record.heading, teaser: record.teaser, detail: record.detail }
+  const diagram = parseDiagram(record.diagram, index, key)
+  return {
+    heading: record.heading,
+    teaser: record.teaser,
+    detail: record.detail,
+    ...(diagram !== undefined ? { diagram } : {}),
+  }
 }
 
 // topics[index].summary(固定4観点)を検証・パースする。4キーの存在・各観点のteaser範囲・
