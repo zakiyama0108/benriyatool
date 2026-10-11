@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { getAllArticles } from '../lib/articles'
 import { buildFindingIndex } from '../lib/findingIndex'
 import BookmarkListView from '../components/BookmarkListView'
+import Breadcrumb from '../components/Breadcrumb'
 
 // 付箋一覧ページ(仕様: design.md「画面設計」「セキュリティ」)。個人のメモを扱うページのため
 // noindexにする(sitemapにも含めない。app/sitemap.ts参照)
@@ -20,17 +20,7 @@ export default function BookmarksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-50 via-slate-50/40 to-white">
       <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8 sm:py-10">
-        <nav className="text-[11px] text-gray-400">
-          <Link href="/" className="hover:underline">
-            べんりやつーる
-          </Link>
-          <span className="mx-1">›</span>
-          <Link href="/research-digest" className="hover:underline">
-            週刊研究発見
-          </Link>
-          <span className="mx-1">›</span>
-          <span>付箋一覧</span>
-        </nav>
+        <Breadcrumb current="付箋一覧" />
 
         <header>
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl">付箋一覧</h1>
