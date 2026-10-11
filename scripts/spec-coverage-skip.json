@@ -7046,6 +7046,11 @@
   },
   {
     "specFile": "future-digest/content-generation/requirements.md",
+    "item": "図解の生成(Nano Banana) [9]",
+    "reason": "Nano Bananaの利用方針・制約はnews-digestの定めと同一とする旨の参照記述で、重複する新規の振る舞いを持たないため(news-digest/content-generation/requirements.md#図解の生成(Nano Banana)-8〜10も同じ理由でスキップ対象)"
+  },
+  {
+    "specFile": "future-digest/content-generation/requirements.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
   },
@@ -7066,7 +7071,7 @@
   },
   {
     "specFile": "future-digest/content-generation/design.md",
-    "item": "見出し・本文を書く処理(エージェントの推論)",
+    "item": "見出し・固定3観点を書く処理(エージェントの推論)",
     "reason": "エージェント(Claude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsでテスト済み)"
   },
   {
@@ -7077,7 +7082,7 @@
   {
     "specFile": "future-digest/content-generation/design.md",
     "item": "記事データの1本分を組み立てる処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-6でbuildPrediction.test.tsによりテスト済みのため"
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-7でbuildPrediction.test.tsによりテスト済みのため"
   },
   {
     "specFile": "future-digest/content-generation/design.md",
@@ -7233,6 +7238,11 @@
     "specFile": "future-digest/article-detail/design.md",
     "item": "コンポーネント設計 > SlotBadges",
     "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはSlotBadges.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > DiagramView",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDiagramView.test.tsxでテスト済みのため"
   },
   {
     "specFile": "future-digest/article-detail/design.md",
