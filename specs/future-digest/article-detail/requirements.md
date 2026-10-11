@@ -35,7 +35,7 @@ flowchart LR
 ## 機能要件
 
 ### 記事本文の表示
-- [1] その回の記事タイトル(編のラベルを含む。[content-generation/requirements.md#記事の構成-7](../content-generation/requirements.md))・公開日・その回の時間軸2区分を表示する〔提案〕
+- [1] その回の記事タイトル(編のラベルを含む。[content-generation/requirements.md#記事の構成-8](../content-generation/requirements.md))・公開日・その回の時間軸2区分を表示する〔提案〕
 - [2] その回に採用された記事(対象編の5ジャンル×2時間軸。現在は最大10本)を、それぞれジャンル・時間軸・影響度のバッジ、見出し、本文、影響度の根拠、出典(情報源名・元URLへのリンク)とセットで表示する〔提案〕
 - [3] 候補が見つからなかった枠は、ジャンル・時間軸のバッジとあわせて「候補が見つかりませんでした」と表示する([content-selection/requirements.md#候補が見つからない枠](../content-selection/requirements.md))
 - [4] 収集の処理自体が失敗した枠は、ジャンル・時間軸のバッジとあわせて分類ラベル([content-selection/requirements.md#収集失敗](../content-selection/requirements.md))を含む「今回は記事を収集できませんでした」旨の表示にする。候補が見つからなかった枠([3])とは異なる文言で表示し、読者が区別できるようにする
