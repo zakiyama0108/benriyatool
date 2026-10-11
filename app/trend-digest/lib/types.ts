@@ -70,15 +70,57 @@ export type TopicTrend = {
   currentRegions: string[] // 現在の主な流行地域。不明は空配列(表示しない)
 }
 
-export type Topic = {
+// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形。アプリごとに型定義は独立して持つ)
+export type Diagram =
+  | { type: 'mermaid'; code: string }
+  | { type: 'image'; path: string }
+
+export type TopicSection = {
+  heading: string // 結論文(短い見出し)
+  text: string // 本文
+  diagram: Diagram | null // 図解(requirements.md#継続度・注目度の表示-20)。不要な観点はnull
+}
+
+// 固定3観点。この3キー・この順序で固定(content-generation/requirements.md#要約-3)。
+// 各キーの固定ラベル(画面に常時表示する観点名そのもの。requirements.md#継続度・注目度の表示-19)はコード側の定数として持つ
+export type TopicSections = {
+  fact: TopicSection // 急上昇の事実
+  reason: TopicSection // なぜ注目されたか
+  caveat: TopicSection // 確からしさ・注意点
+}
+
+export const SECTION_LABELS: Record<keyof TopicSections, string> = {
+  fact: '急上昇の事実',
+  reason: 'なぜ注目されたか',
+  caveat: '確からしさ・注意点',
+}
+
+type TopicBase = {
   id: string // 記事内で一意。フィードバックの紐付けに使う(例: "topic-1")
   genre: Genre
   heading: string // content-generationが生成する見出し
-  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
   sourceTitle: string // 対象作品・話題の原題(content-selectionのCandidate.titleをそのまま引き継ぐ。掲載実績・履歴の突合キーとして使う。表示はしない)
   sourceName: string // 出典の情報源名
   sourceUrl: string // 出典の元URL
   trend?: TopicTrend // 継続度・注目度の情報。この機能より前に公開した記事は持たないため任意(requirements.md#継続度・注目度の表示-18)
+}
+
+// この機能(固定3観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#継続度・注目度の表示-19、ai-dev-digestのLegacyTopicと同じ設計判断)
+export type LegacyTopic = TopicBase & {
+  body: string // 160〜480字、目安200〜400字
+}
+
+// この機能以降に生成する記事が持つ形
+export type CurrentTopic = TopicBase & {
+  sections: TopicSections
+}
+
+export type Topic = LegacyTopic | CurrentTopic
+
+// bodyを持つかどうかで新旧を判定する(ai-dev-digest/lib/types.tsのisLegacyTopicと同じパターン)
+export function isLegacyTopic(topic: Topic): topic is LegacyTopic {
+  return 'body' in topic
 }
 
 export type Article = {

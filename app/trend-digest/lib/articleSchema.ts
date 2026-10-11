@@ -1,12 +1,13 @@
-import type { Article, Edition, Genre, Topic, TopicTrend } from './types'
+import type { Article, Diagram, Edition, Genre, Topic, TopicSections, TopicTrend } from './types'
 import { GENRE_ORDER } from './types'
 import type { DurationLabel, HeatLabel } from './historyTypes'
-import { BODY_MIN_LENGTH, BODY_MAX_LENGTH, isValidTopicBodyLength } from './bodyValidation'
+import { BODY_MIN_LENGTH, BODY_MAX_LENGTH, isValidSectionsLength } from './bodyValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
 // エージェントが生成する入力の事故を早期に検知するため、ビルド時にここで例外を投げて
 // next buildを失敗させる(article-detail/design.md#エラーハンドリング)。
-// 本文の分量検証はcontent-generationがオーナーのbodyValidation.tsに委ねる(重複実装しない)
+// 本文(固定3観点)の分量検証はcontent-generationがオーナーのbodyValidation.tsに委ねる(重複実装しない)。
+// トピックは旧形式(単一body)・新形式(固定3観点sections)のいずれかを持つ(requirements.md#継続度・注目度の表示-19)
 
 const EDITIONS: Edition[] = ['entertainment', 'culture-lifestyle']
 const ALL_GENRES: Genre[] = [...GENRE_ORDER.entertainment, ...GENRE_ORDER['culture-lifestyle']]
@@ -21,6 +22,9 @@ const HEAT_LABELS: HeatLabel[] = ['high', 'normal', 'low']
 // 記事データに取り込む時点でも外部入力として検証する(trend-history/design.mdのバリデーションと同じ上限)
 const REGION_MAX_LENGTH = 50
 const MAX_REGIONS = 10
+// 新形式(sections)の各観点のdiagram.pathが指すべきディレクトリ(design.md「バリデーション」)
+const DIAGRAM_IMAGES_DIR = 'content/trend-digest/articles/images/'
+const SECTION_KEYS = ['fact', 'reason', 'caveat'] as const
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -96,9 +100,56 @@ function parseTrend(raw: unknown, index: number, articleDate: string): TopicTren
   }
 }
 
+// 新形式の各観点のdiagram(仕様: article-detail/design.md「バリデーション」)を検証・パースする。
+// null、または{type:'mermaid',code}(codeが空文字でない)、または{type:'image',path}
+// (pathがcontent/trend-digest/articles/images/配下を指す)のいずれかであること
+function parseDiagram(raw: unknown, index: number, sectionKey: string): Diagram | null {
+  if (raw === null) return null
+  if (typeof raw !== 'object') {
+    throw new Error(`topics[${index}].sections.${sectionKey}.diagramが不正です: ${JSON.stringify(raw)}`)
+  }
+  const diagram = raw as Record<string, unknown>
+
+  if (diagram.type === 'mermaid') {
+    if (!isNonEmptyString(diagram.code)) {
+      throw new Error(`topics[${index}].sections.${sectionKey}.diagram.codeが空文字です`)
+    }
+    return { type: 'mermaid', code: diagram.code }
+  }
+  if (diagram.type === 'image') {
+    if (typeof diagram.path !== 'string' || !diagram.path.startsWith(DIAGRAM_IMAGES_DIR)) {
+      throw new Error(
+        `topics[${index}].sections.${sectionKey}.diagram.pathが${DIAGRAM_IMAGES_DIR}配下を指していません: ${String(diagram.path)}`
+      )
+    }
+    return { type: 'image', path: diagram.path }
+  }
+  throw new Error(`topics[${index}].sections.${sectionKey}.diagram.typeが不正です: ${String(diagram.type)}`)
+}
+
+// 新形式(固定3観点)のsectionsを検証・パースする(仕様: content-generation/requirements.md#要約-3、
+// article-detail/design.md「バリデーション」)。分量検証自体はbodyValidation.isValidSectionsLengthに委ねる
+function parseSections(raw: unknown, index: number): TopicSections {
+  if (!isValidSectionsLength(raw)) {
+    throw new Error(`topics[${index}].sectionsが不正です(fact/reason/caveatの3キーが必要で、各heading/textは空文字不可、text連結で${BODY_MIN_LENGTH}〜${BODY_MAX_LENGTH}字である必要があります)`)
+  }
+  const record = raw as Record<string, { heading: string; text: string; diagram?: unknown }>
+
+  const sections = {} as TopicSections
+  for (const key of SECTION_KEYS) {
+    const section = record[key]
+    sections[key] = {
+      heading: section.heading,
+      text: section.text,
+      diagram: parseDiagram(section.diagram ?? null, index, key),
+    }
+  }
+  return sections
+}
+
 // topics[index]1件を検証・パースする(仕様: article-detail/design.md「バリデーション」)。
 // editionはジャンルが対象ジャンルに属するかの照合に、articleDateはtrend.continuationStartDateの
-// 妥当性検証に使う
+// 妥当性検証に使う。body(旧形式)・sections(新形式)はどちらか一方のみを持つ(requirements.md#継続度・注目度の表示-19)
 function parseTopic(raw: unknown, index: number, edition: Edition, articleDate: string): Topic {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error(`topics[${index}]がオブジェクトではありません`)
@@ -119,13 +170,6 @@ function parseTopic(raw: unknown, index: number, edition: Edition, articleDate: 
 
   if (!isNonEmptyString(topic.heading)) throw new Error(`topics[${index}].headingが空文字です`)
 
-  if (!isNonEmptyString(topic.body)) throw new Error(`topics[${index}].bodyが空文字です`)
-  if (!isValidTopicBodyLength(topic.body)) {
-    throw new Error(
-      `topics[${index}].bodyの文字数が不正です(${BODY_MIN_LENGTH}〜${BODY_MAX_LENGTH}字である必要があります): ${topic.body.length}字`
-    )
-  }
-
   if (!isNonEmptyString(topic.sourceTitle)) throw new Error(`topics[${index}].sourceTitleが空文字です`)
   if (!isNonEmptyString(topic.sourceName)) throw new Error(`topics[${index}].sourceNameが空文字です`)
   if (!isHttpUrl(topic.sourceUrl)) {
@@ -134,11 +178,34 @@ function parseTopic(raw: unknown, index: number, edition: Edition, articleDate: 
 
   const trend = parseTrend(topic.trend, index, articleDate)
 
+  if ('body' in topic) {
+    // 旧形式(この機能より前に公開した記事。requirements.md#継続度・注目度の表示-19)
+    if (!isNonEmptyString(topic.body)) throw new Error(`topics[${index}].bodyが空文字です`)
+    if (topic.body.length < BODY_MIN_LENGTH || topic.body.length > BODY_MAX_LENGTH) {
+      throw new Error(
+        `topics[${index}].bodyの文字数が不正です(${BODY_MIN_LENGTH}〜${BODY_MAX_LENGTH}字である必要があります): ${topic.body.length}字`
+      )
+    }
+
+    return {
+      id: topic.id,
+      genre,
+      heading: topic.heading,
+      body: topic.body,
+      sourceTitle: topic.sourceTitle,
+      sourceName: topic.sourceName,
+      sourceUrl: topic.sourceUrl,
+      ...(trend !== undefined ? { trend } : {}),
+    }
+  }
+
+  // 新形式(固定3観点。requirements.md#継続度・注目度の表示-19)
+  const sections = parseSections(topic.sections, index)
   return {
     id: topic.id,
     genre,
     heading: topic.heading,
-    body: topic.body,
+    sections,
     sourceTitle: topic.sourceTitle,
     sourceName: topic.sourceName,
     sourceUrl: topic.sourceUrl,

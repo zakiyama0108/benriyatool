@@ -48,7 +48,7 @@ function makeTrend(overrides: Partial<Record<string, unknown>> = {}) {
   }
 }
 
-// 仕様: specs/trend-digest/article-detail/design.md#バリデーション、specs/trend-digest/article-detail/requirements.md#記事本文表示-4、specs/trend-digest/article-detail/requirements.md#表示分量・著作権配慮-2、specs/trend-digest/content-generation/requirements.md#要約-1、specs/trend-digest/content-generation/requirements.md#要約-2、specs/trend-digest/content-generation/requirements.md#要約-4、specs/trend-digest/content-generation/requirements.md#記事の構成-5、specs/trend-digest/content-generation/design.md#本文の分量を検証する処理(決定的なコード)
+// 仕様: specs/trend-digest/article-detail/design.md#バリデーション、specs/trend-digest/article-detail/requirements.md#記事本文表示-4、specs/trend-digest/article-detail/requirements.md#表示分量・著作権配慮-2、specs/trend-digest/content-generation/requirements.md#要約-1、specs/trend-digest/content-generation/requirements.md#要約-2、specs/trend-digest/content-generation/requirements.md#要約-6、specs/trend-digest/content-generation/requirements.md#記事の構成-8、specs/trend-digest/content-generation/design.md#本文の分量を検証する処理(決定的なコード)
 describe('記事データのバリデーション - JSONのスキーマを検証し、違反時は例外を投げる', () => {
   it('正常な記事データ(トピック1件のみ)は検証を通り、そのままArticleとして返ること', () => {
     const article = parseArticle(makeArticle(), '2026-09-15-entertainment.json')
@@ -296,5 +296,102 @@ describe('記事データのバリデーション - トピックの継続度・�
     )
     expect(article.topics[0]?.trend?.originRegion).toBeNull()
     expect(article.topics[0]?.trend?.currentRegions).toEqual([])
+  })
+})
+
+// 100字ずつの固定3観点(fact/reason/caveat)を持つsectionsを作る(3観点合計300字で160〜480字の範囲内)
+function makeSections(overrides: Partial<Record<'fact' | 'reason' | 'caveat', Record<string, unknown>>> = {}) {
+  const section = (heading: string) => ({ heading, text: 'あ'.repeat(100), diagram: null })
+  return {
+    fact: section('急上昇の事実の見出し'),
+    reason: section('なぜ注目されたかの見出し'),
+    caveat: section('確からしさ・注意点の見出し'),
+    ...overrides,
+  }
+}
+
+function makeCurrentTopic(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    id: 'topic-1',
+    genre: 'music',
+    heading: '見出し',
+    sections: makeSections(),
+    sourceTitle: '対象作品名',
+    sourceName: 'Oricon',
+    sourceUrl: 'https://example.com/a',
+    ...overrides,
+  }
+}
+
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-19、specs/trend-digest/article-detail/design.md#バリデーション
+describe('記事データのバリデーション - 新形式(固定3観点sections)のトピックを検証する', () => {
+  it('正常な新形式のトピック(sectionsを持つ)は検証を通ること', () => {
+    const article = parseArticle(makeArticle({ topics: [makeCurrentTopic()] }), '2026-09-15-entertainment.json')
+    expect(article.topics[0]).toMatchObject({ sections: makeSections() })
+  })
+
+  it('sectionsにfact/reason/caveatのいずれかが欠落している場合、失敗すること', () => {
+    const { fact, reason } = makeSections()
+    const article = makeArticle({ topics: [makeCurrentTopic({ sections: { fact, reason } })] })
+    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
+  })
+
+  it('いずれかの観点のheadingが空文字の場合、失敗すること', () => {
+    const sections = makeSections({ reason: { heading: '', text: 'あ'.repeat(100), diagram: null } })
+    const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
+    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
+  })
+
+  it('3観点のtextを連結した文字数が160字未満の場合、失敗すること', () => {
+    const section = (heading: string) => ({ heading, text: 'あ'.repeat(10), diagram: null })
+    const sections = { fact: section('見出し'), reason: section('見出し'), caveat: section('見出し') }
+    const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
+    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
+  })
+
+  it('3観点のtextを連結した文字数が480字を超える場合、失敗すること', () => {
+    const section = (heading: string) => ({ heading, text: 'あ'.repeat(200), diagram: null })
+    const sections = { fact: section('見出し'), reason: section('見出し'), caveat: section('見出し') }
+    const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
+    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
+  })
+})
+
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-20、specs/trend-digest/article-detail/design.md#バリデーション
+describe('記事データのバリデーション - 新形式のトピックの観点ごとのdiagramを検証する', () => {
+  it('diagramがnullの場合、検証を通ること(図解が不要な観点)', () => {
+    const article = parseArticle(makeArticle({ topics: [makeCurrentTopic()] }), '2026-09-15-entertainment.json')
+    expect(article.topics[0]).toMatchObject({ sections: { fact: { diagram: null } } })
+  })
+
+  it('{type:"mermaid",code}(codeが空文字でない)の場合、検証を通ること', () => {
+    const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } } })
+    const article = parseArticle(makeArticle({ topics: [makeCurrentTopic({ sections })] }), '2026-09-15-entertainment.json')
+    expect(article.topics[0]).toMatchObject({ sections: { fact: { diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } } } })
+  })
+
+  it('{type:"image",path}(pathがcontent/trend-digest/articles/images/配下)の場合、検証を通ること', () => {
+    const path = 'content/trend-digest/articles/images/2026-09-15-topic-1-fact.png'
+    const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'image', path } } })
+    const article = parseArticle(makeArticle({ topics: [makeCurrentTopic({ sections })] }), '2026-09-15-entertainment.json')
+    expect(article.topics[0]).toMatchObject({ sections: { fact: { diagram: { type: 'image', path } } } })
+  })
+
+  it('type:"mermaid"なのにcodeが空文字の場合、失敗すること', () => {
+    const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'mermaid', code: '' } } })
+    const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
+    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
+  })
+
+  it('type:"image"なのにpathがcontent/trend-digest/articles/images/配下を指していない場合、失敗すること', () => {
+    const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'image', path: 'content/trend-digest/articles/2026-09-15.json' } } })
+    const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
+    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
+  })
+
+  it('diagram.typeが未定義の値の場合、失敗すること', () => {
+    const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'chart' } } })
+    const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
+    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
   })
 })

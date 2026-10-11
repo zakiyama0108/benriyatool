@@ -3,6 +3,7 @@ import path from 'node:path'
 import type { DurationLabel } from './historyTypes'
 import { normalizeTitle } from './selection'
 import { parseArticle } from './articleSchema'
+import { isLegacyTopic } from './types'
 
 // 掲載実績(掲載回数・報告回数・直近掲載時の継続度ラベル)の算出(仕様: requirements.md#掲載実績の追跡-13〜14、
 // design.md「掲載実績(掲載回数・直近掲載時の継続度ラベル)を求める処理」)。
@@ -12,7 +13,12 @@ export type PublishRecord = {
   publishedCount: number // 過去に記事へ掲載された回数(未掲載は0)
   reportCount: number // 今回掲載する場合に通算何回目の報告になるか(= publishedCount + 1)
   lastPublishedDurationLabel: DurationLabel | null // 直近掲載時の継続度ラベル。未掲載・判定不能はnull
-  lastPublishedBody: string | null // 直近掲載時の本文。未掲載はnull。content-generationが続報の重複執筆を防ぐ検証に使う
+  // 直近掲載時の、続報の重複執筆防止チェックに使う本文。未掲載はnull。
+  // 旧形式(body)の記事はbodyそのもの、新形式(sections)の記事は「なぜ注目されたか」観点(reason.text)を
+  // 格納する(content-generation/lib/duplicateReason.tsのisDuplicateOfLastPublishedReasonが比較する対象。
+  // フィールド名はcontent-selection/trend-historyのdesign.mdが定義するSelectedTopic.lastPublishedBodyと
+  // 揃えている。固定3観点への移行に伴い中身の意味が「本文」から「reason観点」に変わった点に注意)
+  lastPublishedBody: string | null
 }
 
 const NEVER_PUBLISHED: PublishRecord = {
@@ -44,7 +50,7 @@ export function collectPublishRecords(articlesDir: string): Map<string, PublishR
         publishedCount,
         reportCount: publishedCount + 1,
         lastPublishedDurationLabel: topic.trend?.durationLabel ?? null,
-        lastPublishedBody: topic.body,
+        lastPublishedBody: isLegacyTopic(topic) ? topic.body : topic.sections.reason.text,
       })
     }
   }

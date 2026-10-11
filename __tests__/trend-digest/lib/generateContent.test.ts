@@ -35,26 +35,32 @@ function makeCandidate(overrides: Partial<SelectedTopic> = {}): SelectedTopic {
   }
 }
 
-// 160〜480字の範囲を満たすダミー本文を作る
-function makeBody(length = 250): string {
-  return 'あ'.repeat(length)
-}
-
-// 成功応答のresult文字列(JSONオブジェクト単体。見出し+本文の形式)を作る
-function okResult(): ClaudeCliResponse {
+// 3観点(fact/reason/caveat)のtextを連結した文字数がtotalLengthになるsectionsを作る
+function makeSections(totalLength = 250, reasonText?: string) {
+  const each = Math.floor(totalLength / 3)
+  const remainder = totalLength - each * 3
   return {
-    result: JSON.stringify({ heading: '見出し', body: makeBody() }),
+    fact: { heading: '見出し', text: 'あ'.repeat(each + remainder), diagram: null },
+    reason: { heading: '見出し', text: reasonText ?? 'あ'.repeat(each), diagram: null },
+    caveat: { heading: '見出し', text: 'あ'.repeat(each), diagram: null },
   }
 }
 
-// 仕様: specs/trend-digest/content-generation/design.md「見出し・本文を書く処理」手順6、specs/trend-digest/content-generation/design.md「エラーハンドリング」
+// 成功応答のresult文字列(JSONオブジェクト単体。見出し+固定3観点の形式)を作る
+function okResult(sections = makeSections()): ClaudeCliResponse {
+  return {
+    result: JSON.stringify({ heading: '見出し', sections }),
+  }
+}
+
+// 仕様: specs/trend-digest/content-generation/design.md「見出し・固定3観点を書く処理」手順6、specs/trend-digest/content-generation/design.md「エラーハンドリング」
 describe('classifyGenerationResult - Claude Code CLIの応答を成功/一時的失敗/利用枠枯渇の3種に分類する', () => {
-  it('見出し・本文(160〜480字)を含むJSON応答はokに分類する', () => {
+  it('見出し・固定3観点(合計160〜480字)を含むJSON応答はokに分類する', () => {
     const c = classifyGenerationResult(okResult(), makeCandidate())
     expect(c.kind).toBe('ok')
     if (c.kind === 'ok') {
       expect(c.content.heading).toBe('見出し')
-      expect(c.content.body).toHaveLength(250)
+      expect(c.content.sections.fact.text.length + c.content.sections.reason.text.length + c.content.sections.caveat.text.length).toBe(250)
     }
   })
 
@@ -64,22 +70,22 @@ describe('classifyGenerationResult - Claude Code CLIの応答を成功/一時的
   })
 
   it('headingがnullの応答(取得困難時の失敗シグナル)はtransientに分類する', () => {
-    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: null, body: null }) }
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: null, sections: null }) }
     expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
-  it('bodyの文字数が160字未満(分量不正)の応答はtransientに分類する', () => {
-    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', body: makeBody(100) }) }
+  it('固定3観点の合計文字数が160字未満(分量不正)の応答はtransientに分類する', () => {
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', sections: makeSections(100) }) }
     expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
-  it('bodyの文字数が480字を超える(分量不正)の応答はtransientに分類する', () => {
-    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', body: makeBody(500) }) }
+  it('固定3観点の合計文字数が480字を超える(分量不正)の応答はtransientに分類する', () => {
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', sections: makeSections(500) }) }
     expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
   it('headingが空文字の応答はtransientに分類する', () => {
-    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '', body: makeBody() }) }
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '', sections: makeSections() }) }
     expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
@@ -104,16 +110,16 @@ describe('classifyGenerationResult - Claude Code CLIの応答を成功/一時的
 })
 
 // 仕様: specs/trend-digest/content-generation/requirements.md#エージェントの逸脱防止-7、specs/trend-digest/content-generation/design.md「本文の分量を検証する処理」手順3
-describe('classifyGenerationResult - 続報の本文が前回掲載時の本文と完全に同一の場合は失敗として扱う(同じ内容の記事の繰り返し公開を防ぐ最終防波堤)', () => {
-  it('報告回数2回目以降の候補で、前回掲載時の本文と一字一句同じ本文が返された場合はtransientに分類する', () => {
-    const previousBody = makeBody(300)
-    const candidate = makeCandidate({ reportCount: 2, lastPublishedBody: previousBody })
-    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', body: previousBody }) }
+describe('classifyGenerationResult - 続報の「なぜ注目されたか」観点が前回掲載時と完全に同一の場合は失敗として扱う(同じ内容の記事の繰り返し公開を防ぐ最終防波堤)', () => {
+  it('報告回数2回目以降の候補で、前回掲載時のreason.textと一字一句同じ応答が返された場合はtransientに分類する', () => {
+    const previousReason = 'あ'.repeat(200)
+    const candidate = makeCandidate({ reportCount: 2, lastPublishedBody: previousReason })
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', sections: makeSections(250, previousReason) }) }
     expect(classifyGenerationResult(res, candidate).kind).toBe('transient')
   })
 
-  it('報告回数2回目以降でも、前回掲載時の本文と異なる内容が返された場合はokに分類する', () => {
-    const candidate = makeCandidate({ reportCount: 2, lastPublishedBody: makeBody(300) })
+  it('報告回数2回目以降でも、前回掲載時のreason.textと異なる内容が返された場合はokに分類する', () => {
+    const candidate = makeCandidate({ reportCount: 2, lastPublishedBody: 'あ'.repeat(300) })
     expect(classifyGenerationResult(okResult(), candidate).kind).toBe('ok')
   })
 

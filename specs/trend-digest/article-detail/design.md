@@ -88,11 +88,11 @@ export type Diagram =
 export type TopicSection = {
   heading: string // 結論文(短い見出し)
   text: string // 本文
-  diagram: Diagram | null // 図解(requirements.md#記事本文表示-20)。不要な観点はnull
+  diagram: Diagram | null // 図解(requirements.md#継続度・注目度の表示-20)。不要な観点はnull
 }
 
 // 固定3観点。この3キー・この順序で固定(content-generation/requirements.md#要約-3)。
-// 各キーの固定ラベル(画面に常時表示する観点名そのもの。requirements.md#記事本文表示-19)はコード側の定数として持つ
+// 各キーの固定ラベル(画面に常時表示する観点名そのもの。requirements.md#継続度・注目度の表示-19)はコード側の定数として持つ
 export type TopicSections = {
   fact: TopicSection // 急上昇の事実
   reason: TopicSection // なぜ注目されたか
@@ -116,7 +116,7 @@ type TopicBase = {
 }
 
 // この機能(固定3観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
-// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#記事本文表示-19、ai-dev-digestのLegacyTopicと同じ設計判断)
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#継続度・注目度の表示-19、ai-dev-digestのLegacyTopicと同じ設計判断)
 export type LegacyTopic = TopicBase & {
   body: string // 160〜480字、目安200〜400字
 }
@@ -163,13 +163,13 @@ export type Article = {
   1. `buildArticleTitle(edition, date)`で導出した記事タイトル・公開日(`date`)を見出しとして表示する
   2. `GENRE_ORDER[edition]`の順に、その編の全ジャンルを見出しとして表示する(requirements.md#記事本文表示-2。`unavailableGenres`を持たない公開済みの過去記事は、掲載のないジャンルの見出しを出さない。手順4参照)。見出しの文言は`Genre`から`GENRE_LABELS`を引いた日本語ラベルを使う
   3. 各ジャンル見出しの下に、そのジャンルの`topics`(新ルールの記事は1件、`unavailableGenres`を持たない過去記事は複数件ありうる)を、見出し・要約・出典(情報源名・元URLへのリンク、新規タブで開く)とセットで表示する(requirements.md#記事本文表示-3)
-  3-1. 要約の表示は`isLegacyTopic(topic)`で分岐する。`true`(旧形式)の場合は`body`をそのまま1つの段落として表示する。`false`(新形式)の場合は`sections`を`fact`→`reason`→`caveat`の順(この順序で固定)に、`SECTION_LABELS`の固定ラベル→`heading`(結論文)→`text`(本文)の順で常時表示する(requirements.md#記事本文表示-19)
-  3-2. 新形式の各観点で`diagram`が`null`でない場合、`text`の下に`DiagramView`を表示する(requirements.md#記事本文表示-20)
+  3-1. 要約の表示は`isLegacyTopic(topic)`で分岐する。`true`(旧形式)の場合は`body`をそのまま1つの段落として表示する。`false`(新形式)の場合は`sections`を`fact`→`reason`→`caveat`の順(この順序で固定)に、`SECTION_LABELS`の固定ラベル→`heading`(結論文)→`text`(本文)の順で常時表示する(requirements.md#継続度・注目度の表示-19)
+  3-2. 新形式の各観点で`diagram`が`null`でない場合、`text`の下に`DiagramView`を表示する(requirements.md#継続度・注目度の表示-20)
   4. `unavailableGenres`に含まれるジャンルは、見出しの下にトピックの代わりとして「今回は情報源から話題を取得できませんでした」と表示する。見出しだけが残る状態にはしない(requirements.md#継続度・注目度の表示-17)。`unavailableGenres`を持たない、新ルール導入前に公開済みの記事では、`topics`にないジャンルには見出しも含め何も表示しない(セクション自体を出さない。同一ジャンルに複数件のトピックがある場合は全件を表示する。公開済み記事を書き換えるとフィードバックの`topic_id`がずれるため、過去記事はそのまま表示する)
   5. 各トピックに`trend`がある場合は、見出しの隣に継続度ラベルのバッジと注目度ラベルのバッジを(いずれも日本語ラベル付きで)並べ、本文の上にトレンド情報の行を表示する。トレンド情報の行に出すのは、継続期間(継続の開始日と継続日数を組み合わせた読みやすい表記)・報告回数(2回目以降のみ)・発祥地域(判定できている場合のみ)・現在の主な流行地域(判定できている場合のみ)で、値が不明な項目は項目ごと表示しない(requirements.md#継続度・注目度の表示-10、同-12、同-14、同-15、同-16)
   6. `trend`を持たないトピックは、バッジ・トレンド情報の行をいずれも表示しない(requirements.md#継続度・注目度の表示-18)
   7. 表示するトピック数は`topics`配列のとおりで、画面側で件数の絞り込みは行わない(`unavailableGenres`を持つ記事ではその編のジャンル数と一致する。持たない過去記事は例外。requirements.md#記事本文表示-4、requirements.md#継続度・注目度の表示-17)
-- 関連するビジネスルール: requirements.md#記事本文表示-1、requirements.md#記事本文表示-2、requirements.md#記事本文表示-3、requirements.md#記事本文表示-4、requirements.md#記事本文表示-19、requirements.md#記事本文表示-20、requirements.md#継続度・注目度の表示-10、requirements.md#継続度・注目度の表示-11、requirements.md#継続度・注目度の表示-12、requirements.md#継続度・注目度の表示-13、requirements.md#継続度・注目度の表示-14、requirements.md#継続度・注目度の表示-15、requirements.md#継続度・注目度の表示-16、requirements.md#継続度・注目度の表示-17、requirements.md#継続度・注目度の表示-18、requirements.md#継続度・注目度の表示の扱い-6、requirements.md#継続度・注目度の表示の扱い-7
+- 関連するビジネスルール: requirements.md#記事本文表示-1、requirements.md#記事本文表示-2、requirements.md#記事本文表示-3、requirements.md#記事本文表示-4、requirements.md#継続度・注目度の表示-19、requirements.md#継続度・注目度の表示-20、requirements.md#継続度・注目度の表示-10、requirements.md#継続度・注目度の表示-11、requirements.md#継続度・注目度の表示-12、requirements.md#継続度・注目度の表示-13、requirements.md#継続度・注目度の表示-14、requirements.md#継続度・注目度の表示-15、requirements.md#継続度・注目度の表示-16、requirements.md#継続度・注目度の表示-17、requirements.md#継続度・注目度の表示-18、requirements.md#継続度・注目度の表示の扱い-6、requirements.md#継続度・注目度の表示の扱い-7
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
