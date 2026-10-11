@@ -6,7 +6,7 @@ export type GeneratedContent = {
   sections: FindingSections
 }
 
-// 記事データの1本分を組み立てる処理(仕様: content-generation/requirements.md#記事の構成-6、
+// 記事データの1本分を組み立てる処理(仕様: content-generation/requirements.md#記事の構成-7、
 // content-generation/design.md「記事データの1本分を組み立てる処理」)。
 // ジャンル・影響度・根拠・出典(論文名・発表元・URL・DOI・発表年)・査読前かどうかは選定時の値を
 // そのまま使い、見出し・sections(固定4観点。各観点のdiagramは呼び出し元のgenerate-content.tsが

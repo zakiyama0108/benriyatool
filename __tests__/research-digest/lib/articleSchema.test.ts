@@ -209,8 +209,7 @@ describe('固定4観点・図解への移行に伴う新旧データ形式の検
   })
 })
 
-// 仕様: specs/research-digest/content-generation/requirements.md#図解-6、
-// specs/research-digest/article-detail/design.md「バリデーション」
+// 仕様: specs/research-digest/content-generation/requirements.md#図解-6、specs/research-digest/article-detail/design.md#バリデーション
 describe('記事スキーマへの図解(diagram)検証の組み込み - sectionsの各観点のdiagramがnull・mermaid・imageいずれかの正しい形のみ許可する', () => {
   it('diagramがnullのとき、検証を通ること(図解が不要な観点)', () => {
     const result = parse(article({ findings: [sectionsFinding('medical-health')] }))
