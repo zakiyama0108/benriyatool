@@ -77,9 +77,9 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | [content-generation](content-generation/requirements.md) | 研究発見の要約を読む | 選ばれた記事の要約・影響度の根拠の執筆ルール(著作権への配慮を含む)を定める | content-selectionの選定結果を受け取る | リリース済み |
 | [weekly-publish](weekly-publish/requirements.md) | 毎週月曜・土曜に新しい記事が並ぶ | 編ごとに週1回(月曜・土曜)の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | リリース済み |
 | [line-broadcast](line-broadcast/requirements.md) | LINEで新着記事の通知を受け取る | 記事ページの公開を確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング、article-detailの記事データに従う | リリース済み |
-| [article-list](article-list/requirements.md) | 過去の回を一覧で探す | 記事を日付リストで一覧表示し、影響度順の先頭3件の見出しを添える | article-detailの記事データを参照 | 実装中 |
-| [article-detail](article-detail/requirements.md) | 記事を読む・意見を残す | 記事を影響度順・ジャンル順で切り替えて表示し、運営者フィードバック欄を出す | content-selection・content-generationの結果に従う | 実装中 |
-| [bookmark](bookmark/requirements.md) | 気になった研究を付箋で残す | ログインした読者が記事ごとにメモ付きの付箋を貼り、一覧で見返す | article-detailの記事識別子に従う | 実装中 |
+| [article-list](article-list/requirements.md) | 過去の回を一覧で探す | 記事を日付リストで一覧表示し、影響度順の先頭3件の見出しを添える | article-detailの記事データを参照 | リリース済み |
+| [article-detail](article-detail/requirements.md) | 記事を読む・意見を残す | 記事を影響度順・ジャンル順で切り替えて表示し、運営者フィードバック欄を出す | content-selection・content-generationの結果に従う | リリース済み |
+| [bookmark](bookmark/requirements.md) | 気になった研究を付箋で残す | ログインした読者が記事ごとにメモ付きの付箋を貼り、一覧で見返す | article-detailの記事識別子に従う | リリース済み |
 | [source-review](source-review/requirements.md) | (運営者専用)基準を月次で見直す | 月次でジャンル・採用基準・執筆ルールの見直し案を作り、人の承認を経て反映する | article-detailのフィードバック、content-selectionの収集状況を参照 | リリース済み |
 
 ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
