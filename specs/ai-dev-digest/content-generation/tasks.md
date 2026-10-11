@@ -51,3 +51,25 @@
   - `scripts/ai-dev-digest/generate-content.ts`の`buildPrompt`が返すJSON例を、design.md「要約を書く処理」に記載の固定4観点+`importance`形式に更新する
 
 Topic型の`LegacyTopic`/`CurrentTopic`化・記事スキーマ検証(`types.ts`/`articleSchema.ts`)への組み込みは、これらのファイルの所有specである[article-detail/tasks.md](../article-detail/tasks.md)側に追加する(article-detail/design.md「前提: 記事データの形式」参照)。
+
+## 開発領域観点・図解への移行
+
+💡新規性を廃止し🧭開発領域を追加、あわせて図解機能(Mermaid/Nano Banana)を追加する変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 13: 固定4観点の`whatsNew`→`domain`移行の検証(仕様: requirements.md#要約-5・12、requirements.md#開発領域-15〜16、design.md「要約の分量を検証する処理」)
+  - 🔴 `summary`が`domain`/`benefit`/`how`/`howToUse`の4キーを持つ場合に有効、`domain.domains`が空配列または未定義の値を含む場合は不正と判定することを確認するテストを書く
+  - 🟢 `app/ai-dev-digest/lib/summaryValidation.ts`の`isValidSummaryDetailLength`を、`hasDomainPerspective(summary)`で`domain`/`benefit`/`how`/`howToUse`と`benefit`/`whatsNew`/`how`/`howToUse`のどちらの4キー構成も受け付けるように拡張し、`domain`がある場合は`domains`の検証(1件以上・定義済み値のみ)も行う
+
+- Task 14: 図解データの検証(仕様: requirements.md#図解-17、design.md「要約を書く処理」手順13)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く(news-digestの`diagramValidation.ts`と同じロジック)
+  - 🟢 `app/ai-dev-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
+
+- Task 15: Nano Banana呼び出しと保存(仕様: requirements.md#図解の生成(Nano Banana)-11、design.md「要約を書く処理」手順13)
+  - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 14でテスト済み)
+  - `scripts/ai-dev-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`content/ai-dev-digest/articles/images/`に変更)
+  - `scripts/ai-dev-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
+  - 画面側の表示タスク(固定ラベル・開発領域タグ・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
+
+</details>

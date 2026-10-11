@@ -39,11 +39,36 @@ export type Impact = 'high' | 'medium' | 'low'
 export const IMPACT_ORDER: Impact[] = ['high', 'medium', 'low']
 export const IMPACT_LABELS: Record<Impact, string> = { high: '大', medium: '中', low: '小' }
 
-export type Finding = {
+// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形)
+export type Diagram =
+  | { type: 'mermaid'; code: string }
+  | { type: 'image'; path: string }
+
+export type FindingSection = {
+  heading: string // 結論文(短い見出し)
+  text: string // 本文
+  diagram: Diagram | null
+}
+
+// 固定4観点。この4キー・この順序で固定(content-generation/requirements.md#要約-3)
+export type FindingSections = {
+  finding: FindingSection // 何が分かったか
+  basis: FindingSection // なぜそう結論づけられたのか
+  relevance: FindingSection // 暮らしへの関わり
+  caveat: FindingSection // 注意点
+}
+
+export const SECTION_LABELS: Record<keyof FindingSections, string> = {
+  finding: '何が分かったか',
+  basis: 'なぜそう結論づけられたのか',
+  relevance: '暮らしへの関わり',
+  caveat: '注意点',
+}
+
+type FindingBase = {
   id: string // 記事内で一意。ジャンルのidと同じ(1ジャンル1本のため)。フィードバック・付箋の紐付けに使う
   genre: Genre
   heading: string // content-generationが生成する見出し
-  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
   impact: Impact
   impactReason: string // 影響度の根拠(1文)
   sourceTitle: string // 論文名(公式発表の場合は発表のタイトル)。画面では出典リンクの文言として使う
@@ -52,6 +77,23 @@ export type Finding = {
   doi: string | null // 論文のDOI(ある場合のみ。配信済み判定の突合に使う)
   publishedYear: number | null // 論文・発表の年(分かる場合のみ。画面で出典の横に出す)
   isPreprint: boolean // 査読前の論文(プレプリント)か
+}
+
+// この機能(固定4観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#記事本文の表示-14、trend-digest/future-digestと同じ設計判断)
+export type LegacyFinding = FindingBase & {
+  body: string // 160〜480字、目安200〜400字
+}
+
+// この機能以降に生成する記事が持つ形
+export type CurrentFinding = FindingBase & {
+  sections: FindingSections
+}
+
+export type Finding = LegacyFinding | CurrentFinding
+
+export function isLegacyFinding(finding: Finding): finding is LegacyFinding {
+  return 'body' in finding
 }
 
 // 掲載できなかったジャンル。reasonで表示文言を出し分ける
@@ -105,10 +147,12 @@ export type Article = {
 - 手順:
   1. 記事タイトル・公開日を見出しとして表示する(requirements.md#記事本文の表示-1)
   2. ページを開いた時点では影響度順で表示する(requirements.md#並び順の切り替え-10)
-  3. 研究があるジャンルは、ジャンル・影響度のバッジ(査読前の論文は「査読前」のバッジも)、見出し、本文、影響度の根拠、出典(論文名または発表元・掲載誌名/発表元・年・元URLへのリンク。新規タブで開く)を表示する(requirements.md#記事本文の表示-2)
+  3. 研究があるジャンルは、ジャンル・影響度のバッジ(査読前の論文は「査読前」のバッジも)、見出し、要約、影響度の根拠、出典(論文名または発表元・掲載誌名/発表元・年・元URLへのリンク。新規タブで開く)を表示する(requirements.md#記事本文の表示-2)
+  3-1. 要約の表示は`isLegacyFinding(finding)`で分岐する。`true`(旧形式)の場合は`body`をそのまま1つの段落として表示する。`false`(新形式)の場合は`sections`を`finding`→`basis`→`relevance`→`caveat`の順(この順序で固定)に、`SECTION_LABELS`の固定ラベル→`heading`(結論文)→`text`(本文)の順で常時表示する(requirements.md#記事本文の表示-14)
+  3-2. 新形式の各観点で`diagram`が`null`でない場合、`text`の下に`DiagramView`を表示する(requirements.md#記事本文の表示-15)
   4. 候補が見つからなかったジャンルは、ジャンルのバッジと「候補が見つかりませんでした」を表示する(requirements.md#記事本文の表示-3)。収集の処理自体が失敗したジャンルは、同じバッジと分類ラベルを含む「今回は記事を収集できませんでした」を表示する(requirements.md#記事本文の表示-4)。生成に失敗したジャンルは、同じバッジと「今回は記事を用意できませんでした」を表示する(requirements.md#記事本文の表示-5)
   5. 並び順の切り替え操作が行われたら、同じ記事データから一覧を組み立て直して表示し直す(requirements.md#並び順の切り替え-7)
-- 関連するビジネスルール: requirements.md#記事本文の表示-1〜6、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
+- 関連するビジネスルール: requirements.md#記事本文の表示-1〜6、requirements.md#記事本文の表示-14〜15、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
@@ -151,7 +195,9 @@ sequenceDiagram
 記事データ(JSONファイル)のスキーマ検証(`parseArticle`):
 - `id`がファイル名と一致し、`<date>-<edition>`の形(`date`と同じ`YYYY-MM-DD`形式+編のid)であること
 - `edition`が`body-life`/`science-society`のいずれかであること
-- 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`genre`が`EDITION_GENRES[edition]`に含まれること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`body`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること、`body`が160〜480字であること
+- 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`genre`が`EDITION_GENRES[edition]`に含まれること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること
+- 旧形式(`body`を持つ)の場合: `body`が160〜480字であること
+- 新形式(`sections`を持つ)の場合: `finding`/`basis`/`relevance`/`caveat`の4キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。4観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`content/research-digest/articles/images/`配下を指す)のいずれかであること
 - 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`EDITION_GENRES[edition]`に含まれ、`reason`が定義済みの値であること
 - 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。対象編で有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
 - 研究は0件でもよい(全ジャンルで採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)
@@ -180,10 +226,12 @@ app/research-digest/components/FindingCard.tsx (新規: 1ジャンル分の表�
 app/research-digest/components/FindingBadges.tsx (新規: ジャンル・影響度・査読前のバッジ)
 app/research-digest/components/FeedbackForm.tsx (新規)
 app/research-digest/components/LoginStatus.tsx (新規)
+app/research-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdmin)
 app/lib/supabaseClient.ts (既存)
 supabase/migrations/<timestamp>_create_research_digest_feedback.sql (新規)
 content/research-digest/articles/*.json (新規: 記事本文データ)
+content/research-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
 ```
 
 ## データベース設計
@@ -232,7 +280,7 @@ Step0: 実施しない(週刊トレンドの確定済みデザインを流用し
 - 記事タイトル・公開日
 - 並び順の切り替え(「影響度順」「ジャンル順」。初期は影響度順)
 - ジャンル枠のカード一覧(ジャンル数分。現在は10件):
-  - 研究があるジャンル: ジャンル・影響度のバッジ(大・中・小を文字でも表示)、査読前の論文は「査読前」のバッジ、見出し、本文、「影響度の根拠: 〜」、出典(「詳しくは元の論文・発表を読む」の文言を添えた、論文名・掲載誌名または発表元・年、元URLへのリンク。新規タブで開く。requirements.md#表示分量・著作権への配慮-1、content-generation/requirements.md#著作権への配慮-1)
+  - 研究があるジャンル: ジャンル・影響度のバッジ(大・中・小を文字でも表示)、査読前の論文は「査読前」のバッジ、見出し、要約(新形式は固定4観点を固定ラベル付きで常時表示、旧形式は単一本文)、「影響度の根拠: 〜」、出典(「詳しくは元の論文・発表を読む」の文言を添えた、論文名・掲載誌名または発表元・年、元URLへのリンク。新規タブで開く。requirements.md#表示分量・著作権への配慮-1、content-generation/requirements.md#著作権への配慮-1)
   - 候補が見つからなかったジャンル: ジャンルのバッジと「候補が見つかりませんでした」(淡い配色)
   - 収集の処理自体が失敗したジャンル: 同じバッジと分類ラベルを含む「今回は記事を収集できませんでした」
   - 生成に失敗したジャンル: 同じバッジと「今回は記事を用意できませんでした」
@@ -250,6 +298,7 @@ Step0: 実施しない(週刊トレンドの確定済みデザインを流用し
 | FindingCard | `entry: GenreEntry`, `articleId: string`, `isAdmin: boolean`, `session: Session \| null`, `bookmark` | 1ジャンル分の表示。研究がないジャンルは理由の文言だけを出す |
 | FindingBadges | `genre: Genre`, `impact?: Impact`, `isPreprint?: boolean` | ジャンル・影響度・査読前のバッジ |
 | FeedbackForm | `articleId: string`, `findingId: string` | フィードバックの入力・送信・結果表示 |
+| DiagramView | `diagram: Diagram \| null` | 図解の表示。`null`は何もレンダリングしない(news-digestと共通の実装) |
 
 ## 状態管理
 
