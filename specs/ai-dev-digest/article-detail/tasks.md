@@ -111,3 +111,9 @@
   - 🟢 `app/ai-dev-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`TopicSection.tsx`から各観点の`diagram`を渡して配置する
 
 </details>
+
+## パンくず
+
+- Task 22: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🔴 共通`Breadcrumb`コンポーネント(article-list/tasks.mdのTask 7で新設)に`current`(記事タイトル)を渡した場合、アプリ名「AI駆動開発ダイジェスト」が`/ai-dev-digest`へのリンクになり、currentがリンクなしの現在地として表示されることを確認するテストを書く(`__tests__/ai-dev-digest/components/Breadcrumb.test.tsx`)
+  - 🟢 `app/ai-dev-digest/components/ArticleDetailView.tsx`の既存パンくずを共通`Breadcrumb`コンポーネントの呼び出しに置き換える

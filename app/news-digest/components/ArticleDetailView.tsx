@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import Link from 'next/link'
 import { List } from 'lucide-react'
 import type { Article } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
@@ -10,6 +9,7 @@ import { getSession, onAuthChange, signInWithGoogle, signOut, isAuthorizedAdmin 
 import { fetchBookmarksByArticleDate, type BookmarkSummary } from '../lib/bookmarks'
 import TopicSection from './TopicSection'
 import LoginStatus from './LoginStatus'
+import Breadcrumb from './Breadcrumb'
 
 type Props = {
   article: Article
@@ -102,17 +102,7 @@ export default function ArticleDetailView({ article }: Props) {
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8 sm:py-10 md:grid md:grid-cols-[1fr_220px] md:items-start md:gap-8">
         <article className="mx-auto max-w-2xl space-y-5 md:mx-0">
-          <nav className="text-[11px] text-gray-400">
-            <Link href="/" className="hover:underline">
-              べんりやつーる
-            </Link>
-            <span className="mx-1">›</span>
-            <Link href="/news-digest" className="hover:underline">
-              重要ニュースダイジェスト
-            </Link>
-            <span className="mx-1">›</span>
-            <span>{title}</span>
-          </nav>
+          <Breadcrumb current={title} />
 
           <header>
             <h1 className="text-xl font-bold leading-relaxed tracking-tight sm:text-2xl">{title}</h1>
