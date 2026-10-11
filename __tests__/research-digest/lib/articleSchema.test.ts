@@ -166,8 +166,7 @@ function sectionsFinding(genre: string, overrides: Record<string, unknown> = {})
   return { ...f, sections: overrides.sections ?? validSections() }
 }
 
-// 仕様: specs/research-digest/article-detail/design.md「バリデーション」(新形式(sectionsを持つ)の場合)、
-// specs/research-digest/content-generation/requirements.md#要約-3
+// 仕様: specs/research-digest/article-detail/design.md「バリデーション」(新形式(sectionsを持つ)の場合)、specs/research-digest/content-generation/requirements.md#要約-3
 describe('固定4観点・図解への移行に伴う新旧データ形式の検証 - bodyを持つ旧形式・sectionsを持つ新形式のどちらか一方のみを受け付ける', () => {
   it('sections形式(新形式)の研究を受け付け、sectionsが保持されること', () => {
     const result = parse(article({ findings: [sectionsFinding('medical-health')] }))
