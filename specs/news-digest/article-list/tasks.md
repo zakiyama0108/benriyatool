@@ -29,3 +29,9 @@
 - Task 6: トップページへのツールカード追加(仕様: [specs/hub-site/requirements.md](../../hub-site/requirements.md))
   - `app/page.tsx`に「重要ニュースダイジェスト」のツールカードを追加する(URL: `/news-digest`、概要はREADME.mdのアプリ一覧と同じ文言)
   - TDD対象外(既存ページへの静的な追記のため)
+
+## パンくず
+
+- Task 7: ブログハブ(`/blog`)への経路をパンくずに追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🔴 共通`Breadcrumb`コンポーネント(`app/news-digest/components/Breadcrumb.tsx`)で、`current`未指定時はアプリ名「重要ニュースダイジェスト」自体が現在地としてリンクなしで表示され、`べんりやつーる(/)`・`週刊ダイジェスト一覧(/blog)`へのリンクを持つことを確認するテストを書く(`__tests__/news-digest/components/Breadcrumb.test.tsx`)
+  - 🟢 `Breadcrumb`コンポーネントを実装し、`app/news-digest/page.tsx`・`app/news-digest/page/[page]/page.tsx`に組み込む
