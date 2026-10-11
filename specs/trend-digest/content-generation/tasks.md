@@ -6,7 +6,7 @@
   - 🔴 本文の文字数が160字未満・480字超で`false`、160〜480字(境界値含む)で`true`になること、`heading`/`body`が`null`または空文字で不正になることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/bodyValidation.ts`に`BODY_MIN_LENGTH`/`BODY_MAX_LENGTH`/`isValidTopicBodyLength`を実装する
 
-- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-6、design.md「記事タイトルを導出する処理」)
+- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-9、design.md「記事タイトルを導出する処理」)
   - 🔴 `entertainment`・`2026-09-15`から`週刊トレンド エンタメ編 2026年9月15日号`、`culture-lifestyle`・`2026-09-18`から`週刊トレンド カルチャー編 2026年9月18日号`が生成されることを確認するテストを書く(1桁月日でゼロ埋めしないこと等)
   - 🟢 `app/trend-digest/lib/articleTitle.ts`に`buildArticleTitle(edition: Edition, date: string): string`を実装する
 

@@ -145,7 +145,7 @@ export type Article = {
 }
 ```
 
-記事タイトルはJSONに保存せず、`edition`・`date`から常に`buildArticleTitle(edition, date)`(content-generation/design.md参照)で導出する(タイトルをエージェントに毎回生成させると表現が揺れたり誇張表現に流れたりするリスクがあるため。content-generation/requirements.md#記事の構成-6・#エージェントの逸脱防止-5と対になる設計判断)。
+記事タイトルはJSONに保存せず、`edition`・`date`から常に`buildArticleTitle(edition, date)`(content-generation/design.md参照)で導出する(タイトルをエージェントに毎回生成させると表現が揺れたり誇張表現に流れたりするリスクがあるため。content-generation/requirements.md#記事の構成-9・#エージェントの逸脱防止-5と対になる設計判断)。
 
 ## 処理フロー
 

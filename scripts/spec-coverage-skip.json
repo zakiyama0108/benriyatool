@@ -4747,7 +4747,7 @@
   {
     "specFile": "trend-digest/article-detail/design.md",
     "item": "コンポーネント設計 > DiagramView",
-    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDiagramView.test.tsx(requirements.md#記事本文表示-20)でテスト済みのため"
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDiagramView.test.tsx(requirements.md#継続度・注目度の表示-20)でテスト済みのため"
   },
   {
     "specFile": "trend-digest/article-detail/design.md",
