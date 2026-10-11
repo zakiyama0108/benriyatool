@@ -294,3 +294,128 @@ describe('記事スキーマへの詳細文(detail)合計分量検証の組み�
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
   })
 })
+
+// 🧭開発領域観点(domain)を含む新形式のsummary fixture(2026-09追加)
+function validSummaryWithDomain(overrides: Record<string, unknown> = {}) {
+  const perspective = (prefix: string) => ({
+    heading: `${prefix}見出し`,
+    teaser: prefix.repeat(60),
+    detail: prefix.repeat(250),
+  })
+  return {
+    domain: { ...perspective('あ'), domains: ['backend'] },
+    benefit: perspective('い'),
+    how: perspective('う'),
+    howToUse: perspective('え'),
+    ...overrides,
+  }
+}
+
+// 仕様: specs/ai-dev-digest/article-detail/design.md#前提: 記事データの形式(この機能が定義する共有スキーマ)、specs/ai-dev-digest/article-detail/design.md#バリデーション
+describe('記事スキーマへのdomain/whatsNew出し分け - summaryがdomain(新形式)またはwhatsNew(旧形式)のどちらか一方の4キー構成を要求する', () => {
+  it('domain/benefit/how/howToUseの4キー構成(新形式)の正常なトピックは検証を通ること', () => {
+    const article = parseArticle(validArticle({ topics: [validCurrentTopic({ summary: validSummaryWithDomain() })] }), '2026-08-01.json')
+    expect(article.topics[0]).toMatchObject({ summary: { domain: { domains: ['backend'] } } })
+  })
+
+  it('domain・whatsNewの両方を持つsummaryは検証エラーになること', () => {
+    const summary = { ...validSummaryWithDomain(), whatsNew: validSummary().whatsNew }
+    const topics = [validCurrentTopic({ summary })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('domain・whatsNewのどちらも持たないsummaryは検証エラーになること', () => {
+    const summary = validSummaryWithDomain()
+    delete (summary as Record<string, unknown>).domain
+    const topics = [validCurrentTopic({ summary })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('domain.domainsが空配列のとき、検証エラーになること', () => {
+    const summary = validSummaryWithDomain({
+      domain: { heading: 'あ見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: [] },
+    })
+    const topics = [validCurrentTopic({ summary })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('domain.domainsに未定義の開発領域が含まれるとき、検証エラーになること', () => {
+    const summary = validSummaryWithDomain({
+      domain: { heading: 'あ見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: ['unknown-domain'] },
+    })
+    const topics = [validCurrentTopic({ summary })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('domain形式(新形式)・whatsNew形式(旧形式)のtopicが同じ記事内に混在しても検証エラーにならないこと', () => {
+    const topics = [
+      validCurrentTopic({ id: 'topic-1', summary: validSummary() }),
+      validCurrentTopic({ id: 'topic-2', summary: validSummaryWithDomain() }),
+    ]
+    const article = parseArticle(validArticle({ topics }), '2026-08-01.json')
+    expect(article.topics).toHaveLength(2)
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-14、specs/ai-dev-digest/article-detail/design.md#バリデーション
+describe('記事スキーマへの図解(diagram)検証の組み込み - 省略/null/mermaid/imageのいずれかの形式のみ受理する', () => {
+  it('diagramキー自体が省略されている(この機能追加前の既存記事データ相当)とき、検証を通ること', () => {
+    const article = parseArticle(validArticle({ topics: [validCurrentTopic({ summary: validSummary() })] }), '2026-08-01.json')
+    expect(article.topics[0]).toMatchObject({ summary: { benefit: { heading: 'あ見出し' } } })
+  })
+
+  it('diagramがnullのとき、検証を通ること', () => {
+    const summary = validSummaryWithDomain({
+      benefit: { heading: 'い見出し', teaser: 'い'.repeat(60), detail: 'い'.repeat(250), diagram: null },
+    })
+    const article = parseArticle(validArticle({ topics: [validCurrentTopic({ summary })] }), '2026-08-01.json')
+    expect(article.topics[0]).toMatchObject({ summary: { benefit: { diagram: null } } })
+  })
+
+  it('diagramが{type:"mermaid", code: 非空文字}のとき、検証を通ること', () => {
+    const summary = validSummaryWithDomain({
+      how: { heading: 'う見出し', teaser: 'う'.repeat(60), detail: 'う'.repeat(250), diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } },
+    })
+    const article = parseArticle(validArticle({ topics: [validCurrentTopic({ summary })] }), '2026-08-01.json')
+    expect(article.topics[0]).toMatchObject({ summary: { how: { diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } } } })
+  })
+
+  it('diagramが{type:"image", path}でpathがcontent/ai-dev-digest/articles/images/配下のとき、検証を通ること', () => {
+    const summary = validSummaryWithDomain({
+      how: {
+        heading: 'う見出し',
+        teaser: 'う'.repeat(60),
+        detail: 'う'.repeat(250),
+        diagram: { type: 'image', path: 'content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' },
+      },
+    })
+    const article = parseArticle(validArticle({ topics: [validCurrentTopic({ summary })] }), '2026-08-01.json')
+    expect(article.topics[0]).toMatchObject({
+      summary: { how: { diagram: { type: 'image', path: 'content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' } } },
+    })
+  })
+
+  it('diagramが{type:"image", path}でpathがcontent/ai-dev-digest/articles/images/配下を指さないとき、検証エラーになること', () => {
+    const summary = validSummaryWithDomain({
+      how: { heading: 'う見出し', teaser: 'う'.repeat(60), detail: 'う'.repeat(250), diagram: { type: 'image', path: '/etc/passwd' } },
+    })
+    const topics = [validCurrentTopic({ summary })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('diagramが{type:"mermaid", code: 空文字}のとき、検証エラーになること', () => {
+    const summary = validSummaryWithDomain({
+      how: { heading: 'う見出し', teaser: 'う'.repeat(60), detail: 'う'.repeat(250), diagram: { type: 'mermaid', code: '' } },
+    })
+    const topics = [validCurrentTopic({ summary })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+
+  it('diagramのtypeが未定義の値のとき、検証エラーになること', () => {
+    const summary = validSummaryWithDomain({
+      how: { heading: 'う見出し', teaser: 'う'.repeat(60), detail: 'う'.repeat(250), diagram: { type: 'chart' } },
+    })
+    const topics = [validCurrentTopic({ summary })]
+    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+  })
+})

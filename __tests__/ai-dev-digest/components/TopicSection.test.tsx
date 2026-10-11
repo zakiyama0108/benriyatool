@@ -59,6 +59,27 @@ function makeCurrentTopic(overrides: CurrentOverrides = {}): Topic {
   }
 }
 
+// CurrentTopic(2026-09以降生成、🧭開発領域観点を含む新形式summary+importance形式)のfixture
+function makeCurrentTopicWithDomain(overrides: CurrentOverrides = {}): Topic {
+  return {
+    id: 'topic-1',
+    heading: 'Anthropicが新モデルを発表',
+    summary: {
+      domain: { heading: '何が発表されたか', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: ['backend', 'infra'] },
+      benefit: { heading: '嬉しいこと', teaser: 'い'.repeat(60), detail: 'い'.repeat(250) },
+      how: { heading: '仕組み', teaser: 'う'.repeat(60), detail: 'う'.repeat(250) },
+      howToUse: { heading: '開発者への影響', teaser: 'え'.repeat(60), detail: 'え'.repeat(250) },
+    },
+    importance: 4,
+    sourceType: 'official',
+    sourceName: 'Anthropic',
+    sourceUrl: 'https://www.anthropic.com/news/example',
+    sourcePublishedAt: '2026-07-31T10:00:00Z',
+    belowCriteria: false,
+    ...overrides,
+  }
+}
+
 function makeSession(email: string): Session {
   return { user: { email } } as Session
 }
@@ -132,6 +153,108 @@ describe('トピック表示(新形式CurrentTopic) - 固定4観点をbenefit→
   it('LegacyTopic(sections形式)の場合、ImportanceStarsは表示されないこと', () => {
     render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" {...noop} />)
     expect(screen.queryByLabelText(/重要度/)).toBeNull()
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3、specs/ai-dev-digest/article-detail/design.md#その日の記事本文を表示する処理
+describe('トピック表示(新形式CurrentTopic、🧭開発領域観点) - 固定4観点をdomain→benefit→how→howToUseの順に常時表示し、固定ラベル・開発領域タグを表示する', () => {
+  it('4観点の見出し・導入文がこの順序で常時表示されること', () => {
+    const { container } = render(<TopicSection topic={makeCurrentTopicWithDomain()} session={null} articleDate="2026-08-01" {...noop} />)
+    const headings = Array.from(container.querySelectorAll('h3')).map((h) => h.textContent)
+    expect(headings).toEqual(['何が発表されたか', '嬉しいこと', '仕組み', '開発者への影響'])
+  })
+
+  it('固定ラベル(🧭開発領域/🚀メリット/🛠仕組み/🎯活用法)が、この順序で結論文の前に表示されること', () => {
+    const { container } = render(<TopicSection topic={makeCurrentTopicWithDomain()} session={null} articleDate="2026-08-01" {...noop} />)
+    const kickers = Array.from(container.querySelectorAll('[data-testid="perspective-kicker"]')).map((el) => el.textContent)
+    expect(kickers).toEqual(['🧭開発領域', '🚀メリット', '🛠仕組み', '🎯活用法'])
+  })
+
+  it('🧭開発領域観点にのみ、domainsの開発領域タグ(日本語ラベル)が固定ラベルの下に表示されること', () => {
+    render(<TopicSection topic={makeCurrentTopicWithDomain()} session={null} articleDate="2026-08-01" {...noop} />)
+    expect(screen.getByText('バックエンド')).toBeTruthy()
+    expect(screen.getByText('インフラ')).toBeTruthy()
+  })
+
+  it('🚀メリット・🛠仕組み・🎯活用法観点には、開発領域タグが表示されない(domain観点にのみ1件表示される)こと', () => {
+    const { container } = render(
+      <TopicSection
+        topic={makeCurrentTopicWithDomain({
+          summary: {
+            domain: { heading: 'd', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: ['frontend'] },
+            benefit: { heading: 'b', teaser: 'い'.repeat(60), detail: 'い'.repeat(250) },
+            how: { heading: 'h', teaser: 'う'.repeat(60), detail: 'う'.repeat(250) },
+            howToUse: { heading: 'u', teaser: 'え'.repeat(60), detail: 'え'.repeat(250) },
+          },
+        })}
+        session={null}
+        articleDate="2026-08-01"
+        {...noop}
+      />
+    )
+    // 開発領域タグ(フロントエンド)がちょうど1件(domain観点の分)だけ表示されること
+    expect(screen.getAllByText('フロントエンド')).toHaveLength(1)
+    // そのタグが見出し(h3)より前(DOM順で先)、つまりdomain観点の固定ラベル直下に配置されていること
+    const tag = screen.getByText('フロントエンド')
+    const firstHeading = container.querySelector('h3')
+    expect(tag.compareDocumentPosition(firstHeading!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3、specs/ai-dev-digest/article-detail/design.md#その日の記事本文を表示する処理
+describe('トピック表示(新形式CurrentTopic、💡新規性を含む旧形式) - 固定4観点をbenefit→whatsNew→how→howToUseの順に常時表示し、固定ラベルを表示する(開発領域タグは表示しない)', () => {
+  it('固定ラベル(🚀メリット/💡新規性/🛠仕組み/🎯活用法)が、この順序で結論文の前に表示されること', () => {
+    const { container } = render(<TopicSection topic={makeCurrentTopic()} session={null} articleDate="2026-08-01" {...noop} />)
+    const kickers = Array.from(container.querySelectorAll('[data-testid="perspective-kicker"]')).map((el) => el.textContent)
+    expect(kickers).toEqual(['🚀メリット', '💡新規性', '🛠仕組み', '🎯活用法'])
+  })
+
+  it('開発領域タグ(DOMAIN_LABELSの日本語ラベル)は表示されないこと', () => {
+    render(<TopicSection topic={makeCurrentTopic()} session={null} articleDate="2026-08-01" {...noop} />)
+    expect(screen.queryByText('フロントエンド')).toBeNull()
+    expect(screen.queryByText('バックエンド')).toBeNull()
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-3
+describe('トピック表示(LegacyTopic、sections形式) - 固定ラベル・開発領域タグのいずれも表示されない', () => {
+  it('固定ラベル([data-testid="perspective-kicker"])が表示されないこと', () => {
+    const { container } = render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" {...noop} />)
+    expect(container.querySelector('[data-testid="perspective-kicker"]')).toBeNull()
+  })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-14、specs/ai-dev-digest/article-detail/design.md#その日の記事本文を表示する処理
+describe('トピック表示 - CurrentTopicの観点ごとの図解(diagram)をDiagramView経由で表示する', () => {
+  it('diagramが{type: "image", path}の観点を含むとき、<img>がそのpathで表示されること', () => {
+    const topic = makeCurrentTopicWithDomain({
+      summary: {
+        domain: { heading: 'd', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: ['backend'] },
+        benefit: { heading: 'b', teaser: 'い'.repeat(60), detail: 'い'.repeat(250) },
+        how: {
+          heading: 'h',
+          teaser: 'う'.repeat(60),
+          detail: 'う'.repeat(250),
+          diagram: { type: 'image', path: 'content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' },
+        },
+        howToUse: { heading: 'u', teaser: 'え'.repeat(60), detail: 'え'.repeat(250) },
+      },
+    })
+    render(<TopicSection topic={topic} session={null} articleDate="2026-08-01" {...noop} />)
+    const img = screen.getByRole('img')
+    expect(img.getAttribute('src')).toBe('content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png')
+  })
+
+  it('いずれの観点もdiagramがない(未指定)とき、画像・Mermaidコンテナのいずれも表示されないこと', () => {
+    const { container } = render(<TopicSection topic={makeCurrentTopicWithDomain()} session={null} articleDate="2026-08-01" {...noop} />)
+    expect(screen.queryByRole('img', { name: '図解' })).toBeNull()
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).toBeNull()
+  })
+
+  it('LegacyTopic(sections形式)にはそもそも図解が表示されないこと', () => {
+    const { container } = render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" {...noop} />)
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).toBeNull()
+    expect(screen.queryByRole('img', { name: '図解' })).toBeNull()
   })
 })
 

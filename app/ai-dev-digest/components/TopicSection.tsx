@@ -1,14 +1,25 @@
 import type { Session } from '@supabase/supabase-js'
-import { isLegacyTopic, type SummaryPerspective, type Topic } from '../lib/types'
+import {
+  isLegacyTopic,
+  hasDomainPerspective,
+  DOMAIN_LABELS,
+  PERSPECTIVE_LABELS,
+  type DomainPerspective,
+  type SummaryPerspective,
+  type Topic,
+} from '../lib/types'
 import { formatSourcePublishedAt } from '../lib/formatSourcePublishedAt'
 import SourceBadge from './SourceBadge'
 import YoutubeEmbed from './YoutubeEmbed'
 import FeedbackForm from './FeedbackForm'
 import ImportanceStars from './ImportanceStars'
 import BookmarkPanel, { type BookmarkSummary } from './BookmarkPanel'
+import DiagramView from './DiagramView'
 
-// 固定4観点(summary)の描画順。この順序で固定(content-generation/requirements.md#要約-5・12)
-const SUMMARY_ORDER = ['benefit', 'whatsNew', 'how', 'howToUse'] as const
+// 固定4観点(summary)の描画順。この順序で固定(content-generation/requirements.md#要約-5・12)。
+// 🧭開発領域観点を含む新形式(domain)/💡新規性を含む旧形式(whatsNew)のどちらかで分岐する(2026-09追加)
+const DOMAIN_SUMMARY_ORDER = ['domain', 'benefit', 'how', 'howToUse'] as const
+const WHATS_NEW_SUMMARY_ORDER = ['benefit', 'whatsNew', 'how', 'howToUse'] as const
 
 type Props = {
   topic: Topic
@@ -20,13 +31,15 @@ type Props = {
 
 // 1トピック分の表示(見出し・要約・出典・種別バッジ・YouTube埋め込み・
 // 基準未達表示)と、配下に付箋操作・フィードバック入力欄を条件付きで表示する
-// (仕様: requirements.md#記事本文表示-1〜4、design.md「その日の記事本文を表示する処理」
+// (仕様: requirements.md#記事本文表示-1〜4・14、design.md「その日の記事本文を表示する処理」
 // 「ログイン状態に応じてフィードバック入力欄の表示を切り替える処理」、bookmark/design.md
 // 「コンポーネント設計」)。要約データは移行期のためisLegacyTopicで新旧フォーマットを出し分ける:
-// 旧フォーマット(sections)はDB格納順そのまま、新フォーマット(summary)は固定4観点を
-// SUMMARY_ORDERの順で描画する(content-generation/requirements.md#要約-5・12)。
-// いずれも配列順にセクション見出し(h3)+導入文(teaser、常時表示)+
-// <details><summary>詳細を見る</summary>詳細文(detail)</details>(展開表示)で構成する。
+// 旧フォーマット(sections)はDB格納順そのまま(固定ラベル・開発領域タグは表示しない)、
+// 新フォーマット(summary)は固定4観点をhasDomainPerspectiveでさらに出し分け、固定ラベル
+// (PERSPECTIVE_LABELS)→見出し→導入文(teaser)の順で常時表示する(content-generation/requirements.md
+// #要約-5・12、requirements.md#記事本文表示-3)。🧭開発領域観点のみ固定ラベルの下に開発領域タグ
+// (DOMAIN_LABELS)を表示する。いずれも導入文の下に<details><summary>詳細を見る</summary>詳細文(detail)
+// +(新フォーマットのみ)図解(DiagramView)</details>(展開表示)で構成する。
 // 新フォーマットのトピックのみ見出し横に重要度(ImportanceStars)を表示する(旧データには
 // importanceが存在しないため)
 // **DBの読み取り(SELECT)は一切行わない**。isAuthorizedAdmin(admin_emailsのSELECT)の呼び出しは
@@ -51,19 +64,48 @@ export default function TopicSection({ topic, session, isAdmin, articleDate, boo
       </div>
 
       <div className="mt-2 space-y-3">
-        {(isLegacyTopic(topic)
-          ? topic.sections
-          : SUMMARY_ORDER.map((key): SummaryPerspective => topic.summary[key])
-        ).map((section, index) => (
-          <div key={index}>
-            <h3 className="text-sm font-semibold text-gray-800">{section.heading}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-gray-700">{section.teaser}</p>
-            <details className="mt-1">
-              <summary className="cursor-pointer text-xs font-semibold text-teal-600">詳細を見る</summary>
-              <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{section.detail}</p>
-            </details>
-          </div>
-        ))}
+        {isLegacyTopic(topic)
+          ? topic.sections.map((section, index) => (
+              <div key={index}>
+                <h3 className="text-sm font-semibold text-gray-800">{section.heading}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-gray-700">{section.teaser}</p>
+                <details className="mt-1">
+                  <summary className="cursor-pointer text-xs font-semibold text-teal-600">詳細を見る</summary>
+                  <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{section.detail}</p>
+                </details>
+              </div>
+            ))
+          : (hasDomainPerspective(topic.summary) ? DOMAIN_SUMMARY_ORDER : WHATS_NEW_SUMMARY_ORDER).map((key) => {
+              const perspective: SummaryPerspective | DomainPerspective = (
+                topic.summary as Record<string, SummaryPerspective | DomainPerspective>
+              )[key]
+              return (
+                <div key={key}>
+                  <p data-testid="perspective-kicker" className="text-[11px] font-semibold text-teal-500">
+                    {PERSPECTIVE_LABELS[key]}
+                  </p>
+                  {key === 'domain' && (
+                    <div className="mt-0.5 flex flex-wrap gap-1">
+                      {(perspective as DomainPerspective).domains.map((domain) => (
+                        <span
+                          key={domain}
+                          className="inline-block rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-700"
+                        >
+                          {DOMAIN_LABELS[domain]}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <h3 className="mt-1 text-sm font-semibold text-gray-800">{perspective.heading}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-gray-700">{perspective.teaser}</p>
+                  <details className="mt-1">
+                    <summary className="cursor-pointer text-xs font-semibold text-teal-600">詳細を見る</summary>
+                    <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{perspective.detail}</p>
+                    <DiagramView diagram={perspective.diagram} />
+                  </details>
+                </div>
+              )
+            })}
       </div>
 
       {topic.belowCriteria && topic.belowCriteriaReason && (

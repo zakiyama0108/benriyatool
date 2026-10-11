@@ -1,4 +1,17 @@
-import type { Article, CurrentTopic, LegacyTopic, SourceType, SummarySection, Topic, TopicSummary } from './types'
+import type {
+  Article,
+  CurrentTopic,
+  Diagram,
+  Domain,
+  DomainPerspective,
+  LegacyTopic,
+  SourceType,
+  SummaryPerspective,
+  SummarySection,
+  Topic,
+  TopicSummary,
+} from './types'
+import { DOMAIN_LABELS } from './types'
 import { isValidTeaserLength, isValidDetailLength, isValidSummaryDetailLength, isValidImportance } from './summaryValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
@@ -8,6 +21,10 @@ import { isValidTeaserLength, isValidDetailLength, isValidSummaryDetailLength, i
 const SOURCE_TYPES: SourceType[] = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn']
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const MAX_TOPICS = 5
+
+// 図解の生成画像が保存されるディレクトリ(content-generation/design.md「要約を書く処理」手順13、
+// scripts/ai-dev-digest/generateDiagram.ts)。diagram.pathはこの配下を指す相対パスである必要がある
+const DIAGRAM_IMAGES_DIR = 'content/ai-dev-digest/articles/images/'
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -68,8 +85,38 @@ function parseSections(raw: unknown, index: number): SummarySection[] {
   return sections
 }
 
+// topics[index].summary.<key>.diagram(観点ごとの図解)を検証・パースする(仕様: design.md
+// 「バリデーション」、content-generation/requirements.md#図解-17。2026-09追加)。この機能の追加前に
+// 公開済みの記事データにはキー自体が存在しないため、undefinedはそのまま通す(後方互換。
+// app/ai-dev-digest/lib/types.tsのSummaryPerspective.diagramが省略可能なことに合わせる)。
+// 存在する場合はnull、または{type:'mermaid', code: 空文字でない}、または
+// {type:'image', path: DIAGRAM_IMAGES_DIR配下}のいずれかであることを確認する
+function parseDiagram(raw: unknown, index: number, key: string): Diagram | null | undefined {
+  if (raw === undefined) return undefined
+  if (raw === null) return null
+  if (typeof raw !== 'object') {
+    throw new Error(`topics[${index}].summary.${key}.diagramがオブジェクトでもnullでもありません`)
+  }
+  const record = raw as Record<string, unknown>
+  if (record.type === 'mermaid') {
+    if (!isNonEmptyString(record.code)) {
+      throw new Error(`topics[${index}].summary.${key}.diagram.codeが空文字です`)
+    }
+    return { type: 'mermaid', code: record.code }
+  }
+  if (record.type === 'image') {
+    if (!isNonEmptyString(record.path) || !record.path.startsWith(DIAGRAM_IMAGES_DIR)) {
+      throw new Error(
+        `topics[${index}].summary.${key}.diagram.pathが${DIAGRAM_IMAGES_DIR}配下のパスではありません: ${String(record.path)}`
+      )
+    }
+    return { type: 'image', path: record.path }
+  }
+  throw new Error(`topics[${index}].summary.${key}.diagram.typeが不正です(mermaid/imageのみ許可): ${String(record.type)}`)
+}
+
 // topics[index].summary(固定4観点)1つ分を検証・パースする(仕様: article-detail/design.md「バリデーション」)
-function parsePerspective(raw: unknown, index: number, key: string) {
+function parsePerspective(raw: unknown, index: number, key: string): SummaryPerspective {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error(`topics[${index}].summary.${key}がオブジェクトではありません`)
   }
@@ -77,25 +124,69 @@ function parsePerspective(raw: unknown, index: number, key: string) {
   if (!isNonEmptyString(record.heading)) throw new Error(`topics[${index}].summary.${key}.headingが空文字です`)
   if (!isNonEmptyString(record.teaser)) throw new Error(`topics[${index}].summary.${key}.teaserが空文字です`)
   if (!isNonEmptyString(record.detail)) throw new Error(`topics[${index}].summary.${key}.detailが空文字です`)
-  return { heading: record.heading, teaser: record.teaser, detail: record.detail }
+  const diagram = parseDiagram(record.diagram, index, key)
+  return {
+    heading: record.heading,
+    teaser: record.teaser,
+    detail: record.detail,
+    ...(diagram !== undefined ? { diagram } : {}),
+  }
 }
 
-// topics[index].summary(固定4観点)を検証・パースする。4キーの存在・各観点のteaser範囲・
-// 4観点のdetail合計範囲はisValidSummaryDetailLengthが判定する(仕様: article-detail/design.md「バリデーション」)
+// topics[index].summary.domain(🧭開発領域観点)1つ分を検証・パースする(仕様: article-detail/design.md
+// 「バリデーション」、content-generation/requirements.md#開発領域-15〜16。2026-09追加)。
+// domainsが1件以上の配列で、各要素が定義済みの開発領域(DOMAIN_LABELSのキー)のいずれかであることを確認する
+function parseDomainPerspective(raw: unknown, index: number): DomainPerspective {
+  const perspective = parsePerspective(raw, index, 'domain')
+  const record = raw as Record<string, unknown>
+  if (!Array.isArray(record.domains) || record.domains.length === 0) {
+    throw new Error(`topics[${index}].summary.domain.domainsが1件以上の配列ではありません`)
+  }
+  const domains = record.domains.map((domain): Domain => {
+    if (typeof domain !== 'string' || !(domain in DOMAIN_LABELS)) {
+      throw new Error(`topics[${index}].summary.domain.domainsに未定義の開発領域が含まれています: ${String(domain)}`)
+    }
+    return domain as Domain
+  })
+  return { ...perspective, domains }
+}
+
+// topics[index].summary(固定4観点)を検証・パースする。(a)domain/benefit/how/howToUse(新形式)、
+// (b)benefit/whatsNew/how/howToUse(旧形式)のいずれか一方の4キー構成であることを確認する
+// (両方・どちらも満たさない組み合わせは不正。hasDomainPerspectiveの判定と対になる制約。2026-09追加)。
+// 4キーの存在・各観点のteaser範囲・4観点のdetail合計範囲・domainsの妥当性はisValidSummaryDetailLengthが
+// 判定する(仕様: article-detail/design.md「バリデーション」)
 function parseSummary(raw: unknown, index: number): TopicSummary {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error(`topics[${index}].summaryがオブジェクトではありません`)
   }
   const record = raw as Record<string, unknown>
-  const summary: TopicSummary = {
-    benefit: parsePerspective(record.benefit, index, 'benefit'),
-    whatsNew: parsePerspective(record.whatsNew, index, 'whatsNew'),
-    how: parsePerspective(record.how, index, 'how'),
-    howToUse: parsePerspective(record.howToUse, index, 'howToUse'),
+
+  const hasDomain = record.domain !== undefined
+  const hasWhatsNew = record.whatsNew !== undefined
+  if (hasDomain === hasWhatsNew) {
+    throw new Error(
+      `topics[${index}].summaryはdomain(新形式)またはwhatsNew(旧形式)のどちらか一方のみを持つ必要があります`
+    )
   }
+
+  const summary: TopicSummary = hasDomain
+    ? {
+        domain: parseDomainPerspective(record.domain, index),
+        benefit: parsePerspective(record.benefit, index, 'benefit'),
+        how: parsePerspective(record.how, index, 'how'),
+        howToUse: parsePerspective(record.howToUse, index, 'howToUse'),
+      }
+    : {
+        benefit: parsePerspective(record.benefit, index, 'benefit'),
+        whatsNew: parsePerspective(record.whatsNew, index, 'whatsNew'),
+        how: parsePerspective(record.how, index, 'how'),
+        howToUse: parsePerspective(record.howToUse, index, 'howToUse'),
+      }
+
   if (!isValidSummaryDetailLength(summary)) {
     throw new Error(
-      `topics[${index}].summaryが不正です(各観点のteaserが40〜140字・4観点のdetail合計が800〜1700字である必要があります)`
+      `topics[${index}].summaryが不正です(各観点のteaserが40〜140字・4観点のdetail合計が800〜1700字・domainがある場合はdomainsが1件以上の定義済み値である必要があります)`
     )
   }
   return summary
