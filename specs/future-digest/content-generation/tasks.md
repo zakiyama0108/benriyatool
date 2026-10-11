@@ -7,11 +7,11 @@
   - 🔴 本文が160字未満・480字超で`false`、160字・480字ちょうどで`true`になること、見出し・本文が`null`・空で不正になること、見出しが100字超で不正になることを確認するテストを書く
   - 🟢 `app/future-digest/lib/bodyValidation.ts`に`BODY_MIN_LENGTH`/`BODY_MAX_LENGTH`/`isValidBodyLength`/`isValidHeading`を実装する
 
-- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-7、design.md「記事タイトルを導出する処理」)
+- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-8、design.md「記事タイトルを導出する処理」)
   - 🔴 `2026-10-01`から「週刊未来予測 2026年10月1日号」、`2026-12-24`から「週刊未来予測 2026年12月24日号」が作られること(月・日をゼロ埋めしない)を確認するテストを書く
   - 🟢 `app/future-digest/lib/articleTitle.ts`に`buildArticleTitle(date)`を実装する
 
-- Task 3: 予測1本分の組み立て(仕様: requirements.md#記事の構成-6、design.md「記事データの1本分を組み立てる処理」)
+- Task 3: 予測1本分の組み立て(仕様: requirements.md#記事の構成-7、design.md「記事データの1本分を組み立てる処理」)
   - 🔴 選定時の値(ジャンル・時間軸・影響度・根拠・対象時期・出典)がそのまま引き継がれ、見出し・本文だけが生成結果から入ること、予測IDが`<genre>--<horizon>`になることを確認するテストを書く
   - 🟢 `app/future-digest/lib/buildPrediction.ts`に`buildPrediction(candidate, generated)`を実装する
 
@@ -37,7 +37,7 @@
 
 <details><summary>詳細を開く</summary>
 
-- Task 8: 記事タイトルの導出を編対応にする(仕様: requirements.md#記事の構成-7、design.md「記事タイトルを導出する処理」)
+- Task 8: 記事タイトルの導出を編対応にする(仕様: requirements.md#記事の構成-8、design.md「記事タイトルを導出する処理」)
   - 🔴 Task 2の`buildArticleTitle`のテストを、第2引数`edition`を渡す形に書き直し、`science-tech`なら「週刊未来予測 サイエンス・テクノロジー編 2026年10月1日号」、`life-society`なら「週刊未来予測 くらし・社会編 2026年10月4日号」になることを確認するケースに差し替える
   - 🟢 `app/future-digest/lib/articleTitle.ts`の`buildArticleTitle(date, edition)`を実装する(呼び出し元のgenerate-content.ts・write-article.tsも合わせて更新する)
 
