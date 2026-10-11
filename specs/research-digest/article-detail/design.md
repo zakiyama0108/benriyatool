@@ -80,7 +80,7 @@ type FindingBase = {
 }
 
 // この機能(固定4観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
-// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#記事本文の表示-14、trend-digest/future-digestと同じ設計判断)
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#運営者向けフィードバック-14、trend-digest/future-digestと同じ設計判断)
 export type LegacyFinding = FindingBase & {
   body: string // 160〜480字、目安200〜400字
 }
@@ -148,11 +148,11 @@ export type Article = {
   1. 記事タイトル・公開日を見出しとして表示する(requirements.md#記事本文の表示-1)
   2. ページを開いた時点では影響度順で表示する(requirements.md#並び順の切り替え-10)
   3. 研究があるジャンルは、ジャンル・影響度のバッジ(査読前の論文は「査読前」のバッジも)、見出し、要約、影響度の根拠、出典(論文名または発表元・掲載誌名/発表元・年・元URLへのリンク。新規タブで開く)を表示する(requirements.md#記事本文の表示-2)
-  3-1. 要約の表示は`isLegacyFinding(finding)`で分岐する。`true`(旧形式)の場合は`body`をそのまま1つの段落として表示する。`false`(新形式)の場合は`sections`を`finding`→`basis`→`relevance`→`caveat`の順(この順序で固定)に、`SECTION_LABELS`の固定ラベル→`heading`(結論文)→`text`(本文)の順で常時表示する(requirements.md#記事本文の表示-14)
-  3-2. 新形式の各観点で`diagram`が`null`でない場合、`text`の下に`DiagramView`を表示する(requirements.md#記事本文の表示-15)
+  3-1. 要約の表示は`isLegacyFinding(finding)`で分岐する。`true`(旧形式)の場合は`body`をそのまま1つの段落として表示する。`false`(新形式)の場合は`sections`を`finding`→`basis`→`relevance`→`caveat`の順(この順序で固定)に、`SECTION_LABELS`の固定ラベル→`heading`(結論文)→`text`(本文)の順で常時表示する(requirements.md#運営者向けフィードバック-14)
+  3-2. 新形式の各観点で`diagram`が`null`でない場合、`text`の下に`DiagramView`を表示する(requirements.md#運営者向けフィードバック-15)
   4. 候補が見つからなかったジャンルは、ジャンルのバッジと「候補が見つかりませんでした」を表示する(requirements.md#記事本文の表示-3)。収集の処理自体が失敗したジャンルは、同じバッジと分類ラベルを含む「今回は記事を収集できませんでした」を表示する(requirements.md#記事本文の表示-4)。生成に失敗したジャンルは、同じバッジと「今回は記事を用意できませんでした」を表示する(requirements.md#記事本文の表示-5)
   5. 並び順の切り替え操作が行われたら、同じ記事データから一覧を組み立て直して表示し直す(requirements.md#並び順の切り替え-7)
-- 関連するビジネスルール: requirements.md#記事本文の表示-1〜6、requirements.md#記事本文の表示-14〜15、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
+- 関連するビジネスルール: requirements.md#記事本文の表示-1〜6、requirements.md#運営者向けフィードバック-14〜15、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
