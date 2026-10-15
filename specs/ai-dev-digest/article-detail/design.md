@@ -135,6 +135,7 @@ export function isLegacyTopic(topic: Topic): topic is LegacyTopic {
   4. `isLegacyTopic(topic)`が`false`の場合、`summary`が`hasDomainPerspective(summary)`なら`domain`→`benefit`→`how`→`howToUse`の順、そうでなければ`benefit`→`whatsNew`→`how`→`howToUse`の順(いずれもこの順序で固定)に、固定ラベル(`p`相当・観点名そのもの)→各観点の見出し(`h3`相当)→導入文(`teaser`)の順で常時表示する。`domain`観点は固定ラベルの下に`domains`の開発領域タグ(`DOMAIN_LABELS`の日本語ラベル)をあわせて表示する。`true`(`LegacyTopic`)の場合は`sections`配列の順に、セクション見出しと導入文を常時表示する(固定ラベル・開発領域タグは表示しない。content-generation/requirements.md#要約-3・5、requirements.md#記事本文表示-3)
   5. 各観点(またはセクション)の導入文の下に、HTML標準の`<details><summary>詳細を見る</summary>…</details>`要素を配置し、`<summary>`を操作すると詳細文(`detail`)が展開表示されるようにする。ブラウザ標準機能で開閉できるため、開閉状態を保持するJavaScriptの状態管理を自前で持つ必要がない(要件「操作前は導入文のみ、操作後に詳細文」に対応。requirements.md#記事本文表示-4)
   5-1. `isLegacyTopic(topic)`が`false`の場合、各観点の`diagram`が`null`でも`undefined`でもない場合、詳細文の下に`DiagramView`を表示する(requirements.md#記事本文表示-14)
+  5-2. `isLegacyTopic(topic)`が`false`の場合、展開表示する詳細文(`detail`)は生のテキストとしてではなく`FormattedText`で描画する。`parseFormattedText(detail)`が段落・番号付きリスト(`1. `)・箇条書き(`- `)・コードブロック(```)のブロックに分解し、各ブロック内のインライン記法(`` `code` ``・`[text](url)`)も解析する。コードブロックには内容をそのままクリップボードにコピーする操作を付ける(requirements.md#記事本文表示-15)。`isLegacyTopic(topic)`が`true`(旧形式)の場合は、この機能追加前の文章表現のままのため従来どおり生テキストで表示する(無理な再解釈はしない)
   6. 各トピックには情報源の種別(公式組織/個人YouTube/個人ブログ/Qiita/Zenn)が分かるバッジを表示する(表示位置・文言は「画面設計」参照)
   7. `youtubeVideoId`を持つトピックは、要約の下にYouTube公式の埋め込みプレーヤー(`<iframe>`、`youtube-nocookie.com`ドメイン)を表示する(content-generation/requirements.md#著作権への配慮-6)。持たない場合は表示しない
   8. `belowCriteria`が`true`のトピックには「採用基準未達」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます」という注記を1回だけ表示する(繰り返し表示による煩雑さを避けるため)
@@ -210,6 +211,8 @@ app/ai-dev-digest/components/SourceBadge.tsx (新規)
 app/ai-dev-digest/components/YoutubeEmbed.tsx (新規)
 app/ai-dev-digest/components/FeedbackForm.tsx (新規)
 app/ai-dev-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
+app/ai-dev-digest/lib/parseFormattedText.ts (新規: 詳細文の簡易Markdown解析。段落・番号付きリスト・箇条書き・コードブロック・インラインのcode/linkに分解する純粋関数)
+app/ai-dev-digest/components/FormattedText.tsx (新規: parseFormattedTextの解析結果を表示する。コードブロックにコピー操作を付ける)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用。2026-08修正: isAuthorizedAdminはフィードバック欄の表示切り替えに利用する)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/ai-dev-digest/articles/*.json (新規: 記事本文データ。コード資産ではないためapp/配下に置かない)
@@ -278,6 +281,7 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 | YoutubeEmbed | `videoId: string` | YouTube公式埋め込みプレーヤー(`youtube-nocookie.com`)を表示 |
 | FeedbackForm | `articleDate: string`, `topicId: string` | 自由記述の入力欄・送信・送信結果表示 |
 | DiagramView | `diagram: Diagram \| null \| undefined` | 図解の表示。`null`/`undefined`は何もレンダリングしない(news-digestと共通の実装) |
+| FormattedText | `text: string` | `CurrentTopic`の詳細文を段落・番号付きリスト・箇条書き・コードブロック(コピー操作付き)・リンクとして表示する(2026-10新規。requirements.md#記事本文表示-15) |
 
 ## 状態管理
 

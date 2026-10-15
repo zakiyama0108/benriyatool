@@ -110,4 +110,9 @@
   - 🔴 `diagram`が`null`または`undefined`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されること、`{type:'image'}`の場合は`<img>`の`src`が`path`と一致することを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
   - 🟢 `app/ai-dev-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`TopicSection.tsx`から各観点の`diagram`を渡して配置する
 
+- Task 22: 詳細文の簡易Markdown表示(仕様: requirements.md#記事本文表示-15、design.md「その日の記事本文を表示する処理」手順5-2)
+  - 🟢 `parseFormattedText(text)`が、段落(空行区切り)・番号付きリスト(「1. 」)・箇条書き(「- 」)・コードブロック(```)をそれぞれ別ブロックとして分解すること、ブロック内のインライン記法(`` `code` ``・`[text](url)`)も解析することを確認するテストを書く(`__tests__/ai-dev-digest/lib/parseFormattedText.test.ts`)
+  - 🟢 `FormattedText`が、段落は`<p>`、番号付きリストは`<ol><li>`、箇条書きは`<ul><li>`、コードブロックはコピー操作付きの`<pre><code>`として描画することを確認するテストを書く(`__tests__/ai-dev-digest/components/FormattedText.test.tsx`)
+  - 🟢 `TopicSection.tsx`の`CurrentTopic`分岐で、詳細文(`perspective.detail`)を生テキストの`<p>`から`<FormattedText text={perspective.detail} />`に差し替える(`LegacyTopic`分岐は変更しない)
+
 </details>

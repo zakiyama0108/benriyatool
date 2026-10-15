@@ -15,6 +15,7 @@ import FeedbackForm from './FeedbackForm'
 import ImportanceStars from './ImportanceStars'
 import BookmarkPanel, { type BookmarkSummary } from './BookmarkPanel'
 import DiagramView from './DiagramView'
+import FormattedText from './FormattedText'
 
 // 固定4観点(summary)の描画順。この順序で固定(content-generation/requirements.md#要約-5・12)。
 // 🧭開発領域観点を含む新形式(domain)/💡新規性を含む旧形式(whatsNew)のどちらかで分岐する(2026-09追加)
@@ -100,7 +101,9 @@ export default function TopicSection({ topic, session, isAdmin, articleDate, boo
                   <p className="mt-1 text-sm leading-relaxed text-gray-700">{perspective.teaser}</p>
                   <details className="mt-1">
                     <summary className="cursor-pointer text-xs font-semibold text-teal-600">詳細を見る</summary>
-                    <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{perspective.detail}</p>
+                    <div className="mt-1.5">
+                      <FormattedText text={perspective.detail} />
+                    </div>
                     <DiagramView diagram={perspective.diagram} />
                   </details>
                 </div>
