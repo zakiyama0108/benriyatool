@@ -371,7 +371,7 @@ describe('記事データのバリデーション - 新形式のトピックの�
   })
 
   it('{type:"image",path}(pathがcontent/trend-digest/articles/images/配下)の場合、検証を通ること', () => {
-    const path = 'content/trend-digest/articles/images/2026-09-15-topic-1-fact.png'
+    const path = '/content/trend-digest/articles/images/2026-09-15-topic-1-fact.png'
     const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'image', path } } })
     const article = parseArticle(makeArticle({ topics: [makeCurrentTopic({ sections })] }), '2026-09-15-entertainment.json')
     expect(article.topics[0]).toMatchObject({ sections: { fact: { diagram: { type: 'image', path } } } })

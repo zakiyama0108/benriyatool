@@ -84,7 +84,7 @@ const CURRENT_TOPIC: CurrentTopic = {
   trend: makeTrend({ reportCount: 1, originRegion: null, currentRegions: [] }),
 }
 
-// 画像生成(Nano Banana)の代わりに使うダミー画像(インラインSVGのdata URI)。
+// 画像生成(Cloudflare Workers AI)の代わりに使うダミー画像(インラインSVGのdata URI)。
 // 実ファイルの有無に依存させず、styleguideが常に画像付きの見た目を再現できるようにする
 const DUMMY_DIAGRAM_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='160'%3E%3Crect width='320' height='160' fill='%23fef3c7'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' font-size='16' fill='%23b45309'%3E生成画像の見本%3C/text%3E%3C/svg%3E"

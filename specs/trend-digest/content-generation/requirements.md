@@ -28,7 +28,7 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - [6] 出典(情報源名・元URLへのリンク)を必ず明記する
 
 ### 図解
-- [7] 生成画像(Nano Banana)は、観点ごとまたは記事全体のいずれかの単位で、トピックにつき原則として少なくとも1枚を必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な事実関係のみのトピックでは、無理にMermaid図を作らない([news-digest/content-generation/requirements.md#図解](../../news-digest/content-generation/requirements.md)と同じ考え方・同じ技術を踏襲する。2026-10改定: 従来は図解全般をエージェントの任意判断としていたが、Nano Banana画像は原則必須に変更した。根拠: 運営者フィードバック「NanoBananaを活用した絵っぽい図がないのがNG。それは絶対入れてほしい」)
+- [7] 生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、トピックにつき原則として少なくとも1枚を必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な事実関係のみのトピックでは、無理にMermaid図を作らない([news-digest/content-generation/requirements.md#図解](../../news-digest/content-generation/requirements.md)と同じ考え方・同じ技術を踏襲する。2026-10改定: 従来は図解全般をエージェントの任意判断としていたが、Cloudflare Workers AI画像は原則必須に変更した。根拠: 運営者フィードバック「NanoBananaを活用した絵っぽい図がないのがNG。それは絶対入れてほしい」)
 
 ### 記事の構成
 - [8] 各トピックには見出し・固定3観点の解説(観点ごとの見出し・本文)・ジャンル名・出典情報(情報源名・元URL)をセットで含める
@@ -53,8 +53,8 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - [6] 継続度ラベル・注目度ラベル・継続日数・報告回数・地域は[trend-history/requirements.md](../trend-history/requirements.md)が判定した値をそのまま扱い、本文の中でそれと異なる段階・期間・地域を書かない(判定と本文が食い違うと、読者にとってどちらが正しいか分からなくなるため)
 - [7] 続報の「なぜ注目されたか」観点の本文が、前回掲載時の同観点の本文と完全に同一になった場合は、その候補の生成を失敗として扱う(同じ内容の記事を繰り返し公開しないための最終防波堤。検証方法は設計で定める)
 
-### 図解の生成(Nano Banana)
-- [8] Nano Banana(Gemini 2.5 Flash Image)の利用方針・制約は[news-digest/content-generation/requirements.md#図解の生成(Nano Banana)](../../news-digest/content-generation/requirements.md)の定めと同一とする(重複して記載しない)
+### 図解の生成(Cloudflare Workers AI)
+- [8] Cloudflare Workers AI(FLUXモデル)の利用方針・制約は[news-digest/content-generation/requirements.md#図解の生成(Cloudflare Workers AI)](../../news-digest/content-generation/requirements.md)の定めと同一とする(重複して記載しない)
 
 ## 依存関係
 - 対象トピックの選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
@@ -62,7 +62,7 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - 記事の生成・公開タイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 - ここで定める要約・記事執筆のルールは、蓄積された運営者フィードバックをもとに[source-review/requirements.md](../source-review/requirements.md)の月次見直し(生成領域)で調整される
 - 続報かどうか・通算の報告回数・継続度ラベル・注目度ラベルは[trend-history/requirements.md](../trend-history/requirements.md)の判定結果を、content-selectionを経て受け取る
-- Nano Bananaの呼び出しにはGemini APIキーが必要(news-digestと共用のGitHub Actions secrets運用)
+- Cloudflare Workers AIの呼び出しには`CLOUDFLARE_ACCOUNT_ID`・`CLOUDFLARE_AI_API_TOKEN`が必要(news-digestと共用のGitHub Actions secrets運用)
 
 ## スコープ外
 - 日本語以外の言語への翻訳(対象読者は日本語話者のみ)

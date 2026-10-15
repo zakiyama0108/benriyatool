@@ -22,8 +22,10 @@ const HEAT_LABELS: HeatLabel[] = ['high', 'normal', 'low']
 // 記事データに取り込む時点でも外部入力として検証する(trend-history/design.mdのバリデーションと同じ上限)
 const REGION_MAX_LENGTH = 50
 const MAX_REGIONS = 10
-// 新形式(sections)の各観点のdiagram.pathが指すべきディレクトリ(design.md「バリデーション」)
-const DIAGRAM_IMAGES_DIR = 'content/trend-digest/articles/images/'
+// 新形式(sections)の各観点のdiagram.pathが指すべきURLパス(design.md「バリデーション」。
+// public/配下に保存され、先頭スラッシュのURLパスである必要がある。2026-10改定: content/配下は
+// ビルド時にfsで読み込むだけで配信対象ではなく<img src>で404になるため、public/配下に変更した)
+const DIAGRAM_IMAGES_DIR = '/content/trend-digest/articles/images/'
 const SECTION_KEYS = ['fact', 'reason', 'caveat'] as const
 
 function isNonEmptyString(value: unknown): value is string {

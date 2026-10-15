@@ -1,5 +1,5 @@
 // エージェントが生成する図解データの妥当性検証(仕様: requirements.md#図解-7、
-// design.md「見出し・固定3観点を書く処理」手順12)。エージェントの応答はまだNano Bananaによる画像取得前の
+// design.md「見出し・固定3観点を書く処理」手順12)。エージェントの応答はまだCloudflare Workers AIによる画像取得前の
 // 生の形式(type: 'image'の場合はpathではなくpromptキーを持つ)のため、最終的な記事データの
 // Diagram型(app/trend-digest/lib/types.ts)とは異なる形を検証する。
 // scripts/trend-digest/generate-content.ts(TDD対象外)が、この判定結果を使って

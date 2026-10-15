@@ -220,7 +220,7 @@ sequenceDiagram
 - `unavailableGenres`は省略可。ある場合は、各要素が`GENRE_ORDER[article.edition]`に含まれるジャンルであること、重複がないこと、`topics`のジャンルと重ならないこと
 - 各`topic`の`trend`は省略可。ある場合は、`durationLabel`が定義済みの4段階のいずれかであること、`heatLabel`が定義済みの3段階のいずれかであること、`continuationDays`が0以上の整数であること、`continuationStartDate`が`YYYY-MM-DD`形式で記事の`date`以前であること、`reportCount`が1以上の整数であること、`originRegion`が文字列(空文字でなく50文字以内・制御文字を含まない)またはnullであること、`currentRegions`が文字列の配列(各要素は空文字でなく50文字以内・制御文字を含まない、10件以内)であること。地域情報は収集エージェントが生成した自由文字列のため、記事データに取り込む時点でも外部入力として検証する([trend-history/design.md](../trend-history/design.md)のバリデーションと同じ上限)
 - 旧形式(`body`を持つ)の場合: `body`の文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2、content-generation/design.md「本文の分量を検証する処理」)
-- 新形式(`sections`を持つ)の場合: `fact`/`reason`/`caveat`の3キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。3観点の`text`を連結した文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2)。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`content/trend-digest/articles/images/`配下を指す)のいずれかであること
+- 新形式(`sections`を持つ)の場合: `fact`/`reason`/`caveat`の3キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。3観点の`text`を連結した文字数が160〜480字の範囲であること(content-generation/requirements.md#要約-2)。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`/content/trend-digest/articles/images/`配下を指すURLパス)のいずれかであること
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(requirements.md#運営者向けフィードバック-9)
 
 ## エラーハンドリング
@@ -247,7 +247,7 @@ app/trend-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.t
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/trend-digest/articles/*.json (新規: 記事本文データ。コード資産ではないためapp/配下に置かない)
-content/trend-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
+public/content/trend-digest/articles/images/*.png (新規: Cloudflare Workers AIが生成した画像。public/配下でブラウザから配信される)
 ```
 
 ## データベース設計
