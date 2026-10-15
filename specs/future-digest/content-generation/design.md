@@ -25,7 +25,7 @@
   9. 「〜と考えられている」「〜と予測している」のように予測であることが分かる書き方にし、確定した未来として断定しない(requirements.md#要約-5)
   10. 元記事に書かれている範囲にとどめ、書かれていない内容を推測で断定しない。Claude独自の予測・考察は加えない(requirements.md#内容の逸脱防止-8)
   11. 影響度・その根拠・対象時期・出典は渡された値を事実として扱い、本文でそれと食い違うことを書かない
-  12. 観点ごと、または記事全体について図解が理解の助けになるかを判断する(requirements.md#図解-6)。[news-digest/content-generation/design.md「図解を生成する処理」](../../news-digest/content-generation/design.md)と同じ形式で`diagram`を返す
+  12. 生成画像(Nano Banana)は観点ごとまたは記事全体のいずれかの単位でトピックにつき原則1枚は必ず作り、流れ・分岐・時系列のような構造を示すのに適した観点にはMermaid図も追加する(requirements.md#図解-6)。[news-digest/content-generation/design.md「図解を生成する処理」](../../news-digest/content-generation/design.md)と同じ形式で`diagram`を返す
   13. 応答は`{ "heading": "...", "sections": { "when": {...}, "basis": {...}, "impact": {...} } }`のJSONだけを返させる。元記事を読めなかった場合は、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書き、それも難しい場合は`heading`を`null`にして返させる(聞き返しはさせない)
 - 応答JSONの形式:
   ```json
