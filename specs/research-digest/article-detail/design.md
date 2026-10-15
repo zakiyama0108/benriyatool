@@ -197,7 +197,7 @@ sequenceDiagram
 - `edition`が`body-life`/`science-society`のいずれかであること
 - 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`genre`が`EDITION_GENRES[edition]`に含まれること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること
 - 旧形式(`body`を持つ)の場合: `body`が160〜480字であること
-- 新形式(`sections`を持つ)の場合: `finding`/`basis`/`relevance`/`caveat`の4キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。4観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`content/research-digest/articles/images/`配下を指す)のいずれかであること
+- 新形式(`sections`を持つ)の場合: `finding`/`basis`/`relevance`/`caveat`の4キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。4観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`/content/research-digest/articles/images/`配下を指すURLパス)のいずれかであること
 - 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`EDITION_GENRES[edition]`に含まれ、`reason`が定義済みの値であること
 - 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。対象編で有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
 - 研究は0件でもよい(全ジャンルで採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)
@@ -231,7 +231,7 @@ app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/i
 app/lib/supabaseClient.ts (既存)
 supabase/migrations/<timestamp>_create_research_digest_feedback.sql (新規)
 content/research-digest/articles/*.json (新規: 記事本文データ)
-content/research-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
+public/content/research-digest/articles/images/*.png (新規: Cloudflare Workers AIが生成した画像。public/配下でブラウザから配信される)
 ```
 
 ## データベース設計

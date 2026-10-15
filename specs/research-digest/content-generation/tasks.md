@@ -56,9 +56,9 @@
   - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く(news-digestの`diagramValidation.ts`と同じロジック)
   - 🟢 `app/research-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
 
-- Task 11: Nano Banana呼び出しと保存(仕様: requirements.md#図解の生成(Nano Banana)-4、design.md「見出し・固定4観点を書く処理」手順13)
+- Task 11: Cloudflare Workers AI呼び出しと保存(仕様: requirements.md#図解の生成(Cloudflare Workers AI)-4、design.md「見出し・固定4観点を書く処理」手順13)
   - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 10でテスト済み)
-  - `scripts/research-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`content/research-digest/articles/images/`に変更)
+  - `scripts/research-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`public/content/research-digest/articles/images/`に変更)
   - `scripts/research-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
   - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
 

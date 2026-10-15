@@ -15,9 +15,11 @@ const MIN_PUBLISHED_YEAR = 1900
 const EDITIONS: Edition[] = ['body-life', 'science-society']
 const SECTION_KEYS = ['finding', 'basis', 'relevance', 'caveat'] as const
 
-// 図解の生成画像が保存されるディレクトリ(content-generation/design.md「見出し・固定4観点を書く処理」
-// 手順13)。diagram.pathはこの配下を指す相対パスである必要がある(news-digestのarticleSchema.tsと同じ考え方)
-const DIAGRAM_IMAGES_DIR = 'content/research-digest/articles/images/'
+// 図解の生成画像が配信されるURLパス(content-generation/design.md「見出し・固定4観点を書く処理」
+// 手順13)。public/配下に保存され、diagram.pathはこの配下を指すURLパス(先頭スラッシュ)である必要が
+// ある(news-digestのarticleSchema.tsと同じ考え方。2026-10改定: content/配下はビルド時にfsで
+// 読み込むだけで配信対象ではなく<img src>で404になるため、public/配下に変更した)
+const DIAGRAM_IMAGES_DIR = '/content/research-digest/articles/images/'
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0

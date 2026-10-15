@@ -10,7 +10,7 @@ export type GeneratedContent = {
 // content-generation/design.md「記事データの1本分を組み立てる処理」)。
 // ジャンル・影響度・根拠・出典(論文名・発表元・URL・DOI・発表年)・査読前かどうかは選定時の値を
 // そのまま使い、見出し・sections(固定4観点。各観点のdiagramは呼び出し元のgenerate-content.tsが
-// Nano Bananaでの画像生成まで解決済みの最終形で渡す)だけを生成結果から取る。研究IDはジャンルのidとする
+// Cloudflare Workers AIでの画像生成まで解決済みの最終形で渡す)だけを生成結果から取る。研究IDはジャンルのidとする
 // (article-detail/design.md「前提: 記事データの形式」)
 export function buildFinding(candidate: Candidate, generated: GeneratedContent): CurrentFinding {
   return {

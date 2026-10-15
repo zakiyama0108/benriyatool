@@ -228,11 +228,11 @@ describe('記事スキーマへの図解(diagram)検証の組み込み - section
 
   it('diagramが{type: "image", path: "content/research-digest/articles/images/"配下}のとき、検証を通ること', () => {
     const sections = validSections({
-      finding: { diagram: { type: 'image', path: 'content/research-digest/articles/images/2026-10-05-medical-health-finding.png' } },
+      finding: { diagram: { type: 'image', path: '/content/research-digest/articles/images/2026-10-05-medical-health-finding.png' } },
     })
     const result = parse(article({ findings: [sectionsFinding('medical-health', { sections })] }))
     expect(result.findings[0]).toMatchObject({
-      sections: { finding: { diagram: { type: 'image', path: 'content/research-digest/articles/images/2026-10-05-medical-health-finding.png' } } },
+      sections: { finding: { diagram: { type: 'image', path: '/content/research-digest/articles/images/2026-10-05-medical-health-finding.png' } } },
     })
   })
 

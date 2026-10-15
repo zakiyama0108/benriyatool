@@ -1,6 +1,6 @@
 // エージェントが生成する図解データの妥当性検証(仕様: content-generation/requirements.md#図解-6、
 // content-generation/design.md「見出し・固定4観点を書く処理」手順13)。エージェントの応答はまだ
-// Nano Bananaによる画像取得前の生の形式(type: 'image'の場合はpathではなくpromptキーを持つ)のため、
+// Cloudflare Workers AIによる画像取得前の生の形式(type: 'image'の場合はpathではなくpromptキーを持つ)のため、
 // 最終的な記事データのDiagram型(app/research-digest/lib/types.ts)とは異なる形を検証する
 // (news-digestのdiagramValidation.tsと同じロジック)。
 // scripts/research-digest/generate-content.ts(TDD対象外)が、この判定結果を使って

@@ -56,7 +56,7 @@ ${GUARDRAIL}
 - 発表年: ${candidate.publishedYear ?? '不明'}
 - 査読前の論文(プレプリント): ${candidate.isPreprint ? 'はい(査読前であることを注意点観点に必ず書くこと)' : 'いいえ'}
 
-生成画像(Nano Banana)は、観点ごとまたは記事全体のいずれかの単位で、この研究につき原則として少なくとも1つは必ず作ってください(requirements.md#図解-6)。概念・具体例を絵で見せることで理解を助ける構図を必ず考え、該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
+生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、この研究につき原則として少なくとも1つは必ず作ってください(requirements.md#図解-6)。概念・具体例を絵で見せることで理解を助ける構図を必ず考え、該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetchツールで元URLの内容を把握したうえで(有料で全文を読めない場合は、要旨・公式発表など公開されている範囲で把握する)、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、渡された情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "sections": null}\`)を返してください(いずれの場合も聞き返さない):
 
@@ -91,7 +91,7 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
 // エージェントが返した観点ごとのdiagram(生の形式。isValidAgentDiagramで妥当性確認したもの)を、
 // 記事データの最終形式(Diagram型)に解決する(content-generation/design.md「見出し・固定4観点を書く処理」
 // 手順13)。type: 'mermaid'はcodeをそのまま保存するだけでよい(構文検証はしない)。
-// type: 'image'のみNano Banana呼び出しが必要なためgenerateDiagramImageに委ねる
+// type: 'image'のみCloudflare Workers AI呼び出しが必要なためgenerateDiagramImageに委ねる
 // (news-digestのscripts/news-digest/generate-content.tsのresolveDiagramと同じロジック)
 async function resolveDiagram(
   genre: string,
@@ -174,7 +174,7 @@ async function main() {
   // 1候補ずつ生成する。一時的失敗はやり直し→ダメなら「生成に失敗したジャンル」として除く。
   // 利用枠枯渇はQuotaExhaustedErrorとしてここから外へ伝播し、下のmain().catchが非ゼロ終了させる
   // (→後続のwrite-article.tsが走らず、Actionsの実行が赤で残る)。
-  // 各観点のdiagram(type: 'image')のNano Banana解決はclassifyGenerationResultより前に行う
+  // 各観点のdiagram(type: 'image')のCloudflare Workers AI解決はclassifyGenerationResultより前に行う
   // (design.md「見出し・固定4観点を書く処理」手順13)
   const result = await generateFindings(
     selectedCandidates,
