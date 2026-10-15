@@ -12,7 +12,7 @@ import type { Diagram } from '../../app/trend-digest/lib/types'
 
 // Geminiの画像生成モデル(無料枠で使えるもの)。環境変数で差し替え可能にしておく
 // (scripts/news-digest/generateDiagram.tsと同じ既定値・運用方式)
-const GEMINI_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image-preview'
+const GEMINI_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image'
 const IMAGES_DIR = 'content/trend-digest/articles/images'
 
 export type GenerateDiagramInput = {
