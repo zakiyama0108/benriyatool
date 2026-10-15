@@ -9,7 +9,7 @@ import path from 'node:path'
 import type { Diagram } from '../../app/research-digest/lib/types'
 
 // Geminiの画像生成モデル(無料枠で使えるもの)。環境変数で差し替え可能にしておく
-const GEMINI_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image-preview'
+const GEMINI_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image'
 const IMAGES_DIR = 'content/research-digest/articles/images'
 
 export type GenerateDiagramInput = {
