@@ -38,11 +38,16 @@
   - 🟢 `app/trend-digest/lib/duplicateReason.ts`に`isDuplicateOfLastPublishedReason(reason, lastPublishedReason)`を実装する(旧ロジックの対象を`body`から`reason.text`に変更したもの)
 
 - Task 9: 図解データの検証(仕様: requirements.md#図解-7、design.md「見出し・固定3観点を書く処理」手順12)
-  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く(news-digestの`diagramValidation.ts`と同じロジック)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', layout:'steps', items: 定義済みアイコン2〜4件}`の場合・`{type:'image', layout:'compare', left, right}`の場合はいずれも有効、`code`が空文字・itemsが2〜4件の範囲外・未定義のアイコン名・labelが空文字・未知のlayout・type不明の場合は不正と判定することを確認するテストを書く
   - 🟢 `app/trend-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
 
-- Task 10: Cloudflare Workers AI呼び出しと保存(仕様: requirements.md#図解の生成(Cloudflare Workers AI)-8、design.md「見出し・固定3観点を書く処理」手順12)
-  - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 9でテスト済み)
-  - `scripts/trend-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`public/content/trend-digest/articles/images/`に変更)
+- Task 9-1: アイコン名の固定セットと概念図のSVG描画(仕様: requirements.md#図解の生成(アイコン図のSVG描画)-8、design.md「見出し・固定3観点を書く処理」手順12。2026-10追加: AI画像生成(Nano Banana→Cloudflare Workers AI)が文章・構図の破綻を避けられなかったため、コードによる決定的なSVG描画に方針転換)
+  - 🟢 `app/trend-digest/lib/diagramIcons.ts`にHeroicons(MIT License)由来のアイコン19種(`terminal`等)のパスデータと`isDiagramIconName`を実装する(ai-dev-digestと同一の内容)
+  - 🟢 `app/trend-digest/lib/renderDiagramSvg.ts`に`renderDiagramSvg(spec: DiagramSpec): string`を実装する(ai-dev-digestと同一のロジック)
+  - 🔴 件数分のアイコン・ラベル・矢印を含むSVGを返すこと、XML特殊文字がエスケープされること、長いラベルが2行に折り返され末尾が省略記号になることを確認するテストを書く(`__tests__/trend-digest/lib/renderDiagramSvg.test.ts`)
+
+- Task 10: 概念図SVGのファイル保存(仕様: requirements.md#図解の生成(アイコン図のSVG描画)-8、design.md「見出し・固定3観点を書く処理」手順12)
+  - TDD対象外(ファイル書き込みのオーケストレーションのため。SVGの組み立てロジック自体はTask 9-1でテスト済み)
+  - `scripts/trend-digest/renderDiagram.ts`に`renderDiagramImage(input): Diagram | null`を実装する。`renderDiagramSvg`の結果を`public/content/trend-digest/articles/images/<date>-<topicId>-<sectionKey>.svg`に保存し、`{type:'image', path}`(`path`は`/content/...`のURLパス)を返す
   - `scripts/trend-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
   - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照

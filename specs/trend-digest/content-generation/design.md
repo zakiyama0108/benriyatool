@@ -1,7 +1,7 @@
 # 設計: 要約・記事執筆のルール
 
 ## サマリ
-[content-selection](../content-selection/design.md)が選定した候補(作品名・出典)ごとに、Claude Code CLIのヘッドレス実行で見出しと固定3観点(急上昇の事実/なぜ注目されたか/確からしさ・注意点、合計200〜400字程度)を生成する。「なぜ注目されたか」は必要に応じてWebSearchで深掘り調査する。あわせて、理解の助けになる場合はMermaid図・生成画像(Cloudflare Workers AI)による図解を作る。分量検証・記事タイトルの導出は決定的なコードで行い、著作権配慮(独自の再構成・出典明記)はガードレール文言と分量上限で担保する。記事タイトルは`buildArticleTitle(edition, date)`で決定的に導出する(下記「記事タイトルを導出する処理」参照)。
+[content-selection](../content-selection/design.md)が選定した候補(作品名・出典)ごとに、Claude Code CLIのヘッドレス実行で見出しと固定3観点(急上昇の事実/なぜ注目されたか/確からしさ・注意点、合計200〜400字程度)を生成する。「なぜ注目されたか」は必要に応じてWebSearchで深掘り調査する。あわせて、理解の助けになる場合はMermaid図・アイコン図(コードでのSVG描画)による図解を作る。分量検証・記事タイトルの導出は決定的なコードで行い、著作権配慮(独自の再構成・出典明記)はガードレール文言と分量上限で担保する。記事タイトルは`buildArticleTitle(edition, date)`で決定的に導出する(下記「記事タイトルを導出する処理」参照)。
 
 ## 設計の前提(エージェントの推論とコードの役割分担)
 
@@ -28,7 +28,7 @@
   9. 記事の内容はcontent-selectionで採用された候補の範囲にとどめ、書かれていない内容を推測で断定しない(requirements.md#エージェントの逸脱防止-5)
   10. 候補の報告回数が2回目以降(続報)の場合は、前回掲載時の`reason`本文と直近掲載時の継続度ラベルをプロンプトにあわせて渡し、`reason`は前回から何が変わったか(継続度の進行・継続期間の伸び・注目度の変化)を軸に書く。前回の表現をなぞらず、かつ前回の記事を読んでいない読者にも通じる最小限の説明を含める(requirements.md#続報の執筆-10〜11)
   11. 継続度ラベル・注目度ラベル・継続日数・報告回数・地域は渡された値をそのまま扱い、本文でそれと異なる段階・強さ・期間・地域を書かない(requirements.md#エージェントの逸脱防止-6)
-  12. 生成画像(Cloudflare Workers AI)は観点ごとまたは記事全体のいずれかの単位でトピックにつき原則1枚は必ず作り、流れ・分岐・時系列のような構造を示すのに適した観点にはMermaid図も追加する(requirements.md#図解-7)。[news-digest/content-generation/design.md「図解を生成する処理」](../../news-digest/content-generation/design.md)と同じ形式で`diagram`を返す
+  12. 概念図は観点ごとまたは記事全体のいずれかの単位でトピックにつき原則1つは必ず作る。`layout:"steps"`(2〜4件の手順・流れ)または`layout:"compare"`(2件の対比)のいずれかを選び、各項目に固定アイコン名(`app/trend-digest/lib/diagramIcons.ts`の19種)と短い日本語ラベルを指定する。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid図も追加する(requirements.md#図解-7)
   13. 応答は必ず指定のJSONオブジェクト単体とし、運営者に判断を仰ぐ質問文や選択肢の提示を返さない(ヘッドレス実行のため質問しても応答する相手がいない)。WebFetchで元URLの内容を十分に取得できなかった場合でも、確認できた情報(作品名・ジャンル・情報源名)の範囲で書けるところまで書いてJSONを返す。それも困難な場合は無理に内容を創作せず、`heading`を`null`にしたJSONを返す(いずれの場合も聞き返さない)
 - 応答JSONの形式:
   ```json
@@ -54,7 +54,7 @@
   3. 続報(報告回数が2回目以降)の候補は、書かれた`reason.text`の前後の空白を除いた文字列が、前回掲載時の`reason.text`と完全に一致する場合は不正とする(requirements.md#エージェントの逸脱防止-7)。表現を変えただけの実質的な重複までは機械的に判定せず、完全一致のみを最終防波堤として弾く(意味の重複判定はコードでは決定的に行えないため、それはプロンプト側のガードレールに委ねる設計判断)
   4. 各観点の`diagram`は[news-digest/content-generation/design.md](../../news-digest/content-generation/design.md)「図解を生成する処理」と同じ検証・保存処理を行う
   5. 不正な場合はその候補の生成失敗として扱い、[weekly-publish](../weekly-publish/design.md)のリトライ・除外の流れに乗せる。記事データとして書き出された後のスキーマ違反は[article-detail](../article-detail/design.md)のスキーマ検証(`parseArticle`)がエラーとして扱い、ビルドを失敗させる(article-detail/design.md#エラーハンドリング)
-- 関連するビジネスルール: requirements.md#要約-2、requirements.md#エージェントの逸脱防止-7、requirements.md#図解の生成(Cloudflare Workers AI)-8
+- 関連するビジネスルール: requirements.md#要約-2、requirements.md#エージェントの逸脱防止-7、requirements.md#図解の生成(アイコン図のSVG描画)-8
 
 ### 記事タイトルを導出する処理(決定的なコード)
 - 対象: edition(エンタメ編/カルチャー編)と発行日
@@ -77,7 +77,9 @@ app/trend-digest/lib/bodyValidation.ts (新規: isValidSectionsLength(sections):
 app/trend-digest/lib/duplicateReason.ts (新規: isDuplicateOfLastPublishedReason(reason, lastPublishedReason))
 app/trend-digest/lib/articleTitle.ts (新規: buildArticleTitle(edition, date))
 app/trend-digest/lib/articleSchema.ts (article-detailで新規作成: 分量検証を組み込む)
-scripts/trend-digest/generateDiagram.ts (新規: news-digestのgenerateDiagram.tsと同じロジック。Cloudflare Workers AI API呼び出し・画像保存)
+scripts/trend-digest/renderDiagram.ts (新規: renderDiagramSvgの結果をpublic/content/trend-digest/articles/images/配下にファイル保存する)
+app/trend-digest/lib/diagramIcons.ts (新規: 固定アイコン名19種とHeroicons由来のSVGパスデータ)
+app/trend-digest/lib/renderDiagramSvg.ts (新規: DiagramSpec(layout:"steps"|"compare")からSVG文字列を組み立てる純粋関数)
 app/trend-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 specs/legal/requirements.md (既存: 知的財産の条項にtrend-digest分を追記)
 app/legal/page.tsx (既存: 「4. 知的財産」セクションに条項本文を追記)

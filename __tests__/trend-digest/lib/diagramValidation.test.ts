@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isValidAgentDiagram } from '../../../app/trend-digest/lib/diagramValidation'
 
-// 仕様: specs/trend-digest/content-generation/requirements.md#図解-7、specs/trend-digest/content-generation/design.md#見出し・固定3観点を書く処理(エージェントの推論)
+// 仕様: specs/trend-digest/content-generation/requirements.md#図解-17、specs/trend-digest/content-generation/design.md#要約を書く処理(エージェントの推論)
 describe('エージェントが返す図解データの妥当性検証 - 観点ごとのdiagramがnull・mermaid・imageのいずれかの正しい形か確認する', () => {
   it('diagramがnullのとき、有効と判定されること(図解が不要な観点)', () => {
     expect(isValidAgentDiagram(null)).toBe(true)
@@ -11,8 +11,28 @@ describe('エージェントが返す図解データの妥当性検証 - 観点�
     expect(isValidAgentDiagram({ type: 'mermaid', code: 'flowchart LR\nA-->B' })).toBe(true)
   })
 
-  it('{type: "image", prompt: 非空文字}のとき、有効と判定されること(promptは後続処理がCloudflare Workers AIへ渡す生成指示)', () => {
-    expect(isValidAgentDiagram({ type: 'image', prompt: '検索数の推移を示す折れ線グラフのイラスト' })).toBe(true)
+  it('{type: "image", layout: "steps", items: 定義済みアイコン2〜4件}のとき、有効と判定されること(itemsは後続処理がrenderDiagramSvgへ渡すデータ)', () => {
+    expect(
+      isValidAgentDiagram({
+        type: 'image',
+        layout: 'steps',
+        items: [
+          { icon: 'terminal', label: 'コマンド' },
+          { icon: 'shield-check', label: '検査' },
+        ],
+      })
+    ).toBe(true)
+  })
+
+  it('{type: "image", layout: "compare", left, right}のとき、有効と判定されること', () => {
+    expect(
+      isValidAgentDiagram({
+        type: 'image',
+        layout: 'compare',
+        left: { icon: 'clock', label: '休憩あり' },
+        right: { icon: 'star', label: '質が向上' },
+      })
+    ).toBe(true)
   })
 
   it('type: "mermaid"なのにcodeが空文字のとき、不正と判定されること', () => {
@@ -23,8 +43,54 @@ describe('エージェントが返す図解データの妥当性検証 - 観点�
     expect(isValidAgentDiagram({ type: 'mermaid', code: '   ' })).toBe(false)
   })
 
-  it('type: "image"なのにpromptが空文字のとき、不正と判定されること', () => {
-    expect(isValidAgentDiagram({ type: 'image', prompt: '' })).toBe(false)
+  it('layout:"steps"でitemsが1件のとき、不正と判定されること(2〜4件の範囲外)', () => {
+    expect(isValidAgentDiagram({ type: 'image', layout: 'steps', items: [{ icon: 'terminal', label: 'a' }] })).toBe(false)
+  })
+
+  it('layout:"steps"でitemsが5件のとき、不正と判定されること(2〜4件の範囲外)', () => {
+    const items = Array.from({ length: 5 }, () => ({ icon: 'terminal', label: 'a' }))
+    expect(isValidAgentDiagram({ type: 'image', layout: 'steps', items })).toBe(false)
+  })
+
+  it('layout:"steps"で未定義のアイコン名が含まれるとき、不正と判定されること', () => {
+    expect(
+      isValidAgentDiagram({
+        type: 'image',
+        layout: 'steps',
+        items: [
+          { icon: 'terminal', label: 'a' },
+          { icon: 'not-a-real-icon', label: 'b' },
+        ],
+      })
+    ).toBe(false)
+  })
+
+  it('layout:"steps"でlabelが空文字のとき、不正と判定されること', () => {
+    expect(
+      isValidAgentDiagram({
+        type: 'image',
+        layout: 'steps',
+        items: [
+          { icon: 'terminal', label: '' },
+          { icon: 'star', label: 'b' },
+        ],
+      })
+    ).toBe(false)
+  })
+
+  it('layout:"compare"でrightのiconが未定義のとき、不正と判定されること', () => {
+    expect(
+      isValidAgentDiagram({
+        type: 'image',
+        layout: 'compare',
+        left: { icon: 'clock', label: 'a' },
+        right: { icon: 'not-a-real-icon', label: 'b' },
+      })
+    ).toBe(false)
+  })
+
+  it('未知のlayout値のとき、不正と判定されること', () => {
+    expect(isValidAgentDiagram({ type: 'image', layout: 'radial', items: [] })).toBe(false)
   })
 
   it('typeが未定義の値("chart"等)のとき、不正と判定されること', () => {
