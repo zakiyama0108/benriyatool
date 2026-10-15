@@ -7,7 +7,7 @@
 // 1件ずつについてClaude Code CLI(`claude -p`)をヘッドレス起動し、見出し・固定3観点(when/basis/impact)を
 // 生成する。あわせて、各観点の図解(diagram)を解決する(requirements.md#図解-6、design.md「見出し・固定3観点を
 // 書く処理」手順12)。エージェントの応答に含まれるtype: 'mermaid'はそのまま保存し、type: 'image'は
-// generateDiagram.ts経由でCloudflare Workers AIを呼び出して画像に差し替える。この差し替えは
+// renderDiagram.ts経由でコードがSVGを描画してファイルに差し替える。この差し替えは
 // generatePredictions(app/future-digest/lib/generateContent.ts)の分量検証より前に行い、以降は
 // sections[key].diagramが最終形式(Diagram型。image版はpath)になっている前提で扱う。
 // 1候補の生成が一時的に失敗した場合はリトライし、それでも失敗する候補は「生成に失敗した枠」として
@@ -16,7 +16,7 @@
 // (weekly-publish/design.md「1回分の記事を生成する処理」手順4)。
 // 認証は運営者個人のClaude Code Pro/Maxサブスクリプション(CLAUDE_CODE_OAUTH_TOKEN)を使う。
 //
-// 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx CLOUDFLARE_ACCOUNT_ID=yyy CLOUDFLARE_AI_API_TOKEN=zzz npx tsx scripts/future-digest/generate-content.ts <selection.jsonのパス>
+// 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx npx tsx scripts/future-digest/generate-content.ts <selection.jsonのパス>
 import fs from 'node:fs'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
@@ -24,8 +24,9 @@ import { promisify } from 'node:util'
 import { pathToFileURL } from 'node:url'
 import type { Candidate, SlotResult } from '../../app/future-digest/lib/candidateTypes'
 import { generatePredictions, type ClaudeCliResponse } from '../../app/future-digest/lib/generateContent'
-import { isValidAgentDiagram } from '../../app/future-digest/lib/diagramValidation'
-import { generateDiagramImage } from './generateDiagram'
+import { isValidAgentDiagram, type AgentDiagram } from '../../app/future-digest/lib/diagramValidation'
+import type { Diagram } from '../../app/future-digest/lib/types'
+import { renderDiagramImage } from './renderDiagram'
 
 const execFileAsync = promisify(execFile)
 
@@ -66,30 +67,33 @@ ${guardrail}
 - 情報源名: ${candidate.sourceName}
 - 元URL: ${candidate.sourceUrl}
 
-生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つは必ず作ってください(requirements.md#図解-6)。構図は説明内容の概略図・理解の補助になる構図(アイコンを使った概念図、番号付きのステップ、比較を示す対比構図など)にし、特定の人物が何かをしている写真的な場面描写にはしないでください。画像モデルは文章を正確に描画できないため、画像の中に文章・単語ラベルを入れることは避け、番号(1・2・3等)や短い記号程度にとどめてください(具体的な語句・ラベルが必要な場合はMermaid側で表現する)。該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文(英語で、具体的な構図・アイコン・配色を指定する)"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
+図解(観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つ)は、AIに自由な画像を生成させるのではなく、次のいずれかの構造化データとしてコードがSVGに描画します(requirements.md#図解-6)。
+- 手順・流れを示す場合: \`{"type": "image", "layout": "steps", "items": [{"icon": "アイコン名", "label": "短い日本語ラベル(10字程度)"}, ...]}\`(itemsは2〜4件)
+- 2つを対比・比較する場合: \`{"type": "image", "layout": "compare", "left": {"icon": "アイコン名", "label": "..."}, "right": {"icon": "アイコン名", "label": "..."}}\`
+- アイコン名は次の固定セットから選んでください(これ以外の名前は使えません): terminal, shield-check, blocked, document, calendar, cart, clock, chat, star, trending-up, cpu, check, idea, search, beaker, heart, settings, refresh, user
+該当する観点の\`diagram\`に上記いずれかを設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "sections": null}\`)を返してください(いずれの場合も聞き返さない):
 
-{"heading": "何が起こると考えられているかが一目で分かる見出し", "sections": {"when": {"heading": "短い結論文", "text": "いつ・何が起こると予測されているかの本文", "diagram": null}, "basis": {"heading": "短い結論文", "text": "誰が・どんな根拠で示しているかの本文", "diagram": null}, "impact": {"heading": "短い結論文", "text": "暮らし・社会への影響の本文(3観点合計で200〜400字程度)", "diagram": null}}}`
+{"heading": "何が起こると考えられているかが一目で分かる見出し", "sections": {"when": {"heading": "短い結論文", "text": "いつ・何が起こると予測されているかの本文", "diagram": null}, "basis": {"heading": "短い結論文", "text": "誰が・どんな根拠で示しているかの本文", "diagram": {"type": "image", "layout": "steps", "items": [{"icon": "search", "label": "..."}, {"icon": "trending-up", "label": "..."}]}}, "impact": {"heading": "短い結論文", "text": "暮らし・社会への影響の本文(3観点合計で200〜400字程度)", "diagram": null}}}`
 }
 
 // エージェントが返した観点ごとのdiagram(生の形式。isValidAgentDiagramで妥当性確認したもの)を、
 // 記事データの最終形式(Diagram型)に解決する(design.md「見出し・固定3観点を書く処理」手順12)。
 // type: 'mermaid'はcodeをそのまま保存するだけでよい(構文検証はしない。壊れていても表示が崩れるのみ)。
-// type: 'image'のみCloudflare Workers AI呼び出しが必要なためgenerateDiagramImageに委ねる
-async function resolveDiagram(
-  candidate: Candidate,
-  sectionKey: SectionKey,
-  date: string,
-  diagram: { type: 'mermaid'; code: string } | { type: 'image'; prompt: string } | null
-): Promise<{ type: 'mermaid'; code: string } | { type: 'image'; path: string } | null> {
+// type: 'image'のみrenderDiagramImage(コードでのSVG描画)でファイル化が必要
+function resolveDiagram(candidate: Candidate, sectionKey: SectionKey, date: string, diagram: AgentDiagram): Diagram | null {
   if (diagram === null) return null
   if (diagram.type === 'mermaid') return diagram
-  return generateDiagramImage({ date, genre: candidate.genre, horizon: candidate.horizon, sectionKey, prompt: diagram.prompt })
+  const spec =
+    diagram.layout === 'steps'
+      ? { layout: 'steps' as const, items: diagram.items }
+      : { layout: 'compare' as const, left: diagram.left, right: diagram.right }
+  return renderDiagramImage({ date, genre: candidate.genre, horizon: candidate.horizon, sectionKey, spec })
 }
 
 // Claude Code CLIの応答テキスト(ClaudeCliResponse.result)からJSONオブジェクトを抽出し、
-// 観点ごとのdiagramをCloudflare Workers AI呼び出しも含めて最終形式に解決してから再度文字列化する。
+// 観点ごとのdiagramをSVG描画も含めて最終形式に解決してから再度文字列化する。
 // 抽出・パースに失敗した場合は元のテキストをそのまま返す(後続のclassifyGenerationResultが
 // 同じ抽出処理を行い、一時的失敗として分類する。design.md「エラーハンドリング」)
 async function resolveDiagramsInResultText(resultText: string, date: string, candidate: Candidate): Promise<string> {
@@ -119,7 +123,7 @@ async function resolveDiagramsInResultText(resultText: string, date: string, can
       section.diagram = null
       continue
     }
-    section.diagram = await resolveDiagram(candidate, key, date, rawDiagram)
+    section.diagram = resolveDiagram(candidate, key, date, rawDiagram)
   }
 
   return JSON.stringify(parsed)
@@ -154,7 +158,7 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
   }
 }
 
-// callClaudeCodeの応答に含まれる各観点のdiagramを、Cloudflare Workers AI呼び出しも含めて最終形式に解決してから
+// callClaudeCodeの応答に含まれる各観点のdiagramを、SVG描画も含めて最終形式に解決してから
 // generatePredictions(app/future-digest/lib/generateContent.ts)に渡す(tasks.md Task11「generate-content.ts
 // から、各観点のdiagram.type === 'image'の場合のみこの処理を呼び出すよう配線する」)
 async function callClaudeCodeWithDiagrams(

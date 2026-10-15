@@ -243,7 +243,7 @@ app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/i
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 supabase/migrations/<timestamp>_create_future_digest_feedback.sql (新規)
 content/future-digest/articles/*.json (新規: 記事本文データ)
-public/content/future-digest/articles/images/*.png (新規: Cloudflare Workers AIが生成した画像。public/配下でブラウザから配信される)
+public/content/future-digest/articles/images/*.svg (新規: renderDiagramSvgが描画した概念図。public/配下でブラウザから配信される)
 ```
 
 ## データベース設計

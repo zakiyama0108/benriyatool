@@ -27,7 +27,7 @@
 - [5] 予測であることが分かる書き方をし(「〜と考えられている」「〜と予測している」等)、確定した未来として断定しない
 
 ### 図解
-- [6] 生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、トピックにつき原則として少なくとも1枚を必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な内容のトピックでは、無理にMermaid図を作らない([news-digest/content-generation/requirements.md#図解](../../news-digest/content-generation/requirements.md)と同じ考え方・同じ技術を踏襲する。2026-10改定: 従来は図解全般をエージェントの任意判断としていたが、Cloudflare Workers AI画像は原則必須に変更した。根拠: 運営者フィードバック「NanoBananaを活用した絵っぽい図がないのがNG。それは絶対入れてほしい」)
+- [6] 概念図(観点ごとまたは記事全体のいずれかの単位)は、トピックにつき原則として少なくとも1つを必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な内容のトピックでは、無理にMermaid図を作らない(2026-10改定。根拠: 運営者フィードバック「絵っぽい図がないのがNG。それは絶対入れてほしい」。さらに、AI画像生成(Nano Banana→Cloudflare Workers AI)では文章・構図の破綻を避けられなかったため、固定アイコン名+短い日本語ラベルの構造化データをエージェントが決め、コードが決定的にSVGへ描画する方式に変更した。requirements.md#図解の生成(アイコン図のSVG描画)参照)
 
 ### 記事の構成
 - [7] 各記事データには、ジャンル・時間軸・見出し・固定3観点の要約(観点ごとの見出し・本文)・影響度・影響度の根拠・出典をセットで含める
@@ -51,15 +51,15 @@
 ### 内容の逸脱防止
 - [8] 要約は元記事に書かれている範囲にとどめ、書かれていない内容を推測で断定しない。影響度の根拠は[content-selection/requirements.md#影響度](../content-selection/requirements.md)の観点に沿って書く
 
-### 図解の生成(Cloudflare Workers AI)
-- [9] Cloudflare Workers AI(FLUXモデル)の利用方針・制約は[news-digest/content-generation/requirements.md#図解の生成(Cloudflare Workers AI)](../../news-digest/content-generation/requirements.md)の定めと同一とする(重複して記載しない)
+### 図解の生成(アイコン図のSVG描画)
+- [9] 概念図はAI画像生成ではなく、コードが決定的にSVGを組み立てて描画する。エージェントは`layout:"steps"`(2〜4件の手順・流れ)または`layout:"compare"`(2件の対比)のいずれかを選び、各項目に固定アイコン名(`app/future-digest/lib/diagramIcons.ts`で定義する19種、Heroicons[MIT License]由来のパスデータ)と短い日本語ラベル(目安10字程度)を指定する。コード側(`app/future-digest/lib/renderDiagramSvg.ts`)がこのデータをSVGとして描画し、ラベルはSVGの`<text>`要素(実フォント)で描画するため常に正確に表示される(ai-dev-digestの[content-generation/requirements.md#図解の生成(アイコン図のSVG描画)](../../ai-dev-digest/content-generation/requirements.md)と同じ考え方・同じ実装。2026-10改定: 従来のAI画像生成(Nano Banana→Cloudflare Workers AI)では日本語の文章・構図の破綻を避けられず、無料で使えて文字描画が正確な代替サービスも見つからなかったため方針転換した)
 
 ## 依存関係
 - 対象記事の選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
 - 作った要約は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 生成・公開のタイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 - 執筆ルールは[source-review/requirements.md](../source-review/requirements.md)の月次見直し(生成領域)で調整される
-- Cloudflare Workers AIの呼び出しには`CLOUDFLARE_ACCOUNT_ID`・`CLOUDFLARE_AI_API_TOKEN`が必要(news-digestと共用のGitHub Actions secrets運用)
+- 概念図の描画はローカルでのSVG組み立てのみのため、外部APIの呼び出し・認証情報は不要
 
 ## スコープ外
 - 元記事の全文掲載・全文転載
