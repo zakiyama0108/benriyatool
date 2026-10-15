@@ -1,7 +1,7 @@
 # 設計: 未来予測記事の要約・記事執筆のルール
 
 ## サマリ
-[content-selection](../content-selection/design.md)で採用された予測1本ごとに、Claude Code CLIのヘッドレス実行で元記事をWebFetchで読み、見出しと固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響、合計200〜400字程度)を書かせる。あわせて、理解の助けになる場合はMermaid図・生成画像(Nano Banana)による図解を作らせる。影響度・その根拠・対象時期・出典は選定時の値をそのまま使い、執筆時に書き換えさせない。本文の分量の検証と記事タイトルの導出は決定的なコードで行う。性・恋愛ジャンルは専用のガードレール文言をプロンプトに加え、率直に書きつつ官能的な描写・利用の手助け・未成年に関わる内容を書かせない。
+[content-selection](../content-selection/design.md)で採用された予測1本ごとに、Claude Code CLIのヘッドレス実行で元記事をWebFetchで読み、見出しと固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響、合計200〜400字程度)を書かせる。あわせて、理解の助けになる場合はMermaid図・生成画像(Cloudflare Workers AI)による図解を作らせる。影響度・その根拠・対象時期・出典は選定時の値をそのまま使い、執筆時に書き換えさせない。本文の分量の検証と記事タイトルの導出は決定的なコードで行う。性・恋愛ジャンルは専用のガードレール文言をプロンプトに加え、率直に書きつつ官能的な描写・利用の手助け・未成年に関わる内容を書かせない。
 
 主要な設計判断:
 - 「本文を書く」ことだけをClaudeに任せ、分量の検証・タイトル・影響度などの値は決定的なコードで扱う(trend-digestと同じ役割分担)
@@ -25,7 +25,7 @@
   9. 「〜と考えられている」「〜と予測している」のように予測であることが分かる書き方にし、確定した未来として断定しない(requirements.md#要約-5)
   10. 元記事に書かれている範囲にとどめ、書かれていない内容を推測で断定しない。Claude独自の予測・考察は加えない(requirements.md#内容の逸脱防止-8)
   11. 影響度・その根拠・対象時期・出典は渡された値を事実として扱い、本文でそれと食い違うことを書かない
-  12. 生成画像(Nano Banana)は観点ごとまたは記事全体のいずれかの単位でトピックにつき原則1枚は必ず作り、流れ・分岐・時系列のような構造を示すのに適した観点にはMermaid図も追加する(requirements.md#図解-6)。[news-digest/content-generation/design.md「図解を生成する処理」](../../news-digest/content-generation/design.md)と同じ形式で`diagram`を返す
+  12. 生成画像(Cloudflare Workers AI)は観点ごとまたは記事全体のいずれかの単位でトピックにつき原則1枚は必ず作り、流れ・分岐・時系列のような構造を示すのに適した観点にはMermaid図も追加する(requirements.md#図解-6)。[news-digest/content-generation/design.md「図解を生成する処理」](../../news-digest/content-generation/design.md)と同じ形式で`diagram`を返す
   13. 応答は`{ "heading": "...", "sections": { "when": {...}, "basis": {...}, "impact": {...} } }`のJSONだけを返させる。元記事を読めなかった場合は、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書き、それも難しい場合は`heading`を`null`にして返させる(聞き返しはさせない)
 - 応答JSONの形式:
   ```json
@@ -66,7 +66,7 @@ sequenceDiagram
   3. 見出しが100字を超える場合は不正とする(見出しとして読める長さに抑えるため)
   4. 各観点の`diagram`は[news-digest/content-generation/design.md](../../news-digest/content-generation/design.md)「図解を生成する処理」と同じ検証・保存処理を行う
   5. 不正な場合は、その1本の生成失敗として[weekly-publish/design.md](../weekly-publish/design.md)のやり直し・除外の流れに乗せる
-- 関連するビジネスルール: requirements.md#要約-2、requirements.md#図解の生成(Nano Banana)-9
+- 関連するビジネスルール: requirements.md#要約-2、requirements.md#図解の生成(Cloudflare Workers AI)-9
 
 ### 記事データの1本分を組み立てる処理(決定的なコード)
 - 対象: 検証を通った見出し・`sections`と、選定時の値
@@ -97,7 +97,7 @@ app/future-digest/lib/articleTitle.ts (編成分割で変更: buildArticleTitle(
 app/future-digest/lib/buildPrediction.ts (新規: 選定時の値+生成結果からPredictionを組み立てる)
 app/future-digest/lib/articleSchema.ts (article-detailで新規: 分量検証を組み込む)
 app/future-digest/lib/diagramValidation.ts (新規: news-digestと同じisValidAgentDiagram)
-scripts/future-digest/generateDiagram.ts (新規: news-digestのgenerateDiagram.tsと同じロジック。保存先のみcontent/future-digest/articles/images/に変更)
+scripts/future-digest/generateDiagram.ts (新規: news-digestのgenerateDiagram.tsと同じロジック。保存先のみpublic/content/future-digest/articles/images/に変更)
 app/future-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 specs/legal/requirements.md (既存: 知的財産の条項の仕様リンクに本specを追加)
 app/legal/page.tsx (既存: 「4. 知的財産」に週刊未来予測の条項を追記)

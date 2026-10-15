@@ -7,7 +7,7 @@
 // 1件ずつについてClaude Code CLI(`claude -p`)をヘッドレス起動し、見出し・固定3観点(when/basis/impact)を
 // 生成する。あわせて、各観点の図解(diagram)を解決する(requirements.md#図解-6、design.md「見出し・固定3観点を
 // 書く処理」手順12)。エージェントの応答に含まれるtype: 'mermaid'はそのまま保存し、type: 'image'は
-// generateDiagram.ts経由でNano Bananaを呼び出して画像に差し替える。この差し替えは
+// generateDiagram.ts経由でCloudflare Workers AIを呼び出して画像に差し替える。この差し替えは
 // generatePredictions(app/future-digest/lib/generateContent.ts)の分量検証より前に行い、以降は
 // sections[key].diagramが最終形式(Diagram型。image版はpath)になっている前提で扱う。
 // 1候補の生成が一時的に失敗した場合はリトライし、それでも失敗する候補は「生成に失敗した枠」として
@@ -16,7 +16,7 @@
 // (weekly-publish/design.md「1回分の記事を生成する処理」手順4)。
 // 認証は運営者個人のClaude Code Pro/Maxサブスクリプション(CLAUDE_CODE_OAUTH_TOKEN)を使う。
 //
-// 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx GEMINI_API_KEY=yyy npx tsx scripts/future-digest/generate-content.ts <selection.jsonのパス>
+// 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx CLOUDFLARE_ACCOUNT_ID=yyy CLOUDFLARE_AI_API_TOKEN=zzz npx tsx scripts/future-digest/generate-content.ts <selection.jsonのパス>
 import fs from 'node:fs'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
@@ -66,7 +66,7 @@ ${guardrail}
 - 情報源名: ${candidate.sourceName}
 - 元URL: ${candidate.sourceUrl}
 
-生成画像(Nano Banana)は、観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つは必ず作ってください(requirements.md#図解-6)。概念・具体例を絵で見せることで理解を助ける構図を必ず考え、該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
+生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つは必ず作ってください(requirements.md#図解-6)。概念・具体例を絵で見せることで理解を助ける構図を必ず考え、該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "sections": null}\`)を返してください(いずれの場合も聞き返さない):
 
@@ -76,7 +76,7 @@ WebFetchツールで元URLの内容を把握したうえで、次のJSON形式�
 // エージェントが返した観点ごとのdiagram(生の形式。isValidAgentDiagramで妥当性確認したもの)を、
 // 記事データの最終形式(Diagram型)に解決する(design.md「見出し・固定3観点を書く処理」手順12)。
 // type: 'mermaid'はcodeをそのまま保存するだけでよい(構文検証はしない。壊れていても表示が崩れるのみ)。
-// type: 'image'のみNano Banana呼び出しが必要なためgenerateDiagramImageに委ねる
+// type: 'image'のみCloudflare Workers AI呼び出しが必要なためgenerateDiagramImageに委ねる
 async function resolveDiagram(
   candidate: Candidate,
   sectionKey: SectionKey,
@@ -89,7 +89,7 @@ async function resolveDiagram(
 }
 
 // Claude Code CLIの応答テキスト(ClaudeCliResponse.result)からJSONオブジェクトを抽出し、
-// 観点ごとのdiagramをNano Banana呼び出しも含めて最終形式に解決してから再度文字列化する。
+// 観点ごとのdiagramをCloudflare Workers AI呼び出しも含めて最終形式に解決してから再度文字列化する。
 // 抽出・パースに失敗した場合は元のテキストをそのまま返す(後続のclassifyGenerationResultが
 // 同じ抽出処理を行い、一時的失敗として分類する。design.md「エラーハンドリング」)
 async function resolveDiagramsInResultText(resultText: string, date: string, candidate: Candidate): Promise<string> {
@@ -154,7 +154,7 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
   }
 }
 
-// callClaudeCodeの応答に含まれる各観点のdiagramを、Nano Banana呼び出しも含めて最終形式に解決してから
+// callClaudeCodeの応答に含まれる各観点のdiagramを、Cloudflare Workers AI呼び出しも含めて最終形式に解決してから
 // generatePredictions(app/future-digest/lib/generateContent.ts)に渡す(tasks.md Task11「generate-content.ts
 // から、各観点のdiagram.type === 'image'の場合のみこの処理を呼び出すよう配線する」)
 async function callClaudeCodeWithDiagrams(

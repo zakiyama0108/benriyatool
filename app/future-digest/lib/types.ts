@@ -47,7 +47,7 @@ export const IMPACT_ORDER: Impact[] = ['high', 'medium', 'low']
 export const IMPACT_LABELS: Record<Impact, string> = { high: '大', medium: '中', low: '小' }
 
 // 図解(news-digest/article-detail/design.md「前提: 記事データの形式」と同一の形)。
-// type: 'image'のpathはNano Bananaが生成した画像の保存先(content/future-digest/articles/images/配下)
+// type: 'image'のpathはCloudflare Workers AIが生成した画像の保存先(content/future-digest/articles/images/配下)
 export type Diagram = { type: 'mermaid'; code: string } | { type: 'image'; path: string }
 
 export type PredictionSection = {

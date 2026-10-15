@@ -12,8 +12,10 @@ const EMPTY_SLOT_REASONS: EmptySlot['reason'][] = ['no-candidate', 'collection-f
 const COLLECTION_FAILURE_REASONS: string[] = ['timeout', 'invalid-format', 'other']
 const EDITIONS: Edition[] = ['science-tech', 'life-society']
 const SECTION_KEYS: (keyof PredictionSections)[] = ['when', 'basis', 'impact']
-// Nano Bananaが生成した画像の保存先(types.ts「Diagram」のimageのpathが指すべき配下)
-const DIAGRAM_IMAGES_DIR_PREFIX = 'content/future-digest/articles/images/'
+// Cloudflare Workers AIが生成した画像が配信されるURLパス(types.ts「Diagram」のimageのpathが
+// 指すべき配下。public/配下に保存され、先頭スラッシュのURLパスである必要がある。2026-10改定:
+// content/配下はビルド時にfsで読み込むだけで配信対象ではなく<img src>で404になるため、public/配下に変更した)
+const DIAGRAM_IMAGES_DIR_PREFIX = '/content/future-digest/articles/images/'
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0

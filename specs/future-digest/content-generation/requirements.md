@@ -27,7 +27,7 @@
 - [5] 予測であることが分かる書き方をし(「〜と考えられている」「〜と予測している」等)、確定した未来として断定しない
 
 ### 図解
-- [6] 生成画像(Nano Banana)は、観点ごとまたは記事全体のいずれかの単位で、トピックにつき原則として少なくとも1枚を必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な内容のトピックでは、無理にMermaid図を作らない([news-digest/content-generation/requirements.md#図解](../../news-digest/content-generation/requirements.md)と同じ考え方・同じ技術を踏襲する。2026-10改定: 従来は図解全般をエージェントの任意判断としていたが、Nano Banana画像は原則必須に変更した。根拠: 運営者フィードバック「NanoBananaを活用した絵っぽい図がないのがNG。それは絶対入れてほしい」)
+- [6] 生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、トピックにつき原則として少なくとも1枚を必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な内容のトピックでは、無理にMermaid図を作らない([news-digest/content-generation/requirements.md#図解](../../news-digest/content-generation/requirements.md)と同じ考え方・同じ技術を踏襲する。2026-10改定: 従来は図解全般をエージェントの任意判断としていたが、Cloudflare Workers AI画像は原則必須に変更した。根拠: 運営者フィードバック「NanoBananaを活用した絵っぽい図がないのがNG。それは絶対入れてほしい」)
 
 ### 記事の構成
 - [7] 各記事データには、ジャンル・時間軸・見出し・固定3観点の要約(観点ごとの見出し・本文)・影響度・影響度の根拠・出典をセットで含める
@@ -51,15 +51,15 @@
 ### 内容の逸脱防止
 - [8] 要約は元記事に書かれている範囲にとどめ、書かれていない内容を推測で断定しない。影響度の根拠は[content-selection/requirements.md#影響度](../content-selection/requirements.md)の観点に沿って書く
 
-### 図解の生成(Nano Banana)
-- [9] Nano Banana(Gemini 2.5 Flash Image)の利用方針・制約は[news-digest/content-generation/requirements.md#図解の生成(Nano Banana)](../../news-digest/content-generation/requirements.md)の定めと同一とする(重複して記載しない)
+### 図解の生成(Cloudflare Workers AI)
+- [9] Cloudflare Workers AI(FLUXモデル)の利用方針・制約は[news-digest/content-generation/requirements.md#図解の生成(Cloudflare Workers AI)](../../news-digest/content-generation/requirements.md)の定めと同一とする(重複して記載しない)
 
 ## 依存関係
 - 対象記事の選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
 - 作った要約は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 生成・公開のタイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 - 執筆ルールは[source-review/requirements.md](../source-review/requirements.md)の月次見直し(生成領域)で調整される
-- Nano Bananaの呼び出しにはGemini APIキーが必要(news-digestと共用のGitHub Actions secrets運用)
+- Cloudflare Workers AIの呼び出しには`CLOUDFLARE_ACCOUNT_ID`・`CLOUDFLARE_AI_API_TOKEN`が必要(news-digestと共用のGitHub Actions secrets運用)
 
 ## スコープ外
 - 元記事の全文掲載・全文転載

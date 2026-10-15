@@ -275,7 +275,7 @@ describe('記事データ(JSON)のスキーマ検証(固定3観点・新形式) 
     const predictions = data.predictions
     const sections = makeSections()
     sections.impact = makeSection(Math.floor(250 / 3), {
-      diagram: { type: 'image', path: 'content/future-digest/articles/images/2026-09-24-technology-ai-near-impact.png' },
+      diagram: { type: 'image', path: '/content/future-digest/articles/images/2026-09-24-technology-ai-near-impact.png' },
     })
     predictions[0] = { ...predictions[0], sections }
     delete predictions[0].body
