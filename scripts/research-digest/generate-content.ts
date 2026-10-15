@@ -17,10 +17,10 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { pathToFileURL } from 'node:url'
 import type { Candidate, GenreResult } from '../../app/research-digest/lib/candidateTypes'
-import { GENRE_LABELS, IMPACT_LABELS } from '../../app/research-digest/lib/types'
+import { GENRE_LABELS, IMPACT_LABELS, type Diagram } from '../../app/research-digest/lib/types'
 import { generateFindings, type ClaudeCliResponse } from '../../app/research-digest/lib/generateContent'
-import { isValidAgentDiagram } from '../../app/research-digest/lib/diagramValidation'
-import { generateDiagramImage } from './generateDiagram'
+import { isValidAgentDiagram, type AgentDiagram } from '../../app/research-digest/lib/diagramValidation'
+import { renderDiagramImage } from './renderDiagram'
 
 const execFileAsync = promisify(execFile)
 
@@ -56,11 +56,15 @@ ${GUARDRAIL}
 - 発表年: ${candidate.publishedYear ?? '不明'}
 - 査読前の論文(プレプリント): ${candidate.isPreprint ? 'はい(査読前であることを注意点観点に必ず書くこと)' : 'いいえ'}
 
-生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、この研究につき原則として少なくとも1つは必ず作ってください(requirements.md#図解-6)。構図は説明内容の概略図・理解の補助になる構図(アイコンを使った概念図、番号付きのステップ、比較を示す対比構図など)にし、特定の人物が何かをしている写真的な場面描写にはしないでください。画像モデルは文章を正確に描画できないため、画像の中に文章・単語ラベルを入れることは避け、番号(1・2・3等)や短い記号程度にとどめてください(具体的な語句・ラベルが必要な場合はMermaid側で表現する)。該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文(英語で、具体的な構図・アイコン・配色を指定する)"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
+図解(観点ごとまたは記事全体のいずれかの単位で、この研究につき原則として少なくとも1つ)は、AIに自由な画像を生成させるのではなく、次のいずれかの構造化データとしてコードがSVGに描画します(requirements.md#図解-6)。
+- 手順・流れを示す場合: \`{"type": "image", "layout": "steps", "items": [{"icon": "アイコン名", "label": "短い日本語ラベル(10字程度)"}, ...]}\`(itemsは2〜4件)
+- 2つを対比・比較する場合: \`{"type": "image", "layout": "compare", "left": {"icon": "アイコン名", "label": "..."}, "right": {"icon": "アイコン名", "label": "..."}}\`
+- アイコン名は次の固定セットから選んでください(これ以外の名前は使えません): terminal, shield-check, blocked, document, calendar, cart, clock, chat, star, trending-up, cpu, check, idea, search, beaker, heart, settings, refresh, user
+該当する観点の\`diagram\`に上記いずれかを設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetchツールで元URLの内容を把握したうえで(有料で全文を読めない場合は、要旨・公式発表など公開されている範囲で把握する)、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、渡された情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "sections": null}\`)を返してください(いずれの場合も聞き返さない):
 
-{"heading": "何が分かったかが一目で分かる1文の見出し", "sections": {"finding": {"heading": "結論文(短い見出し)", "text": "何が分かったかの本文", "diagram": null}, "basis": {"heading": "...", "text": "なぜそう結論づけられたのか(判断の決め手を素人にも分かる言葉で)", "diagram": null}, "relevance": {"heading": "...", "text": "暮らしへの関わり", "diagram": null}, "caveat": {"heading": "...", "text": "注意点(研究の限界。査読前なら必ず明記)", "diagram": null}}}`
+{"heading": "何が分かったかが一目で分かる1文の見出し", "sections": {"finding": {"heading": "結論文(短い見出し)", "text": "何が分かったかの本文", "diagram": {"type": "image", "layout": "steps", "items": [{"icon": "beaker", "label": "..."}, {"icon": "check", "label": "..."}]}}, "basis": {"heading": "...", "text": "なぜそう結論づけられたのか(判断の決め手を素人にも分かる言葉で)", "diagram": null}, "relevance": {"heading": "...", "text": "暮らしへの関わり", "diagram": null}, "caveat": {"heading": "...", "text": "注意点(研究の限界。査読前なら必ず明記)", "diagram": null}}}`
 }
 
 // Claude Code CLIへ渡す起動引数(純粋関数として切り出し、テストで検証できるようにする)。
@@ -91,17 +95,15 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
 // エージェントが返した観点ごとのdiagram(生の形式。isValidAgentDiagramで妥当性確認したもの)を、
 // 記事データの最終形式(Diagram型)に解決する(content-generation/design.md「見出し・固定4観点を書く処理」
 // 手順13)。type: 'mermaid'はcodeをそのまま保存するだけでよい(構文検証はしない)。
-// type: 'image'のみCloudflare Workers AI呼び出しが必要なためgenerateDiagramImageに委ねる
-// (news-digestのscripts/news-digest/generate-content.tsのresolveDiagramと同じロジック)
-async function resolveDiagram(
-  genre: string,
-  sectionKey: string,
-  date: string,
-  diagram: { type: 'mermaid'; code: string } | { type: 'image'; prompt: string } | null,
-): Promise<{ type: 'mermaid'; code: string } | { type: 'image'; path: string } | null> {
+// type: 'image'のみrenderDiagramImage(コードでのSVG描画)でファイル化が必要
+function resolveDiagram(genre: string, sectionKey: string, date: string, diagram: AgentDiagram): Diagram | null {
   if (diagram === null) return null
   if (diagram.type === 'mermaid') return diagram
-  return generateDiagramImage({ date, genre, sectionKey, prompt: diagram.prompt })
+  const spec =
+    diagram.layout === 'steps'
+      ? { layout: 'steps' as const, items: diagram.items }
+      : { layout: 'compare' as const, left: diagram.left, right: diagram.right }
+  return renderDiagramImage({ date, genre, sectionKey, spec })
 }
 
 // callClaudeCodeの応答に含まれる各観点のdiagramを、最終形式に解決してから返す(design.md
@@ -135,7 +137,7 @@ async function resolveDiagramsInResponse(res: ClaudeCliResponse, genre: string, 
         section.diagram = null
         continue
       }
-      section.diagram = await resolveDiagram(genre, key, date, rawDiagram)
+      section.diagram = resolveDiagram(genre, key, date, rawDiagram)
     }
   }
 

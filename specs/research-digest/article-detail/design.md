@@ -231,7 +231,7 @@ app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/i
 app/lib/supabaseClient.ts (既存)
 supabase/migrations/<timestamp>_create_research_digest_feedback.sql (新規)
 content/research-digest/articles/*.json (新規: 記事本文データ)
-public/content/research-digest/articles/images/*.png (新規: Cloudflare Workers AIが生成した画像。public/配下でブラウザから配信される)
+public/content/research-digest/articles/images/*.svg (新規: renderDiagramSvgが描画した概念図。public/配下でブラウザから配信される)
 ```
 
 ## データベース設計
