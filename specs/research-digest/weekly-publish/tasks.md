@@ -1,6 +1,6 @@
 # タスク分解: 週2回の記事自動生成・公開
 
-> 全8件(Task 1〜Task 8)
+> 全9件(Task 1〜Task 9)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 選定結果からの運営者への警告判定(仕様: requirements.md#掲載件数の保証-3、content-selection/requirements.md#収集失敗-4、design.md「1回分の記事を生成する処理」手順2)
@@ -56,3 +56,7 @@ Task 2・4・5を編(`edition`)対応に拡張し、2編目(科学・社会編�
   - PRのタイトル・本文に編のラベルを含める
 
 </details>
+
+- Task 9: 配信時刻の変更(仕様: requirements.md#配信スケジュール-1〜2、design.md「実行環境の前提」)
+  - TDD対象外(cron設定のみの変更)
+  - `.github/workflows/research-digest-weekly.yml`の`schedule`をからだ・くらし編01:43 JST・科学・社会編05:43 JST(本番・再実行とも6時間早める)に変更する

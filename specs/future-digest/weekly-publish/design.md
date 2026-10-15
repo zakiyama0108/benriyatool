@@ -1,11 +1,11 @@
 # 設計: 週2回の記事自動生成・公開
 
 ## サマリ
-GitHub Actionsのスケジュール実行が、サイエンス・テクノロジー編は毎週木曜07:43(日本時間)頃、くらし・社会編は毎週日曜09:43(日本時間)頃に、それぞれ独立して起動し、[content-selection](../content-selection/design.md)の収集・選定→[content-generation](../content-generation/design.md)の見出し・本文生成→記事データの組み立て→PR作成・自動マージまでを行う。編の判定は、`github.event.schedule`(起動元のcron式)またはworkflow_dispatchの入力から行う(trend-digestの編成判定と同じ方法)。完全自動マージの対象はこの週次記事PR(`future-digest/articles/**`ブランチ)だけで、trend-digestのweekly-publishと同じ例外運用とする。CIが失敗したPRはマージせず、失敗の概要をPRにコメントする。
+GitHub Actionsのスケジュール実行が、サイエンス・テクノロジー編は毎週木曜01:43(日本時間)頃、くらし・社会編は毎週日曜03:43(日本時間)頃に、それぞれ独立して起動し、[content-selection](../content-selection/design.md)の収集・選定→[content-generation](../content-generation/design.md)の見出し・本文生成→記事データの組み立て→PR作成・自動マージまでを行う。編の判定は、`github.event.schedule`(起動元のcron式)またはworkflow_dispatchの入力から行う(trend-digestの編成判定と同じ方法)。完全自動マージの対象はこの週次記事PR(`future-digest/articles/**`ブランチ)だけで、trend-digestのweekly-publishと同じ例外運用とする。CIが失敗したPRはマージせず、失敗の概要をPRにコメントする。
 
 主要な設計判断:
 - 実行基盤・認証・自動マージの仕組みはtrend-digestと同じ構成をそのまま使う(新しい運用パターンを増やさない。architecture.md#2)。編の判定方法(`github.event.schedule`の照合)もtrend-digestの実装をそのまま踏襲する
-- 2編目(くらし・社会編)の時刻は、既存のサイエンス・テクノロジー編(07:43 JST)と同じにせず、09:43 JSTにずらした(下記「実行環境の前提」)。根拠: 2026-10-03に、future-digest・research-digestを同じ07:43 JST系の時間帯で同時に手動実行した際、2本のClaude Code CLIが同じ利用枠を取り合いどちらも生成の途中で打ち切られる事故が実際に発生した。本番cronだけでなく、本番の12〜36時間後に追加される再実行cronどうしが近接・衝突しないよう、research-digestの2編目(科学・社会編、土曜11:43 JST予定)とも時刻をずらしている([research-digest/weekly-publish/design.md](../../research-digest/weekly-publish/design.md)参照)
+- 2編目(くらし・社会編)の時刻は、サイエンス・テクノロジー編(01:43 JST)と同じにせず、03:43 JSTにずらした(下記「実行環境の前提」)。根拠: future-digest・research-digestを同じ時間帯で同時実行すると、2本のClaude Code CLIが同じ利用枠を取り合いどちらも生成の途中で打ち切られる(実際に発生した事故を踏まえた設計)。本番cronだけでなく、本番の12〜36時間後に追加される再実行cronどうしが近接・衝突しないよう、research-digestの2編目(科学・社会編、土曜05:43 JST)とも時刻をずらしている([research-digest/weekly-publish/design.md](../../research-digest/weekly-publish/design.md)参照)
 - 採用0件の回・生成が全件失敗した回も、公開をスキップせず候補なし・収集失敗・生成失敗の記載で記事を作成・公開する(根拠: /requirementでの決定)。公開するかどうかの分岐はなくなり、「その回の実行を運営者への警告付きにするか」だけを判定する。全枠が収集失敗だった回は、公開はしたうえで実行を失敗表示にする(収集の仕組み自体の異常に運営者が気づけるようにするため)
 - 利用上限への到達は記事を作る材料が得られないため、その回はいったん打ち切るが、本番の12時間後・24時間後・36時間後の最大3回、自動的に再試行する(根拠: /requirementでの決定「12時間×3回くらいはリトライしてほしい」)。エラーメッセージから解除時刻を読み取って待つ方式は表示形式に依存し不安定なため採用しない
 - 再実行が翌日にまたがるため、記事の`date`は実行日ではなく「本来の配信日(対象編の配信曜日)」から求める(`issueNumber`は日付に依存せず「その編で公開済みの最大値+1」で決まるため、再実行でも通常どおりの方法で採番する)。配信日はこれを純粋関数`getScheduledPublishDate(nowUtc, edition)`(UTCの時点と編を受け取り、関数の内側でJSTに変換してから対象編の直近の配信曜日を求める。呼び出し側でJST変換はしない)で算出し、本番cron・再実行cron・手動`workflow_dispatch`のすべてで共通に使う
@@ -15,21 +15,21 @@ GitHub Actionsのスケジュール実行が、サイエンス・テクノロジ
 
 | 論点 | 選んだ案 | 採らなかった案 | 理由 | 影響範囲 | 出所 |
 |---|---|---|---|---|---|
-| くらし・社会編の配信時刻 | 日曜09:43 JST(既存の07:43 JSTから2時間ずらす) | 既存と同じ07:43 JST | 2026-10-03に実際に発生した「複数digestアプリの同時実行による利用枠の枯渇」の再発を防ぐため。既存の07:43 JST系の時刻・互いの再実行グリッド(12h/24h/36h後)と重ならないようにした | 実行環境の前提 | 〔提案〕 |
+| くらし・社会編の配信時刻 | 日曜03:43 JST(サイエンス・テクノロジー編の01:43 JSTから2時間ずらす) | サイエンス・テクノロジー編と同じ01:43 JST | 「複数digestアプリの同時実行による利用枠の枯渇」の再発を防ぐため。同じ時刻系・互いの再実行グリッド(12h/24h/36h後)と重ならないようにした | 実行環境の前提 | 〔提案〕 |
 | 記事ID・ファイル名の形式 | `<date>-<edition>`(trend-digestと同じ形式) | `<date>`のまま(編は内部フィールドのみ) | 1日に2編の記事が存在しうる前提では日付だけでは一意にならない。trend-digestの既存実装と形式を揃え、新しい運用パターンを増やさない | article-detailの共有スキーマ・ブランチ名・公開パス全体 | 〔提案〕 |
 | 編の判定方法 | `github.event.schedule`(起動元cron式)またはworkflow_dispatch入力から判定(trend-digestと同じ) | 新しい判定方法を設計する | 既存の実装パターンをそのまま踏襲し、新しい運用パターンを増やさない | 実行環境の前提・1回分の記事を生成する処理 | 〔提案〕 |
 
 ## 実行環境の前提
 
 - ワークフロー本体は`.github/workflows/future-digest-weekly.yml`とし、編ごとに独立した`schedule`で起動する(いずれもUTC表記。JSTは括弧内)。GitHub Actionsのスケジュール実行は毎時0分に遅れやすいため0分を避ける(trend-digestと同じ)
-  - サイエンス・テクノロジー編(既存): 本番`43 22 * * 3`(水曜22:43 UTC=木曜07:43 JST)。ai-dev-digestの日次実行(06:43 JST)と1時間ずらす
-    - 再実行1回目(本番の12時間後): `43 10 * * 4`(木曜10:43 UTC=木曜19:43 JST)
-    - 再実行2回目(本番の24時間後): `43 22 * * 4`(木曜22:43 UTC=金曜07:43 JST)
-    - 再実行3回目(本番の36時間後): `43 10 * * 5`(金曜10:43 UTC=金曜19:43 JST)
-  - くらし・社会編(新規): 本番`43 0 * * 0`(日曜00:43 UTC=日曜09:43 JST)。サイエンス・テクノロジー編と2時間ずらす(上記「主要な設計判断」参照)
-    - 再実行1回目(本番の12時間後): `43 12 * * 0`(日曜12:43 UTC=日曜21:43 JST)
-    - 再実行2回目(本番の24時間後): `43 0 * * 1`(月曜00:43 UTC=月曜09:43 JST)
-    - 再実行3回目(本番の36時間後): `43 12 * * 1`(月曜12:43 UTC=月曜21:43 JST)
+  - サイエンス・テクノロジー編: 本番`43 16 * * 3`(水曜16:43 UTC=木曜01:43 JST)。ai-dev-digestの日次実行(00:43 JST)と1時間ずらす
+    - 再実行1回目(本番の12時間後): `43 4 * * 4`(木曜04:43 UTC=木曜13:43 JST)
+    - 再実行2回目(本番の24時間後): `43 16 * * 4`(木曜16:43 UTC=金曜01:43 JST)
+    - 再実行3回目(本番の36時間後): `43 4 * * 5`(金曜04:43 UTC=金曜13:43 JST)
+  - くらし・社会編: 本番`43 18 * * 6`(土曜18:43 UTC=日曜03:43 JST)。サイエンス・テクノロジー編と2時間ずらす(上記「主要な設計判断」参照)
+    - 再実行1回目(本番の12時間後): `43 6 * * 0`(日曜06:43 UTC=日曜15:43 JST)
+    - 再実行2回目(本番の24時間後): `43 18 * * 0`(日曜18:43 UTC=月曜03:43 JST)
+    - 再実行3回目(本番の36時間後): `43 6 * * 1`(月曜06:43 UTC=月曜15:43 JST)
   これら8本のcronで起動した実行は、いずれも「利用上限への到達時に再実行する処理」の冪等チェックを最初に行う(requirements.md#利用上限への到達時の再実行-1〜2)。3本を区別する回数管理は行わず、3本目のcronのぶんまで走って公開に至らなければ、それ以上自動で再試行する仕組み自体がないというだけで足りる(requirements.md#利用上限への到達時の再実行-3)
 - 編の判定(`science-tech`/`life-society`)は、`workflow_dispatch`起動時は入力`edition`をそのまま使い、`schedule`起動時は`github.event.schedule`(起動元のcron式の文字列)が上記のサイエンス・テクノロジー編の4本のいずれかに一致すれば`science-tech`、それ以外(くらし・社会編の4本)なら`life-society`と判定する(trend-digestの編成判定と同じ方法。design.md#主要な設計判断)
 - `workflow_dispatch`でも起動できるようにする。用途は(a) Secrets設定後の動作確認、(b) 上記3回の自動再実行でも公開できなかった回の復旧、の2つ(requirements.md#スコープ外の「手動での日時指定実行・即時の再実行機能」はこの2つを除く)。入力は2つ: `edition`(必須。`science-tech`または`life-society`のchoice。trend-digestのworkflow_dispatchと同じ形)と、`scheduled_publish_date`(省略可、`YYYY-MM-DD`)で本来の配信日を指定できる。省略時は実行日時から`getScheduledPublishDate(nowUtc, edition)`で求める(下記「配信日を求める処理」)。入力がある場合は純粋関数`validateScheduledPublishDate(value, edition)`で`^\d{4}-\d{2}-\d{2}$`の形かつ対象編の配信曜日(科学・テクノロジー編は木曜、くらし・社会編は日曜。JST)であることを検証し、満たさなければワークフローを失敗させる(下記「セキュリティ」)
@@ -157,7 +157,7 @@ sequenceDiagram
 ## 関連するファイル(抜粋)
 
 ```
-.github/workflows/future-digest-weekly.yml (新規: 木曜の本番cronと、木曜19:43・金曜07:43・金曜19:43(JST)の3本の再実行cronで起動するワークフロー本体。publishジョブとrecord-ci-failureジョブ)
+.github/workflows/future-digest-weekly.yml (新規: 木曜の本番cronと、木曜13:43・金曜01:43・金曜13:43(JST)の3本の再実行cronで起動するワークフロー本体。publishジョブとrecord-ci-failureジョブ)
 scripts/future-digest/collect-and-select.ts (content-selectionで新規: 収集・選定のCLI)
 scripts/future-digest/generate-content.ts (content-generationで新規: 見出し・本文生成のCLI)
 app/future-digest/lib/shouldAlertOperator.ts (新規: 選定結果から全枠収集失敗かどうか〈運営者への警告が必要か〉を判定する純粋関数。content-selectionの`collect-and-select.ts`から呼ばれる)
