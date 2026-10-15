@@ -54,7 +54,7 @@ Topic型の`LegacyTopic`/`CurrentTopic`化・記事スキーマ検証(`types.ts`
 
 ## 開発領域観点・図解への移行
 
-💡新規性を廃止し🧭開発領域を追加、あわせて図解機能(Mermaid/Nano Banana)を追加する変更。〔提案〕
+💡新規性を廃止し🧭開発領域を追加、あわせて図解機能(Mermaid/Cloudflare Workers AI)を追加する変更。〔提案〕
 
 <details><summary>詳細を開く</summary>
 
@@ -66,7 +66,7 @@ Topic型の`LegacyTopic`/`CurrentTopic`化・記事スキーマ検証(`types.ts`
   - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く(news-digestの`diagramValidation.ts`と同じロジック)
   - 🟢 `app/ai-dev-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
 
-- Task 15: Nano Banana呼び出しと保存(仕様: requirements.md#図解の生成(Nano Banana)-11、design.md「要約を書く処理」手順13)
+- Task 15: Cloudflare Workers AI呼び出しと保存(仕様: requirements.md#図解の生成(Cloudflare Workers AI)-11、design.md「要約を書く処理」手順13)
   - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 14でテスト済み)
   - `scripts/ai-dev-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`content/ai-dev-digest/articles/images/`に変更)
   - `scripts/ai-dev-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する

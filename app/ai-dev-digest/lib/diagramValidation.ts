@@ -1,5 +1,5 @@
 // エージェントが生成する図解データの妥当性検証(仕様: requirements.md#図解-17、
-// design.md「要約を書く処理」手順13。news-digestと同じロジック)。エージェントの応答はまだNano Bananaによる
+// design.md「要約を書く処理」手順13。news-digestと同じロジック)。エージェントの応答はまだCloudflare Workers AIによる
 // 画像取得前の生の形式(type: 'image'の場合はpathではなくpromptキーを持つ)のため、最終的な記事データの
 // Diagram型(app/ai-dev-digest/lib/types.ts)とは異なる形を検証する。
 // scripts/ai-dev-digest/generate-content.ts(TDD対象外)が、この判定結果を使って
