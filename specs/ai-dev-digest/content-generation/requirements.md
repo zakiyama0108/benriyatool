@@ -45,7 +45,7 @@
 - [16] 1つのトピックが複数領域にまたがる場合、該当する領域をすべてタグとして示す
 
 ### 図解
-- [17] 生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、トピックにつき原則として少なくとも1枚を必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・手順のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な内容のトピックでは、無理にMermaid図を作らない([news-digest/content-generation/requirements.md#図解](../../news-digest/content-generation/requirements.md)と同じ考え方・同じ技術を踏襲する。2026-10改定: 従来は図解全般をエージェントの任意判断としていたが、Cloudflare Workers AI画像は原則必須に変更した。根拠: 運営者フィードバック「NanoBananaを活用した絵っぽい図がないのがNG。それは絶対入れてほしい」)。特に🎯活用法観点で上記[12]の(a)具体的な手順を示す場合は、実際の操作・画面イメージが伝わるCloudflare Workers AI画像を必ず検討し、手順の流れそのものを示したい場合はMermaid図も併用する
+- [17] 概念図(観点ごとまたは記事全体のいずれかの単位)は、トピックにつき原則として少なくとも1つを必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・手順のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な内容のトピックでは、無理にMermaid図を作らない。特に🎯活用法観点で上記[12]の(a)具体的な手順を示す場合は、手順をアイコン+ラベルで示す概念図を必ず検討し、手順の流れそのものを示したい場合はMermaid図も併用する(2026-10改定。根拠: 運営者フィードバック「絵っぽい図がないのがNG。それは絶対入れてほしい」。さらに、AI画像生成(Nano Banana→Cloudflare Workers AI)では文章・構図の破綻を避けられなかったため、固定アイコン名+短い日本語ラベルの構造化データをエージェントが決め、コードが決定的にSVGへ描画する方式に変更した。requirements.md#図解の生成(アイコン図のSVG描画)参照)
 
 ### 記事の構成
 - [7] 各トピックには見出し(タイトル)・固定4観点の要約(観点ごとの導入文・詳細文)・重要度・出典情報(発信者名・タイトル・元URL)をセットで含める
@@ -72,15 +72,15 @@
 - [8] 記事の内容は[content-selection/requirements.md](../content-selection/requirements.md)で採用されたトピックの範囲にとどめ、無関係な話題(政治・時事ネタなど)を無理に「AI駆動開発」に関連付けて取り上げない(具体的なガードレールの文言は設計で詰める)
 - [10] 固定4観点いずれも、記事内に明記されている情報を根拠とし、書かれていない内容を推測で断定しない。ただし🎯活用法観点における「自分への影響」は記事内容から合理的に判断することを許容し、推測を含む場合はその旨が伝わる書き方にする(機能要件[12]と同一の制約をここに明記する)
 
-### 図解の生成(Cloudflare Workers AI)
-- [11] Cloudflare Workers AI(FLUXモデル)の利用方針・制約は[news-digest/content-generation/requirements.md#図解の生成(Cloudflare Workers AI)](../../news-digest/content-generation/requirements.md)の定めと同一とする(重複して記載しない)
+### 図解の生成(アイコン図のSVG描画)
+- [11] 概念図はAI画像生成ではなく、コードが決定的にSVGを組み立てて描画する。エージェントは`layout:"steps"`(2〜4件の手順・流れ)または`layout:"compare"`(2件の対比)のいずれかを選び、各項目に固定アイコン名(`app/ai-dev-digest/lib/diagramIcons.ts`で定義する19種、Heroicons[MIT License]由来のパスデータ)と短い日本語ラベル(目安10字程度)を指定する。コード側(`app/ai-dev-digest/lib/renderDiagramSvg.ts`)がこのデータをSVGとして描画し、ラベルはSVGの`<text>`要素(実フォント)で描画するため常に正確に表示される(2026-10改定。根拠: AI画像生成(Nano Banana→Cloudflare Workers AI)では日本語の文章・構図の破綻を避けられず、調査の結果、無料で使えて文字描画が正確な代替サービスも見つからなかったため、コードによる決定的な描画に方針転換した)
 
 ## 依存関係
 - 対象トピックの選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
 - 生成された記事は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 記事の生成・公開タイミングは[daily-publish/requirements.md](../daily-publish/requirements.md)に従う
 - ここで定める翻訳・要約・記事執筆のルールは、蓄積された運営者フィードバックをもとに[watchlist-review/requirements.md](../watchlist-review/requirements.md)の月次見直し(生成領域)で調整される。実際のルール文は記事生成CLI(`scripts/ai-dev-digest/generate-content.ts`)が実行時にこのrequirements.mdと[design.md](design.md)を読み込んでプロンプトへ渡す
-- Cloudflare Workers AIの呼び出しには`CLOUDFLARE_ACCOUNT_ID`・`CLOUDFLARE_AI_API_TOKEN`が必要(news-digestと共用のGitHub Actions secrets運用)
+- 概念図の描画はローカルでのSVG組み立てのみのため、外部APIの呼び出し・認証情報は不要
 
 ## スコープ外
 - 日本語以外の言語への翻訳(対象読者は日本語話者のみ)

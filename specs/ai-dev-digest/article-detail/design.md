@@ -216,7 +216,7 @@ app/ai-dev-digest/components/FormattedText.tsx (新規: parseFormattedTextの解
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用。2026-08修正: isAuthorizedAdminはフィードバック欄の表示切り替えに利用する)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/ai-dev-digest/articles/*.json (新規: 記事本文データ。コード資産ではないためapp/配下に置かない)
-public/content/ai-dev-digest/articles/images/*.png (新規: Cloudflare Workers AIが生成した画像。public/配下でブラウザから配信される)
+public/content/ai-dev-digest/articles/images/*.svg (新規: renderDiagramSvgが描画した概念図。public/配下でブラウザから配信される)
 ```
 
 ## データベース設計

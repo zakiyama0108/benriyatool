@@ -20,7 +20,7 @@ import type { GeneratedTopicInput } from '../../app/ai-dev-digest/lib/assembleAr
 import type { SelectedTopic, SelectionResult } from '../../app/ai-dev-digest/lib/candidateTypes'
 import { generateTopics, type ClaudeCliResponse } from '../../app/ai-dev-digest/lib/generateContent'
 import { isValidAgentDiagram } from '../../app/ai-dev-digest/lib/diagramValidation'
-import { generateDiagramImage } from './generateDiagram'
+import { renderDiagramImage } from './renderDiagram'
 
 const execFileAsync = promisify(execFile)
 
@@ -53,11 +53,15 @@ ${GUARDRAIL}
 - 元URL: ${candidate.url}
 - 情報源種別: ${candidate.sourceType}
 
-生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つは必ず作ってください(requirements.md#図解-17)。構図は説明内容の概略図・理解の補助になる構図(アイコンを使った概念図、番号付きのステップ、比較を示す対比構図など)にし、特定の人物が何かをしている写真的な場面描写にはしないでください。画像モデルは文章を正確に描画できないため、画像の中に文章・単語ラベルを入れることは避け、番号(1・2・3等)や短い記号程度にとどめてください(具体的な語句・ラベルが必要な場合はMermaid側で表現する)。該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文(英語で、具体的な構図・アイコン・配色を指定する)"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。理解が容易な単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
+図解(観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つ)は、AIに自由な画像を生成させるのではなく、次のいずれかの構造化データとしてコードがSVGに描画します(requirements.md#図解-17)。
+- 手順・流れを示す場合: \`{"type": "image", "layout": "steps", "items": [{"icon": "アイコン名", "label": "短い日本語ラベル(10字程度)"}, ...]}\`(itemsは2〜4件)
+- 2つを対比・比較する場合: \`{"type": "image", "layout": "compare", "left": {"icon": "アイコン名", "label": "..."}, "right": {"icon": "アイコン名", "label": "..."}}\`
+- アイコン名は次の固定セットから選んでください(これ以外の名前は使えません): terminal, shield-check, blocked, document, calendar, cart, clock, chat, star, trending-up, cpu, check, idea, search, beaker, heart, settings, refresh, user
+該当する観点の\`diagram\`に上記いずれかを設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。理解が容易な単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、確認できた情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`summary\`を\`null\`にしたJSON(\`{"heading": "...", "importance": 1, "summary": null}\`)を返してください(いずれの場合も聞き返さない):
 
-{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"domain": {"heading": "既存のどの作業をどう変えるかを含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "domains": ["backend", "infra"], "diagram": null}, "benefit": {"heading": "結論・メリットを含む見出し", "teaser": "...", "detail": "...", "diagram": null}, "how": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "howToUse": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}}}`
+{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"domain": {"heading": "既存のどの作業をどう変えるかを含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "domains": ["backend", "infra"], "diagram": null}, "benefit": {"heading": "結論・メリットを含む見出し", "teaser": "...", "detail": "...", "diagram": null}, "how": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "howToUse": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "image", "layout": "steps", "items": [{"icon": "terminal", "label": "..."}, {"icon": "shield-check", "label": "..."}]}}}}`
 }
 
 // Claude Code CLIを非対話モード(-p)で1回呼び出し、--output-format jsonで返る応答オブジェクトを返す。
@@ -89,7 +93,7 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
 // classifyGenerationResultに渡す前に、応答JSON内の各観点のdiagramを最終形式に解決する
 // (仕様: content-generation/design.md「要約を書く処理」手順13、content-generation/tasks.md Task15)。
 // type: 'mermaid'はcodeをそのまま保存するだけでよい(構文検証はしない)。type: 'image'のみ
-// generateDiagramImage(Cloudflare Workers AI呼び出し)で画像化が必要。失敗してもその観点の図解なしで続行する
+// renderDiagramImage(コードでのSVG描画)でファイル化が必要。失敗してもその観点の図解なしで続行する
 // (resはis_error/JSON抽出不可の場合はそのまま返し、classifyGenerationResultの既存の失敗判定に委ねる)
 async function resolveDiagramsInResult(
   res: ClaudeCliResponse,
@@ -125,7 +129,11 @@ async function resolveDiagramsInResult(
       perspective.diagram = rawDiagram
       continue
     }
-    perspective.diagram = await generateDiagramImage({ date, topicId, perspectiveKey: key, prompt: rawDiagram.prompt })
+    const spec =
+      rawDiagram.layout === 'steps'
+        ? { layout: 'steps' as const, items: rawDiagram.items }
+        : { layout: 'compare' as const, left: rawDiagram.left, right: rawDiagram.right }
+    perspective.diagram = renderDiagramImage({ date, topicId, perspectiveKey: key, spec })
   }
 
   return { ...res, result: JSON.stringify(parsed) }
