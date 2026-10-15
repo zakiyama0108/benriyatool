@@ -19,9 +19,11 @@ const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const MIN_TOPICS = 1
 const MAX_TOPICS = 7
 
-// 図解の生成画像が保存されるディレクトリ(content-generation/design.md「図解を生成する処理」手順3)。
-// diagram.pathはこの配下を指す絶対URLではない相対パスである必要がある
-const DIAGRAM_IMAGES_DIR = 'content/news-digest/articles/images/'
+// 図解の生成画像が配信されるURLパス(content-generation/design.md「図解を生成する処理」手順3)。
+// public/配下に保存され、diagram.pathはこの配下を指すURLパス(先頭スラッシュ)である必要がある
+// (2026-10改定: content/配下はビルド時にfsで読み込むだけで配信対象ではなく<img src>で404になるため、
+// public/配下に変更した)
+const DIAGRAM_IMAGES_DIR = '/content/news-digest/articles/images/'
 
 // 固定4観点。この4キー・この順序で固定(content-generation/requirements.md#要約-4)
 const SUMMARY_KEYS = ['whatHappened', 'whyItMatters', 'background', 'outlook'] as const

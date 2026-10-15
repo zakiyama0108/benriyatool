@@ -34,6 +34,6 @@
 
 - Task 8: Cloudflare Workers AI呼び出しと保存(仕様: requirements.md#図解の生成(Cloudflare Workers AI)-8〜10、design.md「図解を生成する処理」)
   - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 7でテスト済み)
-  - `scripts/news-digest/generateDiagram.ts`を実装する。`type: 'image'`の`diagram`に対してのみGemini 2.5 Flash Image APIを呼び出し、成功時は`content/news-digest/articles/images/<date>-<topicId>-<observationKey>.png`に保存して記事データの`diagram`を`{type:'image', path}`に差し替える。失敗時は`diagram`を`null`に差し替える(記事全体の生成は継続する)
+  - `scripts/news-digest/generateDiagram.ts`を実装する。`type: 'image'`の`diagram`に対してのみCloudflare Workers AI APIを呼び出し、成功時は`public/content/news-digest/articles/images/<date>-<topicId>-<observationKey>.png`に保存して記事データの`diagram`を`{type:'image', path}`(`path`は`/content/news-digest/articles/images/...`のURLパス)に差し替える。失敗時は`diagram`を`null`に差し替える(記事全体の生成は継続する)
   - `scripts/news-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する(`type: 'mermaid'`はそのまま保存するだけで呼び出し不要)
   - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)Task 12〜13を参照

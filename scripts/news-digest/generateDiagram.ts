@@ -14,7 +14,11 @@ import type { Diagram } from '../../app/news-digest/lib/types'
 
 // Workers AIの画像生成モデル(無料枠で使えるもの)。環境変数で差し替え可能にしておく
 const WORKERS_AI_MODEL = process.env.WORKERS_AI_IMAGE_MODEL || '@cf/black-forest-labs/flux-1-schnell'
-const IMAGES_DIR = 'content/news-digest/articles/images'
+// 生成画像はpublic/配下に保存する(output: 'export'の静的エクスポートでもブラウザから直接配信される
+// ようにするため。content/配下はビルド時にfs読み込みするだけで配信対象ではなく、<img src>で参照すると
+// 404になる。IMAGES_URL_PREFIXがDiagram.pathに入れる配信用パス、IMAGES_DIRがfs書き込み先)
+const IMAGES_URL_PREFIX = '/content/news-digest/articles/images'
+const IMAGES_DIR = `public${IMAGES_URL_PREFIX}`
 
 export type GenerateDiagramInput = {
   date: string // 記事の公開日(YYYY-MM-DD)。保存ファイル名の一部
@@ -43,7 +47,7 @@ export async function callWorkersAI(prompt: string, accountId: string, apiToken:
 }
 
 // type: 'image'のdiagram(エージェントが返したprompt)に対し、Workers AIで画像を生成・保存する。
-// 成功時はcontent/news-digest/articles/images/<date>-<topicId>-<perspectiveKey>.pngに保存し、
+// 成功時はpublic/content/news-digest/articles/images/<date>-<topicId>-<perspectiveKey>.pngに保存し、
 // {type: 'image', path}を返す。失敗時(認証情報未設定・API呼び出し失敗・保存失敗等)はnullを返し、
 // 呼び出し元(generate-content.ts)がその観点の図解なしで記事生成を続行できるようにする
 // (requirements.md#図解-14。1観点の画像生成失敗でその週全体・そのトピック全体の生成を失敗させない)
@@ -63,7 +67,7 @@ export async function generateDiagramImage(input: GenerateDiagramInput): Promise
     fs.mkdirSync(outputDir, { recursive: true })
     fs.writeFileSync(path.join(outputDir, fileName), image)
 
-    return { type: 'image', path: `${IMAGES_DIR}/${fileName}` }
+    return { type: 'image', path: `${IMAGES_URL_PREFIX}/${fileName}` }
   } catch (error) {
     console.error(
       `図解画像の生成に失敗したため、この観点の図解なしで続行します(${input.topicId}/${input.perspectiveKey}): ${(error as Error).message}`
