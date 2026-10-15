@@ -71,11 +71,11 @@ ${GUARDRAIL}
 - 元URL: ${candidate.url}
 - 元記事の公開日時: ${candidate.publishedAt}
 
-観点ごとに、図解が理解の助けになるかを判断してください(requirements.md#図解-12〜14)。理解が容易な単純な事実関係のみの観点では、無理に図解を作らず\`diagram\`を\`null\`にしてください。流れ・分岐・手順・時系列のような構造を示すのに適した内容はMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)、概念・具体例を絵で見せた方が伝わる内容は生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文"}\`)にしてください。可能な限り両方の形式を使ってください(片方しか当てはまらない内容であればその一方のみでよい)。
+生成画像(Nano Banana)は、観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つは必ず作ってください(requirements.md#図解-12)。概念・具体例を絵で見せることで理解を助ける構図を必ず考え、該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください(requirements.md#図解-13)。理解が容易な単純な事実関係のみの観点でMermaid図が不要な場合は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetch/WebSearchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、確認できた情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`summary\`を\`null\`にしたJSON(\`{"heading": "...", "importance": 1, "summary": null}\`)を返してください(いずれの場合も聞き返さない):
 
-{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"whatHappened": {"heading": "結論・要点を含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "whyItMatters": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}, "background": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}, "outlook": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}}}`
+{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"whatHappened": {"heading": "結論・要点を含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "diagram": {"type": "image", "prompt": "画像生成に使うプロンプト文(概念・具体例を絵で見せる構図)"}}, "whyItMatters": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}, "background": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "outlook": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}}}`
 }
 
 // Claude Code CLIを非対話モード(-p)で1回呼び出し、応答テキスト(result)を返す。
