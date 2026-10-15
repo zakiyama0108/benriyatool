@@ -17,7 +17,7 @@ export type Category = 'general' | 'business' | 'kanagawa' | 'childcare'
 
 export type Diagram =
   | { type: 'mermaid'; code: string } // Mermaid記法の文字列。レンダリングはクライアント側のMermaidライブラリに委ねる
-  | { type: 'image'; path: string } // content/news-digest/articles/images/配下の相対パス(ビルド時にNano Bananaで生成・保存済み)
+  | { type: 'image'; path: string } // content/news-digest/articles/images/配下の相対パス(ビルド時にCloudflare Workers AIで生成・保存済み)
 
 export type SummaryPerspective = {
   heading: string // 結論・要点を含む見出し(テーマ名にしない。requirements.md#要約-6)
@@ -154,7 +154,7 @@ app/news-digest/components/DiagramView.tsx (新規: Diagramを受け取り、mer
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/news-digest/articles/*.json (新規: 記事本文データ)
-content/news-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
+content/news-digest/articles/images/*.png (新規: Cloudflare Workers AIが生成した画像)
 ```
 
 図解のレンダリングには`mermaid`パッケージ(クライアント側・静的書き出し可)を新規に採用する(本アプリ初導入。他の4アプリと共通化する)。
