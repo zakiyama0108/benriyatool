@@ -79,6 +79,8 @@ jobs:
         run: npx tsx scripts/ai-dev-digest/generate-content.ts /tmp/selection.json > /tmp/topics.json
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AI_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_API_TOKEN }}
 
       - name: 記事データの組み立て・書き出し
         if: steps.selection.outputs.status == 'ok'
