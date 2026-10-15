@@ -9,7 +9,7 @@ export type Category = 'general' | 'business' | 'kanagawa' | 'childcare'
 // 観点ごとの図解(content-generation/requirements.md#図解-12〜14、article-detail/design.md
 // 「前提: 記事データの形式」)。mermaidはエージェントが書いたMermaid記法の文字列をそのまま保存し、
 // レンダリングはクライアント側のMermaidライブラリ(DiagramView)に委ねる。imageはビルド時に
-// Nano Bananaで生成・保存済みの画像ファイルへの相対パスを持つ
+// Cloudflare Workers AIで生成・保存済みの画像ファイルへの相対パスを持つ
 export type Diagram = { type: 'mermaid'; code: string } | { type: 'image'; path: string }
 
 export type SummaryPerspective = {

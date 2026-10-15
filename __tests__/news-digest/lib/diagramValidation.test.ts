@@ -11,7 +11,7 @@ describe('エージェントが返す図解データの妥当性検証 - 観点�
     expect(isValidAgentDiagram({ type: 'mermaid', code: 'flowchart LR\nA-->B' })).toBe(true)
   })
 
-  it('{type: "image", prompt: 非空文字}のとき、有効と判定されること(promptは後続処理がNano Bananaへ渡す生成指示)', () => {
+  it('{type: "image", prompt: 非空文字}のとき、有効と判定されること(promptは後続処理がCloudflare Workers AIへ渡す生成指示)', () => {
     expect(isValidAgentDiagram({ type: 'image', prompt: '保育施設の見取り図を描いたイラスト' })).toBe(true)
   })
 

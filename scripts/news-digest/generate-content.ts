@@ -18,10 +18,10 @@
 // (CLAUDE_CODE_OAUTH_TOKEN)を使う(weekly-publish/design.md「実行環境の前提」)。
 // あわせて、各観点の図解(diagram)を解決する(requirements.md#図解-12〜14、design.md「図解を生成する処理」)。
 // エージェントの応答に含まれるtype: 'mermaid'はそのまま保存し、type: 'image'はgenerateDiagram.ts経由で
-// Nano Bananaを呼び出して画像に差し替える。この差し替えはisUsableContent(分量検証)より前に行い、
+// Cloudflare Workers AIを呼び出して画像に差し替える。この差し替えはisUsableContent(分量検証)より前に行い、
 // 以降はGeneratedContent.summary[key].diagramが最終形式(Diagram型。image版はpath)になっている前提で扱う
 //
-// 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx GEMINI_API_KEY=yyy npx tsx scripts/news-digest/generate-content.ts <selection.jsonのパス> <candidateIndex>
+// 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx CLOUDFLARE_ACCOUNT_ID=yyy CLOUDFLARE_AI_API_TOKEN=zzz npx tsx scripts/news-digest/generate-content.ts <selection.jsonのパス> <candidateIndex>
 import fs from 'node:fs'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
@@ -71,7 +71,7 @@ ${GUARDRAIL}
 - 元URL: ${candidate.url}
 - 元記事の公開日時: ${candidate.publishedAt}
 
-生成画像(Nano Banana)は、観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つは必ず作ってください(requirements.md#図解-12)。概念・具体例を絵で見せることで理解を助ける構図を必ず考え、該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください(requirements.md#図解-13)。理解が容易な単純な事実関係のみの観点でMermaid図が不要な場合は、その観点の\`diagram\`を\`null\`にしてください。
+生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つは必ず作ってください(requirements.md#図解-12)。概念・具体例を絵で見せることで理解を助ける構図を必ず考え、該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください(requirements.md#図解-13)。理解が容易な単純な事実関係のみの観点でMermaid図が不要な場合は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetch/WebSearchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、確認できた情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`summary\`を\`null\`にしたJSON(\`{"heading": "...", "importance": 1, "summary": null}\`)を返してください(いずれの場合も聞き返さない):
 
@@ -128,7 +128,7 @@ export async function callClaudeCode(prompt: string): Promise<string> {
 // エージェントが返した観点ごとのdiagram(生の形式。isValidAgentDiagramで妥当性確認したもの)を、
 // 記事データの最終形式(Diagram型)に解決する(design.md「図解を生成する処理」手順1〜4)。
 // type: 'mermaid'はcodeをそのまま保存するだけでよい(構文検証はしない。壊れていても表示が崩れるのみ)。
-// type: 'image'のみNano Banana呼び出しが必要なためgenerateDiagramImageに委ねる(呼び出し自体の
+// type: 'image'のみCloudflare Workers AI呼び出しが必要なためgenerateDiagramImageに委ねる(呼び出し自体の
 // 成否判定・フォールバックはgenerateDiagram.ts側の責務。ここでは呼び出すかどうかの振り分けのみ行う)
 async function resolveDiagram(
   topicId: string,
@@ -141,7 +141,7 @@ async function resolveDiagram(
   return generateDiagramImage({ date, topicId, perspectiveKey, prompt: diagram.prompt })
 }
 
-// エージェント応答テキストからJSONオブジェクトを抽出・検証し、観点ごとのdiagramをNano Banana呼び出し
+// エージェント応答テキストからJSONオブジェクトを抽出・検証し、観点ごとのdiagramをCloudflare Workers AI呼び出し
 // も含めて最終形式に解決する。抽出・パース・分量検証いずれかに失敗した場合はnullを返す
 // (design.md「要約を書く処理」手順10、design.md「エラーハンドリング」)
 async function parseAndResolveGeneratedContent(
