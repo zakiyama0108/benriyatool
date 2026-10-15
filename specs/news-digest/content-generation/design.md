@@ -51,7 +51,7 @@ content-selectionが選定した候補ごとに、固定4観点(何が起きた�
 - 手順:
   1. `type: 'mermaid'`の場合、`code`をそのまま記事データの`diagram`として保存する(レンダリング時にMermaidライブラリが解釈するため、生成時点での構文検証はしない。壊れたMermaid記法だった場合はarticle-detail側の表示が崩れるのみで、記事全体のビルド失敗にはしない)
   2. `type: 'image'`の場合、`prompt`を使ってCloudflare Workers AI(FLUX)のAPIを1回呼び出し、画像データを取得する(requirements.md#図解の生成(Cloudflare Workers AI)-8)
-  3. 取得できた画像を`content/<アプリ名>/articles/images/<記事の公開日>-<トピックID>-<観点キー>.png`に保存し、記事データの`diagram`を`{ type: 'image', path: '<保存先の相対パス>' }`に差し替える
+  3. 取得できた画像を`public/content/<アプリ名>/articles/images/<記事の公開日>-<トピックID>-<観点キー>.png`に保存し(output: 'export'の静的エクスポートでもブラウザから直接配信されるようにするため。content/配下は配信対象ではない)、記事データの`diagram`を`{ type: 'image', path: '/content/<アプリ名>/articles/images/...' }`(先頭スラッシュのURLパス)に差し替える
   4. API呼び出しが失敗した場合(ネットワークエラー・利用上限到達など)、その観点の`diagram`を`null`に差し替えて記事の生成を続行する(requirements.md#図解-14。1観点の画像生成失敗でその週全体・そのトピック全体の生成を失敗させない)
 - 関連するビジネスルール: requirements.md#図解-12〜14、requirements.md#図解の生成(Cloudflare Workers AI)-8〜10
 
