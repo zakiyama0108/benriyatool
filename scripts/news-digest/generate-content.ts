@@ -17,20 +17,21 @@
 // 認証はAnthropic APIの従量課金ではなく運営者個人のClaude Code Pro/Maxサブスクリプション
 // (CLAUDE_CODE_OAUTH_TOKEN)を使う(weekly-publish/design.md「実行環境の前提」)。
 // あわせて、各観点の図解(diagram)を解決する(requirements.md#図解-12〜14、design.md「図解を生成する処理」)。
-// エージェントの応答に含まれるtype: 'mermaid'はそのまま保存し、type: 'image'はgenerateDiagram.ts経由で
-// Cloudflare Workers AIを呼び出して画像に差し替える。この差し替えはisUsableContent(分量検証)より前に行い、
+// エージェントの応答に含まれるtype: 'mermaid'はそのまま保存し、type: 'image'はrenderDiagram.ts経由で
+// コードがSVGを描画してファイルに差し替える。この差し替えはisUsableContent(分量検証)より前に行い、
 // 以降はGeneratedContent.summary[key].diagramが最終形式(Diagram型。image版はpath)になっている前提で扱う
 //
-// 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx CLOUDFLARE_ACCOUNT_ID=yyy CLOUDFLARE_AI_API_TOKEN=zzz npx tsx scripts/news-digest/generate-content.ts <selection.jsonのパス> <candidateIndex>
+// 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx npx tsx scripts/news-digest/generate-content.ts <selection.jsonのパス> <candidateIndex>
 import fs from 'node:fs'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { pathToFileURL } from 'node:url'
 import { isUsableContent, isQuotaExhaustionError, type GeneratedContent } from '../../app/news-digest/lib/generateContent'
-import { isValidAgentDiagram } from '../../app/news-digest/lib/diagramValidation'
+import { isValidAgentDiagram, type AgentDiagram } from '../../app/news-digest/lib/diagramValidation'
 import type { SelectedTopic, SelectionResult } from '../../app/news-digest/lib/candidateTypes'
-import { generateDiagramImage } from './generateDiagram'
+import type { Diagram } from '../../app/news-digest/lib/types'
+import { renderDiagramImage } from './renderDiagram'
 
 const execFileAsync = promisify(execFile)
 
@@ -71,11 +72,15 @@ ${GUARDRAIL}
 - 元URL: ${candidate.url}
 - 元記事の公開日時: ${candidate.publishedAt}
 
-生成画像(Cloudflare Workers AI)は、観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つは必ず作ってください(requirements.md#図解-12)。構図は説明内容の概略図・理解の補助になる構図(アイコンを使った概念図、番号付きのステップ、比較を示す対比構図など)にし、特定の人物が何かをしている写真的な場面描写にはしないでください(requirements.md#図解-15)。画像モデルは文章を正確に描画できないため、画像の中に文章・単語ラベルを入れることは避け、番号(1・2・3等)や短い記号程度にとどめてください(具体的な語句・ラベルが必要な場合はMermaid側で表現する)。該当する観点の\`diagram\`に生成画像(\`{"type": "image", "prompt": "画像生成に使うプロンプト文(英語で、具体的な構図・アイコン・配色を指定する)"}\`)を設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください(requirements.md#図解-13)。理解が容易な単純な事実関係のみの観点でMermaid図が不要な場合は、その観点の\`diagram\`を\`null\`にしてください。
+図解(観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つ)は、AIに自由な画像を生成させるのではなく、次のいずれかの構造化データとしてコードがSVGに描画します(requirements.md#図解-12)。
+- 手順・流れを示す場合: \`{"type": "image", "layout": "steps", "items": [{"icon": "アイコン名", "label": "短い日本語ラベル(10字程度)"}, ...]}\`(itemsは2〜4件)
+- 2つを対比・比較する場合: \`{"type": "image", "layout": "compare", "left": {"icon": "アイコン名", "label": "..."}, "right": {"icon": "アイコン名", "label": "..."}}\`
+- アイコン名は次の固定セットから選んでください(これ以外の名前は使えません): terminal, shield-check, blocked, document, calendar, cart, clock, chat, star, trending-up, cpu, check, idea, search, beaker, heart, settings, refresh, user
+該当する観点の\`diagram\`に上記いずれかを設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください(requirements.md#図解-13)。理解が容易な単純な事実関係のみの観点でMermaid図が不要な場合は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetch/WebSearchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、確認できた情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`summary\`を\`null\`にしたJSON(\`{"heading": "...", "importance": 1, "summary": null}\`)を返してください(いずれの場合も聞き返さない):
 
-{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"whatHappened": {"heading": "結論・要点を含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "diagram": {"type": "image", "prompt": "画像生成に使うプロンプト文(概念・具体例を絵で見せる構図)"}}, "whyItMatters": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}, "background": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "outlook": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}}}`
+{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"whatHappened": {"heading": "結論・要点を含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "diagram": {"type": "image", "layout": "steps", "items": [{"icon": "document", "label": "..."}, {"icon": "check", "label": "..."}]}}, "whyItMatters": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}, "background": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "outlook": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}}}`
 }
 
 // Claude Code CLIを非対話モード(-p)で1回呼び出し、応答テキスト(result)を返す。
@@ -128,20 +133,18 @@ export async function callClaudeCode(prompt: string): Promise<string> {
 // エージェントが返した観点ごとのdiagram(生の形式。isValidAgentDiagramで妥当性確認したもの)を、
 // 記事データの最終形式(Diagram型)に解決する(design.md「図解を生成する処理」手順1〜4)。
 // type: 'mermaid'はcodeをそのまま保存するだけでよい(構文検証はしない。壊れていても表示が崩れるのみ)。
-// type: 'image'のみCloudflare Workers AI呼び出しが必要なためgenerateDiagramImageに委ねる(呼び出し自体の
-// 成否判定・フォールバックはgenerateDiagram.ts側の責務。ここでは呼び出すかどうかの振り分けのみ行う)
-async function resolveDiagram(
-  topicId: string,
-  perspectiveKey: string,
-  date: string,
-  diagram: { type: 'mermaid'; code: string } | { type: 'image'; prompt: string } | null
-): Promise<{ type: 'mermaid'; code: string } | { type: 'image'; path: string } | null> {
+// type: 'image'のみrenderDiagramImage(コードでのSVG描画)でファイル化が必要
+function resolveDiagram(topicId: string, perspectiveKey: string, date: string, diagram: AgentDiagram): Diagram | null {
   if (diagram === null) return null
   if (diagram.type === 'mermaid') return diagram
-  return generateDiagramImage({ date, topicId, perspectiveKey, prompt: diagram.prompt })
+  const spec =
+    diagram.layout === 'steps'
+      ? { layout: 'steps' as const, items: diagram.items }
+      : { layout: 'compare' as const, left: diagram.left, right: diagram.right }
+  return renderDiagramImage({ date, topicId, perspectiveKey, spec })
 }
 
-// エージェント応答テキストからJSONオブジェクトを抽出・検証し、観点ごとのdiagramをCloudflare Workers AI呼び出し
+// エージェント応答テキストからJSONオブジェクトを抽出・検証し、観点ごとのdiagramをSVG描画
 // も含めて最終形式に解決する。抽出・パース・分量検証いずれかに失敗した場合はnullを返す
 // (design.md「要約を書く処理」手順10、design.md「エラーハンドリング」)
 async function parseAndResolveGeneratedContent(
@@ -172,7 +175,7 @@ async function parseAndResolveGeneratedContent(
           perspective.diagram = null
           continue
         }
-        perspective.diagram = await resolveDiagram(topicId, key, date, rawDiagram)
+        perspective.diagram = resolveDiagram(topicId, key, date, rawDiagram)
       }
     }
   }

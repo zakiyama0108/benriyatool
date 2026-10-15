@@ -28,12 +28,17 @@
 
 ## 図解
 
-- Task 7: 図解データの検証(仕様: requirements.md#図解-12〜14、design.md「図解を生成する処理」)
-  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く
+- Task 7: 図解データの検証(仕様: requirements.md#図解-12〜15、design.md「図解を生成する処理」)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', layout:'steps', items: 定義済みアイコン2〜4件}`の場合・`{type:'image', layout:'compare', left, right}`の場合はいずれも有効、`code`が空文字・itemsが2〜4件の範囲外・未定義のアイコン名・labelが空文字・未知のlayout・type不明の場合は不正と判定することを確認するテストを書く
   - 🟢 `app/news-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
 
-- Task 8: Cloudflare Workers AI呼び出しと保存(仕様: requirements.md#図解の生成(Cloudflare Workers AI)-8〜10、design.md「図解を生成する処理」)
-  - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 7でテスト済み)
-  - `scripts/news-digest/generateDiagram.ts`を実装する。`type: 'image'`の`diagram`に対してのみCloudflare Workers AI APIを呼び出し、成功時は`public/content/news-digest/articles/images/<date>-<topicId>-<observationKey>.png`に保存して記事データの`diagram`を`{type:'image', path}`(`path`は`/content/news-digest/articles/images/...`のURLパス)に差し替える。失敗時は`diagram`を`null`に差し替える(記事全体の生成は継続する)
+- Task 7-1: アイコン名の固定セットと概念図のSVG描画(仕様: requirements.md#図解の生成(アイコン図のSVG描画)-8、design.md「図解を生成する処理」。2026-10追加: AI画像生成(Nano Banana→Cloudflare Workers AI)が文章・構図の破綻を避けられなかったため、コードによる決定的なSVG描画に方針転換)
+  - 🟢 `app/news-digest/lib/diagramIcons.ts`にHeroicons(MIT License)由来のアイコン19種(`terminal`等)のパスデータと`isDiagramIconName`を実装する
+  - 🟢 `app/news-digest/lib/renderDiagramSvg.ts`に`renderDiagramSvg(spec: DiagramSpec): string`を実装する。`layout:"steps"`はアイコンを矢印でつなぐ横並び、`layout:"compare"`は2項目を区切り線で対比させるレイアウトで、ラベルはSVGの`<text>`要素(日本語フォント指定)で描画する。長いラベルは2行に折り返し、XML特殊文字はエスケープする
+  - 🔴 件数分のアイコン・ラベル・矢印を含むSVGを返すこと、XML特殊文字がエスケープされること、長いラベルが2行に折り返され末尾が省略記号になることを確認するテストを書く(`__tests__/news-digest/lib/renderDiagramSvg.test.ts`)
+
+- Task 8: 概念図SVGのファイル保存(仕様: requirements.md#図解の生成(アイコン図のSVG描画)-8、design.md「図解を生成する処理」)
+  - TDD対象外(ファイル書き込みのオーケストレーションのため。SVGの組み立てロジック自体はTask 7-1でテスト済み)
+  - `scripts/news-digest/renderDiagram.ts`に`renderDiagramImage(input): Diagram | null`を実装する。`renderDiagramSvg`の結果を`public/content/news-digest/articles/images/<date>-<topicId>-<observationKey>.svg`に保存し、`{type:'image', path}`(`path`は`/content/news-digest/articles/images/...`のURLパス)を返す。失敗時は`diagram`を`null`に差し替える(記事全体の生成は継続する)
   - `scripts/news-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する(`type: 'mermaid'`はそのまま保存するだけで呼び出し不要)
   - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)Task 12〜13を参照

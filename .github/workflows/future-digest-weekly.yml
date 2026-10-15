@@ -198,8 +198,6 @@ jobs:
         run: npx tsx scripts/future-digest/generate-content.ts /tmp/selection.json > /tmp/generation.json
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_AI_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_API_TOKEN }}
 
       # 生成に失敗した枠の数をPR本文に載せるため集計する(weekly-publish/design.md「ログ」)
       - name: 生成結果の集計(PR本文用)
