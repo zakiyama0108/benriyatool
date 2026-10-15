@@ -187,7 +187,7 @@ sequenceDiagram
 - 各`topic`: `id`が記事内で重複しないこと、`heading`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`sourcePublishedAt`は任意項目だが指定する場合はISO 8601形式としてパース可能な日時文字列であること、`sourceType`が定義済み種別のいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須(false時は無くてよい)
 - 各`topic`は`sections`キー(`LegacyTopic`)または`summary`+`importance`キー(`CurrentTopic`)のどちらか一方を持つこと。両方持つ・どちらも持たない場合は不正とする(`isLegacyTopic`の判定と対になる制約)
 - `sections`(`LegacyTopic`の場合。既存記事データの検証ルールとしてそのまま維持する): 配列長が**2件以上**であること(要件「複数のセクションに分けて構成する」により1件は不正)。各セクションの`heading`/`teaser`/`detail`が空文字でないこと。各セクションの`teaser`が40〜140字の範囲であること(目安60〜120字)。全セクションの`detail`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字)
-- `summary`+`importance`(`CurrentTopic`の場合): `summary`が(a)`domain`/`benefit`/`how`/`howToUse`の4キー、または(b)`benefit`/`whatsNew`/`how`/`howToUse`の4キーのいずれか一方をすべて持つこと(両方・どちらも満たさない組み合わせは不正。`hasDomainPerspective`の判定と対になる制約)。各観点の`heading`/`teaser`/`detail`が空文字でないこと。各観点の`teaser`が40〜140字の範囲であること(目安60〜120字。content-generation/requirements.md#要約-3)。4観点の`detail`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字。content-generation/requirements.md#要約-4)。`importance`が1〜5の整数であること(content-generation/requirements.md#重要度-13)。`domain`観点がある場合、`domains`が1件以上の配列で各要素がrequirements.md#開発領域-15の値のいずれかであること。各観点の`diagram`は省略可、ある場合は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`content/ai-dev-digest/articles/images/`配下を指す)のいずれかであること
+- `summary`+`importance`(`CurrentTopic`の場合): `summary`が(a)`domain`/`benefit`/`how`/`howToUse`の4キー、または(b)`benefit`/`whatsNew`/`how`/`howToUse`の4キーのいずれか一方をすべて持つこと(両方・どちらも満たさない組み合わせは不正。`hasDomainPerspective`の判定と対になる制約)。各観点の`heading`/`teaser`/`detail`が空文字でないこと。各観点の`teaser`が40〜140字の範囲であること(目安60〜120字。content-generation/requirements.md#要約-3)。4観点の`detail`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字。content-generation/requirements.md#要約-4)。`importance`が1〜5の整数であること(content-generation/requirements.md#重要度-13)。`domain`観点がある場合、`domains`が1件以上の配列で各要素がrequirements.md#開発領域-15の値のいずれかであること。各観点の`diagram`は省略可、ある場合は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`/content/ai-dev-digest/articles/images/`配下を指すURLパス)のいずれかであること
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(トリムした結果が空文字になる入力を拒否する)(requirements.md#運営者向けフィードバック-10)
 
 ## エラーハンドリング
@@ -213,7 +213,7 @@ app/ai-dev-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用。2026-08修正: isAuthorizedAdminはフィードバック欄の表示切り替えに利用する)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/ai-dev-digest/articles/*.json (新規: 記事本文データ。コード資産ではないためapp/配下に置かない)
-content/ai-dev-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
+public/content/ai-dev-digest/articles/images/*.png (新規: Cloudflare Workers AIが生成した画像。public/配下でブラウザから配信される)
 ```
 
 ## データベース設計

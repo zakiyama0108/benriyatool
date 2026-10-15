@@ -22,9 +22,11 @@ const SOURCE_TYPES: SourceType[] = ['official', 'individual-youtube', 'individua
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const MAX_TOPICS = 5
 
-// 図解の生成画像が保存されるディレクトリ(content-generation/design.md「要約を書く処理」手順13、
-// scripts/ai-dev-digest/generateDiagram.ts)。diagram.pathはこの配下を指す相対パスである必要がある
-const DIAGRAM_IMAGES_DIR = 'content/ai-dev-digest/articles/images/'
+// 図解の生成画像が配信されるURLパス(content-generation/design.md「要約を書く処理」手順13、
+// scripts/ai-dev-digest/generateDiagram.ts)。public/配下に保存され、diagram.pathはこの配下を
+// 指すURLパス(先頭スラッシュ)である必要がある(2026-10改定: content/配下はビルド時にfsで
+// 読み込むだけで配信対象ではなく<img src>で404になるため、public/配下に変更した)
+const DIAGRAM_IMAGES_DIR = '/content/ai-dev-digest/articles/images/'
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0

@@ -68,7 +68,7 @@ Topic型の`LegacyTopic`/`CurrentTopic`化・記事スキーマ検証(`types.ts`
 
 - Task 15: Cloudflare Workers AI呼び出しと保存(仕様: requirements.md#図解の生成(Cloudflare Workers AI)-11、design.md「要約を書く処理」手順13)
   - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 14でテスト済み)
-  - `scripts/ai-dev-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`content/ai-dev-digest/articles/images/`に変更)
+  - `scripts/ai-dev-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`public/content/ai-dev-digest/articles/images/`に変更)
   - `scripts/ai-dev-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
   - 画面側の表示タスク(固定ラベル・開発領域タグ・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
 

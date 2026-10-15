@@ -386,12 +386,12 @@ describe('記事スキーマへの図解(diagram)検証の組み込み - 省略/
         heading: 'う見出し',
         teaser: 'う'.repeat(60),
         detail: 'う'.repeat(250),
-        diagram: { type: 'image', path: 'content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' },
+        diagram: { type: 'image', path: '/content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' },
       },
     })
     const article = parseArticle(validArticle({ topics: [validCurrentTopic({ summary })] }), '2026-08-01.json')
     expect(article.topics[0]).toMatchObject({
-      summary: { how: { diagram: { type: 'image', path: 'content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' } } },
+      summary: { how: { diagram: { type: 'image', path: '/content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' } } },
     })
   })
 

@@ -99,7 +99,7 @@
 
 - Task 19: 記事スキーマへのdomain/diagram検証の組み込み(仕様: design.md「バリデーション」)
   - 🔴 `parseArticle`が、`summary`が(a)`domain`/`benefit`/`how`/`howToUse`、(b)`benefit`/`whatsNew`/`how`/`howToUse`のいずれか一方の4キー構成であれば受理すること、両方・どちらも満たさない場合は拒否すること、`domain`がある場合は`domains`が1件以上かつ定義済み値のみであることを確認するテストを、Task 15の既存テストに追加する
-  - 🔴 各観点の`diagram`が省略されている場合(既存の公開済み記事データ相当)・`null`・`{type:'mermaid',code}`・`{type:'image',path}`のいずれでも受理し、`path`が`content/ai-dev-digest/articles/images/`配下を指さない場合は拒否することを確認するテストを書く
+  - 🔴 各観点の`diagram`が省略されている場合(既存の公開済み記事データ相当)・`null`・`{type:'mermaid',code}`・`{type:'image',path}`のいずれでも受理し、`path`が`/content/ai-dev-digest/articles/images/`配下を指さない場合は拒否することを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/articleSchema.ts`の`parseTopic`を上記の検証に対応させる
 
 - Task 20: 固定ラベル(kicker)・開発領域タグの表示(仕様: requirements.md#記事本文表示-3、design.md「その日の記事本文を表示する処理」手順4)
