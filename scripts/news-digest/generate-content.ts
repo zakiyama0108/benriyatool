@@ -147,11 +147,11 @@ function resolveDiagram(topicId: string, perspectiveKey: string, date: string, d
 // エージェント応答テキストからJSONオブジェクトを抽出・検証し、観点ごとのdiagramをSVG描画
 // も含めて最終形式に解決する。抽出・パース・分量検証いずれかに失敗した場合はnullを返す
 // (design.md「要約を書く処理」手順10、design.md「エラーハンドリング」)
-async function parseAndResolveGeneratedContent(
+function parseAndResolveGeneratedContent(
   responseText: string,
   date: string,
   topicId: string
-): Promise<GeneratedContent | null> {
+): GeneratedContent | null {
   const match = responseText.match(/\{[\s\S]*\}/)
   if (!match) return null
   let parsed: unknown
@@ -194,7 +194,7 @@ async function generateWithRetry(
 ): Promise<GeneratedContent | null> {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const responseText = await callClaudeCode(buildPrompt(candidate, requirements, design))
-    const content = await parseAndResolveGeneratedContent(responseText, date, topicId)
+    const content = parseAndResolveGeneratedContent(responseText, date, topicId)
     if (content) return content
     console.error(
       `候補の生成に失敗しました(${attempt}/${MAX_ATTEMPTS}回目): ${candidate.sourceName} - ${candidate.heading}`
