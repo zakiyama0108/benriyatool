@@ -6,11 +6,12 @@
 
 export type Category = 'general' | 'business' | 'kanagawa' | 'childcare'
 
-// 観点ごとの図解(content-generation/requirements.md#図解-12〜14、article-detail/design.md
-// 「前提: 記事データの形式」)。mermaidはエージェントが書いたMermaid記法の文字列をそのまま保存し、
-// レンダリングはクライアント側のMermaidライブラリ(DiagramView)に委ねる。imageはビルド時に
-// Cloudflare Workers AIで生成・保存済みの画像ファイルへの相対パスを持つ
-export type Diagram = { type: 'mermaid'; code: string } | { type: 'image'; path: string }
+// 観点ごとの図解(content-generation/requirements.md#図解-12〜13、article-detail/design.md
+// 「前提: 記事データの形式」)。エージェントが書いたMermaid記法の文字列をそのまま保存し、
+// レンダリングはクライアント側のMermaidライブラリ(DiagramView)に委ねる(2026-10改定: 画像による
+// 図解(AI画像生成→コードでのアイコン図SVG描画)も試みたが、いずれも求める品質を満たせなかった
+// ため、画像による図解は行わないことにし、Mermaid図のみを図解として扱う)
+export type Diagram = { type: 'mermaid'; code: string }
 
 export type SummaryPerspective = {
   heading: string // 結論・要点を含む見出し(テーマ名にしない。content-generation/requirements.md#要約-6)

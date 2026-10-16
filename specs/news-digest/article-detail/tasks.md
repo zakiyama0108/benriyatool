@@ -66,7 +66,7 @@
   - 🟢 `app/news-digest/components/TopicSection.tsx`を修正し、各観点ブロックの先頭に固定ラベルを表示する
 
 - Task 13: 図解の表示(仕様: requirements.md#記事本文表示-13、design.md「その週の記事本文を表示する処理」)
-  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されること、`{type:'image'}`の場合は`<img>`の`src`が`path`と一致することを確認するテストを書く
+  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されることを確認するテストを書く
   - 🟢 `app/news-digest/components/DiagramView.tsx`を実装し、`mermaid`パッケージを新規導入する(`npm install mermaid`)。`TopicSection.tsx`から各観点の`diagram`を渡して配置する
 
 ## パンくず
