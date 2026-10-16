@@ -264,7 +264,7 @@ describe('記事スキーマへの図解(diagram)検証の組み込み - null・
             heading: '見出し',
             teaser: 'あ'.repeat(60),
             detail: 'あ'.repeat(250),
-            diagram: { type: 'image', path: 'content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png' },
+            diagram: { type: 'image', path: '/content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png' },
           },
         }),
       }),
@@ -272,7 +272,7 @@ describe('記事スキーマへの図解(diagram)検証の組み込み - null・
     const article = parseArticle(validArticle({ topics }), '2026-09-09.json')
     expect(article.topics[0].summary.whatHappened.diagram).toEqual({
       type: 'image',
-      path: 'content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png',
+      path: '/content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png',
     })
   })
 

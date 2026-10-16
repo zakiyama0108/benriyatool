@@ -17,7 +17,7 @@ export type Category = 'general' | 'business' | 'kanagawa' | 'childcare'
 
 export type Diagram =
   | { type: 'mermaid'; code: string } // Mermaid記法の文字列。レンダリングはクライアント側のMermaidライブラリに委ねる
-  | { type: 'image'; path: string } // content/news-digest/articles/images/配下の相対パス(ビルド時にNano Bananaで生成・保存済み)
+  | { type: 'image'; path: string } // /content/news-digest/articles/images/配下のURLパス(public/配下にビルド時にrenderDiagramSvgで生成・保存済み)
 
 export type SummaryPerspective = {
   heading: string // 結論・要点を含む見出し(テーマ名にしない。requirements.md#要約-6)
@@ -128,7 +128,7 @@ sequenceDiagram
 - `date`: `YYYY-MM-DD`形式で、ファイル名と一致すること
 - `topics`: 配列長が1件以上7件以下であること(content-selection/requirements.md#1週あたりの掲載件数-6〜7)
 - 各`topic`: `id`が記事内で重複しないこと、`heading`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`category`が定義済みカテゴリのいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須
-- `summary`: `whatHappened`/`whyItMatters`/`background`/`outlook`の4キーをすべて持つこと。各観点の`heading`/`teaser`/`detail`が空文字でないこと。各観点の`teaser`が40〜140字の範囲であること。4観点の`detail`を連結した文字数が800〜1700字の範囲であること。各観点の`diagram`は`null`、または`{ type: 'mermaid', code: string }`(`code`が空文字でない)、または`{ type: 'image', path: string }`(`path`が`content/news-digest/articles/images/`配下を指す)のいずれかであること
+- `summary`: `whatHappened`/`whyItMatters`/`background`/`outlook`の4キーをすべて持つこと。各観点の`heading`/`teaser`/`detail`が空文字でないこと。各観点の`teaser`が40〜140字の範囲であること。4観点の`detail`を連結した文字数が800〜1700字の範囲であること。各観点の`diagram`は`null`、または`{ type: 'mermaid', code: string }`(`code`が空文字でない)、または`{ type: 'image', path: string }`(`path`が`/content/news-digest/articles/images/`配下を指すURLパス)のいずれかであること
 - `importance`が1〜5の整数であること
 - 上記を満たさない場合は例外を投げる。フィードバック送信の入力内容自体は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない
 
@@ -154,7 +154,7 @@ app/news-digest/components/DiagramView.tsx (新規: Diagramを受け取り、mer
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/news-digest/articles/*.json (新規: 記事本文データ)
-content/news-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
+public/content/news-digest/articles/images/*.svg (新規: renderDiagramSvgが描画した概念図。public/配下でブラウザから配信される)
 ```
 
 図解のレンダリングには`mermaid`パッケージ(クライアント側・静的書き出し可)を新規に採用する(本アプリ初導入。他の4アプリと共通化する)。
