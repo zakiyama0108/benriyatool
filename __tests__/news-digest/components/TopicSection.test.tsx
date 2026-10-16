@@ -114,7 +114,7 @@ describe('トピック表示 - 観点ごとの固定ラベル(PERSPECTIVE_LABELS
 
 // 仕様: specs/news-digest/article-detail/requirements.md#記事本文表示-13
 describe('トピック表示 - 観点ごとの図解(diagram)をDiagramView経由で表示する', () => {
-  it('diagramが{type: "image", path}の観点を含むとき、<img>がそのpathで表示されること', () => {
+  it('diagramが{type: "mermaid", code}の観点を含むとき、Mermaidコンテナが表示されること', () => {
     const topic = makeTopic({
       summary: {
         ...makeTopic().summary,
@@ -122,18 +122,16 @@ describe('トピック表示 - 観点ごとの図解(diagram)をDiagramView経�
           heading: '何が起きたか',
           teaser: 'あ'.repeat(60),
           detail: 'あ'.repeat(250),
-          diagram: { type: 'image', path: 'content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png' },
+          diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' },
         },
       },
     })
-    render(<TopicSection topic={topic} {...noop} />)
-    const img = screen.getByRole('img')
-    expect(img.getAttribute('src')).toBe('content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png')
+    const { container } = render(<TopicSection topic={topic} {...noop} />)
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).not.toBeNull()
   })
 
-  it('いずれの観点もdiagramがnull・未指定のとき、画像・Mermaidコンテナのいずれも表示されないこと', () => {
+  it('いずれの観点もdiagramがnull・未指定のとき、Mermaidコンテナが表示されないこと', () => {
     const { container } = render(<TopicSection topic={makeTopic()} {...noop} />)
-    expect(screen.queryByRole('img', { name: '図解' })).toBeNull()
     expect(container.querySelector('[data-testid="mermaid-diagram"]')).toBeNull()
   })
 })
