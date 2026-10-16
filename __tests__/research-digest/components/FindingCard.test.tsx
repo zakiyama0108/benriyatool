@@ -146,23 +146,22 @@ describe('固定4観点(sections)を持つ新形式の研究の表示 - finding�
 // 仕様: specs/research-digest/article-detail/requirements.md#運営者向けフィードバック-15
 // (design.md「その回の記事本文を表示する処理」手順3-2)
 describe('固定4観点ごとの図解の表示 - diagramがnullでない観点の本文の近くにDiagramViewを表示する', () => {
-  it('観点のdiagramが{type: "image", path}のとき、そのpathを持つ<img>が表示されること', () => {
-    render(
+  it('観点のdiagramが{type: "mermaid", code}のとき、Mermaidコンテナが表示されること', () => {
+    const { container } = render(
       <FindingCard
         entry={currentFindingEntry({
-          finding: { diagram: { type: 'image', path: 'content/research-digest/articles/images/2026-10-05-medical-health-finding.png' } },
+          finding: { diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } },
         })}
         articleId="2026-10-05"
         isAdmin={false}
       />,
     )
-    const img = screen.getByRole('img')
-    expect(img.getAttribute('src')).toBe('content/research-digest/articles/images/2026-10-05-medical-health-finding.png')
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).not.toBeNull()
   })
 
-  it('すべての観点のdiagramがnullのとき、画像・Mermaidコンテナが表示されないこと', () => {
-    render(<FindingCard entry={currentFindingEntry()} articleId="2026-10-05" isAdmin={false} />)
-    expect(screen.queryByRole('img')).toBeNull()
+  it('すべての観点のdiagramがnullのとき、Mermaidコンテナが表示されないこと', () => {
+    const { container } = render(<FindingCard entry={currentFindingEntry()} articleId="2026-10-05" isAdmin={false} />)
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).toBeNull()
   })
 })
 

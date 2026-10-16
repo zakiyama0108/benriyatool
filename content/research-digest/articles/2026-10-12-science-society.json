@@ -1,0 +1,54 @@
+{
+  "id": "2026-10-12-science-society",
+  "edition": "science-society",
+  "date": "2026-10-12",
+  "emptyGenres": [
+    { "genre": "environment-climate", "reason": "no-candidate" },
+    { "genre": "economics-behavioral", "reason": "no-candidate" },
+    { "genre": "space-physics", "reason": "no-candidate" },
+    { "genre": "materials-energy", "reason": "no-candidate" }
+  ],
+  "findings": [
+    {
+      "id": "ai-it",
+      "genre": "ai-it",
+      "heading": "短い休憩を挟みながら作業すると、AIへの指示文の質が上がりやすいという調査結果",
+      "impact": "medium",
+      "impactReason": "日常的にAIを使う作業全般に関わる話題で、誰でも今日から試せる一方、効果の大きさはタスクの種類によって差があるため、影響度は中としました。",
+      "sourceTitle": "Micro-breaks and Prompt Quality in Human-AI Collaborative Work",
+      "sourceName": "架空ヒューマンコンピュータ研究誌",
+      "sourceUrl": "https://example.com/research/micro-breaks-prompt-quality",
+      "doi": "10.1234/example.2026.001",
+      "publishedYear": 2026,
+      "isPreprint": false,
+      "sections": {
+        "finding": {
+          "heading": "25分ごとに短い休憩を挟んだグループは、指示文の質の評価点が高かった",
+          "text": "AIに作業を指示する際、25分ごとに5分の短い休憩を挟んだグループは、休憩なしで続けて作業したグループより、指示文の具体性・明確さの評価点が平均で高かった。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[25分作業] --> B[5分休憩]\n  B --> C[指示文の質が高い]"
+          }
+        },
+        "basis": {
+          "heading": "参加者の指示文を第三者が評価し、休憩の有無で比較する実験で確かめた",
+          "text": "研究チームは参加者を2グループに分け、同じ作業課題でAIへの指示文を作成させた。できあがった指示文を、どちらのグループか分からない状態で第三者の評価者が採点し、グループ間の点数を比較することで休憩の効果を確かめた。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[参加者を2グループに分ける] --> B[同じ課題でAIへの指示文を作成]\n  B --> C[第三者がグループを知らずに採点]\n  C --> D[休憩ありグループの点数が高い]"
+          }
+        },
+        "relevance": {
+          "heading": "長時間AIに向き合う人ほど、休憩を意識的に挟む価値がある",
+          "text": "仕事でAIに長時間指示を出し続ける人にとって、こまめな休憩は息抜きだけでなく、指示文そのものの質を保つための工夫にもなりうる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "参加者数が少なく、作業内容も限定的な実験である",
+          "text": "参加者数は数十人規模で、作業内容も文章作成課題に限られるため、結果をすべての仕事にそのまま当てはめられるとは言えない。",
+          "diagram": null
+        }
+      }
+    }
+  ]
+}

@@ -23,7 +23,7 @@ beforeEach(() => {
 })
 
 // 仕様: specs/research-digest/article-detail/requirements.md#運営者向けフィードバック-15、specs/research-digest/article-detail/design.md#コンポーネント設計-DiagramView
-describe('図解の表示(DiagramView) - diagramの形式(null/mermaid/image)に応じて表示を切り替える', () => {
+describe('図解の表示(DiagramView) - diagramの形式(null/mermaid)に応じて表示を切り替える', () => {
   it('diagramがnullのとき、何も描画されないこと', () => {
     const { container } = render(<DiagramView diagram={null} />)
     expect(container.firstChild).toBeNull()
@@ -33,11 +33,5 @@ describe('図解の表示(DiagramView) - diagramの形式(null/mermaid/image)に
     render(<DiagramView diagram={{ type: 'mermaid', code: 'flowchart LR\nA-->B' }} />)
     await waitFor(() => expect(renderMock).toHaveBeenCalledWith(expect.any(String), 'flowchart LR\nA-->B'))
     await waitFor(() => expect(screen.getByTestId('rendered-mermaid-svg')).toBeTruthy())
-  })
-
-  it('diagramが{type: "image", path}のとき、<img>のsrcがpathと一致すること', () => {
-    render(<DiagramView diagram={{ type: 'image', path: 'content/research-digest/articles/images/2026-10-05-medical-health-finding.png' }} />)
-    const img = screen.getByRole('img')
-    expect(img.getAttribute('src')).toBe('content/research-digest/articles/images/2026-10-05-medical-health-finding.png')
   })
 })

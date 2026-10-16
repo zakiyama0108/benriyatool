@@ -88,7 +88,7 @@
   - 🟢 `app/research-digest/components/FindingCard.tsx`を修正し、`isLegacyFinding`で表示を分岐する
 
 - Task 15: 図解の表示(仕様: requirements.md#運営者向けフィードバック-15、design.md「その回の記事本文を表示する処理」手順3-2)
-  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されること、`{type:'image'}`の場合は`<img>`の`src`が`path`と一致することを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
+  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されることを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
   - 🟢 `app/research-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`FindingCard.tsx`から新形式の各観点の`diagram`を渡して配置する
 
 </details>

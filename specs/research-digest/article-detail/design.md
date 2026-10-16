@@ -39,10 +39,12 @@ export type Impact = 'high' | 'medium' | 'low'
 export const IMPACT_ORDER: Impact[] = ['high', 'medium', 'low']
 export const IMPACT_LABELS: Record<Impact, string> = { high: '大', medium: '中', low: '小' }
 
-// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形)
-export type Diagram =
-  | { type: 'mermaid'; code: string }
-  | { type: 'image'; path: string }
+// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形)。エージェントが
+// 書いたMermaid記法の文字列をそのまま保存し、レンダリングはクライアント側のMermaidライブラリ
+// (DiagramView)に委ねる(2026-10改定: 画像による図解(AI画像生成→コードでのアイコン図SVG描画)も
+// 試みたが、いずれも求める品質を満たせなかったため、画像による図解は行わないことにし、Mermaid図のみを
+// 図解として扱う)
+export type Diagram = { type: 'mermaid'; code: string }
 
 export type FindingSection = {
   heading: string // 結論文(短い見出し)
@@ -197,7 +199,7 @@ sequenceDiagram
 - `edition`が`body-life`/`science-society`のいずれかであること
 - 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`genre`が`EDITION_GENRES[edition]`に含まれること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること
 - 旧形式(`body`を持つ)の場合: `body`が160〜480字であること
-- 新形式(`sections`を持つ)の場合: `finding`/`basis`/`relevance`/`caveat`の4キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。4観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`/content/research-digest/articles/images/`配下を指すURLパス)のいずれかであること
+- 新形式(`sections`を持つ)の場合: `finding`/`basis`/`relevance`/`caveat`の4キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。4観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)のいずれかであること
 - 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`EDITION_GENRES[edition]`に含まれ、`reason`が定義済みの値であること
 - 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。対象編で有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
 - 研究は0件でもよい(全ジャンルで採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)
@@ -231,7 +233,6 @@ app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/i
 app/lib/supabaseClient.ts (既存)
 supabase/migrations/<timestamp>_create_research_digest_feedback.sql (新規)
 content/research-digest/articles/*.json (新規: 記事本文データ)
-public/content/research-digest/articles/images/*.svg (新規: renderDiagramSvgが描画した概念図。public/配下でブラウザから配信される)
 ```
 
 ## データベース設計

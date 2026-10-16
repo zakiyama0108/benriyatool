@@ -209,7 +209,7 @@ describe('固定4観点・図解への移行に伴う新旧データ形式の検
 })
 
 // 仕様: specs/research-digest/content-generation/requirements.md#図解-6、specs/research-digest/article-detail/design.md#バリデーション
-describe('記事スキーマへの図解(diagram)検証の組み込み - sectionsの各観点のdiagramがnull・mermaid・imageいずれかの正しい形のみ許可する', () => {
+describe('記事スキーマへの図解(diagram)検証の組み込み - sectionsの各観点のdiagramがnull・mermaidいずれかの正しい形のみ許可する', () => {
   it('diagramがnullのとき、検証を通ること(図解が不要な観点)', () => {
     const result = parse(article({ findings: [sectionsFinding('medical-health')] }))
     expect(result.findings[0]).toMatchObject({ sections: { finding: { diagram: null } } })
@@ -226,22 +226,12 @@ describe('記事スキーマへの図解(diagram)検証の組み込み - section
     expect(() => parse(article({ findings: [sectionsFinding('medical-health', { sections })] }))).toThrow()
   })
 
-  it('diagramが{type: "image", path: "content/research-digest/articles/images/"配下}のとき、検証を通ること', () => {
-    const sections = validSections({
-      finding: { diagram: { type: 'image', path: '/content/research-digest/articles/images/2026-10-05-medical-health-finding.png' } },
+  it('diagramのtypeが未定義の値("image"・"chart"等)のとき、検証エラーになること(画像による図解は廃止したため)', () => {
+    const imageSections = validSections({
+      finding: { diagram: { type: 'image', path: '/content/research-digest/articles/images/x.png' } },
     })
-    const result = parse(article({ findings: [sectionsFinding('medical-health', { sections })] }))
-    expect(result.findings[0]).toMatchObject({
-      sections: { finding: { diagram: { type: 'image', path: '/content/research-digest/articles/images/2026-10-05-medical-health-finding.png' } } },
-    })
-  })
+    expect(() => parse(article({ findings: [sectionsFinding('medical-health', { sections: imageSections })] }))).toThrow()
 
-  it('diagramが{type: "image", path: "content/research-digest/articles/images/"配下以外}のとき、検証エラーになること', () => {
-    const sections = validSections({ finding: { diagram: { type: 'image', path: 'public/other.png' } } })
-    expect(() => parse(article({ findings: [sectionsFinding('medical-health', { sections })] }))).toThrow()
-  })
-
-  it('diagramのtypeが未定義の値("chart"等)のとき、検証エラーになること', () => {
     const sections = validSections({ finding: { diagram: { type: 'chart', code: 'x' } } })
     expect(() => parse(article({ findings: [sectionsFinding('medical-health', { sections })] }))).toThrow()
   })

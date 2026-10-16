@@ -1,7 +1,7 @@
 # 設計: 研究発見の要約・記事執筆のルール
 
 ## サマリ
-[content-selection](../content-selection/design.md)で採用された研究1本ごとに、Claude Code CLIのヘッドレス実行で元の論文・公式発表をWebFetchで読み、見出しと固定4観点(何が分かったか/なぜそう結論づけられたのか/暮らしへの関わり/注意点、合計200〜400字程度)を書かせる。誇張せず、健康に関わる研究では個別の治療・服薬の判断を勧めない。あわせて、理解の助けになる場合はMermaid図・アイコン図(コードでのSVG描画)による図解を作らせる。影響度・根拠・出典・査読前かどうかは選定時の値をそのまま使い、書き換えさせない。本文の分量の検証と記事タイトルの導出は決定的なコードで行う。
+[content-selection](../content-selection/design.md)で採用された研究1本ごとに、Claude Code CLIのヘッドレス実行で元の論文・公式発表をWebFetchで読み、見出しと固定4観点(何が分かったか/なぜそう結論づけられたのか/暮らしへの関わり/注意点、合計200〜400字程度)を書かせる。誇張せず、健康に関わる研究では個別の治療・服薬の判断を勧めない。あわせて、流れ・分岐・時系列のような構造を示すのに適した観点にはMermaid図による図解を作らせる。影響度・根拠・出典・査読前かどうかは選定時の値をそのまま使い、書き換えさせない。本文の分量の検証と記事タイトルの導出は決定的なコードで行う。
 
 主要な設計判断:
 - 「本文を書く」ことだけをClaudeに任せ、分量・タイトル・値の引き継ぎは決定的なコードで扱う(future-digest・trend-digestと同じ役割分担)
@@ -26,7 +26,7 @@
   10. 研究結果を実際より確かなもの・効果の大きいものとして書かない。健康に関わる研究では、個別の治療・服薬の判断を勧める書き方をしない(requirements.md#要約-5)
   11. 元の論文・発表に書かれている範囲にとどめ、書かれていない内容を推測で断定しない(requirements.md#内容の逸脱防止-3)
   12. 影響度・その根拠・出典・査読前かどうかは渡された値を事実として扱い、本文でそれと食い違うことを書かない
-  13. 概念図は観点ごとまたは記事全体のいずれかの単位で研究につき原則1つは必ず作る。`layout:"steps"`(2〜4件の手順・流れ)または`layout:"compare"`(2件の対比)のいずれかを選び、各項目に固定アイコン名(`app/research-digest/lib/diagramIcons.ts`の19種)と短い日本語ラベルを指定する。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid図も追加する(requirements.md#図解-6)
+  13. 流れ・分岐・時系列のような構造を示すのに適した観点には、Mermaid図を作る(requirements.md#図解-6)
   14. 応答は`{ "heading": "...", "sections": { "finding": {...}, "basis": {...}, "relevance": {...}, "caveat": {...} } }`のJSONだけを返させる。元の論文を読めなかった場合は、渡された情報の範囲で書けるところまで書き、それも難しい場合は`heading`を`null`にして返させる(聞き返しはさせない)
 - シーケンス図(俯瞰用。正は上記の手順の文章):
 
@@ -53,9 +53,9 @@ sequenceDiagram
   2. 4観点の`text`を連結した文字数が160字未満、または480字を超える場合は不正とする(「程度」を目安の約±20%と解釈する。future-digest・trend-digestと同じ)
   3. 見出しが100字を超える場合は不正とする
   4. 査読前の論文なのに、4観点の`text`を連結した文字列に「査読」という語が含まれない場合は不正とする(査読前であることの明記を機械的に最低限確かめるため)
-  5. 各観点の`diagram`は[news-digest/content-generation/design.md](../../news-digest/content-generation/design.md)「図解を生成する処理」と同じ検証・保存処理を行う
+  5. 各観点の`diagram`は[news-digest/content-generation/design.md](../../news-digest/content-generation/design.md)「図解を生成する処理(エージェントの推論)」と同じ検証を行う(`isValidAgentDiagram`の形式を満たさない場合は`null`に差し替える)
   6. 不正な場合は、その1本の生成失敗として[weekly-publish/design.md](../weekly-publish/design.md)のやり直し・除外の流れに乗せる
-- 関連するビジネスルール: requirements.md#要約-2、content-selection/requirements.md#採用基準-3、requirements.md#図解の生成(アイコン図のSVG描画)-4
+- 関連するビジネスルール: requirements.md#要約-2、content-selection/requirements.md#採用基準-3
 
 ### 記事データの1本分を組み立てる処理(決定的なコード)
 - 対象: 検証を通った見出し・`sections`と、選定時の値
@@ -86,9 +86,6 @@ app/research-digest/lib/articleTitle.ts (編成分割で変更: buildArticleTitl
 app/research-digest/lib/buildFinding.ts (新規: 選定時の値+生成結果からFindingを組み立てる)
 app/research-digest/lib/articleSchema.ts (article-detailで新規: 分量検証を組み込む)
 app/research-digest/lib/diagramValidation.ts (新規: news-digestと同じisValidAgentDiagram)
-scripts/research-digest/renderDiagram.ts (新規: renderDiagramSvgの結果をpublic/content/research-digest/articles/images/配下にファイル保存する)
-app/research-digest/lib/diagramIcons.ts (新規: 固定アイコン名19種とHeroicons由来のSVGパスデータ)
-app/research-digest/lib/renderDiagramSvg.ts (新規: DiagramSpec(layout:"steps"|"compare")からSVG文字列を組み立てる純粋関数)
 app/research-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 specs/legal/requirements.md (既存: 知的財産の条項の仕様リンクに本specを追加)
 app/legal/page.tsx (既存: 「4. 知的財産」の条項に週刊研究発見を加える)
@@ -100,13 +97,13 @@ app/legal/page.tsx (既存: 「4. 知的財産」の条項に週刊研究発見�
 - 生成用のClaude CLIに許可するツールはWebFetchに限る
 - 著作権リスクへの対応は、分量の上限(コード)・独自の書き直し(ガードレール文言)・出典の明記(スキーマで必須)・利用規約への条項追記の4点で構成する(requirements.md#著作権への配慮-1、requirements.md#利用規約への反映-2)
 - 健康に関わる研究の誤用を防ぐ制約(誇張しない・個別の治療判断を勧めない)は、ガードレール文言と、月次見直しでこの制約を弱める提案をしないルール([source-review/requirements.md](../source-review/requirements.md)ビジネスルール[3])で守る
-- Mermaid/生成画像の扱いは[news-digest/content-generation/design.md#セキュリティ](../../news-digest/content-generation/design.md)と同一の方針を踏襲する
+- Mermaidの扱いは[news-digest/content-generation/design.md#セキュリティ](../../news-digest/content-generation/design.md)と同一の方針を踏襲する
 
 ## ログ
 
 - 1本ごとに、生成の成否・本文の文字数・失敗時の理由を実行ログに出す(本文そのものは出さない)
 - 記事データの分量違反は、ビルド時の例外としてCIログに出る
-- 図解の生成成否はGitHub Actionsのワークフロー実行ログに出力する(news-digestと同じ)
+- 図解の生成成否(mermaid/なしの内訳、不正な応答の件数)は、GitHub Actionsのワークフロー実行ログに出力する(news-digestと同じ)
 
 ## 利用規約への反映
 

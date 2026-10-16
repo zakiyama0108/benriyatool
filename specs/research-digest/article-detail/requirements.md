@@ -69,7 +69,7 @@ flowchart LR
 - 表示する記事は[content-selection/requirements.md](../content-selection/requirements.md)で選ばれ、[content-generation/requirements.md](../content-generation/requirements.md)のルールで書かれる
 - 読者の付箋は[bookmark/requirements.md](../bookmark/requirements.md)で定める
 - フィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで使われる
-- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
+- 図解のレンダリング(Mermaid)は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示、訪問者向けのコメント欄

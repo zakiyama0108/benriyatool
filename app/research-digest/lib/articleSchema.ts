@@ -15,12 +15,6 @@ const MIN_PUBLISHED_YEAR = 1900
 const EDITIONS: Edition[] = ['body-life', 'science-society']
 const SECTION_KEYS = ['finding', 'basis', 'relevance', 'caveat'] as const
 
-// 図解の生成画像が配信されるURLパス(content-generation/design.md「見出し・固定4観点を書く処理」
-// 手順13)。public/配下に保存され、diagram.pathはこの配下を指すURLパス(先頭スラッシュ)である必要が
-// ある(news-digestのarticleSchema.tsと同じ考え方。2026-10改定: content/配下はビルド時にfsで
-// 読み込むだけで配信対象ではなく<img src>で404になるため、public/配下に変更した)
-const DIAGRAM_IMAGES_DIR = '/content/research-digest/articles/images/'
-
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
 }
@@ -37,8 +31,8 @@ function isHttpUrl(value: unknown): value is string {
 
 // findings[index].sections.<key>.diagram(観点ごとの図解)を検証・パースする(仕様:
 // content-generation/requirements.md#図解-6、article-detail/design.md「バリデーション」)。
-// null、または{type:'mermaid', code: 空文字でない}、または{type:'image', path: DIAGRAM_IMAGES_DIR配下}
-// のいずれかであることを確認する。CurrentFindingは常にdiagramキーを持つため、undefinedは許容しない
+// null、または{type:'mermaid', code: 空文字でない}のいずれかであることを確認する。
+// CurrentFindingは常にdiagramキーを持つため、undefinedは許容しない
 // (キー自体がない過去記事はbodyを持つLegacyFindingとして別経路で検証する)
 function parseDiagram(raw: unknown, index: number, key: string): Diagram | null {
   if (raw === null) return null
@@ -52,15 +46,7 @@ function parseDiagram(raw: unknown, index: number, key: string): Diagram | null 
     }
     return { type: 'mermaid', code: record.code }
   }
-  if (record.type === 'image') {
-    if (!isNonEmptyString(record.path) || !record.path.startsWith(DIAGRAM_IMAGES_DIR)) {
-      throw new Error(
-        `findings[${index}].sections.${key}.diagram.pathが${DIAGRAM_IMAGES_DIR}配下のパスではありません: ${String(record.path)}`,
-      )
-    }
-    return { type: 'image', path: record.path }
-  }
-  throw new Error(`findings[${index}].sections.${key}.diagram.typeが不正です(mermaid/imageのみ許可): ${String(record.type)}`)
+  throw new Error(`findings[${index}].sections.${key}.diagram.typeが不正です(mermaidのみ許可): ${String(record.type)}`)
 }
 
 // findings[index].sections.<key>(固定4観点1つ分)を検証・パースする

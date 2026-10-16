@@ -8,10 +8,11 @@ type Props = {
 }
 
 // 図解(観点ごとのdiagram)の表示(仕様: requirements.md#運営者向けフィードバック-15、content-generation/design.md
-// 「見出し・固定4観点を書く処理」手順13)。diagramがnullのときは何も描画しない。type: 'mermaid'はMermaid
-// ライブラリで描画、type: 'image'は<img>で表示する。mermaidは静的エクスポート(output: 'export')のSSR時に
-// モジュール評価でDOM/windowへアクセスしうるため、ブラウザのuseEffect内でのみ動的importする
-// (news-digestのDiagramView.tsxと同じ実装。Next.js固有の挙動差分としてnextjs-notes.mdに記載済み)。
+// 「見出し・固定4観点を書く処理」手順13)。diagramがnullのときは何も描画しない。
+// Mermaid図のみをMermaidライブラリで描画する(2026-10改定: 画像による図解は廃止した)。
+// mermaidは静的エクスポート(output: 'export')のSSR時にモジュール評価でDOM/windowへアクセスしうるため、
+// ブラウザのuseEffect内でのみ動的importする(news-digestのDiagramView.tsxと同じ実装。
+// Next.js固有の挙動差分としてnextjs-notes.mdに記載済み)。
 // 壊れたMermaid記法は構文検証をせずそのままmermaidに渡す(記事全体のビルド失敗にはしない)。
 // 描画自体が失敗した場合はコンソールにのみエラーを出し、画面の表示は崩れるのみにする
 let mermaidRenderIdCounter = 0
@@ -43,11 +44,6 @@ export default function DiagramView({ diagram }: Props) {
   }, [diagram])
 
   if (!diagram) return null
-
-  if (diagram.type === 'image') {
-    // eslint-disable-next-line @next/next/no-img-element -- ビルド時に生成済みの静的画像をそのまま表示する(next/image最適化は不要)
-    return <img src={diagram.path} alt="図解" className="mt-2 w-full rounded-lg" />
-  }
 
   return <div ref={containerRef} data-testid="mermaid-diagram" className="mt-2 overflow-x-auto" />
 }
