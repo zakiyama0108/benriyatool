@@ -136,7 +136,6 @@ async function main() {
   }
 
   const selection = JSON.parse(fs.readFileSync(selectionPath, 'utf8')) as {
-    scheduledPublishDate: string
     genreResults: GenreResult[]
   }
   const selectedCandidates = selection.genreResults
