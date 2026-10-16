@@ -12,9 +12,13 @@ export type SummarySection = {
   detail: string // 「詳細を見る」操作で展開表示する詳細文(全セクション合計800〜1700字。目安1000〜1500字。content-generation/requirements.md#要約-4)
 }
 
-// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形。
-// content-generation/requirements.md#図解-17、article-detail/requirements.md#記事本文表示-14。2026-09追加)
-export type Diagram = { type: 'mermaid'; code: string } | { type: 'image'; path: string }
+// 観点ごとの図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形。
+// content-generation/requirements.md#図解-17、article-detail/requirements.md#記事本文表示-14)。
+// エージェントが書いたMermaid記法の文字列をそのまま保存し、レンダリングはクライアント側の
+// Mermaidライブラリ(DiagramView)に委ねる(2026-10改定: 画像による図解(AI画像生成→コードでの
+// アイコン図SVG描画)も試みたが、いずれも求める品質を満たせなかったため、画像による図解は
+// 行わないことにし、Mermaid図のみを図解として扱う)
+export type Diagram = { type: 'mermaid'; code: string }
 
 // 固定4観点1つ分(content-generation/requirements.md#要約-9〜12。2026-08追加)
 export type SummaryPerspective = {

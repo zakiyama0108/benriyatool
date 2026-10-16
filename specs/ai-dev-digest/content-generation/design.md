@@ -22,11 +22,11 @@
   6. 各観点の導入文・詳細文は、専門用語や仕組みの説明から書き始めず、結論・メリット(WHAT)→なぜ重要か(WHY)→どう実現しているか(HOW)の順で説明する(requirements.md#要約-10)
   7. 記事に含める情報は、開発効率・生産性・コスト等への直接的な影響を最優先とする優先順位(requirements.md#要約-11)に従って選び、優先度の高い情報ほど上位の観点・早い文で扱う
   8. 原文の逐語訳ではなく、内容を踏まえた解説として書く(requirements.md#翻訳-1)。原文の段落構成・表現の順序をなぞらず、独自の構成に再構成する。原文の詳細な展開・結論・具体的な数値を網羅的に転記しない(requirements.md#要約-6)
-  9. `🎯活用法`観点では、記事の内容を実際のAI駆動開発にどう応用できるかを示す(例: 今すぐ試す価値がある/今後使う可能性が高い/考え方として参考になる/現時点では直接使う必要はない/まだ成熟していない。requirements.md#要約-12)。「今すぐ試す価値がある」「今後使う可能性が高い」と判断した場合は、読者がその場で試せる欄にするため、(a)具体的な手順、(b)手順を説明する参照先URL(`sourceUrl`の明示でもよい)、(c)手順を示す図解、のうち少なくとも1つを必ず含める。(a)で設定項目・パラメータを扱う場合は、効果が大きく出やすい推奨設定値を1つ具体的に示し、その値にした場合の効果までセットで書く。複数手順がある場合は`detail`文字列の中で「1. 」形式の番号付きリストにし、コピペしてそのまま使えるコマンド・設定はMarkdownのコードブロック(```で前後を囲む)にする(article-detail/requirements.md#記事本文表示-15。`FormattedText`コンポーネントがこの記法を解釈して段落・リスト・コードブロックとして表示する)。(b)では公式ドキュメントのトップページより、具体例・サンプルが豊富なページを優先する。(c)を選ぶ場合は後述13.の図解を`howToUse`に付け、手順の各段階をアイコン+ラベルで示す`layout:"steps"`の概念図を基本とし、手順の分岐・詳細な流れそのものを示したい場合はMermaidも併用する(requirements.md#要約-12、requirements.md#図解-17)。固定4観点いずれも、記事に書かれていない内容を推測で断定しない。ただし`🎯活用法`の「自分への影響」は記事内容から合理的に判断することを許容し、推測を含む場合はその旨が伝わる書き方にする(requirements.md#エージェントの逸脱防止-10)
+  9. `🎯活用法`観点では、記事の内容を実際のAI駆動開発にどう応用できるかを示す(例: 今すぐ試す価値がある/今後使う可能性が高い/考え方として参考になる/現時点では直接使う必要はない/まだ成熟していない。requirements.md#要約-12)。「今すぐ試す価値がある」「今後使う可能性が高い」と判断した場合は、読者がその場で試せる欄にするため、(a)具体的な手順、(b)手順を説明する参照先URL(`sourceUrl`の明示でもよい)、(c)手順を示す図解、のうち少なくとも1つを必ず含める。(a)で設定項目・パラメータを扱う場合は、効果が大きく出やすい推奨設定値を1つ具体的に示し、その値にした場合の効果までセットで書く。複数手順がある場合は`detail`文字列の中で「1. 」形式の番号付きリストにし、コピペしてそのまま使えるコマンド・設定はMarkdownのコードブロック(```で前後を囲む)にする(article-detail/requirements.md#記事本文表示-15。`FormattedText`コンポーネントがこの記法を解釈して段落・リスト・コードブロックとして表示する)。(b)では公式ドキュメントのトップページより、具体例・サンプルが豊富なページを優先する。(c)を選ぶ場合は後述13.の図解(Mermaid記法)を`howToUse`に付け、手順の流れを示す(requirements.md#要約-12、requirements.md#図解-17)。固定4観点いずれも、記事に書かれていない内容を推測で断定しない。ただし`🎯活用法`の「自分への影響」は記事内容から合理的に判断することを許容し、推測を含む場合はその旨が伝わる書き方にする(requirements.md#エージェントの逸脱防止-10)
   10. トピック全体の重要度を5段階(★1〜★5)で判定する。基準は「自分のAI駆動開発にどれだけ影響するか」であり、記事・情報源の知名度では判断しない(requirements.md#重要度-13〜14)
   11. 見出し(タイトル)は原文タイトルの逐語的な言い換えにとどめず、各観点の見出しと同じ考え方(requirements.md#要約-9)で、この記事から何が得られるか(結論・要点)が見出しだけで伝わるように作成する
   12. 出典情報(発信者名・見出し・元URL)を必ずセットにする(requirements.md#記事の構成-7)
-  13. 概念図は観点ごとまたは記事全体のいずれかの単位でトピックにつき原則1つは必ず作る。`layout:"steps"`(2〜4件の手順・流れ)または`layout:"compare"`(2件の対比)のいずれかを選び、各項目に固定アイコン名(`app/ai-dev-digest/lib/diagramIcons.ts`の19種)と短い日本語ラベルを指定する。流れ・分岐・手順のような構造を示すのに適した観点には、これに加えてMermaid図も追加する(requirements.md#図解-17)
+  13. 流れ・分岐・手順のような構造を示すのに適した観点には、Mermaid図を作る。該当しない単純な内容の観点では、無理にMermaid図を作らず`diagram`を`null`にする(requirements.md#図解-17)
   14. **応答は必ず指定のJSONオブジェクト単体とし、運営者に判断を仰ぐ質問文や選択肢の提示を返さない**(ヘッドレス実行のため質問しても応答する相手がおらず、返答が非JSONになると後述のとおり当該トピックの生成失敗として扱われる)。WebFetch/WebSearchで元URLの内容を十分に取得できなかった場合でも、確認できた情報(タイトル・発信者・情報源種別など)の範囲で書けるところまで書いてJSONを返す。それも困難な場合は無理に内容を創作せず、後段で失敗と判定できるよう`summary`を`null`にしたJSONを返す(いずれの場合も聞き返さない)
 - 応答JSONの形式(固定4観点+重要度):
   ```json
@@ -56,7 +56,7 @@
   5. `importance`が1〜5の整数でない場合は不正とする(requirements.md#重要度-13)
   6. 各観点の`diagram`は[news-digest/content-generation/design.md](../../news-digest/content-generation/design.md)「図解を生成する処理」と同じ検証・保存処理を行う
   7. 不正な場合は[article-detail](../article-detail/design.md)のスキーマ検証(`parseArticle`)がエラーとして扱い、ビルドを失敗させる(article-detail/design.md#エラーハンドリング)。本検証より前に生成された既存記事データ(可変長`sections`配列、または固定4観点`whatsNew`形式)は本検証の対象外とし、従来どおりの検証を維持する(article-detail/design.md#バリデーション参照。無理な再生成・変換は行わない)
-- 関連するビジネスルール: requirements.md#要約-2〜5、requirements.md#開発領域-15〜16、requirements.md#重要度-13〜14、requirements.md#図解の生成(アイコン図のSVG描画)-11
+- 関連するビジネスルール: requirements.md#要約-2〜5、requirements.md#開発領域-15〜16、requirements.md#重要度-13〜14、requirements.md#図解-17
 
 ### 記事タイトルを導出する処理(決定的なコード)
 - 対象: 記事の日付
@@ -89,9 +89,6 @@ app/ai-dev-digest/lib/youtubeUrl.ts (既存: extractYoutubeVideoId(url))
 app/ai-dev-digest/lib/articleSchema.ts (既存: article-detailで新規作成。`domain`/`whatsNew`いずれの形式かで検証を分岐)
 app/ai-dev-digest/lib/generateContent.ts (既存: isUsableContentの判定に`domain`観点の検証を追加)
 app/ai-dev-digest/lib/diagramValidation.ts (新規: news-digestと同じisValidAgentDiagram)
-scripts/ai-dev-digest/renderDiagram.ts (新規: renderDiagramSvgの結果をpublic/content/ai-dev-digest/articles/images/配下にファイル保存する)
-app/ai-dev-digest/lib/diagramIcons.ts (新規: 固定アイコン名19種とHeroicons由来のSVGパスデータ)
-app/ai-dev-digest/lib/renderDiagramSvg.ts (新規: DiagramSpec(layout:"steps"|"compare")からSVG文字列を組み立てる純粋関数)
 app/ai-dev-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 specs/legal/requirements.md (既存: 知的財産の条項に第三者コンテンツ紹介の条項を追記)
 app/legal/page.tsx (既存: 「4. 知的財産」セクションに条項本文を追記)
@@ -101,7 +98,7 @@ app/legal/page.tsx (既存: 「4. 知的財産」セクションに条項本文�
 
 - 生成される要約・見出しは訪問者に表示される文章のため、通常のReactレンダリングでエスケープされる(article-detail/design.md#セキュリティと同様、追加のサニタイズは不要)
 - 著作権リスクへの対応は、分量の上下限(コードで強制)・独自の章立て構成(ガードレール文言で指示)・出典明記(スキーマで必須化)・利用規約への条項追記の4点で構成する(requirements.md#著作権への配慮-1〜6・9)。ただし翻訳・要約の「質」(本当に独自の解説として再構成されているか、原文をなぞっていないか)はコードで保証できない限界がある点を明記しておく(上記エラーハンドリング参照)
-- Mermaid/生成画像の扱いは[news-digest/content-generation/design.md#セキュリティ](../../news-digest/content-generation/design.md)と同一の方針を踏襲する
+- Mermaidの扱いは[news-digest/content-generation/design.md#セキュリティ](../../news-digest/content-generation/design.md)と同一の方針を踏襲する
 
 ## ログ
 

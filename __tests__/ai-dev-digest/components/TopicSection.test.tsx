@@ -226,7 +226,7 @@ describe('トピック表示(LegacyTopic、sections形式) - 固定ラベル・�
 
 // 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-14、specs/ai-dev-digest/article-detail/design.md#その日の記事本文を表示する処理
 describe('トピック表示 - CurrentTopicの観点ごとの図解(diagram)をDiagramView経由で表示する', () => {
-  it('diagramが{type: "image", path}の観点を含むとき、<img>がそのpathで表示されること', () => {
+  it('diagramが{type: "mermaid", code}の観点を含むとき、Mermaidコンテナが表示されること', () => {
     const topic = makeCurrentTopicWithDomain({
       summary: {
         domain: { heading: 'd', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: ['backend'] },
@@ -235,26 +235,23 @@ describe('トピック表示 - CurrentTopicの観点ごとの図解(diagram)をD
           heading: 'h',
           teaser: 'う'.repeat(60),
           detail: 'う'.repeat(250),
-          diagram: { type: 'image', path: 'content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' },
+          diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' },
         },
         howToUse: { heading: 'u', teaser: 'え'.repeat(60), detail: 'え'.repeat(250) },
       },
     })
-    render(<TopicSection topic={topic} session={null} articleDate="2026-08-01" {...noop} />)
-    const img = screen.getByRole('img')
-    expect(img.getAttribute('src')).toBe('content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png')
+    const { container } = render(<TopicSection topic={topic} session={null} articleDate="2026-08-01" {...noop} />)
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).not.toBeNull()
   })
 
-  it('いずれの観点もdiagramがない(未指定)とき、画像・Mermaidコンテナのいずれも表示されないこと', () => {
+  it('いずれの観点もdiagramがない(未指定)とき、Mermaidコンテナが表示されないこと', () => {
     const { container } = render(<TopicSection topic={makeCurrentTopicWithDomain()} session={null} articleDate="2026-08-01" {...noop} />)
-    expect(screen.queryByRole('img', { name: '図解' })).toBeNull()
     expect(container.querySelector('[data-testid="mermaid-diagram"]')).toBeNull()
   })
 
   it('LegacyTopic(sections形式)にはそもそも図解が表示されないこと', () => {
     const { container } = render(<TopicSection topic={makeTopic()} session={null} articleDate="2026-08-01" {...noop} />)
     expect(container.querySelector('[data-testid="mermaid-diagram"]')).toBeNull()
-    expect(screen.queryByRole('img', { name: '図解' })).toBeNull()
   })
 })
 

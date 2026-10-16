@@ -54,7 +54,7 @@ Topic型の`LegacyTopic`/`CurrentTopic`化・記事スキーマ検証(`types.ts`
 
 ## 開発領域観点・図解への移行
 
-💡新規性を廃止し🧭開発領域を追加、あわせて図解機能(Mermaid/アイコン図のSVG描画)を追加する変更。〔提案〕
+💡新規性を廃止し🧭開発領域を追加、あわせて図解機能(Mermaid)を追加する変更。〔提案〕
 
 <details><summary>詳細を開く</summary>
 
@@ -63,18 +63,8 @@ Topic型の`LegacyTopic`/`CurrentTopic`化・記事スキーマ検証(`types.ts`
   - 🟢 `app/ai-dev-digest/lib/summaryValidation.ts`の`isValidSummaryDetailLength`を、`hasDomainPerspective(summary)`で`domain`/`benefit`/`how`/`howToUse`と`benefit`/`whatsNew`/`how`/`howToUse`のどちらの4キー構成も受け付けるように拡張し、`domain`がある場合は`domains`の検証(1件以上・定義済み値のみ)も行う
 
 - Task 14: 図解データの検証(仕様: requirements.md#図解-17、design.md「要約を書く処理」手順13)
-  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', layout:'steps', items: 定義済みアイコン2〜4件}`の場合・`{type:'image', layout:'compare', left, right}`の場合はいずれも有効、`code`が空文字・itemsが2〜4件の範囲外・未定義のアイコン名・labelが空文字・未知のlayout・type不明の場合は不正と判定することを確認するテストを書く
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合はいずれも有効、`code`が空文字・空白のみ・type不明(`image`等)・オブジェクトでない値の場合は不正と判定することを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
-
-- Task 14-1: アイコン名の固定セットと概念図のSVG描画(仕様: requirements.md#図解の生成(アイコン図のSVG描画)-11、design.md「要約を書く処理」手順13。2026-10追加: AI画像生成(Nano Banana→Cloudflare Workers AI)が文章・構図の破綻を避けられなかったため、コードによる決定的なSVG描画に方針転換)
-  - 🟢 `app/ai-dev-digest/lib/diagramIcons.ts`にHeroicons(MIT License)由来のアイコン19種(`terminal`等)のパスデータと`isDiagramIconName`を実装する
-  - 🟢 `app/ai-dev-digest/lib/renderDiagramSvg.ts`に`renderDiagramSvg(spec: DiagramSpec): string`を実装する。`layout:"steps"`はアイコンを矢印でつなぐ横並び、`layout:"compare"`は2項目を区切り線で対比させるレイアウトで、ラベルはSVGの`<text>`要素(日本語フォント指定)で描画する。長いラベルは2行に折り返し、XML特殊文字はエスケープする
-  - 🔴 件数分のアイコン・ラベル・矢印を含むSVGを返すこと、XML特殊文字がエスケープされること、長いラベルが2行に折り返され末尾が省略記号になることを確認するテストを書く(`__tests__/ai-dev-digest/lib/renderDiagramSvg.test.ts`)
-
-- Task 15: 概念図SVGのファイル保存(仕様: requirements.md#図解の生成(アイコン図のSVG描画)-11、design.md「要約を書く処理」手順13)
-  - TDD対象外(ファイル書き込みのオーケストレーションのため。SVGの組み立てロジック自体はTask 14-1でテスト済み)
-  - `scripts/ai-dev-digest/renderDiagram.ts`に`renderDiagramImage(input): Diagram | null`を実装する。`renderDiagramSvg`の結果を`public/content/ai-dev-digest/articles/images/<date>-<topicId>-<perspectiveKey>.svg`に保存し、`{type:'image', path}`(`path`は`/content/...`のURLパス)を返す
-  - `scripts/ai-dev-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
   - 画面側の表示タスク(固定ラベル・開発領域タグ・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
 
 </details>

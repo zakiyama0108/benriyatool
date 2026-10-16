@@ -22,12 +22,6 @@ const SOURCE_TYPES: SourceType[] = ['official', 'individual-youtube', 'individua
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const MAX_TOPICS = 5
 
-// 図解の生成画像が配信されるURLパス(content-generation/design.md「要約を書く処理」手順13、
-// scripts/ai-dev-digest/generateDiagram.ts)。public/配下に保存され、diagram.pathはこの配下を
-// 指すURLパス(先頭スラッシュ)である必要がある(2026-10改定: content/配下はビルド時にfsで
-// 読み込むだけで配信対象ではなく<img src>で404になるため、public/配下に変更した)
-const DIAGRAM_IMAGES_DIR = '/content/ai-dev-digest/articles/images/'
-
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
 }
@@ -88,11 +82,10 @@ function parseSections(raw: unknown, index: number): SummarySection[] {
 }
 
 // topics[index].summary.<key>.diagram(観点ごとの図解)を検証・パースする(仕様: design.md
-// 「バリデーション」、content-generation/requirements.md#図解-17。2026-09追加)。この機能の追加前に
+// 「バリデーション」、content-generation/requirements.md#図解-17)。この機能の追加前に
 // 公開済みの記事データにはキー自体が存在しないため、undefinedはそのまま通す(後方互換。
 // app/ai-dev-digest/lib/types.tsのSummaryPerspective.diagramが省略可能なことに合わせる)。
-// 存在する場合はnull、または{type:'mermaid', code: 空文字でない}、または
-// {type:'image', path: DIAGRAM_IMAGES_DIR配下}のいずれかであることを確認する
+// 存在する場合はnull、または{type:'mermaid', code: 空文字でない}のいずれかであることを確認する
 function parseDiagram(raw: unknown, index: number, key: string): Diagram | null | undefined {
   if (raw === undefined) return undefined
   if (raw === null) return null
@@ -106,15 +99,7 @@ function parseDiagram(raw: unknown, index: number, key: string): Diagram | null 
     }
     return { type: 'mermaid', code: record.code }
   }
-  if (record.type === 'image') {
-    if (!isNonEmptyString(record.path) || !record.path.startsWith(DIAGRAM_IMAGES_DIR)) {
-      throw new Error(
-        `topics[${index}].summary.${key}.diagram.pathが${DIAGRAM_IMAGES_DIR}配下のパスではありません: ${String(record.path)}`
-      )
-    }
-    return { type: 'image', path: record.path }
-  }
-  throw new Error(`topics[${index}].summary.${key}.diagram.typeが不正です(mermaid/imageのみ許可): ${String(record.type)}`)
+  throw new Error(`topics[${index}].summary.${key}.diagram.typeが不正です(mermaidのみ許可): ${String(record.type)}`)
 }
 
 // topics[index].summary(固定4観点)1つ分を検証・パースする(仕様: article-detail/design.md「バリデーション」)

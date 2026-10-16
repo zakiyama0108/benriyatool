@@ -358,7 +358,7 @@ describe('記事スキーマへのdomain/whatsNew出し分け - summaryがdomain
 })
 
 // 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-14、specs/ai-dev-digest/article-detail/design.md#バリデーション
-describe('記事スキーマへの図解(diagram)検証の組み込み - 省略/null/mermaid/imageのいずれかの形式のみ受理する', () => {
+describe('記事スキーマへの図解(diagram)検証の組み込み - 省略/null/mermaidのいずれかの形式のみ受理する', () => {
   it('diagramキー自体が省略されている(この機能追加前の既存記事データ相当)とき、検証を通ること', () => {
     const article = parseArticle(validArticle({ topics: [validCurrentTopic({ summary: validSummary() })] }), '2026-08-01.json')
     expect(article.topics[0]).toMatchObject({ summary: { benefit: { heading: 'あ見出し' } } })
@@ -380,29 +380,6 @@ describe('記事スキーマへの図解(diagram)検証の組み込み - 省略/
     expect(article.topics[0]).toMatchObject({ summary: { how: { diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } } } })
   })
 
-  it('diagramが{type:"image", path}でpathがcontent/ai-dev-digest/articles/images/配下のとき、検証を通ること', () => {
-    const summary = validSummaryWithDomain({
-      how: {
-        heading: 'う見出し',
-        teaser: 'う'.repeat(60),
-        detail: 'う'.repeat(250),
-        diagram: { type: 'image', path: '/content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' },
-      },
-    })
-    const article = parseArticle(validArticle({ topics: [validCurrentTopic({ summary })] }), '2026-08-01.json')
-    expect(article.topics[0]).toMatchObject({
-      summary: { how: { diagram: { type: 'image', path: '/content/ai-dev-digest/articles/images/2026-08-01-topic-1-how.png' } } },
-    })
-  })
-
-  it('diagramが{type:"image", path}でpathがcontent/ai-dev-digest/articles/images/配下を指さないとき、検証エラーになること', () => {
-    const summary = validSummaryWithDomain({
-      how: { heading: 'う見出し', teaser: 'う'.repeat(60), detail: 'う'.repeat(250), diagram: { type: 'image', path: '/etc/passwd' } },
-    })
-    const topics = [validCurrentTopic({ summary })]
-    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
-  })
-
   it('diagramが{type:"mermaid", code: 空文字}のとき、検証エラーになること', () => {
     const summary = validSummaryWithDomain({
       how: { heading: 'う見出し', teaser: 'う'.repeat(60), detail: 'う'.repeat(250), diagram: { type: 'mermaid', code: '' } },
@@ -411,11 +388,17 @@ describe('記事スキーマへの図解(diagram)検証の組み込み - 省略/
     expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
   })
 
-  it('diagramのtypeが未定義の値のとき、検証エラーになること', () => {
-    const summary = validSummaryWithDomain({
+  it('diagramのtypeが未定義の値("image"・"chart"等)のとき、検証エラーになること(画像による図解は廃止したため)', () => {
+    const summary1 = validSummaryWithDomain({
+      how: { heading: 'う見出し', teaser: 'う'.repeat(60), detail: 'う'.repeat(250), diagram: { type: 'image', path: '/content/ai-dev-digest/articles/images/x.png' } },
+    })
+    const topics1 = [validCurrentTopic({ summary: summary1 })]
+    expect(() => parseArticle(validArticle({ topics: topics1 }), '2026-08-01.json')).toThrow()
+
+    const summary2 = validSummaryWithDomain({
       how: { heading: 'う見出し', teaser: 'う'.repeat(60), detail: 'う'.repeat(250), diagram: { type: 'chart' } },
     })
-    const topics = [validCurrentTopic({ summary })]
-    expect(() => parseArticle(validArticle({ topics }), '2026-08-01.json')).toThrow()
+    const topics2 = [validCurrentTopic({ summary: summary2 })]
+    expect(() => parseArticle(validArticle({ topics: topics2 }), '2026-08-01.json')).toThrow()
   })
 })

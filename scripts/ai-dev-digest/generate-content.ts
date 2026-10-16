@@ -20,7 +20,6 @@ import type { GeneratedTopicInput } from '../../app/ai-dev-digest/lib/assembleAr
 import type { SelectedTopic, SelectionResult } from '../../app/ai-dev-digest/lib/candidateTypes'
 import { generateTopics, type ClaudeCliResponse } from '../../app/ai-dev-digest/lib/generateContent'
 import { isValidAgentDiagram } from '../../app/ai-dev-digest/lib/diagramValidation'
-import { renderDiagramImage } from './renderDiagram'
 
 const execFileAsync = promisify(execFile)
 
@@ -53,15 +52,11 @@ ${GUARDRAIL}
 - 元URL: ${candidate.url}
 - 情報源種別: ${candidate.sourceType}
 
-図解(観点ごとまたは記事全体のいずれかの単位で、このトピックにつき原則として少なくとも1つ)は、AIに自由な画像を生成させるのではなく、次のいずれかの構造化データとしてコードがSVGに描画します(requirements.md#図解-17)。
-- 手順・流れを示す場合: \`{"type": "image", "layout": "steps", "items": [{"icon": "アイコン名", "label": "短い日本語ラベル(10字程度)"}, ...]}\`(itemsは2〜4件)
-- 2つを対比・比較する場合: \`{"type": "image", "layout": "compare", "left": {"icon": "アイコン名", "label": "..."}, "right": {"icon": "アイコン名", "label": "..."}}\`
-- アイコン名は次の固定セットから選んでください(これ以外の名前は使えません): terminal, shield-check, blocked, document, calendar, cart, clock, chat, star, trending-up, cpu, check, idea, search, beaker, heart, settings, refresh, user
-該当する観点の\`diagram\`に上記いずれかを設定してください。視覚化できる要素が本当に存在しない例外的な場合に限り省略してかまいません。さらに、流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、それとは別にMermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)も追加してください。理解が容易な単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
+流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、Mermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)を該当する観点の\`diagram\`に設定してください(requirements.md#図解-17)。理解が容易な単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
 
 WebFetchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、確認できた情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`summary\`を\`null\`にしたJSON(\`{"heading": "...", "importance": 1, "summary": null}\`)を返してください(いずれの場合も聞き返さない):
 
-{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"domain": {"heading": "既存のどの作業をどう変えるかを含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "domains": ["backend", "infra"], "diagram": null}, "benefit": {"heading": "結論・メリットを含む見出し", "teaser": "...", "detail": "...", "diagram": null}, "how": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "howToUse": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "image", "layout": "steps", "items": [{"icon": "terminal", "label": "..."}, {"icon": "shield-check", "label": "..."}]}}}}`
+{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"domain": {"heading": "既存のどの作業をどう変えるかを含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "domains": ["backend", "infra"], "diagram": null}, "benefit": {"heading": "結論・メリットを含む見出し", "teaser": "...", "detail": "...", "diagram": null}, "how": {"heading": "...", "teaser": "...", "detail": "...", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "howToUse": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}}}`
 }
 
 // Claude Code CLIを非対話モード(-p)で1回呼び出し、--output-format jsonで返る応答オブジェクトを返す。
@@ -90,16 +85,11 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
   }
 }
 
-// classifyGenerationResultに渡す前に、応答JSON内の各観点のdiagramを最終形式に解決する
-// (仕様: content-generation/design.md「要約を書く処理」手順13、content-generation/tasks.md Task15)。
-// type: 'mermaid'はcodeをそのまま保存するだけでよい(構文検証はしない)。type: 'image'のみ
-// renderDiagramImage(コードでのSVG描画)でファイル化が必要。失敗してもその観点の図解なしで続行する
-// (resはis_error/JSON抽出不可の場合はそのまま返し、classifyGenerationResultの既存の失敗判定に委ねる)
-async function resolveDiagramsInResult(
-  res: ClaudeCliResponse,
-  date: string,
-  topicId: string,
-): Promise<ClaudeCliResponse> {
+// classifyGenerationResultに渡す前に、応答JSON内の各観点のdiagram(Mermaid図のみ)が正しい
+// 形式かを検証する(仕様: content-generation/design.md「要約を書く処理」手順13)。不正な形式は
+// `null`に差し替える(resはis_error/JSON抽出不可の場合はそのまま返し、classifyGenerationResultの
+// 既存の失敗判定に委ねる)
+function resolveDiagramsInResult(res: ClaudeCliResponse): ClaudeCliResponse {
   if (res.is_error || typeof res.result !== 'string') return res
   const match = res.result.match(/\{[\s\S]*\}/)
   if (!match) return res
@@ -121,19 +111,9 @@ async function resolveDiagramsInResult(
     const rawDiagram = perspective.diagram
     if (rawDiagram === undefined) continue // この観点がdiagramキーを返していない(省略)
     if (!isValidAgentDiagram(rawDiagram)) {
-      console.error(`図解データの形式が不正なため無視します(${topicId}/${key}): ${JSON.stringify(rawDiagram)}`)
+      console.error(`図解データの形式が不正なため無視します(${key}): ${JSON.stringify(rawDiagram)}`)
       perspective.diagram = null
-      continue
     }
-    if (rawDiagram === null || rawDiagram.type === 'mermaid') {
-      perspective.diagram = rawDiagram
-      continue
-    }
-    const spec =
-      rawDiagram.layout === 'steps'
-        ? { layout: 'steps' as const, items: rawDiagram.items }
-        : { layout: 'compare' as const, left: rawDiagram.left, right: rawDiagram.right }
-    perspective.diagram = renderDiagramImage({ date, topicId, perspectiveKey: key, spec })
   }
 
   return { ...res, result: JSON.stringify(parsed) }
@@ -165,12 +145,8 @@ async function main() {
   const generated = await generateTopics(
     selection.topics,
     async (candidate) => {
-      // 図解画像の保存ファイル名に使う仮の識別子(選定結果内での位置から導出。design.md「要約を書く処理」
-      // 手順13。最終的なTopic.idはassembleArticle.ts側が生成失敗した候補を除外した後に採番するため、
-      // ここで厳密に一致させる必要はなく、一意なファイル名が得られれば十分)
-      const topicId = `topic-${selection.topics.indexOf(candidate) + 1}`
       const res = await callClaudeCode(buildPrompt(candidate, requirements, design))
-      return resolveDiagramsInResult(res, selection.date, topicId)
+      return resolveDiagramsInResult(res)
     },
     {
       onExcluded: ({ candidate, attempts, detail }) => {

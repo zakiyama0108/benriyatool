@@ -48,7 +48,7 @@
 - ログイン状態・運営者判定は既存の管理画面と同じGoogle OIDC + `admin_emails`許可リスト([docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、`app/lib/adminAuth.ts`のisAuthorizedAdmin())を利用する(2026-08修正)。`admin_emails`テーブル・そのRLSポリシーは複数アプリ共有の既存資産であり、本specのための新しいテーブル・マイグレーションは不要。フィードバック保存先テーブル(`ai_dev_digest_feedback`)自体には、ADR-0006が定める「運営者専用SELECTポリシーの追加」は行わない(このテーブルはSELECTを必要とせず、従来通りINSERT専用のまま)
 - 付箋機能([bookmark/requirements.md](../bookmark/requirements.md))の追加により、記事詳細ページのログインはサイトの読者全員が行うようになる。フィードバック欄の表示条件を運営者本人に限定するのはこの変更に伴う対応
 - 蓄積されたフィードバックは[watchlist-review/requirements.md](../watchlist-review/requirements.md)の月次見直しで参照される
-- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
+- 図解のレンダリング(Mermaid)は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示
