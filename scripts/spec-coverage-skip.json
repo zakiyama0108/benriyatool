@@ -2120,11 +2120,6 @@
     "reason": "固定4観点への変更経緯・著作権リスク評価の結論を説明する記述で、テスト対象の振る舞いを持たないため(具体的な検証はrequirements.md#要約-2〜5・summaryValidation.test.tsで担保する)"
   },
   {
-    "specFile": "ai-dev-digest/content-generation/requirements.md",
-    "item": "図解の生成(Nano Banana) [11]",
-    "reason": "Nano Banana(Gemini 2.5 Flash Image)の利用方針・制約をnews-digestの同名項目への参照のみで定める記述(重複して記載しない)で、具体的なテスト対象の実体はnews-digest側のrequirements.md・diagramValidation.test.tsにあり、scripts/ai-dev-digest/generateDiagram.tsはTDD対象外のため(tasks.md Task15。外部API呼び出し・ファイル書き込みのオーケストレーションで、失敗時にdiagramをnullに差し替えるtry/catchとして実装するのみ)"
-  },
-  {
     "specFile": "ai-dev-digest/content-selection/design.md",
     "item": "設計の前提(エージェントの推論とコードの役割分担)",
     "reason": "エージェントとコードの役割分担の方針説明で、それ自体はテスト対象の振る舞いを持たないため"

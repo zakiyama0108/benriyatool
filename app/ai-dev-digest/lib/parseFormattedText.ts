@@ -7,12 +7,14 @@
 export type InlineNode = { type: 'text'; text: string } | { type: 'code'; text: string } | { type: 'link'; text: string; href: string }
 
 export type Block =
+  // startはコードブロック等で中断された番号付きリストが再開するときの開始番号(例: 1. 2. (コード) 3. の
+  // 「3」)。先頭から始まる通常のリスト(1.から始まる)ではHTMLの既定値と同じため省略する
   | { type: 'paragraph'; inline: InlineNode[] }
-  | { type: 'orderedList'; items: InlineNode[][] }
+  | { type: 'orderedList'; items: InlineNode[][]; start?: number }
   | { type: 'unorderedList'; items: InlineNode[][] }
   | { type: 'code'; code: string }
 
-const ORDERED_ITEM = /^\s*\d+\.\s+(.*)$/
+const ORDERED_ITEM = /^\s*(\d+)\.\s+(.*)$/
 const UNORDERED_ITEM = /^\s*[-・]\s+(.*)$/
 const CODE_FENCE = /^```/
 
@@ -64,12 +66,18 @@ export function parseFormattedText(text: string): Block[] {
 
     if (ORDERED_ITEM.test(line)) {
       const items: InlineNode[][] = []
+      let start: number | undefined
+      let isFirstItem = true
       while (i < lines.length && ORDERED_ITEM.test(lines[i])) {
         const m = ORDERED_ITEM.exec(lines[i])!
-        items.push(parseInline(m[1]))
+        // 先頭項目の番号が1でない場合のみstartを持たせる(コードブロック等で中断された
+        // リストの再開箇所。1から始まる通常のリストはHTMLの既定値と同じため省略する)
+        if (isFirstItem && Number(m[1]) !== 1) start = Number(m[1])
+        isFirstItem = false
+        items.push(parseInline(m[2]))
         i++
       }
-      blocks.push({ type: 'orderedList', items })
+      blocks.push(start !== undefined ? { type: 'orderedList', items, start } : { type: 'orderedList', items })
       continue
     }
 

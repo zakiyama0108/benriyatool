@@ -53,7 +53,9 @@ function CodeBlock({ code }: { code: string }) {
       </pre>
       <button
         type="button"
-        onClick={handleCopy}
+        onClick={() => {
+          void handleCopy()
+        }}
         className="absolute right-2 top-2 rounded bg-gray-700 px-2 py-1 text-[11px] text-gray-100 hover:bg-gray-600"
       >
         {copied ? 'コピーしました' : 'コピー'}
@@ -74,7 +76,11 @@ export default function FormattedText({ text }: Props) {
         if (block.type === 'code') return <CodeBlock key={i} code={block.code} />
         if (block.type === 'orderedList') {
           return (
-            <ol key={i} className="list-decimal space-y-1 pl-5 text-sm leading-relaxed text-gray-600">
+            <ol
+              key={i}
+              start={block.start}
+              className="list-decimal space-y-1 pl-5 text-sm leading-relaxed text-gray-600"
+            >
               {block.items.map((item, j) => (
                 <li key={j}>
                   <InlineNodes nodes={item} />

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseFormattedText, parseInline } from '../../../app/ai-dev-digest/lib/parseFormattedText'
 
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-15
 describe('parseInline', () => {
   it('前後に通常テキストがない場合、単一のtextノードを返すこと', () => {
     expect(parseInline('ただの文章です')).toEqual([{ type: 'text', text: 'ただの文章です' }])
@@ -32,6 +33,7 @@ describe('parseInline', () => {
   })
 })
 
+// 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-15
 describe('parseFormattedText', () => {
   it('空行区切りの2段落を別々のparagraphブロックにすること', () => {
     const blocks = parseFormattedText('1段落目\n\n2段落目')
@@ -104,5 +106,24 @@ describe('parseFormattedText', () => {
 
   it('空文字列の場合、空配列を返すこと', () => {
     expect(parseFormattedText('')).toEqual([])
+  })
+
+  // コードブロックで中断された番号付き手順は、再開後も元の番号から続くこと
+  // (例: 1. 2. (コード) 3. のように番号が1.に戻って表示上の段数と食い違わない)
+  // 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-15
+  it('コードブロックで中断された番号付きリストは、再開後の番号(数字)をstartとして保持すること', () => {
+    const blocks = parseFormattedText('1. 最初の手順\n2. 次の手順\n```\nnpm install\n```\n3. 最後の手順')
+    expect(blocks).toEqual([
+      {
+        type: 'orderedList',
+        items: [[{ type: 'text', text: '最初の手順' }], [{ type: 'text', text: '次の手順' }]],
+      },
+      { type: 'code', code: 'npm install' },
+      {
+        type: 'orderedList',
+        items: [[{ type: 'text', text: '最後の手順' }]],
+        start: 3,
+      },
+    ])
   })
 })
