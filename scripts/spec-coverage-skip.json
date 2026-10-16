@@ -6146,18 +6146,18 @@
   },
   {
     "specFile": "news-digest/content-generation/requirements.md",
-    "item": "図解の生成(Nano Banana) [8]",
-    "reason": "生成画像にGemini 2.5 Flash Image APIを使うというアーキテクチャ上の決定の記述で、scripts/news-digest/generateDiagram.tsに実装するのみでテスト対象を持たないため(tasks.md Task8、TDD対象外)"
+    "item": "図解 [15]",
+    "reason": "概念図のレイアウト種別・アイコン名・ラベルの指定方法を定義する執筆内容の質に関する要件で、コードで自動検証できないため(diagramの形自体はapp/news-digest/lib/diagramValidation.tsのisValidAgentDiagramでテスト済み)"
   },
   {
     "specFile": "news-digest/content-generation/requirements.md",
-    "item": "図解の生成(Nano Banana) [9]",
-    "reason": "Nano Banana無料枠の利用上の制約(商用利用不可の地域・学習データ利用)を把握しておくという運用上の注意事項で、コードとして実装・検証する対象を持たないため"
+    "item": "図解の生成(アイコン図のSVG描画) [8]",
+    "reason": "概念図をコードで決定的にSVG描画するというアーキテクチャ上の決定の記述で、app/news-digest/lib/renderDiagramSvg.tsに実装するのみでテスト対象を持たないため(固定アイコン名の集合自体はdiagramIcons.ts参照)"
   },
   {
     "specFile": "news-digest/content-generation/requirements.md",
-    "item": "図解の生成(Nano Banana) [10]",
-    "reason": "正確な文章再現を要する図は生成画像にしないという、画像生成プロンプトを書く際の執筆内容の質に関する要件で、コードで自動検証できないため"
+    "item": "図解の生成(アイコン図のSVG描画) [9]",
+    "reason": "ローカルでのSVG組み立てのみで外部APIを呼ばないという設計上の帰結の記述で、コードとして実装・検証する対象を持たないため"
   },
   {
     "specFile": "news-digest/content-generation/requirements.md",
