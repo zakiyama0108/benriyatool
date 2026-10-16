@@ -74,7 +74,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "value=${{ github.event.inputs.edition }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "43 22 * * 1" ]; then
+          elif [ "${{ github.event.schedule }}" = "43 16 * * 1" ]; then
             echo "value=entertainment" >> "$GITHUB_OUTPUT"
           else
             echo "value=culture-lifestyle" >> "$GITHUB_OUTPUT"

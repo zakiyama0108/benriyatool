@@ -73,7 +73,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "value=${{ github.event.inputs.edition }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "43 22 * * 3" ] || [ "${{ github.event.schedule }}" = "43 10 * * 4" ] || [ "${{ github.event.schedule }}" = "43 22 * * 4" ] || [ "${{ github.event.schedule }}" = "43 10 * * 5" ]; then
+          elif [ "${{ github.event.schedule }}" = "43 16 * * 3" ] || [ "${{ github.event.schedule }}" = "43 4 * * 4" ] || [ "${{ github.event.schedule }}" = "43 16 * * 4" ] || [ "${{ github.event.schedule }}" = "43 4 * * 5" ]; then
             echo "value=science-tech" >> "$GITHUB_OUTPUT"
           else
             echo "value=life-society" >> "$GITHUB_OUTPUT"
@@ -115,8 +115,8 @@ jobs:
           EDITION: ${{ steps.edition.outputs.value }}
         run: |
           schedule="${{ github.event.schedule }}"
-          if [ "$schedule" = "43 10 * * 4" ] || [ "$schedule" = "43 22 * * 4" ] || [ "$schedule" = "43 10 * * 5" ] \
-            || [ "$schedule" = "43 12 * * 0" ] || [ "$schedule" = "43 0 * * 1" ] || [ "$schedule" = "43 12 * * 1" ]; then
+          if [ "$schedule" = "43 4 * * 4" ] || [ "$schedule" = "43 16 * * 4" ] || [ "$schedule" = "43 4 * * 5" ] \
+            || [ "$schedule" = "43 6 * * 0" ] || [ "$schedule" = "43 18 * * 0" ] || [ "$schedule" = "43 6 * * 1" ]; then
             is_retry=true
           else
             is_retry=false
