@@ -45,7 +45,7 @@
 
 ## 固定3観点・図解への移行
 
-単一の`body`を固定3観点(`when`/`basis`/`impact`)に再構成し、図解機能(Mermaid/アイコン図のSVG描画)を追加する。〔提案〕
+単一の`body`を固定3観点(`when`/`basis`/`impact`)に再構成し、図解機能(Mermaid)を追加する。〔提案〕
 
 <details><summary>詳細を開く</summary>
 
@@ -54,18 +54,8 @@
   - 🟢 `app/future-digest/lib/bodyValidation.ts`の`isValidBodyLength(body)`を`isValidSectionsLength(sections)`に置き換える(呼び出し元の`articleSchema.ts`・`buildPrediction.ts`も追随)
 
 - Task 10: 図解データの検証(仕様: requirements.md#図解-6、design.md「見出し・固定3観点を書く処理」手順12)
-  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', layout:'steps', items: 定義済みアイコン2〜4件}`の場合・`{type:'image', layout:'compare', left, right}`の場合はいずれも有効、`code`が空文字・itemsが2〜4件の範囲外・未定義のアイコン名・labelが空文字・未知のlayout・type不明の場合は不正と判定することを確認するテストを書く
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合はいずれも有効、`code`が空文字・空白のみ・type不明(`image`等)・オブジェクトでない値の場合は不正と判定することを確認するテストを書く
   - 🟢 `app/future-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
-
-- Task 10-1: アイコン名の固定セットと概念図のSVG描画(仕様: requirements.md#図解の生成(アイコン図のSVG描画)-9、design.md「見出し・固定3観点を書く処理」手順12。2026-10追加: AI画像生成(Nano Banana→Cloudflare Workers AI)が文章・構図の破綻を避けられなかったため、コードによる決定的なSVG描画に方針転換)
-  - 🟢 `app/future-digest/lib/diagramIcons.ts`にHeroicons(MIT License)由来のアイコン19種(`terminal`等)のパスデータと`isDiagramIconName`を実装する(ai-dev-digestと同一の内容)
-  - 🟢 `app/future-digest/lib/renderDiagramSvg.ts`に`renderDiagramSvg(spec: DiagramSpec): string`を実装する(ai-dev-digestと同一のロジック)
-  - 🔴 件数分のアイコン・ラベル・矢印を含むSVGを返すこと、XML特殊文字がエスケープされること、長いラベルが2行に折り返され末尾が省略記号になることを確認するテストを書く(`__tests__/future-digest/lib/renderDiagramSvg.test.ts`)
-
-- Task 11: 概念図SVGのファイル保存(仕様: requirements.md#図解の生成(アイコン図のSVG描画)-9、design.md「見出し・固定3観点を書く処理」手順12)
-  - TDD対象外(ファイル書き込みのオーケストレーションのため。SVGの組み立てロジック自体はTask 10-1でテスト済み)
-  - `scripts/future-digest/renderDiagram.ts`に`renderDiagramImage(input): Diagram | null`を実装する。`renderDiagramSvg`の結果を`public/content/future-digest/articles/images/<date>-<genre>-<horizon>-<sectionKey>.svg`に保存し、`{type:'image', path}`(`path`は`/content/...`のURLパス)を返す
-  - `scripts/future-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
   - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
 
 </details>

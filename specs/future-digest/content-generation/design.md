@@ -1,7 +1,7 @@
 # 設計: 未来予測記事の要約・記事執筆のルール
 
 ## サマリ
-[content-selection](../content-selection/design.md)で採用された予測1本ごとに、Claude Code CLIのヘッドレス実行で元記事をWebFetchで読み、見出しと固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響、合計200〜400字程度)を書かせる。あわせて、理解の助けになる場合はMermaid図・アイコン図(コードでのSVG描画)による図解を作らせる。影響度・その根拠・対象時期・出典は選定時の値をそのまま使い、執筆時に書き換えさせない。本文の分量の検証と記事タイトルの導出は決定的なコードで行う。性・恋愛ジャンルは専用のガードレール文言をプロンプトに加え、率直に書きつつ官能的な描写・利用の手助け・未成年に関わる内容を書かせない。
+[content-selection](../content-selection/design.md)で採用された予測1本ごとに、Claude Code CLIのヘッドレス実行で元記事をWebFetchで読み、見出しと固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響、合計200〜400字程度)を書かせる。あわせて、流れ・分岐・手順・時系列のような構造を示すのに適した観点にはMermaid図による図解を作らせる。影響度・その根拠・対象時期・出典は選定時の値をそのまま使い、執筆時に書き換えさせない。本文の分量の検証と記事タイトルの導出は決定的なコードで行う。性・恋愛ジャンルは専用のガードレール文言をプロンプトに加え、率直に書きつつ官能的な描写・利用の手助け・未成年に関わる内容を書かせない。
 
 主要な設計判断:
 - 「本文を書く」ことだけをClaudeに任せ、分量の検証・タイトル・影響度などの値は決定的なコードで扱う(trend-digestと同じ役割分担)
@@ -25,7 +25,7 @@
   9. 「〜と考えられている」「〜と予測している」のように予測であることが分かる書き方にし、確定した未来として断定しない(requirements.md#要約-5)
   10. 元記事に書かれている範囲にとどめ、書かれていない内容を推測で断定しない。Claude独自の予測・考察は加えない(requirements.md#内容の逸脱防止-8)
   11. 影響度・その根拠・対象時期・出典は渡された値を事実として扱い、本文でそれと食い違うことを書かない
-  12. 概念図は観点ごとまたは記事全体のいずれかの単位でトピックにつき原則1つは必ず作る。`layout:"steps"`(2〜4件の手順・流れ)または`layout:"compare"`(2件の対比)のいずれかを選び、各項目に固定アイコン名(`app/future-digest/lib/diagramIcons.ts`の19種)と短い日本語ラベルを指定する。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid図も追加する(requirements.md#図解-6)
+  12. 流れ・分岐・手順・時系列のような構造を示すのに適した観点には、Mermaid記法の図(`diagram`)を追加する。該当しない単純な内容の観点では`diagram`を`null`にする(requirements.md#図解-6)
   13. 応答は`{ "heading": "...", "sections": { "when": {...}, "basis": {...}, "impact": {...} } }`のJSONだけを返させる。元記事を読めなかった場合は、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書き、それも難しい場合は`heading`を`null`にして返させる(聞き返しはさせない)
 - 応答JSONの形式:
   ```json
@@ -64,9 +64,9 @@ sequenceDiagram
   1. 見出し・`sections`が`null`、またはいずれかの観点の`heading`/`text`が空の場合は不正とする
   2. 3観点の`text`を連結した文字数が160字未満、または480字を超える場合は不正とする(「200〜400字程度」の「程度」を、trend-digestと同じく目安の約±20%と解釈する)
   3. 見出しが100字を超える場合は不正とする(見出しとして読める長さに抑えるため)
-  4. 各観点の`diagram`は[news-digest/content-generation/design.md](../../news-digest/content-generation/design.md)「図解を生成する処理」と同じ検証・保存処理を行う
+  4. 各観点の`diagram`は[news-digest/content-generation/design.md](../../news-digest/content-generation/design.md)「図解を生成する処理(エージェントの推論)」と同じ検証を行う。応答が`isValidAgentDiagram`(`app/future-digest/lib/diagramValidation.ts`)の形式を満たさない場合、その観点の`diagram`を`null`に差し替えて続行する(その回・そのトピック全体の生成失敗にはしない)
   5. 不正な場合は、その1本の生成失敗として[weekly-publish/design.md](../weekly-publish/design.md)のやり直し・除外の流れに乗せる
-- 関連するビジネスルール: requirements.md#要約-2、requirements.md#図解の生成(アイコン図のSVG描画)-9
+- 関連するビジネスルール: requirements.md#要約-2、requirements.md#図解-6
 
 ### 記事データの1本分を組み立てる処理(決定的なコード)
 - 対象: 検証を通った見出し・`sections`と、選定時の値
@@ -97,9 +97,6 @@ app/future-digest/lib/articleTitle.ts (編成分割で変更: buildArticleTitle(
 app/future-digest/lib/buildPrediction.ts (新規: 選定時の値+生成結果からPredictionを組み立てる)
 app/future-digest/lib/articleSchema.ts (article-detailで新規: 分量検証を組み込む)
 app/future-digest/lib/diagramValidation.ts (新規: news-digestと同じisValidAgentDiagram)
-scripts/future-digest/renderDiagram.ts (新規: renderDiagramSvgの結果をpublic/content/future-digest/articles/images/配下にファイル保存する)
-app/future-digest/lib/diagramIcons.ts (新規: 固定アイコン名19種とHeroicons由来のSVGパスデータ)
-app/future-digest/lib/renderDiagramSvg.ts (新規: DiagramSpec(layout:"steps"|"compare")からSVG文字列を組み立てる純粋関数)
 app/future-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 specs/legal/requirements.md (既存: 知的財産の条項の仕様リンクに本specを追加)
 app/legal/page.tsx (既存: 「4. 知的財産」に週刊未来予測の条項を追記)
@@ -111,13 +108,13 @@ app/legal/page.tsx (既存: 「4. 知的財産」に週刊未来予測の条項�
 - 生成用のClaude CLIに許可するツールはWebFetchに限る(外部のページに書かれた指示でファイル編集・シェル実行をさせないため)
 - 著作権リスクへの対応は、分量の上限(コードで強制)・独自の書き直し(ガードレール文言)・出典の明記(スキーマで必須)・利用規約への条項追記の4点で構成する(requirements.md#著作権への配慮-1〜2、requirements.md#利用規約への反映-3)
 - 性・恋愛ジャンルの安全性は、上記の専用ガードレール文言(収集時は[content-selection/design.md](../content-selection/design.md#セキュリティ)でも同じ制約をかける)と、月次見直しで制約を弱める提案をしないルール([source-review/requirements.md](../source-review/requirements.md)ビジネスルール[3])で守る
-- Mermaid/生成画像の扱いは[news-digest/content-generation/design.md#セキュリティ](../../news-digest/content-generation/design.md)と同一の方針を踏襲する
+- Mermaidの扱いは[news-digest/content-generation/design.md#セキュリティ](../../news-digest/content-generation/design.md)と同一の方針を踏襲する
 
 ## ログ
 
 - 1本ごとに、生成の成否・本文の文字数・失敗時の理由(検証エラーの内容/JSONを取り出せない/拒否)を実行ログに出す(本文そのものはログに出さない)
 - 記事データの分量違反は、ビルド時の例外としてCIログに出る
-- 図解の生成成否はGitHub Actionsのワークフロー実行ログに出力する(news-digestと同じ)
+- 図解の生成成否(mermaid/なしの内訳、不正な応答の件数)はGitHub Actionsのワークフロー実行ログに出力する(news-digestと同じ)
 
 ## 利用規約への反映
 

@@ -270,18 +270,6 @@ describe('記事データ(JSON)のスキーマ検証(固定3観点・新形式) 
     expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).not.toThrow()
   })
 
-  it('sections.impactのdiagramが{type:"image",path:"content/future-digest/articles/images/..."}のとき、受け付けること', () => {
-    const data = makeValidArticleData()
-    const predictions = data.predictions
-    const sections = makeSections()
-    sections.impact = makeSection(Math.floor(250 / 3), {
-      diagram: { type: 'image', path: '/content/future-digest/articles/images/2026-09-24-technology-ai-near-impact.png' },
-    })
-    predictions[0] = { ...predictions[0], sections }
-    delete predictions[0].body
-    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).not.toThrow()
-  })
-
   it('sections.when/basis/impactのいずれかのキーが欠落している場合に拒否すること', () => {
     const data = makeValidArticleData()
     const predictions = data.predictions
@@ -318,24 +306,22 @@ describe('記事データ(JSON)のスキーマ検証(固定3観点・新形式) 
     expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
-  it('diagramがtype不明の場合に拒否すること', () => {
-    const data = makeValidArticleData()
-    const predictions = data.predictions
-    const sections = makeSections()
-    sections.when = makeSection(Math.floor(250 / 3), { diagram: { type: 'chart', code: 'x' } })
-    predictions[0] = { ...predictions[0], sections }
-    delete predictions[0].body
-    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
-  })
+  it('diagramのtypeが未定義の値("image"・"chart"等)のとき、検証エラーになること(画像による図解は廃止したため)', () => {
+    const data1 = makeValidArticleData()
+    const predictions1 = data1.predictions
+    const sections1 = makeSections()
+    sections1.when = makeSection(Math.floor(250 / 3), { diagram: { type: 'image', path: '/content/future-digest/articles/images/x.png' } })
+    predictions1[0] = { ...predictions1[0], sections: sections1 }
+    delete predictions1[0].body
+    expect(() => parseArticle(data1, `2026-09-24-${EDITION}.json`)).toThrow()
 
-  it('diagramがtype:"image"だがpathが画像の保存先配下でない場合に拒否すること', () => {
-    const data = makeValidArticleData()
-    const predictions = data.predictions
-    const sections = makeSections()
-    sections.when = makeSection(Math.floor(250 / 3), { diagram: { type: 'image', path: '/etc/passwd' } })
-    predictions[0] = { ...predictions[0], sections }
-    delete predictions[0].body
-    expect(() => parseArticle(data, `2026-09-24-${EDITION}.json`)).toThrow()
+    const data2 = makeValidArticleData()
+    const predictions2 = data2.predictions
+    const sections2 = makeSections()
+    sections2.when = makeSection(Math.floor(250 / 3), { diagram: { type: 'chart', code: 'x' } })
+    predictions2[0] = { ...predictions2[0], sections: sections2 }
+    delete predictions2[0].body
+    expect(() => parseArticle(data2, `2026-09-24-${EDITION}.json`)).toThrow()
   })
 
   it('bodyもsectionsも持たない予測を拒否すること', () => {

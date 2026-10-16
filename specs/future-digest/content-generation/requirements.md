@@ -1,7 +1,7 @@
 # 要件定義: 未来予測記事の要約・記事執筆のルール
 
 ## サマリ
-[content-selection](../content-selection/requirements.md)で選ばれた未来予測記事ごとに、固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響)に分けて要約を書く。各観点は固定ラベルを表示する。影響度(大・中・小)とその根拠も1文で添える。著作権への配慮(独自に書き直す・全文を転記しない・出典を明記する)はai-dev-digest・trend-digestと同じ方針にする。性・恋愛ジャンルは、テーマを避けずに率直・具体的に書くが、官能的・扇情的な描写はしない。
+[content-selection](../content-selection/requirements.md)で選ばれた未来予測記事ごとに、固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響)に分けて要約を書く。各観点は固定ラベルを表示する。影響度(大・中・小)とその根拠も1文で添える。あわせて、流れ・分岐・手順・時系列のような構造を示すのに適した観点にはMermaid記法の図解を追加する(要否はエージェントの判断に委ねる)。著作権への配慮(独自に書き直す・全文を転記しない・出典を明記する)はai-dev-digest・trend-digestと同じ方針にする。性・恋愛ジャンルは、テーマを避けずに率直・具体的に書くが、官能的・扇情的な描写はしない。
 
 ## 概要
 - 機能名: 未来予測記事の要約・記事執筆のルール
@@ -27,7 +27,7 @@
 - [5] 予測であることが分かる書き方をし(「〜と考えられている」「〜と予測している」等)、確定した未来として断定しない
 
 ### 図解
-- [6] 概念図(観点ごとまたは記事全体のいずれかの単位)は、トピックにつき原則として少なくとも1つを必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な内容のトピックでは、無理にMermaid図を作らない(2026-10改定。根拠: 運営者フィードバック「絵っぽい図がないのがNG。それは絶対入れてほしい」。さらに、AI画像生成(Nano Banana→Cloudflare Workers AI)では文章・構図の破綻を避けられなかったため、固定アイコン名+短い日本語ラベルの構造化データをエージェントが決め、コードが決定的にSVGへ描画する方式に変更した。requirements.md#図解の生成(アイコン図のSVG描画)参照)
+- [6] 流れ・分岐・手順・時系列のような構造を示すのに適した観点には、Mermaid記法の図を作る。該当しない単純な内容の観点では、無理にMermaid図を作らず`diagram`を`null`にする(要否の判断はエージェントに委ねる)
 
 ### 記事の構成
 - [7] 各記事データには、ジャンル・時間軸・見出し・固定3観点の要約(観点ごとの見出し・本文)・影響度・影響度の根拠・出典をセットで含める
@@ -51,15 +51,12 @@
 ### 内容の逸脱防止
 - [8] 要約は元記事に書かれている範囲にとどめ、書かれていない内容を推測で断定しない。影響度の根拠は[content-selection/requirements.md#影響度](../content-selection/requirements.md)の観点に沿って書く
 
-### 図解の生成(アイコン図のSVG描画)
-- [9] 概念図はAI画像生成ではなく、コードが決定的にSVGを組み立てて描画する。エージェントは`layout:"steps"`(2〜4件の手順・流れ)または`layout:"compare"`(2件の対比)のいずれかを選び、各項目に固定アイコン名(`app/future-digest/lib/diagramIcons.ts`で定義する19種、Heroicons[MIT License]由来のパスデータ)と短い日本語ラベル(目安10字程度)を指定する。コード側(`app/future-digest/lib/renderDiagramSvg.ts`)がこのデータをSVGとして描画し、ラベルはSVGの`<text>`要素(実フォント)で描画するため常に正確に表示される(ai-dev-digestの[content-generation/requirements.md#図解の生成(アイコン図のSVG描画)](../../ai-dev-digest/content-generation/requirements.md)と同じ考え方・同じ実装。2026-10改定: 従来のAI画像生成(Nano Banana→Cloudflare Workers AI)では日本語の文章・構図の破綻を避けられず、無料で使えて文字描画が正確な代替サービスも見つからなかったため方針転換した)
-
 ## 依存関係
 - 対象記事の選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
 - 作った要約は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 生成・公開のタイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 - 執筆ルールは[source-review/requirements.md](../source-review/requirements.md)の月次見直し(生成領域)で調整される
-- 概念図の描画はローカルでのSVG組み立てのみのため、外部APIの呼び出し・認証情報は不要
+- Mermaid図の描画はクライアント側のMermaidライブラリに委ねるため、記事生成時点では外部APIの呼び出し・認証情報は不要
 
 ## スコープ外
 - 元記事の全文掲載・全文転載

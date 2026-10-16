@@ -24,7 +24,7 @@ beforeEach(() => {
 })
 
 // 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-15、specs/future-digest/article-detail/design.md「その回の記事本文を表示する処理」手順3-2
-describe('図解の表示(DiagramView) - diagramの形式(null/mermaid/image)に応じて表示を切り替える', () => {
+describe('図解の表示(DiagramView) - diagramの形式(null/mermaid)に応じて表示を切り替える', () => {
   it('diagramがnullのとき、何も描画されないこと', () => {
     const { container } = render(<DiagramView diagram={null} />)
     expect(container.firstChild).toBeNull()
@@ -39,15 +39,5 @@ describe('図解の表示(DiagramView) - diagramの形式(null/mermaid/image)に
     render(<DiagramView diagram={{ type: 'mermaid', code: 'flowchart LR\nA-->B' }} />)
     await waitFor(() => expect(renderMock).toHaveBeenCalledWith(expect.any(String), 'flowchart LR\nA-->B'))
     await waitFor(() => expect(screen.getByTestId('rendered-mermaid-svg')).toBeTruthy())
-  })
-
-  it('diagramが{type: "image", path}のとき、<img>のsrcがpathと一致すること', () => {
-    render(
-      <DiagramView
-        diagram={{ type: 'image', path: 'content/future-digest/articles/images/2026-09-24-technology-ai-near-impact.png' }}
-      />
-    )
-    const img = screen.getByRole('img')
-    expect(img.getAttribute('src')).toBe('content/future-digest/articles/images/2026-09-24-technology-ai-near-impact.png')
   })
 })

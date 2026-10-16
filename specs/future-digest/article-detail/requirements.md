@@ -42,7 +42,7 @@ flowchart LR
 - [5] 要約の生成に失敗した記事は「今回は記事を用意できませんでした」と表示する([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))
 - [6] 候補が見つからなかった枠([3])・収集に失敗した枠([4])・生成に失敗した記事([5])は、影響度順ではいずれも末尾に、ジャンル順では本来の位置に並べる
 - [14] 要約が固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響、この順序で固定。[content-generation/requirements.md#要約](../content-generation/requirements.md))で構成される記事は、観点ごとに固定ラベル(観点名そのもの)・結論文(見出し)・本文を常時表示する(展開操作は設けない)。この機能より前に公開した記事(単一の`body`文字列のみを持つ記事)は、従来どおり本文をそのまま1つの段落として表示する(過去記事を書き換えない)
-- [15] 観点、または記事全体について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、対応する本文の近くに表示する。生成されていない場合は何も表示しない
+- [15] 観点について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、対応する本文の近くに表示する。生成されていない場合は何も表示しない
 
 ### 並び順の切り替え
 - [7] 並び順を「影響度順」と「ジャンル順」の2通りから切り替えられるようにする(根拠: /requirementでの決定)
@@ -69,7 +69,7 @@ flowchart LR
 - 表示する記事は[content-selection/requirements.md](../content-selection/requirements.md)で選ばれ、[content-generation/requirements.md](../content-generation/requirements.md)のルールで書かれる
 - 読者の付箋は[bookmark/requirements.md](../bookmark/requirements.md)で定める
 - フィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで使われる
-- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
+- 図解のレンダリング(Mermaid)は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示、訪問者向けのコメント欄

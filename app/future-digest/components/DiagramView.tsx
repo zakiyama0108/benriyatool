@@ -9,8 +9,8 @@ type Props = {
 
 // 図解(観点ごとのdiagram)の表示(仕様: requirements.md#記事本文の表示-15、design.md「その回の記事本文を
 // 表示する処理」手順3-2)。diagramがnull・undefined(この機能追加前の記事データとの後方互換)のときは
-// 何も描画しない。type: 'mermaid'はMermaidライブラリで描画、type: 'image'は<img>で表示する。
-// mermaidは静的エクスポート(output: 'export')のSSR時にモジュール評価でDOM/windowへアクセスしうるため、
+// 何も描画しない。Mermaid図のみをMermaidライブラリで描画する(2026-10改定: 画像による図解は廃止した)。
+// 静的エクスポート(output: 'export')のSSR時にモジュール評価でDOM/windowへアクセスしうるため、
 // ブラウザのuseEffect内でのみ動的importする(news-digestと同じNext.js固有の挙動差分対応)。
 // 壊れたMermaid記法は構文検証をせずそのままmermaidに渡す(content-generation/design.md「見出し・固定3観点を
 // 書く処理」手順12。記事全体のビルド失敗にはしない)。描画自体が失敗した場合はコンソールにのみエラーを出し、
@@ -44,11 +44,6 @@ export default function DiagramView({ diagram }: Props) {
   }, [diagram])
 
   if (!diagram) return null
-
-  if (diagram.type === 'image') {
-    // eslint-disable-next-line @next/next/no-img-element -- ビルド時に生成済みの静的画像をそのまま表示する(next/image最適化は不要)
-    return <img src={diagram.path} alt="図解" className="mt-2 w-full rounded-lg" />
-  }
 
   return <div ref={containerRef} data-testid="mermaid-diagram" className="mt-2 overflow-x-auto" />
 }
