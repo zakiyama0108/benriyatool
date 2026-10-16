@@ -84,12 +84,7 @@ const CURRENT_TOPIC: CurrentTopic = {
   trend: makeTrend({ reportCount: 1, originRegion: null, currentRegions: [] }),
 }
 
-// 画像生成(Cloudflare Workers AI)の代わりに使うダミー画像(インラインSVGのdata URI)。
-// 実ファイルの有無に依存させず、styleguideが常に画像付きの見た目を再現できるようにする
-const DUMMY_DIAGRAM_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='160'%3E%3Crect width='320' height='160' fill='%23fef3c7'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' font-size='16' fill='%23b45309'%3E生成画像の見本%3C/text%3E%3C/svg%3E"
-
-// 新形式+図解あり(mermaid/image)の見本(design.md「その回の記事本文を表示する処理」手順3-2)
+// 新形式+図解あり(mermaid)の見本(design.md「その回の記事本文を表示する処理」手順3-2)
 const CURRENT_TOPIC_WITH_DIAGRAMS: CurrentTopic = {
   ...CURRENT_TOPIC,
   id: 'styleguide-current-diagram',
@@ -98,10 +93,7 @@ const CURRENT_TOPIC_WITH_DIAGRAMS: CurrentTopic = {
       ...CURRENT_TOPIC.sections.fact,
       diagram: { type: 'mermaid', code: 'flowchart LR\n配信開始 --> 検索数急増 --> ランキング上位' },
     },
-    reason: {
-      ...CURRENT_TOPIC.sections.reason,
-      diagram: { type: 'image', path: DUMMY_DIAGRAM_IMAGE },
-    },
+    reason: CURRENT_TOPIC.sections.reason,
     caveat: CURRENT_TOPIC.sections.caveat,
   },
 }
@@ -215,7 +207,7 @@ export default function TrendDigestStyleguidePage() {
           <TopicCard topic={CURRENT_TOPIC} isAdmin={false} articleId="styleguide-sample" />
         </Section>
 
-        <Section title="新形式のトピック表示(TopicCard・図解あり: mermaid/image)">
+        <Section title="新形式のトピック表示(TopicCard・図解あり: mermaid)">
           <TopicCard topic={CURRENT_TOPIC_WITH_DIAGRAMS} isAdmin={false} articleId="styleguide-sample" />
         </Section>
 

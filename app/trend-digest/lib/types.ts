@@ -70,10 +70,12 @@ export type TopicTrend = {
   currentRegions: string[] // 現在の主な流行地域。不明は空配列(表示しない)
 }
 
-// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形。アプリごとに型定義は独立して持つ)
-export type Diagram =
-  | { type: 'mermaid'; code: string }
-  | { type: 'image'; path: string }
+// 図解(content-generation/requirements.md#図解-7、news-digest/article-detail/design.mdの前提:
+// 記事データの形式と同一の形。アプリごとに型定義は独立して持つ)。Mermaid記法の文字列をそのまま保存し、
+// レンダリングはクライアント側のMermaidライブラリ(DiagramView)に委ねる(2026-10改定: 画像による
+// 図解(AI画像生成→コードでのアイコン図SVG描画)も試みたが、いずれも求める品質を満たせなかった
+// ため、画像による図解は行わないことにし、Mermaid図のみを図解として扱う)
+export type Diagram = { type: 'mermaid'; code: string }
 
 export type TopicSection = {
   heading: string // 結論文(短い見出し)

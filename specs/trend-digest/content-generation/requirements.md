@@ -28,7 +28,7 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - [6] 出典(情報源名・元URLへのリンク)を必ず明記する
 
 ### 図解
-- [7] 概念図(観点ごとまたは記事全体のいずれかの単位)は、トピックにつき原則として少なくとも1つを必ず作る。視覚化できる要素が本当に存在しない例外的な場合に限り省略してよい。流れ・分岐・時系列のような構造を示すのに適した観点には、これに加えてMermaid記法の図も作る。該当しない単純な事実関係のみのトピックでは、無理にMermaid図を作らない(2026-10改定。根拠: 運営者フィードバック「絵っぽい図がないのがNG。それは絶対入れてほしい」。さらに、AI画像生成(Nano Banana→Cloudflare Workers AI)では文章・構図の破綻を避けられなかったため、固定アイコン名+短い日本語ラベルの構造化データをエージェントが決め、コードが決定的にSVGへ描画する方式に変更した。requirements.md#図解の生成(アイコン図のSVG描画)参照)
+- [7] 流れ・分岐・時系列のような構造を示すのに適した観点には、Mermaid記法の図を作る。該当しない単純な事実関係のみの観点では、無理にMermaid図を作らず`diagram`を`null`にする(要否の判断はエージェントに委ねる。2026-10改定: 画像による図解(AI画像生成→コードでのアイコン図SVG描画)も試みたが、いずれも求める品質を満たせなかったため、画像による図解は行わないことにし、Mermaid図のみを図解として扱う)
 
 ### 記事の構成
 - [8] 各トピックには見出し・固定3観点の解説(観点ごとの見出し・本文)・ジャンル名・出典情報(情報源名・元URL)をセットで含める
@@ -53,16 +53,13 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - [6] 継続度ラベル・注目度ラベル・継続日数・報告回数・地域は[trend-history/requirements.md](../trend-history/requirements.md)が判定した値をそのまま扱い、本文の中でそれと異なる段階・期間・地域を書かない(判定と本文が食い違うと、読者にとってどちらが正しいか分からなくなるため)
 - [7] 続報の「なぜ注目されたか」観点の本文が、前回掲載時の同観点の本文と完全に同一になった場合は、その候補の生成を失敗として扱う(同じ内容の記事を繰り返し公開しないための最終防波堤。検証方法は設計で定める)
 
-### 図解の生成(アイコン図のSVG描画)
-- [8] 概念図はAI画像生成ではなく、コードが決定的にSVGを組み立てて描画する。エージェントは`layout:"steps"`(2〜4件の手順・流れ)または`layout:"compare"`(2件の対比)のいずれかを選び、各項目に固定アイコン名(`app/trend-digest/lib/diagramIcons.ts`で定義する19種、Heroicons[MIT License]由来のパスデータ)と短い日本語ラベル(目安10字程度)を指定する。コード側(`app/trend-digest/lib/renderDiagramSvg.ts`)がこのデータをSVGとして描画し、ラベルはSVGの`<text>`要素(実フォント)で描画するため常に正確に表示される(ai-dev-digestの[content-generation/requirements.md#図解の生成(アイコン図のSVG描画)](../../ai-dev-digest/content-generation/requirements.md)と同じ考え方・同じ実装。2026-10改定: 従来のAI画像生成(Nano Banana→Cloudflare Workers AI)では日本語の文章・構図の破綻を避けられず、無料で使えて文字描画が正確な代替サービスも見つからなかったため方針転換した)
-
 ## 依存関係
 - 対象トピックの選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
 - 生成された記事は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 記事の生成・公開タイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 - ここで定める要約・記事執筆のルールは、蓄積された運営者フィードバックをもとに[source-review/requirements.md](../source-review/requirements.md)の月次見直し(生成領域)で調整される
 - 続報かどうか・通算の報告回数・継続度ラベル・注目度ラベルは[trend-history/requirements.md](../trend-history/requirements.md)の判定結果を、content-selectionを経て受け取る
-- 概念図の描画はローカルでのSVG組み立てのみのため、外部APIの呼び出し・認証情報は不要
+- Mermaid図の描画はクライアント側のMermaidライブラリに委ねるため、記事生成時点では外部APIの呼び出し・認証情報は不要
 
 ## スコープ外
 - 日本語以外の言語への翻訳(対象読者は日本語話者のみ)

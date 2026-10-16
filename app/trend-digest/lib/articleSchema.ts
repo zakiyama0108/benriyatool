@@ -22,10 +22,6 @@ const HEAT_LABELS: HeatLabel[] = ['high', 'normal', 'low']
 // 記事データに取り込む時点でも外部入力として検証する(trend-history/design.mdのバリデーションと同じ上限)
 const REGION_MAX_LENGTH = 50
 const MAX_REGIONS = 10
-// 新形式(sections)の各観点のdiagram.pathが指すべきURLパス(design.md「バリデーション」。
-// public/配下に保存され、先頭スラッシュのURLパスである必要がある。2026-10改定: content/配下は
-// ビルド時にfsで読み込むだけで配信対象ではなく<img src>で404になるため、public/配下に変更した)
-const DIAGRAM_IMAGES_DIR = '/content/trend-digest/articles/images/'
 const SECTION_KEYS = ['fact', 'reason', 'caveat'] as const
 
 function isNonEmptyString(value: unknown): value is string {
@@ -103,8 +99,8 @@ function parseTrend(raw: unknown, index: number, articleDate: string): TopicTren
 }
 
 // 新形式の各観点のdiagram(仕様: article-detail/design.md「バリデーション」)を検証・パースする。
-// null、または{type:'mermaid',code}(codeが空文字でない)、または{type:'image',path}
-// (pathがcontent/trend-digest/articles/images/配下を指す)のいずれかであること
+// null、または{type:'mermaid',code}(codeが空文字でない)のいずれかであること
+// (2026-10改定: 画像による図解は廃止し、Mermaid図のみを図解として扱う)
 function parseDiagram(raw: unknown, index: number, sectionKey: string): Diagram | null {
   if (raw === null) return null
   if (typeof raw !== 'object') {
@@ -118,15 +114,7 @@ function parseDiagram(raw: unknown, index: number, sectionKey: string): Diagram 
     }
     return { type: 'mermaid', code: diagram.code }
   }
-  if (diagram.type === 'image') {
-    if (typeof diagram.path !== 'string' || !diagram.path.startsWith(DIAGRAM_IMAGES_DIR)) {
-      throw new Error(
-        `topics[${index}].sections.${sectionKey}.diagram.pathが${DIAGRAM_IMAGES_DIR}配下を指していません: ${String(diagram.path)}`
-      )
-    }
-    return { type: 'image', path: diagram.path }
-  }
-  throw new Error(`topics[${index}].sections.${sectionKey}.diagram.typeが不正です: ${String(diagram.type)}`)
+  throw new Error(`topics[${index}].sections.${sectionKey}.diagram.typeが不正です(mermaidのみ許可): ${String(diagram.type)}`)
 }
 
 // 新形式(固定3観点)のsectionsを検証・パースする(仕様: content-generation/requirements.md#要約-3、

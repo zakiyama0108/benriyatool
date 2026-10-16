@@ -12,8 +12,8 @@ import type { TopicSections } from './types'
 
 // エージェントが生成する記事1トピック分の内容(見出し+固定3観点。content-generation/design.md
 // 「見出し・固定3観点を書く処理」応答JSONの形式)。sectionsは最終形式(TopicSections)の型を
-// そのまま使う(diagramはこの時点で既にscripts/trend-digest/generate-content.tsがCloudflare Workers AI呼び出しを
-// 済ませ、最終形式のDiagram|nullに解決している前提。news-digestのapp/news-digest/lib/generateContent.tsと同じ構成)
+// そのまま使う(diagramはこの時点で既にscripts/trend-digest/generate-content.tsが検証済みで、
+// 最終形式のDiagram|nullになっている前提。news-digestのapp/news-digest/lib/generateContent.tsと同じ構成)
 export type GeneratedContent = {
   heading: string
   sections: TopicSections

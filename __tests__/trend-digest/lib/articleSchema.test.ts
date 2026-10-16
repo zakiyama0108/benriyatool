@@ -370,28 +370,19 @@ describe('記事データのバリデーション - 新形式のトピックの�
     expect(article.topics[0]).toMatchObject({ sections: { fact: { diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } } } })
   })
 
-  it('{type:"image",path}(pathがcontent/trend-digest/articles/images/配下)の場合、検証を通ること', () => {
-    const path = '/content/trend-digest/articles/images/2026-09-15-topic-1-fact.png'
-    const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'image', path } } })
-    const article = parseArticle(makeArticle({ topics: [makeCurrentTopic({ sections })] }), '2026-09-15-entertainment.json')
-    expect(article.topics[0]).toMatchObject({ sections: { fact: { diagram: { type: 'image', path } } } })
-  })
-
   it('type:"mermaid"なのにcodeが空文字の場合、失敗すること', () => {
     const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'mermaid', code: '' } } })
     const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
     expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
   })
 
-  it('type:"image"なのにpathがcontent/trend-digest/articles/images/配下を指していない場合、失敗すること', () => {
-    const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'image', path: 'content/trend-digest/articles/2026-09-15.json' } } })
-    const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
-    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
-  })
+  it('diagram.typeが未定義の値("image"・"chart"等)の場合、失敗すること(画像による図解は廃止したため)', () => {
+    const sections1 = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'image', path: '/content/trend-digest/articles/images/2026-09-15-topic-1-fact.png' } } })
+    const article1 = makeArticle({ topics: [makeCurrentTopic({ sections: sections1 })] })
+    expect(() => parseArticle(article1, '2026-09-15-entertainment.json')).toThrow()
 
-  it('diagram.typeが未定義の値の場合、失敗すること', () => {
-    const sections = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'chart' } } })
-    const article = makeArticle({ topics: [makeCurrentTopic({ sections })] })
-    expect(() => parseArticle(article, '2026-09-15-entertainment.json')).toThrow()
+    const sections2 = makeSections({ fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: { type: 'chart' } } })
+    const article2 = makeArticle({ topics: [makeCurrentTopic({ sections: sections2 })] })
+    expect(() => parseArticle(article2, '2026-09-15-entertainment.json')).toThrow()
   })
 })

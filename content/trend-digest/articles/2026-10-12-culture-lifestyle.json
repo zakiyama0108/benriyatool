@@ -1,0 +1,44 @@
+{
+  "id": "2026-10-12-culture-lifestyle",
+  "edition": "culture-lifestyle",
+  "date": "2026-10-12",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "sns-buzz",
+      "heading": "「ポケ活」というSNS用語が急上昇中",
+      "sourceTitle": "ポケ活 とは",
+      "sourceName": "SNSトレンド観測",
+      "sourceUrl": "https://example.com/trend/poke-katsu",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 4,
+        "continuationStartDate": "2026-10-08",
+        "reportCount": 1,
+        "originRegion": "日本",
+        "currentRegions": ["日本"]
+      },
+      "sections": {
+        "fact": {
+          "heading": "休憩中に外を軽く歩く習慣を指す「ポケ活」が急上昇",
+          "text": "仕事や勉強の休憩時間に、スマホを見ながらでも外を軽く歩く習慣を指す「ポケ活」という言葉の投稿数が、この4日間で急に増えている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "運動不足解消と息抜きを同時に叶える手軽さが共感を集めた",
+          "text": "長時間の運動をわざわざ確保しなくても、休憩のついでに気分転換と運動不足解消を両立できる手軽さが「無理なく続けられる」と共感を呼び、紹介する短い動画が繰り返し拡散されたことで一気に知られるようになった。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[休憩時間に少し歩く動画] --> B[手軽さに共感が集まる]\n  B --> C[紹介動画が繰り返し拡散]\n  C --> D[ポケ活という言葉が定着]"
+          }
+        },
+        "caveat": {
+          "heading": "まだ発生して数日で、定着するかは見極めが必要",
+          "text": "観測期間はまだ4日間と短く、一時的な話題で終わる可能性も十分にある。継続して報告されるかどうかは今後数週間の推移を見て判断する段階。",
+          "diagram": null
+        }
+      }
+    }
+  ]
+}

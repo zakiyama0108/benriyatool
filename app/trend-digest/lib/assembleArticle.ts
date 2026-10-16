@@ -11,7 +11,7 @@ import { GENRE_ORDER } from './types'
 
 // generate-content.tsの出力(generateTopicsの返り値)と同じ形。titleはCandidate.titleを
 // 引き継いだもので、Topic.sourceTitleに変換される。sections(固定3観点)はこの時点で既に
-// Cloudflare Workers AI呼び出しを済ませ最終形式(diagram: Diagram|null)に解決されている前提
+// 検証を済ませ最終形式(diagram: Diagram|null)に解決されている前提
 // (requirements.md#継続度・注目度の表示-19、この機能以降に生成する記事はすべて新形式になる)
 export type GeneratedTopicInput = {
   genre: Genre
