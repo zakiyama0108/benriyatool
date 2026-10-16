@@ -20,3 +20,7 @@
   - TDD対象外(コード変更を伴わない運用手順)
   - このリポジトリ専用のfine-grained PATを発行し、`NEWS_DIGEST_GH_PAT`としてActions Secretsに登録する
   - 既存の`CLAUDE_CODE_OAUTH_TOKEN`がこのワークフローからも参照できることを確認する(新規発行は不要)
+
+- Task 5: 配信時刻の変更(仕様: design.md「実行環境の前提」)
+  - TDD対象外(cron設定のみの変更)
+  - `.github/workflows/news-digest-weekly.yml`の`schedule`を00:17 JSTに変更する
