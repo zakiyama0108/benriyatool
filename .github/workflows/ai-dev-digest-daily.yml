@@ -13,8 +13,9 @@ on:
   schedule:
     # 毎時0分は世界中のscheduled workflowが集中し起動遅延が大きくなるため、
     # 0分を避けた43分に設定する(実測で0分指定時は起動が+1〜3.5時間遅延しLINE配信時刻が
-    # ばらついていたための対策。design.md「実行環境の前提」参照)
-    - cron: '43 21 * * *' # 毎日21:43 UTC = 06:43 JST(実行日はJSTの日付を使う)
+    # ばらついていたための対策。design.md「実行環境の前提」参照)。
+    # 配信は日付をまたいだ直後(JST未明)を狙う
+    - cron: '43 15 * * *' # 毎日15:43 UTC = 00:43 JST(実行日はJSTの日付を使う)
   workflow_dispatch: # Secrets設定後の動作確認用に手動実行できるようにする
   workflow_run:
     workflows: ['CI']
@@ -79,6 +80,8 @@ jobs:
         run: npx tsx scripts/ai-dev-digest/generate-content.ts /tmp/selection.json > /tmp/topics.json
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AI_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_API_TOKEN }}
 
       - name: 記事データの組み立て・書き出し
         if: steps.selection.outputs.status == 'ok'

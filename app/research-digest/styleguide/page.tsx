@@ -122,6 +122,8 @@ export default function ResearchDigestStyleguidePage() {
           <nav aria-label="パンくず(見本)" className="text-[11px] text-gray-400">
             <span className="hover:underline">べんりやつーる</span>
             <span className="mx-1">›</span>
+            <span className="hover:underline">週刊ダイジェスト一覧</span>
+            <span className="mx-1">›</span>
             <span className="hover:underline">週刊研究発見</span>
             <span className="mx-1">›</span>
             <span>週刊研究発見 2026年10月5日号</span>

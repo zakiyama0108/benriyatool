@@ -58,3 +58,8 @@
 - Task 11: プライバシーポリシーの更新(仕様: requirements.md#依存関係、[specs/legal/requirements.md](../../legal/requirements.md))
   - `app/legal/page.tsx`のプライバシーポリシーに、付箋機能でログインした読者のGoogleアカウントのメールアドレスと、本人が入力したメモ内容を、ログインしたアカウントに紐付けて保存する旨を追記する(life-money-simのマイシナリオ機能の記載パターンを踏襲)
   - コンテンツ変更のみのためテスト対象外
+
+## パンくず
+
+- Task 12: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🟢 `app/ai-dev-digest/bookmarks/page.tsx`の既存パンくずを共通`Breadcrumb`コンポーネント(`current="付箋一覧"`)の呼び出しに置き換える(テストは[article-list/tasks.md](../article-list/tasks.md)のTask 7で担保済みの`Breadcrumb`コンポーネント自体のテストを参照)

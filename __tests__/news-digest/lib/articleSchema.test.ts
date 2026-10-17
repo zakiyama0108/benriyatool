@@ -256,38 +256,16 @@ describe('記事スキーマへの図解(diagram)検証の組み込み - null・
     expect(() => parseArticle(validArticle({ topics }), '2026-09-09.json')).toThrow()
   })
 
-  it('diagramが{type: "image", path: "content/news-digest/articles/images/"配下}のとき、検証を通ること', () => {
-    const topics = [
+  it('diagramのtypeが未定義の値("image"・"chart"等)のとき、検証エラーになること(画像による図解は廃止したため)', () => {
+    const topics1 = [
       validTopic({
         summary: validSummary({
-          whatHappened: {
-            heading: '見出し',
-            teaser: 'あ'.repeat(60),
-            detail: 'あ'.repeat(250),
-            diagram: { type: 'image', path: 'content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png' },
-          },
+          whatHappened: { heading: '見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), diagram: { type: 'image', path: '/content/news-digest/articles/images/x.png' } },
         }),
       }),
     ]
-    const article = parseArticle(validArticle({ topics }), '2026-09-09.json')
-    expect(article.topics[0].summary.whatHappened.diagram).toEqual({
-      type: 'image',
-      path: 'content/news-digest/articles/images/2026-09-09-topic-1-whatHappened.png',
-    })
-  })
+    expect(() => parseArticle(validArticle({ topics: topics1 }), '2026-09-09.json')).toThrow()
 
-  it('diagramが{type: "image", path: "content/news-digest/articles/images/"配下以外}のとき、検証エラーになること', () => {
-    const topics = [
-      validTopic({
-        summary: validSummary({
-          whatHappened: { heading: '見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), diagram: { type: 'image', path: 'public/other.png' } },
-        }),
-      }),
-    ]
-    expect(() => parseArticle(validArticle({ topics }), '2026-09-09.json')).toThrow()
-  })
-
-  it('diagramのtypeが未定義の値("chart"等)のとき、検証エラーになること', () => {
     const topics = [
       validTopic({
         summary: validSummary({

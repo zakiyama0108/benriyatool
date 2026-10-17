@@ -92,3 +92,9 @@
   - 🟢 `app/research-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`FindingCard.tsx`から新形式の各観点の`diagram`を渡して配置する
 
 </details>
+
+## パンくず
+
+- Task 16: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🔴 共通`Breadcrumb`コンポーネント(article-list/tasks.mdのTask 11で新設)に`current`(記事タイトル)を渡した場合、アプリ名「週刊研究発見」が`/research-digest`へのリンクになり、currentがリンクなしの現在地として表示されることを確認するテストを書く(`__tests__/research-digest/components/Breadcrumb.test.tsx`)
+  - 🟢 `app/research-digest/components/ArticleDetailView.tsx`の既存パンくずを共通`Breadcrumb`コンポーネントの呼び出しに置き換える
