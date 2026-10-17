@@ -1,7 +1,5 @@
 # 要件定義: 記事詳細ページ
 
-> ステータス: 仕様確認中(未実装)(今回追加した固定ラベル・固定3観点・図解機能のみ。既存部分は実装済み)
-
 ## サマリ
 その回のトレンド記事本文を、その編の全ジャンルの見出しごとに区切って、各ジャンル1件のトピック(`unavailableGenres`を持たない公開済みの過去記事は例外で、記録されているとおりに表示する)・要約・出典リンクを表示する。各トピックには、その話題がどれだけ続いているか(継続度ラベル)・今どれくらい強いか(注目度ラベル)・継続期間・何回目の報告か・どの地域で流行しているかをあわせて表示する。情報源から話題を取得できなかったジャンルは、見出しを出したうえでその旨を表示する。あわせて、運営者本人がその場でフィードバックを残せるようにする。
 
@@ -65,6 +63,9 @@ flowchart LR
 - [19] トピックの要約が固定3観点(急上昇の事実・なぜ注目されたか・確からしさ/注意点、この順序で固定。[content-generation/requirements.md#要約](../content-generation/requirements.md))で構成される記事は、観点ごとに固定ラベル(観点名そのもの)・結論文(見出し)・本文を常時表示する(展開操作は設けない)。この機能より前に公開した記事(単一の`body`文字列のみを持つ記事)は、従来どおり本文をそのまま1つの段落として表示する(過去記事を書き換えない。[18]と同じ考え方)
 - [20] 観点、または記事全体について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、対応する本文の近くに表示する。生成されていない場合は何も表示しない
 
+### パンくずナビゲーション
+- [1] 記事詳細ページのパンくずに「週刊ダイジェスト一覧」階層を追加し、べんりやつーる › 週刊ダイジェスト一覧(`/blog`) › 週刊トレンド › 記事タイトルの4階層で表示する(`/blog`からブログハブへ戻れるようにするため) **🟡〔提案〕**
+
 ## ビジネスルール・制約
 
 ### 表示分量・著作権配慮
@@ -90,7 +91,7 @@ flowchart LR
 - 要約の生成ルールは[content-generation/requirements.md](../content-generation/requirements.md)に従う
 - ログイン状態・運営者判定は既存の管理画面と同じGoogle OIDC + `admin_emails`許可リスト([docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、`app/lib/adminAuth.ts`のisAuthorizedAdmin())を利用する。`admin_emails`テーブル・そのRLSポリシーは複数アプリ共有の既存資産であり、本specのための新しいテーブル・マイグレーションは不要
 - 蓄積されたフィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで参照される
-- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
+- 図解のレンダリング(Mermaid)は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示

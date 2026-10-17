@@ -1,6 +1,6 @@
 // 見出し・本文生成プロンプトに添える、継続度・注目度の事実情報と続報の情報を組み立てる
 // (仕様: content-generation/design.md「見出し・本文を書く処理」手順6-7、
-// requirements.md#エージェントの逸脱防止-6、#続報の執筆-7〜8)。
+// requirements.md#エージェントの逸脱防止-6、#続報の執筆-10〜11)。
 // 純粋関数のため、scripts/trend-digest/generate-content.tsから切り出してテストする
 import type { SelectedTopic } from './candidateTypes'
 import { DURATION_LABELS, HEAT_LABELS } from './types'
@@ -26,7 +26,7 @@ export function buildContinuityNote(candidate: SelectedTopic): string {
   const lastLabel = candidate.lastPublishedDurationLabel ? DURATION_LABELS[candidate.lastPublishedDurationLabel] : '不明'
   return `${facts}
 
-# 続報の情報(この話題は過去にも掲載済みです。requirements.md#続報の執筆-7〜8)
+# 続報の情報(この話題は過去にも掲載済みです。requirements.md#続報の執筆-10〜11)
 - 直近掲載時の継続度ラベル: ${lastLabel}
 - 前回掲載時の本文: ${candidate.lastPublishedBody ?? '(取得できませんでした)'}
 

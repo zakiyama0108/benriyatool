@@ -22,10 +22,11 @@ name: トレンドダイジェスト 週次記事公開
 on:
   schedule:
     # 毎時0分は世界中のscheduled workflowが集中し起動遅延が大きくなるため、
-    # 0分を避けた43分に設定する(ai-dev-digestの日次実行(06:43 JST)の実測知見を踏襲し、
-    # 週次であることが分かるよう+1時間ずらした。design.md「実行環境の前提」参照)
-    - cron: '43 22 * * 1' # 月曜22:43 UTC = 火曜07:43 JST(エンタメ編)
-    - cron: '43 22 * * 4' # 木曜22:43 UTC = 金曜07:43 JST(カルチャー・ライフスタイル編)
+    # 0分を避けた43分に設定する(ai-dev-digestの日次実行の実測知見を踏襲し、
+    # 週次であることが分かるよう+1時間ずらした。design.md「実行環境の前提」参照)。
+    # 配信は日付をまたいだ直後(JST未明)を狙う
+    - cron: '43 16 * * 1' # 月曜16:43 UTC = 火曜01:43 JST(エンタメ編)
+    - cron: '43 16 * * 4' # 木曜16:43 UTC = 金曜01:43 JST(カルチャー・ライフスタイル編)
   workflow_dispatch: # Secrets設定後の動作確認用に手動実行できるようにする(editionを指定する)
     inputs:
       edition:
@@ -73,7 +74,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "value=${{ github.event.inputs.edition }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "43 22 * * 1" ]; then
+          elif [ "${{ github.event.schedule }}" = "43 16 * * 1" ]; then
             echo "value=entertainment" >> "$GITHUB_OUTPUT"
           else
             echo "value=culture-lifestyle" >> "$GITHUB_OUTPUT"

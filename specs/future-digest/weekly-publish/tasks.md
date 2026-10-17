@@ -1,6 +1,6 @@
 # タスク分解: 週2回の記事自動生成・公開
 
-> 全8件(Task 1〜Task 8)
+> 全9件(Task 1〜Task 9)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 選定結果からの運営者への警告判定(仕様: requirements.md#掲載件数の保証-3、content-selection/requirements.md#収集失敗-4、design.md「1回分の記事を生成する処理」手順2)
@@ -15,7 +15,7 @@
   - `scripts/future-digest/write-article.ts`を実装する。同じ日付のファイルが既にある場合は上書きせずに非ゼロで終える
 
 - Task 4: 配信日の算出と再実行cronの冪等チェック(仕様: requirements.md#利用上限への到達時の再実行-2・5、design.md「配信日を求める処理」「利用上限への到達時に再実行する処理」手順1)
-  - 🔴 `getScheduledPublishDate(nowUtc)`(UTCの`Date`を受け取り、関数の内側でJSTに変換してから直近の木曜を求める)について次を確認するテストを書く: 木曜07:43 JST相当のUTC日時を渡すとその日の日付が返る/木曜19:43・金曜07:43・金曜19:43(いずれもJSTの3本の再実行cronの起動時刻をUTCに換算した日時)を渡すと同じ週の木曜の日付が返る/週をまたいだ木曜(次の木曜)は返らない/境界値として、水曜22:43 UTC(=木曜07:43 JST)を渡すと同じ週の木曜の日付が返る
+  - 🔴 `getScheduledPublishDate(nowUtc)`(UTCの`Date`を受け取り、関数の内側でJSTに変換してから直近の木曜を求める)について次を確認するテストを書く: 木曜01:43 JST相当のUTC日時を渡すとその日の日付が返る/木曜13:43・金曜01:43・金曜13:43(いずれもJSTの3本の再実行cronの起動時刻をUTCに換算した日時)を渡すと同じ週の木曜の日付が返る/週をまたいだ木曜(次の木曜)は返らない/境界値として、水曜16:43 UTC(=木曜01:43 JST)を渡すと同じ週の木曜の日付が返る
   - 🟢 `app/future-digest/lib/scheduledPublishDate.ts`に実装する
   - 🔴 `validateScheduledPublishDate(value)`について次を確認するテストを書く: `YYYY-MM-DD`形式かつ実在する木曜日(JST)なら妥当/形式が違う・日付として存在しない・木曜日でない場合はいずれも不正(仕様: design.md「セキュリティ」)
   - 🟢 同じ`app/future-digest/lib/scheduledPublishDate.ts`に実装する
@@ -34,14 +34,14 @@
 
 ## 週1回配信を週2回(2編)に分割する追加タスク
 
-Task 2・4・5を編(`edition`)対応に拡張し、2編目(くらし・社会編、日曜)のcronを追加する。〔提案〕
+Task 2・4・5を編(`edition`)対応に拡張し、2編目(くらし・社会編、日曜)のcronを追加する。**🟡〔提案〕**
 
 <details><summary>詳細を開く</summary>
 
 - Task 7: 記事データの組み立て・配信日算出・冪等チェックの編対応(仕様: requirements.md#配信スケジュール-1〜3、design.md「配信日を求める処理」「利用上限への到達時に再実行する処理」手順1)
   - 🔴 Task 2の`assembleArticle`のテストに、引数`edition`を追加し`id`が`<date>-<edition>`になること・`edition`が記事データに入ることを確認するケースを足す
   - 🟢 `app/future-digest/lib/assembleArticle.ts`の`assembleArticle(date, edition, issueNumber, ...)`を変更する([article-detail/tasks.md](../article-detail/tasks.md)のparseArticleが`edition`必須になる前提で呼び出しを揃える)
-  - 🔴 Task 4の`getScheduledPublishDate`のテストを、第2引数`edition`を渡す形に書き直し、`science-tech`なら木曜、`life-society`なら日曜を基準にすることを確認するケースを追加する。日曜09:43 JST相当のUTC日時を渡すとその日が返る、日曜21:43・月曜09:43・月曜21:43(JSTの3本の再実行cronをUTC換算)を渡すと同じ週の日曜が返る境界値も確認する
+  - 🔴 Task 4の`getScheduledPublishDate`のテストを、第2引数`edition`を渡す形に書き直し、`science-tech`なら木曜、`life-society`なら日曜を基準にすることを確認するケースを追加する。日曜03:43 JST相当のUTC日時を渡すとその日が返る、日曜15:43・月曜03:43・月曜15:43(JSTの3本の再実行cronをUTC換算)を渡すと同じ週の日曜が返る境界値も確認する
   - 🟢 `app/future-digest/lib/scheduledPublishDate.ts`の`getScheduledPublishDate(nowUtc, edition)`を実装する(編ごとに対象曜日を切り替える)
   - 🔴 `validateScheduledPublishDate`のテストに、第2引数`edition`を渡す形を追加し、`life-society`では日曜以外は不正になることを確認するケースを足す
   - 🟢 同じファイルの`validateScheduledPublishDate(value, edition)`を実装する
@@ -56,3 +56,7 @@ Task 2・4・5を編(`edition`)対応に拡張し、2編目(くらし・社会�
   - PRのタイトル・本文に編のラベルを含める
 
 </details>
+
+- Task 9: 配信時刻の変更(仕様: requirements.md#配信スケジュール-1〜2、design.md「実行環境の前提」)
+  - TDD対象外(cron設定のみの変更)
+  - `.github/workflows/future-digest-weekly.yml`の`schedule`をサイエンス・テクノロジー編01:43 JST・くらし・社会編03:43 JST(本番・再実行とも6時間早める)に変更する

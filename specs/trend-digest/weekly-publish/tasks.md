@@ -22,3 +22,7 @@
   - fine-grained PAT(Contents・Pull requestsのwrite権限、このリポジトリのみ)を発行し`TREND_DIGEST_GH_PAT`として保存する
   - 既存の`CLAUDE_CODE_OAUTH_TOKEN`(ai-dev-digestで発行済み)がそのまま使えることを確認する(新規発行は不要)
   - 運用開始前に、上記が実際にActions Secretsへ設定されていることを確認する
+
+- Task 5: 配信時刻の変更(仕様: design.md「実行環境の前提」)
+  - TDD対象外(cron設定のみの変更)
+  - `.github/workflows/trend-digest-weekly.yml`の`schedule`を両編とも01:43 JSTに変更する

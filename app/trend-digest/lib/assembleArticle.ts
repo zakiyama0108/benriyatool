@@ -5,19 +5,21 @@
 // article-detail/design.mdのArticleスキーマに従う記事データを組み立てる純粋関数。
 // ファイル入出力はscripts/trend-digest/write-article.ts(Task2)が担う
 
-import type { Article, Edition, Genre, Topic, TopicTrend } from './types'
+import type { Article, Edition, Genre, Topic, TopicSections, TopicTrend } from './types'
 import type { SelectedTopic } from './candidateTypes'
 import { GENRE_ORDER } from './types'
 
 // generate-content.tsの出力(generateTopicsの返り値)と同じ形。titleはCandidate.titleを
-// 引き継いだもので、Topic.sourceTitleに変換される
+// 引き継いだもので、Topic.sourceTitleに変換される。sections(固定3観点)はこの時点で既に
+// 検証を済ませ最終形式(diagram: Diagram|null)に解決されている前提
+// (requirements.md#継続度・注目度の表示-19、この機能以降に生成する記事はすべて新形式になる)
 export type GeneratedTopicInput = {
   genre: Genre
   title: string
   sourceName: string
   sourceUrl: string
   heading: string
-  body: string
+  sections: TopicSections
   trend: TopicTrend // 選定時のtrend-historyの判定結果。記事のtopic.trendとして保存する(article-detail/design.md「前提: 記事データの形式」)
 }
 
@@ -54,7 +56,7 @@ export function assembleArticle(
     id: `topic-${index + 1}`,
     genre: topic.genre,
     heading: topic.heading,
-    body: topic.body,
+    sections: topic.sections,
     sourceTitle: topic.title,
     sourceName: topic.sourceName,
     sourceUrl: topic.sourceUrl,

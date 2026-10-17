@@ -36,8 +36,30 @@
 
 <details><summary>詳細を開く</summary>
 
-- Task 8: 記事タイトルの導出を編対応にする(仕様: requirements.md#記事の構成-7)
+- Task 8: 記事タイトルの導出を編対応にする(仕様: requirements.md#記事の構成-8)
   - 🔴 Task 2の`buildArticleTitle`のテストを、第2引数`edition`を渡す形に書き直し、`body-life`なら「週刊研究発見 からだ・くらし編 2026年10月5日号」、`science-society`なら「週刊研究発見 科学・社会編 2026年10月10日号」になることを確認するケースに差し替える
   - 🟢 `app/research-digest/lib/articleTitle.ts`の`buildArticleTitle(date, edition)`を実装する(呼び出し元のgenerate-content.ts・write-article.tsも合わせて更新する)
+
+</details>
+
+## 固定4観点・図解への移行
+
+〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 9: 固定4観点への移行(仕様: requirements.md#要約-1〜5、design.md「見出し・固定4観点を書く処理」「生成結果を検証する処理」)
+  - 🔴 分量検証のテストを、単一`body`ではなく`sections: {finding, basis, relevance, caveat}`(各`{heading, text}`)を検証する形に書き換える(4観点の`text`を連結した文字数で160〜480字を判定)。査読前チェック(「査読」の語を含むか)も連結後の文字列に対して行う形に書き換える
+  - 🟢 `app/research-digest/lib/bodyValidation.ts`の`isValidBodyLength(body)`を`isValidSectionsLength(sections)`に置き換える(呼び出し元の`articleSchema.ts`・`buildFinding.ts`も追随)
+
+- Task 10: 図解データの検証(仕様: requirements.md#図解-6、design.md「見出し・固定4観点を書く処理」手順13)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く(news-digestの`diagramValidation.ts`と同じロジック)
+  - 🟢 `app/research-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
+
+- Task 11: Nano Banana呼び出しと保存(仕様: requirements.md#図解の生成(Nano Banana)-4、design.md「見出し・固定4観点を書く処理」手順13)
+  - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 10でテスト済み)
+  - `scripts/research-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`content/research-digest/articles/images/`に変更)
+  - `scripts/research-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
+  - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
 
 </details>

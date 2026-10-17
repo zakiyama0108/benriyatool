@@ -15,7 +15,7 @@ type SupabaseClient = ReturnType<typeof createClient>
 // ゲーム紹介画像の公開バケット(仕様: admin/design.md「ゲーム紹介画像の公開Storage」)
 const GAME_PHOTOS_BUCKET = 'board-game-rules-game-photos'
 // Geminiの画像生成/編集モデル(無料枠で使えるもの)。環境変数で差し替え可能にしておく
-const GEMINI_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image-preview'
+const GEMINI_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image'
 
 // BoardGameGeek APIでゲーム名を検索し、最初の候補の box art 画像URLを返す。
 // 該当なしのときは null(呼び出し側は紹介画像なしで続行する)。
