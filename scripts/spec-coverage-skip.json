@@ -4746,6 +4746,11 @@
   },
   {
     "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > DiagramView",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDiagramView.test.tsx(requirements.md#継続度・注目度の表示-20)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
     "item": "状態管理",
     "reason": "ページの状態設計(useStateの持ち方)の説明で、tasks.md Task9の判断によりpage.tsx/ArticleDetailView.tsx自体はユニットテスト対象外とし、配下のGenreSection/TopicCard/FeedbackFormの各テストで担保するため"
   },
@@ -4808,6 +4813,11 @@
     "specFile": "trend-digest/article-detail/requirements.md",
     "item": "継続度・注目度の表示の扱い [8]",
     "reason": "継続度ラベル・注目度ラベルを見た目で区別するという配色・形状のトーン指定で、Tailwindでの実装確認はlocalhost実機での目視確認に委ねるため(DurationBadgeは暖色系の塗りつぶし・HeatBadgeは寒色系の枠線という区別はHeatBadge.tsx/DurationBadge.tsxの実装コメント参照)"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "表示分量・著作権配慮(図解) [9]",
+    "reason": "表示分量・著作権配慮[1]と同一の数値境界(160〜480字、目安200〜400字)を新形式(sections)向けに言い換えたもので、境界値自体はbodyValidation.test.ts(isValidSectionsLength)・articleSchema.test.tsでテスト済み。表示分量・著作権配慮[1]と同じ理由により本項目自体は追加のテスト対象を持たない"
   },
   {
     "specFile": "trend-digest/article-detail/requirements.md",
@@ -4962,17 +4972,27 @@
   {
     "specFile": "trend-digest/content-generation/requirements.md",
     "item": "要約 [3]",
+    "reason": "固定3観点(急上昇の事実/なぜ注目されたか/確からしさ・注意点)それぞれで何を書くかという執筆内容の指示で、コードで自動検証できないため(design.mdの「見出し・固定3観点を書く処理」手順3〜5でプロンプトに指示を反映する。3キー固定であること自体はisValidSectionsLength・articleSchema.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "要約 [4]",
+    "reason": "「なぜ注目されたか」観点で背景が特定できない場合は推測で断定せず正直に書くという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・固定3観点を書く処理」のプロンプトに指示を反映する)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "要約 [5]",
     "reason": "本文は原文の構成・表現をなぞらず独自の視点で再構成し、原文の詳細な数値・全文を網羅的に転記しないという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。分量の上下限のみコードで強制する)"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
-    "item": "続報の執筆 [7]",
-    "reason": "続報の本文を前回から何が変わったかを軸に書くという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・本文を書く処理」手順6でプロンプトに継続度・注目度の情報と指示を反映する。完全一致の重複投稿だけはisDuplicateOfLastPublishedBodyで機械的に検知する。requirements.md#エージェントの逸脱防止-7・generateContent.test.ts参照)"
+    "item": "続報の執筆 [10]",
+    "reason": "続報の「なぜ注目されたか」観点を前回から何が変わったかを軸に書くという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・固定3観点を書く処理」手順6でプロンプトに継続度・注目度の情報と指示を反映する。完全一致の重複投稿だけはisDuplicateOfLastPublishedReasonで機械的に検知する。requirements.md#エージェントの逸脱防止-7・generateContent.test.ts参照)"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
-    "item": "続報の執筆 [8]",
-    "reason": "続報でも前回の記事を読んでいない読者に通じる最小限の説明を含めるという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・本文を書く処理」手順6でプロンプトに指示を反映する)"
+    "item": "続報の執筆 [11]",
+    "reason": "続報でも前回の記事を読んでいない読者に通じる最小限の説明を各観点に含めるという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・固定3観点を書く処理」手順6でプロンプトに指示を反映する)"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
@@ -4987,12 +5007,12 @@
   {
     "specFile": "trend-digest/content-generation/requirements.md",
     "item": "著作権への配慮(根拠) [2]",
-    "reason": "機能要件#要約-3と同一の制約を根拠とともに明記した記述で、要約-3と同じ理由によりコードで自動検証できないため"
+    "reason": "機能要件#要約-5と同一の制約を根拠とともに明記した記述で、要約-5と同じ理由によりコードで自動検証できないため"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
     "item": "著作権への配慮(根拠) [3]",
-    "reason": "出典明記の要件は機能要件#要約-4と同一の内容で、具体的な検証はarticleSchema.test.ts(該当要約-4の参照)で担保するため"
+    "reason": "出典明記の要件は機能要件#要約-6と同一の内容で、具体的な検証はarticleSchema.test.ts(該当要約-6の参照)で担保するため"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
@@ -5036,8 +5056,8 @@
   },
   {
     "specFile": "trend-digest/content-generation/design.md",
-    "item": "見出し・本文を書く処理(エージェントの推論)",
-    "reason": "エージェント(GitHub Actionsから呼び出すClaude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsでテスト済み)"
+    "item": "見出し・固定3観点を書く処理(エージェントの推論)",
+    "reason": "エージェント(GitHub Actionsから呼び出すClaude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類・図解データの妥当性検証以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsで、図解データの妥当性検証はdiagramValidation.test.tsでテスト済み)"
   },
   {
     "specFile": "trend-digest/content-generation/design.md",

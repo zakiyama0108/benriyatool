@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import TopicCard from '../../../app/trend-digest/components/TopicCard'
-import { DURATION_LABELS, HEAT_LABELS } from '../../../app/trend-digest/lib/types'
-import type { Topic, TopicTrend } from '../../../app/trend-digest/lib/types'
+import { DURATION_LABELS, HEAT_LABELS, SECTION_LABELS } from '../../../app/trend-digest/lib/types'
+import type { CurrentTopic, Topic, TopicTrend } from '../../../app/trend-digest/lib/types'
 
 // FeedbackForm経由でsaveFeedback(→supabaseClient)が読み込まれるが、本テストはisAdminによる
 // フィードバック欄の表示切り替えのみを検証するためモックする(ai-dev-digestと同じ考え方)
@@ -73,5 +73,50 @@ describe('トピックカードの継続度・注目度バッジ表示 - topic.t
     const durationBadge = screen.getByText(DURATION_LABELS.talked, { exact: false })
     const heatBadge = screen.getByText(HEAT_LABELS.high)
     expect(durationBadge.className).not.toBe(heatBadge.className)
+  })
+})
+
+const currentTopic: CurrentTopic = {
+  id: 'topic-2',
+  genre: 'music',
+  heading: '新曲がストリーミングで急上昇',
+  sections: {
+    fact: { heading: '急上昇の事実の結論文', text: '検索数が急上昇している。'.repeat(10), diagram: null },
+    reason: { heading: 'なぜ注目されたかの結論文', text: '話題になった背景。'.repeat(10), diagram: null },
+    caveat: { heading: '確からしさ・注意点の結論文', text: '推測を含む可能性がある。'.repeat(10), diagram: null },
+  },
+  sourceTitle: 'サンプル楽曲B',
+  sourceName: 'Oricon',
+  sourceUrl: 'https://example.com/oricon/b',
+}
+
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-19
+describe('トピックカードの要約表示 - isLegacyTopicで旧形式(単一body)・新形式(固定3観点sections)を出し分ける', () => {
+  it('旧形式(bodyを持つトピック)は、bodyがそのまま1段落で表示されること', () => {
+    render(<TopicCard topic={topic} isAdmin={false} articleId="a" />)
+    expect(screen.getByText(topic.body)).toBeTruthy()
+  })
+
+  it('新形式(sectionsを持つトピック)は、fact→reason→caveatの順に固定ラベル→heading→textが表示されること', () => {
+    const { container } = render(<TopicCard topic={currentTopic} isAdmin={false} articleId="a" />)
+
+    const labels = Array.from(container.querySelectorAll('[data-testid="section-label"]')).map((el) => el.textContent)
+    expect(labels).toEqual([SECTION_LABELS.fact, SECTION_LABELS.reason, SECTION_LABELS.caveat])
+
+    const headings = Array.from(container.querySelectorAll('h4')).map((el) => el.textContent)
+    expect(headings).toEqual([
+      currentTopic.sections.fact.heading,
+      currentTopic.sections.reason.heading,
+      currentTopic.sections.caveat.heading,
+    ])
+
+    expect(screen.getByText(currentTopic.sections.fact.text)).toBeTruthy()
+    expect(screen.getByText(currentTopic.sections.reason.text)).toBeTruthy()
+    expect(screen.getByText(currentTopic.sections.caveat.text)).toBeTruthy()
+
+    // 固定ラベルが結論文(h4)より前(DOM順で先)に配置されていることを確認する(requirements.md#継続度・注目度の表示-19)
+    const firstLabel = container.querySelector('[data-testid="section-label"]')
+    const firstHeading = container.querySelector('h4')
+    expect(firstLabel?.compareDocumentPosition(firstHeading!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
   })
 })
