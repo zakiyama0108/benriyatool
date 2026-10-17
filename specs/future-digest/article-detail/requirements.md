@@ -1,7 +1,5 @@
 # 要件定義: 記事詳細ページ
 
-> ステータス: 仕様確認中(未実装)(今回追加した固定3観点・図解機能のみ。既存部分は実装済み)
-
 ## サマリ
 その回(編ごと)の未来予測記事(対象編の5ジャンル×2時間軸。現在は最大10本)を表示する。各記事には、ジャンル・時間軸・影響度(大・中・小)のバッジ、要約、影響度の根拠、出典リンクを付ける。並び順は「影響度順」と「ジャンル順」(ジャンル1の近未来→ジャンル1の長期未来→ジャンル2の近未来…)を読者が切り替えられる。ログイン中の運営者本人は、記事ごとにフィードバックを残せる。
 
@@ -37,12 +35,14 @@ flowchart LR
 ## 機能要件
 
 ### 記事本文の表示
-- [1] その回の記事タイトル(編のラベルを含む。[content-generation/requirements.md#記事の構成-7](../content-generation/requirements.md))・公開日・その回の時間軸2区分を表示する〔提案〕
+- [1] その回の記事タイトル(編のラベルを含む。[content-generation/requirements.md#記事の構成-8](../content-generation/requirements.md))・公開日・その回の時間軸2区分を表示する〔提案〕
 - [2] その回に採用された記事(対象編の5ジャンル×2時間軸。現在は最大10本)を、それぞれジャンル・時間軸・影響度のバッジ、見出し、本文、影響度の根拠、出典(情報源名・元URLへのリンク)とセットで表示する〔提案〕
 - [3] 候補が見つからなかった枠は、ジャンル・時間軸のバッジとあわせて「候補が見つかりませんでした」と表示する([content-selection/requirements.md#候補が見つからない枠](../content-selection/requirements.md))
 - [4] 収集の処理自体が失敗した枠は、ジャンル・時間軸のバッジとあわせて分類ラベル([content-selection/requirements.md#収集失敗](../content-selection/requirements.md))を含む「今回は記事を収集できませんでした」旨の表示にする。候補が見つからなかった枠([3])とは異なる文言で表示し、読者が区別できるようにする
 - [5] 要約の生成に失敗した記事は「今回は記事を用意できませんでした」と表示する([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))
 - [6] 候補が見つからなかった枠([3])・収集に失敗した枠([4])・生成に失敗した記事([5])は、影響度順ではいずれも末尾に、ジャンル順では本来の位置に並べる
+- [14] 要約が固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響、この順序で固定。[content-generation/requirements.md#要約](../content-generation/requirements.md))で構成される記事は、観点ごとに固定ラベル(観点名そのもの)・結論文(見出し)・本文を常時表示する(展開操作は設けない)。この機能より前に公開した記事(単一の`body`文字列のみを持つ記事)は、従来どおり本文をそのまま1つの段落として表示する(過去記事を書き換えない)
+- [15] 観点について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、対応する本文の近くに表示する。生成されていない場合は何も表示しない
 
 ### 並び順の切り替え
 - [7] 並び順を「影響度順」と「ジャンル順」の2通りから切り替えられるようにする(根拠: /requirementでの決定)
@@ -54,8 +54,9 @@ flowchart LR
 - [11] 各記事の下に、フィードバック入力欄(自由記述。1000字まで)を表示する。入力欄は、運営者本人がGoogle OIDCでログインしている場合だけ表示する
 - [12] 送信すると、対象の記事(回のID・記事の識別子)と入力内容を紐づけてデータベースに保存し、保存できたことが分かる表示にする
 - [13] 入力欄が空、または空白文字だけの場合は送信できない。1000字を超える場合も送信できない
-- [14] 要約が固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響、この順序で固定。[content-generation/requirements.md#要約](../content-generation/requirements.md))で構成される記事は、観点ごとに固定ラベル(観点名そのもの)・結論文(見出し)・本文を常時表示する(展開操作は設けない)。この機能より前に公開した記事(単一の`body`文字列のみを持つ記事)は、従来どおり本文をそのまま1つの段落として表示する(過去記事を書き換えない)
-- [15] 観点、または記事全体について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、対応する本文の近くに表示する。生成されていない場合は何も表示しない
+
+### パンくずナビゲーション
+- [1] 記事詳細ページのパンくずに「週刊ダイジェスト一覧」階層を追加し、べんりやつーる › 週刊ダイジェスト一覧(`/blog`) › 週刊未来予測 › 記事タイトルの4階層で表示する(`/blog`からブログハブへ戻れるようにするため) **🟡〔提案〕**
 
 ## ビジネスルール・制約
 
@@ -71,7 +72,7 @@ flowchart LR
 - 表示する記事は[content-selection/requirements.md](../content-selection/requirements.md)で選ばれ、[content-generation/requirements.md](../content-generation/requirements.md)のルールで書かれる
 - 読者の付箋は[bookmark/requirements.md](../bookmark/requirements.md)で定める
 - フィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで使われる
-- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
+- 図解のレンダリング(Mermaid)は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示、訪問者向けのコメント欄

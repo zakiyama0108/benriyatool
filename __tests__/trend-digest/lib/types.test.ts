@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { GENRE_ORDER, GENRE_LABELS, DURATION_LABELS, HEAT_LABELS } from '../../../app/trend-digest/lib/types'
+import { GENRE_ORDER, GENRE_LABELS, DURATION_LABELS, HEAT_LABELS, isLegacyTopic } from '../../../app/trend-digest/lib/types'
+import type { LegacyTopic, CurrentTopic } from '../../../app/trend-digest/lib/types'
 
 // 仕様: specs/trend-digest/article-detail/design.md#前提: 記事データの形式(この機能が定義する共有スキーマ)
 describe('ジャンルの日本語ラベル定義 - GENRE_ORDERに含まれる全ジャンルにGENRE_LABELSが過不足なく対応していること', () => {
@@ -35,5 +36,28 @@ describe('継続度ラベル・注目度ラベルの日本語表記定義 - tren
     expect(HEAT_LABELS.high).toContain('高い')
     expect(HEAT_LABELS.normal).toContain('普通')
     expect(HEAT_LABELS.low).toContain('低い')
+  })
+})
+
+const topicBase = {
+  id: 'topic-1',
+  genre: 'music' as const,
+  heading: '見出し',
+  sourceTitle: '対象作品名',
+  sourceName: 'Oricon',
+  sourceUrl: 'https://example.com/a',
+}
+
+// 仕様: specs/trend-digest/article-detail/requirements.md#継続度・注目度の表示-19、specs/trend-digest/article-detail/design.md#前提: 記事データの形式(この機能が定義する共有スキーマ)
+describe('旧形式(単一body)・新形式(固定3観点sections)のトピック判定 - isLegacyTopic', () => {
+  it('bodyを持つトピック(この機能より前に公開した過去記事)はtrueになること', () => {
+    const topic: LegacyTopic = { ...topicBase, body: 'あ'.repeat(200) }
+    expect(isLegacyTopic(topic)).toBe(true)
+  })
+
+  it('sectionsを持つトピック(この機能以降に生成した記事)はfalseになること', () => {
+    const section = { heading: '見出し', text: 'あ'.repeat(100), diagram: null }
+    const topic: CurrentTopic = { ...topicBase, sections: { fact: section, reason: section, caveat: section } }
+    expect(isLegacyTopic(topic)).toBe(false)
   })
 })

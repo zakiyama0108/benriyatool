@@ -46,18 +46,62 @@ export type Impact = 'high' | 'medium' | 'low'
 export const IMPACT_ORDER: Impact[] = ['high', 'medium', 'low']
 export const IMPACT_LABELS: Record<Impact, string> = { high: '大', medium: '中', low: '小' }
 
-export type Prediction = {
+// 観点ごとの図解(content-generation/requirements.md#図解-6、article-detail/design.md
+// 「前提: 記事データの形式」)。エージェントが書いたMermaid記法の文字列をそのまま保存し、
+// レンダリングはクライアント側のMermaidライブラリ(DiagramView)に委ねる(2026-10改定: 画像による
+// 図解(AI画像生成→コードでのアイコン図SVG描画)も試みたが、いずれも求める品質を満たせなかった
+// ため、画像による図解は行わないことにし、Mermaid図のみを図解として扱う)
+export type Diagram = { type: 'mermaid'; code: string }
+
+export type PredictionSection = {
+  heading: string // 結論文(短い見出し)
+  text: string // 本文
+  diagram: Diagram | null
+}
+
+// 固定3観点。この3キー・この順序で固定(content-generation/requirements.md#要約-3)
+export type PredictionSections = {
+  when: PredictionSection // いつ・何が起こると予測されているか
+  basis: PredictionSection // 誰が・どんな根拠で示しているか
+  impact: PredictionSection // 暮らし・社会への影響
+}
+
+export const SECTION_LABELS: Record<keyof PredictionSections, string> = {
+  when: 'いつ・何が起こると予測されているか',
+  basis: '誰が・どんな根拠で示しているか',
+  impact: '暮らし・社会への影響',
+}
+
+type PredictionBase = {
   id: string // 記事内で一意。`<genre>--<horizon>`(例: "technology-ai--near")。フィードバック・付箋の紐付けに使う
   genre: Genre
   horizon: Horizon
   heading: string // content-generationが生成する見出し
-  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
   impact: Impact
   impactReason: string // 影響度の根拠(1文)
   targetPeriod: string // 予測が対象とする時期(例: "2030年まで")
   sourceTitle: string // 元記事のタイトル(配信済み判定の突合に使う)
   sourceName: string // 情報源名
   sourceUrl: string // 元記事のURL
+}
+
+// この機能(固定3観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる
+// (article-detail/requirements.md#記事本文の表示-14)
+export type LegacyPrediction = PredictionBase & {
+  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
+}
+
+// この機能以降に生成する記事が持つ形
+export type CurrentPrediction = PredictionBase & {
+  sections: PredictionSections
+}
+
+export type Prediction = LegacyPrediction | CurrentPrediction
+
+// bodyを持つか(旧形式)で判別する(article-detail/design.md「前提: 記事データの形式」)
+export function isLegacyPrediction(prediction: Prediction): prediction is LegacyPrediction {
+  return 'body' in prediction
 }
 
 // 掲載できなかった枠。reasonで表示文言を出し分ける

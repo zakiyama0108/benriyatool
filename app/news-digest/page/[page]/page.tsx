@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getAllArticles } from '../../lib/articles'
 import { paginate } from '../../lib/pagination'
 import ArticleListView from '../../components/ArticleListView'
+import Breadcrumb from '../../components/Breadcrumb'
 
 // 記事一覧ページ(2ページ目以降)。仕様: requirements.md#ビジネスルール・制約-2、
 // design.md「関連するファイル」。TDD対象外(tasks.md Task5参照。ロジック自体はlib/pagination.ts・
@@ -27,6 +28,7 @@ export default async function ArticleListPageN({ params }: { params: Promise<{ p
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white">
       <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8 sm:py-10">
+        <Breadcrumb />
         <header>
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl">重要ニュースダイジェスト</h1>
         </header>

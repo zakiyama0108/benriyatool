@@ -39,3 +39,9 @@
 
 - Task 9: ファビコン追加(仕様: `specs/hub-site/requirements.md#機能要件-4`)
   - `app/trend-digest/icon.svg`を追加する(hub-site/requirements.mdの機能要件[4]で定義済みの暖色系(アンバー/オレンジ)+上昇トレンドモチーフに従う。具体的な色コードはStitchで作成する)
+
+## パンくず
+
+- Task 10: ブログハブ(`/blog`)への経路をパンくずに追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🔴 共通`Breadcrumb`コンポーネント(`app/trend-digest/components/Breadcrumb.tsx`)で、`current`未指定時はアプリ名「週刊トレンド」自体が現在地としてリンクなしで表示され、`べんりやつーる(/)`・`週刊ダイジェスト一覧(/blog)`へのリンクを持つことを確認するテストを書く(`__tests__/trend-digest/components/Breadcrumb.test.tsx`)
+  - 🟢 `Breadcrumb`コンポーネントを実装し、`app/trend-digest/page.tsx`・`app/trend-digest/page/[page]/page.tsx`に組み込む。`app/trend-digest/styleguide/page.tsx`のパンくず見本も3階層表示に更新する

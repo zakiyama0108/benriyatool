@@ -53,3 +53,8 @@
 - Task 10: プライバシーポリシーの更新(仕様: requirements.md#依存関係)
   - TDD対象外(静的な文言追記のため)
   - `app/legal/page.tsx`に、読者本人の付箋メモ(自由記述、200文字まで)を保存する旨を追記する(life-money-simのマイシナリオ機能の記載パターンを踏襲する)
+
+## パンくず
+
+- Task 11: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🟢 `app/news-digest/bookmarks/page.tsx`の既存パンくずを共通`Breadcrumb`コンポーネント(`current="付箋一覧"`)の呼び出しに置き換える(テストは[article-list/tasks.md](../article-list/tasks.md)のTask 7で担保済みの`Breadcrumb`コンポーネント自体のテストを参照)

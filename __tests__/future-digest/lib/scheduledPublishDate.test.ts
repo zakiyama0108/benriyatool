@@ -4,24 +4,24 @@ import { getScheduledPublishDate, validateScheduledPublishDate } from '../../../
 // 仕様: specs/future-digest/weekly-publish/requirements.md#利用上限への到達時の再実行-5
 describe('本来の配信日の算出 - 実行日時(UTC)から本来の配信日(直近の対象編の配信曜日、JST)を求める', () => {
   describe('サイエンス・テクノロジー編(木曜配信)', () => {
-    it('木曜07:43 JST相当のUTC日時(本番cronの起動時刻)を渡すと、その日の日付が返ること', () => {
-      // 2026-10-01(木)07:43 JST = 2026-09-30T22:43Z
-      expect(getScheduledPublishDate(new Date('2026-09-30T22:43:00Z'), 'science-tech')).toBe('2026-10-01')
+    it('木曜01:43 JST相当のUTC日時(本番cronの起動時刻)を渡すと、その日の日付が返ること', () => {
+      // 2026-10-01(木)01:43 JST = 2026-09-30T16:43Z
+      expect(getScheduledPublishDate(new Date('2026-09-30T16:43:00Z'), 'science-tech')).toBe('2026-10-01')
     })
 
-    it('木曜19:43 JST(12時間後の再実行cron)を渡すと、同じ週の木曜の日付が返ること', () => {
-      // 2026-10-01(木)19:43 JST = 2026-10-01T10:43Z
-      expect(getScheduledPublishDate(new Date('2026-10-01T10:43:00Z'), 'science-tech')).toBe('2026-10-01')
+    it('木曜13:43 JST(12時間後の再実行cron)を渡すと、同じ週の木曜の日付が返ること', () => {
+      // 2026-10-01(木)13:43 JST = 2026-10-01T04:43Z
+      expect(getScheduledPublishDate(new Date('2026-10-01T04:43:00Z'), 'science-tech')).toBe('2026-10-01')
     })
 
-    it('金曜07:43 JST(24時間後の再実行cron)を渡すと、同じ週の木曜の日付が返ること', () => {
-      // 2026-10-02(金)07:43 JST = 2026-10-01T22:43Z
-      expect(getScheduledPublishDate(new Date('2026-10-01T22:43:00Z'), 'science-tech')).toBe('2026-10-01')
+    it('金曜01:43 JST(24時間後の再実行cron)を渡すと、同じ週の木曜の日付が返ること', () => {
+      // 2026-10-02(金)01:43 JST = 2026-10-01T16:43Z
+      expect(getScheduledPublishDate(new Date('2026-10-01T16:43:00Z'), 'science-tech')).toBe('2026-10-01')
     })
 
-    it('金曜19:43 JST(36時間後の再実行cron)を渡すと、同じ週の木曜の日付が返ること', () => {
-      // 2026-10-02(金)19:43 JST = 2026-10-02T10:43Z
-      expect(getScheduledPublishDate(new Date('2026-10-02T10:43:00Z'), 'science-tech')).toBe('2026-10-01')
+    it('金曜13:43 JST(36時間後の再実行cron)を渡すと、同じ週の木曜の日付が返ること', () => {
+      // 2026-10-02(金)13:43 JST = 2026-10-02T04:43Z
+      expect(getScheduledPublishDate(new Date('2026-10-02T04:43:00Z'), 'science-tech')).toBe('2026-10-01')
     })
 
     it('週をまたいでも次の木曜の日付は返らないこと(前週の木曜の日付のままであること)', () => {
@@ -29,30 +29,30 @@ describe('本来の配信日の算出 - 実行日時(UTC)から本来の配信�
       expect(getScheduledPublishDate(new Date('2026-10-07T14:59:00Z'), 'science-tech')).toBe('2026-10-01')
     })
 
-    it('境界値: 水曜22:43 UTC(=木曜07:43 JST)を渡すと、同じ週の木曜の日付が返ること', () => {
-      expect(getScheduledPublishDate(new Date('2026-09-30T22:43:00Z'), 'science-tech')).toBe('2026-10-01')
+    it('境界値: 水曜16:43 UTC(=木曜01:43 JST)を渡すと、同じ週の木曜の日付が返ること', () => {
+      expect(getScheduledPublishDate(new Date('2026-09-30T16:43:00Z'), 'science-tech')).toBe('2026-10-01')
     })
   })
 
   describe('くらし・社会編(日曜配信)', () => {
-    it('日曜09:43 JST相当のUTC日時(本番cronの起動時刻)を渡すと、その日の日付が返ること', () => {
-      // 2026-10-04(日)09:43 JST = 2026-10-04T00:43Z
-      expect(getScheduledPublishDate(new Date('2026-10-04T00:43:00Z'), 'life-society')).toBe('2026-10-04')
+    it('日曜03:43 JST相当のUTC日時(本番cronの起動時刻)を渡すと、その日の日付が返ること', () => {
+      // 2026-10-04(日)03:43 JST = 2026-10-03T18:43Z
+      expect(getScheduledPublishDate(new Date('2026-10-03T18:43:00Z'), 'life-society')).toBe('2026-10-04')
     })
 
-    it('日曜21:43 JST(12時間後の再実行cron)を渡すと、同じ週の日曜の日付が返ること', () => {
-      // 2026-10-04(日)21:43 JST = 2026-10-04T12:43Z
-      expect(getScheduledPublishDate(new Date('2026-10-04T12:43:00Z'), 'life-society')).toBe('2026-10-04')
+    it('日曜15:43 JST(12時間後の再実行cron)を渡すと、同じ週の日曜の日付が返ること', () => {
+      // 2026-10-04(日)15:43 JST = 2026-10-04T06:43Z
+      expect(getScheduledPublishDate(new Date('2026-10-04T06:43:00Z'), 'life-society')).toBe('2026-10-04')
     })
 
-    it('月曜09:43 JST(24時間後の再実行cron)を渡すと、同じ週の日曜の日付が返ること', () => {
-      // 2026-10-05(月)09:43 JST = 2026-10-05T00:43Z
-      expect(getScheduledPublishDate(new Date('2026-10-05T00:43:00Z'), 'life-society')).toBe('2026-10-04')
+    it('月曜03:43 JST(24時間後の再実行cron)を渡すと、同じ週の日曜の日付が返ること', () => {
+      // 2026-10-05(月)03:43 JST = 2026-10-04T18:43Z
+      expect(getScheduledPublishDate(new Date('2026-10-04T18:43:00Z'), 'life-society')).toBe('2026-10-04')
     })
 
-    it('月曜21:43 JST(36時間後の再実行cron)を渡すと、同じ週の日曜の日付が返ること', () => {
-      // 2026-10-05(月)21:43 JST = 2026-10-05T12:43Z
-      expect(getScheduledPublishDate(new Date('2026-10-05T12:43:00Z'), 'life-society')).toBe('2026-10-04')
+    it('月曜15:43 JST(36時間後の再実行cron)を渡すと、同じ週の日曜の日付が返ること', () => {
+      // 2026-10-05(月)15:43 JST = 2026-10-05T06:43Z
+      expect(getScheduledPublishDate(new Date('2026-10-05T06:43:00Z'), 'life-society')).toBe('2026-10-04')
     })
 
     it('週をまたいでも次の日曜の日付は返らないこと(前週の日曜の日付のままであること)', () => {

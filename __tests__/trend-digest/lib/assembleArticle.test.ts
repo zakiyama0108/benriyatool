@@ -22,9 +22,15 @@ function makeTrend(overrides: Partial<TopicTrend> = {}): TopicTrend {
   }
 }
 
-// 160〜480字の範囲を満たすダミー本文を作る
-function makeBody(length = 250): string {
-  return 'あ'.repeat(length)
+// 160〜480字の範囲を満たす固定3観点(fact/reason/caveat)のダミーsectionsを作る
+function makeSections(length = 250) {
+  const each = Math.floor(length / 3)
+  const remainder = length - each * 3
+  return {
+    fact: { heading: '事実の見出し', text: 'あ'.repeat(each + remainder), diagram: null },
+    reason: { heading: '理由の見出し', text: 'あ'.repeat(each), diagram: null },
+    caveat: { heading: '注意点の見出し', text: 'あ'.repeat(each), diagram: null },
+  }
 }
 
 function makeTopicInput(overrides: Partial<GeneratedTopicInput> = {}): GeneratedTopicInput {
@@ -34,7 +40,7 @@ function makeTopicInput(overrides: Partial<GeneratedTopicInput> = {}): Generated
     sourceName: 'Oricon',
     sourceUrl: 'https://example.com/a',
     heading: '見出しA',
-    body: makeBody(),
+    sections: makeSections(),
     trend: makeTrend(),
     ...overrides,
   }

@@ -1,10 +1,13 @@
-// 見出し・本文生成CLI(仕様: content-generation/design.md「見出し・本文を書く処理」)。TDD対象外
+// 見出し・固定3観点生成CLI(仕様: content-generation/design.md「見出し・固定3観点を書く処理」)。TDD対象外
 // (Claude Code CLIのヘッドレス起動とプロンプトの組み立てで、検証可能な決定的ロジックは
 // app/future-digest/lib/generateContent.tsに切り出し、__tests__/future-digest/lib/generateContent.test.tsで
-// 検証済みのため。tasks.md Task6参照)。
+// 検証済みのため。tasks.md Task6・Task11参照)。
 //
 // content-selection/collect-and-select.tsが出力した選定結果を受け取り、採用された候補(status: 'selected')
-// 1件ずつについてClaude Code CLI(`claude -p`)をヘッドレス起動し、見出し・本文を生成する。
+// 1件ずつについてClaude Code CLI(`claude -p`)をヘッドレス起動し、見出し・固定3観点(when/basis/impact)を
+// 生成する。あわせて、各観点の図解(diagram、Mermaid図のみ)を検証する(requirements.md#図解-6、
+// design.md「生成結果を検証する処理」手順4)。不正な形式はnullに差し替え、この検証は
+// generatePredictions(app/future-digest/lib/generateContent.ts)の分量検証より前に行う。
 // 1候補の生成が一時的に失敗した場合はリトライし、それでも失敗する候補は「生成に失敗した枠」として
 // 除き残りで公開する(採用0件・全件失敗でも公開をスキップしない。weekly-publish/requirements.md#掲載件数の保証-4)。
 // 利用上限への到達を検知した場合はここで非ゼロ終了し、後続のwrite-article.ts(公開)には進まない
@@ -19,14 +22,18 @@ import { promisify } from 'node:util'
 import { pathToFileURL } from 'node:url'
 import type { Candidate, SlotResult } from '../../app/future-digest/lib/candidateTypes'
 import { generatePredictions, type ClaudeCliResponse } from '../../app/future-digest/lib/generateContent'
+import { isValidAgentDiagram } from '../../app/future-digest/lib/diagramValidation'
 
 const execFileAsync = promisify(execFile)
+
+// 固定3観点。この3キー・この順序で固定(content-generation/requirements.md#要約-3)
+const SECTION_KEYS = ['when', 'basis', 'impact'] as const
 
 const REQUIREMENTS_PATH = path.join(process.cwd(), 'specs/future-digest/content-generation/requirements.md')
 const DESIGN_PATH = path.join(process.cwd(), 'specs/future-digest/content-generation/design.md')
 
-// content-generation/design.md「見出し・本文を書く処理」の全ジャンル共通ガードレール文言をそのまま転記する
-const COMMON_GUARDRAIL = `この記事で扱ってよいのは、渡された元記事に書かれている予測だけである。元記事の構成・表現の順序をなぞらず独自に書き直し、数値・全文を網羅的に転記しない。予測を確定した未来として断定せず、元記事にない内容や自分の予測を加えない。渡された影響度・その根拠・対象時期は事実として扱い、それと異なることを書かない。`
+// content-generation/design.md「見出し・固定3観点を書く処理」の全ジャンル共通ガードレール文言をそのまま転記する
+const COMMON_GUARDRAIL = `この記事で扱ってよいのは、渡された元記事に書かれている予測だけである。各観点の本文は元記事の構成・表現の順序をなぞらず独自に書き直し、数値・全文を網羅的に転記しない。予測を確定した未来として断定せず、元記事にない内容や自分の予測を加えない。渡された影響度・その根拠・対象時期は事実として扱い、それと異なることを書かない。`
 
 // 性・恋愛ジャンルの専用ガードレール文言(requirements.md#性・恋愛ジャンルの書き方-4〜7の具体化)
 const SEXUALITY_GUARDRAIL = `このジャンルのテーマ(自慰の新しいやり方・セルフプレジャーのテクノロジー、恋愛・結婚・性交・性生活の動向、出会い系・立ちんぼ・風俗など性産業の動向)は、避けたりぼかしたりせず、行為・製品・サービスの内容も報道・解説の文体で率直かつ具体的に書く。ただし、読者の性的興奮を目的とする官能的・扇情的な描写はしない。性産業については動向と社会・法制度の変化を書き、特定の店舗・場所・相手の探し方など利用や違法行為を手助けする情報は書かない。未成年が関わる性的な内容は一切扱わない。`
@@ -34,7 +41,7 @@ const SEXUALITY_GUARDRAIL = `このジャンルのテーマ(自慰の新しい�
 function buildPrompt(candidate: Candidate, requirements: string, design: string): string {
   const guardrail = candidate.genre === 'sexuality-romance' ? `${COMMON_GUARDRAIL}\n${SEXUALITY_GUARDRAIL}` : COMMON_GUARDRAIL
 
-  return `あなたは「週刊未来予測」の記事執筆を担当するエージェントです。以下の要件定義・設計に厳密に従って、指定された予測の見出し・本文を日本語で執筆してください。
+  return `あなたは「週刊未来予測」の記事執筆を担当するエージェントです。以下の要件定義・設計に厳密に従って、指定された予測の見出し・固定3観点(いつ・何が起こると予測されているか/誰が・どんな根拠で示しているか/暮らし・社会への影響)を日本語で執筆してください。
 
 # 要件定義(content-generation/requirements.md)
 ${requirements}
@@ -55,9 +62,47 @@ ${guardrail}
 - 情報源名: ${candidate.sourceName}
 - 元URL: ${candidate.sourceUrl}
 
-WebFetchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "body": null}\`)を返してください(いずれの場合も聞き返さない):
+流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、Mermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)を該当する観点の\`diagram\`に設定してください(requirements.md#図解-6)。理解が容易な単純な内容のみの観点でMermaid図が不要な場合は、その観点の\`diagram\`を\`null\`にしてください。
 
-{"heading": "何が起こると考えられているかが一目で分かる見出し", "body": "200〜400字程度の本文(対象時期・何が起こると考えられているか・根拠・暮らし社会への影響)"}`
+WebFetchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、渡された情報(元記事タイトル・対象時期・影響度の根拠)の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "sections": null}\`)を返してください(いずれの場合も聞き返さない):
+
+{"heading": "何が起こると考えられているかが一目で分かる見出し", "sections": {"when": {"heading": "短い結論文", "text": "いつ・何が起こると予測されているかの本文", "diagram": null}, "basis": {"heading": "短い結論文", "text": "誰が・どんな根拠で示しているかの本文", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "impact": {"heading": "短い結論文", "text": "暮らし・社会への影響の本文(3観点合計で200〜400字程度)", "diagram": null}}}`
+}
+
+// Claude Code CLIの応答テキスト(ClaudeCliResponse.result)からJSONオブジェクトを抽出し、
+// 観点ごとのdiagram(Mermaid図のみ)が正しい形式かを検証してから再度文字列化する。
+// 不正な形式はnullに差し替える(design.md「生成結果を検証する処理」手順4)。
+// 抽出・パースに失敗した場合は元のテキストをそのまま返す(後続のclassifyGenerationResultが
+// 同じ抽出処理を行い、一時的失敗として分類する。design.md「エラーハンドリング」)
+function validateDiagramsInResultText(resultText: string, candidate: Candidate): string {
+  const match = resultText.match(/\{[\s\S]*\}/)
+  if (!match) return resultText
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(match[0])
+  } catch {
+    return resultText
+  }
+  if (typeof parsed !== 'object' || parsed === null) return resultText
+
+  const sections = (parsed as { sections?: unknown }).sections
+  if (typeof sections !== 'object' || sections === null) return resultText
+
+  const sectionsRecord = sections as Record<string, { diagram?: unknown } | undefined>
+  for (const key of SECTION_KEYS) {
+    const section = sectionsRecord[key]
+    if (!section || typeof section !== 'object') continue
+    const rawDiagram = section.diagram
+    if (rawDiagram === undefined) continue // 観点自体がdiagramキーを返していない(省略)
+    if (!isValidAgentDiagram(rawDiagram)) {
+      console.error(
+        `図解データの形式が不正なため無視します(${candidate.genre}/${candidate.horizon}/${key}): ${JSON.stringify(rawDiagram)}`
+      )
+      section.diagram = null
+    }
+  }
+
+  return JSON.stringify(parsed)
 }
 
 // Claude Code CLIへ渡す起動引数(純粋関数として切り出し、テストで検証できるようにする)。
@@ -89,6 +134,19 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
   }
 }
 
+// callClaudeCodeの応答に含まれる各観点のdiagramを検証してから
+// generatePredictions(app/future-digest/lib/generateContent.ts)に渡す
+async function callClaudeCodeWithDiagrams(
+  candidate: Candidate,
+  requirements: string,
+  design: string
+): Promise<ClaudeCliResponse> {
+  const response = await callClaudeCode(buildPrompt(candidate, requirements, design))
+  if (response.is_error || !response.result) return response
+  const validatedResult = validateDiagramsInResultText(response.result, candidate)
+  return { ...response, result: validatedResult }
+}
+
 async function main() {
   const selectionPath = process.argv[2]
   if (!selectionPath) {
@@ -101,7 +159,9 @@ async function main() {
     process.exit(1)
   }
 
-  const selection = JSON.parse(fs.readFileSync(selectionPath, 'utf8')) as { slots: SlotResult[] }
+  const selection = JSON.parse(fs.readFileSync(selectionPath, 'utf8')) as {
+    slots: SlotResult[]
+  }
   const selectedCandidates = selection.slots
     .filter((s): s is Extract<SlotResult, { status: 'selected' }> => s.status === 'selected')
     .map((s) => s.candidate)
@@ -120,7 +180,7 @@ async function main() {
   // (→後続のwrite-article.tsが走らず、Actionsの実行が赤で残る)
   const result = await generatePredictions(
     selectedCandidates,
-    (candidate) => callClaudeCode(buildPrompt(candidate, requirements, design)),
+    (candidate) => callClaudeCodeWithDiagrams(candidate, requirements, design),
     {
       onExcluded: ({ candidate, attempts, detail }) => {
         console.error(
@@ -130,10 +190,11 @@ async function main() {
     },
   )
 
-  // 1本ごとに、生成の成否・本文の文字数を実行ログに出す(本文そのものはログに出さない。
+  // 1本ごとに、生成の成否・固定3観点の合計文字数を実行ログに出す(本文そのものはログに出さない。
   // 失敗時の理由は上のonExcludedで既に出している。design.md「ログ」)
   for (const { candidate, prediction } of result.succeeded) {
-    console.error(`${candidate.genre}/${candidate.horizon}: 生成成功(本文${prediction.body.length}字)`)
+    const bodyLength = SECTION_KEYS.reduce((sum, key) => sum + prediction.sections[key].text.length, 0)
+    console.error(`${candidate.genre}/${candidate.horizon}: 生成成功(本文${bodyLength}字)`)
   }
   console.error(`生成成功: ${result.succeeded.length}件 / 生成失敗: ${result.failed.length}件`)
 

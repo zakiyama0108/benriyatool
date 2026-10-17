@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { buildArticleTitle } from '../../../app/future-digest/lib/articleTitle'
 
-// 仕様: specs/future-digest/content-generation/requirements.md#記事の構成-7
+// 仕様: specs/future-digest/content-generation/requirements.md#記事の構成-8
 describe('記事タイトルの組み立て - 発行日・編から「週刊未来予測 <編のラベル> YYYY年M月D日号」を導出する(月・日はゼロ埋めしない)', () => {
   it('science-techの場合、2026-10-01から「週刊未来予測 サイエンス・テクノロジー編 2026年10月1日号」が作られること', () => {
     expect(buildArticleTitle('2026-10-01', 'science-tech')).toBe('週刊未来予測 サイエンス・テクノロジー編 2026年10月1日号')
