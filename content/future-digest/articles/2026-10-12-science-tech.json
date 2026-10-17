@@ -1,0 +1,51 @@
+{
+  "id": "2026-10-12-science-tech",
+  "edition": "science-tech",
+  "date": "2026-10-12",
+  "issueNumber": 1,
+  "emptySlots": [
+    { "genre": "technology-ai", "horizon": "long", "reason": "no-candidate" },
+    { "genre": "medical-health", "horizon": "near", "reason": "no-candidate" },
+    { "genre": "medical-health", "horizon": "long", "reason": "no-candidate" },
+    { "genre": "environment-energy", "horizon": "near", "reason": "no-candidate" },
+    { "genre": "environment-energy", "horizon": "long", "reason": "no-candidate" },
+    { "genre": "space-science", "horizon": "near", "reason": "no-candidate" },
+    { "genre": "space-science", "horizon": "long", "reason": "no-candidate" },
+    { "genre": "geopolitics", "horizon": "near", "reason": "no-candidate" },
+    { "genre": "geopolitics", "horizon": "long", "reason": "no-candidate" }
+  ],
+  "predictions": [
+    {
+      "id": "technology-ai--near",
+      "genre": "technology-ai",
+      "horizon": "near",
+      "heading": "2028年までに、個人のAIエージェントが複数サービスをまとめて代行操作する生活が一般化すると予測されている",
+      "impact": "high",
+      "impactReason": "複数の調査機関が、ブラウザ操作型AIエージェントの普及時期を2028年前後と見込んでおり、買い物・予約・事務処理など日常の広い範囲に影響するため、影響度は大としました。",
+      "targetPeriod": "2027年〜2028年ごろ",
+      "sourceTitle": "Agentic AI Adoption Outlook",
+      "sourceName": "架空リサーチ機関",
+      "sourceUrl": "https://example.com/future/agentic-ai-outlook",
+      "sections": {
+        "when": {
+          "heading": "2028年までに、複数サービスを横断して代行操作するAIエージェントが一般家庭に広がると予測",
+          "text": "2028年までに、買い物・予約・事務処理など複数のウェブサービスを横断して操作できるAIエージェントが一般家庭にも普及すると予測されている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "ブラウザ操作AIの精度向上と価格低下を根拠に複数機関が同時期を予測",
+          "text": "複数の調査機関が、ブラウザ操作型AIの精度向上と利用コストの低下が同時に進んでいることを根拠に、同じ時期を予測として示している。既に試験導入している企業の利用実績も参考にしている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[ブラウザ操作AIの精度向上] --> C[2028年ごろの普及予測]\n  B[利用コストの低下] --> C\n  D[企業での試験導入の実績] --> C"
+          }
+        },
+        "impact": {
+          "heading": "買い物や予約などの日常の雑務が、人の操作なしで完了する生活に変わる",
+          "text": "日常的なネット上の雑務(買い物・予約・事務処理)の多くを、人が都度操作しなくてもAIエージェントが代行する生活になると見込まれる。一方で誤操作や意図しない契約のリスクをどう管理するかが新たな課題になる。",
+          "diagram": null
+        }
+      }
+    }
+  ]
+}

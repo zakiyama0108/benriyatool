@@ -7,8 +7,10 @@ import {
   COLLECTION_FAILURE_LABELS,
   EDITION_GENRES,
   EDITION_LABELS,
+  isLegacyPrediction,
 } from '../../../app/future-digest/lib/types'
 import type { GenreConfig } from '../../../app/future-digest/lib/genres'
+import type { LegacyPrediction, CurrentPrediction } from '../../../app/future-digest/lib/types'
 
 // 仕様: specs/future-digest/article-detail/design.md「前提: 記事データの形式」、specs/future-digest/content-selection/requirements.md#時間軸の切り替え-1
 describe('配信回数からその回が扱う時間軸2区分を決める', () => {
@@ -76,5 +78,40 @@ describe('収集失敗の分類ラベルを読者に分かる日本語文言に�
 
   it('otherは「調査中にエラーが発生しました」であること', () => {
     expect(COLLECTION_FAILURE_LABELS.other).toBe('調査中にエラーが発生しました')
+  })
+})
+
+function makeBase() {
+  return {
+    id: 'technology-ai--near',
+    genre: 'technology-ai',
+    horizon: 'near' as const,
+    heading: '見出し',
+    impact: 'high' as const,
+    impactReason: '根拠',
+    targetPeriod: '2030年まで',
+    sourceTitle: '元記事タイトル',
+    sourceName: '情報源',
+    sourceUrl: 'https://example.com/a',
+  }
+}
+
+// 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-14
+describe('旧形式(body)・新形式(sections)の予測データの判別 - isLegacyPrediction', () => {
+  it('bodyを持つ予測(この機能より前に公開した記事)でtrueを返すこと', () => {
+    const legacy: LegacyPrediction = { ...makeBase(), body: 'あ'.repeat(200) }
+    expect(isLegacyPrediction(legacy)).toBe(true)
+  })
+
+  it('sectionsを持つ予測(この機能以降に生成する記事)でfalseを返すこと', () => {
+    const current: CurrentPrediction = {
+      ...makeBase(),
+      sections: {
+        when: { heading: '見出し1', text: 'あ'.repeat(70), diagram: null },
+        basis: { heading: '見出し2', text: 'あ'.repeat(70), diagram: null },
+        impact: { heading: '見出し3', text: 'あ'.repeat(70), diagram: null },
+      },
+    }
+    expect(isLegacyPrediction(current)).toBe(false)
   })
 })

@@ -23,22 +23,29 @@ function makeCandidate(overrides: Partial<Candidate> = {}): Candidate {
   }
 }
 
-function makeBody(length = 250): string {
-  return 'あ'.repeat(length)
+// 3観点のtextの合計が指定文字数になるよう、ほぼ均等に3分割して組み立てる
+function makeSections(totalLength = 250) {
+  const base = Math.floor(totalLength / 3)
+  const remainder = totalLength - base * 3
+  return {
+    when: { heading: '見出し1', text: 'あ'.repeat(base + remainder), diagram: null },
+    basis: { heading: '見出し2', text: 'あ'.repeat(base), diagram: null },
+    impact: { heading: '見出し3', text: 'あ'.repeat(base), diagram: null },
+  }
 }
 
 function okResult(): ClaudeCliResponse {
-  return { result: JSON.stringify({ heading: '見出し', body: makeBody() }) }
+  return { result: JSON.stringify({ heading: '見出し', sections: makeSections() }) }
 }
 
-// 仕様: specs/future-digest/content-generation/design.md「見出し・本文を書く処理」手順8、specs/future-digest/content-generation/design.md「エラーハンドリング」
+// 仕様: specs/future-digest/content-generation/design.md「見出し・固定3観点を書く処理」手順13、specs/future-digest/content-generation/design.md「エラーハンドリング」
 describe('Claude Code CLIの応答の分類 - 成功/一時的失敗/利用上限到達の3種に分類する', () => {
-  it('見出し・本文(160〜480字)を含むJSON応答はokに分類すること', () => {
+  it('見出し・固定3観点(sections、合計160〜480字)を含むJSON応答はokに分類すること', () => {
     const c = classifyGenerationResult(okResult())
     expect(c.kind).toBe('ok')
     if (c.kind === 'ok') {
       expect(c.content.heading).toBe('見出し')
-      expect(c.content.body).toHaveLength(250)
+      expect(c.content.sections.when.text.length + c.content.sections.basis.text.length + c.content.sections.impact.text.length).toBe(250)
     }
   })
 
@@ -47,17 +54,17 @@ describe('Claude Code CLIの応答の分類 - 成功/一時的失敗/利用上�
   })
 
   it('headingがnullの応答(取得困難時の失敗シグナル)はtransientに分類すること', () => {
-    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: null, body: null }) }
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: null, sections: null }) }
     expect(classifyGenerationResult(res).kind).toBe('transient')
   })
 
-  it('本文の文字数が160字未満・480字超の応答はtransientに分類すること', () => {
-    expect(classifyGenerationResult({ result: JSON.stringify({ heading: '見出し', body: makeBody(100) }) }).kind).toBe('transient')
-    expect(classifyGenerationResult({ result: JSON.stringify({ heading: '見出し', body: makeBody(500) }) }).kind).toBe('transient')
+  it('3観点合計の文字数が160字未満・480字超の応答はtransientに分類すること', () => {
+    expect(classifyGenerationResult({ result: JSON.stringify({ heading: '見出し', sections: makeSections(100) }) }).kind).toBe('transient')
+    expect(classifyGenerationResult({ result: JSON.stringify({ heading: '見出し', sections: makeSections(500) }) }).kind).toBe('transient')
   })
 
   it('見出しが100字を超える応答はtransientに分類すること', () => {
-    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: 'あ'.repeat(101), body: makeBody() }) }
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: 'あ'.repeat(101), sections: makeSections() }) }
     expect(classifyGenerationResult(res).kind).toBe('transient')
   })
 

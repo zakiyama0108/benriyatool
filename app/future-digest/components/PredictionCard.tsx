@@ -1,9 +1,10 @@
 import type { Session } from '@supabase/supabase-js'
 import type { Slot } from '../lib/sortSlots'
-import { COLLECTION_FAILURE_LABELS } from '../lib/types'
+import { COLLECTION_FAILURE_LABELS, SECTION_LABELS, isLegacyPrediction } from '../lib/types'
 import SlotBadges from './SlotBadges'
 import FeedbackForm from './FeedbackForm'
 import BookmarkPanel, { type BookmarkSummary } from './BookmarkPanel'
+import DiagramView from './DiagramView'
 
 type Props = {
   slot: Slot
@@ -16,11 +17,13 @@ type Props = {
   onBookmarkChange?: (predictionId: string, bookmark: BookmarkSummary | null) => void
 }
 
-// 1枠分の表示(仕様: requirements.md#記事本文の表示-2〜5、design.md「その回の記事本文を表示する処理」
-// 手順3〜4。付箋の操作領域はbookmark/design.md「記事詳細ページへの追加(article-detailの画面)」)。
-// 予測がある枠は本文・出典・(ログイン中のみ)付箋の操作領域・(運営者のみ)フィードバック入力欄を
-// 表示し、掲載できなかった枠は理由に応じた3種の文言だけを表示する(候補なし・収集失敗・生成失敗で
-// 異なる文言にする。付箋を貼る対象の予測がないため付箋の操作も出さない)
+// 1枠分の表示(仕様: requirements.md#記事本文の表示-2〜5、requirements.md#記事本文の表示-14〜15、
+// design.md「その回の記事本文を表示する処理」手順3〜4。付箋の操作領域はbookmark/design.md「記事詳細
+// ページへの追加(article-detailの画面)」)。予測がある枠は本文・出典・(ログイン中のみ)付箋の操作
+// 領域・(運営者のみ)フィードバック入力欄を表示し、掲載できなかった枠は理由に応じた3種の文言だけを
+// 表示する(候補なし・収集失敗・生成失敗で異なる文言にする。付箋を貼る対象の予測がないため付箋の操作も
+// 出さない)。本文はisLegacyPredictionで分岐し、旧形式(body)は1段落、新形式(sections)は固定3観点を
+// 固定ラベル付きで表示し、観点ごとの図解(diagram)もDiagramViewで表示する
 export default function PredictionCard({ slot, articleId, isAdmin, session = null, bookmark = null, onBookmarkChange }: Props) {
   if (slot.kind === 'empty') {
     const { emptySlot } = slot
@@ -47,7 +50,23 @@ export default function PredictionCard({ slot, articleId, isAdmin, session = nul
       <SlotBadges genre={slot.genre} horizon={slot.horizon} impact={prediction.impact} />
       <p className="mt-2 text-[11px] text-gray-400">{prediction.targetPeriod}</p>
       <h3 className="mt-1 text-base font-bold leading-relaxed">{prediction.heading}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-gray-700">{prediction.body}</p>
+      {isLegacyPrediction(prediction) ? (
+        // この機能(固定3観点・図解)より前に公開した記事は、単一のbodyを1段落として表示する
+        // (過去記事を書き換えない。article-detail/requirements.md#記事本文の表示-14)
+        <p className="mt-2 text-sm leading-relaxed text-gray-700">{prediction.body}</p>
+      ) : (
+        (['when', 'basis', 'impact'] as const).map((key) => {
+          const section = prediction.sections[key]
+          return (
+            <div key={key} className="mt-3">
+              <p className="text-xs font-bold text-indigo-600">{SECTION_LABELS[key]}</p>
+              <p className="mt-1 text-sm font-semibold leading-relaxed">{section.heading}</p>
+              <p className="mt-1 text-sm leading-relaxed text-gray-700">{section.text}</p>
+              <DiagramView diagram={section.diagram} />
+            </div>
+          )
+        })
+      )}
       <p className="mt-2 text-xs leading-relaxed text-gray-500">影響度の根拠: {prediction.impactReason}</p>
       <p className="mt-3 text-xs leading-relaxed text-gray-400">
         詳しくは元記事を読む:{' '}
