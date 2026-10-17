@@ -8391,8 +8391,8 @@
   },
   {
     "specFile": "research-digest/content-generation/design.md",
-    "item": "見出し・本文を書く処理(エージェントの推論)",
-    "reason": "エージェント(Claude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsでテスト済み)"
+    "item": "見出し・固定4観点を書く処理(エージェントの推論)",
+    "reason": "エージェント(Claude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類・図解データの妥当性検証以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsで、図解データの検証はdiagramValidation.test.tsでテスト済み)"
   },
   {
     "specFile": "research-digest/content-generation/design.md",
@@ -8402,12 +8402,12 @@
   {
     "specFile": "research-digest/content-generation/design.md",
     "item": "記事データの1本分を組み立てる処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-6でbuildFinding.test.tsによりテスト済みのため"
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-7でbuildFinding.test.tsによりテスト済みのため"
   },
   {
     "specFile": "research-digest/content-generation/design.md",
     "item": "記事タイトルを導出する処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-7でarticleTitle.test.tsによりテスト済みのため"
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-8でarticleTitle.test.tsによりテスト済みのため"
   },
   {
     "specFile": "research-digest/content-generation/design.md",

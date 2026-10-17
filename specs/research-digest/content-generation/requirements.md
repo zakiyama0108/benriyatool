@@ -1,7 +1,5 @@
 # 要件定義: 研究発見の要約・記事執筆のルール
 
-> ステータス: 仕様確認中(未実装)(今回追加した固定4観点・図解機能のみ。既存部分は実装済み)
-
 ## サマリ
 [content-selection](../content-selection/requirements.md)で選ばれた研究ごとに、固定4観点(何が分かったか/なぜそう結論づけられたのか/暮らしへの関わり/注意点)に分けて要約を書く。各観点は固定ラベルを表示する。「なぜそう結論づけられたのか」は、判断の決め手(研究の方法・規模等)を専門用語を避けて素人向けに書く。影響度(大・中・小)とその根拠も1文で添える。著作権への配慮はai-dev-digest・trend-digestと同じ方針にする。
 
@@ -31,7 +29,7 @@
 - [5] 研究結果を実際より確かなもの・効果の大きいものとして誇張しない。健康に関わる研究では、個別の治療・服薬の判断を勧める書き方をしない(「なぜそう結論づけられたのか」「暮らしへの関わり」観点でも同様とし、具体的な試し方・手順は書かない)
 
 ### 図解
-- [6] 観点ごと、または記事全体について、図解が理解の助けになるかをエージェントが判断する。単純な内容の研究では、無理に図解を作らない([news-digest/content-generation/requirements.md#図解](../../news-digest/content-generation/requirements.md)と同じ考え方・同じ技術(Mermaid/Nano Banana)を踏襲する)
+- [6] 流れ・分岐・時系列のような構造を示すのに適した観点には、Mermaid記法の図を作る。該当しない単純な事実関係のみの観点では、無理にMermaid図を作らず`diagram`を`null`にする(要否の判断はエージェントに委ねる)
 
 ### 記事の構成
 - [7] 各記事データには、ジャンル・見出し・固定4観点の要約(観点ごとの見出し・本文)・影響度・影響度の根拠・出典をセットで含める
@@ -48,14 +46,11 @@
 ### 内容の逸脱防止
 - [3] 要約は元の論文・発表に書かれている範囲にとどめ、書かれていない内容を推測で断定しない
 
-### 図解の生成(Nano Banana)
-- [4] Nano Banana(Gemini 2.5 Flash Image)の利用方針・制約は[news-digest/content-generation/requirements.md#図解の生成(Nano Banana)](../../news-digest/content-generation/requirements.md)の定めと同一とする(重複して記載しない)
-
 ## 依存関係
 - 対象研究の選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
 - 作った要約は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 執筆ルールは[source-review/requirements.md](../source-review/requirements.md)の月次見直し(生成領域)で調整される
-- Nano Bananaの呼び出しにはGemini APIキーが必要(news-digestと共用のGitHub Actions secrets運用)
+- Mermaid図の描画はクライアント側のMermaidライブラリに委ねるため、記事生成時点では外部APIの呼び出し・認証情報は不要
 
 ## スコープ外
 - 論文の全文掲載・全文転載

@@ -1,7 +1,7 @@
 import type { Edition } from './types'
 import { EDITION_LABELS } from './types'
 
-// 記事タイトルの導出(仕様: content-generation/requirements.md#記事の構成-7、
+// 記事タイトルの導出(仕様: content-generation/requirements.md#記事の構成-8、
 // content-generation/design.md「記事タイトルを導出する処理」)。
 // タイトルはJSONに保存せず、発行日・編から常に導出する(Claudeには作らせない。表現の揺れ・誇張を避けるため)。
 // JSONのタイムゾーン変換に依存しないよう、Dateを介さず文字列を直接分解する

@@ -1,7 +1,7 @@
-import type { Article, Edition, EmptyGenre, Finding, Genre, Impact } from './types'
+import type { Article, CurrentFinding, Diagram, Edition, EmptyGenre, Finding, FindingSection, FindingSections, Genre, Impact, LegacyFinding } from './types'
 import { IMPACT_ORDER } from './types'
 import { EDITION_GENRES } from './genres'
-import { isValidBodyLength } from './bodyValidation'
+import { isValidBodyLength, isValidSectionsLength } from './bodyValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: article-detail/design.md「バリデーション」)。
 // 週次記事PRのCIをここで壊すことで、不正な記事データが公開されるのを防ぐ。
@@ -13,6 +13,7 @@ const EMPTY_GENRE_REASONS: EmptyGenre['reason'][] = ['no-candidate', 'collection
 const COLLECTION_FAILURE_REASONS: string[] = ['timeout', 'invalid-format', 'other']
 const MIN_PUBLISHED_YEAR = 1900
 const EDITIONS: Edition[] = ['body-life', 'science-society']
+const SECTION_KEYS = ['finding', 'basis', 'relevance', 'caveat'] as const
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -26,6 +27,60 @@ function isHttpUrl(value: unknown): value is string {
   } catch {
     return false
   }
+}
+
+// findings[index].sections.<key>.diagram(観点ごとの図解)を検証・パースする(仕様:
+// content-generation/requirements.md#図解-6、article-detail/design.md「バリデーション」)。
+// null、または{type:'mermaid', code: 空文字でない}のいずれかであることを確認する。
+// CurrentFindingは常にdiagramキーを持つため、undefinedは許容しない
+// (キー自体がない過去記事はbodyを持つLegacyFindingとして別経路で検証する)
+function parseDiagram(raw: unknown, index: number, key: string): Diagram | null {
+  if (raw === null) return null
+  if (typeof raw !== 'object') {
+    throw new Error(`findings[${index}].sections.${key}.diagramがオブジェクトでもnullでもありません`)
+  }
+  const record = raw as Record<string, unknown>
+  if (record.type === 'mermaid') {
+    if (!isNonEmptyString(record.code)) {
+      throw new Error(`findings[${index}].sections.${key}.diagram.codeが空文字です`)
+    }
+    return { type: 'mermaid', code: record.code }
+  }
+  throw new Error(`findings[${index}].sections.${key}.diagram.typeが不正です(mermaidのみ許可): ${String(record.type)}`)
+}
+
+// findings[index].sections.<key>(固定4観点1つ分)を検証・パースする
+function parseSection(raw: unknown, index: number, key: string): FindingSection {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error(`findings[${index}].sections.${key}がオブジェクトではありません`)
+  }
+  const record = raw as Record<string, unknown>
+  if (!isNonEmptyString(record.heading)) throw new Error(`findings[${index}].sections.${key}.headingが空文字です`)
+  if (!isNonEmptyString(record.text)) throw new Error(`findings[${index}].sections.${key}.textが空文字です`)
+  return { heading: record.heading, text: record.text, diagram: parseDiagram(record.diagram, index, key) }
+}
+
+// findings[index].sections(固定4観点)を検証・パースする。4キーの存在・各観点のheading/textの非空・
+// 4観点のtext合計の分量はisValidSectionsLengthで判定する(仕様: content-generation/design.md
+// 「生成結果を検証する処理」、article-detail/design.md「バリデーション」)
+function parseSections(raw: unknown, index: number): FindingSections {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error(`findings[${index}].sectionsがオブジェクトではありません`)
+  }
+  const record = raw as Record<string, unknown>
+  const sections: FindingSections = {
+    finding: parseSection(record.finding, index, 'finding'),
+    basis: parseSection(record.basis, index, 'basis'),
+    relevance: parseSection(record.relevance, index, 'relevance'),
+    caveat: parseSection(record.caveat, index, 'caveat'),
+  }
+  if (!isValidSectionsLength(sections)) {
+    const totalLength = SECTION_KEYS.reduce((sum, key) => sum + sections[key].text.length, 0)
+    throw new Error(
+      `findings[${index}].sectionsのtext合計文字数が不正です(160〜480字である必要があります): ${totalLength}字`,
+    )
+  }
+  return sections
 }
 
 function parseFinding(raw: unknown, index: number, genreIds: Genre[], issueYear: number): Finding {
@@ -43,7 +98,7 @@ function parseFinding(raw: unknown, index: number, genreIds: Genre[], issueYear:
   if (!IMPACT_ORDER.includes(f.impact as Impact)) {
     throw new Error(`findings[${index}].impactが定義済みの値ではありません: ${String(f.impact)}`)
   }
-  for (const key of ['heading', 'body', 'impactReason', 'sourceTitle', 'sourceName'] as const) {
+  for (const key of ['heading', 'impactReason', 'sourceTitle', 'sourceName'] as const) {
     if (!isNonEmptyString(f[key])) throw new Error(`findings[${index}].${key}が空です`)
   }
   if (!isHttpUrl(f.sourceUrl)) {
@@ -64,15 +119,20 @@ function parseFinding(raw: unknown, index: number, genreIds: Genre[], issueYear:
   if (typeof f.isPreprint !== 'boolean') {
     throw new Error(`findings[${index}].isPreprintが真偽値ではありません: ${String(f.isPreprint)}`)
   }
-  if (!isValidBodyLength(f.body)) {
-    throw new Error(`findings[${index}].bodyの文字数が不正です(160〜480字である必要があります): ${(f.body as string).length}字`)
+
+  // body(LegacyFinding)またはsections(CurrentFinding)のどちらか一方のみを持つこと(仕様:
+  // article-detail/design.md「前提: 記事データの形式」isLegacyFindingの判定と対になる制約。
+  // ai-dev-digestのhasSections/hasSummaryの排他判定と同じ考え方)
+  const hasBody = f.body !== undefined
+  const hasSections = f.sections !== undefined
+  if (hasBody === hasSections) {
+    throw new Error(`findings[${index}]はbody(旧形式)またはsections(新形式)のどちらか一方のみを持つ必要があります`)
   }
 
-  return {
+  const base = {
     id: f.genre,
     genre: f.genre,
     heading: f.heading as string,
-    body: f.body as string,
     impact: f.impact as Impact,
     impactReason: f.impactReason as string,
     sourceTitle: f.sourceTitle as string,
@@ -82,6 +142,17 @@ function parseFinding(raw: unknown, index: number, genreIds: Genre[], issueYear:
     publishedYear: f.publishedYear,
     isPreprint: f.isPreprint,
   }
+
+  if (hasBody) {
+    if (!isValidBodyLength(f.body)) {
+      throw new Error(`findings[${index}].bodyの文字数が不正です(160〜480字である必要があります): ${(f.body as string).length}字`)
+    }
+    const result: LegacyFinding = { ...base, body: f.body as string }
+    return result
+  }
+
+  const result: CurrentFinding = { ...base, sections: parseSections(f.sections, index) }
+  return result
 }
 
 function parseEmptyGenre(raw: unknown, index: number, genreIds: Genre[]): EmptyGenre {

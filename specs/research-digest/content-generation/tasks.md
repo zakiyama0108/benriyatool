@@ -7,12 +7,12 @@
   - 🔴 本文が160字未満・480字超で`false`、境界値で`true`になること、見出し・本文が`null`・空で不正になること、見出しが100字超で不正になること、査読前の論文で本文に「査読」が含まれない場合に不正・含まれる場合に正常になること、査読済みの論文ではこの確認をしないことを確認するテストを書く
   - 🟢 `app/research-digest/lib/bodyValidation.ts`に`BODY_MIN_LENGTH`/`BODY_MAX_LENGTH`/`isValidBodyLength`/`isValidHeading`/`mentionsPreprint`を実装する
 
-- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-7)
+- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-8)
   - 🔴 `2026-10-05`から「週刊研究発見 2026年10月5日号」、`2026-11-30`から「週刊研究発見 2026年11月30日号」が作られることを確認するテストを書く
   - 🟢 `app/research-digest/lib/articleTitle.ts`に`buildArticleTitle(date)`を実装する
 
-- Task 3: 研究1本分の組み立て(仕様: requirements.md#記事の構成-6)
-  - 🔴 選定時の値(ジャンル・影響度・根拠・論文名・発表元・URL・DOI・発表年・査読前か)がそのまま引き継がれ、見出し・本文だけが生成結果から入ること、研究IDがジャンルのidになることを確認するテストを書く
+- Task 3: 研究1本分の組み立て(仕様: requirements.md#記事の構成-7)
+  - 🔴 選定時の値(ジャンル・影響度・根拠・論文名・発表元・URL・DOI・発表年・査読前か)がそのまま引き継がれ、見出し・`sections`だけが生成結果から入ること、研究IDがジャンルのidになることを確認するテストを書く
   - 🟢 `app/research-digest/lib/buildFinding.ts`に`buildFinding(candidate, generated)`を実装する
 
 - Task 4: 生成応答の分類(仕様: design.md「エラーハンドリング」)
@@ -53,13 +53,8 @@
   - 🟢 `app/research-digest/lib/bodyValidation.ts`の`isValidBodyLength(body)`を`isValidSectionsLength(sections)`に置き換える(呼び出し元の`articleSchema.ts`・`buildFinding.ts`も追随)
 
 - Task 10: 図解データの検証(仕様: requirements.md#図解-6、design.md「見出し・固定4観点を書く処理」手順13)
-  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く(news-digestの`diagramValidation.ts`と同じロジック)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合はいずれも有効、`code`が空文字・空白のみ・type不明(`image`等)・オブジェクトでない値の場合は不正と判定することを確認するテストを書く
   - 🟢 `app/research-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
-
-- Task 11: Nano Banana呼び出しと保存(仕様: requirements.md#図解の生成(Nano Banana)-4、design.md「見出し・固定4観点を書く処理」手順13)
-  - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 10でテスト済み)
-  - `scripts/research-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`content/research-digest/articles/images/`に変更)
-  - `scripts/research-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
   - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
 
 </details>
