@@ -1,4 +1,5 @@
-import type { Importance, SummarySection, SummaryPerspective, TopicSummary } from './types'
+import type { Importance, SummarySection, SummaryPerspective, TopicSummary, DomainPerspective } from './types'
+import { hasDomainPerspective, DOMAIN_LABELS } from './types'
 
 // 導入文(teaser)の分量検証(仕様: requirements.md#要約-3、design.md「要約の分量を検証する処理」手順2)。
 // 「60〜120字程度」の「程度」を、最初に導入した要約分量チェック(目安100〜150字に対し±20字の許容幅)
@@ -34,27 +35,43 @@ export function isValidDetailLength(sections: SummarySection[]): boolean {
   return totalLength >= DETAIL_TOTAL_MIN_LENGTH && totalLength <= DETAIL_TOTAL_MAX_LENGTH
 }
 
-// 固定4観点(TopicSummary)の分量検証(仕様: requirements.md#要約-2〜5、design.md「要約の分量を検証する処理」手順1〜3)。
-// 2026-08追加。4キー(benefit/whatsNew/how/howToUse)がすべて揃っていること、各観点のheading/teaser/detailが
-// 空文字でないこと、各観点のteaserが有効範囲(isValidTeaserLengthを再利用)であること、4観点のdetail合計が
-// DETAIL_TOTAL_MIN_LENGTH〜DETAIL_TOTAL_MAX_LENGTHの範囲内であることを確認する
-const SUMMARY_KEYS = ['benefit', 'whatsNew', 'how', 'howToUse'] as const
+// 1観点分の内容検証(heading/teaser/detailが空文字でないこと、teaserが有効範囲であること)。
+// summaryは呼び出し側でJSON由来の値をキャストして渡す場合があり、型上は必須のキーが実行時には
+// 欠けている(undefined)ことがあるため、型チェックをすり抜けないよう明示的に確認する
+function isValidPerspective(p: SummaryPerspective | undefined): p is SummaryPerspective {
+  if (p === undefined) return false
+  if (p.heading.length === 0 || p.teaser.length === 0 || p.detail.length === 0) return false
+  return isValidTeaserLength(p.teaser)
+}
 
+// 🧭開発領域観点の追加検証(仕様: requirements.md#開発領域-15〜16、design.md「要約の分量を検証する処理」
+// 手順2。2026-09追加)。domainsが1件以上の配列で、各要素がrequirements.md#開発領域-15で定める値
+// (DOMAIN_LABELSのキー)のいずれかであることを確認する
+function isValidDomainPerspective(p: DomainPerspective | undefined): boolean {
+  if (!isValidPerspective(p)) return false
+  const domains = p.domains
+  if (!Array.isArray(domains) || domains.length === 0) return false
+  return domains.every((domain) => domain in DOMAIN_LABELS)
+}
+
+// 固定4観点(TopicSummary)の分量検証(仕様: requirements.md#要約-2〜5、requirements.md#開発領域-15〜16、
+// design.md「要約の分量を検証する処理」手順1〜3)。2026-08追加、2026-09拡張。
+// hasDomainPerspectiveで新形式(domain/benefit/how/howToUse)・旧形式(benefit/whatsNew/how/howToUse)の
+// どちらの4キー構成も受け付ける。各観点のheading/teaser/detailが空文字でないこと、各観点のteaserが
+// 有効範囲(isValidTeaserLengthを再利用)であること、新形式はdomain.domainsの検証もあわせて行うこと、
+// 4観点のdetail合計がDETAIL_TOTAL_MIN_LENGTH〜DETAIL_TOTAL_MAX_LENGTHの範囲内であることを確認する
 export function isValidSummaryDetailLength(summary: TopicSummary): boolean {
-  // summaryは呼び出し側でJSON由来の値をキャストして渡す場合があり、型上は必須の4キーが
-  // 実行時には欠けている(undefined)ことがあるため、型チェックをすり抜けないよう明示的に確認する
-  const perspectives: (SummaryPerspective | undefined)[] = SUMMARY_KEYS.map((key) => summary[key])
-  if (perspectives.some((p) => p === undefined)) return false
-  if (
-    perspectives.some(
-      (p) => p!.heading.length === 0 || p!.teaser.length === 0 || p!.detail.length === 0
-    )
-  ) {
-    return false
+  if (hasDomainPerspective(summary)) {
+    if (!isValidDomainPerspective(summary.domain)) return false
+    const perspectives = [summary.domain, summary.benefit, summary.how, summary.howToUse]
+    if (perspectives.some((p) => !isValidPerspective(p))) return false
+    const totalLength = perspectives.reduce((sum, p) => sum + p.detail.length, 0)
+    return totalLength >= DETAIL_TOTAL_MIN_LENGTH && totalLength <= DETAIL_TOTAL_MAX_LENGTH
   }
-  if (perspectives.some((p) => !isValidTeaserLength(p!.teaser))) return false
 
-  const totalLength = perspectives.reduce((sum, p) => sum + p!.detail.length, 0)
+  const perspectives = [summary.benefit, summary.whatsNew, summary.how, summary.howToUse]
+  if (perspectives.some((p) => !isValidPerspective(p))) return false
+  const totalLength = perspectives.reduce((sum, p) => sum + p.detail.length, 0)
   return totalLength >= DETAIL_TOTAL_MIN_LENGTH && totalLength <= DETAIL_TOTAL_MAX_LENGTH
 }
 

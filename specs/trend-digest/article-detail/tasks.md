@@ -80,3 +80,9 @@
 - Task 14: styleguideページへの追加(仕様: design.md「画面設計」)
   - `app/trend-digest/styleguide/page.tsx`に、固定3観点表示(新形式)・旧形式(単一本文)・図解あり(mermaid)の各状態を並べる
   - 同じコミットで`app/trend-digest/styleguide/styleguide.png`を撮り直す
+
+## パンくず
+
+- Task 15: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🔴 共通`Breadcrumb`コンポーネント(article-list/tasks.mdのTask 10で新設)に`current`(記事タイトル)を渡した場合、アプリ名「週刊トレンド」が`/trend-digest`へのリンクになり、currentがリンクなしの現在地として表示されることを確認するテストを書く(`__tests__/trend-digest/components/Breadcrumb.test.tsx`)
+  - 🟢 `app/trend-digest/components/ArticleDetailView.tsx`の既存パンくずを共通`Breadcrumb`コンポーネントの呼び出しに置き換える

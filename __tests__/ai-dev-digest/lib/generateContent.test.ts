@@ -51,6 +51,22 @@ function okResult(): ClaudeCliResponse {
   }
 }
 
+// 🧭開発領域観点を含む新形式(domain/benefit/how/howToUse)のsummary fixture(2026-09追加)
+function validSummaryWithDomain(overrides: Record<string, unknown> = {}) {
+  const perspective = (prefix: string) => ({
+    heading: `${prefix}見出し`,
+    teaser: prefix.repeat(60),
+    detail: prefix.repeat(250),
+  })
+  return {
+    domain: { ...perspective('あ'), domains: ['backend'] },
+    benefit: perspective('い'),
+    how: perspective('う'),
+    howToUse: perspective('え'),
+    ...overrides,
+  }
+}
+
 // 仕様: specs/ai-dev-digest/content-generation/design.md「要約を書く処理」手順8・「エラーハンドリング」
 describe('classifyGenerationResult - CLI応答を成功/一時的失敗/利用枠枯渇の3種に分類する', () => {
   it('見出し・固定4観点(summary)・importanceを含むJSON応答はokに分類する', () => {
@@ -125,6 +141,33 @@ describe('classifyGenerationResult - CLI応答を成功/一時的失敗/利用�
   it('resultが利用上限到達メッセージを示す場合はquotaに分類する(api_error_statusが無くても)', () => {
     const res: ClaudeCliResponse = { is_error: true, result: "You've hit your weekly limit" }
     expect(classifyGenerationResult(res).kind).toBe('quota')
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-generation/requirements.md#要約-5、specs/ai-dev-digest/content-generation/requirements.md#要約-12、specs/ai-dev-digest/content-generation/requirements.md#開発領域-15、specs/ai-dev-digest/content-generation/requirements.md#開発領域-16
+describe('classifyGenerationResult - 🧭開発領域観点(domain)を含む新形式の応答も成功として分類する(2026-09追加)', () => {
+  it('domain/benefit/how/howToUseの4キー構成(新形式)でdomainsも有効な応答はokに分類する', () => {
+    const res: ClaudeCliResponse = {
+      result: JSON.stringify({ heading: '見出し', importance: 4, summary: validSummaryWithDomain() }),
+    }
+    const c = classifyGenerationResult(res)
+    expect(c.kind).toBe('ok')
+  })
+
+  it('domain.domainsが空配列の応答はtransientに分類する', () => {
+    const summary = validSummaryWithDomain({
+      domain: { heading: 'あ見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: [] },
+    })
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', importance: 4, summary }) }
+    expect(classifyGenerationResult(res).kind).toBe('transient')
+  })
+
+  it('domain観点のheadingが空文字の応答はtransientに分類する', () => {
+    const summary = validSummaryWithDomain({
+      domain: { heading: '', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: ['backend'] },
+    })
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', importance: 4, summary }) }
+    expect(classifyGenerationResult(res).kind).toBe('transient')
   })
 })
 

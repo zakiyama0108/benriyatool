@@ -44,6 +44,7 @@ app/trend-digest/layout.tsx (新規: title/description。page.tsxはgetAllArticl
 
 Step0: 簡易実施(既存ai-dev-digestの`app/ai-dev-digest/page.tsx`の配色・レイアウトパターンを踏襲し、最終的な見た目の確定はautopilotの画面レビュー(実装後のlocalhost確認)で行う)。時系列1本のフィード+バッジのレイアウトはrequirements.mdで確定済み。既存画面からの見分けが付くよう、アクセントカラーのみトレンド系トピックらしい配色(暖色系。例: アンバー/オレンジ系のアクセント。article-detailと共通のトークンにする)に変更する。
 
+- パンくず(べんりやつーる › 週刊ダイジェスト一覧 › 週刊トレンド) **🟡〔提案〕**
 - 見出し「週刊トレンド」+簡単な説明文(requirements.md#メタ情報-1のdescriptionと同趣旨の短い紹介文)
 - カード一覧(新しい順、1ページ20件): グループバッジ(「エンタメ」/「カルチャー」、エンタメ編はentertainment、カルチャー編はculture-lifestyle。requirements.md#一覧表示-2)・記事タイトル(`buildArticleTitle(edition, date)`)・公開日・トピック見出し(最大3件、超過時は「他N件」)・詳細ページへのリンク
 - 記事が0件の場合: 「まだ記事がありません。しばらくお待ちください。」という案内文のみを表示する

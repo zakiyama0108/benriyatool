@@ -184,7 +184,7 @@ create policy "benriyatool_readonly can select" on research_digest_bookmarks
 - ページ下部のログイン状態表示に、ログイン中だけ「付箋一覧」へのリンクを出す
 
 ### 付箋一覧ページ(新規: `/research-digest/bookmarks`)
-- パンくず(べんりやつーる › 週刊研究発見 › 付箋一覧)
+- パンくず(べんりやつーる › 週刊ダイジェスト一覧 › 週刊研究発見 › 付箋一覧)
 - 見出し「付箋一覧」
 - 確認中・取得中: ローディング表示だけ
 - 未ログイン: ログインを促す文言と「ログイン」ボタンだけ

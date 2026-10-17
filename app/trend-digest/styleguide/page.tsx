@@ -134,6 +134,8 @@ export default function TrendDigestStyleguidePage() {
           <nav aria-label="パンくず(見本)" className="text-[11px] text-gray-400">
             <span className="hover:underline">べんりやつーる</span>
             <span className="mx-1">›</span>
+            <span className="hover:underline">週刊ダイジェスト一覧</span>
+            <span className="mx-1">›</span>
             <span className="hover:underline">週刊トレンド</span>
             <span className="mx-1">›</span>
             <span>週刊トレンド エンタメ編 2026年9月15日号</span>
