@@ -80,17 +80,43 @@ function resolveLink(href: string, baseUrl: string): string | null {
   }
 }
 
+// Infoseekニュース配信社ページ(news.infoseek.co.jp/publisher/<code>/)が使う構造を専用に抽出する。
+// 1つの<a>内にタイトル(.topics-list__text-title)と日付(.topics-list__text-option)が別要素で
+// 入っており、extractHeadingAnchorの「<a>内の全テキスト」抽出だとタイトルに日付文字列が混入して
+// しまうため、汎用の<li>パターンより先にこの専用クラスを優先して拾う
+// (読売新聞・TBS NEWS DIG・日テレNEWS NNN・時事通信・ロイターの取得に使う。
+// requirements.md#情報源(固定リスト)-2の注記)
+function extractInfoseekTopicsListEntry(item: string): { href: string; title: string; dateText: string } | null {
+  const hrefMatch = item.match(/<a[^>]*href="([^"]+)"/)
+  const titleMatch = item.match(/topics-list__text-title"[^>]*>([\s\S]*?)<\/div>/)
+  const dateMatch = item.match(/topics-list__text-option"[^>]*>([\s\S]*?)<\/p>/)
+  if (!hrefMatch || !titleMatch || !dateMatch) return null
+  const title = titleMatch[1].replace(/<[^>]*>/g, '').trim()
+  return title ? { href: hrefMatch[1], title, dateText: dateMatch[1] } : null
+}
+
 // 公式RSSがない情報源の公開ページ(HTML)から新着項目を雑駁に抽出する。
 // (要件はHTML構造の実装方法を定めていないため設計判断。サイト構造が大きく変わった場合は個別に対応する)
-// 対応する2パターン:
-//   1. <li>要素内に見出し(<a>タグ)・日付が両方含まれるパターン
-//   2. <dt>日付</dt><dd>...<a>見出し</a>...</dd>の定義リスト形式
+// 対応する3パターン:
+//   1. Infoseekニュース配信社ページの専用クラス構造(上記extractInfoseekTopicsListEntry参照)
+//   2. <li>要素内に見出し(<a>タグ)・日付が両方含まれる汎用パターン
+//   3. <dt>日付</dt><dd>...<a>見出し</a>...</dd>の定義リスト形式
 //      (神奈川県公式サイトのお知らせ一覧がこの形式。他の自治体サイトにも多い構造のため汎用的に対応する)
 function parseOfficialPageEntries(html: string, baseUrl: string): CollectedEntry[] {
   const entries: CollectedEntry[] = []
 
   const listItems = html.match(/<li\b[\s\S]*?<\/li>/g) ?? []
   for (const item of listItems) {
+    const infoseekEntry = extractInfoseekTopicsListEntry(item)
+    if (infoseekEntry) {
+      const parsedDate = parseDateFromText(infoseekEntry.dateText)
+      const link = parsedDate ? resolveLink(infoseekEntry.href, baseUrl) : null
+      if (parsedDate && link) {
+        entries.push({ title: infoseekEntry.title, link, publishedAt: parsedDate.toISOString() })
+      }
+      continue
+    }
+
     const anchor = extractHeadingAnchor(item)
     if (!anchor) continue
     const parsedDate = parseDateFromText(item)

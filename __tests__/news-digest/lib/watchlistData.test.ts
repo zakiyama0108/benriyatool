@@ -8,10 +8,26 @@ const criteria: Criteria = criteriaData
 
 // requirements.md#情報源(固定リスト)-<カテゴリ名>の表セルをそのまま転記した期待値
 const EXPECTED_NAMES_BY_CATEGORY: Record<CategoryId, string[]> = {
-  general: ['NHK NEWS WEB(政治・国際)', '共同通信', '産経新聞', 'ANN(テレビ朝日系)', 'FNNプライムオンライン'],
-  business: ['東洋経済オンライン', 'ダイヤモンド・オンライン', 'BUSINESS INSIDER JAPAN'],
-  kanagawa: ['神奈川県公式サイト(お知らせ)', '神奈川新聞(カナロコ)'],
-  childcare: ['こども家庭庁', '厚生労働省(子育て支援関連)', 'NHK生活情報(子育て)'],
+  general: [
+    'NHK NEWS WEB(政治・国際)',
+    '共同通信',
+    '産経新聞',
+    'ANN(テレビ朝日系)',
+    'FNNプライムオンライン',
+    '読売新聞',
+    'TBS NEWS DIG Powered by JNN',
+    '日テレNEWS NNN',
+    '時事通信',
+  ],
+  business: ['東洋経済オンライン', 'ダイヤモンド・オンライン', 'BUSINESS INSIDER JAPAN', 'ロイター', '日経ビジネス電子版'],
+  kanagawa: ['神奈川県公式サイト(お知らせ)', '神奈川新聞(カナロコ)', '川崎市公式サイト(お知らせ)', '横浜市公式サイト(記者発表)'],
+  childcare: [
+    'こども家庭庁',
+    '厚生労働省(子育て支援関連)',
+    'NHK生活情報(子育て)',
+    '川崎市公式サイト(こども・子育て)',
+    '横浜市公式サイト(こども青少年局)',
+  ],
 }
 
 // 仕様: specs/news-digest/content-selection/requirements.md#カテゴリ-1
@@ -23,9 +39,9 @@ describe('選定対象カテゴリ - 総合・経済/ビジネス・神奈川ロ
 })
 
 // 仕様: specs/news-digest/content-selection/requirements.md#情報源(固定リスト)-2
-describe('情報源の固定リストのデータ - requirements.mdの表と完全一致する13件の固定リストであること', () => {
-  it('ウォッチリストがちょうど13件であること(記載以外の発信者・組織をエージェントが自律的に追加しない固定リスト運用)', () => {
-    expect(watchlist).toHaveLength(13)
+describe('情報源の固定リストのデータ - requirements.mdの表と完全一致する23件の固定リストであること', () => {
+  it('ウォッチリストがちょうど23件であること(記載以外の発信者・組織をエージェントが自律的に追加しない固定リスト運用)', () => {
+    expect(watchlist).toHaveLength(23)
   })
 })
 
@@ -55,23 +71,68 @@ describe('情報源の固定リストのデータ - 共同通信・産経新聞�
 })
 
 // 仕様: specs/news-digest/content-selection/requirements.md#情報源(固定リスト)-2
-// (robots.txtで全ボットを禁止しており無料の公式代替も存在しないため削除)
-describe('情報源の固定リストのデータ - Reuters Japan(ビジネス)は情報源リストに含まれないこと', () => {
-  it('reuters-japan-businessのidを持つ情報源が存在しないこと', () => {
+// ロイター公式サイトの直接取得(id: reuters-japan-business)はrobots.txtで全ボットを禁止しており
+// 無料の公式代替も存在しないため不採用のまま。ただし、Infoseekニュース配信社ページ経由
+// (id: reuters)では取得できることを確認し、こちらを情報源として採用した
+describe('情報源の固定リストのデータ - Reuters Japan(ビジネス)の直接サイト取得(reuters-japan-business)は情報源リストに含まれないこと', () => {
+  it('reuters-japan-businessのidを持つ情報源が存在しないこと(Infoseek経由のreutersとは別)', () => {
     expect(watchlist.find((e) => e.id === 'reuters-japan-business')).toBeUndefined()
   })
 })
 
 // 仕様: specs/news-digest/content-selection/requirements.md#情報源(固定リスト)-2
-// 時事通信は日付が本文になくURLのクエリ文字列に埋め込まれているため安定した抽出ができず、
-// 日本経済新聞(電子版)はJS描画のSPA構造で静的HTML取得では記事一覧・日付が取得できず公式RSSも
-// 存在しないため、いずれも技術的にスクレイピング不可能と判断し情報源リストから削除した
-// (2026-10-03の本番運用で総合・経済/ビジネスが0件になったバグの原因調査で判明)
-describe('情報源の固定リストのデータ - 時事通信・日本経済新聞(電子版)はスクレイピング不可能のため情報源リストに含まれないこと', () => {
-  it('jiji-press・nikkeiのidを持つ情報源が存在しないこと', () => {
+// 時事通信の直接サイト取得(id: jiji-press)は日付が本文になくURLのクエリ文字列に埋め込まれて
+// いるため安定した抽出ができず不採用のまま。ただし、Infoseekニュース配信社ページ経由(id: jiji)
+// では日付が本文に表示されており取得できることを確認し、こちらを情報源として採用した。
+// 日本経済新聞本紙(電子版、id: nikkei)はJS描画のSPA構造で静的HTML取得では記事一覧・日付が
+// 取得できず公式RSSも存在しないため、引き続き不採用(日経ビジネス電子版はRSSを持つ別媒体のため
+// id: nikkei-businessとして別途採用している)
+describe('情報源の固定リストのデータ - 時事通信・日本経済新聞(電子版)の直接サイト取得(jiji-press・nikkei)は情報源リストに含まれないこと', () => {
+  it('jiji-press・nikkeiのidを持つ情報源が存在しないこと(Infoseek経由のjiji・日経ビジネスのnikkei-businessとは別)', () => {
     expect(watchlist.find((e) => e.id === 'jiji-press')).toBeUndefined()
     expect(watchlist.find((e) => e.id === 'nikkei')).toBeUndefined()
   })
+})
+
+// 仕様: specs/news-digest/content-selection/requirements.md#情報源(固定リスト)-2
+// 読売新聞・TBS NEWS DIG・日テレNEWS NNN・時事通信・ロイターは、各社公式サイトが直接アクセスを
+// 禁止またはJS描画のSPA構造で取得できないため、Infoseekニュース配信社ページ(news.infoseek.co.jp)
+// 経由のofficial-page取得にしている(design.md「データ設計(情報源・採用基準)」参照)
+const EXPECTED_INFOSEEK_CHANNEL: Record<string, string> = {
+  yomiuri: 'https://news.infoseek.co.jp/publisher/yomiuri/',
+  'tbs-news-dig': 'https://news.infoseek.co.jp/publisher/tbs/',
+  'ntv-news-nnn': 'https://news.infoseek.co.jp/publisher/ntv/',
+  jiji: 'https://news.infoseek.co.jp/publisher/jiji/',
+  reuters: 'https://news.infoseek.co.jp/publisher/reuters/',
+}
+
+describe('情報源の固定リストのデータ - 読売新聞・TBS NEWS DIG・日テレNEWS NNN・時事通信・ロイターはInfoseekニュース配信社ページ経由で取得すること', () => {
+  for (const [id, url] of Object.entries(EXPECTED_INFOSEEK_CHANNEL)) {
+    it(`「${id}」のchannelsがInfoseekニュース配信社ページ(${url})のみであること`, () => {
+      const entry = watchlist.find((e) => e.id === id)
+      expect(entry?.channels).toEqual([{ type: 'official-page', url }])
+    })
+  }
+})
+
+// 仕様: specs/news-digest/content-selection/requirements.md#情報源(固定リスト)-2
+// 日経ビジネス電子版・川崎市公式サイト・横浜市公式サイトは各社・各自治体の公式RSSフィードを
+// 直接取得する
+const EXPECTED_OFFICIAL_RSS_CHANNEL: Record<string, string> = {
+  'nikkei-business': 'https://business.nikkei.com/rss/sns/nb.rdf',
+  'kawasaki-city': 'https://www.city.kawasaki.jp/main/rss/rss_new.xml',
+  'yokohama-city': 'https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/rss_news.xml',
+  'kawasaki-kodomo': 'https://www.city.kawasaki.jp/kodomo/rss/rss.xml',
+  'yokohama-kodomo': 'https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/kodomo/rss_news.xml',
+}
+
+describe('情報源の固定リストのデータ - 日経ビジネス電子版・川崎市公式サイト・横浜市公式サイトは各社・各自治体の公式RSSフィードを直接取得すること', () => {
+  for (const [id, feedUrl] of Object.entries(EXPECTED_OFFICIAL_RSS_CHANNEL)) {
+    it(`「${id}」のchannelsが公式RSS(${feedUrl})のみであること`, () => {
+      const entry = watchlist.find((e) => e.id === id)
+      expect(entry?.channels).toEqual([{ type: 'rss', feedUrl }])
+    })
+  }
 })
 
 const CATEGORY_LABELS: Record<CategoryId, string> = {
