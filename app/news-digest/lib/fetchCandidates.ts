@@ -63,12 +63,22 @@ function parseDateFromText(text: string): Date | null {
   return Number.isNaN(parsedDate.getTime()) ? null : parsedDate
 }
 
+// HTMLタグを除去して前後の空白を落とす(見出しテキストの抽出で共用)
+function stripTags(html: string): string {
+  return html.replace(/<[^>]*>/g, '').trim()
+}
+
+// 最初の<a href="...">のリンク先だけを抜き出す(見出しテキストの抽出方法が異なる複数パターンで共用)
+function matchHref(html: string): string | null {
+  return html.match(/<a[^>]*href="([^"]+)"/)?.[1] ?? null
+}
+
 // 見出し(<a>タグのテキスト)とリンク先を1件抽出する
 function extractHeadingAnchor(html: string): { href: string; title: string } | null {
   const match = html.match(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/)
   if (!match) return null
   const [, href, rawTitle] = match
-  const title = rawTitle.replace(/<[^>]*>/g, '').trim()
+  const title = stripTags(rawTitle)
   return title ? { href, title } : null
 }
 
@@ -87,12 +97,12 @@ function resolveLink(href: string, baseUrl: string): string | null {
 // (読売新聞・TBS NEWS DIG・日テレNEWS NNN・時事通信・ロイターの取得に使う。
 // requirements.md#情報源(固定リスト)-2の注記)
 function extractInfoseekTopicsListEntry(item: string): { href: string; title: string; dateText: string } | null {
-  const hrefMatch = item.match(/<a[^>]*href="([^"]+)"/)
+  const href = matchHref(item)
   const titleMatch = item.match(/topics-list__text-title"[^>]*>([\s\S]*?)<\/div>/)
   const dateMatch = item.match(/topics-list__text-option"[^>]*>([\s\S]*?)<\/p>/)
-  if (!hrefMatch || !titleMatch || !dateMatch) return null
-  const title = titleMatch[1].replace(/<[^>]*>/g, '').trim()
-  return title ? { href: hrefMatch[1], title, dateText: dateMatch[1] } : null
+  if (!href || !titleMatch || !dateMatch) return null
+  const title = stripTags(titleMatch[1])
+  return title ? { href, title, dateText: dateMatch[1] } : null
 }
 
 // 公式RSSがない情報源の公開ページ(HTML)から新着項目を雑駁に抽出する。
@@ -110,10 +120,10 @@ function parseOfficialPageEntries(html: string, baseUrl: string): CollectedEntry
     const infoseekEntry = extractInfoseekTopicsListEntry(item)
     if (infoseekEntry) {
       const parsedDate = parseDateFromText(infoseekEntry.dateText)
-      const link = parsedDate ? resolveLink(infoseekEntry.href, baseUrl) : null
-      if (parsedDate && link) {
-        entries.push({ title: infoseekEntry.title, link, publishedAt: parsedDate.toISOString() })
-      }
+      if (!parsedDate) continue
+      const link = resolveLink(infoseekEntry.href, baseUrl)
+      if (!link) continue
+      entries.push({ title: infoseekEntry.title, link, publishedAt: parsedDate.toISOString() })
       continue
     }
 
