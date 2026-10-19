@@ -51,7 +51,7 @@ export type Criteria = {
 }
 ```
 
-`watchlist.json`はrequirements.md#情報源(固定リスト)-2の13件(総合5・経済/ビジネス3・神奈川ローカル2・育児3)をそのまま構造化する。各情報源の実際のRSSフィードURL・公開ページURLは、tasks.mdの実装タスクで運営者と確認しながら確定する(設計時点では未確認のURLを推測で埋めない)。
+`watchlist.json`はrequirements.md#情報源(固定リスト)-2の23件(総合9・経済/ビジネス5・神奈川ローカル4・育児5)をそのまま構造化する。各情報源の実際のRSSフィードURL・公開ページURLは、tasks.mdの実装タスクで運営者と確認しながら確定する(設計時点では未確認のURLを推測で埋めない)。
 
 情報源ごとの取得経路(`channels`)は、各サイトのrobots.txtの実機確認結果に基づき次のとおりとする(requirements.md#情報源(固定リスト)-2の注記):
 - NHK NEWS WEB・神奈川県公式サイト・こども家庭庁・厚生労働省・NHK生活情報は、各社の公式RSSまたは公開ページを直接取得する(`type: 'rss'`または`type: 'official-page'`)
@@ -65,15 +65,22 @@ export type Criteria = {
   - FNNプライムオンライン: `https://news.yahoo.co.jp/rss/media/fnnprimev/all.xml`
   - ダイヤモンド・オンライン: `https://news.yahoo.co.jp/rss/media/diamond/all.xml`
   - BUSINESS INSIDER JAPAN: `https://news.yahoo.co.jp/rss/media/binsider/all.xml`
-- 時事通信・日本経済新聞(電子版)は固定リストに含めない。時事通信は日付がURLのクエリ文字列に埋め込まれ本文から抽出できず、日本経済新聞(電子版)はJS描画のSPA構造で静的HTML取得では記事一覧・日付とも取得できず公式RSSも存在しないため、いずれも技術的にスクレイピング不可能である(requirements.md#情報源(固定リスト)-2の注記)
+- 読売新聞・TBS NEWS DIG・日テレNEWS NNN・時事通信・ロイターは、各社公式サイトが直接アクセスを禁止またはJS描画のSPA構造で取得できないため、Infoseekニュース配信社ページ(`type: 'official-page'`)から取得する。配信社ページは`<ul class="topics-list"><li><a href="...">`内に`.topics-list__text-title`(見出し)・`.topics-list__text-option`(公開日時)が別要素で入っている構造で、日付は本文に直接表示されている(時事通信を直接サイトで取得できなかった理由=URLクエリへの日付埋め込みは、このページには当てはまらない)
+  - 読売新聞: `https://news.infoseek.co.jp/publisher/yomiuri/`
+  - TBS NEWS DIG Powered by JNN: `https://news.infoseek.co.jp/publisher/tbs/`
+  - 日テレNEWS NNN: `https://news.infoseek.co.jp/publisher/ntv/`
+  - 時事通信: `https://news.infoseek.co.jp/publisher/jiji/`
+  - ロイター: `https://news.infoseek.co.jp/publisher/reuters/`
+- 日本経済新聞本紙(電子版)は固定リストに含めない。JS描画のSPA構造で静的HTML取得では記事一覧・日付とも取得できず公式RSSも存在しないため、技術的にスクレイピング不可能である(requirements.md#情報源(固定リスト)-2の注記)。日経ビジネス電子版は本紙とは別媒体で公式RSS(`https://business.nikkei.com/rss/sns/nb.rdf`)を持つため、こちらを`type: 'rss'`で取得する
+- 川崎市公式サイト(お知らせ: `https://www.city.kawasaki.jp/main/rss/rss_new.xml`、こども・子育て: `https://www.city.kawasaki.jp/kodomo/rss/rss.xml`)、横浜市公式サイト(記者発表: `https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/rss_news.xml`、こども青少年局: `https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/kodomo/rss_news.xml`)は、各自治体の公式RSSを`type: 'rss'`で直接取得する
 
 ## 処理フロー
 
 ### 情報源から候補を収集する処理(決定的なコード)
-- 対象: `watchlist.json`に登録された13件の情報源
+- 対象: `watchlist.json`に登録された23件の情報源
 - 手順:
   1. 公式RSSフィードを持つ情報源はフィードを取得し、直近1週間以内に公開された記事を候補として抽出する(requirements.md#データ取得方法-1)
-  2. 公式RSSがない情報源(神奈川県公式サイトのお知らせ等)は、公開ページを取得し、直近1週間以内の新着項目を候補として抽出する。HTML構造は`<li>`要素内に見出し(`<a>`)・日付が両方含まれるパターンに加え、`<dt>日付</dt><dd>...<a>見出し</a>...</dd>`の定義リスト形式にも対応する(神奈川県公式サイトのお知らせ一覧がこの形式のため)
+  2. 公式RSSがない情報源(神奈川県公式サイトのお知らせ、Infoseekニュース配信社ページ等)は、公開ページを取得し、直近1週間以内の新着項目を候補として抽出する。HTML構造は次の3パターンに対応する: (a)`<li>`要素内に見出し(`<a>`)・日付が両方含まれるパターン、(b)`<dt>日付</dt><dd>...<a>見出し</a>...</dd>`の定義リスト形式(神奈川県公式サイトのお知らせ一覧がこの形式)、(c)Infoseekニュース配信社ページの`.topics-list__text-title`(見出し)・`.topics-list__text-option`(日付)専用クラス構造(見出し・日付が別要素のため、(a)の全文抽出だと日付が見出しに混入してしまうことへの対応)
   3. 取得できなかった情報源(一時的な障害等)は、その情報源だけを候補から除外して処理を続ける(1件の取得失敗で週次実行全体を止めない)
   4. 取得した各候補について、発信者名・見出し(原文タイトル)・元URL・公開日時・カテゴリを記録する
   5. 情報源ごとの収集件数(取得失敗・0件はその旨)を標準エラー出力に記録する(requirements.md#情報源の健全性監視-3)

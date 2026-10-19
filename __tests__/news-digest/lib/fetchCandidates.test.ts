@@ -141,6 +141,44 @@ describe('情報源からの候補収集 - 公式RSS・公開ページから直�
     expect(candidates[0]).toMatchObject({ heading: '新着のお知らせ' })
   })
 
+  it('Infoseekニュース配信社ページ(topics-list構造)の公式ページから、タイトルに日付文字列を混入させずに新着項目を抽出できること(読売新聞・TBS NEWS DIG・日テレNEWS NNN・時事通信・ロイターの取得に使う構造。仕様: requirements.md#情報源(固定リスト)-2の注記)', async () => {
+    const html = `<html><body><ul class="topics-list">
+      <li>
+        <a href="/article/yomiuri_20261018_gyt1t00195/">
+          <div class="topics-list__text">
+            <div class="topics-list__text-title">新着のお知らせ</div>
+            <p class="topics-list__text-option">2026年9月12日 23時47分</p>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a href="/article/yomiuri_20261018_gyt1t00000/">
+          <div class="topics-list__text">
+            <div class="topics-list__text-title">8日前のお知らせ(対象外)</div>
+            <p class="topics-list__text-option">2026年9月5日 10時0分</p>
+          </div>
+        </a>
+      </li>
+    </ul></body></html>`
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(html) })
+    const yomiuriEntry: WatchlistEntry = {
+      id: 'yomiuri',
+      category: 'general',
+      name: '読売新聞',
+      channels: [{ type: 'official-page', url: 'https://news.infoseek.co.jp/publisher/yomiuri/' }],
+    }
+
+    const candidates = await fetchOfficialPageCandidates(yomiuriEntry, 'https://news.infoseek.co.jp/publisher/yomiuri/', http, NOW)
+
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]).toMatchObject({
+      sourceId: 'yomiuri',
+      category: 'general',
+      heading: '新着のお知らせ',
+      url: 'https://news.infoseek.co.jp/article/yomiuri_20261018_gyt1t00195/',
+    })
+  })
+
   it('1つの情報源の取得が失敗しても、その情報源だけを除外して他の情報源の候補は返ること', async () => {
     const okXml = rssXml([{ title: '取得できた記事', link: 'https://www3.nhk.or.jp/news/c.html', pubDate: 'Fri, 11 Sep 2026 00:00:00 +0900' }])
     const fetchText = vi.fn().mockImplementation((url: string) => {

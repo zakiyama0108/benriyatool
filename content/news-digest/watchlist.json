@@ -33,6 +33,30 @@
     "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/fnnprimev/all.xml" }]
   },
   {
+    "id": "yomiuri",
+    "category": "general",
+    "name": "読売新聞",
+    "channels": [{ "type": "official-page", "url": "https://news.infoseek.co.jp/publisher/yomiuri/" }]
+  },
+  {
+    "id": "tbs-news-dig",
+    "category": "general",
+    "name": "TBS NEWS DIG Powered by JNN",
+    "channels": [{ "type": "official-page", "url": "https://news.infoseek.co.jp/publisher/tbs/" }]
+  },
+  {
+    "id": "ntv-news-nnn",
+    "category": "general",
+    "name": "日テレNEWS NNN",
+    "channels": [{ "type": "official-page", "url": "https://news.infoseek.co.jp/publisher/ntv/" }]
+  },
+  {
+    "id": "jiji",
+    "category": "general",
+    "name": "時事通信",
+    "channels": [{ "type": "official-page", "url": "https://news.infoseek.co.jp/publisher/jiji/" }]
+  },
+  {
     "id": "toyokeizai",
     "category": "business",
     "name": "東洋経済オンライン",
@@ -51,6 +75,18 @@
     "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/binsider/all.xml" }]
   },
   {
+    "id": "reuters",
+    "category": "business",
+    "name": "ロイター",
+    "channels": [{ "type": "official-page", "url": "https://news.infoseek.co.jp/publisher/reuters/" }]
+  },
+  {
+    "id": "nikkei-business",
+    "category": "business",
+    "name": "日経ビジネス電子版",
+    "channels": [{ "type": "rss", "feedUrl": "https://business.nikkei.com/rss/sns/nb.rdf" }]
+  },
+  {
     "id": "kanagawa-pref",
     "category": "kanagawa",
     "name": "神奈川県公式サイト(お知らせ)",
@@ -61,6 +97,18 @@
     "category": "kanagawa",
     "name": "神奈川新聞(カナロコ)",
     "channels": [{ "type": "rss", "feedUrl": "https://news.yahoo.co.jp/rss/media/kana/all.xml" }]
+  },
+  {
+    "id": "kawasaki-city",
+    "category": "kanagawa",
+    "name": "川崎市公式サイト(お知らせ)",
+    "channels": [{ "type": "rss", "feedUrl": "https://www.city.kawasaki.jp/main/rss/rss_new.xml" }]
+  },
+  {
+    "id": "yokohama-city",
+    "category": "kanagawa",
+    "name": "横浜市公式サイト(記者発表)",
+    "channels": [{ "type": "rss", "feedUrl": "https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/rss_news.xml" }]
   },
   {
     "id": "cfa",
@@ -79,5 +127,17 @@
     "category": "childcare",
     "name": "NHK生活情報(子育て)",
     "channels": [{ "type": "official-page", "url": "https://www.nhk.or.jp/sukusuku/" }]
+  },
+  {
+    "id": "kawasaki-kodomo",
+    "category": "childcare",
+    "name": "川崎市公式サイト(こども・子育て)",
+    "channels": [{ "type": "rss", "feedUrl": "https://www.city.kawasaki.jp/kodomo/rss/rss.xml" }]
+  },
+  {
+    "id": "yokohama-kodomo",
+    "category": "childcare",
+    "name": "横浜市公式サイト(こども青少年局)",
+    "channels": [{ "type": "rss", "feedUrl": "https://www.city.yokohama.lg.jp/city-info/koho-kocho/press/kodomo/rss_news.xml" }]
   }
 ]
