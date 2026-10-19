@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { fetchFixedSourceHints } from '../../../app/future-digest/lib/fetchFixedSourceHints'
+import { fetchFixedSourceHints, buildFixedSourceHealthLogLines } from '../../../app/future-digest/lib/fetchFixedSourceHints'
 import type { HttpClient } from '../../../app/future-digest/lib/fetchFixedSourceHints'
 import type { FixedSourceEntry } from '../../../app/future-digest/lib/fixedSourceTypes'
 
@@ -82,5 +82,26 @@ describe('固定情報源からのヒント取得 - feed/site-specific-htmlの�
     const { hints } = await fetchFixedSourceHints([feedEntry], http)
 
     expect(hints).toHaveLength(10)
+  })
+})
+
+// 仕様: specs/future-digest/content-selection/design.md「固定情報源からヒントを集める処理」手順4
+describe('固定情報源の健全性ログ - 情報源ごとに取得件数・取得失敗をログ行として出すこと', () => {
+  it('取得できた情報源は件数つきの行になること', () => {
+    const lines = buildFixedSourceHealthLogLines(
+      [feedEntry],
+      [{ sourceName: 'MIT Technology Review', title: 'A', url: 'https://example.com/a', publishedAt: null }],
+      []
+    )
+    expect(lines).toEqual(['MIT Technology Review: 1件'])
+  })
+
+  it('0件だった情報源、取得自体に失敗した情報源は、いずれもWARN付きの行になること', () => {
+    const lines = buildFixedSourceHealthLogLines(
+      [feedEntry, htmlEntry],
+      [],
+      [{ sourceName: 'AMED', message: '取得失敗' }]
+    )
+    expect(lines).toEqual(['WARN MIT Technology Review: 0件', 'WARN AMED: 取得失敗(取得失敗)'])
   })
 })

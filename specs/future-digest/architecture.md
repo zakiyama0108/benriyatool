@@ -116,6 +116,7 @@ flowchart LR
 ## 10. ディレクトリ構成
 CLAUDE.mdの一般規約(`components/`,`lib/`)どおり。trend-digestと同じ考え方で、次のように置く(各ファイルの役割は各specのdesign.md「関連するファイル」参照)。
 - `content/future-digest/genres.json` — ジャンル・個人的注目分野の設定(運営者が追記して増やす)
+- `content/future-digest/fixedSources.json` — 7ジャンルの固定情報源(source-reviewの月次見直しで更新)
 - `content/future-digest/articles/<発行日>-<edition>.json` — 1回分の記事データ(型は[article-detail/design.md](article-detail/design.md)で定義。idの形式はtrend-digestと同じ)
 - `app/future-digest/` — 一覧・詳細・付箋一覧のページと`components/`・`lib/`
 - `scripts/future-digest/` — 収集・選定、生成、記事の書き出し、LINE配信、月次見直しの材料収集のCLI

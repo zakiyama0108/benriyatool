@@ -15,7 +15,7 @@ import { loadGenres, getActiveGenres } from '../../app/future-digest/lib/genres'
 import type { DeliveredIndex } from '../../app/future-digest/lib/deliveredIndex'
 import type { FixedSourceHint } from '../../app/future-digest/lib/fixedSourceTypes'
 import { loadFixedSources, getFixedSourcesForGenre } from '../../app/future-digest/lib/fixedSourceTypes'
-import { fetchFixedSourceHints, fetchHttpClient } from '../../app/future-digest/lib/fetchFixedSourceHints'
+import { fetchFixedSourceHints, fetchHttpClient, buildFixedSourceHealthLogLines } from '../../app/future-digest/lib/fetchFixedSourceHints'
 
 const execFileAsync = promisify(execFile)
 
@@ -258,9 +258,8 @@ export async function collectGenre(genre: GenreConfig, horizons: [Horizon, Horiz
   const requirements = fs.readFileSync(REQUIREMENTS_PATH, 'utf8')
   const fixedSourceEntries = getFixedSourcesForGenre(loadFixedSources(), genre.id)
   const { hints: fixedSourceHints, failures } = await fetchFixedSourceHints(fixedSourceEntries, fetchHttpClient)
-  console.error(`${genre.label}: 固定情報源のヒント${fixedSourceHints.length}件(対象情報源${fixedSourceEntries.length}件)`)
-  for (const failure of failures) {
-    console.error(`WARN ${genre.label}: 固定情報源「${failure.sourceName}」の取得に失敗しました: ${failure.message}`)
+  for (const line of buildFixedSourceHealthLogLines(fixedSourceEntries, fixedSourceHints, failures)) {
+    console.error(`${genre.label}: ${line}`)
   }
   const call: CollectCallFn = (g, h) => callClaudeCode(g, h, deliveredIndex, requirements, scheduledPublishDate, fixedSourceHints)
   return collectForGenre(genre, horizons, call)

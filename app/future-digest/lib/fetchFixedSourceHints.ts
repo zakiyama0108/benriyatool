@@ -85,3 +85,18 @@ export async function fetchFixedSourceHints(
   })
   return { hints, failures }
 }
+
+// 情報源ごとの取得件数をログ行に整形する(design.md「固定情報源からヒントを集める処理」手順4、
+// design.md「ログ」。news-digestのbuildSourceHealthLogLinesと同じ考え方)。
+// 取得失敗・0件だった情報源はWARN付きにして無言停止に気づけるようにする
+export function buildFixedSourceHealthLogLines(entries: FixedSourceEntry[], hints: FixedSourceHint[], failures: FixedSourceFetchFailure[]): string[] {
+  const failureBySourceName = new Map(failures.map((f) => [f.sourceName, f]))
+  return entries.map((entry) => {
+    const failure = failureBySourceName.get(entry.name)
+    if (failure) {
+      return `WARN ${entry.name}: 取得失敗(${failure.message})`
+    }
+    const count = hints.filter((h) => h.sourceName === entry.name).length
+    return count > 0 ? `${entry.name}: ${count}件` : `WARN ${entry.name}: 0件`
+  })
+}
