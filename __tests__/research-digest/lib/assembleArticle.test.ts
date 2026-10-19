@@ -29,9 +29,9 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
   it('idと発行日が入り、採用した研究がそのまま反映されること', () => {
     const findings = [makeFinding('medical-health'), makeFinding('technology-ai')]
 
-    const article = assembleArticle('2026-10-05', ACTIVE_GENRES, findings, [], [], [])
+    const article = assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, findings, [], [], [])
 
-    expect(article.id).toBe('2026-10-05')
+    expect(article.id).toBe('2026-10-05-body-life')
     expect(article.date).toBe('2026-10-05')
     expect(article.findings).toEqual(findings)
     expect(article.emptyGenres).toEqual([])
@@ -40,7 +40,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
   it('候補なしのジャンルが「候補なし」の理由つきで掲載できなかったジャンルに入ること', () => {
     const noCandidate = [{ genre: 'medical-health' }]
 
-    const article = assembleArticle('2026-10-05', ACTIVE_GENRES, [makeFinding('technology-ai')], noCandidate, [], [])
+    const article = assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, [makeFinding('technology-ai')], noCandidate, [], [])
 
     expect(article.emptyGenres).toEqual([{ genre: 'medical-health', reason: 'no-candidate' }])
   })
@@ -48,7 +48,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
   it('収集失敗のジャンルが「収集失敗」の理由と分類ラベルつきで入ること', () => {
     const collectionFailed = [{ genre: 'medical-health', collectionFailureReason: 'timeout' as const }]
 
-    const article = assembleArticle('2026-10-05', ACTIVE_GENRES, [makeFinding('technology-ai')], [], collectionFailed, [])
+    const article = assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, [makeFinding('technology-ai')], [], collectionFailed, [])
 
     expect(article.emptyGenres).toEqual([
       { genre: 'medical-health', reason: 'collection-failed', collectionFailureReason: 'timeout' },
@@ -56,7 +56,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
   })
 
   it('生成に失敗したジャンルが「生成失敗」の理由つきで入ること', () => {
-    const article = assembleArticle('2026-10-05', ACTIVE_GENRES, [makeFinding('technology-ai')], [], [], ['medical-health'])
+    const article = assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, [makeFinding('technology-ai')], [], [], ['medical-health'])
 
     expect(article.emptyGenres).toEqual([{ genre: 'medical-health', reason: 'generation-failed' }])
   })
@@ -65,7 +65,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     const collectionFailed = [{ genre: 'medical-health', collectionFailureReason: undefined }]
 
     expect(() =>
-      assembleArticle('2026-10-05', ACTIVE_GENRES, [makeFinding('technology-ai')], [], collectionFailed, []),
+      assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, [makeFinding('technology-ai')], [], collectionFailed, []),
     ).toThrow()
   })
 
@@ -73,7 +73,7 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     const noCandidate = [{ genre: 'medical-health', collectionFailureReason: 'timeout' }]
 
     expect(() =>
-      assembleArticle('2026-10-05', ACTIVE_GENRES, [makeFinding('technology-ai')], noCandidate, [], []),
+      assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, [makeFinding('technology-ai')], noCandidate, [], []),
     ).toThrow()
   })
 
@@ -82,37 +82,42 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
     const failed = [{ genre: 'medical-health', collectionFailureReason: 'timeout' }] as unknown as string[]
 
     expect(() =>
-      assembleArticle('2026-10-05', ACTIVE_GENRES, [makeFinding('technology-ai')], [], [], failed),
+      assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, [makeFinding('technology-ai')], [], [], failed),
     ).toThrow()
   })
 
   it('研究と掲載できなかったジャンルを合わせると有効な全ジャンルと過不足なく一致すること(足りない入力は例外)', () => {
     // technology-aiがどこにも現れない
-    expect(() => assembleArticle('2026-10-05', ACTIVE_GENRES, [makeFinding('medical-health')], [], [], [])).toThrow()
+    expect(() => assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, [makeFinding('medical-health')], [], [], [])).toThrow()
   })
 
   it('有効でないジャンルが混じっている入力は例外を投げること', () => {
     const findings = [makeFinding('medical-health'), makeFinding('technology-ai'), makeFinding('unknown-genre')]
 
-    expect(() => assembleArticle('2026-10-05', ACTIVE_GENRES, findings, [], [], [])).toThrow()
+    expect(() => assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, findings, [], [], [])).toThrow()
   })
 
   it('同じジャンルが研究と掲載できなかったジャンルの両方に現れる入力は例外を投げること', () => {
     const findings = [makeFinding('medical-health'), makeFinding('technology-ai')]
 
-    expect(() => assembleArticle('2026-10-05', ACTIVE_GENRES, findings, [{ genre: 'medical-health' }], [], [])).toThrow()
+    expect(() =>
+      assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, findings, [{ genre: 'medical-health' }], [], []),
+    ).toThrow()
   })
 
   it('研究が0件で、全ジャンルが候補なし・収集失敗・生成失敗のいずれかでも組み立てられること', () => {
-    const genres = ['medical-health', 'ai-it', 'space-physics']
+    // 検証はgenres.jsonの実在ジャンルでは行わない(assembleArticle自身は引数のactiveGenresとの
+    // 整合のみ検証し、genres.jsonとの照合・edition内かどうかの検証はparseArticle側の責務のため)
+    const genres = ['medical-health', 'nutrition-food', 'sleep-exercise']
 
     const article = assembleArticle(
       '2026-10-05',
+      'body-life',
       genres,
       [],
       [{ genre: 'medical-health' }],
-      [{ genre: 'ai-it', collectionFailureReason: 'other' as const }],
-      ['space-physics'],
+      [{ genre: 'nutrition-food', collectionFailureReason: 'other' as const }],
+      ['sleep-exercise'],
     )
 
     expect(article.findings).toEqual([])
@@ -120,17 +125,34 @@ describe('記事データの組み立て - 選定結果・生成結果から記�
   })
 
   it('組み立てた記事が記事データの検証(parseArticle)を通ること', () => {
-    // 検証はgenres.jsonの実在ジャンルで行われるため、実際のジャンルidを使う
-    const genres = ['medical-health', 'ai-it']
+    // 検証はgenres.jsonの実在ジャンル・対象編(edition)に属するジャンルで行われるため、
+    // 実際のジャンルidを使う
+    const genres = ['medical-health', 'nutrition-food']
     const article = assembleArticle(
       '2026-10-05',
+      'body-life',
       genres,
       [makeFinding('medical-health')],
       [],
-      [{ genre: 'ai-it', collectionFailureReason: 'invalid-format' as const }],
+      [{ genre: 'nutrition-food', collectionFailureReason: 'invalid-format' as const }],
       [],
     )
 
-    expect(() => parseArticle(article, '2026-10-05.json')).not.toThrow()
+    expect(() => parseArticle(article, '2026-10-05-body-life.json')).not.toThrow()
+  })
+
+  // 仕様: specs/research-digest/weekly-publish/requirements.md#配信スケジュール-1、specs/research-digest/weekly-publish/requirements.md#配信スケジュール-2
+  describe('編(edition)対応 - 記事idを<date>-<edition>の形式にし、editionを記事データに持たせる', () => {
+    it('editionがbody-lifeの場合、idが<date>-body-lifeになること', () => {
+      const article = assembleArticle('2026-10-05', 'body-life', ACTIVE_GENRES, [], ACTIVE_GENRES.map((genre) => ({ genre })), [], [])
+      expect(article.id).toBe('2026-10-05-body-life')
+      expect(article.edition).toBe('body-life')
+    })
+
+    it('editionがscience-societyの場合、idが<date>-science-societyになること', () => {
+      const article = assembleArticle('2026-10-10', 'science-society', ACTIVE_GENRES, [], ACTIVE_GENRES.map((genre) => ({ genre })), [], [])
+      expect(article.id).toBe('2026-10-10-science-society')
+      expect(article.edition).toBe('science-society')
+    })
   })
 })

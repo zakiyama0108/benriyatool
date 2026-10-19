@@ -3,7 +3,7 @@
 // ため、当初は型定義とhorizonsForIssueのみを最小限置いていた。article-detail実装(本ファイル)で
 // GENRE_ORDER/GENRE_LABELS/HORIZON_ORDER/HORIZON_LABELS/IMPACT_LABELS/COLLECTION_FAILURE_LABELSを追記する。
 
-import { loadGenres } from './genres'
+import { loadGenres, EDITION_GENRES as GENRES_EDITION_GENRES, type Edition } from './genres'
 
 export type Genre = string // genres.jsonのid(例: "technology-ai")
 
@@ -11,6 +11,16 @@ export type Genre = string // genres.jsonのid(例: "technology-ai")
 // 廃止したジャンルも過去記事の表示用に含む。design.md「前提: 記事データの形式」)
 export const GENRE_ORDER: Genre[] = loadGenres().map((g) => g.id)
 export const GENRE_LABELS: Record<Genre, string> = Object.fromEntries(loadGenres().map((g) => [g.id, g.label]))
+
+// 編(仕様: content-selection/requirements.md#編成とジャンルの割り当て-1〜2)。genres.jsonのedition
+// 属性(genres.tsが検証・集計済み)をそのまま再公開する。EDITION_LABELSは記事タイトル・一覧の編バッジ等、
+// 読者向け表示の日本語ラベル
+export type { Edition }
+export const EDITION_GENRES: Record<Edition, Genre[]> = GENRES_EDITION_GENRES
+export const EDITION_LABELS: Record<Edition, string> = {
+  'science-tech': 'サイエンス・テクノロジー編',
+  'life-society': 'くらし・社会編',
+}
 
 // 時間軸(content-selection/requirements.md#時間軸)。配列順=「時間軸の近い順」
 export type Horizon = 'near' | 'mid' | 'long' | 'ultra-long'
@@ -36,18 +46,62 @@ export type Impact = 'high' | 'medium' | 'low'
 export const IMPACT_ORDER: Impact[] = ['high', 'medium', 'low']
 export const IMPACT_LABELS: Record<Impact, string> = { high: '大', medium: '中', low: '小' }
 
-export type Prediction = {
+// 観点ごとの図解(content-generation/requirements.md#図解-6、article-detail/design.md
+// 「前提: 記事データの形式」)。エージェントが書いたMermaid記法の文字列をそのまま保存し、
+// レンダリングはクライアント側のMermaidライブラリ(DiagramView)に委ねる(2026-10改定: 画像による
+// 図解(AI画像生成→コードでのアイコン図SVG描画)も試みたが、いずれも求める品質を満たせなかった
+// ため、画像による図解は行わないことにし、Mermaid図のみを図解として扱う)
+export type Diagram = { type: 'mermaid'; code: string }
+
+export type PredictionSection = {
+  heading: string // 結論文(短い見出し)
+  text: string // 本文
+  diagram: Diagram | null
+}
+
+// 固定3観点。この3キー・この順序で固定(content-generation/requirements.md#要約-3)
+export type PredictionSections = {
+  when: PredictionSection // いつ・何が起こると予測されているか
+  basis: PredictionSection // 誰が・どんな根拠で示しているか
+  impact: PredictionSection // 暮らし・社会への影響
+}
+
+export const SECTION_LABELS: Record<keyof PredictionSections, string> = {
+  when: 'いつ・何が起こると予測されているか',
+  basis: '誰が・どんな根拠で示しているか',
+  impact: '暮らし・社会への影響',
+}
+
+type PredictionBase = {
   id: string // 記事内で一意。`<genre>--<horizon>`(例: "technology-ai--near")。フィードバック・付箋の紐付けに使う
   genre: Genre
   horizon: Horizon
   heading: string // content-generationが生成する見出し
-  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
   impact: Impact
   impactReason: string // 影響度の根拠(1文)
   targetPeriod: string // 予測が対象とする時期(例: "2030年まで")
   sourceTitle: string // 元記事のタイトル(配信済み判定の突合に使う)
   sourceName: string // 情報源名
   sourceUrl: string // 元記事のURL
+}
+
+// この機能(固定3観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる
+// (article-detail/requirements.md#記事本文の表示-14)
+export type LegacyPrediction = PredictionBase & {
+  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
+}
+
+// この機能以降に生成する記事が持つ形
+export type CurrentPrediction = PredictionBase & {
+  sections: PredictionSections
+}
+
+export type Prediction = LegacyPrediction | CurrentPrediction
+
+// bodyを持つか(旧形式)で判別する(article-detail/design.md「前提: 記事データの形式」)
+export function isLegacyPrediction(prediction: Prediction): prediction is LegacyPrediction {
+  return 'body' in prediction
 }
 
 // 掲載できなかった枠。reasonで表示文言を出し分ける
@@ -68,9 +122,10 @@ export const COLLECTION_FAILURE_LABELS: Record<NonNullable<EmptySlot['collection
 }
 
 export type Article = {
-  id: string // ファイル名と一致(= date)
+  id: string // ファイル名と一致(= `<date>-<edition>`。weekly-publish/design.md「決定事項」)
+  edition: Edition
   date: string // YYYY-MM-DD。発行日
-  issueNumber: number // 何回目の配信か(1始まり)
+  issueNumber: number // 何回目の配信か(編ごとに1始まりで独立してカウント)
   predictions: Prediction[]
   emptySlots: EmptySlot[]
 }

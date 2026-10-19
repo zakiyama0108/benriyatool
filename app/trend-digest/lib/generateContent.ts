@@ -5,14 +5,18 @@
 // Claude Code CLIのヘッドレス起動そのもの(execFile)はscripts/trend-digest/generate-content.tsが担い、
 // 本モジュールは「CLIの応答をどう分類し、失敗した候補をどう扱うか」という決定的ロジックのみを持つ
 // (CLI呼び出しを注入できる形にしてvitestで完全にテストする。ai-dev-digestのgenerateContent.tsと同じ構成)
-import { isValidTopicBodyLength } from './bodyValidation'
-import type { Candidate } from './candidateTypes'
+import { isValidSectionsLength } from './bodyValidation'
+import { isDuplicateOfLastPublishedReason } from './duplicateReason'
+import type { SelectedTopic } from './candidateTypes'
+import type { TopicSections } from './types'
 
-// エージェントが生成する記事1トピック分の内容(見出し+本文。content-generation/design.md
-// 「見出し・本文を書く処理」応答JSONの形式)
+// エージェントが生成する記事1トピック分の内容(見出し+固定3観点。content-generation/design.md
+// 「見出し・固定3観点を書く処理」応答JSONの形式)。sectionsは最終形式(TopicSections)の型を
+// そのまま使う(diagramはこの時点で既にscripts/trend-digest/generate-content.tsが検証済みで、
+// 最終形式のDiagram|nullになっている前提。news-digestのapp/news-digest/lib/generateContent.tsと同じ構成)
 export type GeneratedContent = {
   heading: string
-  body: string
+  sections: TopicSections
 }
 
 // Claude Code CLI(`claude -p ... --output-format json`)の応答のうち、分類に使うフィールドのみを型にする。
@@ -41,20 +45,25 @@ function isQuotaExhausted(res: ClaudeCliResponse): boolean {
   return /hit your (weekly|usage|5-hour) limit|usage limit reached|rate limit/i.test(text)
 }
 
-// エージェントが生成した内容として使えるか(見出しが非空文字列・本文が160〜480字)を判定する
-// (content-generation/design.md「本文の分量を検証する処理」)。取得困難でheading/bodyがnullの応答も
-// ここで弾かれる(design.md「見出し・本文を書く処理」応答JSONの形式)
+// エージェントが生成した内容として使えるか(見出しが非空文字列・固定3観点の合計が160〜480字)を判定する
+// (content-generation/design.md「本文の分量を検証する処理」)。取得困難でheading/sectionsがnullの応答も
+// ここで弾かれる(design.md「見出し・固定3観点を書く処理」応答JSONの形式)
 function isUsableContent(value: unknown): value is GeneratedContent {
   if (typeof value !== 'object' || value === null) return false
-  const v = value as { heading?: unknown; body?: unknown }
+  const v = value as { heading?: unknown; sections?: unknown }
   if (typeof v.heading !== 'string' || v.heading.trim() === '') return false
-  if (!isValidTopicBodyLength(v.body)) return false
+  if (!isValidSectionsLength(v.sections)) return false
   return true
 }
 
 // CLI応答を成功/一時的失敗/利用枠枯渇の3種に分類する
-// (content-generation/design.md「見出し・本文を書く処理」手順6・「エラーハンドリング」)
-export function classifyGenerationResult(res: ClaudeCliResponse): ClassifiedResult {
+// (content-generation/design.md「見出し・本文を書く処理」手順6・「エラーハンドリング」)。
+// candidateは続報(reportCount2回目以降)の重複本文検知に使う(requirements.md#エージェントの
+// 逸脱防止-7、design.md「本文の分量を検証する処理」手順3)
+export function classifyGenerationResult(
+  res: ClaudeCliResponse,
+  candidate: Pick<SelectedTopic, 'reportCount' | 'lastPublishedBody'>,
+): ClassifiedResult {
   // 利用枠枯渇はis_errorの有無より先に判定する(枯渇はリトライ対象外・即打ち切りのため区別が最優先)
   if (isQuotaExhausted(res)) {
     return { kind: 'quota', detail: res.result ?? '(メッセージなし)' }
@@ -74,7 +83,12 @@ export function classifyGenerationResult(res: ClaudeCliResponse): ClassifiedResu
     return { kind: 'transient', detail: `応答のJSONをパースできませんでした: ${text}` }
   }
   if (!isUsableContent(parsed)) {
-    return { kind: 'transient', detail: '見出しが空、または本文の分量が不正(160〜480字の範囲外)な応答でした' }
+    return { kind: 'transient', detail: '見出しが空、または固定3観点の分量が不正(160〜480字の範囲外)な応答でした' }
+  }
+  // 続報(2回目以降の報告)で、前回掲載時の「なぜ注目されたか」観点と完全に同一の場合は生成失敗として扱う
+  // (同じ内容の記事を繰り返し公開しないための最終防波堤)
+  if (candidate.reportCount >= 2 && isDuplicateOfLastPublishedReason(parsed.sections.reason.text, candidate.lastPublishedBody)) {
+    return { kind: 'transient', detail: '続報の「なぜ注目されたか」観点が前回掲載時と完全に同一でした(requirements.md#エージェントの逸脱防止-7)' }
   }
   return { kind: 'ok', content: parsed }
 }
@@ -96,15 +110,15 @@ export class AllTopicsFailedError extends Error {
 }
 
 // 1候補分の生成を行う関数。scripts側がClaude Code CLIのヘッドレス起動を注入する(テストではモックを渡す)
-export type GenerateCallFn = (candidate: Candidate) => Promise<ClaudeCliResponse>
+export type GenerateCallFn = (candidate: SelectedTopic) => Promise<ClaudeCliResponse>
 
-export type GeneratedTopic = { candidate: Candidate; content: GeneratedContent }
+export type GeneratedTopic = { candidate: SelectedTopic; content: GeneratedContent }
 
 export type GenerateTopicsOptions = {
   // 1候補あたりの最大試行回数(初回+リトライ)。design.mdの既定は2(初回+1回)
   maxAttempts?: number
   // 除外した候補を記録するためのコールバック(scriptsはconsole.errorでActionsログに残す)
-  onExcluded?: (info: { candidate: Candidate; attempts: number; detail: string }) => void
+  onExcluded?: (info: { candidate: SelectedTopic; attempts: number; detail: string }) => void
 }
 
 // 選定された候補を1件ずつ生成し、一時的失敗はmaxAttemptsまでリトライ、それでも失敗する候補は除外して継続する。
@@ -112,7 +126,7 @@ export type GenerateTopicsOptions = {
 // (weekly-publish/design.md「1回分の記事を生成する処理」手順4・「エラーハンドリング」、
 //  weekly-publish/requirements.md#掲載件数の保証-2)
 export async function generateTopics(
-  candidates: Candidate[],
+  candidates: SelectedTopic[],
   call: GenerateCallFn,
   options: GenerateTopicsOptions = {},
 ): Promise<GeneratedTopic[]> {
@@ -123,7 +137,7 @@ export async function generateTopics(
     let lastDetail = ''
     let ok = false
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const classified = classifyGenerationResult(await call(candidate))
+      const classified = classifyGenerationResult(await call(candidate), candidate)
       if (classified.kind === 'ok') {
         succeeded.push({ candidate, content: classified.content })
         ok = true

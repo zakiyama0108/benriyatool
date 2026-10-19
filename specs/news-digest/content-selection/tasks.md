@@ -36,3 +36,11 @@
 - Task 8: 情報源ごとの取得件数ログ(仕様: requirements.md#情報源の健全性監視-3、design.md「ログ」)
   - 🔴 収集処理が情報源ごとの件数を返し、0件の情報源が警告として区別できることをテストする(`fetchCandidates`の戻り値または集計関数の単体テスト)
   - 🟢 `fetchCandidates`が情報源ごとの取得件数を集計できるようにし、`collect-and-select.ts`が0件の情報源を`WARN`付きでstderrに出力する
+
+- Task 9(バグ修正・2026-10-03): 2026-10-03の本番週次配信で総合・経済/ビジネスが0件になったバグの修正(仕様: requirements.md#情報源(固定リスト)-2、design.md「データ設計(情報源・採用基準)」「情報源から候補を収集する処理」)
+  - 原因1: NHK NEWS WEBのRSS(`https://www3.nhk.or.jp/rss/news/cat4.xml`・`cat6.xml`)が2026年8月から更新停止していた。現行ドメインの`https://www.nhk.or.jp/rss/news/cat4.xml`・`cat6.xml`に`watchlist.json`を更新
+  - 原因2: 神奈川県公式サイトのお知らせ一覧が`<dt>日付</dt><dd>...<a>見出し</a>...</dd>`形式で、`parseOfficialPageEntries`(`app/news-digest/lib/fetchCandidates.ts`)が`<li>`パターンにしか対応していなかった。`<dt>/<dd>`パターンにも対応するよう拡張(既存の`<li>`パターンのテストは維持)
+    - 🔴 `<dt>/<dd>`形式の公式ページから新着項目を抽出できることを確認する失敗テストを`__tests__/news-digest/lib/fetchCandidates.test.ts`に追加
+    - 🟢 `parseOfficialPageEntries`を拡張して`<dt>/<dd>`パターンにも対応
+  - 原因3: 時事通信・日本経済新聞(電子版)は技術的にスクレイピング不可能と判明したため情報源リストから削除(日付抽出・SPA構造の問題。requirements.md参照)
+  - 対応: 総合・経済/ビジネスの採用基準([4])を満たす候補の母数を確保するため、産経新聞・ANN(テレビ朝日系)・FNNプライムオンライン(総合)、ダイヤモンド・オンライン・BUSINESS INSIDER JAPAN(経済/ビジネス)をYahoo!ニュース公式RSS経由で追加し、`watchlist.json`・`__tests__/news-digest/lib/watchlistData.test.ts`を更新(総合5件・経済/ビジネス3件・計13件)

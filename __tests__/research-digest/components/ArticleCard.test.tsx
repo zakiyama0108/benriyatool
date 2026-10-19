@@ -23,8 +23,8 @@ function buildFinding(genreIndex: number, impact: Impact, overrides: Partial<Fin
   }
 }
 
-function buildArticle(findings: Finding[] = []): Article {
-  return { id: '2026-10-05', date: '2026-10-05', findings, emptyGenres: [] }
+function buildArticle(findings: Finding[] = [], edition: Article['edition'] = 'body-life'): Article {
+  return { id: `2026-10-05-${edition}`, edition, date: '2026-10-05', findings, emptyGenres: [] }
 }
 
 // 仕様: specs/research-digest/article-list/requirements.md#一覧表示-2、specs/research-digest/article-list/requirements.md#一覧表示-3
@@ -33,12 +33,12 @@ describe('記事一覧の1回分のカード表示 - 公開日・タイトル・
     render(<ArticleCard article={buildArticle([buildFinding(0, 'high'), buildFinding(1, 'medium')])} />)
 
     expect(screen.getByText('2026-10-05')).toBeTruthy()
-    expect(screen.getByText('週刊研究発見 2026年10月5日号')).toBeTruthy()
+    expect(screen.getByText('週刊研究発見 からだ・くらし編 2026年10月5日号')).toBeTruthy()
     expect(screen.getByText('見出し0')).toBeTruthy()
     expect(screen.getByText('見出し1')).toBeTruthy()
     expect(screen.getByText('大')).toBeTruthy()
     expect(screen.getByText('中')).toBeTruthy()
-    expect(screen.getByRole('link').getAttribute('href')).toBe('/research-digest/2026-10-05')
+    expect(screen.getByRole('link').getAttribute('href')).toBe('/research-digest/2026-10-05-body-life')
   })
 
   it('見出しは最大3件までで、影響度の大きい研究が優先されること', () => {
@@ -69,7 +69,20 @@ describe('記事一覧の1回分のカード表示 - 公開日・タイトル・
     render(<ArticleCard article={buildArticle()} />)
 
     expect(screen.getByText('2026-10-05')).toBeTruthy()
-    expect(screen.getByText('週刊研究発見 2026年10月5日号')).toBeTruthy()
+    expect(screen.getByText('週刊研究発見 からだ・くらし編 2026年10月5日号')).toBeTruthy()
     expect(screen.queryByRole('list')).toBeNull()
+  })
+})
+
+// 仕様: specs/research-digest/article-list/requirements.md#一覧表示-1、specs/research-digest/article-list/requirements.md#一覧表示-2、specs/research-digest/article-list/design.md「画面設計」
+describe('記事一覧の1回分のカード表示 - 編(からだ・くらし編/科学・社会編)のバッジを表示する', () => {
+  it('editionがbody-lifeの場合は「からだ・くらし編」のバッジが表示されること', () => {
+    render(<ArticleCard article={buildArticle([], 'body-life')} />)
+    expect(screen.getByText('からだ・くらし編')).toBeTruthy()
+  })
+
+  it('editionがscience-societyの場合は「科学・社会編」のバッジが表示されること', () => {
+    render(<ArticleCard article={buildArticle([], 'science-society')} />)
+    expect(screen.getByText('科学・社会編')).toBeTruthy()
   })
 })

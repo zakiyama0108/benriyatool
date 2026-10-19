@@ -24,8 +24,22 @@ function makeCandidate(overrides: Partial<Candidate> = {}): Candidate {
   }
 }
 
-function okResponse(body = 'あ'.repeat(200), heading = '見出し'): ClaudeCliResponse {
-  return { result: JSON.stringify({ heading, body }) }
+// 固定4観点(finding/basis/relevance/caveat)のtext合計がtotalLengthになるsectionsを作る
+// (findingText・caveatTextで合計・査読前の明記テキストを上書きできるようにする)
+function makeSections(totalLength: number, findingText?: string, caveatText?: string) {
+  const fixedLength = 2 // basis・relevanceの固定分(1字×2観点)
+  const caveat = caveatText ?? 'え'
+  const findingLength = Math.max(totalLength - fixedLength - caveat.length, 0)
+  return {
+    finding: { heading: '何が分かったか見出し', text: findingText ?? 'あ'.repeat(findingLength), diagram: null },
+    basis: { heading: 'なぜそう結論づけられたのか見出し', text: 'い', diagram: null },
+    relevance: { heading: '暮らしへの関わり見出し', text: 'う', diagram: null },
+    caveat: { heading: '注意点見出し', text: caveat, diagram: null },
+  }
+}
+
+function okResponse(bodyLength = 200, heading = '見出し', caveatText?: string): ClaudeCliResponse {
+  return { result: JSON.stringify({ heading, sections: makeSections(bodyLength, undefined, caveatText) }) }
 }
 
 const QUOTA_RESPONSE: ClaudeCliResponse = { is_error: true, api_error_status: 429, result: "You've hit your weekly limit" }
@@ -42,27 +56,27 @@ describe('生成結果の判定 - Claudeが書いた見出し・本文を、成�
   })
 
   it('元の論文を読めず見出しがnullで返された場合は一時的な失敗になること', () => {
-    const res = { result: JSON.stringify({ heading: null, body: null }) }
+    const res = { result: JSON.stringify({ heading: null, sections: null }) }
     expect(classifyGenerationResult(res, makeCandidate()).kind).toBe('transient')
   })
 
-  it('本文の分量が範囲外(160字未満・480字超)なら一時的な失敗になること', () => {
-    expect(classifyGenerationResult(okResponse('あ'.repeat(159)), makeCandidate()).kind).toBe('transient')
-    expect(classifyGenerationResult(okResponse('あ'.repeat(481)), makeCandidate()).kind).toBe('transient')
+  it('4観点のtext合計が範囲外(160字未満・480字超)なら一時的な失敗になること', () => {
+    expect(classifyGenerationResult(okResponse(159), makeCandidate()).kind).toBe('transient')
+    expect(classifyGenerationResult(okResponse(481), makeCandidate()).kind).toBe('transient')
   })
 
   it('見出しが100字を超える場合は一時的な失敗になること', () => {
-    expect(classifyGenerationResult(okResponse('あ'.repeat(200), 'あ'.repeat(101)), makeCandidate()).kind).toBe('transient')
+    expect(classifyGenerationResult(okResponse(200, 'あ'.repeat(101)), makeCandidate()).kind).toBe('transient')
   })
 
-  it('査読前の論文で本文に「査読」がなければ一時的な失敗、あれば成功になること', () => {
+  it('査読前の論文で4観点のtextに「査読」がなければ一時的な失敗、あれば成功になること', () => {
     const preprint = makeCandidate({ isPreprint: true })
-    expect(classifyGenerationResult(okResponse('あ'.repeat(200)), preprint).kind).toBe('transient')
-    expect(classifyGenerationResult(okResponse('査読前の論文である点に注意が必要です。' + 'あ'.repeat(200)), preprint).kind).toBe('ok')
+    expect(classifyGenerationResult(okResponse(200), preprint).kind).toBe('transient')
+    expect(classifyGenerationResult(okResponse(200, '見出し', '査読前の論文である点に注意が必要です'), preprint).kind).toBe('ok')
   })
 
   it('査読済みの論文では「査読」の記載を確認しないこと', () => {
-    expect(classifyGenerationResult(okResponse('あ'.repeat(200)), makeCandidate({ isPreprint: false })).kind).toBe('ok')
+    expect(classifyGenerationResult(okResponse(200), makeCandidate({ isPreprint: false })).kind).toBe('ok')
   })
 
   it('Claude CLIが異常終了(生成の拒否を含む)した場合は一時的な失敗になること', () => {

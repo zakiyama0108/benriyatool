@@ -123,13 +123,15 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | spec | 役割 | 状態 | 依存 |
 |---|---|---|---|
 | [content-selection](content-selection/requirements.md) | カテゴリ・情報源(固定リスト)を定義し、週次のトピックを選び出す。神奈川ローカル・育児は専用枠として基準未達でも拾う | リリース済み | 週次の実行タイミングは[weekly-publish/requirements.md](weekly-publish/requirements.md)に従う |
-| [content-generation](content-generation/requirements.md) | 選定されたトピックの要約・記事執筆のルールを定める | リリース済み | content-selectionの選定結果を受け取る |
+| [content-generation](content-generation/requirements.md) | 選定されたトピックの要約・記事執筆のルールを定める(図解機能を含む) | リリース済み | content-selectionの選定結果を受け取る |
 | [weekly-publish](weekly-publish/requirements.md) | 収集・要約・記事公開を週1回(毎週水曜)自動実行し、完全自動マージする | リリース済み | content-selection・content-generationの結果を公開する |
 | [line-broadcast](line-broadcast/requirements.md) | weekly-publishの週次記事PRがmainへ自動マージされた後、記事ページが本番で閲覧可能になったことを確認してから、新着記事をLINE公式アカウント(ai-dev-digest・trend-digestと共通)の友だち全員へ自動配信する | リリース済み | weekly-publishのマージタイミング、article-detailの記事データ構造に従う |
 | [monthly-review](monthly-review/requirements.md) | 月次で情報源・採用基準・専用枠の運用(選定領域)と要約・記事執筆ルール(生成領域)の見直し案を作成し、人間承認を経て反映する | リリース済み | article-detailのフィードバック、content-selectionの掲載実績を参照 |
 | [article-list](article-list/requirements.md) | 週ごとのダイジェスト記事をカード一覧で表示する | リリース済み | article-detailの記事構造を参照 |
-| [article-detail](article-detail/requirements.md) | 記事本文(トピックごとの見出し・要約・出典)と、運営者本人向けフィードバック入力欄を表示する | リリース済み | content-selectionの選定結果、content-generationの生成ルールに従う |
+| [article-detail](article-detail/requirements.md) | 記事本文(トピックごとの見出し・要約・出典)と、運営者本人向けフィードバック入力欄を表示する(固定ラベル・図解表示を含む) | リリース済み | content-selectionの選定結果、content-generationの生成ルールに従う |
 | [bookmark](bookmark/requirements.md) | ログイン中の読者がトピックへ自由記述メモ付きの付箋を貼り、一覧から振り返れるようにする | リリース済み | article-detailのトピック識別子・記事データ構造に従う |
+
+ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
 
 ## 9. コンポーネント図
 ```mermaid
@@ -180,8 +182,8 @@ content/news-digest/criteria.json         # 採用基準の数値(monthly-review
 | Supabase(`news_digest_feedback`テーブル) | 運営者フィードバックの保存 |
 | Supabase(`news_digest_bookmarks`テーブル) | ログイン中の読者本人の付箋(自由記述メモ)の保存 |
 | Supabase Auth(Google OIDC) | 記事詳細ページ・付箋一覧ページのログイン(読者全員が対象)。フィードバック入力欄の表示切り替え(運営者判定)にも利用 |
-| NHK NEWS WEB・共同通信・時事通信・日本経済新聞・東洋経済オンライン・神奈川県公式サイト・神奈川新聞・こども家庭庁・厚生労働省 | 各カテゴリの固定情報源データの取得([content-selection/requirements.md#情報源(固定リスト)](content-selection/requirements.md)) |
-| Yahoo!ニュース(媒体別RSS) | 共同通信・東洋経済オンライン・神奈川新聞(カナロコ)の記事取得(各社サイトのrobots.txtが直接アクセスを禁止しているため、Yahoo!ニュースが公式配信するRSS経由で取得する。[content-selection/design.md](content-selection/design.md)) |
+| NHK NEWS WEB・共同通信・産経新聞・ANN(テレビ朝日系)・FNNプライムオンライン・東洋経済オンライン・ダイヤモンド・オンライン・BUSINESS INSIDER JAPAN・神奈川県公式サイト・神奈川新聞・こども家庭庁・厚生労働省 | 各カテゴリの固定情報源データの取得([content-selection/requirements.md#情報源(固定リスト)](content-selection/requirements.md)) |
+| Yahoo!ニュース(媒体別RSS) | 共同通信・産経新聞・ANN(テレビ朝日系)・FNNプライムオンライン・東洋経済オンライン・ダイヤモンド・オンライン・BUSINESS INSIDER JAPAN・神奈川新聞(カナロコ)の記事取得。各社サイトへの直接アクセスでは安定して取得できないため、Yahoo!ニュースが公式配信するRSS経由で取得する([content-selection/design.md](content-selection/design.md)) |
 | WebSearch(Claude Code CLI) | 重要度判定・見落とし補完のための探索的収集(基本無料方針のため、有料の検索APIは利用しない) |
 | GitHub Actions | 記事生成([weekly-publish](weekly-publish/requirements.md))・見直し提案([monthly-review](monthly-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む) |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | weekly-publishの要約生成、monthly-reviewの見直し案検討に、いずれもヘッドレス起動で使用 |

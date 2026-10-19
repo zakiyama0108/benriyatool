@@ -64,12 +64,21 @@ jobs:
 
           見直し対象の仕様は次のとおりです:
           - 選定領域: specs/trend-digest/content-selection/requirements.md と design.md、
-            機械可読データ content/trend-digest/watchlist.json と content/trend-digest/criteria.json
+            機械可読データ content/trend-digest/watchlist.json と content/trend-digest/criteria.json。
+            継続度ラベルの日数の区切り(criteria.jsonのhistory)を見直す場合は
+            specs/trend-digest/trend-history/requirements.md・design.md も対象(この値の仕様上の
+            所有者はtrend-historyのため)
           - 生成領域: specs/trend-digest/content-generation/requirements.md と design.md
 
-          見直しの材料(直近1ヶ月の掲載見送りジャンル・運営者フィードバック)は /tmp/review-data.json に
-          JSON形式で保存されています。読み込んで判断材料にしてください。フィードバックは領域で絞り込まれて
-          いない全件です。
+          見直しの材料(直近1ヶ月の掲載見送りジャンル・観測ログから再集計したジャンルごとの指標・
+          運営者フィードバック)は /tmp/review-data.json にJSON形式で保存されています。読み込んで
+          判断材料にしてください。フィードバックは領域で絞り込まれていない全件です。genreHistoryStats
+          フィールドには、ジャンルごとに次の2つが入っています(source-review/design.md「見直しの材料を
+          集める処理」手順3で観測ログから再集計したもの):
+          - preTrendDespiteCandidatesRounds: 採用基準を満たした候補が1件以上あったのに、実際に
+            掲載した話題の継続度ラベルが「流行前」だった回数(直近1ヶ月分)
+          - regionUnknownRatio・regionObservationCount: 発祥地域・主な流行地域がともに「不明」の
+            まま記録された観測の割合と、その分母(観測件数)
 
           # フィードバックの振り分け(requirements.md#見直しの実行-3〜4)
           各運営者フィードバックを内容から「選定領域」「生成領域」「いずれにも該当しない」に振り分けて
@@ -105,7 +114,25 @@ jobs:
           itemの値は、追加した見出し(### で始まる行)のテキストと箇条書きの番号を「見出し名 [番号]」の
           形式でそのまま使ってください。
 
-          # 生成領域の見直し案(requirements.md#生成領域の見直し案の粒度・提示方法-9)
+          # 継続度ラベル・地域情報の判定精度に関する見直し案(design.md「見直し案を作成する処理」手順4)
+          あるジャンルで、直近1ヶ月の対象回すべてでpreTrendDespiteCandidatesRoundsが発生している場合
+          (候補は収集できているのに「流行前」の話題しか掲載できていない状態が続いている場合)、
+          そのジャンルの情報源・採用基準に加えて、content/trend-digest/criteria.json の history
+          (継続度ラベルの日数の区切り。emergingMinDays等)の妥当性を検証する見直し案を必ず含めて
+          ください(requirements.md#選定領域の見直し案の粒度・提示方法-9)。日数の区切りを変更する
+          場合は、継続度ラベルの日数の区切りを定義する
+          specs/trend-digest/trend-history/requirements.md・design.md と
+          content/trend-digest/criteria.json を更新してください(content-selectionではなく
+          trend-historyがこの値の仕様上の所有者です)。
+
+          あるジャンルでregionUnknownRatioが高い状態(regionObservationCountが一定数あるにも
+          かかわらず不明の割合が高い状態)が続いている場合、地域を判定するための情報源・収集指示の
+          見直し案を必ず含めてください(requirements.md#選定領域の見直し案の粒度・提示方法-10)。
+          対象は content/trend-digest/watchlist.json の情報源の地域区分(固定リストジャンル)と、
+          WebSearch収集プロンプト scripts/trend-digest/collect-websearch-candidates.ts の地域情報の
+          収集指示です。
+
+          # 生成領域の見直し案(requirements.md#生成領域の見直し案の粒度・提示方法-11)
           生成領域に振り分けたフィードバックがある場合、分かりやすさ・本文の分量・独自性の弱さといった
           問題に対し、specs/trend-digest/content-generation/requirements.md の機能要件・ビジネスルール
           (要約の分量、記事の構成など)と specs/trend-digest/content-generation/design.md の該当処理の
@@ -129,7 +156,7 @@ jobs:
           含む)が1件でもある場合は、必ず具体的な変更案(実際のファイル差分)を作成してください。
           「1件では根拠が薄い」「単発のため見送り」といった理由で提案自体を見送り、無言で終了する
           ことは禁止します(requirements.md#選定領域の見直し案の粒度・提示方法-7、requirements.md#生成
-          領域の見直し案の粒度・提示方法-9)。両領域とも材料が0件の場合のみ、一切のファイルを変更せず
+          領域の見直し案の粒度・提示方法-11)。両領域とも材料が0件の場合のみ、一切のファイルを変更せず
           終了してください。
 
           # 実装後の確認
@@ -149,19 +176,24 @@ jobs:
 
       # 変更検知・git addの対象パス(design.md「関連するファイル」「見直し案を作成する処理」変更対象ファイル):
       # - 選定領域: content-selection/requirements.md・watchlist.json・criteria.json。新しい判定ロジックの
-      #   実装(手順6)がapp/trend-digest/lib・__tests__/trend-digest/libのどのファイルに及ぶかは提案
+      #   実装(手順7)がapp/trend-digest/lib・__tests__/trend-digest/libのどのファイルに及ぶかは提案
       #   内容によって変わるため、個別ファイルの列挙ではなくディレクトリ単位で対象を指定する
       #   (ai-dev-digest-monthly.ymlと同じ設計判断。選定ロジックはlib/配下にのみ存在するため、
-      #   components/・[id]/等の画面コードは対象に含めない)
+      #   components/・[id]/等の画面コードは対象に含めない)。継続度ラベルの日数の区切り
+      #   (criteria.jsonのhistory)を見直す場合はtrend-history/requirements.md・design.mdも対象
+      #   (requirements.md#選定領域の見直し案の粒度・提示方法-9。この値の仕様上の所有者はtrend-history)
       # - 生成領域: content-generation配下(requirements.md・design.md)と、転記箇所に及ぶ場合の
-      #   scripts/trend-digest/generate-content.ts(design.md「見直し案を作成する処理」手順8)
+      #   scripts/trend-digest/generate-content.ts(design.md「見直し案を作成する処理」手順9)
       - name: 変更の有無を確認
         id: diff
         run: |
           if git diff --quiet -- \
             specs/trend-digest/content-selection/requirements.md \
+            specs/trend-digest/trend-history/requirements.md \
+            specs/trend-digest/trend-history/design.md \
             content/trend-digest/watchlist.json \
             content/trend-digest/criteria.json \
+            scripts/trend-digest/collect-websearch-candidates.ts \
             scripts/spec-coverage-skip.json \
             app/trend-digest/lib \
             __tests__/trend-digest/lib \
@@ -186,8 +218,11 @@ jobs:
           git checkout -b "$BRANCH"
           git add \
             specs/trend-digest/content-selection/requirements.md \
+            specs/trend-digest/trend-history/requirements.md \
+            specs/trend-digest/trend-history/design.md \
             content/trend-digest/watchlist.json \
             content/trend-digest/criteria.json \
+            scripts/trend-digest/collect-websearch-candidates.ts \
             scripts/spec-coverage-skip.json \
             app/trend-digest/lib \
             __tests__/trend-digest/lib \

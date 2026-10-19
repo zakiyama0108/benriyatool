@@ -1,17 +1,18 @@
 # タスク分解: 研究発見の要約・記事執筆のルール
 
+> 全8件(Task 1〜Task 8)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 本文・見出しの検証(仕様: requirements.md#要約-2〜3、design.md「生成結果を検証する処理」)
   - 🔴 本文が160字未満・480字超で`false`、境界値で`true`になること、見出し・本文が`null`・空で不正になること、見出しが100字超で不正になること、査読前の論文で本文に「査読」が含まれない場合に不正・含まれる場合に正常になること、査読済みの論文ではこの確認をしないことを確認するテストを書く
   - 🟢 `app/research-digest/lib/bodyValidation.ts`に`BODY_MIN_LENGTH`/`BODY_MAX_LENGTH`/`isValidBodyLength`/`isValidHeading`/`mentionsPreprint`を実装する
 
-- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-7)
+- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-8)
   - 🔴 `2026-10-05`から「週刊研究発見 2026年10月5日号」、`2026-11-30`から「週刊研究発見 2026年11月30日号」が作られることを確認するテストを書く
   - 🟢 `app/research-digest/lib/articleTitle.ts`に`buildArticleTitle(date)`を実装する
 
-- Task 3: 研究1本分の組み立て(仕様: requirements.md#記事の構成-6)
-  - 🔴 選定時の値(ジャンル・影響度・根拠・論文名・発表元・URL・DOI・発表年・査読前か)がそのまま引き継がれ、見出し・本文だけが生成結果から入ること、研究IDがジャンルのidになることを確認するテストを書く
+- Task 3: 研究1本分の組み立て(仕様: requirements.md#記事の構成-7)
+  - 🔴 選定時の値(ジャンル・影響度・根拠・論文名・発表元・URL・DOI・発表年・査読前か)がそのまま引き継がれ、見出し・`sections`だけが生成結果から入ること、研究IDがジャンルのidになることを確認するテストを書く
   - 🟢 `app/research-digest/lib/buildFinding.ts`に`buildFinding(candidate, generated)`を実装する
 
 - Task 4: 生成応答の分類(仕様: design.md「エラーハンドリング」)
@@ -27,3 +28,33 @@
 
 - Task 7: 利用規約への条項追記(仕様: requirements.md#利用規約への反映-2)(TDD対象外。静的な文言の変更のため)
   - [future-digest/content-generation/tasks.md](../../future-digest/content-generation/tasks.md)のTask 7と同じ1回の変更で、`app/legal/page.tsx`の「4. 知的財産」の条項を3アプリ対象の文面にする。`specs/legal/requirements.md`の知的財産の仕様リンクに本specを追加する
+
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+記事タイトルに編のラベルを追加する変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 8: 記事タイトルの導出を編対応にする(仕様: requirements.md#記事の構成-8)
+  - 🔴 Task 2の`buildArticleTitle`のテストを、第2引数`edition`を渡す形に書き直し、`body-life`なら「週刊研究発見 からだ・くらし編 2026年10月5日号」、`science-society`なら「週刊研究発見 科学・社会編 2026年10月10日号」になることを確認するケースに差し替える
+  - 🟢 `app/research-digest/lib/articleTitle.ts`の`buildArticleTitle(date, edition)`を実装する(呼び出し元のgenerate-content.ts・write-article.tsも合わせて更新する)
+
+</details>
+
+## 固定4観点・図解への移行
+
+〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 9: 固定4観点への移行(仕様: requirements.md#要約-1〜5、design.md「見出し・固定4観点を書く処理」「生成結果を検証する処理」)
+  - 🔴 分量検証のテストを、単一`body`ではなく`sections: {finding, basis, relevance, caveat}`(各`{heading, text}`)を検証する形に書き換える(4観点の`text`を連結した文字数で160〜480字を判定)。査読前チェック(「査読」の語を含むか)も連結後の文字列に対して行う形に書き換える
+  - 🟢 `app/research-digest/lib/bodyValidation.ts`の`isValidBodyLength(body)`を`isValidSectionsLength(sections)`に置き換える(呼び出し元の`articleSchema.ts`・`buildFinding.ts`も追随)
+
+- Task 10: 図解データの検証(仕様: requirements.md#図解-6、design.md「見出し・固定4観点を書く処理」手順13)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合はいずれも有効、`code`が空文字・空白のみ・type不明(`image`等)・オブジェクトでない値の場合は不正と判定することを確認するテストを書く
+  - 🟢 `app/research-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
+  - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
+
+</details>

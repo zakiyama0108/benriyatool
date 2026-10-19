@@ -1,4 +1,4 @@
-import type { Article, EmptyGenre, Finding, Genre } from './types'
+import type { Article, Edition, EmptyGenre, Finding, Genre } from './types'
 import type { CollectionFailureReason } from './candidateTypes'
 
 // 記事データの組み立て(仕様: weekly-publish/requirements.md#掲載件数の保証-1・2・4、
@@ -35,6 +35,7 @@ function assertValidCollectionFailureReason(genre: CollectionFailedGenreInput): 
 
 export function assembleArticle(
   date: string,
+  edition: Edition,
   activeGenres: Genre[],
   findings: Finding[],
   noCandidateGenres: PlainGenreInput[],
@@ -70,5 +71,7 @@ export function assembleArticle(
     throw new Error('研究と掲載できなかったジャンル(emptyGenres)の合計が、有効な全ジャンルと一致しません')
   }
 
-  return { id: date, date, findings, emptyGenres }
+  // 記事IDは<配信日>-<edition>の形式にする(trend-digestと同じ形式。weekly-publish/design.md
+  // 「決定事項」。1日に2編の記事が存在しうるため日付だけでは一意にならない)
+  return { id: `${date}-${edition}`, edition, date, findings, emptyGenres }
 }

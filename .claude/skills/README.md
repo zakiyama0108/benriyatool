@@ -18,12 +18,14 @@ Skillの`.claude/skills/`直下はフラット構造しか使えない(`<Skill�
 | カテゴリ | ユーザーが`/xxx`で起動 | Claudeが自律起動 | frontmatter |
 |---|---|---|---|
 | 機能開発フロー(工程Skill) | ○ | ○ | (なし) |
-| 定期作業Skill | ○ | **×** | `disable-model-invocation: true` |
+| 定期作業Skill | ○ | 原則× / 例外○ | 原則 `disable-model-invocation: true`(例外は付けない) |
 | 自動運転モードSkill(autopilot) | ○ | **×** | `disable-model-invocation: true` |
 | 知識Skill | ○ | ○ | (なし) |
 | ユーティリティSkill | ○ | ○ | (なし) |
 
-定期作業と自動運転モード(autopilot)はClaudeの自律起動を切っている。定期作業は**実行タイミングを人が決める作業**であり(月1回・年2回など)、autopilotは**確認を省く範囲をユーザーが意図的に選ぶモード**であるため、どちらも会話の流れでClaudeが勝手に始めてはいけない。このフラグを付けるとdescriptionもコンテキストに載らなくなるので、ユーザーが`/dependency-update`や`/autopilot`のように明示的に打つ必要がある(ルーティングフックもこれらを扱わない)。
+autopilotはClaudeの自律起動を切っている。**確認を省く範囲をユーザーが意図的に選ぶモード**であり、会話の流れでClaudeが勝手に始めてはいけないため。このフラグを付けるとdescriptionもコンテキストに載らなくなるので、ユーザーが`/autopilot`のように明示的に打つ必要がある(ルーティングフックも扱わない)。
+
+定期作業Skillは**原則**同じフラグを付ける。実行タイミングを人が決める作業(月1回・年2回など)で、Claudeが先回りして実行すると法令調査・依存更新のように実害やノイズが出るため。**例外**として、オンデマンドで何度実行しても副作用が「運営者がレビューする自動マージなしの提案PR」に限られる冪等な定期作業は、フラグを付けず会話の依頼(例:「フィードバックを元に改善して」)から起動できるようにしてよい。現時点の例外は[ai-dev-digest-feedback-review](ai-dev-digest-feedback-review/SKILL.md)のみ。
 
 ## まとめ表
 
@@ -140,7 +142,7 @@ flowchart TD
 - 例外停止条件は遷移図1aと同じ枠組みに、fix起点特有の条件(実装判断の自信が持てない場合)が加わる(条件は[autopilot](autopilot/SKILL.md)「例外停止」参照)。正常系のみを図示している
 - 使う工程Skill・Agentは遷移図2と同一(手順は各Skillが単一の情報源のまま)。[/fix](../fix/SKILL.md)のStep1で新規spec相当と判定された場合は遷移図1aに合流する(図には示していない)
 
-### 定期作業Skill(開発ループ外・ユーザーが`/xxx`で明示起動)
+### 定期作業Skill(開発ループ外・原則ユーザーが`/xxx`で明示起動)
 
 | Skill | 役割 | 頻度 | 異常時の遷移先 |
 |---|---|---|---|
@@ -148,8 +150,10 @@ flowchart TD
 | [dependency-update](dependency-update/SKILL.md) | npm依存パッケージの更新と検証 | 毎月1日(routineが自動実行。patch/minorのみ)+脆弱性報告時 | /pr(実装PR) |
 | [data-check](data-check/SKILL.md) | Supabase保存データの健全性確認(SQLを用意しダッシュボードで実行してもらう) | DB機能リリース直後(/release-checkが案内)+月1回 | /fix |
 | [retrospective](retrospective/SKILL.md) | ワークフローと実際の進め方のずれを振り返り、Skill側を更新する | 月1回〜四半期に1回 | /pr(Skill更新PR) |
+| [ai-dev-digest-feedback-review](ai-dev-digest-feedback-review/SKILL.md) | ai-dev-digestの運営者フィードバック・掲載実績からウォッチリスト・採用基準の見直し案を作らせる(月次GitHub Actionsを前倒し起動)。`disable-model-invocation`なし=会話の依頼から起動可(例外の根拠は[起動者](#起動者誰がskillを起動できるか)) | 毎月2日 07:00 JST(routineが自動実行)+「フィードバックを元に改善して」の依頼時 | /consult または /fix |
 
 - law-revision-check(毎年4/1・7/1の朝、報告のみ)とdependency-update(毎月1日の朝、patch/minor更新+検証+PR作成まで。major・Next.js/React系は報告のみ)は、ユーザーの明示起動に加えてclaude.aiの定期エージェント(routine)で自動実行する(https://claude.ai/code/routines で管理)。スケジュール実行はユーザーが登録した明示起動の一種であり、「Claudeが会話の流れで自律起動しない」原則とは矛盾しない
+- ai-dev-digest-feedback-reviewが起動する見直しは、Skill・routineとは別に`.github/workflows/ai-dev-digest-monthly.yml`のcron(毎月1日 22:00 UTC)でも自動実行される。Skillからの手動`workflow_dispatch`はこのcronと同じワークフローを前倒しで走らせるだけで、両者は共存する
 
 ### 知識Skill(工程から参照される)
 

@@ -36,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/trend-digest/`, lastModified: now, priority: 0.8 },
     { url: `${SITE_URL}/future-digest/`, lastModified: now, priority: 0.8 },
     { url: `${SITE_URL}/research-digest/`, lastModified: now, priority: 0.8 },
+    { url: `${SITE_URL}/blog/`, lastModified: now, priority: 0.8 },
   ]
 
   const guidePages: MetadataRoute.Sitemap = GUIDE_ARTICLES.map((article) => ({

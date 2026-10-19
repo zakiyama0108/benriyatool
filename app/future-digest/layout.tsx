@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 
-// 仕様: requirements.md#メタ情報-6
-const TITLE = '週刊未来予測｜ジャンル別・時間軸別の未来予測を毎週お届け'
+// 仕様: article-list/requirements.md#メタ情報-6
+const TITLE = '週刊未来予測｜ジャンル別・時間軸別の未来予測を週2回お届け'
 const DESCRIPTION =
-  'テクノロジー・医療・環境・経済・宇宙など10ジャンルについて、近未来から50年後以降までの未来予測記事を毎週木曜に要約してお届け。影響の大きい予測から読めます。'
+  'テクノロジー・医療・環境・経済・宇宙など10ジャンルについて、近未来から50年後以降までの未来予測記事を要約してお届け。サイエンス・テクノロジー編は木曜、くらし・社会編は日曜に公開。影響の大きい予測から読めます。'
 
 export const metadata: Metadata = {
   title: TITLE,

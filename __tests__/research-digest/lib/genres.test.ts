@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import genresData from '../../../content/research-digest/genres.json'
-import { parseGenres, loadGenres, getActiveGenres, type GenreConfig } from '../../../app/research-digest/lib/genres'
+import {
+  parseGenres,
+  loadGenres,
+  getActiveGenres,
+  buildEditionGenres,
+  EDITION_GENRES,
+  type GenreConfig,
+} from '../../../app/research-digest/lib/genres'
 
 // 仕様: specs/research-digest/content-selection/requirements.md#機能要件-1
 describe('ジャンル設定ファイル - ジャンルをコードではなく設定ファイルで管理し、追記で増やせるようにする', () => {
@@ -11,11 +18,59 @@ describe('ジャンル設定ファイル - ジャンルをコードではなく�
 
   it('active: falseのジャンルは収集対象から外れるが、過去記事の表示用にラベルは引けること', () => {
     const genres = parseGenres([
-      { id: 'medical-health', label: '医療・健康', description: '説明A', active: true },
-      { id: 'retired-genre', label: '廃止済みジャンル', description: '説明B', active: false },
+      { id: 'medical-health', label: '医療・健康', description: '説明A', edition: 'body-life', active: true },
+      { id: 'retired-genre', label: '廃止済みジャンル', description: '説明B', edition: 'body-life', active: false },
     ])
     expect(getActiveGenres(genres).map((g) => g.id)).toEqual(['medical-health'])
     expect(genres.find((g) => g.id === 'retired-genre')?.label).toBe('廃止済みジャンル')
+  })
+})
+
+// 仕様: specs/research-digest/content-selection/requirements.md#機能要件-5、specs/research-digest/content-selection/requirements.md#機能要件-6、specs/research-digest/content-selection/requirements.md#編成とジャンルの割り当て-1、specs/research-digest/content-selection/requirements.md#編成とジャンルの割り当て-2、specs/research-digest/content-selection/requirements.md#編成とジャンルの割り当て-3
+describe('編成(edition)の設定 - 各ジャンルがからだ・くらし編/科学・社会編のどちらかに固定で属する', () => {
+  it('genres.jsonの各ジャンルがedition(body-lifeまたはscience-society)を持つこと', () => {
+    const genres = loadGenres()
+    for (const g of genres) {
+      expect(['body-life', 'science-society']).toContain(g.edition)
+    }
+  })
+
+  it('editionが2値以外の場合に例外になること', () => {
+    expect(() =>
+      parseGenres([{ id: 'medical-health', label: '医療・健康', description: '説明', edition: 'other', active: true }]),
+    ).toThrow()
+  })
+
+  it('editionが未指定の場合に例外になること', () => {
+    expect(() =>
+      parseGenres([{ id: 'medical-health', label: '医療・健康', description: '説明', active: true }]),
+    ).toThrow()
+  })
+
+  it('EDITION_GENRESが編ごとのジャンルID配列(からだ・くらし編5件・科学・社会編5件)を返すこと', () => {
+    expect(EDITION_GENRES['body-life']).toEqual([
+      'medical-health',
+      'nutrition-food',
+      'psychology-brain',
+      'sleep-exercise',
+      'education-parenting',
+    ])
+    expect(EDITION_GENRES['science-society']).toEqual([
+      'environment-climate',
+      'ai-it',
+      'economics-behavioral',
+      'space-physics',
+      'materials-energy',
+    ])
+  })
+
+  it('buildEditionGenresが記載順を保ったまま編ごとに振り分けること', () => {
+    const genres = parseGenres([
+      { id: 'a', label: 'A', description: '説明', edition: 'science-society', active: true },
+      { id: 'b', label: 'B', description: '説明', edition: 'body-life', active: true },
+      { id: 'c', label: 'C', description: '説明', edition: 'body-life', active: true },
+    ])
+    expect(buildEditionGenres(genres)).toEqual({ 'body-life': ['b', 'c'], 'science-society': ['a'] })
   })
 })
 
@@ -47,17 +102,21 @@ describe('ジャンル設定の検証 - 壊れたジャンル設定をビルド�
   it('idが重複する場合に例外になること', () => {
     expect(() =>
       parseGenres([
-        { id: 'medical-health', label: 'A', description: '説明', active: true },
-        { id: 'medical-health', label: 'B', description: '説明', active: true },
+        { id: 'medical-health', label: 'A', description: '説明', edition: 'body-life', active: true },
+        { id: 'medical-health', label: 'B', description: '説明', edition: 'body-life', active: true },
       ]),
     ).toThrow()
   })
 
   it('labelが空の場合に例外になること', () => {
-    expect(() => parseGenres([{ id: 'medical-health', label: '', description: '説明', active: true }])).toThrow()
+    expect(() =>
+      parseGenres([{ id: 'medical-health', label: '', description: '説明', edition: 'body-life', active: true }]),
+    ).toThrow()
   })
 
   it('activeが真偽値でない場合に例外になること', () => {
-    expect(() => parseGenres([{ id: 'medical-health', label: 'A', description: '説明', active: 'true' }])).toThrow()
+    expect(() =>
+      parseGenres([{ id: 'medical-health', label: 'A', description: '説明', edition: 'body-life', active: 'true' }]),
+    ).toThrow()
   })
 })

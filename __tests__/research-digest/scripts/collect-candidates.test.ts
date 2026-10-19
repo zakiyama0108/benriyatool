@@ -9,7 +9,7 @@ import {
 } from '../../../scripts/research-digest/collect-candidates'
 import type { GenreConfig } from '../../../app/research-digest/lib/genres'
 
-const GENRE: GenreConfig = { id: 'medical-health', label: '医療・健康', description: '説明', active: true }
+const GENRE: GenreConfig = { id: 'medical-health', label: '医療・健康', description: '説明', edition: 'body-life', active: true }
 const TODAY = new Date('2026-10-05T12:00:00')
 
 function rawCandidate(overrides: Record<string, unknown> = {}) {

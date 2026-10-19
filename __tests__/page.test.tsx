@@ -4,7 +4,7 @@ import HubPage from '../app/page'
 
 // 仕様: specs/hub-site/requirements.md#機能要件-2、specs/board-game-rules/game-list/requirements.md#メタ情報-11、specs/board-game-rules/game-list/design.md#トップページ掲載(hub-site)
 describe('【トップページ】ツールカード一覧 - 本番公開済みの全アプリへのリンクを掲載する', () => {
-  it('育休給付金シミュレーター(/ikukyu)・資産推移シミュレーター(/life-money-sim)・AI駆動開発ダイジェスト(/ai-dev-digest)・ボドゲのトリセツ(/board-game-rules)・曲名からプレイリスト作成(/spotify-playlist)・週刊トレンド(/trend-digest)・重要ニュースダイジェスト(/news-digest)・週刊未来予測(/future-digest)・週刊研究発見(/research-digest)、すべてのカードが表示されること', () => {
+  it('育休給付金シミュレーター(/ikukyu)・資産推移シミュレーター(/life-money-sim)・ボドゲのトリセツ(/board-game-rules)・曲名からプレイリスト作成(/spotify-playlist)、すべてのカードが表示されること', () => {
     render(<HubPage />)
 
     const ikukyuLink = screen.getByRole('link', { name: /育休給付金シミュレーター/ })
@@ -13,26 +13,31 @@ describe('【トップページ】ツールカード一覧 - 本番公開済み�
     const lifeMoneySimLink = screen.getByRole('link', { name: /資産推移シミュレーター/ })
     expect(lifeMoneySimLink.getAttribute('href')).toBe('/life-money-sim')
 
-    const aiDevDigestLink = screen.getByRole('link', { name: /AI駆動開発ダイジェスト/ })
-    expect(aiDevDigestLink.getAttribute('href')).toBe('/ai-dev-digest')
-
     const boardGameRulesLink = screen.getByRole('link', { name: /ボドゲのトリセツ/ })
     expect(boardGameRulesLink.getAttribute('href')).toBe('/board-game-rules')
 
     const spotifyPlaylistLink = screen.getByRole('link', { name: /曲名からプレイリスト作成/ })
     expect(spotifyPlaylistLink.getAttribute('href')).toBe('/spotify-playlist')
+  })
+})
 
-    const trendDigestLink = screen.getByRole('link', { name: /週刊トレンド/ })
-    expect(trendDigestLink.getAttribute('href')).toBe('/trend-digest')
+// 仕様: specs/hub-site/requirements.md#機能要件-2、specs/blog/digest-hub/requirements.md#サマリ
+describe('【トップページ】ダイジェストハブへの導線 - 5アプリ個別カードは廃止し、/blogへの1枚のカードに集約する', () => {
+  it('ai-dev-digest/news-digest/trend-digest/future-digest/research-digestへの個別リンクが存在しないこと', () => {
+    render(<HubPage />)
 
-    const newsDigestLink = screen.getByRole('link', { name: /重要ニュースダイジェスト/ })
-    expect(newsDigestLink.getAttribute('href')).toBe('/news-digest')
+    expect(screen.queryByRole('link', { name: /AI駆動開発ダイジェスト/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /重要ニュースダイジェスト/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /週刊トレンド/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /週刊未来予測/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /週刊研究発見/ })).toBeNull()
+  })
 
-    const futureDigestLink = screen.getByRole('link', { name: /週刊未来予測/ })
-    expect(futureDigestLink.getAttribute('href')).toBe('/future-digest')
+  it('/blogへのリンクが1つ表示されること', () => {
+    render(<HubPage />)
 
-    const researchDigestLink = screen.getByRole('link', { name: /週刊研究発見/ })
-    expect(researchDigestLink.getAttribute('href')).toBe('/research-digest')
+    const blogLinks = screen.getAllByRole('link').filter((link) => link.getAttribute('href') === '/blog')
+    expect(blogLinks).toHaveLength(1)
   })
 })
 

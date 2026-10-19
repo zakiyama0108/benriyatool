@@ -1,0 +1,195 @@
+{
+  "id": "2026-10-19-body-life",
+  "edition": "body-life",
+  "date": "2026-10-19",
+  "findings": [
+    {
+      "id": "medical-health",
+      "genre": "medical-health",
+      "heading": "帯状疱疹ワクチンを受けた高齢者は、4年以内の認知症診断が約24%少なかった",
+      "sections": {
+        "finding": {
+          "heading": "接種した人は認知症と診断される割合が低かった",
+          "text": "専門看護施設に入所した高齢者のうち、帯状疱疹ワクチン(シングリックス)を受けた人は、受けていない人より4年以内に認知症と診断される割合が約24%低かった。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "約51万人の記録を4年間たどって比べた",
+          "text": "全米の約51万人分の医療保険の請求データなどを4年間たどり、接種した人と受けていない人を比べた。くじ引きで分ける試験に近い形を、すでにある記録の上で再現する方法を使っている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[施設に入所した高齢者 約51万人] --> B{ワクチンを接種したか}\n  B -->|接種した| C[4年間の認知症診断を追跡]\n  B -->|接種していない| D[4年間の認知症診断を追跡]\n  C --> E[診断された割合を比較]\n  D --> E"
+          }
+        },
+        "relevance": {
+          "heading": "ワクチンの別の働きを探る手がかりになる",
+          "text": "帯状疱疹ワクチンに、帯状疱疹の予防以外の働きがある可能性を探る手がかりになる。ただし、接種するかどうかの判断は、医師など専門家との相談が前提になる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "原因とは言い切れず、対象も限られる",
+          "text": "観察研究なので、ワクチンが原因だとは言い切れない。接種した人は若く健康な傾向があり、その差が結果に影響した可能性が残る。対象は専門看護施設に入所した人で、他の高齢者に当てはまるとは限らない。因果関係の確認には、臨床試験などのさらなる研究が必要とされている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "帯状疱疹ワクチン(シングリックス)を受けた高齢者は4年間の認知症診断が約24%少なかった。対象は約51万人と大規模で、接種を考える人は多い。ただし観察研究のため、ワクチンが原因だとは言い切れない。",
+      "sourceTitle": "Dementia Risk After Recombinant Herpes Zoster Vaccination in Older Adults With a Recent Skilled-Nursing Facility Stay",
+      "sourceName": "Annals of Internal Medicine(ブラウン大学の公式発表で確認)",
+      "sourceUrl": "https://www.brown.edu/news/2026-06-15/shingles-vaccine-lowers-dementia-risk",
+      "doi": "10.7326/annals-25-04689",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "nutrition-food",
+      "genre": "nutrition-food",
+      "heading": "カロリーを抑えた地中海食と運動の組み合わせで、2型糖尿病の発症が約31%少なかった",
+      "sections": {
+        "finding": {
+          "heading": "食事の量と運動も見直した群で、糖尿病になる人が少なかった",
+          "text": "メタボリックシンドロームのある中高年では、カロリーを抑えた地中海食に運動を組み合わせた群のほうが、食事量を制限しない地中海食の群より、2型糖尿病になった人が約31%少なかった。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "約4,700人をくじ引きで2群に分け、6年間比べた",
+          "text": "約4,700人をくじ引きのように無作為に2つの群へ分け、約6年追って発症を比べた試験である。分け方に偏りが出にくいので、差が生活習慣の違いによるものと考えやすい。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[メタボのある中高年 約4,700人] --> B{無作為に分ける}\n  B --> C[カロリーを抑えた地中海食と運動]\n  B --> D[量を制限しない地中海食]\n  C --> E[約6年追って糖尿病の発症を比較]\n  D --> E"
+          }
+        },
+        "relevance": {
+          "heading": "食事の質に加え、量と運動も合わせて考える手がかりになる",
+          "text": "食べるものの内容だけでなく、食べる量や体を動かす習慣まで含めて暮らしを見直すことが、糖尿病の予防を考えるうえで大切だと示唆する。日々の食事や運動を振り返るきっかけになる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "対象は限られ、どの要素が効いたかは切り分けにくい",
+          "text": "対象はメタボリックシンドロームのある中高年に限られ、ほかの年代や健康状態の人にも同じ効果があるとは限らない。食事と運動を合わせた比較なので、どちらがどれだけ効いたかは分けて語れない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "メタボリックシンドロームのある中高年約4,700人を6年追った無作為化試験で、カロリーを抑えた地中海食と運動の組み合わせにより2型糖尿病の発症が約31%少なく、食事と運動の見直しという身近な行動に直結するため。",
+      "sourceTitle": "Comparison of an Energy-Reduced Mediterranean Diet and Physical Activity Versus an Ad Libitum Mediterranean Diet in the Prevention of Type 2 Diabetes",
+      "sourceName": "Annals of Internal Medicine (PREDIMED-Plus)",
+      "sourceUrl": "https://doi.org/10.7326/ANNALS-25-00388",
+      "doi": "10.7326/annals-25-00388",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "psychology-brain",
+      "genre": "psychology-brain",
+      "heading": "運動・食事・頭の訓練を手厚く支援した高齢者は、認知機能の低下がわずかに小さかった",
+      "sections": {
+        "finding": {
+          "heading": "手厚い生活改善支援で、認知機能の低下が少し小さくなった",
+          "text": "認知症のリスクが高い約2,100人の高齢者を2年追跡したところ、運動・食事・頭の訓練を組み合わせた手厚い支援を受けた群は、自分のペースで生活を見直した群より、認知機能の低下がわずかに小さかった。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "くじ引きで2群に分け、同じ検査で比べた",
+          "text": "参加者をくじ引きのように無作為に2群へ分け、一方には定期的なチーム面談と具体的な計画を、もう一方には資料と少ない面談だけを提供した。同じ検査で2年間比べたため、支援の差による違いが見えやすい。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[高齢者 約2,100人] --> B{無作為に2群へ}\n B --> C[手厚い支援群 運動・食事・頭の訓練・定期面談]\n B --> D[自己管理群 資料と少ない面談]\n C --> E[2年間追跡し同じ認知検査で比較]\n D --> E"
+          }
+        },
+        "relevance": {
+          "heading": "続ける仕組みがあると生活改善が力になる可能性",
+          "text": "運動・食事・頭を使う活動を組み合わせた暮らしは、周りの支えや定期的な振り返りがあると続けやすく、認知機能の維持に役立つ可能性がある。日々の習慣を見直すきっかけとして受け止める程度が妥当である。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "差は小さく、実際の意味や長期の効果は未確認",
+          "text": "群間の差は小さく、日常で実感できる違いかどうかは分かっていない。認知症の発症を調べた研究ではなく、5施設の選ばれた参加者が対象で、本人も群分けを知っていた。長い目で効果が続くかも確かめられていない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "米国の高齢者2,111人を対象にした大規模な無作為化試験で、運動・食事・認知トレーニングなどの生活改善プログラムが2年間で認知機能の維持に役立つ可能性を示したが、自己管理型との差は小さく(年0.029標準偏差)、臨床的な意味はまだ不明である。",
+      "sourceTitle": "Structured vs Self-Guided Multidomain Lifestyle Interventions for Global Cognitive Function: The US POINTER Randomized Clinical Trial",
+      "sourceName": "JAMA",
+      "sourceUrl": "https://jamanetwork.com/journals/jama/fullarticle/2837046",
+      "doi": "10.1001/jama.2025.12923",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "sleep-exercise",
+      "genre": "sleep-exercise",
+      "heading": "不眠症の認知行動療法は、治療後およそ1年たっても睡眠の改善が続くことが分かった",
+      "sections": {
+        "finding": {
+          "heading": "不眠への認知行動療法の効果は約1年続く",
+          "text": "不眠症の認知行動療法(CBT-I)を受けた人は、治療を受けない人に比べて、不眠の重さや寝つきが改善していた。効果は時間とともに小さくなるものの、治療後およそ1年たっても、臨床的に意味のある水準で続いていた。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "30件の試験をまとめて比べた結果",
+          "text": "くじ引きのように無作為に振り分けた30件の試験を1つにまとめて分析した。治療を受けた群と受けない群を3か月後、6か月後、12か月後で比べた。極端な結果が出た1件は除いて分析している。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "薬以外にも、長く効く眠りの改善策がある",
+          "text": "不眠に悩む人にとって、考え方や生活習慣に働きかける方法が、薬を使わない選択肢として長く効く可能性を示した。睡眠の悩みを考えるときに知っておく価値のある情報といえる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "他の治療との比較や個人差は分からない",
+          "text": "比べた相手は何も治療しない群で、他の治療法との優劣はこの結果からは分からない。効果は時間とともに弱まる傾向があり、個人差もあるはずだ。今回確認できたのは公開された要旨の範囲なので、詳しくは元の論文を読んでほしい。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "不眠症の認知行動療法(CBT-I)は、30件の無作為化試験の統合で、不眠の重さや寝つきが改善し、効果が1年後まで臨床的に意味のある水準で続いたため、不眠に悩む多くの人の睡眠を薬以外の方法で変えられる。",
+      "sourceTitle": "Cognitive behavioral therapy for insomnia: A meta-analysis of long-term effects in controlled studies",
+      "sourceName": "Sleep Medicine Reviews",
+      "sourceUrl": "https://research.vu.nl/en/publications/cognitive-behavioral-therapy-for-insomnia-a-meta-analysis-of-long/",
+      "doi": "10.1016/j.smrv.2019.08.002",
+      "publishedYear": 2019,
+      "isPreprint": false
+    },
+    {
+      "id": "education-parenting",
+      "genre": "education-parenting",
+      "heading": "幼児期の画面時間が長いほど言葉の力は低めで、保護者と一緒に見ると高めという傾向が見つかった",
+      "sections": {
+        "finding": {
+          "heading": "画面の見方によって、言葉の力との関係が変わる",
+          "text": "子どもの画面を見る時間が長いほど、言葉の力は低めという関連が見られました。つけっぱなしのテレビも同様です。一方、教育番組を見ることや、保護者と一緒に見ることは、言葉の力が高めという関連でした。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[子どもの画面利用] --> B[長時間・つけっぱなし]\n A --> C[教育番組・保護者と一緒]\n B --> D[言葉の力は低めの傾向]\n C --> E[言葉の力は高めの傾向]"
+          }
+        },
+        "basis": {
+          "heading": "多くの調査をまとめて傾向を確かめた",
+          "text": "過去に行われた42件の調査を集め、約1.9万人の子どものデータをまとめて比べています。1つの調査だけでは偶然の影響も大きいため、複数をまとめて同じ向きの傾向が出るかを確かめた点が、結論の決め手です。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "使う時間だけでなく見方も大切かもしれない",
+          "text": "家庭では、見る時間の長さに加えて、何をどう見るかも関わっている可能性があります。親子で内容について話しながら見ることが、言葉の力と結びつく傾向がありました。ただし、これは日々の使い方を考える際の一つの材料にとどまります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "原因と結果までは言い切れない",
+          "text": "示されたのは関連であり、画面が言葉の力を下げたとは言えません。画面利用は保護者の自己申告で、スマートフォンの普及前の研究も多く含まれます。そのため、今の子どもにそのまま当てはまるとは限りません。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "42件の研究・約1.9万人の子どもを統合した解析で、幼児期の画面時間が長いほど言葉の力が低く、保護者と一緒に見ると高い傾向が示され、多くの家庭の使い方に関わるが、結果は因果ではなく関連にとどまる。",
+      "sourceTitle": "Associations Between Screen Use and Child Language Skills: A Systematic Review and Meta-analysis",
+      "sourceName": "JAMA Pediatrics",
+      "sourceUrl": "https://jamanetwork.com/journals/jamapediatrics/article-abstract/2762864",
+      "doi": "10.1001/jamapediatrics.2020.0327",
+      "publishedYear": 2020,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}

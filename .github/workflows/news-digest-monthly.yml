@@ -11,7 +11,7 @@ name: 重要ニュース週刊ダイジェスト 選定・生成の月次見直�
 
 on:
   schedule:
-    - cron: '30 22 1 * *' # 毎月1日22:30 UTC = 2日07:30 JST(ai-dev-digest 07:00・weekly-publish 06:17とずらし利用枠の競合時間帯を分散させる)
+    - cron: '30 22 1 * *' # 毎月1日22:30 UTC = 2日07:30 JST(ai-dev-digest・weekly-publishの日次・週次実行(いずれもJST未明)とずらし利用枠の競合時間帯を分散させる)
   workflow_dispatch: # Secrets設定後の動作確認用に手動実行できるようにする
 
 jobs:

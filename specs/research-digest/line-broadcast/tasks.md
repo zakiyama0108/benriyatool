@@ -1,5 +1,6 @@
 # タスク分解: LINE公式アカウントでの新着記事の自動配信
 
+> 全6件(Task 1〜Task 6)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 記事URLの導出(仕様: requirements.md#配信内容-5)
@@ -19,3 +20,15 @@
 
 - Task 5: 本番での通し確認(仕様: requirements.md#配信タイミング・方式-7〜8)(TDD対象外。手動確認)
   - 初回の週次記事のマージで配信ワークフローが動き、実行ログに公開待ちの試行記録が残ること、届いたLINEのリンクで記事ページが開けることを確認する
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+配信タイトルに編のラベルを追加する変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 6: 配信タイトルの導出を編対応にする(仕様: requirements.md#配信内容-2、design.md「配信メッセージを組み立てる処理」)
+  - 🔴 Task 2の`buildBroadcastTitle`のテストを、第2引数`edition`を渡す形に書き直し、1行目が「【週刊研究発見】からだ・くらし編 2026年10月5日号」(body-lifeの場合)・「【週刊研究発見】科学・社会編 2026年10月10日号」(science-societyの場合)になることを確認するケースに差し替える
+  - 🟢 `app/research-digest/lib/buildBroadcastMessage.ts`の`buildBroadcastTitle(date, edition)`を実装する(呼び出し元の`buildBroadcastMessage`・`broadcast-line.ts`も合わせて更新する)
+
+</details>

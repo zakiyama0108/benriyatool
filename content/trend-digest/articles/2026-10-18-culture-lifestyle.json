@@ -1,0 +1,139 @@
+{
+  "id": "2026-10-18-culture-lifestyle",
+  "edition": "culture-lifestyle",
+  "date": "2026-10-18",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "sns-buzz",
+      "heading": "老舗和菓子店の季節限定どら焼きがSNS動画で紹介され入荷直後に完売続出",
+      "sections": {
+        "fact": {
+          "heading": "紹介動画の再生後に来店者が急増し即日完売",
+          "text": "ある和菓子店の季節限定どら焼きを紹介する動画が公開され、再生数が1週間で急増した。動画公開直後から来店者が普段の数倍に増え、開店直後に即日完売する状態が3日連続で続いている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[紹介動画公開] --> B[再生数急増]\n  B --> C[来店者急増・即日完売]"
+          }
+        },
+        "reason": {
+          "heading": "食べ比べ動画の拡散と季節限定という希少性が重なった",
+          "text": "複数の食レビューアカウントが同時期に食べ比べ動画を投稿し、互いの投稿が拡散し合う形で話題が広がった。秋の季節限定商品という希少性も、今のうちに食べておきたいという心理を後押ししたとみられる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "地方の一部店舗では話題化前から人気で急上昇とは言い切れない面も",
+          "text": "一部の地方店舗ではもともと行列ができる人気商品だったとの指摘もあり、全国的な急上昇というより、もとからの人気が動画で可視化されただけという見方もできる。今後の販売動向を注視する必要がある。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "季節限定どら焼きの実食紹介",
+      "sourceName": "グルメ系動画プラットフォーム",
+      "sourceUrl": "https://example.com/trend/sns-buzz-dorayaki",
+      "trend": {
+        "durationLabel": "talked",
+        "heatLabel": "high",
+        "continuationDays": 9,
+        "continuationStartDate": "2026-10-08",
+        "reportCount": 2,
+        "originRegion": "関東",
+        "currentRegions": [
+          "関東",
+          "近畿"
+        ]
+      }
+    },
+    {
+      "id": "topic-2",
+      "genre": "gadgets",
+      "heading": "片耳だけで使う新型イヤホンが「会議中にも気づかれにくい」とビジネス層で話題",
+      "sections": {
+        "fact": {
+          "heading": "片耳装着・長時間駆動を売りにした新製品が発売1週間で品薄に",
+          "text": "片耳だけで使う設計のワイヤレスイヤホンが発売され、1週間で主要家電量販店の在庫が品薄になった。長時間のバッテリー駆動と装着時の目立たなさを両立させた点が特徴として紹介されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "オンライン会議の合間にも使えるという口コミが拡散した",
+          "text": "購入者のレビュー投稿で、オンライン会議の合間や通勤中にも自然に装着し続けられるという声が相次ぎ、ビジネス層を中心に口コミで広がった。価格帯も手頃だったことが後押しした。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "連続使用時の聞き取りやすさには個人差があるとの声も",
+          "text": "一方で長時間の連続使用では音質の聞き取りやすさに個人差があるとのレビューも一定数あり、万人向けと言い切るには実際の使用感を試す必要がありそうだ。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "片耳型ワイヤレスイヤホン新製品レビュー",
+      "sourceName": "家電口コミサイト",
+      "sourceUrl": "https://example.com/trend/gadgets-earbuds"
+    },
+    {
+      "id": "topic-3",
+      "genre": "games",
+      "heading": "発売3日で小規模スタジオの新作パズルゲームが配信ランキング首位に浮上",
+      "sections": {
+        "fact": {
+          "heading": "少人数開発のインディータイトルが大手を抑えて首位獲得",
+          "text": "数名規模の小さな開発スタジオが手がけた新作パズルゲームが、配信開始からわずか3日で主要配信プラットフォームのランキング首位に浮上した。大手スタジオの新作を抑えての首位獲得となった。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "操作が簡単なのに奥が深いという口コミ動画が連鎖的に拡散",
+          "text": "実況者による「操作は簡単なのに奥が深い」という紹介動画が相次いで投稿され、視聴者が実際に購入して自分の攻略動画を投稿する連鎖が起きた。低価格だったことも参入障壁を下げた。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "首位の持続性は今後のアップデート頻度次第との見方",
+          "text": "話題性による初動の盛り上がりである可能性もあり、今後も継続的にランキング上位を保てるかは追加コンテンツやアップデートの頻度次第という見方が複数の業界関係者から出ている。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "インディーパズルゲーム新作ランキング速報",
+      "sourceName": "ゲーム配信ランキング集計サイト",
+      "sourceUrl": "https://example.com/trend/games-indie-puzzle",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 3,
+        "continuationStartDate": "2026-10-14",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-4",
+      "genre": "economy-money",
+      "heading": "来年度からのポイント還元制度見直し案が公表され家計への影響に関心集まる",
+      "sections": {
+        "fact": {
+          "heading": "共通ポイント制度の還元率見直し案が公的機関から公表された",
+          "text": "複数の小売・決済事業者が参加する共通ポイント制度について、来年度から還元率の算定方法を見直す案が公表された。対象となる利用者は数千万人規模とみられ、家計への影響範囲の広さから関心が高まっている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "見直しにより一部利用者で還元率が下がる可能性が報じられた",
+          "text": "見直し案では利用額に応じた段階的な還元率が導入される見込みで、利用額が少ない層では現行より還元率が下がる可能性があると報じられたことが、SNSでの関心の高まりにつながっている。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "正式な制度詳細は未確定で今後変更される可能性がある",
+          "text": "現時点では案の段階であり、対象サービスや具体的な還元率などの詳細は正式発表されていない。今後の制度設計の進展によって内容が変わる可能性がある点には注意が必要である。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "共通ポイント制度の還元率見直し案",
+      "sourceName": "経済ニュースサイト",
+      "sourceUrl": "https://example.com/trend/economy-point-reform"
+    }
+  ],
+  "unavailableGenres": [
+    "buzzwords",
+    "gourmet",
+    "hobby",
+    "fashion",
+    "travel",
+    "dev-trends"
+  ]
+}
