@@ -13,6 +13,7 @@ export type Candidate = {
   sourceUrl: string
   method: SelectionMethod
   strength: number // 並べ替えの優先順位付けに使う数値。固定リスト: 100-順位(順位が高い=強い)。WebSearch: 独立情報源の言及数
+  area?: string // WebSearchの応答が申告した話題の地域(focusAreasの地域枠判定に使う。地域に紐づかない話題は未設定)
   rank: number | null // 固定リストジャンルの候補のその回の順位(1が最上位)。WebSearchジャンルの候補はnull。
                       // trend-historyの観測ログと注目度ラベルの判定に渡す(trend-history/requirements.md#注目度ラベル-9)
   originRegion: string | null // 発祥地域。判定できない場合はnull(=不明。trend-history/requirements.md#地域情報-1)

@@ -44,3 +44,11 @@
     - 🟢 `parseOfficialPageEntries`を拡張して`<dt>/<dd>`パターンにも対応
   - 原因3: 時事通信・日本経済新聞(電子版)は技術的にスクレイピング不可能と判明したため情報源リストから削除(日付抽出・SPA構造の問題。requirements.md参照)
   - 対応: 総合・経済/ビジネスの採用基準([4])を満たす候補の母数を確保するため、産経新聞・ANN(テレビ朝日系)・FNNプライムオンライン(総合)、ダイヤモンド・オンライン・BUSINESS INSIDER JAPAN(経済/ビジネス)をYahoo!ニュース公式RSS経由で追加し、`watchlist.json`・`__tests__/news-digest/lib/watchlistData.test.ts`を更新(総合5件・経済/ビジネス3件・計13件)
+
+- Task 10(情報源の複数化・2026-10): 各カテゴリの情報源を複数化し偏りを減らす(仕様: requirements.md#情報源(固定リスト)-2、design.md「データ設計(情報源・採用基準)」「情報源から候補を収集する処理」。/consultでの壁打ちが起点)
+  - 対応1: 読売新聞・TBS NEWS DIG・日テレNEWS NNN・時事通信(総合)、ロイター(経済・ビジネス)を追加。各社公式サイトは直接アクセスできないため、Infoseekニュース配信社ページ(`news.infoseek.co.jp/publisher/<code>/`)経由の`official-page`取得にする
+    - 🔴 Infoseekニュース配信社ページの`.topics-list__text-title`/`.topics-list__text-option`構造から、見出しに日付文字列を混入させずに新着項目を抽出できることを確認する失敗テストを`__tests__/news-digest/lib/fetchCandidates.test.ts`に追加
+    - 🟢 `parseOfficialPageEntries`(`app/news-digest/lib/fetchCandidates.ts`)に`extractInfoseekTopicsListEntry`を追加し、この構造を優先的に拾うよう拡張(既存の`<li>`・`<dt>/<dd>`パターンのテストは維持)
+  - 対応2: 日経ビジネス電子版(経済・ビジネス)を追加。公式RSS(`https://business.nikkei.com/rss/sns/nb.rdf`)を直接取得する(日本経済新聞本紙とは別媒体のため、本紙がスクレイピング不可能という既存の制約には抵触しない)
+  - 対応3: 川崎市公式サイト(お知らせ・こども子育て)・横浜市公式サイト(記者発表・こども青少年局)を神奈川ローカル・育児に追加。各自治体の公式RSSを直接取得する
+  - 対応4: `watchlist.json`・`__tests__/news-digest/lib/watchlistData.test.ts`を更新(総合9件・経済/ビジネス5件・神奈川ローカル4件・育児5件・計23件)
