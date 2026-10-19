@@ -1,7 +1,5 @@
 # 要件定義: 記事詳細ページ
 
-> ステータス: 仕様確認中(未実装)(今回追加した固定4観点・図解機能のみ。既存部分は実装済み)
-
 ## サマリ
 その回(編ごと)の研究発見の記事(1ジャンル1本、対象編の5ジャンルだけ。現在は最大5本)を表示する。各記事には、ジャンル・影響度(大・中・小)のバッジ、要約、影響度の根拠、出典リンクを付ける。並び順は「影響度順」と「ジャンル順」を読者が切り替えられる(future-digestと同じ)。ログイン中の運営者本人は、記事ごとにフィードバックを残せる。
 
@@ -74,7 +72,7 @@ flowchart LR
 - 表示する記事は[content-selection/requirements.md](../content-selection/requirements.md)で選ばれ、[content-generation/requirements.md](../content-generation/requirements.md)のルールで書かれる
 - 読者の付箋は[bookmark/requirements.md](../bookmark/requirements.md)で定める
 - フィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで使われる
-- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
+- 図解のレンダリング(Mermaid)は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示、訪問者向けのコメント欄

@@ -1,7 +1,5 @@
 # 要件定義: 要約・記事執筆のルール
 
-> ステータス: 仕様確認中(未実装)(今回追加した固定3観点・図解機能のみ。既存部分は実装済み)
-
 ## サマリ
 content-selectionで採用された各トピック(音楽・映画・グルメなど多様なジャンルの流行)について、著作権リスクを抑えつつ「なぜ今週話題なのか」が伝わる短い解説を生成するルールを定める。解説は固定3観点(急上昇の事実/なぜ注目されたか/確からしさ・注意点)に分け、観点ごとに固定ラベルを表示する。「なぜ注目されたか」は情報源(Googleトレンドの関連ニュース等)だけで判断できない場合、WebSearchでの追加調査で補う。著作権配慮の方針(要約分量の制限・出典明記・利用規約への条項追記)はai-dev-digestと同じ考え方を踏襲する。
 
@@ -30,7 +28,7 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - [6] 出典(情報源名・元URLへのリンク)を必ず明記する
 
 ### 図解
-- [7] 観点ごと、または記事全体について、図解が理解の助けになるかをエージェントが判断する。単純な事実関係のみのトピックでは、無理に図解を作らない([news-digest/content-generation/requirements.md#図解](../../news-digest/content-generation/requirements.md)と同じ考え方・同じ技術(Mermaid/Nano Banana)を踏襲する)
+- [7] 流れ・分岐・時系列のような構造を示すのに適した観点には、Mermaid記法の図を作る。該当しない単純な事実関係のみの観点では、無理にMermaid図を作らず`diagram`を`null`にする(要否の判断はエージェントに委ねる。2026-10改定: 画像による図解(AI画像生成→コードでのアイコン図SVG描画)も試みたが、いずれも求める品質を満たせなかったため、画像による図解は行わないことにし、Mermaid図のみを図解として扱う)
 
 ### 記事の構成
 - [8] 各トピックには見出し・固定3観点の解説(観点ごとの見出し・本文)・ジャンル名・出典情報(情報源名・元URL)をセットで含める
@@ -55,16 +53,13 @@ content-selectionで採用された各トピック(音楽・映画・グルメ�
 - [6] 継続度ラベル・注目度ラベル・継続日数・報告回数・地域は[trend-history/requirements.md](../trend-history/requirements.md)が判定した値をそのまま扱い、本文の中でそれと異なる段階・期間・地域を書かない(判定と本文が食い違うと、読者にとってどちらが正しいか分からなくなるため)
 - [7] 続報の「なぜ注目されたか」観点の本文が、前回掲載時の同観点の本文と完全に同一になった場合は、その候補の生成を失敗として扱う(同じ内容の記事を繰り返し公開しないための最終防波堤。検証方法は設計で定める)
 
-### 図解の生成(Nano Banana)
-- [8] Nano Banana(Gemini 2.5 Flash Image)の利用方針・制約は[news-digest/content-generation/requirements.md#図解の生成(Nano Banana)](../../news-digest/content-generation/requirements.md)の定めと同一とする(重複して記載しない)
-
 ## 依存関係
 - 対象トピックの選定は[content-selection/requirements.md](../content-selection/requirements.md)に従う
 - 生成された記事は[article-detail/requirements.md](../article-detail/requirements.md)で表示される
 - 記事の生成・公開タイミングは[weekly-publish/requirements.md](../weekly-publish/requirements.md)に従う
 - ここで定める要約・記事執筆のルールは、蓄積された運営者フィードバックをもとに[source-review/requirements.md](../source-review/requirements.md)の月次見直し(生成領域)で調整される
 - 続報かどうか・通算の報告回数・継続度ラベル・注目度ラベルは[trend-history/requirements.md](../trend-history/requirements.md)の判定結果を、content-selectionを経て受け取る
-- Nano Bananaの呼び出しにはGemini APIキーが必要(news-digestと共用のGitHub Actions secrets運用)
+- Mermaid図の描画はクライアント側のMermaidライブラリに委ねるため、記事生成時点では外部APIの呼び出し・認証情報は不要
 
 ## スコープ外
 - 日本語以外の言語への翻訳(対象読者は日本語話者のみ)

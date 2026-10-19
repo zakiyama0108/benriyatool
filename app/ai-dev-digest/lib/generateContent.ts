@@ -46,9 +46,26 @@ function isQuotaExhausted(res: ClaudeCliResponse): boolean {
 
 // エージェントが生成した内容として使えるか(見出し・固定4観点summary・importanceが揃っているか)を判定する。
 // 分量の上下限の妥当性はビルド時のparseArticle(article-detail)が検証するため、ここでは
-// 「取得不能でsummary: nullを返してきた」ケース(design手順8)・観点の欠落/空文字・importanceの範囲外を
-// 一時的失敗として弾くための非空・形式チェックにとどめる(2026-08修正: 固定4観点+importance形式に変更)
-const SUMMARY_KEYS = ['benefit', 'whatsNew', 'how', 'howToUse'] as const
+// 「取得不能でsummary: nullを返してきた」ケース(design手順14)・観点の欠落/空文字・importanceの範囲外を
+// 一時的失敗として弾くための非空・形式チェックにとどめる(2026-08修正: 固定4観点+importance形式に変更。
+// 2026-09修正: 💡新規性(whatsNew)を廃止し🧭開発領域(domain)を追加した新形式に対応。新規生成では
+// summaryがdomainキーを持つ想定だが、summaryValidation.isValidSummaryDetailLengthと同じ考え方で
+// 新旧どちらの4キー構成も受け付ける)
+const DOMAIN_SUMMARY_KEYS = ['domain', 'benefit', 'how', 'howToUse'] as const
+const WHATS_NEW_SUMMARY_KEYS = ['benefit', 'whatsNew', 'how', 'howToUse'] as const
+
+function isValidPerspectiveShape(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false
+  const p = value as { heading?: unknown; teaser?: unknown; detail?: unknown }
+  return (
+    typeof p.heading === 'string' &&
+    p.heading.trim() !== '' &&
+    typeof p.teaser === 'string' &&
+    p.teaser.trim() !== '' &&
+    typeof p.detail === 'string' &&
+    p.detail.trim() !== ''
+  )
+}
 
 function isUsableContent(value: unknown): value is GeneratedContent {
   if (typeof value !== 'object' || value === null) return false
@@ -57,19 +74,16 @@ function isUsableContent(value: unknown): value is GeneratedContent {
   if (!isValidImportance(v.importance)) return false
   if (typeof v.summary !== 'object' || v.summary === null) return false
   const summary = v.summary as Record<string, unknown>
-  return SUMMARY_KEYS.every((key) => {
-    const perspective = summary[key]
-    if (typeof perspective !== 'object' || perspective === null) return false
-    const p = perspective as { heading?: unknown; teaser?: unknown; detail?: unknown }
-    return (
-      typeof p.heading === 'string' &&
-      p.heading.trim() !== '' &&
-      typeof p.teaser === 'string' &&
-      p.teaser.trim() !== '' &&
-      typeof p.detail === 'string' &&
-      p.detail.trim() !== ''
-    )
-  })
+
+  const isDomainFormat = 'domain' in summary
+  const keys = isDomainFormat ? DOMAIN_SUMMARY_KEYS : WHATS_NEW_SUMMARY_KEYS
+  if (!keys.every((key) => isValidPerspectiveShape(summary[key]))) return false
+
+  if (isDomainFormat) {
+    const domain = summary.domain as { domains?: unknown }
+    if (!Array.isArray(domain.domains) || domain.domains.length === 0) return false
+  }
+  return true
 }
 
 // CLI応答を成功/一時的失敗/利用枠枯渇の3種に分類する(design.md「要約を書く処理」手順8・「エラーハンドリング」)

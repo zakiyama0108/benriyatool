@@ -1,34 +1,59 @@
 import { describe, it, expect } from 'vitest'
-import { BODY_MIN_LENGTH, BODY_MAX_LENGTH, isValidBodyLength, isValidHeading } from '../../../app/future-digest/lib/bodyValidation'
+import { BODY_MIN_LENGTH, BODY_MAX_LENGTH, isValidSectionsLength, isValidHeading } from '../../../app/future-digest/lib/bodyValidation'
 
-function makeBody(length: number): string {
-  return 'あ'.repeat(length)
+function makeSection(length: number, overrides: Partial<{ heading: string; text: string }> = {}) {
+  return { heading: '見出し', text: 'あ'.repeat(length), diagram: null, ...overrides }
+}
+
+// 3観点のtextの合計が指定文字数になるよう、ほぼ均等に3分割して組み立てる
+function makeSections(totalLength: number) {
+  const base = Math.floor(totalLength / 3)
+  const remainder = totalLength - base * 3
+  return {
+    when: makeSection(base + remainder),
+    basis: makeSection(base),
+    impact: makeSection(base),
+  }
 }
 
 // 仕様: specs/future-digest/content-generation/requirements.md#要約-3
-describe('本文の分量検証 - 本文の分量(200〜400字程度)を160〜480字の範囲で検証する', () => {
-  it('160字未満は不正であること', () => {
-    expect(isValidBodyLength(makeBody(BODY_MIN_LENGTH - 1))).toBe(false)
+describe('固定3観点(sections)の分量検証 - 3観点のtextを連結した文字数(200〜400字程度)を160〜480字の範囲で検証する', () => {
+  it('3観点合計が160字未満は不正であること', () => {
+    expect(isValidSectionsLength(makeSections(BODY_MIN_LENGTH - 1))).toBe(false)
   })
 
-  it('480字を超える場合は不正であること', () => {
-    expect(isValidBodyLength(makeBody(BODY_MAX_LENGTH + 1))).toBe(false)
+  it('3観点合計が480字を超える場合は不正であること', () => {
+    expect(isValidSectionsLength(makeSections(BODY_MAX_LENGTH + 1))).toBe(false)
   })
 
-  it('160字ちょうどは妥当であること', () => {
-    expect(isValidBodyLength(makeBody(BODY_MIN_LENGTH))).toBe(true)
+  it('3観点合計が160字ちょうどは妥当であること', () => {
+    expect(isValidSectionsLength(makeSections(BODY_MIN_LENGTH))).toBe(true)
   })
 
-  it('480字ちょうどは妥当であること', () => {
-    expect(isValidBodyLength(makeBody(BODY_MAX_LENGTH))).toBe(true)
+  it('3観点合計が480字ちょうどは妥当であること', () => {
+    expect(isValidSectionsLength(makeSections(BODY_MAX_LENGTH))).toBe(true)
   })
 
-  it('nullは不正であること', () => {
-    expect(isValidBodyLength(null)).toBe(false)
+  it('sectionsがnullのとき、不正であること', () => {
+    expect(isValidSectionsLength(null)).toBe(false)
   })
 
-  it('空文字は不正であること', () => {
-    expect(isValidBodyLength('')).toBe(false)
+  it('whenキーが欠落しているとき、不正であること', () => {
+    const sections = makeSections(250) as Record<string, unknown>
+    delete sections.when
+    expect(isValidSectionsLength(sections)).toBe(false)
+  })
+
+  it('basisのheadingが空文字のとき、不正であること', () => {
+    const sections = makeSections(250)
+    sections.basis = makeSection(80, { heading: '' })
+    expect(isValidSectionsLength(sections)).toBe(false)
+  })
+
+  it('impactのtextが空文字のとき、不正であること', () => {
+    const sections = makeSections(250)
+    sections.impact = makeSection(0)
+    expect(isValidSectionsLength(sections)).toBe(false)
   })
 })
 

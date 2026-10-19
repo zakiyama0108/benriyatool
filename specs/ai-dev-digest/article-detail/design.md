@@ -20,10 +20,10 @@ export type SummarySection = {
   detail: string // 「詳細を見る」操作で展開表示する詳細文
 }
 
-// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形)
-export type Diagram =
-  | { type: 'mermaid'; code: string }
-  | { type: 'image'; path: string }
+// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形。
+// 2026-10改定: 画像による図解(AI画像生成→コードでのアイコン図SVG描画)も試みたが、いずれも
+// 求める品質を満たせなかったため、画像による図解は行わないことにし、Mermaid図のみを扱う)
+export type Diagram = { type: 'mermaid'; code: string }
 
 // 【新形式】固定4観点1つ分(content-generation/requirements.md#要約-9〜12)
 export type SummaryPerspective = {
@@ -135,6 +135,7 @@ export function isLegacyTopic(topic: Topic): topic is LegacyTopic {
   4. `isLegacyTopic(topic)`が`false`の場合、`summary`が`hasDomainPerspective(summary)`なら`domain`→`benefit`→`how`→`howToUse`の順、そうでなければ`benefit`→`whatsNew`→`how`→`howToUse`の順(いずれもこの順序で固定)に、固定ラベル(`p`相当・観点名そのもの)→各観点の見出し(`h3`相当)→導入文(`teaser`)の順で常時表示する。`domain`観点は固定ラベルの下に`domains`の開発領域タグ(`DOMAIN_LABELS`の日本語ラベル)をあわせて表示する。`true`(`LegacyTopic`)の場合は`sections`配列の順に、セクション見出しと導入文を常時表示する(固定ラベル・開発領域タグは表示しない。content-generation/requirements.md#要約-3・5、requirements.md#記事本文表示-3)
   5. 各観点(またはセクション)の導入文の下に、HTML標準の`<details><summary>詳細を見る</summary>…</details>`要素を配置し、`<summary>`を操作すると詳細文(`detail`)が展開表示されるようにする。ブラウザ標準機能で開閉できるため、開閉状態を保持するJavaScriptの状態管理を自前で持つ必要がない(要件「操作前は導入文のみ、操作後に詳細文」に対応。requirements.md#記事本文表示-4)
   5-1. `isLegacyTopic(topic)`が`false`の場合、各観点の`diagram`が`null`でも`undefined`でもない場合、詳細文の下に`DiagramView`を表示する(requirements.md#記事本文表示-14)
+  5-2. `isLegacyTopic(topic)`が`false`の場合、展開表示する詳細文(`detail`)は生のテキストとしてではなく`FormattedText`で描画する。`parseFormattedText(detail)`が段落・番号付きリスト(`1. `)・箇条書き(`- `)・コードブロック(```)のブロックに分解し、各ブロック内のインライン記法(`` `code` ``・`[text](url)`)も解析する。コードブロックには内容をそのままクリップボードにコピーする操作を付ける(requirements.md#記事本文表示-15)。`isLegacyTopic(topic)`が`true`(旧形式)の場合は、この機能追加前の文章表現のままのため従来どおり生テキストで表示する(無理な再解釈はしない)
   6. 各トピックには情報源の種別(公式組織/個人YouTube/個人ブログ/Qiita/Zenn)が分かるバッジを表示する(表示位置・文言は「画面設計」参照)
   7. `youtubeVideoId`を持つトピックは、要約の下にYouTube公式の埋め込みプレーヤー(`<iframe>`、`youtube-nocookie.com`ドメイン)を表示する(content-generation/requirements.md#著作権への配慮-6)。持たない場合は表示しない
   8. `belowCriteria`が`true`のトピックには「採用基準未達」バッジと`belowCriteriaReason`の内容を小さく添える。1件以上該当がある記事では、記事冒頭にも「この日は基準を満たす候補が少なかったため、一部のトピックは基準に届いていない内容を含みます」という注記を1回だけ表示する(繰り返し表示による煩雑さを避けるため)
@@ -187,7 +188,7 @@ sequenceDiagram
 - 各`topic`: `id`が記事内で重複しないこと、`heading`/`sourceName`/`sourceUrl`が空文字でないこと、`sourceUrl`が`http`または`https`で始まる絶対URLであること、`sourcePublishedAt`は任意項目だが指定する場合はISO 8601形式としてパース可能な日時文字列であること、`sourceType`が定義済み種別のいずれかであること、`belowCriteria`が`true`の場合は`belowCriteriaReason`が必須(false時は無くてよい)
 - 各`topic`は`sections`キー(`LegacyTopic`)または`summary`+`importance`キー(`CurrentTopic`)のどちらか一方を持つこと。両方持つ・どちらも持たない場合は不正とする(`isLegacyTopic`の判定と対になる制約)
 - `sections`(`LegacyTopic`の場合。既存記事データの検証ルールとしてそのまま維持する): 配列長が**2件以上**であること(要件「複数のセクションに分けて構成する」により1件は不正)。各セクションの`heading`/`teaser`/`detail`が空文字でないこと。各セクションの`teaser`が40〜140字の範囲であること(目安60〜120字)。全セクションの`detail`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字)
-- `summary`+`importance`(`CurrentTopic`の場合): `summary`が(a)`domain`/`benefit`/`how`/`howToUse`の4キー、または(b)`benefit`/`whatsNew`/`how`/`howToUse`の4キーのいずれか一方をすべて持つこと(両方・どちらも満たさない組み合わせは不正。`hasDomainPerspective`の判定と対になる制約)。各観点の`heading`/`teaser`/`detail`が空文字でないこと。各観点の`teaser`が40〜140字の範囲であること(目安60〜120字。content-generation/requirements.md#要約-3)。4観点の`detail`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字。content-generation/requirements.md#要約-4)。`importance`が1〜5の整数であること(content-generation/requirements.md#重要度-13)。`domain`観点がある場合、`domains`が1件以上の配列で各要素がrequirements.md#開発領域-15の値のいずれかであること。各観点の`diagram`は省略可、ある場合は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`content/ai-dev-digest/articles/images/`配下を指す)のいずれかであること
+- `summary`+`importance`(`CurrentTopic`の場合): `summary`が(a)`domain`/`benefit`/`how`/`howToUse`の4キー、または(b)`benefit`/`whatsNew`/`how`/`howToUse`の4キーのいずれか一方をすべて持つこと(両方・どちらも満たさない組み合わせは不正。`hasDomainPerspective`の判定と対になる制約)。各観点の`heading`/`teaser`/`detail`が空文字でないこと。各観点の`teaser`が40〜140字の範囲であること(目安60〜120字。content-generation/requirements.md#要約-3)。4観点の`detail`を連結した文字数が800〜1700字の範囲であること(目安1000〜1500字。content-generation/requirements.md#要約-4)。`importance`が1〜5の整数であること(content-generation/requirements.md#重要度-13)。`domain`観点がある場合、`domains`が1件以上の配列で各要素がrequirements.md#開発領域-15の値のいずれかであること。各観点の`diagram`は省略可、ある場合は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)のいずれかであること
 - 上記を満たさない場合は例外を投げる(下記エラーハンドリング参照)。フィードバック送信の入力内容自体(自由記述テキスト)は長さ・文字種の制限を設けないが、空文字または空白文字のみの場合は送信できない(トリムした結果が空文字になる入力を拒否する)(requirements.md#運営者向けフィードバック-10)
 
 ## エラーハンドリング
@@ -210,10 +211,11 @@ app/ai-dev-digest/components/SourceBadge.tsx (新規)
 app/ai-dev-digest/components/YoutubeEmbed.tsx (新規)
 app/ai-dev-digest/components/FeedbackForm.tsx (新規)
 app/ai-dev-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
+app/ai-dev-digest/lib/parseFormattedText.ts (新規: 詳細文の簡易Markdown解析。段落・番号付きリスト・箇条書き・コードブロック・インラインのcode/linkに分解する純粋関数)
+app/ai-dev-digest/components/FormattedText.tsx (新規: parseFormattedTextの解析結果を表示する。コードブロックにコピー操作を付ける)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdminを利用。2026-08修正: isAuthorizedAdminはフィードバック欄の表示切り替えに利用する)
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 content/ai-dev-digest/articles/*.json (新規: 記事本文データ。コード資産ではないためapp/配下に置かない)
-content/ai-dev-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
 ```
 
 ## データベース設計
@@ -263,7 +265,7 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 - パンくず(べんりやつーる › 週刊ダイジェスト一覧 › AI駆動開発ダイジェスト › 記事タイトル)
 - デスクトップ幅(md以上、768px)では本文の右側に目次(各トピック見出しへのアンカーリンク)を表示する。モバイル幅では本文がそのまま縦に並ぶため目次は表示しない(`ikukyu/guide`の`ArticleSidebar`(`specs/ikukyu/guide/design.md#PC版レイアウト`)と同じ構造・ブレークポイント・スタイルを踏襲する)
 - 記事タイトル・公開日
-- トピックごとのカード: 情報源種別バッジ、(2026-08以降生成のみ)重要度(★1〜★5)、見出し、要約(最新形式: 固定4観点それぞれに固定ラベル(観点名)→結論文→導入文をこの順(🧭開発領域/🚀メリット/🛠仕組み/🎯活用法)に常時表示。🧭開発領域観点のみ固定ラベルの下に開発領域タグを並べる。💡新規性を含む旧形式: 固定ラベルなしで🚀メリット/💡新規性/🛠仕組み/🎯活用法の結論文→導入文を表示。さらに古いセクション形式: 従来通りセクション見出し+導入文を2〜4セクション程度常時表示。いずれも各観点/セクションに「詳細を見る」の開閉操作を配置し、展開すると詳細文(合計1000〜1500字程度)が表示される。図解がある観点は詳細文の下にMermaid図または生成画像を表示)、出典(発信者名・元URLへのリンク、新規タブで開く。(該当時)投稿日時を併記)、(該当時)YouTube埋め込みプレーヤー、(該当時)「採用基準未達」バッジ+理由の小さな注記
+- トピックごとのカード: 情報源種別バッジ、(2026-08以降生成のみ)重要度(★1〜★5)、見出し、要約(最新形式(🧭開発領域観点を含む): 固定4観点それぞれに固定ラベル(観点名)→結論文→導入文をこの順(🧭開発領域/🚀メリット/🛠仕組み/🎯活用法)に常時表示。🧭開発領域観点のみ固定ラベルの下に開発領域タグを並べる。💡新規性を含む旧形式: 固定4観点それぞれに固定ラベル(観点名)→結論文→導入文をこの順(🚀メリット/💡新規性/🛠仕組み/🎯活用法)に常時表示(開発領域タグは表示しない)。さらに古いセクション形式: 従来通りセクション見出し+導入文を2〜4セクション程度常時表示(固定ラベルは表示しない)。いずれも各観点/セクションに「詳細を見る」の開閉操作を配置し、展開すると詳細文(合計1000〜1500字程度)が表示される。図解がある観点は詳細文の下にMermaid図を表示)、出典(発信者名・元URLへのリンク、新規タブで開く。(該当時)投稿日時を併記)、(該当時)YouTube埋め込みプレーヤー、(該当時)「採用基準未達」バッジ+理由の小さな注記
 - 基準未達トピックが1件以上ある場合、記事冒頭に注記文を1回表示
 - 各トピックの下: 運営者本人がログイン中の場合のみフィードバック入力欄(テキストエリア+送信ボタン)を表示する(2026-08修正: 従来はログイン中の読者全員に表示していたが、[bookmark](../bookmark/requirements.md)によりログインが読者全員に開放されたため運営者本人限定に変更)。送信後は「送信しました」、失敗時は「送信に失敗しました。もう一度お試しください」を表示
 - ページ下部: ログイン状態表示(2026-08修正: 未ログイン時のボタン文言は「ログイン」。運営者限定を示す表現は使わない。詳細は[bookmark/design.md](../bookmark/design.md)「画面設計」)。ログイン中はログイン中メールアドレス+ログアウトボタン(`life-money-sim`の`LoginStatus`と同じ表示)
@@ -278,6 +280,7 @@ create policy "benriyatool_readonly can select" on ai_dev_digest_feedback
 | YoutubeEmbed | `videoId: string` | YouTube公式埋め込みプレーヤー(`youtube-nocookie.com`)を表示 |
 | FeedbackForm | `articleDate: string`, `topicId: string` | 自由記述の入力欄・送信・送信結果表示 |
 | DiagramView | `diagram: Diagram \| null \| undefined` | 図解の表示。`null`/`undefined`は何もレンダリングしない(news-digestと共通の実装) |
+| FormattedText | `text: string` | `CurrentTopic`の詳細文を段落・番号付きリスト・箇条書き・コードブロック(コピー操作付き)・リンクとして表示する(2026-10新規。requirements.md#記事本文表示-15) |
 
 ## 状態管理
 

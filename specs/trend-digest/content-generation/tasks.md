@@ -6,7 +6,7 @@
   - 🔴 本文の文字数が160字未満・480字超で`false`、160〜480字(境界値含む)で`true`になること、`heading`/`body`が`null`または空文字で不正になることを確認するテストを書く
   - 🟢 `app/trend-digest/lib/bodyValidation.ts`に`BODY_MIN_LENGTH`/`BODY_MAX_LENGTH`/`isValidTopicBodyLength`を実装する
 
-- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-6、design.md「記事タイトルを導出する処理」)
+- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-9、design.md「記事タイトルを導出する処理」)
   - 🔴 `entertainment`・`2026-09-15`から`週刊トレンド エンタメ編 2026年9月15日号`、`culture-lifestyle`・`2026-09-18`から`週刊トレンド カルチャー編 2026年9月18日号`が生成されることを確認するテストを書く(1桁月日でゼロ埋めしないこと等)
   - 🟢 `app/trend-digest/lib/articleTitle.ts`に`buildArticleTitle(edition: Edition, date: string): string`を実装する
 
@@ -38,11 +38,6 @@
   - 🟢 `app/trend-digest/lib/duplicateReason.ts`に`isDuplicateOfLastPublishedReason(reason, lastPublishedReason)`を実装する(旧ロジックの対象を`body`から`reason.text`に変更したもの)
 
 - Task 9: 図解データの検証(仕様: requirements.md#図解-7、design.md「見出し・固定3観点を書く処理」手順12)
-  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合・`{type:'image', prompt: '非空文字'}`の場合はいずれも有効、`code`/`prompt`が空文字の場合やtype不明の場合は不正と判定することを確認するテストを書く(news-digestの`diagramValidation.ts`と同じロジック)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合はいずれも有効、`code`が空文字・空白のみ・type不明(`image`等)・オブジェクトでない値の場合は不正と判定することを確認するテストを書く
   - 🟢 `app/trend-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
-
-- Task 10: Nano Banana呼び出しと保存(仕様: requirements.md#図解の生成(Nano Banana)-8、design.md「見出し・固定3観点を書く処理」手順12)
-  - TDD対象外(外部API呼び出し・ファイル書き込みのオーケストレーションのため。入力の妥当性判定はTask 9でテスト済み)
-  - `scripts/trend-digest/generateDiagram.ts`を実装する(news-digestの`generateDiagram.ts`と同じロジック。保存先のみ`content/trend-digest/articles/images/`に変更)
-  - `scripts/trend-digest/generate-content.ts`から、各観点の`diagram.type === 'image'`の場合のみこの処理を呼び出すよう配線する
   - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照

@@ -112,4 +112,32 @@ describe('掲載実績(掲載回数・報告回数・直近掲載時の継続度
     const record = lookupPublishRecord(records, '未掲載の話題')
     expect(record).toEqual({ publishedCount: 0, reportCount: 1, lastPublishedDurationLabel: null, lastPublishedBody: null })
   })
+
+  // 仕様: specs/trend-digest/content-generation/requirements.md#エージェントの逸脱防止-7
+  it('新形式(固定3観点sections)の記事は、直近掲載時の本文として「なぜ注目されたか」観点(reason.text)が使われること', () => {
+    writeArticle('2026-09-01-entertainment.json', {
+      id: '2026-09-01-entertainment',
+      edition: 'entertainment',
+      date: '2026-09-01',
+      topics: [
+        {
+          id: 'topic-1',
+          genre: 'music',
+          heading: '見出し',
+          sections: {
+            fact: { heading: '見出し', text: 'あ'.repeat(100), diagram: null },
+            reason: { heading: '見出し', text: 'なぜ注目されたかの本文。'.repeat(10), diagram: null },
+            caveat: { heading: '見出し', text: 'あ'.repeat(100), diagram: null },
+          },
+          sourceTitle: '新曲A',
+          sourceName: '出典',
+          sourceUrl: 'https://example.com/x',
+        },
+      ],
+    })
+
+    const records = collectPublishRecords(tmpDir)
+    const record = lookupPublishRecord(records, '新曲a')
+    expect(record.lastPublishedBody).toBe('なぜ注目されたかの本文。'.repeat(10))
+  })
 })

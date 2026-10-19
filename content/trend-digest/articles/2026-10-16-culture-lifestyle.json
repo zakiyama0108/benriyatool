@@ -1,0 +1,123 @@
+{
+  "id": "2026-10-16-culture-lifestyle",
+  "edition": "culture-lifestyle",
+  "date": "2026-10-16",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "buzzwords",
+      "heading": "タイのスティダー王妃、自ら操縦して札幌へ――戦闘機の単独飛行も報じられ検索が急上昇",
+      "body": "Google公式トレンドRSS(日本)で、「スティダー王妃」が急上昇ワードとして現れた。検索数の目安は100+で、継続度は「流行前」、注目度は「高い」、継続日数は0日、報告回数は1回目だ。背景として、関連ニュースでは、王妃が旅客機を自ら操縦して札幌方面へ着陸したことが伝えられている。あわせて、ジェット戦闘機での単独飛行や、旅客機の副操縦士の経験にも触れる報道が並ぶ。王妃という立場と操縦士としての実績の組み合わせが、日本の読者の関心を引いたと考えられる。ただし、この理由は関連ニュースの見出しと概要からの推測で、検索が増えた直接の要因は断定できない。流行が続くかも、現時点では見通せない。詳しくはテレ朝NEWS、読売新聞、千葉テレビ放送など一次報道を参照してほしい。出典: Google公式トレンドRSS(日本) https://trends.google.com/trending/rss?geo=JP",
+      "sourceTitle": "スティダー王妃",
+      "sourceName": "Google公式トレンドRSS(日本)",
+      "sourceUrl": "https://trends.google.com/trending/rss?geo=JP",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-16",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-2",
+      "genre": "gourmet",
+      "heading": "ドバイチョコの次の候補? トルコ菓子「エンジェルヘアー」を包んだチョコが静かに登場",
+      "body": "トルコの伝統菓子ピシュマニエ(糸状の綿菓子風の菓子)をチョコで包んだ「エンジェルヘアーチョコ」が、グルメ分野で動き出しています。繊細な糸の食感とチョコの組み合わせが、ピスタチオ系スイーツで盛り上がったドバイチョコの流れに乗る新顔として紹介されています。ただし継続度は「流行前」、注目度は「低い」、継続日数は0日で、今回が初めての掲載です。発祥地域や主な流行地域も不明です。複数ブランドが扱っているとみられますが、話題になった決定的な理由までは特定できませんでした。今後広がるかは見通せない段階なので、気になる方は様子見で。詳しくは出典のmacaroniなど一次情報をご確認ください(出典: macaroni https://webtan.impress.co.jp/r/prtimes/items/000000115.000005511 )。",
+      "sourceTitle": "エンジェルヘアーチョコ(トルコ菓子を使ったチョコ)",
+      "sourceName": "macaroni",
+      "sourceUrl": "https://webtan.impress.co.jp/r/prtimes/items/000000115.000005511",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-16",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-3",
+      "genre": "hobby",
+      "heading": "W杯2026を機に、PANINIのサッカーカードが次のホビーの本命に?専門家が人気拡大を予測",
+      "body": "DIMEのホビー分野のトレンド予測で、W杯2026をきっかけにPANINIのサッカーカードの人気が広がるとの見方が紹介されています。PANINIはFIFA公式ライセンスのもとでW杯関連のカードやステッカーを出し続けており、欧州ではすでに定着したコレクション文化です。専門家は、出場国が増えて関心が高まれば、日本でも熱が波及して価格が上がり、投資対象になり得ると見ています。ただし現時点の継続度は「流行前」で、注目度も低く、継続日数は0日、報告は今回が初めてです。主な流行地域はヨーロッパで、発祥地域は不明です。予測は専門家の見立てに基づくもので、DIMEの記事中でも確度は70%程度とされています。実際に広がるかは大会の盛り上がり次第なので、詳しい根拠は出典の記事で確認してください。",
+      "sourceTitle": "サッカーW杯2026関連のPANINIカード人気",
+      "sourceName": "DIME",
+      "sourceUrl": "https://dime.jp/genre/2068263/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-16",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": [
+          "ヨーロッパ"
+        ]
+      }
+    },
+    {
+      "id": "topic-4",
+      "genre": "fashion",
+      "heading": "2026-27年秋冬は「愛着」がキーワードに ― 手仕事風の刺しゅうニットや制服風ブレザーが話題",
+      "body": "今回の話題は、2026-27年秋冬の「愛着」ムードです。手仕事風の刺しゅうニット、スクール制服風のブレザーやシャツ、メンズとレディスの境界を越えるスタイルが挙げられています。急上昇の事実としては、通算1回目の報告で、継続度は「流行前」、注目度は「低い」、継続日数は0日です。発祥地域も現在の主な流行地域も不明です。背景として、WWDJAPANの関連記事では、実用性や着る人の個性に寄り添う流れや、長く着込んだ服の味わい、制服のように毎日着て愛着が育つ発想が語られていました。ただし元記事は取得できず、個々のアイテムとの結びつきは関連情報からの推測を含みます。流行が定着するかはまだ見通せません。詳しくは出典のWWDJAPANをご確認ください。",
+      "sourceTitle": "2026-27年秋冬トレンド「愛着」ムード(手仕事風刺しゅうのニット、スクール制服風ブレザー・シャツ、メンズ×レディスの境界を越えるスタイル)",
+      "sourceName": "WWDJAPAN",
+      "sourceUrl": "https://webtan.impress.co.jp/r/prtimes/items/000000187.000080364",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-16",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-5",
+      "genre": "games",
+      "heading": "Counter-Strike 2がSteamのプレイヤー数ランキングで1位を維持、7日間の上位が続く",
+      "body": "Steamの公式プレイヤー数データでCounter-Strike 2が1位に入り、前週から順位は変わっていません。ピーク同時接続数は約128万人でした。対戦型FPSとして長く遊ばれてきた定番タイトルが、今週も首位を守った形です。背景として、新規の話題だけでなく既存プレイヤーの継続的な参加が数字を支えているとみられますが、今回確認できた情報には、今週に特有の出来事(大型アップデートや大会など)の記載がなく、急上昇の具体的な理由は特定できませんでした。継続度は『流行前』で、継続日数は7日です。今後も上位が続くかは、この段階では見通せません。発祥地域・現在の主な流行地域も不明です。詳細な数値は一次情報であるSteam公式Web API(プレイヤー数)をご確認ください。",
+      "sourceTitle": "Counter-Strike 2",
+      "sourceName": "Steam公式Web API(プレイヤー数)",
+      "sourceUrl": "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 7,
+        "continuationStartDate": "2026-10-09",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-6",
+      "genre": "travel",
+      "heading": "じゃらんnetの「定番観光スポット47選」が急上昇、ただし背景は特定できず",
+      "body": "「【2026】一度は行きたい！日本全国「定番観光スポット」47選」が、検索の急上昇として観測されました。継続日数は7日、継続度は「流行前」、注目度は「高い」です。じゃらんnetの一覧ページで確認できたのは、全国の定番スポットを47件紹介する趣旨の見出しと公開日(2026年1月28日)までで、本文は確認できていません。そのため、なぜ今注目されたのかという背景は特定できませんでした。季節の行楽需要など、推測できる要因はありますが、裏付けはありません。流行前の段階なので、この関心が続くかも見通せません。詳しい内容は、出典のじゃらんnet人気ランキング(https://www.jalan.net/news/)で確認してください。",
+      "sourceTitle": "【2026】一度は行きたい！日本全国「定番観光スポット」47選",
+      "sourceName": "じゃらんnet人気ランキング",
+      "sourceUrl": "https://www.jalan.net/news/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 7,
+        "continuationStartDate": "2026-10-09",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    }
+  ],
+  "unavailableGenres": [
+    "sns-buzz",
+    "gadgets",
+    "economy-money",
+    "dev-trends"
+  ]
+}

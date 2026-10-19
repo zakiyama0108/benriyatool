@@ -1,7 +1,5 @@
 # 要件定義: 記事詳細ページ
 
-> ステータス: 仕様確認中(未実装)(今回追加した固定ラベル・固定3観点・図解機能のみ。既存部分は実装済み)
-
 ## サマリ
 その回のトレンド記事本文を、その編の全ジャンルの見出しごとに区切って、各ジャンル1件のトピック(`unavailableGenres`を持たない公開済みの過去記事は例外で、記録されているとおりに表示する)・要約・出典リンクを表示する。各トピックには、その話題がどれだけ続いているか(継続度ラベル)・今どれくらい強いか(注目度ラベル)・継続期間・何回目の報告か・どの地域で流行しているかをあわせて表示する。情報源から話題を取得できなかったジャンルは、見出しを出したうえでその旨を表示する。あわせて、運営者本人がその場でフィードバックを残せるようにする。
 
@@ -93,7 +91,7 @@ flowchart LR
 - 要約の生成ルールは[content-generation/requirements.md](../content-generation/requirements.md)に従う
 - ログイン状態・運営者判定は既存の管理画面と同じGoogle OIDC + `admin_emails`許可リスト([docs/adr/0006-admin-screen-oidc-rls.md](../../../docs/adr/0006-admin-screen-oidc-rls.md)、`app/lib/adminAuth.ts`のisAuthorizedAdmin())を利用する。`admin_emails`テーブル・そのRLSポリシーは複数アプリ共有の既存資産であり、本specのための新しいテーブル・マイグレーションは不要
 - 蓄積されたフィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで参照される
-- 図解のレンダリング(Mermaid)・生成画像の保存先は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
+- 図解のレンダリング(Mermaid)は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
 
 ## スコープ外
 - フィードバックへの返信・公開表示

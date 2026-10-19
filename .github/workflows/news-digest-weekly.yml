@@ -13,9 +13,10 @@ name: 重要ニュース週刊ダイジェスト 週次記事公開
 on:
   schedule:
     # 毎時0分は世界中のscheduled workflowが集中し起動遅延が大きくなるため、0分を避けた17分に設定する
-    # (ai-dev-digestの日次実行(06:43 JST)の実測知見を踏襲し、0分を避ける。design.md「実行環境の前提」参照。
-    # ai-dev-digest/trend-digestの週次・月次実行と起動時刻をずらし、利用枠の競合時間帯を分散させる)
-    - cron: '17 21 * * 2' # 火曜21:17 UTC = 水曜06:17 JST
+    # (ai-dev-digestの日次実行の実測知見を踏襲し、0分を避ける。design.md「実行環境の前提」参照。
+    # ai-dev-digest/trend-digestの週次・月次実行と起動時刻をずらし、利用枠の競合時間帯を分散させる)。
+    # 配信は日付をまたいだ直後(JST未明)を狙う
+    - cron: '17 15 * * 2' # 火曜15:17 UTC = 水曜00:17 JST
   workflow_dispatch: # Secrets設定後の動作確認用に手動実行できるようにする
   workflow_run:
     workflows: ['CI']
@@ -89,8 +90,6 @@ jobs:
         if: steps.selection.outputs.status == 'ok'
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_AI_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_API_TOKEN }}
         run: |
           echo "[]" > /tmp/inputs.json
           count=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/selection.json','utf8')).topics.length)")

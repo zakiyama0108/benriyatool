@@ -3,8 +3,8 @@
 # 「1回分の記事を生成する処理」「利用上限への到達時に再実行する処理」「PRを作成しCIの結果を待つ処理」
 # 「PRを自動マージする処理」「CI失敗時に記録する処理」「収集失敗を運営者に警告する処理」「セキュリティ」)
 #
-# publishジョブ: からだ・くらし編(月曜07:43 JST本番+再実行3本)・科学・社会編
-# (土曜11:43 JST本番+再実行3本)のいずれかのcron、もしくは手動のworkflow_dispatchで起動する。
+# publishジョブ: からだ・くらし編(月曜01:43 JST本番+再実行3本)・科学・社会編
+# (土曜05:43 JST本番+再実行3本)のいずれかのcron、もしくは手動のworkflow_dispatchで起動する。
 # 候補収集・選定(content-selection)→見出し・本文生成(content-generation)→記事データ組み立て→
 # PR作成→auto-merge有効化までを行う。research-digest/articles/**ブランチからのPRに限り、CIが成功すると
 # 人間の承認なしに自動マージされる(trend-digestのweekly-publishと同じ例外運用)
@@ -15,15 +15,17 @@ name: 研究発見 週次記事公開
 on:
   schedule:
     # 毎時0分は世界中のscheduled workflowが集中し起動遅延が大きくなるため、0分を避けた43分に設定する
-    # (ai-dev-digest・trend-digestと同じ)。ai-dev-digestの日次実行(06:43 JST)と1時間ずらす
-    - cron: '43 22 * * 0' # 日曜22:43 UTC = 月曜07:43 JST(からだ・くらし編 本番)
-    - cron: '43 10 * * 1' # 月曜10:43 UTC = 月曜19:43 JST(からだ・くらし編 本番の12時間後の再実行)
-    - cron: '43 22 * * 1' # 月曜22:43 UTC = 火曜07:43 JST(からだ・くらし編 本番の24時間後の再実行)
-    - cron: '43 10 * * 2' # 火曜10:43 UTC = 火曜19:43 JST(からだ・くらし編 本番の36時間後の再実行)
-    - cron: '43 2 * * 6'  # 土曜02:43 UTC = 土曜11:43 JST(科学・社会編 本番。からだ・くらし編と4時間ずらす。design.md「主要な設計判断」)
-    - cron: '43 14 * * 6' # 土曜14:43 UTC = 土曜23:43 JST(科学・社会編 本番の12時間後の再実行)
-    - cron: '43 2 * * 0'  # 日曜02:43 UTC = 日曜11:43 JST(科学・社会編 本番の24時間後の再実行)
-    - cron: '43 14 * * 0' # 日曜14:43 UTC = 日曜23:43 JST(科学・社会編 本番の36時間後の再実行)
+    # (ai-dev-digest・trend-digestと同じ)。ai-dev-digestの日次実行(00:43 JST)と1時間ずらす。
+    # 配信は日付をまたいだ直後(JST未明)を狙う。future-digestとの衝突回避のための各編・各再実行の
+    # 相対的な時間差は維持する(design.md「実行環境の前提」参照)
+    - cron: '43 16 * * 0' # 日曜16:43 UTC = 月曜01:43 JST(からだ・くらし編 本番)
+    - cron: '43 4 * * 1'  # 月曜04:43 UTC = 月曜13:43 JST(からだ・くらし編 本番の12時間後の再実行)
+    - cron: '43 16 * * 1' # 月曜16:43 UTC = 火曜01:43 JST(からだ・くらし編 本番の24時間後の再実行)
+    - cron: '43 4 * * 2'  # 火曜04:43 UTC = 火曜13:43 JST(からだ・くらし編 本番の36時間後の再実行)
+    - cron: '43 20 * * 5' # 金曜20:43 UTC = 土曜05:43 JST(科学・社会編 本番。からだ・くらし編と4時間ずらす。design.md「主要な設計判断」)
+    - cron: '43 8 * * 6'  # 土曜08:43 UTC = 土曜17:43 JST(科学・社会編 本番の12時間後の再実行)
+    - cron: '43 20 * * 6' # 土曜20:43 UTC = 日曜05:43 JST(科学・社会編 本番の24時間後の再実行)
+    - cron: '43 8 * * 0'  # 日曜08:43 UTC = 日曜17:43 JST(科学・社会編 本番の36時間後の再実行)
   workflow_dispatch: # (a) Secrets設定後の動作確認、(b) 3回の自動再実行でも公開できなかった回の復旧、の2用途
     inputs:
       edition:
@@ -71,7 +73,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "value=${{ github.event.inputs.edition }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "43 22 * * 0" ] || [ "${{ github.event.schedule }}" = "43 10 * * 1" ] || [ "${{ github.event.schedule }}" = "43 22 * * 1" ] || [ "${{ github.event.schedule }}" = "43 10 * * 2" ]; then
+          elif [ "${{ github.event.schedule }}" = "43 16 * * 0" ] || [ "${{ github.event.schedule }}" = "43 4 * * 1" ] || [ "${{ github.event.schedule }}" = "43 16 * * 1" ] || [ "${{ github.event.schedule }}" = "43 4 * * 2" ]; then
             echo "value=body-life" >> "$GITHUB_OUTPUT"
           else
             echo "value=science-society" >> "$GITHUB_OUTPUT"
@@ -113,8 +115,8 @@ jobs:
           EDITION: ${{ steps.edition.outputs.value }}
         run: |
           schedule="${{ github.event.schedule }}"
-          if [ "$schedule" = "43 10 * * 1" ] || [ "$schedule" = "43 22 * * 1" ] || [ "$schedule" = "43 10 * * 2" ] \
-            || [ "$schedule" = "43 14 * * 6" ] || [ "$schedule" = "43 2 * * 0" ] || [ "$schedule" = "43 14 * * 0" ]; then
+          if [ "$schedule" = "43 4 * * 1" ] || [ "$schedule" = "43 16 * * 1" ] || [ "$schedule" = "43 4 * * 2" ] \
+            || [ "$schedule" = "43 8 * * 6" ] || [ "$schedule" = "43 20 * * 6" ] || [ "$schedule" = "43 8 * * 0" ]; then
             is_retry=true
           else
             is_retry=false
@@ -196,8 +198,6 @@ jobs:
         run: npx tsx scripts/research-digest/generate-content.ts /tmp/selection.json > /tmp/generation.json
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_AI_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_API_TOKEN }}
 
       # 生成に失敗したジャンルの数・査読前の論文の数をPR本文に載せるため集計する
       # (weekly-publish/design.md「PRを作成しCIの結果を待つ処理」「ログ」)

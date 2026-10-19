@@ -7,7 +7,7 @@
 
 実行主体はGitHub Actionsとする(ai-dev-digestのdaily-publishと同じ構成を踏襲)。
 
-- ワークフロー本体は`.github/workflows/news-digest-weekly.yml`として毎週水曜(JST想定時刻をUTCのcronに変換)に起動する。GitHub Actionsのscheduled workflowには起動時刻のSLAがないため、`cron`の分は0を避けて設定し、起動遅延の傾向を緩和する(ai-dev-digest/daily-publish/design.mdと同じ理由。厳密な定刻配信までは保証しない)
+- ワークフロー本体は`.github/workflows/news-digest-weekly.yml`として毎週水曜(JST想定時刻をUTCのcronに変換)に起動する。GitHub Actionsのscheduled workflowには起動時刻のSLAがないため、`cron`の分は0を避けて設定し、起動遅延の傾向を緩和する(ai-dev-digest/daily-publish/design.mdと同じ理由。厳密な定刻配信までは保証しない)。本番の想定時刻は日付をまたいだ直後の00:17 JST
 - GitHubへの書き込み(ブランチ作成・コミット・push・PR作成)には、このリポジトリのみに範囲を限定した新規のfine-grained PAT(Contents・Pull requestsのwrite権限)を発行し、`NEWS_DIGEST_GH_PAT`としてリポジトリのActions Secretsに保存する。ai-dev-digestの`AI_DEV_DIGEST_GH_PAT`とは分離する(根拠: ai-dev-digest/daily-publish/design.md「PRを自動マージする処理」が明記するとおり、自動マージの安全な範囲限定は「ワークフローが常に決まった名前のブランチからしかPRを作らない」という運用規律に依存する。PATをアプリ間で共用すると、一方のワークフローの不具合が他方の自動マージ範囲に影響しうるため、アプリ単位でPATを分離し影響範囲を限定する)。ワークフロー既定の`GITHUB_TOKEN`は使わない(既定の`GITHUB_TOKEN`で作成したPR・pushでは後続ワークフロー(CI)が自動起動されないため。ai-dev-digestと同じ理由)
 - [content-generation](../content-generation/design.md)の要約生成、[content-selection](../content-selection/design.md)の候補グループ化・判定は、いずれもClaude Code CLIのヘッドレス実行(運営者個人のClaude Code Pro/Maxサブスクリプション認証)で行う。GitHub Actionsランナーには`npm install -g @anthropic-ai/claude-code`でインストールし、`claude setup-token`で発行済みの長期OAuthトークンを使う。**ai-dev-digestが既に`CLAUDE_CODE_OAUTH_TOKEN`として保存済みの同じトークンを再利用する**(運営者個人のサブスクリプション自体が同一のため、新しいトークンを発行する必要はない)。ただし利用枠(5時間ごと・週次の上限)は、ai-dev-digestの日次・月次実行、news-digestの週次・月次実行が同じ枠を共有する点に留意する(下記「セキュリティ」参照)
 - ワークフローへの実行指示は、この`weekly-publish`のrequirements.md/design.mdと、参照先の`content-selection`/`content-generation`/`article-detail`のrequirements.md/design.mdをスクリプト・プロンプトの根拠としてそのまま参照する形にする(専用のプロンプトファイルを別途複製しない)

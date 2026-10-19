@@ -49,10 +49,9 @@ export type Impact = 'high' | 'medium' | 'low'
 export const IMPACT_ORDER: Impact[] = ['high', 'medium', 'low']
 export const IMPACT_LABELS: Record<Impact, string> = { high: '大', medium: '中', low: '小' }
 
-// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形)
-export type Diagram =
-  | { type: 'mermaid'; code: string }
-  | { type: 'image'; path: string }
+// 図解(content-generation/requirements.md#図解-6)。エージェントが書いたMermaid記法の文字列をそのまま
+// 保存し、レンダリングはクライアント側のMermaidライブラリ(DiagramView)に委ねる
+export type Diagram = { type: 'mermaid'; code: string }
 
 export type PredictionSection = {
   heading: string // 結論文(短い見出し)
@@ -208,7 +207,7 @@ sequenceDiagram
 - `issueNumber`が1以上の整数であること
 - 各予測: `horizon`・`impact`が定義済みの値であること、`horizon`が`horizonsForIssue(issueNumber)`の2区分のどちらかであること、`id`が`<genre>--<horizon>`と一致すること、`genre`が`EDITION_GENRES[edition]`に含まれること(記事の`edition`と矛盾するジャンルを弾く)、`heading`・`impactReason`・`targetPeriod`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること
 - 旧形式(`body`を持つ)の場合: `body`が160〜480字であること([content-generation/design.md](../content-generation/design.md)「生成結果を検証する処理」)
-- 新形式(`sections`を持つ)の場合: `when`/`basis`/`impact`の3キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。3観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)、または`{type:'image',path}`(`path`が`content/future-digest/articles/images/`配下を指す)のいずれかであること
+- 新形式(`sections`を持つ)の場合: `when`/`basis`/`impact`の3キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。3観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)のいずれかであること
 - 各掲載できなかった枠: `genre`・`horizon`・`reason`が定義済みの値で、`horizon`がその回の2区分のどちらかであること、`genre`が`EDITION_GENRES[edition]`に含まれること
 - `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること
 - 同じ枠(ジャンル×時間軸)が2回現れないこと。記事に現れるジャンルは、対象編の5ジャンル×その回の2時間軸の両方が予測または掲載できなかった枠として揃っていること(枠が黙って消える事故をビルド時に検知するため。content-selection/requirements.md#機能要件-3)。対象編で有効だった全ジャンルが揃っていることは、記事を組み立てる時点で[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルを後から追加・廃止しても過去記事の検証が壊れないよう、ビルド時の検証は「その記事の中での整合」に限る)
@@ -243,7 +242,6 @@ app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/i
 app/lib/supabaseClient.ts (既存の共通クライアントを利用)
 supabase/migrations/<timestamp>_create_future_digest_feedback.sql (新規)
 content/future-digest/articles/*.json (新規: 記事本文データ)
-content/future-digest/articles/images/*.png (新規: Nano Bananaが生成した画像)
 ```
 
 ## データベース設計

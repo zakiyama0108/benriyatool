@@ -89,7 +89,7 @@
 
 ## 開発領域観点・固定ラベル・図解への移行
 
-💡新規性を廃止し🧭開発領域を追加、観点の固定ラベル(kicker)表示、図解機能(Mermaid/Nano Banana)を追加する変更。〔提案〕
+💡新規性を廃止し🧭開発領域を追加、観点の固定ラベル(kicker)表示、図解機能(Mermaid)を追加する変更。〔提案〕
 
 <details><summary>詳細を開く</summary>
 
@@ -99,7 +99,7 @@
 
 - Task 19: 記事スキーマへのdomain/diagram検証の組み込み(仕様: design.md「バリデーション」)
   - 🔴 `parseArticle`が、`summary`が(a)`domain`/`benefit`/`how`/`howToUse`、(b)`benefit`/`whatsNew`/`how`/`howToUse`のいずれか一方の4キー構成であれば受理すること、両方・どちらも満たさない場合は拒否すること、`domain`がある場合は`domains`が1件以上かつ定義済み値のみであることを確認するテストを、Task 15の既存テストに追加する
-  - 🔴 各観点の`diagram`が省略されている場合(既存の公開済み記事データ相当)・`null`・`{type:'mermaid',code}`・`{type:'image',path}`のいずれでも受理し、`path`が`content/ai-dev-digest/articles/images/`配下を指さない場合は拒否することを確認するテストを書く
+  - 🔴 各観点の`diagram`が省略されている場合(既存の公開済み記事データ相当)・`null`・`{type:'mermaid',code}`のいずれでも受理し、`code`が空文字の場合は拒否することを確認するテストを書く
   - 🟢 `app/ai-dev-digest/lib/articleSchema.ts`の`parseTopic`を上記の検証に対応させる
 
 - Task 20: 固定ラベル(kicker)・開発領域タグの表示(仕様: requirements.md#記事本文表示-3、design.md「その日の記事本文を表示する処理」手順4)
@@ -107,8 +107,13 @@
   - 🟢 `TopicSection.tsx`を修正し、`hasDomainPerspective`で観点の並び順・固定ラベルを分岐する
 
 - Task 21: 図解の表示(仕様: requirements.md#記事本文表示-14、design.md「その日の記事本文を表示する処理」手順5-1)
-  - 🔴 `diagram`が`null`または`undefined`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されること、`{type:'image'}`の場合は`<img>`の`src`が`path`と一致することを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
+  - 🔴 `diagram`が`null`または`undefined`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されることを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
   - 🟢 `app/ai-dev-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`TopicSection.tsx`から各観点の`diagram`を渡して配置する
+
+- Task 22: 詳細文の簡易Markdown表示(仕様: requirements.md#記事本文表示-15、design.md「その日の記事本文を表示する処理」手順5-2)
+  - 🟢 `parseFormattedText(text)`が、段落(空行区切り)・番号付きリスト(「1. 」)・箇条書き(「- 」)・コードブロック(```)をそれぞれ別ブロックとして分解すること、ブロック内のインライン記法(`` `code` ``・`[text](url)`)も解析することを確認するテストを書く(`__tests__/ai-dev-digest/lib/parseFormattedText.test.ts`)
+  - 🟢 `FormattedText`が、段落は`<p>`、番号付きリストは`<ol><li>`、箇条書きは`<ul><li>`、コードブロックはコピー操作付きの`<pre><code>`として描画することを確認するテストを書く(`__tests__/ai-dev-digest/components/FormattedText.test.tsx`)
+  - 🟢 `TopicSection.tsx`の`CurrentTopic`分岐で、詳細文(`perspective.detail`)を生テキストの`<p>`から`<FormattedText text={perspective.detail} />`に差し替える(`LegacyTopic`分岐は変更しない)
 
 </details>
 

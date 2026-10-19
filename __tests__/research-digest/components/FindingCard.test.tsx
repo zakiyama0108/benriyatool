@@ -48,6 +48,36 @@ function emptyEntry(overrides: Partial<EmptyGenre>): GenreEntry {
   return { genre: emptyGenre.genre, kind: 'empty', emptyGenre }
 }
 
+// 固定4観点(sections)を持つ新形式の研究エントリ(仕様: article-detail/requirements.md#運営者向けフィードバック-14)
+function currentFindingEntry(sectionOverrides: Record<string, { heading?: string; text?: string; diagram?: unknown }> = {}): GenreEntry {
+  const section = (key: string, heading: string, text: string) => ({
+    heading,
+    text,
+    diagram: null,
+    ...sectionOverrides[key],
+  })
+  const finding: Finding = {
+    id: GENRE_ORDER[0],
+    genre: GENRE_ORDER[0],
+    heading: '運動が記憶力を高める可能性',
+    impact: 'high',
+    impactReason: '誰にでも取り入れやすい習慣に関わるため',
+    sourceTitle: 'Exercise and memory',
+    sourceName: 'Journal of Health',
+    sourceUrl: 'https://example.com/paper',
+    doi: null,
+    publishedYear: 2025,
+    isPreprint: false,
+    sections: {
+      finding: section('finding', '何が分かったか見出し', '何が分かったかの本文'),
+      basis: section('basis', 'なぜそう結論づけられたのか見出し', 'なぜそう結論づけられたのかの本文'),
+      relevance: section('relevance', '暮らしへの関わり見出し', '暮らしへの関わりの本文'),
+      caveat: section('caveat', '注意点見出し', '注意点の本文'),
+    },
+  } as unknown as Finding
+  return { genre: finding.genre, kind: 'finding', finding }
+}
+
 // 仕様: specs/research-digest/article-detail/requirements.md#記事本文の表示-2
 describe('研究があるジャンルの表示', () => {
   it('見出し・本文・影響度の根拠と、出典(論文名のリンク・掲載誌名・年)が表示され、リンクは新規タブで開くこと', () => {
@@ -84,6 +114,54 @@ describe('研究があるジャンルの表示', () => {
     expect(screen.getByRole('textbox')).toBeTruthy()
     rerender(<FindingCard entry={findingEntry()} articleId="2026-10-05" isAdmin={false} />)
     expect(screen.queryByRole('textbox')).toBeNull()
+  })
+})
+
+// 仕様: specs/research-digest/article-detail/requirements.md#運営者向けフィードバック-14
+// (design.md「その回の記事本文を表示する処理」手順3-1)
+describe('固定4観点(sections)を持つ新形式の研究の表示 - finding→basis→relevance→caveatの順に固定ラベル→見出し→本文を常時表示する', () => {
+  it('固定4観点が、この順序で固定ラベル・見出し・本文とともに表示されること', () => {
+    render(<FindingCard entry={currentFindingEntry()} articleId="2026-10-05" isAdmin={false} />)
+
+    const labels = screen.getAllByText(/^(何が分かったか|なぜそう結論づけられたのか|暮らしへの関わり|注意点)$/).map((el) => el.textContent)
+    expect(labels).toEqual(['何が分かったか', 'なぜそう結論づけられたのか', '暮らしへの関わり', '注意点'])
+
+    expect(screen.getByText('何が分かったか見出し')).toBeTruthy()
+    expect(screen.getByText('何が分かったかの本文')).toBeTruthy()
+    expect(screen.getByText('なぜそう結論づけられたのか見出し')).toBeTruthy()
+    expect(screen.getByText('なぜそう結論づけられたのかの本文')).toBeTruthy()
+    expect(screen.getByText('暮らしへの関わり見出し')).toBeTruthy()
+    expect(screen.getByText('暮らしへの関わりの本文')).toBeTruthy()
+    expect(screen.getByText('注意点見出し')).toBeTruthy()
+    expect(screen.getByText('注意点の本文')).toBeTruthy()
+  })
+
+  it('旧形式(body)の研究は、従来どおり単一の段落として表示されること(過去記事を書き換えない)', () => {
+    render(<FindingCard entry={findingEntry()} articleId="2026-10-05" isAdmin={false} />)
+    expect(screen.getByText('あ'.repeat(250))).toBeTruthy()
+    expect(screen.queryByText('何が分かったか')).toBeNull()
+  })
+})
+
+// 仕様: specs/research-digest/article-detail/requirements.md#運営者向けフィードバック-15
+// (design.md「その回の記事本文を表示する処理」手順3-2)
+describe('固定4観点ごとの図解の表示 - diagramがnullでない観点の本文の近くにDiagramViewを表示する', () => {
+  it('観点のdiagramが{type: "mermaid", code}のとき、Mermaidコンテナが表示されること', () => {
+    const { container } = render(
+      <FindingCard
+        entry={currentFindingEntry({
+          finding: { diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } },
+        })}
+        articleId="2026-10-05"
+        isAdmin={false}
+      />,
+    )
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).not.toBeNull()
+  })
+
+  it('すべての観点のdiagramがnullのとき、Mermaidコンテナが表示されないこと', () => {
+    const { container } = render(<FindingCard entry={currentFindingEntry()} articleId="2026-10-05" isAdmin={false} />)
+    expect(container.querySelector('[data-testid="mermaid-diagram"]')).toBeNull()
   })
 })
 

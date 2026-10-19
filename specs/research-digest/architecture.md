@@ -74,7 +74,7 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 | spec | 機能(利用者から見て) | 役割 | 依存 | 状態 |
 |---|---|---|---|---|
 | [content-selection](content-selection/requirements.md) | ジャンルごとに影響の大きい研究を選ぶ | 対象編の5ジャンルだけ、生活への影響度が最も大きく未配信の研究・論文を1本選ぶ | weekly-publishの実行タイミングに従う。まとめCLIがweekly-publishの運営者への警告判定(`shouldAlertOperator`)を呼ぶ | リリース済み |
-| [content-generation](content-generation/requirements.md) | 研究発見の要約を読む | 選ばれた記事の要約・影響度の根拠の執筆ルール(著作権への配慮を含む)を定める | content-selectionの選定結果を受け取る | リリース済み |
+| [content-generation](content-generation/requirements.md) | 研究発見の要約を読む | 選ばれた記事の要約(固定4観点・図解機能を含む)・影響度の根拠の執筆ルール(著作権への配慮を含む)を定める | content-selectionの選定結果を受け取る | リリース済み |
 | [weekly-publish](weekly-publish/requirements.md) | 毎週月曜・土曜に新しい記事が並ぶ | 編ごとに週1回(月曜・土曜)の収集・選定・要約・公開を自動で行い、完全自動マージする | content-selection・content-generationの結果を公開する | リリース済み |
 | [line-broadcast](line-broadcast/requirements.md) | LINEで新着記事の通知を受け取る | 記事ページの公開を確認してから、既存LINE公式アカウントで新着記事を配信する | weekly-publishのマージタイミング、article-detailの記事データに従う | リリース済み |
 | [article-list](article-list/requirements.md) | 過去の回を一覧で探す | 記事を日付リストで一覧表示し、影響度順の先頭3件の見出しを添える | article-detailの記事データを参照 | リリース済み |
