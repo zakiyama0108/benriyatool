@@ -15,7 +15,13 @@ import { shouldAlertOperator } from '../../app/research-digest/lib/shouldAlertOp
 import { getAllArticles } from '../../app/research-digest/lib/articles'
 import type { Candidate, GenreResult } from '../../app/research-digest/lib/candidateTypes'
 import type { Edition } from '../../app/research-digest/lib/types'
+import { loadFixedSources } from '../../app/research-digest/lib/fixedSourceTypes'
+import { fetchGenreHints, fetchHttpClient, buildFixedSourceHealthLogLines } from '../../app/research-digest/lib/fetchFixedSourceHints'
+import { jmaPress, dietitianNews, aistResearch, naoNews, nedoNews, mextHoudou } from '../../app/research-digest/lib/fixedSourceParsers'
 import { collectGenre } from './collect-candidates'
+
+// site-specific-htmlのparserIdからパース関数を引く辞書(design.md「固定情報源からヒントを集める処理」)
+const HTML_PARSERS = { jmaPress, dietitianNews, aistResearch, naoNews, nedoNews, mextHoudou }
 
 const EDITIONS: Edition[] = ['body-life', 'science-society']
 
@@ -46,14 +52,20 @@ async function main() {
 
   console.error(`編: ${edition} / 配信日: ${scheduledPublishDate} / 有効ジャンル数: ${genres.length}`)
 
+  const fixedSources = loadFixedSources()
   const candidatesByGenre: Record<string, Candidate[]> = {}
   const collectionFailedGenres: CollectionFailedGenre[] = []
 
   for (const genre of genres) {
+    // 固定情報源からの新着をヒントとして取得する(design.md「固定情報源からヒントを集める処理」。
+    // 1件の取得失敗でそのジャンルの収集処理自体は止めない。requirements.md#データ取得方法-2)
+    const { hints, stats } = await fetchGenreHints(genre.id, fixedSources, fetchHttpClient, HTML_PARSERS)
+    for (const line of buildFixedSourceHealthLogLines(stats)) console.error(`ジャンル[${genre.id}] 固定情報源 ${line}`)
+
     // 利用上限への到達を検知した場合はQuotaExhaustedErrorがここから外へ伝播し、
     // main().catchで非ゼロ終了する(記事を作らずこの回を打ち切り、次の再実行cronに委ねる。
     // weekly-publish/design.md「1回分の記事を生成する処理」手順2)。打ち切った旨は下のcatchでerror出力する
-    const result = await collectGenre(genre, deliveredIndex, scheduledPublishDate)
+    const result = await collectGenre(genre, deliveredIndex, scheduledPublishDate, hints)
     if (result.status === 'collection-failed') {
       collectionFailedGenres.push({ genre: genre.id, reason: result.reason })
     } else {

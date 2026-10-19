@@ -1,11 +1,12 @@
 # 設計: ジャンル別の研究発見・論文の選定
 
 ## サマリ
-対象編(からだ・くらし編/科学・社会編)の有効なジャンル(5)ごとに、Claude Code CLIのヘッドレス実行(WebSearch)で採用基準を満たす研究・論文の候補を集めさせ、生活への影響度の判定と順位付けまでを任せる。編は`genres.json`の各ジャンルの`edition`属性で固定され、動的には切り替わらない(下記「[データ設計](#データ設計ジャンルの設定ファイル)」、requirements.md#編成とジャンルの割り当て)。配信済みとの重複は、編を問わず全記事を対象に、同じURL・同じDOIを決定的なコードで機械的に除き、同じ研究を扱う別の報道などの実質的な重複は、過去に配信した全研究の見出し・論文名の一覧をプロンプトに渡してClaudeに判定させる。最後にジャンルごとの採用(影響度の最も大きい1本)と、候補が見つからなかったジャンル・収集の処理自体に失敗したジャンル(`collection-failed`)の記録を決定的なコードで行い、ジャンルごとの候補件数を実行ログに出す。利用上限への到達を検知した場合は、その時点で収集を打ち切る(公開はしない。再実行cron(最大3回)での再試行は[weekly-publish/design.md](../weekly-publish/design.md)が扱う)。future-digestのcontent-selectionと同じ作りで、時間軸がない点・DOIで突合する点・査読前かどうかを判定させる点が異なる。
+対象編(からだ・くらし編/科学・社会編)の有効なジャンル(5)ごとに、Claude Code CLIのヘッドレス実行(WebSearch)で採用基準を満たす研究・論文の候補を集めさせ、生活への影響度の判定と順位付けまでを任せる。8ジャンルは収集前に固定情報源(`fixedSources.json`)から新着一覧を決定的なコードで取得し、プロンプトの手がかり(ヒント)として渡すハイブリッド方式にする(requirements.md#情報源(固定リスト))。採用基準の判定自体はヒント付きの候補もWebSearchで見つけた候補も区別せずClaudeが行う(下記「固定情報源からヒントを集める処理」)。編は`genres.json`の各ジャンルの`edition`属性で固定され、動的には切り替わらない(下記「[データ設計](#データ設計ジャンルの設定ファイル)」、requirements.md#編成とジャンルの割り当て)。配信済みとの重複は、編を問わず全記事を対象に、同じURL・同じDOIを決定的なコードで機械的に除き、同じ研究を扱う別の報道などの実質的な重複は、過去に配信した全研究の見出し・論文名の一覧をプロンプトに渡してClaudeに判定させる。最後にジャンルごとの採用(影響度の最も大きい1本)と、候補が見つからなかったジャンル・収集の処理自体に失敗したジャンル(`collection-failed`)の記録を決定的なコードで行い、ジャンルごとの候補件数を実行ログに出す。利用上限への到達を検知した場合は、その時点で収集を打ち切る(公開はしない。再実行cron(最大3回)での再試行は[weekly-publish/design.md](../weekly-publish/design.md)が扱う)。future-digestのcontent-selectionと同じ作りで、時間軸がない点・DOIで突合する点・査読前かどうかを判定させる点が異なる。
 
 主要な設計判断:
 - 「論文を探す・元の論文や公式発表を確かめる・影響度を判定する・実質的な重複を見分ける」はClaudeに任せ、「同じURL/DOIの除外・ジャンルごとの採用・候補なしの記録」は決定的なコードで行う
 - ジャンル・編の割り当ては`content/research-digest/genres.json`に置き、追記だけで増やせる(trend-digestのwatchlist.jsonと同じく、ジャンルごとに`edition`属性を持たせる)
+- 固定情報源は`content/research-digest/fixedSources.json`に別ファイルで置き、取得したヒントは手がかりに留める(採否判定の責務はClaudeから奪わない)。HTML構造が情報源ごとに異なるため、サイトごとの専用パーサー(`parserId`)を持つ(trend-digest・future-digestと同じ考え方)
 - 編の判定は、実行主体(weekly-publishのワークフロー)が起動元のcronから決定し、`collect-and-select.ts`にCLI引数として渡す。本spec自身はどのcronで起動されたかを判定しない(weekly-publish/design.md「編を判定する処理」参照)
 - 図: [ジャンルごとに候補を集める処理](#ジャンルごとに候補を集める処理エージェントの推論)のシーケンス図
 
@@ -13,15 +14,17 @@
 
 | 論点 | 選んだ案 | 採らなかった案 | 理由 | 影響範囲 | 出所 |
 |---|---|---|---|---|---|
-| 編成の分け方 | ジャンルを`genres.json`の`edition`属性で固定2分割(future-digest・trend-digestと同じ) | ジャンルを動的に2グループへ振り分ける | 編の判定を固定値にすることで、収集・公開・表示の各処理が「今対象の編はどれか」だけで完結し、揺れが入らない | データ設計・処理フロー全体 | 〔提案〕 |
-| 編ごとのジャンル割り当て | からだ・くらし編(医療・健康/栄養・食/睡眠・運動/心理・脳科学/教育・子育て)と科学・社会編(環境・気候/AI・情報技術/経済・行動科学/宇宙・物理/材料・エネルギー) | 他の組み合わせ | からだ・暮らしに身近な領域か、より広い科学・社会寄りの領域かで分けた。唯一の正解はなく承認者の確認が必要 | requirements.md#編成とジャンルの割り当て | 〔提案〕 |
-| 配信済み判定の対象範囲 | 編をまたいで全記事を対象に重複除外する | 編ごとに独立して重複除外する | 編が違っても同じ研究を二度配信しないため | 配信済みの一覧を作る処理 | 〔提案〕 |
+| 編成の分け方 | ジャンルを`genres.json`の`edition`属性で固定2分割(future-digest・trend-digestと同じ) | ジャンルを動的に2グループへ振り分ける | 編の判定を固定値にすることで、収集・公開・表示の各処理が「今対象の編はどれか」だけで完結し、揺れが入らない | データ設計・処理フロー全体 | **🟡〔提案〕** |
+| 編ごとのジャンル割り当て | からだ・くらし編(医療・健康/栄養・食/睡眠・運動/心理・脳科学/教育・子育て)と科学・社会編(環境・気候/AI・情報技術/経済・行動科学/宇宙・物理/材料・エネルギー) | 他の組み合わせ | からだ・暮らしに身近な領域か、より広い科学・社会寄りの領域かで分けた。唯一の正解はなく承認者の確認が必要 | requirements.md#編成とジャンルの割り当て | **🟡〔提案〕** |
+| 配信済み判定の対象範囲 | 編をまたいで全記事を対象に重複除外する | 編ごとに独立して重複除外する | 編が違っても同じ研究を二度配信しないため | 配信済みの一覧を作る処理 | **🟡〔提案〕** |
+| 固定情報源の扱い方 | 決定的なコードで取得し、プロンプトの手がかり(ヒント)としてClaudeに渡す。採否判定自体はClaudeに残す | 件数・しきい値で機械的に判定する(news-digest方式) | 本specの採否判定(採用基準・影響度)はいずれも意味の判断を要し、既にWebSearchで見つけた候補と同じプロセスでClaudeに委ねている。発見経路(固定情報源かWebSearchか)で判定の責務を分けると、同じ候補が経路によって扱いが変わってしまう | ジャンルごとに候補を集める処理 | **🟡〔提案〕** |
+| 固定情報源のHTML構造への対応 | 情報源ごとに専用パーサー(`parserId`)を持つ(RSS/Atom/RDFの標準フィードは共通パーサー) | 1つの汎用パーサーで全HTML構造に対応する | 調査した6件のHTML公開ページ(日本医師会・日本栄養士会・産総研・NEDO・国立天文台・文部科学省)の構造がいずれも異なり(日付の持ち方・テキスト表記がそれぞれ違う)、汎用パーサーで無理に対応すると個々の構造変化に弱くなる。trend-digest・future-digestの`parserId`方式と同じ考え方 | 固定情報源からヒントを集める処理 | **🟡〔提案〕** |
 
 <details><summary>詳細を開く</summary>
 
 | 論点 | 選んだ案 | 採らなかった案 | 理由 | 影響範囲 | 出所 |
 |---|---|---|---|---|---|
-| 編の判定方法 | `weekly-publish`のワークフローが起動元cronから判定し、CLI引数で渡す | content-selection自身が`process.env`等から判定 | trend-digestの既存実装と同じ責務分担(実行環境の判定はワークフロー側、ロジックは引数で受け取る) | ジャンルごとに候補を集める処理 | 〔提案〕 |
+| 編の判定方法 | `weekly-publish`のワークフローが起動元cronから判定し、CLI引数で渡す | content-selection自身が`process.env`等から判定 | trend-digestの既存実装と同じ責務分担(実行環境の判定はワークフロー側、ロジックは引数で受け取る) | ジャンルごとに候補を集める処理 | **🟡〔提案〕** |
 
 </details>
 
@@ -65,7 +68,64 @@ export type GenreResult =
   | { genre: Genre; status: 'collection-failed'; reason: CollectionFailureReason }
 ```
 
+## データ設計(固定情報源)
+
+固定情報源は本specの`requirements.md#情報源(固定リスト)`(人間が読む正の仕様)と、実行時にコードが読み込む機械可読データの二重管理とする。[source-review](../source-review/design.md)の月次見直しPRは、同じ変更を両方に加える(片方だけの変更はレビューで差し戻す。ai-dev-digest・news-digest・future-digestと同じ運用)。
+
+```ts
+// app/research-digest/lib/fixedSourceTypes.ts
+export type FixedSourceChannel =
+  | { type: 'feed'; url: string } // RSS/Atom/RDFの標準フィード。共通パーサーで解析
+  | { type: 'site-specific-html'; url: string; parserId: string } // 公式フィードがない情報源の専用パーサー
+
+export type FixedSourceEntry = {
+  genreId: string // genres.jsonのid
+  name: string // 例: "日本医師会プレスリリース一覧"
+  channel: FixedSourceChannel
+}
+
+export type FixedSourceHint = {
+  sourceName: string
+  title: string
+  url: string
+  publishedAt: string | null // 取得元で日付が分かる場合のみ
+}
+```
+
+`content/research-digest/fixedSources.json`の内容(全12件。requirements.md#情報源(固定リスト)-2の表をそのまま構造化したもの。URLは/fixで実際にcurl(ブラウザのUser-Agentを付与)を使いアクセスし、見出し・日付が静的HTML/XMLに含まれることを確認済み):
+
+```jsonc
+[
+  { "genreId": "medical-health", "name": "日本医師会プレスリリース一覧", "channel": { "type": "site-specific-html", "url": "https://www.med.or.jp/nichiionline/press/", "parserId": "jmaPress" } },
+  { "genreId": "nutrition-food", "name": "日本栄養士会お知らせ", "channel": { "type": "site-specific-html", "url": "https://www.dietitian.or.jp/news/", "parserId": "dietitianNews" } },
+  { "genreId": "psychology-brain", "name": "Nature Neuroscience", "channel": { "type": "feed", "url": "https://www.nature.com/neuro.rss" } },
+  { "genreId": "environment-climate", "name": "IPCC News", "channel": { "type": "feed", "url": "https://www.ipcc.ch/feed/" } },
+  { "genreId": "ai-it", "name": "arXiv cs.AI", "channel": { "type": "feed", "url": "https://rss.arxiv.org/rss/cs.AI" } },
+  { "genreId": "ai-it", "name": "国立情報学研究所(NII)ニュースリリース", "channel": { "type": "feed", "url": "https://www.nii.ac.jp/news/release/rss.xml" } },
+  { "genreId": "space-physics", "name": "arXiv astro-ph", "channel": { "type": "feed", "url": "https://rss.arxiv.org/rss/astro-ph" } },
+  { "genreId": "space-physics", "name": "国立天文台トピックス・研究成果", "channel": { "type": "site-specific-html", "url": "https://www.nao.ac.jp/news/", "parserId": "naoNews" } },
+  { "genreId": "materials-energy", "name": "産業技術総合研究所(産総研)研究成果記事一覧", "channel": { "type": "site-specific-html", "url": "https://www.aist.go.jp/aist_j/list/l_research_research.html", "parserId": "aistResearch" } },
+  { "genreId": "materials-energy", "name": "NEDOニュースリリース一覧", "channel": { "type": "site-specific-html", "url": "https://www.nedo.go.jp/news/", "parserId": "nedoNews" } },
+  { "genreId": "education-parenting", "name": "国立教育政策研究所 新着情報", "channel": { "type": "feed", "url": "https://www.nier.go.jp/02_news/rss.xml" } },
+  { "genreId": "education-parenting", "name": "文部科学省報道発表", "channel": { "type": "site-specific-html", "url": "https://www.mext.go.jp/b_menu/houdou/", "parserId": "mextHoudou" } }
+]
+```
+
+- sleep-exercise(睡眠・運動)・economics-behavioral(経済・行動科学)は対象のエントリーを持たない(requirements.md#情報源(固定リスト)-3)
+- NAO・MEXTは年を含まないURL(`/news/`・`/b_menu/houdou/`)を使う。年を含むURL(`/news/science/2026/`等)は年が変わるたびに陳腐化するため避ける(/fixで確認。いずれも年なしURLで同じ一覧が取得できることを確認済み)
+- `genreId`は`genres.json`の有効なidと一致すること、`channel.type`が`feed`または`site-specific-html`のいずれかであること、`site-specific-html`は`parserId`が必須であることを読み込み時に検証する(不正な場合は例外)
+
 ## 処理フロー
+
+### 固定情報源からヒントを集める処理(決定的なコード)
+- 対象: `fixedSources.json`に登録された、対象ジャンルに該当する固定情報源(ジャンルに固定情報源がない場合は空配列)
+- 手順:
+  1. 対象ジャンルの固定情報源ごとに、`channel.type`が`feed`なら共通のRSS/Atom/RDFパーサーで、`site-specific-html`なら`parserId`に対応する専用パーサー(`app/research-digest/lib/fixedSourceParsers.ts`)で、新着の見出し・元URL・公開日時(分かる場合)を取得する。情報源あたり最新10件までに絞る(件数が多いとプロンプトが肥大化するため。requirements.md#採用基準-2により発表の時期は問わないため、期間での絞り込みは行わない)
+  2. 取得できなかった情報源(一時的な障害・HTML構造の変化等)は、その情報源だけをヒントから除外して処理を続ける(1件の取得失敗でそのジャンルの収集処理自体は止めない。requirements.md#データ取得方法-2)
+  3. 取得したヒント(発信者名・見出し・元URL・公開日時)を、下記「ジャンルごとに候補を集める処理」のプロンプトに手がかりとして渡す。ヒントに載っているというだけで無条件に採用されるわけではなく、Claudeが他の候補と同じ採用基準で判定する(requirements.md#情報源(固定リスト)-1)
+  4. 情報源ごとの取得件数・取得失敗を標準エラー出力に記録する
+- 実行主体: `scripts/research-digest/collect-candidates.ts`
+- 関連するビジネスルール: requirements.md#情報源(固定リスト)-1〜4、requirements.md#データ取得方法-2
 
 ### 配信済みの一覧を作る処理
 - 対象: 公開済みの全記事データ
@@ -79,7 +139,7 @@ export type GenreResult =
 ### ジャンルごとに候補を集める処理(エージェントの推論)
 - 対象: 対象編の有効なジャンル1つ(現在は編あたり5)
 - 手順:
-  1. `requirements.md`を実行時に読み込み、その内容(採用基準・影響度の観点)をプロンプトに含める(content-generationと同じく、別ファイルにルール文を複製・転記しない)。あわせてジャンルの説明、配信済みの一覧もプロンプトに含め、Claude Code CLIをヘッドレス起動する(WebSearch・WebFetchを使わせる)
+  1. `requirements.md`を実行時に読み込み、その内容(採用基準・影響度の観点)をプロンプトに含める(content-generationと同じく、別ファイルにルール文を複製・転記しない)。あわせてジャンルの説明、配信済みの一覧、上記「固定情報源からヒントを集める処理」で取得したヒント(ある場合のみ)もプロンプトに含め、Claude Code CLIをヘッドレス起動する(WebSearch・WebFetchを使わせる)。ヒントは手がかりであり、そこに載っていない話題もWebSearchで探してよいことを明示する
   2. Claudeは、学術誌に掲載された論文、または大学・研究機関が公式に発表した研究成果を探す。科学系の報道をきっかけにしてよいが、元の論文・公式発表を開いて確かめられたものだけを候補にし、出典にはその論文・公式発表のURLを使う(requirements.md#採用基準-1)
   3. 発表の時期は問わない(requirements.md#採用基準-2)
   4. 出典を確かめられない話題、健康食品などの宣伝を目的とした発表は候補にしない(requirements.md#採用基準-4)
@@ -93,12 +153,15 @@ export type GenreResult =
 ```mermaid
 sequenceDiagram
     participant script as 収集・選定スクリプト
+    participant fixed as 固定情報源（RSS/公開ページ）
     participant claude as Claude Code CLI(ヘッドレス)
     participant web as 公開Webページ(報道・論文・公式発表)
 
     script ->> script: 配信済みの一覧を作る
     loop 対象編の有効なジャンルごと
-        script ->> claude: ジャンル説明・採用基準・配信済みの一覧を渡す
+        script ->> fixed: 固定情報源(ある場合)から新着一覧を取得する
+        fixed -->> script: 見出し・元URL・公開日時のヒント(取得失敗した情報源は除く)
+        script ->> claude: ジャンル説明・採用基準・配信済みの一覧・固定情報源のヒントを渡す
         claude ->> web: WebSearchで研究を探し、元の論文・公式発表をWebFetchで確かめる
         web -->> claude: 検索結果・論文ページ
         claude -->> script: 候補(影響度・根拠・順位・査読前か)のJSON
@@ -106,7 +169,7 @@ sequenceDiagram
     end
     script ->> script: 配信済みのURL・DOIを除いてジャンルごとに1本を採用し、候補なしのジャンル・収集失敗のジャンル(collection-failed)を記録する(利用上限への到達を検知した場合はそこで打ち切り、再実行cron(最大3回)に委ねる)
 ```
-- 関連するビジネスルール: requirements.md#機能要件-3〜4、requirements.md#採用基準-1〜4、requirements.md#影響度-1〜3、requirements.md#データ取得方法-1
+- 関連するビジネスルール: requirements.md#機能要件-3〜4、requirements.md#採用基準-1〜4、requirements.md#影響度-1〜3、requirements.md#データ取得方法-1、requirements.md#情報源(固定リスト)-1
 
 ### ジャンルごとに1本を採用する処理(決定的なコード)
 - 対象: 収集に成功したジャンルの候補と、収集に失敗したジャンルの一覧(`collectionFailedGenres`。ジャンルごとの分類ラベルつき)
@@ -140,6 +203,7 @@ Claudeが返した候補ごとに検証し、満たさない候補は捨てる(�
 
 ## エラーハンドリング
 
+- 固定情報源1件の取得失敗(一時的な障害・HTML構造の変化等)は、その情報源だけをヒントから除外してそのジャンルの収集処理を続行する。収集失敗(`collection-failed`)には含めない(ヒントが0件でもClaudeの収集自体は通常どおり実行する。requirements.md#データ取得方法-2)
 - 1ジャンルの収集が失敗した場合(JSONを取り出せない・応答全体の形のスキーマを満たさない・Claude CLIの異常終了・Claude CLI呼び出しが設定したタイムアウト値を超えた)は、いずれも同じく最大2回まで(初回+1回)起動し直す。それでも失敗した場合は、そのジャンルを`status: 'collection-failed'`として扱い(候補なしとは区別する。requirements.md#収集失敗-1)、他のジャンルの収集を続ける。失敗したことは実行ログに残す
   - 失敗原因は次のとおり分類ラベルに変換する(requirements.md#収集失敗-2)。原因のエラー文字列はログにのみ残し、分類ラベルだけを記事データ・読者向け表示に渡す
     - `timeout`: Claude CLI呼び出しがタイムアウト値を超えて中断された場合(タイムアウト値は環境変数等で調整可能な定数とする)
@@ -153,25 +217,32 @@ Claudeが返した候補ごとに検証し、満たさない候補は捨てる(�
 
 ```
 content/research-digest/genres.json (編成分割で変更: 各ジャンルにedition属性を追加)
+content/research-digest/fixedSources.json (新規: 固定情報源12件。requirements.md#情報源(固定リスト)-2)
 app/research-digest/lib/genres.ts (編成分割で変更: genres.jsonの読み込み・検証。EDITION_GENRESを追加)
+app/research-digest/lib/fixedSourceTypes.ts (新規: FixedSourceEntry/FixedSourceHintの型定義とfixedSources.jsonの読み込み・検証)
+app/research-digest/lib/fetchFixedSourceHints.ts (新規: ジャンル別ヒント取得・feed共通パーサー・健全性集計)
+app/research-digest/lib/fixedSourceParsers.ts (新規: site-specific-html向けの専用パーサー。parserId: jmaPress/dietitianNews/aistResearch/naoNews/nedoNews/mextHoudou)
 app/research-digest/lib/candidateTypes.ts (新規: Candidate/GenreResult)
 app/research-digest/lib/deliveredIndex.ts (新規: URL・DOIの正規化と、配信済みの一覧の組み立て)
 app/research-digest/lib/candidateValidation.ts (新規: Claudeが返した候補の検証)
 app/research-digest/lib/selectGenres.ts (新規: ジャンルごとの採用・候補なしの記録・収集失敗ジャンルの合流)
-scripts/research-digest/collect-candidates.ts (新規: ジャンルごとにClaude Code CLIを起動して候補を集めるCLI)
-scripts/research-digest/collect-and-select.ts (新規: 収集→採用→結果のJSON出力→shouldAlertOperatorによるGITHUB_OUTPUT書き出しまでをまとめるCLI。weekly-publishのワークフローから呼ばれる)
+scripts/research-digest/collect-candidates.ts (新規・ハイブリッド化で変更: ジャンルごとにClaude Code CLIを起動して候補を集めるCLI。buildPromptに固定情報源のヒントを追加)
+scripts/research-digest/collect-and-select.ts (新規・ハイブリッド化で変更: 配信済みの一覧→固定情報源のヒント取得→収集→採用→結果のJSON出力→shouldAlertOperatorによるGITHUB_OUTPUT書き出しまでをまとめるCLI。weekly-publishのワークフローから呼ばれる)
 app/research-digest/lib/articles.ts (article-detailで新規: getAllArticlesを利用)
 ```
 
 ## セキュリティ
 
 - Claudeが外部から持ち帰った文字列(論文名・発表元など)は、上記「バリデーション」で長さ・制御文字・URLのスキームを検証してから記事データに取り込む
+- 固定情報源から取得した文字列(見出し・発信者名など)も、プロンプトに埋め込む前に長さの上限(200字)で切り詰め、制御文字を除く(プロンプトインジェクション・異常に長い文字列の混入を防ぐ。固定情報源はClaudeへの参考材料に過ぎず、無条件採用されない点は上記「ジャンルごとに候補を集める処理」のとおり)
 - 収集用のClaude CLIに許可するツールはWebSearch・WebFetchに限り、ファイル編集・シェル実行は許可しない(外部のページに書かれた指示でリポジトリを書き換えられないようにするため)
 - 公開ページの閲覧はClaude CLI標準の範囲にとどめ、有料の論文データベースAPI・認証の回避は行わない(requirements.md#データ取得方法-1、requirements.md#スコープ外)。有料購読が必要な論文でも、要旨・公式発表など公開されている範囲で確かめる
+- 固定情報源の取得も認証不要の公開エンドポイント(公式RSS/Atom/RDF・公開ページ)のみを使い、非公式APIや利用規約を超えた高頻度アクセスは行わない(requirements.md#データ取得方法-2)。アクセス頻度は編ごと週1回の実行分のみ
 
 ## ログ
 
 - 実行開始時: 有効ジャンル数(info)
+- 固定情報源ごと: 取得件数(info)、取得失敗・0件(WARN)
 - ジャンルごと: 収集の成否・やり直しの有無・候補件数・検証で捨てた候補の件数と理由(info。失敗時はerror)。2回とも失敗した場合は分類ラベル(`timeout`/`invalid-format`/`other`)を添えてerrorで出す
 - ジャンルごと: 採用した元URL・DOI・影響度・査読前か、または候補なし、または収集失敗(分類ラベル)(info)
 - 終了時: 候補なしのジャンルの一覧・収集失敗のジャンルの一覧(分類ラベル別の件数)・採用件数の合計(info)。利用上限への到達で打ち切った場合はその旨と再実行cron(最大3回)に委ねる旨(error)

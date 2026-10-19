@@ -1,6 +1,6 @@
 # タスク分解: ジャンル別の研究発見・論文の選定
 
-> 全7件(Task 1〜Task 7)
+> 全10件(Task 1〜Task 10)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: ジャンル設定ファイルの読み込み(仕様: requirements.md#機能要件-1、requirements.md#ジャンル-1〜10、design.md「データ設計」)
@@ -35,5 +35,24 @@
 - Task 7: ジャンル設定ファイルのedition対応(仕様: requirements.md#機能要件-5〜6、requirements.md#編成とジャンルの割り当て-1〜3、design.md「データ設計」)
   - 🔴 `genres.json`の各ジャンルが`edition`(`"body-life"`または`"science-society"`)を持つこと、値が2値以外・未指定なら例外になること、`EDITION_GENRES`(編ごとのジャンルID配列)が編成どおり(からだ・くらし編5件・科学・社会編5件)に分かれることを確認するテストを書く(Task 1のテストファイルに追記する)
   - 🟢 `content/research-digest/genres.json`の10ジャンルそれぞれに`edition`属性を追加する(requirements.md#編成とジャンルの割り当て-1〜2のとおり)。`app/research-digest/lib/genres.ts`に検証と`EDITION_GENRES`を追加する
+
+</details>
+
+## 情報源を固定リスト+WebSearchのハイブリッド化する追加タスク
+
+8ジャンルに固定情報源を追加し、収集前にヒントとして取得・プロンプトに渡す変更。**🟡〔提案〕**
+
+<details><summary>詳細を開く</summary>
+
+- Task 8: 固定情報源の設定ファイルと型定義(仕様: requirements.md#情報源(固定リスト)-1〜4、design.md「データ設計(固定情報源)」)
+  - 🔴 `fixedSources.json`の全12件の`genreId`がgenres.jsonの有効なidと一致すること、`channel.type`が`feed`または`site-specific-html`のいずれかであること、`site-specific-html`は`parserId`が必須であること、不正な`channel.type`・`genreId`は例外になることを確認するテストを書く
+  - 🟢 `content/research-digest/fixedSources.json`(requirements.md#情報源(固定リスト)-2の12件)と`app/research-digest/lib/fixedSourceTypes.ts`を実装する
+
+- Task 9: 固定情報源からのヒント取得(仕様: design.md「固定情報源からヒントを集める処理」)
+  - 🔴 `fetchGenreHints(genreId, entries, http, parsers)`について次を確認するテストを書く: `feed`形式(RSS/Atom/RDF)から見出し・URL・公開日時を抽出できること/`site-specific-html`形式は`parserId`に対応する専用パーサーを呼び出すこと/1件の取得失敗が他の情報源の結果に影響しないこと(その情報源だけが結果から除かれる)/対象ジャンルに固定情報源がない場合は空配列を返すこと/取得件数が情報源あたり10件を超えないこと/取得失敗・0件の情報源がいずれもWARN付きの健全性ログ行になること。あわせて`app/research-digest/lib/fixedSourceParsers.ts`の`jmaPress`・`dietitianNews`・`aistResearch`・`naoNews`・`nedoNews`・`mextHoudou`の各パーサーについて、それぞれの実際のHTML構造を模したサンプルHTMLから見出し・URL・公開日時を抽出できることを確認するテストを書く
+  - 🟢 `app/research-digest/lib/fetchFixedSourceHints.ts`(feed共通パーサー・HttpClient注入はnews-digestのfetchCandidates.tsと同じ考え方・健全性ログ行の組み立て)と`app/research-digest/lib/fixedSourceParsers.ts`(parserId: `jmaPress`・`dietitianNews`・`aistResearch`・`naoNews`・`nedoNews`・`mextHoudou`)を実装する
+
+- Task 10: 収集CLIへのヒント統合(仕様: design.md「ジャンルごとに候補を集める処理」手順1、design.md「収集状況を記録する処理」)(TDD対象外。buildPrompt・collectGenre・collect-and-select.tsの統合はCLI本体〈Task 5・6と同じ扱い〉で、呼び出す関数自体はTask 8・9でテスト済みのため)
+  - `scripts/research-digest/collect-candidates.ts`の`buildPrompt`・`collectGenre`にヒント(`FixedSourceHint[]`)を渡す引数を追加し、プロンプトに手がかりとして組み込む(ヒントが無い場合は「新着の手がかりがありません」と分かる記載にする)。`scripts/research-digest/collect-and-select.ts`でジャンルごとに`fetchGenreHints`を呼び出し、取得件数・取得失敗を標準エラー出力に記録してから`collectGenre`へ渡すように更新する
 
 </details>
