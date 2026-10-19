@@ -1,0 +1,14 @@
+[
+  { "genreId": "medical-health", "name": "日本医師会プレスリリース一覧", "channel": { "type": "site-specific-html", "url": "https://www.med.or.jp/nichiionline/press/", "parserId": "jmaPress" } },
+  { "genreId": "nutrition-food", "name": "日本栄養士会お知らせ", "channel": { "type": "site-specific-html", "url": "https://www.dietitian.or.jp/news/", "parserId": "dietitianNews" } },
+  { "genreId": "psychology-brain", "name": "Nature Neuroscience", "channel": { "type": "feed", "url": "https://www.nature.com/neuro.rss" } },
+  { "genreId": "environment-climate", "name": "IPCC News", "channel": { "type": "feed", "url": "https://www.ipcc.ch/feed/" } },
+  { "genreId": "ai-it", "name": "arXiv cs.AI", "channel": { "type": "feed", "url": "https://rss.arxiv.org/rss/cs.AI" } },
+  { "genreId": "ai-it", "name": "国立情報学研究所(NII)ニュースリリース", "channel": { "type": "feed", "url": "https://www.nii.ac.jp/news/release/rss.xml" } },
+  { "genreId": "space-physics", "name": "arXiv astro-ph", "channel": { "type": "feed", "url": "https://rss.arxiv.org/rss/astro-ph" } },
+  { "genreId": "space-physics", "name": "国立天文台トピックス・研究成果", "channel": { "type": "site-specific-html", "url": "https://www.nao.ac.jp/news/", "parserId": "naoNews" } },
+  { "genreId": "materials-energy", "name": "産業技術総合研究所(産総研)研究成果記事一覧", "channel": { "type": "site-specific-html", "url": "https://www.aist.go.jp/aist_j/list/l_research_research.html", "parserId": "aistResearch" } },
+  { "genreId": "materials-energy", "name": "NEDOニュースリリース一覧", "channel": { "type": "site-specific-html", "url": "https://www.nedo.go.jp/news/", "parserId": "nedoNews" } },
+  { "genreId": "education-parenting", "name": "国立教育政策研究所 新着情報", "channel": { "type": "feed", "url": "https://www.nier.go.jp/02_news/rss.xml" } },
+  { "genreId": "education-parenting", "name": "文部科学省報道発表", "channel": { "type": "site-specific-html", "url": "https://www.mext.go.jp/b_menu/houdou/", "parserId": "mextHoudou" } }
+]

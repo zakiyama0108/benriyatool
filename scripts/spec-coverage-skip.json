@@ -8235,6 +8235,61 @@
     "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   },
   {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 医療・健康",
+    "reason": "ジャンルごとの固定情報源一覧という参照データの表の1行で、実際の対応関係(genreId単位の件数・内容)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 栄養・食",
+    "reason": "ジャンルごとの固定情報源一覧という参照データの表の1行で、実際の対応関係(genreId単位の件数・内容)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 心理・脳科学",
+    "reason": "ジャンルごとの固定情報源一覧という参照データの表の1行で、実際の対応関係(genreId単位の件数・内容)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 睡眠・運動",
+    "reason": "固定情報源が無いことを示す参照データの表の1行で、実際の対応関係(genreId単位の件数が0件であること)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 環境・気候",
+    "reason": "ジャンルごとの固定情報源一覧という参照データの表の1行で、実際の対応関係(genreId単位の件数・内容)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > AI・情報技術",
+    "reason": "ジャンルごとの固定情報源一覧という参照データの表の1行で、実際の対応関係(genreId単位の件数・内容)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 経済・行動科学",
+    "reason": "固定情報源が無いことを示す参照データの表の1行で、実際の対応関係(genreId単位の件数が0件であること)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 宇宙・物理",
+    "reason": "ジャンルごとの固定情報源一覧という参照データの表の1行で、実際の対応関係(genreId単位の件数・内容)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 材料・エネルギー",
+    "reason": "ジャンルごとの固定情報源一覧という参照データの表の1行で、実際の対応関係(genreId単位の件数・内容)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "情報源(固定リスト) > 教育・子育て",
+    "reason": "ジャンルごとの固定情報源一覧という参照データの表の1行で、実際の対応関係(genreId単位の件数・内容)はfixedSourceTypes.test.ts・fixedSources.jsonでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "データ取得方法 [2]",
+    "reason": "固定情報源の取得方針・1件の取得失敗時にその情報源だけを除外する運用方針の記述で、実際の振る舞い(1件の取得失敗が他の情報源・ジャンルの収集処理に影響しないこと)はfetchFixedSourceHints.test.tsでテスト済みのため"
+  },
+  {
     "specFile": "research-digest/content-selection/design.md",
     "item": "サマリ",
     "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
@@ -8318,6 +8373,26 @@
     "specFile": "research-digest/content-selection/design.md",
     "item": "ログ",
     "reason": "収集・選定結果を標準エラー出力に記録するCLI(scripts/research-digest/collect-and-select.ts・collect-candidates.ts)の説明で、TDD対象外の薄いラッパー(tasks.md Task 6)のため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "決定事項 > 固定情報源の扱い方",
+    "reason": "固定情報源の新着を手がかり(ヒント)に留め採否判定自体はClaudeに残す方式を選んだ理由を記録した設計判断の表の1行で、ヒントが候補を機械的に確定させないこと自体はプロンプト構成(scripts/research-digest/collect-candidates.ts。TDD対象外)の記述のため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "決定事項 > 固定情報源のHTML構造への対応",
+    "reason": "情報源ごとに専用パーサー(parserId)を持つ方式を選んだ理由を記録した設計判断の表の1行で、採用した案(parserIdディスパッチ)自体はfetchFixedSourceHints.test.tsで、各専用パーサーの実際の振る舞いはfixedSourceParsers.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "データ設計(固定情報源)",
+    "reason": "型定義・fixedSources.jsonの初期値の宣言で、実際の値・構造の妥当性はfixedSourceTypes.test.tsで検証されるため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "固定情報源からヒントを集める処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応する振る舞い(feed/site-specific-htmlのディスパッチ・1件の取得失敗の除外・件数上限・健全性ログ)はfetchFixedSourceHints.test.tsで、各専用パーサーはfixedSourceParsers.test.tsでテスト済みのため"
   },
   {
     "specFile": "research-digest/content-generation/requirements.md",
