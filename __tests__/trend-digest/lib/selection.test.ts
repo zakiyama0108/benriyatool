@@ -4,6 +4,33 @@ import type { CandidateWithJudgement, GenreObservations, JudgementLookup } from 
 import type { Candidate } from '../../../app/trend-digest/lib/candidateTypes'
 import type { HistoryJudgement } from '../../../app/trend-digest/lib/historyTypes'
 import type { Genre } from '../../../app/trend-digest/lib/types'
+import { GENRE_ORDER } from '../../../app/trend-digest/lib/types'
+import type { Criteria } from '../../../app/trend-digest/lib/watchlistTypes'
+
+// selectEditionTopicsの4引数目(focusAreasの解決にのみ使う)。テストではfocusAreasを指定しない限り
+// 全ジャンルがwebsearch・focusAreasなしとして扱われれば十分なため、実際のcontent/criteria.jsonの値を
+// 再現する必要はない(minIndependentSources自体はbaseCandidateのmeetsCriteriaで直接指定するため無関係)
+function baseCriteria(overrides: Partial<Record<Genre, { focusAreas?: string[] }>> = {}): Criteria {
+  const allGenres = [...GENRE_ORDER.entertainment, ...GENRE_ORDER['culture-lifestyle']]
+  const genreCriteria = Object.fromEntries(
+    allGenres.map((genre) => [genre, { method: 'websearch' as const, minIndependentSources: 1, ...overrides[genre] }])
+  ) as Criteria['genreCriteria']
+  return {
+    newEntryLookbackWeeks: 4,
+    genreCriteria,
+    history: {
+      emergingMinDays: 14,
+      talkedMinDays: 30,
+      highlyTalkedMinDays: 90,
+      maxObservationsPerSource: 30,
+      heatMinObservationRuns: 12,
+      heatRankHigh: 3,
+      heatRankNormal: 10,
+      heatSourcesHigh: 5,
+      heatSourcesNormal: 3,
+    },
+  }
+}
 
 function baseCandidate(overrides: Partial<Candidate>): Candidate {
   return {
@@ -148,7 +175,7 @@ describe('各ジャンル1件の選定(selectEditionTopics) - 対象editionの�
 
   it('エンタメ編9ジャンルすべてから1件ずつ選ばれ、結果がGENRE_ORDER順に並ぶこと', () => {
     const { genreObservations, judgements } = observationsWithJudgements([...entertainmentGenres].reverse())
-    const result = selectEditionTopics(genreObservations, judgements, 'entertainment')
+    const result = selectEditionTopics(genreObservations, judgements, 'entertainment', baseCriteria())
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
     expect(result.topics).toHaveLength(9)
@@ -157,7 +184,7 @@ describe('各ジャンル1件の選定(selectEditionTopics) - 対象editionの�
 
   it('カルチャー・ライフスタイル編10ジャンルすべてから1件ずつ選ばれること(掲載件数の上限は設けない。旧perEditionMaxによる10件打ち切りが残っていないことの回帰テスト)', () => {
     const { genreObservations, judgements } = observationsWithJudgements(cultureGenres)
-    const result = selectEditionTopics(genreObservations, judgements, 'culture-lifestyle')
+    const result = selectEditionTopics(genreObservations, judgements, 'culture-lifestyle', baseCriteria())
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
     expect(result.topics).toHaveLength(10)
@@ -176,7 +203,7 @@ describe('各ジャンル1件の選定(selectEditionTopics) - 対象editionの�
         ],
       },
     ]
-    const result = selectEditionTopics(genreObservations, judgements, 'entertainment')
+    const result = selectEditionTopics(genreObservations, judgements, 'entertainment', baseCriteria())
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
     // 候補Bの方が継続度ラベルは高いが採用基準を満たしていないため、候補Aが選ばれる
@@ -196,7 +223,7 @@ describe('各ジャンル1件の選定(selectEditionTopics) - 対象editionの�
         ],
       },
     ]
-    const result = selectEditionTopics(genreObservations, judgements, 'entertainment')
+    const result = selectEditionTopics(genreObservations, judgements, 'entertainment', baseCriteria())
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
     expect(result.topics.find((t) => t.genre === 'music')?.title).toBe('強い観測項目')
@@ -204,7 +231,7 @@ describe('各ジャンル1件の選定(selectEditionTopics) - 対象editionの�
 
   it('観測項目が1件もないジャンルはunavailableGenresに入り、topicsには入らないこと(情報源から話題を1件も取得できなかった場合。requirements.md#掲載件数-3)', () => {
     const { genreObservations, judgements } = observationsWithJudgements(entertainmentGenres.filter((g) => g !== 'music'))
-    const result = selectEditionTopics(genreObservations, judgements, 'entertainment')
+    const result = selectEditionTopics(genreObservations, judgements, 'entertainment', baseCriteria())
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
     expect(result.topics).toHaveLength(8)
@@ -213,13 +240,13 @@ describe('各ジャンル1件の選定(selectEditionTopics) - 対象editionの�
   })
 
   it('対象editionの全ジャンルで観測項目が0件のとき、候補不足によりスキップ結果になること', () => {
-    const result = selectEditionTopics([], new Map(), 'entertainment')
+    const result = selectEditionTopics([], new Map(), 'entertainment', baseCriteria())
     expect(result.status).toBe('skipped')
   })
 
   it('1ジャンルでも観測項目があれば、他の全ジャンルが0件でもstatus: okになること', () => {
     const { genreObservations, judgements } = observationsWithJudgements(['music'])
-    const result = selectEditionTopics(genreObservations, judgements, 'entertainment')
+    const result = selectEditionTopics(genreObservations, judgements, 'entertainment', baseCriteria())
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
     expect(result.topics).toHaveLength(1)
@@ -246,7 +273,7 @@ describe('選定結果へのtrend-history判定結果の添付(selectEditionTopi
     const genreObservations: GenreObservations[] = [
       { genre: 'music', observations: [baseCandidate({ genre: 'music', title: 'music-話題', meetsCriteria: true })] },
     ]
-    const result = selectEditionTopics(genreObservations, judgements, 'entertainment')
+    const result = selectEditionTopics(genreObservations, judgements, 'entertainment', baseCriteria())
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
     const [topic] = result.topics
@@ -270,9 +297,127 @@ describe('同一話題の突き合わせ(selectEditionTopics) - 観測項目の�
     const genreObservations: GenreObservations[] = [
       { genre: 'music', observations: [baseCandidate({ genre: 'music', title: '  ＡＢＣ Special Edition  ', meetsCriteria: true })] },
     ]
-    const result = selectEditionTopics(genreObservations, judgements, 'entertainment')
+    const result = selectEditionTopics(genreObservations, judgements, 'entertainment', baseCriteria())
     expect(result.status).toBe('ok')
     if (result.status !== 'ok') return
     expect(result.topics.find((t) => t.genre === 'music')?.durationLabel).toBe('talked')
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-12
+describe('地域枠(グルメ) - 候補に対象エリアの話題が1件以上あれば、その回のグルメの掲載枠は対象エリアの話題から選ぶ', () => {
+  const focusAreasCriteria = baseCriteria({ gourmet: { focusAreas: ['小田原', '茅ヶ崎', '横浜'] } })
+
+  function judgementsFor(titles: string[]): JudgementLookup {
+    const judgements: JudgementLookup = new Map()
+    for (const title of titles) judgements.set(normalizeTitle(title), baseJudgement({}))
+    return judgements
+  }
+
+  it('全国の話題の方が強さ(strength)が大きくても、対象エリアの話題が候補にあればそちらが選ばれること', () => {
+    const genreObservations: GenreObservations[] = [
+      {
+        genre: 'gourmet',
+        observations: [
+          baseCandidate({ genre: 'gourmet', title: '全国の人気店', method: 'websearch', strength: 5, meetsCriteria: true }),
+          baseCandidate({ genre: 'gourmet', title: '茅ヶ崎の店', method: 'websearch', strength: 2, area: '茅ヶ崎', meetsCriteria: true }),
+        ],
+      },
+    ]
+    const result = selectEditionTopics(
+      genreObservations,
+      judgementsFor(['全国の人気店', '茅ヶ崎の店']),
+      'culture-lifestyle',
+      focusAreasCriteria
+    )
+    expect(result.status).toBe('ok')
+    if (result.status !== 'ok') return
+    expect(result.topics.find((t) => t.genre === 'gourmet')?.title).toBe('茅ヶ崎の店')
+  })
+
+  it('対象エリアの話題が候補に複数あれば、その中で通常どおりの並べ替え(strength等)で最上位が選ばれること', () => {
+    const genreObservations: GenreObservations[] = [
+      {
+        genre: 'gourmet',
+        observations: [
+          baseCandidate({ genre: 'gourmet', title: '横浜の店(弱)', method: 'websearch', strength: 2, area: '横浜', meetsCriteria: true }),
+          baseCandidate({ genre: 'gourmet', title: '横浜の店(強)', method: 'websearch', strength: 9, area: '横浜', meetsCriteria: true }),
+        ],
+      },
+    ]
+    const result = selectEditionTopics(
+      genreObservations,
+      judgementsFor(['横浜の店(弱)', '横浜の店(強)']),
+      'culture-lifestyle',
+      focusAreasCriteria
+    )
+    expect(result.status).toBe('ok')
+    if (result.status !== 'ok') return
+    expect(result.topics.find((t) => t.genre === 'gourmet')?.title).toBe('横浜の店(強)')
+  })
+
+  it('対象エリアの候補が1件もない場合は、通常どおりプール全体から並べ替え最上位が選ばれること', () => {
+    const genreObservations: GenreObservations[] = [
+      {
+        genre: 'gourmet',
+        observations: [
+          baseCandidate({ genre: 'gourmet', title: '全国A', method: 'websearch', strength: 5, meetsCriteria: true }),
+          baseCandidate({ genre: 'gourmet', title: '全国B', method: 'websearch', strength: 4, meetsCriteria: true }),
+        ],
+      },
+    ]
+    const result = selectEditionTopics(
+      genreObservations,
+      judgementsFor(['全国A', '全国B']),
+      'culture-lifestyle',
+      focusAreasCriteria
+    )
+    expect(result.status).toBe('ok')
+    if (result.status !== 'ok') return
+    expect(result.topics.find((t) => t.genre === 'gourmet')?.title).toBe('全国A')
+  })
+
+  it('対象外の地域名の話題は地域枠として扱われず、対象エリア扱いにならないこと', () => {
+    const genreObservations: GenreObservations[] = [
+      {
+        genre: 'gourmet',
+        observations: [
+          baseCandidate({ genre: 'gourmet', title: '全国A', method: 'websearch', strength: 5, meetsCriteria: true }),
+          baseCandidate({ genre: 'gourmet', title: '札幌の店', method: 'websearch', strength: 9, area: '札幌', meetsCriteria: true }),
+        ],
+      },
+    ]
+    const result = selectEditionTopics(
+      genreObservations,
+      judgementsFor(['全国A', '札幌の店']),
+      'culture-lifestyle',
+      focusAreasCriteria
+    )
+    expect(result.status).toBe('ok')
+    if (result.status !== 'ok') return
+    // 札幌はfocusAreas対象外のため地域枠が働かず、通常の並べ替え(strength)で札幌の店が選ばれる
+    // (地域枠自体が適用されないだけで、札幌の話題を候補から排除するわけではない)
+    expect(result.topics.find((t) => t.genre === 'gourmet')?.title).toBe('札幌の店')
+  })
+
+  it('focusAreas未指定のジャンルでは地域による優先は行われず、通常どおり並べ替え最上位が選ばれること', () => {
+    const genreObservations: GenreObservations[] = [
+      {
+        genre: 'gourmet',
+        observations: [
+          baseCandidate({ genre: 'gourmet', title: '全国A', method: 'websearch', strength: 5, meetsCriteria: true }),
+          baseCandidate({ genre: 'gourmet', title: '茅ヶ崎の店', method: 'websearch', strength: 2, area: '茅ヶ崎', meetsCriteria: true }),
+        ],
+      },
+    ]
+    const result = selectEditionTopics(
+      genreObservations,
+      judgementsFor(['全国A', '茅ヶ崎の店']),
+      'culture-lifestyle',
+      baseCriteria() // gourmetにfocusAreasを設定しない
+    )
+    expect(result.status).toBe('ok')
+    if (result.status !== 'ok') return
+    expect(result.topics.find((t) => t.genre === 'gourmet')?.title).toBe('全国A')
   })
 })
