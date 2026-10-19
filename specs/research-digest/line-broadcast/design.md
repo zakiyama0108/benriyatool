@@ -1,7 +1,7 @@
 # 設計: LINE公式アカウントでの新着記事の自動配信
 
 ## サマリ
-[weekly-publish](../weekly-publish/design.md)の週次記事PRがmainへ自動マージされると、`main`へのpush(記事JSONの新規追加)をきっかけに独立したワークフローが起動する。記事ページが本番で開けることを確認してから、既存の「AI駆動開発ニュース」のLINE公式アカウントで友だち全員にブロードキャスト配信する。本文は「【週刊研究発見】」+日付・その回の研究の見出し全件(影響度順、掲載した研究がないジャンル〈候補なし・収集失敗・生成失敗〉は除く)・記事ページへのリンク1本で組み立てる。
+[weekly-publish](../weekly-publish/design.md)の週次記事PRがmainへ自動マージされると、`main`へのpush(記事JSONの新規追加)をきっかけに独立したワークフローが起動する。記事ページが本番で開けることを確認してから、既存の「AI駆動開発ニュース」のLINE公式アカウントで友だち全員にブロードキャスト配信する。本文は「【週刊研究発見】」+編のラベル+日付・その回の研究の見出し全件(影響度順、掲載した研究がないジャンル〈候補なし・収集失敗・生成失敗〉は除く)・記事ページへのリンク1本で組み立てる。
 
 主要な設計判断:
 - 配信の仕組み(pushトリガー・新規追加ファイルだけを対象・公開待ち・リトライしない)はtrend-digest・future-digestと同じ構成で、共有モジュール`app/lib/waitForPageAvailable.ts`をそのまま使う
@@ -29,21 +29,21 @@
 ### 配信メッセージを組み立てる処理
 - 対象: 1回分の記事データ
 - 手順:
-  1. 1行目を「【週刊研究発見】YYYY年M月D日号」にする(requirements.md#配信内容-2)
+  1. 1行目を「【週刊研究発見】<編のラベル> YYYY年M月D日号」(例:「【週刊研究発見】からだ・くらし編 2026年10月5日号」)にする(buildBroadcastTitle(edition, date)で組み立てる。requirements.md#配信内容-2)
   2. 掲載した研究を影響度の大きい順、同じ影響度の中ではジャンル順に並べ、「・【影響度 大/ジャンル名】見出し」の形で1行ずつ並べる。候補なし・収集失敗・生成失敗のジャンルは載せない(requirements.md#配信内容-3〜4)。その回の研究が0件(採用0件の回。全ジャンルが候補なし・収集失敗・生成失敗のいずれか)の場合は、この行の代わりに「今週は掲載できる記事がありませんでした」の1行を入れる(requirements.md#配信内容-6)
   3. 末尾に「記事を読む」と記事詳細ページのURL(`https://benriyatool.com/research-digest/<id>`)を1本だけ付ける。研究ごとの出典URLは含めない(requirements.md#配信内容-5)
   4. 書式の例:
      ```
-     【週刊研究発見】2026年10月5日号
+     【週刊研究発見】からだ・くらし編 2026年10月5日号
 
      ・【影響度 大/医療・健康】<見出し>
      ・【影響度 大/睡眠・運動】<見出し>
      ・【影響度 中/教育・子育て】<見出し>
 
      記事を読む
-     https://benriyatool.com/research-digest/2026-10-05
+     https://benriyatool.com/research-digest/2026-10-05-body-life
      ```
-  5. 見出しは有効なジャンルの数だけ(現在は最大10件)で短いため、LINEのテキストメッセージの文字数上限(5000字)を超えない見込み。切り詰め処理は設けず、万一超えた場合はAPIのエラーとして扱う
+  5. 見出しは対象編の有効なジャンルの数だけ(現在は最大5件)で短いため、LINEのテキストメッセージの文字数上限(5000字)を超えない見込み。切り詰め処理は設けず、万一超えた場合はAPIのエラーとして扱う
 - 関連するビジネスルール: requirements.md#配信内容-1〜6
 
 ### 配信する処理
@@ -86,7 +86,7 @@ sequenceDiagram
 
 ```
 .github/workflows/research-digest-line-broadcast.yml (新規)
-app/research-digest/lib/buildBroadcastMessage.ts (新規: buildBroadcastTitle・buildBroadcastMessage)
+app/research-digest/lib/buildBroadcastMessage.ts (編成分割で変更: buildBroadcastTitle(edition, date)・buildBroadcastMessage)
 app/research-digest/lib/articleUrl.ts (新規: 記事詳細ページのURLの導出。配信本文と公開待ちで共有する)
 scripts/research-digest/broadcast-line.ts (新規: 記事を読み込み、公開待ち→LINEへ送信するCLI)
 app/lib/waitForPageAvailable.ts (既存: 公開待ちの共有モジュール)

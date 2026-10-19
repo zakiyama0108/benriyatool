@@ -1,6 +1,6 @@
 import type { Edition } from './types'
 
-// 記事タイトルの導出(仕様: content-generation/requirements.md#記事の構成-6、
+// 記事タイトルの導出(仕様: content-generation/requirements.md#記事の構成-9、
 // content-generation/design.md「記事タイトルを導出する処理」)。
 // article-detail(記事詳細ページ)がこの関数の呼び出し元であるため、本ファイルはarticle-detailの
 // 実装として先行作成する(ownerはcontent-generation。content-generationの実装時にこのファイルを

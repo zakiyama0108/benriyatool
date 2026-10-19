@@ -1,25 +1,44 @@
 # 設計: ジャンル別の研究発見・論文の選定
 
 ## サマリ
-有効なジャンルごとに、Claude Code CLIのヘッドレス実行(WebSearch)で採用基準を満たす研究・論文の候補を集めさせ、生活への影響度の判定と順位付けまでを任せる。配信済みとの重複は、同じURL・同じDOIを決定的なコードで機械的に除き、同じ研究を扱う別の報道などの実質的な重複は、過去に配信した全研究の見出し・論文名の一覧をプロンプトに渡してClaudeに判定させる。最後にジャンルごとの採用(影響度の最も大きい1本)と、候補が見つからなかったジャンル・収集の処理自体に失敗したジャンル(`collection-failed`)の記録を決定的なコードで行い、ジャンルごとの候補件数を実行ログに出す。利用上限への到達を検知した場合は、その時点で収集を打ち切る(公開はしない。再実行cron(最大3回)での再試行は[weekly-publish/design.md](../weekly-publish/design.md)が扱う)。future-digestのcontent-selectionと同じ作りで、時間軸がない点・DOIで突合する点・査読前かどうかを判定させる点が異なる。
+対象編(からだ・くらし編/科学・社会編)の有効なジャンル(5)ごとに、Claude Code CLIのヘッドレス実行(WebSearch)で採用基準を満たす研究・論文の候補を集めさせ、生活への影響度の判定と順位付けまでを任せる。編は`genres.json`の各ジャンルの`edition`属性で固定され、動的には切り替わらない(下記「[データ設計](#データ設計ジャンルの設定ファイル)」、requirements.md#編成とジャンルの割り当て)。配信済みとの重複は、編を問わず全記事を対象に、同じURL・同じDOIを決定的なコードで機械的に除き、同じ研究を扱う別の報道などの実質的な重複は、過去に配信した全研究の見出し・論文名の一覧をプロンプトに渡してClaudeに判定させる。最後にジャンルごとの採用(影響度の最も大きい1本)と、候補が見つからなかったジャンル・収集の処理自体に失敗したジャンル(`collection-failed`)の記録を決定的なコードで行い、ジャンルごとの候補件数を実行ログに出す。利用上限への到達を検知した場合は、その時点で収集を打ち切る(公開はしない。再実行cron(最大3回)での再試行は[weekly-publish/design.md](../weekly-publish/design.md)が扱う)。future-digestのcontent-selectionと同じ作りで、時間軸がない点・DOIで突合する点・査読前かどうかを判定させる点が異なる。
 
 主要な設計判断:
 - 「論文を探す・元の論文や公式発表を確かめる・影響度を判定する・実質的な重複を見分ける」はClaudeに任せ、「同じURL/DOIの除外・ジャンルごとの採用・候補なしの記録」は決定的なコードで行う
-- ジャンルは`content/research-digest/genres.json`に置き、追記だけで増やせる
+- ジャンル・編の割り当ては`content/research-digest/genres.json`に置き、追記だけで増やせる(trend-digestのwatchlist.jsonと同じく、ジャンルごとに`edition`属性を持たせる)
+- 編の判定は、実行主体(weekly-publishのワークフロー)が起動元のcronから決定し、`collect-and-select.ts`にCLI引数として渡す。本spec自身はどのcronで起動されたかを判定しない(weekly-publish/design.md「編を判定する処理」参照)
 - 図: [ジャンルごとに候補を集める処理](#ジャンルごとに候補を集める処理エージェントの推論)のシーケンス図
+
+## 決定事項
+
+| 論点 | 選んだ案 | 採らなかった案 | 理由 | 影響範囲 | 出所 |
+|---|---|---|---|---|---|
+| 編成の分け方 | ジャンルを`genres.json`の`edition`属性で固定2分割(future-digest・trend-digestと同じ) | ジャンルを動的に2グループへ振り分ける | 編の判定を固定値にすることで、収集・公開・表示の各処理が「今対象の編はどれか」だけで完結し、揺れが入らない | データ設計・処理フロー全体 | 〔提案〕 |
+| 編ごとのジャンル割り当て | からだ・くらし編(医療・健康/栄養・食/睡眠・運動/心理・脳科学/教育・子育て)と科学・社会編(環境・気候/AI・情報技術/経済・行動科学/宇宙・物理/材料・エネルギー) | 他の組み合わせ | からだ・暮らしに身近な領域か、より広い科学・社会寄りの領域かで分けた。唯一の正解はなく承認者の確認が必要 | requirements.md#編成とジャンルの割り当て | 〔提案〕 |
+| 配信済み判定の対象範囲 | 編をまたいで全記事を対象に重複除外する | 編ごとに独立して重複除外する | 編が違っても同じ研究を二度配信しないため | 配信済みの一覧を作る処理 | 〔提案〕 |
+
+<details><summary>詳細を開く</summary>
+
+| 論点 | 選んだ案 | 採らなかった案 | 理由 | 影響範囲 | 出所 |
+|---|---|---|---|---|---|
+| 編の判定方法 | `weekly-publish`のワークフローが起動元cronから判定し、CLI引数で渡す | content-selection自身が`process.env`等から判定 | trend-digestの既存実装と同じ責務分担(実行環境の判定はワークフロー側、ロジックは引数で受け取る) | ジャンルごとに候補を集める処理 | 〔提案〕 |
+
+</details>
 
 ## データ設計(ジャンルの設定ファイル)
 
 ```jsonc
 // content/research-digest/genres.json(記載順=ジャンル順)
 [
-  { "id": "medical-health", "label": "医療・健康", "description": "収集時にClaudeへ渡すジャンルの範囲の説明", "active": true },
-  { "id": "nutrition-food", "label": "栄養・食", "description": "...", "active": true },
-  // psychology-brain(心理・脳科学)/ sleep-exercise(睡眠・運動)/ environment-climate(環境・気候)/ ai-it(AI・情報技術)/
-  // economics-behavioral(経済・行動科学)/ space-physics(宇宙・物理)/ materials-energy(材料・エネルギー)/ education-parenting(教育・子育て)
+  { "id": "medical-health", "label": "医療・健康", "description": "収集時にClaudeへ渡すジャンルの範囲の説明", "edition": "body-life", "active": true },
+  { "id": "nutrition-food", "label": "栄養・食", "description": "...", "edition": "body-life", "active": true },
+  // sleep-exercise(睡眠・運動)/ psychology-brain(心理・脳科学)/ education-parenting(教育・子育て)はedition: "body-life"
+  // environment-climate(環境・気候)/ ai-it(AI・情報技術)/ economics-behavioral(経済・行動科学)/
+  // space-physics(宇宙・物理)/ materials-energy(材料・エネルギー)はedition: "science-society"
 ]
 ```
 
+- `edition`は`"body-life"`(からだ・くらし編)または`"science-society"`(科学・社会編)の2値で、ジャンルごとに固定(requirements.md#編成とジャンルの割り当て)。ジャンルを新規追加する際はこの属性を必ず指定する。属性が2値以外・未指定の場合は読み込み時に例外を投げる
 - `active: false`のジャンルは収集しないが、過去記事の表示用にラベルを残す
 - `genres.json`と`requirements.md#ジャンル`は二重管理になるため、[source-review](../source-review/design.md)の月次見直しでは両方を同じPRで更新する
 
@@ -58,7 +77,7 @@ export type GenreResult =
 - 関連するビジネスルール: requirements.md#配信済みの研究の除外-1
 
 ### ジャンルごとに候補を集める処理(エージェントの推論)
-- 対象: 有効なジャンル1つ
+- 対象: 対象編の有効なジャンル1つ(現在は編あたり5)
 - 手順:
   1. `requirements.md`を実行時に読み込み、その内容(採用基準・影響度の観点)をプロンプトに含める(content-generationと同じく、別ファイルにルール文を複製・転記しない)。あわせてジャンルの説明、配信済みの一覧もプロンプトに含め、Claude Code CLIをヘッドレス起動する(WebSearch・WebFetchを使わせる)
   2. Claudeは、学術誌に掲載された論文、または大学・研究機関が公式に発表した研究成果を探す。科学系の報道をきっかけにしてよいが、元の論文・公式発表を開いて確かめられたものだけを候補にし、出典にはその論文・公式発表のURLを使う(requirements.md#採用基準-1)
@@ -78,7 +97,7 @@ sequenceDiagram
     participant web as 公開Webページ(報道・論文・公式発表)
 
     script ->> script: 配信済みの一覧を作る
-    loop 有効なジャンルごと
+    loop 対象編の有効なジャンルごと
         script ->> claude: ジャンル説明・採用基準・配信済みの一覧を渡す
         claude ->> web: WebSearchで研究を探し、元の論文・公式発表をWebFetchで確かめる
         web -->> claude: 検索結果・論文ページ
@@ -133,8 +152,8 @@ Claudeが返した候補ごとに検証し、満たさない候補は捨てる(�
 ## 関連するファイル(抜粋)
 
 ```
-content/research-digest/genres.json (新規: ジャンルの設定ファイル)
-app/research-digest/lib/genres.ts (新規: genres.jsonの読み込み・検証)
+content/research-digest/genres.json (編成分割で変更: 各ジャンルにedition属性を追加)
+app/research-digest/lib/genres.ts (編成分割で変更: genres.jsonの読み込み・検証。EDITION_GENRESを追加)
 app/research-digest/lib/candidateTypes.ts (新規: Candidate/GenreResult)
 app/research-digest/lib/deliveredIndex.ts (新規: URL・DOIの正規化と、配信済みの一覧の組み立て)
 app/research-digest/lib/candidateValidation.ts (新規: Claudeが返した候補の検証)

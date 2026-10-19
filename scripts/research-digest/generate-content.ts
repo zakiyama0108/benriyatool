@@ -19,17 +19,21 @@ import { pathToFileURL } from 'node:url'
 import type { Candidate, GenreResult } from '../../app/research-digest/lib/candidateTypes'
 import { GENRE_LABELS, IMPACT_LABELS } from '../../app/research-digest/lib/types'
 import { generateFindings, type ClaudeCliResponse } from '../../app/research-digest/lib/generateContent'
+import { isValidAgentDiagram } from '../../app/research-digest/lib/diagramValidation'
 
 const execFileAsync = promisify(execFile)
 
 const REQUIREMENTS_PATH = path.join(process.cwd(), 'specs/research-digest/content-generation/requirements.md')
 const DESIGN_PATH = path.join(process.cwd(), 'specs/research-digest/content-generation/design.md')
 
-// content-generation/design.md「見出し・本文を書く処理」の「プロンプトに必ず含めるガードレール文言」をそのまま転記する
-const GUARDRAIL = `この記事で扱ってよいのは、渡された論文・公式発表に書かれている研究結果だけである。元の構成・表現の順序をなぞらず独自に書き直し、数値・全文を網羅的に転記しない。研究結果を実際より確かなもの・効果の大きいものとして書かず、研究の限界を注意点に書く。健康に関わる研究では、読者に個別の治療・服薬の開始・中止・変更を勧めない。元にない内容を推測で断定しない。渡された影響度・その根拠・査読前かどうかは事実として扱い、それと異なることを書かない。査読前の論文であれば、そのことを注意点に必ず書く。`
+// 固定4観点。この4キー・この順序で固定(content-generation/requirements.md#要約-3)
+const SECTION_KEYS = ['finding', 'basis', 'relevance', 'caveat'] as const
+
+// content-generation/design.md「見出し・固定4観点を書く処理」の「プロンプトに必ず含めるガードレール文言」をそのまま転記する
+const GUARDRAIL = `この記事で扱ってよいのは、渡された論文・公式発表に書かれている研究結果だけである。各観点の本文は元の構成・表現の順序をなぞらず独自に書き直し、数値・全文を網羅的に転記しない。研究結果を実際より確かなもの・効果の大きいものとして書かず、研究の限界を注意点観点に書く。健康に関わる研究では、読者に個別の治療・服薬の開始・中止・変更を勧めない(「なぜそう結論づけられたのか」「暮らしへの関わり」観点も同様)。元にない内容を推測で断定しない。渡された影響度・その根拠・査読前かどうかは事実として扱い、それと異なることを書かない。査読前の論文であれば、そのことを注意点観点に必ず書く。`
 
 function buildPrompt(candidate: Candidate, requirements: string, design: string): string {
-  return `あなたは「週刊研究発見」の記事執筆を担当するエージェントです。以下の要件定義・設計に厳密に従って、指定された研究の見出し・本文を日本語で執筆してください。
+  return `あなたは「週刊研究発見」の記事執筆を担当するエージェントです。以下の要件定義・設計に厳密に従って、指定された研究の見出し・固定4観点を日本語で執筆してください。
 
 # 要件定義(content-generation/requirements.md)
 ${requirements}
@@ -49,11 +53,13 @@ ${GUARDRAIL}
 - 元URL: ${candidate.sourceUrl}
 - DOI: ${candidate.doi ?? 'なし'}
 - 発表年: ${candidate.publishedYear ?? '不明'}
-- 査読前の論文(プレプリント): ${candidate.isPreprint ? 'はい(査読前であることを本文の注意点に必ず書くこと)' : 'いいえ'}
+- 査読前の論文(プレプリント): ${candidate.isPreprint ? 'はい(査読前であることを注意点観点に必ず書くこと)' : 'いいえ'}
 
-WebFetchツールで元URLの内容を把握したうえで(有料で全文を読めない場合は、要旨・公式発表など公開されている範囲で把握する)、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、渡された情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "body": null}\`)を返してください(いずれの場合も聞き返さない):
+流れ・分岐・時系列のような構造を示すのに適した観点があれば、Mermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)を該当する観点の\`diagram\`に設定してください(requirements.md#図解-6)。単純な内容でMermaid図が不要な観点は、その観点の\`diagram\`を\`null\`にしてください。
 
-{"heading": "何が分かったかが一目で分かる1文の見出し", "body": "200〜400字程度の本文(何が分かったか・どう調べたか〈方法・規模〉・暮らしにどう関わるか・注意点)"}`
+WebFetchツールで元URLの内容を把握したうえで(有料で全文を読めない場合は、要旨・公式発表など公開されている範囲で把握する)、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、渡された情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`heading\`を\`null\`にしたJSON(\`{"heading": null, "sections": null}\`)を返してください(いずれの場合も聞き返さない):
+
+{"heading": "何が分かったかが一目で分かる1文の見出し", "sections": {"finding": {"heading": "結論文(短い見出し)", "text": "何が分かったかの本文", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "basis": {"heading": "...", "text": "なぜそう結論づけられたのか(判断の決め手を素人にも分かる言葉で)", "diagram": null}, "relevance": {"heading": "...", "text": "暮らしへの関わり", "diagram": null}, "caveat": {"heading": "...", "text": "注意点(研究の限界。査読前なら必ず明記)", "diagram": null}}}`
 }
 
 // Claude Code CLIへ渡す起動引数(純粋関数として切り出し、テストで検証できるようにする)。
@@ -81,6 +87,42 @@ async function callClaudeCode(prompt: string): Promise<ClaudeCliResponse> {
   }
 }
 
+// callClaudeCodeの応答に含まれる各観点のdiagram(Mermaid図のみ)が正しい形式かを検証する(design.md
+// 「見出し・固定4観点を書く処理」手順13)。応答がJSONを含まない・パースできない場合はそのまま返し、
+// classifyGenerationResult(generateFindings経由)に失敗判定を委ねる。
+// 不正な形式のdiagramはログに出してnullに差し替え、その観点の図解なしで生成を続行する
+// (1観点の図解不正でその研究全体の生成失敗にはしない)
+function resolveDiagramsInResponse(res: ClaudeCliResponse, genre: string): ClaudeCliResponse {
+  const text = res.result ?? ''
+  const match = text.match(/\{[\s\S]*\}/)
+  if (!match) return res
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(match[0])
+  } catch {
+    return res
+  }
+  if (typeof parsed !== 'object' || parsed === null) return res
+
+  const sections = (parsed as { sections?: unknown }).sections
+  if (typeof sections === 'object' && sections !== null) {
+    const sectionsRecord = sections as Record<string, { diagram?: unknown } | undefined>
+    for (const key of SECTION_KEYS) {
+      const section = sectionsRecord[key]
+      if (!section || typeof section !== 'object') continue
+      const rawDiagram = section.diagram
+      if (rawDiagram === undefined) continue // 観点自体がdiagramキーを返していない(省略)
+      if (!isValidAgentDiagram(rawDiagram)) {
+        console.error(`図解データの形式が不正なため無視します(${genre}/${key}): ${JSON.stringify(rawDiagram)}`)
+        section.diagram = null
+      }
+    }
+  }
+
+  return { ...res, result: JSON.stringify(parsed) }
+}
+
 async function main() {
   const selectionPath = process.argv[2]
   if (!selectionPath) {
@@ -93,7 +135,9 @@ async function main() {
     process.exit(1)
   }
 
-  const selection = JSON.parse(fs.readFileSync(selectionPath, 'utf8')) as { genreResults: GenreResult[] }
+  const selection = JSON.parse(fs.readFileSync(selectionPath, 'utf8')) as {
+    genreResults: GenreResult[]
+  }
   const selectedCandidates = selection.genreResults
     .filter((r): r is Extract<GenreResult, { status: 'selected' }> => r.status === 'selected')
     .map((r) => r.candidate)
@@ -109,10 +153,15 @@ async function main() {
 
   // 1候補ずつ生成する。一時的失敗はやり直し→ダメなら「生成に失敗したジャンル」として除く。
   // 利用枠枯渇はQuotaExhaustedErrorとしてここから外へ伝播し、下のmain().catchが非ゼロ終了させる
-  // (→後続のwrite-article.tsが走らず、Actionsの実行が赤で残る)
+  // (→後続のwrite-article.tsが走らず、Actionsの実行が赤で残る)。
+  // 各観点のdiagram(Mermaid図のみ)の検証はclassifyGenerationResultより前に行う
+  // (design.md「見出し・固定4観点を書く処理」手順13)
   const result = await generateFindings(
     selectedCandidates,
-    (candidate) => callClaudeCode(buildPrompt(candidate, requirements, design)),
+    async (candidate) => {
+      const res = await callClaudeCode(buildPrompt(candidate, requirements, design))
+      return resolveDiagramsInResponse(res, candidate.genre)
+    },
     {
       onExcluded: ({ candidate, attempts, detail }) => {
         console.error(`${candidate.genre}: 生成失敗(${attempts}回試行) 理由: ${detail}`)
@@ -120,10 +169,11 @@ async function main() {
     },
   )
 
-  // 1本ごとに、生成の成否・本文の文字数を実行ログに出す(本文そのものはログに出さない。
+  // 1本ごとに、生成の成否・固定4観点のtext合計文字数を実行ログに出す(本文そのものはログに出さない。
   // 失敗時の理由は上のonExcludedで出している。design.md「ログ」)
   for (const { finding } of result.succeeded) {
-    console.error(`${finding.genre}: 生成成功(本文${finding.body.length}字)`)
+    const totalLength = SECTION_KEYS.reduce((sum, key) => sum + finding.sections[key].text.length, 0)
+    console.error(`${finding.genre}: 生成成功(本文${totalLength}字)`)
   }
   console.error(`生成成功: ${result.succeeded.length}件 / 生成失敗: ${result.failed.length}件`)
 

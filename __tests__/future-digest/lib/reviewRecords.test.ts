@@ -30,7 +30,7 @@ function makeArticle(
       emptySlots.push({ genre: slot.genre, horizon: slot.horizon, reason: slot.status })
     }
   }
-  return { id: date, date, issueNumber: 1, predictions, emptySlots }
+  return { id: date, edition: 'science-tech', date, issueNumber: 1, predictions, emptySlots }
 }
 
 // 仕様: specs/future-digest/source-review/requirements.md#見直しの実行-1、specs/future-digest/source-review/requirements.md#見直しの実行-5

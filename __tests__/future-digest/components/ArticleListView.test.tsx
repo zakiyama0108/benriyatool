@@ -4,7 +4,7 @@ import ArticleListView from '../../../app/future-digest/components/ArticleListVi
 import type { Article } from '../../../app/future-digest/lib/types'
 
 function buildArticle(id: string, date: string): Article {
-  return { id, date, issueNumber: 1, predictions: [], emptySlots: [] }
+  return { id, edition: 'science-tech', date, issueNumber: 1, predictions: [], emptySlots: [] }
 }
 
 // 仕様: specs/future-digest/article-list/requirements.md#一覧表示-1、specs/future-digest/article-list/requirements.md#一覧表示-5

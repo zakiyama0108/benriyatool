@@ -7,10 +7,14 @@
 // 採用候補全件の生成が失敗しても例外を投げず「生成に失敗したジャンル」として返す
 // (weekly-publish/requirements.md#掲載件数の保証-4「採用0件でも記事を作り配信する」方針との一貫性のため。
 // 例外を投げるのは利用上限への到達〈QuotaExhaustedError〉だけ)
-import { isValidBodyLength, isValidHeading, mentionsPreprint } from './bodyValidation'
+import { isValidHeading, isValidSectionsLength, mentionsPreprint } from './bodyValidation'
 import type { Candidate } from './candidateTypes'
 import { buildFinding, type GeneratedContent } from './buildFinding'
-import type { Finding } from './types'
+import type { CurrentFinding, FindingSections } from './types'
+
+// 固定4観点。この4キー・この順序で固定(content-generation/requirements.md#要約-3)。
+// 査読前チェックで4観点のtextを連結する際の順序に使う
+const SECTION_KEYS = ['finding', 'basis', 'relevance', 'caveat'] as const
 
 // Claude Code CLI(`claude -p ... --output-format json`)の応答のうち、分類に使うフィールドのみを型にする
 export type ClaudeCliResponse = {
@@ -47,9 +51,9 @@ export function classifyGenerationResult(res: ClaudeCliResponse, candidate: Cand
   if (!match) {
     return { kind: 'transient', detail: `応答からJSONを抽出できませんでした: ${text}` }
   }
-  let parsed: { heading?: unknown; body?: unknown } | null
+  let parsed: { heading?: unknown; sections?: unknown } | null
   try {
-    parsed = JSON.parse(match[0]) as { heading?: unknown; body?: unknown } | null
+    parsed = JSON.parse(match[0]) as { heading?: unknown; sections?: unknown } | null
   } catch {
     return { kind: 'transient', detail: `応答のJSONをパースできませんでした: ${text}` }
   }
@@ -62,12 +66,14 @@ export function classifyGenerationResult(res: ClaudeCliResponse, candidate: Cand
   if (!isValidHeading(parsed.heading)) {
     return { kind: 'transient', detail: '見出しが空、または100字を超えています' }
   }
-  if (!isValidBodyLength(parsed.body)) {
-    return { kind: 'transient', detail: '本文の分量が不正です(160〜480字の範囲外)' }
+  if (!isValidSectionsLength(parsed.sections)) {
+    return { kind: 'transient', detail: '固定4観点(sections)の分量が不正です(4観点のtext合計が160〜480字の範囲外)' }
   }
-  const content = { heading: parsed.heading as string, body: parsed.body as string }
-  if (candidate.isPreprint && !mentionsPreprint(content.body)) {
-    return { kind: 'transient', detail: '査読前の論文なのに、本文に査読前であることの記載(「査読」)がありません' }
+  const sections = parsed.sections as FindingSections
+  const content: GeneratedContent = { heading: parsed.heading as string, sections }
+  const combinedText = SECTION_KEYS.map((key) => sections[key].text).join('')
+  if (candidate.isPreprint && !mentionsPreprint(combinedText)) {
+    return { kind: 'transient', detail: '査読前の論文なのに、固定4観点に査読前であることの記載(「査読」)がありません' }
   }
   return { kind: 'ok', content }
 }
@@ -82,7 +88,7 @@ export class QuotaExhaustedError extends Error {
 
 export type GenerateCallFn = (candidate: Candidate) => Promise<ClaudeCliResponse>
 
-export type GeneratedFinding = { candidate: Candidate; finding: Finding }
+export type GeneratedFinding = { candidate: Candidate; finding: CurrentFinding }
 export type GenerationFailure = { candidate: Candidate; detail: string }
 export type GenerateFindingsResult = {
   succeeded: GeneratedFinding[]

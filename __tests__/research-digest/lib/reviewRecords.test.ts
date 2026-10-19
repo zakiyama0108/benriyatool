@@ -30,7 +30,7 @@ function makeArticle(
       emptyGenres.push({ genre: g.genre, reason: g.status })
     }
   }
-  return { id: date, date, findings, emptyGenres }
+  return { id: date, edition: 'body-life', date, findings, emptyGenres }
 }
 
 // 仕様: specs/research-digest/source-review/requirements.md#見直しの実行-1、specs/research-digest/source-review/requirements.md#見直しの実行-5

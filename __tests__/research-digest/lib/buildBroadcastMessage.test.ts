@@ -24,15 +24,19 @@ function buildFinding(genreIndex: number, impact: Impact, overrides: Partial<Fin
 }
 
 function buildArticle(findings: Finding[], emptyGenres: Article['emptyGenres'] = []): Article {
-  return { id: '2026-10-05', date: '2026-10-05', findings, emptyGenres }
+  return { id: '2026-10-05-body-life', edition: 'body-life', date: '2026-10-05', findings, emptyGenres }
 }
 
 const label = (index: number) => GENRE_LABELS[GENRE_ORDER[index]]
 
 // 仕様: specs/research-digest/line-broadcast/requirements.md#配信内容-2
-describe('LINE配信メッセージ専用タイトルの組み立て - 「【週刊研究発見】」+日付から配信専用の見出しを組み立てる', () => {
-  it('日付2026-10-05から「【週刊研究発見】2026年10月5日号」が生成されること', () => {
-    expect(buildBroadcastTitle('2026-10-05')).toBe('【週刊研究発見】2026年10月5日号')
+describe('LINE配信メッセージ専用タイトルの組み立て - 「【週刊研究発見】」+編のラベル+日付から配信専用の見出しを組み立てる', () => {
+  it('日付2026-10-05・からだ・くらし編から「【週刊研究発見】からだ・くらし編 2026年10月5日号」が生成されること', () => {
+    expect(buildBroadcastTitle('2026-10-05', 'body-life')).toBe('【週刊研究発見】からだ・くらし編 2026年10月5日号')
+  })
+
+  it('日付2026-10-10・科学・社会編から「【週刊研究発見】科学・社会編 2026年10月10日号」が生成されること', () => {
+    expect(buildBroadcastTitle('2026-10-10', 'science-society')).toBe('【週刊研究発見】科学・社会編 2026年10月10日号')
   })
 })
 
@@ -43,12 +47,12 @@ describe('配信メッセージの組み立て - タイトル・研究の見出�
 
     expect(message).toBe(
       [
-        '【週刊研究発見】2026年10月5日号',
+        '【週刊研究発見】からだ・くらし編 2026年10月5日号',
         '',
         `・【影響度 大/${label(0)}】見出し0`,
         '',
         '記事を読む',
-        'https://benriyatool.com/research-digest/2026-10-05',
+        'https://benriyatool.com/research-digest/2026-10-05-body-life',
       ].join('\n')
     )
   })
@@ -111,12 +115,12 @@ describe('採用0件の回の配信メッセージ - 見出し一覧の代わり
 
     expect(message).toBe(
       [
-        '【週刊研究発見】2026年10月5日号',
+        '【週刊研究発見】からだ・くらし編 2026年10月5日号',
         '',
         '今週は掲載できる記事がありませんでした',
         '',
         '記事を読む',
-        'https://benriyatool.com/research-digest/2026-10-05',
+        'https://benriyatool.com/research-digest/2026-10-05-body-life',
       ].join('\n')
     )
   })

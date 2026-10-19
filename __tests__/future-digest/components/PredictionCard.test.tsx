@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest'
 import type { Session } from '@supabase/supabase-js'
 import PredictionCard from '../../../app/future-digest/components/PredictionCard'
 import type { Slot } from '../../../app/future-digest/lib/sortSlots'
-import type { Prediction, EmptySlot } from '../../../app/future-digest/lib/types'
+import type { LegacyPrediction, CurrentPrediction, PredictionSections, EmptySlot } from '../../../app/future-digest/lib/types'
 import { GENRE_ORDER } from '../../../app/future-digest/lib/types'
 import { createBookmark } from '../../../app/future-digest/lib/bookmarks'
 
@@ -22,13 +22,48 @@ vi.mock('../../../app/future-digest/lib/bookmarks', () => ({
   deleteBookmark: vi.fn(),
 }))
 
-function makePrediction(overrides: Partial<Prediction> = {}): Prediction {
+// DiagramView(mermaidの動的importを内部で行う)をモックし、PredictionCardが各観点のdiagramを
+// DiagramViewへ渡して配置していることだけを検証する(描画の中身自体はDiagramView.test.tsxで担保済み)
+vi.mock('../../../app/future-digest/components/DiagramView', () => ({
+  default: ({ diagram }: { diagram: unknown }) =>
+    diagram ? <div data-testid="diagram-view-mock">{JSON.stringify(diagram)}</div> : null,
+}))
+
+// この機能(固定3観点・図解)より前に公開した記事が持つ形(単一のbody文字列)
+function makeLegacyPrediction(overrides: Partial<LegacyPrediction> = {}): LegacyPrediction {
   return {
     id: `${GENRE_ORDER[0]}--near`,
     genre: GENRE_ORDER[0],
     horizon: 'near',
     heading: '自律走行がさらに普及する',
     body: 'あ'.repeat(250),
+    impact: 'high',
+    impactReason: '生活の移動手段が大きく変わるため',
+    targetPeriod: '2030年まで',
+    sourceTitle: '交通白書2026',
+    sourceName: '国土交通省',
+    sourceUrl: 'https://example.com/report',
+    ...overrides,
+  }
+}
+
+function makeSections(overrides: Partial<PredictionSections> = {}): PredictionSections {
+  return {
+    when: { heading: '2030年までに普及が進む', text: 'い'.repeat(70), diagram: null },
+    basis: { heading: '国土交通省の調査に基づく', text: 'ろ'.repeat(70), diagram: null },
+    impact: { heading: '移動手段の選択肢が広がる', text: 'は'.repeat(70), diagram: null },
+    ...overrides,
+  }
+}
+
+// この機能以降に生成する記事が持つ形(固定3観点)
+function makeCurrentPrediction(overrides: Partial<CurrentPrediction> = {}): CurrentPrediction {
+  return {
+    id: `${GENRE_ORDER[0]}--near`,
+    genre: GENRE_ORDER[0],
+    horizon: 'near',
+    heading: '自律走行がさらに普及する',
+    sections: makeSections(),
     impact: 'high',
     impactReason: '生活の移動手段が大きく変わるため',
     targetPeriod: '2030年まで',
@@ -48,7 +83,7 @@ const createBookmarkMock = vi.mocked(createBookmark)
 // 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-2
 describe('予測がある枠の表示', () => {
   it('見出し・本文・影響度の根拠・対象時期・出典リンク(新規タブ)が表示されること', () => {
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} />)
 
@@ -65,17 +100,56 @@ describe('予測がある枠の表示', () => {
   })
 
   it('isAdminがtrueの場合、フィードバック入力欄が表示されること', () => {
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={true} />)
     expect(screen.getByRole('textbox')).toBeTruthy()
   })
 
   it('isAdminがfalseの場合、フィードバック入力欄が表示されないこと', () => {
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} />)
     expect(screen.queryByRole('textbox')).toBeNull()
+  })
+})
+
+// 仕様: specs/future-digest/article-detail/requirements.md#記事本文の表示-14、specs/future-digest/article-detail/requirements.md#記事本文の表示-15、specs/future-digest/article-detail/design.md「その回の記事本文を表示する処理」手順3-1〜3-2
+describe('要約の表示の新旧分岐(isLegacyPrediction) - 旧形式(body)は1段落、新形式(sections)は固定3観点を固定ラベル付きで表示する', () => {
+  it('旧形式(bodyを持つ記事)は、bodyがそのまま1段落で表示されること', () => {
+    const prediction = makeLegacyPrediction()
+    const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
+    render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} />)
+    expect(screen.getByText(prediction.body)).toBeTruthy()
+  })
+
+  it('新形式(sectionsを持つ記事)は、when→basis→impactの順に固定ラベル→結論文(heading)→本文(text)が表示されること', () => {
+    const prediction = makeCurrentPrediction()
+    const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
+    render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} />)
+
+    const labels = screen.getAllByText(/いつ・何が起こると予測されているか|誰が・どんな根拠で示しているか|暮らし・社会への影響/).map((el) => el.textContent)
+    expect(labels).toEqual(['いつ・何が起こると予測されているか', '誰が・どんな根拠で示しているか', '暮らし・社会への影響'])
+    expect(screen.getByText(prediction.sections.when.heading)).toBeTruthy()
+    expect(screen.getByText(prediction.sections.when.text)).toBeTruthy()
+    expect(screen.getByText(prediction.sections.basis.heading)).toBeTruthy()
+    expect(screen.getByText(prediction.sections.impact.heading)).toBeTruthy()
+  })
+
+  it('新形式で観点にdiagramが指定されている場合、その観点の本文の近くにDiagramViewが表示されること', () => {
+    const prediction = makeCurrentPrediction({
+      sections: makeSections({ basis: { heading: '国土交通省の調査に基づく', text: 'ろ'.repeat(70), diagram: { type: 'mermaid', code: 'flowchart LR\nA-->B' } } }),
+    })
+    const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
+    render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} />)
+    expect(screen.getAllByTestId('diagram-view-mock')).toHaveLength(1)
+  })
+
+  it('新形式で全観点のdiagramがnullの場合、DiagramViewのモック(図解の表示)は描画されないこと', () => {
+    const prediction = makeCurrentPrediction()
+    const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
+    render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} />)
+    expect(screen.queryByTestId('diagram-view-mock')).toBeNull()
   })
 })
 
@@ -115,21 +189,21 @@ describe('掲載できなかった枠の表示(候補なし・収集失敗・生
 // 仕様: specs/future-digest/bookmark/requirements.md#記事への付箋-5、specs/future-digest/bookmark/design.md「記事詳細ページへの追加(article-detailの画面)」
 describe('付箋の操作領域の表示切り替え(ログイン中のみ表示し、掲載できなかった枠には出さない)', () => {
   it('未ログイン(sessionがnull)の場合、予測がある枠でも付箋の操作が表示されないこと', () => {
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} session={null} />)
     expect(screen.queryByRole('button', { name: '付箋を貼る' })).toBeNull()
   })
 
   it('ログイン中(sessionがある)の場合、予測がある枠に付箋の操作(「付箋を貼る」)が表示されること', () => {
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} session={makeSession('reader@example.com')} />)
     expect(screen.getByRole('button', { name: '付箋を貼る' })).toBeTruthy()
   })
 
   it('取得済みの付箋(bookmarkプロパティ)が渡された場合、保存済みのメモが表示されること', () => {
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     render(
       <PredictionCard
@@ -144,7 +218,7 @@ describe('付箋の操作領域の表示切り替え(ログイン中のみ表示
   })
 
   it('付箋の取得が遅れて未付箋(null)でマウントされたあとに取得済みの付箋が届いた場合、保存済みのメモが表示され「付箋を貼る」に戻らないこと(bookmark/requirements.md#記事への付箋-4)', () => {
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     const { rerender } = render(
       <PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} session={makeSession('reader@example.com')} bookmark={null} />
@@ -177,7 +251,7 @@ describe('付箋変更の親への通知 - BookmarkPanelのonChangeをonBookmark
   it('付箋を新規作成すると、onBookmarkChangeが予測IDと作成された付箋で呼ばれること', async () => {
     createBookmarkMock.mockResolvedValue('bookmark-1')
     const onBookmarkChange = vi.fn()
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     render(
       <PredictionCard
@@ -199,7 +273,7 @@ describe('付箋変更の親への通知 - BookmarkPanelのonChangeをonBookmark
 // 仕様: specs/future-digest/bookmark/design.md「記事詳細ページへの追加(article-detailの画面)」
 describe('予測カードへの予測ID属性の付与(付箋一覧からのリンク先になる)', () => {
   it('予測がある枠のカード要素に予測IDのid属性が付くこと(付箋一覧からのリンク先として使う)', () => {
-    const prediction = makePrediction()
+    const prediction = makeLegacyPrediction()
     const slot: Slot = { genre: prediction.genre, horizon: prediction.horizon, kind: 'prediction', prediction }
     const { container } = render(<PredictionCard slot={slot} articleId="2026-09-24" isAdmin={false} />)
     expect(container.querySelector(`#${prediction.id}`)).toBeTruthy()

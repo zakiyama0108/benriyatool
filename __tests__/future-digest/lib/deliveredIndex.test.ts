@@ -20,7 +20,7 @@ function makePrediction(overrides: Partial<Prediction> = {}): Prediction {
 }
 
 function makeArticle(predictions: Prediction[]): Article {
-  return { id: '2026-10-01', date: '2026-10-01', issueNumber: 1, predictions, emptySlots: [] }
+  return { id: '2026-10-01-science-tech', edition: 'science-tech', date: '2026-10-01', issueNumber: 1, predictions, emptySlots: [] }
 }
 
 // 仕様: specs/future-digest/content-selection/requirements.md#配信済みの記事・予測の除外-1

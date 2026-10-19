@@ -1,5 +1,6 @@
 # タスク分解: 記事詳細ページ
 
+> 全13件(Task 1〜Task 13)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 ## データ基盤
@@ -59,3 +60,43 @@
 - Task 12: 記事詳細ページ(仕様: design.md「関連するファイル」「画面設計」)
   - `app/future-digest/[id]/page.tsx`を実装する(`generateStaticParams`で全記事IDを列挙し、記事タイトル・公開日・時間軸2区分を見出しに出して`ArticleDetailView`へ渡す)
   - page.tsxはカバレッジ計測対象外。Task 2〜11のテストで担保する
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+`Edition`型・`EDITION_GENRES`の追加と、`id`/`issueNumber`/記事タイトルの編対応。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 13: 型定義・スキーマ検証・読み込みの編対応(仕様: requirements.md#記事本文の表示-1〜2、design.md「前提: 記事データの形式」「バリデーション」)
+  - 🔴 Task 2のテストに、`Edition`型(`'science-tech'`/`'life-society'`)・`EDITION_LABELS`・`EDITION_GENRES`(genres.jsonのedition属性から編ごとのジャンルID配列を作る)を確認するケースを追加する
+  - 🟢 `app/future-digest/lib/types.ts`に`Edition`/`EDITION_LABELS`/`EDITION_GENRES`を追加する
+  - 🔴 Task 3の`parseArticle`のテストに、`id`が`<date>-<edition>`形式であること、`edition`が2値のいずれかであること、各予測・各掲載できなかった枠の`genre`が`EDITION_GENRES[edition]`に含まれない場合に例外になることを確認するケースを追加する
+  - 🟢 `app/future-digest/lib/articleSchema.ts`の`parseArticle`を上記の検証に対応させる
+  - 🔴 Task 12の`page.tsx`のテスト(または`generateStaticParams`相当の確認)に、IDが`<date>-<edition>`形式で列挙されることを確認するケースを追加する
+  - 🟢 `app/future-digest/[id]/page.tsx`を更新する
+
+</details>
+
+## 固定3観点・図解への移行
+
+〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 14: 固定3観点の型と表示(仕様: requirements.md#記事本文の表示-14、design.md「前提: 記事データの形式」「その回の記事本文を表示する処理」手順3-1)
+  - 🔴 `isLegacyPrediction`が`body`を持つ予測で`true`、`sections`を持つ予測で`false`を返すことを確認するテストを書く
+  - 🟢 `app/future-digest/lib/types.ts`に`Diagram`/`PredictionSection`/`PredictionSections`/`SECTION_LABELS`/`LegacyPrediction`/`CurrentPrediction`/`isLegacyPrediction`を追加する
+  - 🔴 `isLegacyPrediction(prediction)`が`true`の場合は`body`がそのまま1段落で表示されること、`false`の場合は`when`→`basis`→`impact`の順に`SECTION_LABELS`の固定ラベル→`heading`→`text`が表示されることを確認するテストを書く
+  - 🟢 `app/future-digest/components/PredictionCard.tsx`を修正し、`isLegacyPrediction`で表示を分岐する
+
+- Task 15: 図解の表示(仕様: requirements.md#記事本文の表示-15、design.md「その回の記事本文を表示する処理」手順3-2)
+  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されることを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
+  - 🟢 `app/future-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`PredictionCard.tsx`から新形式の各観点の`diagram`を渡して配置する
+
+</details>
+
+## パンくず
+
+- Task 16: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🔴 共通`Breadcrumb`コンポーネント(article-list/tasks.mdのTask 11で新設)に`current`(記事タイトル)を渡した場合、アプリ名「週刊未来予測」が`/future-digest`へのリンクになり、currentがリンクなしの現在地として表示されることを確認するテストを書く(`__tests__/future-digest/components/Breadcrumb.test.tsx`)
+  - 🟢 `app/future-digest/components/ArticleDetailView.tsx`の既存パンくずを共通`Breadcrumb`コンポーネントの呼び出しに置き換える

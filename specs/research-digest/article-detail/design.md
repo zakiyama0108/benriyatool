@@ -1,10 +1,10 @@
 # 設計: 記事詳細ページ
 
 ## サマリ
-その回の研究発見の記事(ジャンルごとに1本、有効なジャンルの数だけ。現在は10ジャンル)を、初期表示は影響度順、切り替えでジャンル順に並べて表示する。掲載できなかったジャンルも必ず表示し、全ジャンルが画面に現れる状態を保つ。掲載できなかった理由は候補なし・収集失敗・生成失敗の3種があり、それぞれ「候補が見つかりませんでした」・分類ラベルを含む「今回は記事を収集できませんでした」・「今回は記事を用意できませんでした」の異なる文言で表示する。査読前の論文には「査読前」のバッジを付ける。運営者本人がログイン中の場合のみ、各研究の下にフィードバック入力欄を出し、`research_digest_feedback`テーブルへINSERT専用で保存する。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。
+その回(編ごと)の研究発見の記事(ジャンルごとに1本、対象編の5ジャンルだけ)を、初期表示は影響度順、切り替えでジャンル順に並べて表示する。掲載できなかったジャンルも必ず表示し、対象編の全ジャンルが画面に現れる状態を保つ。掲載できなかった理由は候補なし・収集失敗・生成失敗の3種があり、それぞれ「候補が見つかりませんでした」・分類ラベルを含む「今回は記事を収集できませんでした」・「今回は記事を用意できませんでした」の異なる文言で表示する。査読前の論文には「査読前」のバッジを付ける。運営者本人がログイン中の場合のみ、各研究の下にフィードバック入力欄を出し、`research_digest_feedback`テーブルへINSERT専用で保存する。記事データの型・置き場所は本specが定義し、他specが共通して従う(下記「前提: 記事データの形式」)。
 
 主要な設計判断:
-- 記事データは`content/research-digest/articles/<date>.json`の静的JSON。ジャンルは設定ファイル`content/research-digest/genres.json`から読み、追記だけで増やせるようにする
+- 記事データは`content/research-digest/articles/<date>-<edition>.json`の静的JSON。ジャンルは設定ファイル`content/research-digest/genres.json`から読み、追記だけで増やせるようにする(編の割り当ても同じファイルに持つ)
 - 並び順の切り替えはfuture-digestの記事詳細ページと同じ作り(画面内の状態で切り替え、並べ替えは決定的な純粋関数)
 - 査読前かどうかは記事データのフラグで持ち、バッジは画面側で決定的に出す(本文の書きぶりだけに頼らない)
 - UIはStep0を実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するため)。trend-digestの実装済みレイアウトを流用し、アクセントカラーのみティール系に変える(下記「画面設計」)
@@ -14,7 +14,7 @@
 
 記事本文はDBではなく、ビルド時に取り込む静的コンテンツファイルとして管理する(architecture.md#3-設計方針)。この形式は[article-list](../article-list/design.md)・[content-selection](../content-selection/design.md)・[content-generation](../content-generation/design.md)・[weekly-publish](../weekly-publish/design.md)・[line-broadcast](../line-broadcast/design.md)・[bookmark](../bookmark/design.md)・[source-review](../source-review/design.md)が共通して従う。
 
-- 格納場所: `content/research-digest/articles/<id>.json`(`<id>`は発行日`YYYY-MM-DD`。URLの`[id]`と一致させる)
+- 格納場所: `content/research-digest/articles/<id>.json`(`<id>`は`<発行日YYYY-MM-DD>-<edition>`。trend-digestと同じ形式。URLの`[id]`と一致させる)
 - 1ファイル=1回分の記事。週次のワークフロー([weekly-publish](../weekly-publish/design.md))が新規追加する。採用0件の回も含め、実行を最後まで終えた回は必ずファイルを作る。利用上限への到達で実行を打ち切った回だけファイルを作らない
 
 ```ts
@@ -24,20 +24,53 @@
 // (content-selection/requirements.md#機能要件-1。ファイルの形式は content-selection/design.md「データ設計」)
 export type Genre = string // genres.jsonのid(例: "medical-health")
 
+// 編(content-selection/requirements.md#編成とジャンルの割り当て)。ジャンルごとに固定で属する
+export type Edition = 'body-life' | 'science-society'
+export const EDITION_LABELS: Record<Edition, string> = { 'body-life': 'からだ・くらし編', 'science-society': '科学・社会編' }
+
 // ジャンル順(genres.jsonの記載順。廃止したジャンルも過去記事の表示用に含む)
 export const GENRE_ORDER: Genre[]
 export const GENRE_LABELS: Record<Genre, string> // 例: { "medical-health": "医療・健康", ... }
+// 編ごとのジャンルID一覧(genres.jsonのedition属性から導出)
+export const EDITION_GENRES: Record<Edition, Genre[]>
 
 // 影響度(content-selection/requirements.md#影響度-1)。配列順=影響度の大きい順
 export type Impact = 'high' | 'medium' | 'low'
 export const IMPACT_ORDER: Impact[] = ['high', 'medium', 'low']
 export const IMPACT_LABELS: Record<Impact, string> = { high: '大', medium: '中', low: '小' }
 
-export type Finding = {
+// 図解(news-digest/article-detail/design.mdの前提: 記事データの形式と同一の形)。エージェントが
+// 書いたMermaid記法の文字列をそのまま保存し、レンダリングはクライアント側のMermaidライブラリ
+// (DiagramView)に委ねる(2026-10改定: 画像による図解(AI画像生成→コードでのアイコン図SVG描画)も
+// 試みたが、いずれも求める品質を満たせなかったため、画像による図解は行わないことにし、Mermaid図のみを
+// 図解として扱う)
+export type Diagram = { type: 'mermaid'; code: string }
+
+export type FindingSection = {
+  heading: string // 結論文(短い見出し)
+  text: string // 本文
+  diagram: Diagram | null
+}
+
+// 固定4観点。この4キー・この順序で固定(content-generation/requirements.md#要約-3)
+export type FindingSections = {
+  finding: FindingSection // 何が分かったか
+  basis: FindingSection // なぜそう結論づけられたのか
+  relevance: FindingSection // 暮らしへの関わり
+  caveat: FindingSection // 注意点
+}
+
+export const SECTION_LABELS: Record<keyof FindingSections, string> = {
+  finding: '何が分かったか',
+  basis: 'なぜそう結論づけられたのか',
+  relevance: '暮らしへの関わり',
+  caveat: '注意点',
+}
+
+type FindingBase = {
   id: string // 記事内で一意。ジャンルのidと同じ(1ジャンル1本のため)。フィードバック・付箋の紐付けに使う
   genre: Genre
   heading: string // content-generationが生成する見出し
-  body: string // content-generationが生成する本文(160〜480字、目安200〜400字)
   impact: Impact
   impactReason: string // 影響度の根拠(1文)
   sourceTitle: string // 論文名(公式発表の場合は発表のタイトル)。画面では出典リンクの文言として使う
@@ -46,6 +79,23 @@ export type Finding = {
   doi: string | null // 論文のDOI(ある場合のみ。配信済み判定の突合に使う)
   publishedYear: number | null // 論文・発表の年(分かる場合のみ。画面で出典の横に出す)
   isPreprint: boolean // 査読前の論文(プレプリント)か
+}
+
+// この機能(固定4観点・図解)より前に公開した記事が持つ形(単一のbody文字列)。
+// 過去記事を書き換えずそのまま表示し続けるため、新形式と並存させる(requirements.md#運営者向けフィードバック-14、trend-digest/future-digestと同じ設計判断)
+export type LegacyFinding = FindingBase & {
+  body: string // 160〜480字、目安200〜400字
+}
+
+// この機能以降に生成する記事が持つ形
+export type CurrentFinding = FindingBase & {
+  sections: FindingSections
+}
+
+export type Finding = LegacyFinding | CurrentFinding
+
+export function isLegacyFinding(finding: Finding): finding is LegacyFinding {
+  return 'body' in finding
 }
 
 // 掲載できなかったジャンル。reasonで表示文言を出し分ける
@@ -64,14 +114,16 @@ export const COLLECTION_FAILURE_LABELS: Record<NonNullable<EmptyGenre['collectio
 }
 
 export type Article = {
-  id: string // ファイル名と一致(= date)
+  id: string // ファイル名と一致(= `<date>-<edition>`。trend-digestと同じ形式)
   date: string // YYYY-MM-DD。発行日
+  edition: Edition // どちらの編の記事か
   findings: Finding[]
   emptyGenres: EmptyGenre[]
 }
 ```
 
-- 記事タイトルはJSONに保存せず、`date`から`buildArticleTitle(date)`([content-generation/design.md](../content-generation/design.md))で導出する
+- 記事タイトルはJSONに保存せず、`date`・`edition`から`buildArticleTitle(date, edition)`([content-generation/design.md](../content-generation/design.md))で導出する
+- `findings`の各要素の`genre`は、記事の`edition`に対応する`EDITION_GENRES[edition]`に含まれるジャンルでなければならない(`parseArticle`のバリデーションで検証する)
 - `emptyGenres`の`reason`は、候補が見つからなかったジャンル(requirements.md#記事本文の表示-3)・収集の処理自体が失敗したジャンル(requirements.md#記事本文の表示-4。分類ラベルは[content-selection/requirements.md#収集失敗](../content-selection/requirements.md)で定義)・生成に失敗して除いたジャンル([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))の3つを区別するために持つ。表示文言もこの3つで異なる(requirements.md#記事本文の表示-3〜6、future-digestと同じ扱い)
 
 ## 処理フロー
@@ -97,10 +149,12 @@ export type Article = {
 - 手順:
   1. 記事タイトル・公開日を見出しとして表示する(requirements.md#記事本文の表示-1)
   2. ページを開いた時点では影響度順で表示する(requirements.md#並び順の切り替え-10)
-  3. 研究があるジャンルは、ジャンル・影響度のバッジ(査読前の論文は「査読前」のバッジも)、見出し、本文、影響度の根拠、出典(論文名または発表元・掲載誌名/発表元・年・元URLへのリンク。新規タブで開く)を表示する(requirements.md#記事本文の表示-2)
+  3. 研究があるジャンルは、ジャンル・影響度のバッジ(査読前の論文は「査読前」のバッジも)、見出し、要約、影響度の根拠、出典(論文名または発表元・掲載誌名/発表元・年・元URLへのリンク。新規タブで開く)を表示する(requirements.md#記事本文の表示-2)
+  3-1. 要約の表示は`isLegacyFinding(finding)`で分岐する。`true`(旧形式)の場合は`body`をそのまま1つの段落として表示する。`false`(新形式)の場合は`sections`を`finding`→`basis`→`relevance`→`caveat`の順(この順序で固定)に、`SECTION_LABELS`の固定ラベル→`heading`(結論文)→`text`(本文)の順で常時表示する(requirements.md#運営者向けフィードバック-14)
+  3-2. 新形式の各観点で`diagram`が`null`でない場合、`text`の下に`DiagramView`を表示する(requirements.md#運営者向けフィードバック-15)
   4. 候補が見つからなかったジャンルは、ジャンルのバッジと「候補が見つかりませんでした」を表示する(requirements.md#記事本文の表示-3)。収集の処理自体が失敗したジャンルは、同じバッジと分類ラベルを含む「今回は記事を収集できませんでした」を表示する(requirements.md#記事本文の表示-4)。生成に失敗したジャンルは、同じバッジと「今回は記事を用意できませんでした」を表示する(requirements.md#記事本文の表示-5)
   5. 並び順の切り替え操作が行われたら、同じ記事データから一覧を組み立て直して表示し直す(requirements.md#並び順の切り替え-7)
-- 関連するビジネスルール: requirements.md#記事本文の表示-1〜6、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
+- 関連するビジネスルール: requirements.md#記事本文の表示-1〜6、requirements.md#運営者向けフィードバック-14〜15、requirements.md#並び順の切り替え-7〜10、requirements.md#表示分量・著作権への配慮-1
 
 ### ログイン状態に応じてフィードバック入力欄の表示を切り替える処理
 - 対象: Supabase Authのログインセッション
@@ -141,10 +195,13 @@ sequenceDiagram
 ## バリデーション
 
 記事データ(JSONファイル)のスキーマ検証(`parseArticle`):
-- `id`がファイル名と一致し、`date`と同じ`YYYY-MM-DD`形式であること
-- 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`body`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること、`body`が160〜480字であること
-- 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`reason`が定義済みの値であること
-- 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。その回に有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
+- `id`がファイル名と一致し、`<date>-<edition>`の形(`date`と同じ`YYYY-MM-DD`形式+編のid)であること
+- `edition`が`body-life`/`science-society`のいずれかであること
+- 各研究: `genre`が`genres.json`に存在するジャンル(廃止済みを含む)であること、`genre`が`EDITION_GENRES[edition]`に含まれること、`id`が`genre`と一致すること、`impact`が定義済みの値であること、`heading`・`impactReason`・`sourceTitle`・`sourceName`・`sourceUrl`が空でないこと、`sourceUrl`が`http`/`https`の絶対URLであること、`doi`が`null`または`10.`で始まる文字列であること、`publishedYear`が`null`または1900以上で発行日の年以下の整数であること、`isPreprint`が真偽値であること
+- 旧形式(`body`を持つ)の場合: `body`が160〜480字であること
+- 新形式(`sections`を持つ)の場合: `finding`/`basis`/`relevance`/`caveat`の4キーをすべて持つこと。各観点の`heading`/`text`が空文字でないこと。4観点の`text`を連結した文字数が160〜480字であること。各観点の`diagram`は`null`、または`{type:'mermaid',code}`(`code`が空文字でない)のいずれかであること
+- 各掲載できなかったジャンル: `genre`が`genres.json`に存在し、`EDITION_GENRES[edition]`に含まれ、`reason`が定義済みの値であること
+- 研究と掲載できなかったジャンルを合わせて、同じジャンルが2回現れないこと(1ジャンル1本。content-selection/requirements.md#機能要件-2)。対象編で有効だった全ジャンルが揃っていることは[weekly-publish/design.md](../weekly-publish/design.md)の`assembleArticle`が保証する(ジャンルの追加・廃止で過去記事の検証が壊れないよう、ビルド時の検証は記事の中での整合に限る)
 - 研究は0件でもよい(全ジャンルで採用できなかった回も公開する。weekly-publish/requirements.md#掲載件数の保証-3)
 - 各掲載できなかったジャンル: `reason`が`'collection-failed'`の場合は`collectionFailureReason`が`timeout`/`invalid-format`/`other`のいずれかであること(必須)。`reason`がそれ以外(`'no-candidate'`・`'generation-failed'`)の場合は`collectionFailureReason`を持たないこと(いずれの条件を満たさない記事データは例外にする)
 - フィードバックの入力内容は、前後の空白を除いて空でないこと、1000字以内であることを確認する(文字種の制限は設けない)
@@ -171,6 +228,7 @@ app/research-digest/components/FindingCard.tsx (新規: 1ジャンル分の表�
 app/research-digest/components/FindingBadges.tsx (新規: ジャンル・影響度・査読前のバッジ)
 app/research-digest/components/FeedbackForm.tsx (新規)
 app/research-digest/components/LoginStatus.tsx (新規)
+app/research-digest/components/DiagramView.tsx (新規: news-digestのDiagramView.tsxと同じ実装)
 app/lib/adminAuth.ts (既存: getSession/onAuthChange/signInWithGoogle/signOut/isAuthorizedAdmin)
 app/lib/supabaseClient.ts (既存)
 supabase/migrations/<timestamp>_create_research_digest_feedback.sql (新規)
@@ -219,11 +277,11 @@ create policy "benriyatool_readonly can select" on research_digest_feedback
 
 Step0: 実施しない(週刊トレンドの確定済みデザインを流用し配色のみ変更するため)。trend-digestの記事詳細ページの配色・レイアウトパターンを流用し、アクセントカラーのみティール系(研究・自然科学を表す落ち着いた寒色。future-digestのインディゴ系と見分けられる色)に変える。最終的な見た目の確認は実装後のlocalhostでの画面レビューで行う。
 
-- パンくず(べんりやつーる › 週刊研究発見 › 記事タイトル)
+- パンくず(べんりやつーる › 週刊ダイジェスト一覧 › 週刊研究発見 › 記事タイトル)
 - 記事タイトル・公開日
 - 並び順の切り替え(「影響度順」「ジャンル順」。初期は影響度順)
 - ジャンル枠のカード一覧(ジャンル数分。現在は10件):
-  - 研究があるジャンル: ジャンル・影響度のバッジ(大・中・小を文字でも表示)、査読前の論文は「査読前」のバッジ、見出し、本文、「影響度の根拠: 〜」、出典(「詳しくは元の論文・発表を読む」の文言を添えた、論文名・掲載誌名または発表元・年、元URLへのリンク。新規タブで開く。requirements.md#表示分量・著作権への配慮-1、content-generation/requirements.md#著作権への配慮-1)
+  - 研究があるジャンル: ジャンル・影響度のバッジ(大・中・小を文字でも表示)、査読前の論文は「査読前」のバッジ、見出し、要約(新形式は固定4観点を固定ラベル付きで常時表示、旧形式は単一本文)、「影響度の根拠: 〜」、出典(「詳しくは元の論文・発表を読む」の文言を添えた、論文名・掲載誌名または発表元・年、元URLへのリンク。新規タブで開く。requirements.md#表示分量・著作権への配慮-1、content-generation/requirements.md#著作権への配慮-1)
   - 候補が見つからなかったジャンル: ジャンルのバッジと「候補が見つかりませんでした」(淡い配色)
   - 収集の処理自体が失敗したジャンル: 同じバッジと分類ラベルを含む「今回は記事を収集できませんでした」
   - 生成に失敗したジャンル: 同じバッジと「今回は記事を用意できませんでした」
@@ -241,6 +299,7 @@ Step0: 実施しない(週刊トレンドの確定済みデザインを流用し
 | FindingCard | `entry: GenreEntry`, `articleId: string`, `isAdmin: boolean`, `session: Session \| null`, `bookmark` | 1ジャンル分の表示。研究がないジャンルは理由の文言だけを出す |
 | FindingBadges | `genre: Genre`, `impact?: Impact`, `isPreprint?: boolean` | ジャンル・影響度・査読前のバッジ |
 | FeedbackForm | `articleId: string`, `findingId: string` | フィードバックの入力・送信・結果表示 |
+| DiagramView | `diagram: Diagram \| null` | 図解の表示。`null`は何もレンダリングしない(news-digestと共通の実装) |
 
 ## 状態管理
 

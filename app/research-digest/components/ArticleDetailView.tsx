@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import Link from 'next/link'
 import type { Article } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
 import { sortGenres, type SortOrder } from '../lib/sortGenres'
@@ -11,6 +10,7 @@ import { fetchBookmarksByArticle, type BookmarkSummary } from '../lib/bookmarks'
 import SortToggle from './SortToggle'
 import FindingCard from './FindingCard'
 import LoginStatus from './LoginStatus'
+import Breadcrumb from './Breadcrumb'
 
 type Props = {
   article: Article
@@ -101,23 +101,13 @@ export default function ArticleDetailView({ article }: Props) {
     })
   }
 
-  const title = buildArticleTitle(article.date)
+  const title = buildArticleTitle(article.date, article.edition)
   const entries = sortGenres(article, order)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-50 via-slate-50/40 to-white">
       <article className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8 sm:py-10">
-        <nav className="text-[11px] text-gray-400">
-          <Link href="/" className="hover:underline">
-            べんりやつーる
-          </Link>
-          <span className="mx-1">›</span>
-          <Link href="/research-digest" className="hover:underline">
-            週刊研究発見
-          </Link>
-          <span className="mx-1">›</span>
-          <span>{title}</span>
-        </nav>
+        <Breadcrumb current={title} />
 
         <header>
           <h1 className="text-xl font-bold leading-relaxed tracking-tight sm:text-2xl">{title}</h1>

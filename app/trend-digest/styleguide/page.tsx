@@ -5,6 +5,29 @@ import EditionBadge from '../components/EditionBadge'
 import ArticleCard from '../components/ArticleCard'
 import Pagination from '../components/Pagination'
 import LoginStatus from '../components/LoginStatus'
+import DurationBadge from '../components/DurationBadge'
+import HeatBadge from '../components/HeatBadge'
+import TrendMeta from '../components/TrendMeta'
+import GenreSection from '../components/GenreSection'
+import TopicCard from '../components/TopicCard'
+import type { DurationLabel, HeatLabel } from '../lib/historyTypes'
+import type { CurrentTopic, LegacyTopic, TopicTrend } from '../lib/types'
+
+const DURATION_LABEL_VALUES: DurationLabel[] = ['pre-trend', 'emerging', 'talked', 'highly-talked']
+const HEAT_LABEL_VALUES: HeatLabel[] = ['high', 'normal', 'low']
+
+function makeTrend(overrides: Partial<TopicTrend>): TopicTrend {
+  return {
+    durationLabel: 'talked',
+    heatLabel: 'high',
+    continuationDays: 30,
+    continuationStartDate: '2026-08-16',
+    reportCount: 1,
+    originRegion: null,
+    currentRegions: [],
+    ...overrides,
+  }
+}
 
 // 週刊トレンド(trend-digest)の共通部品カタログ(styleguide)。開発者向け確認用ページで、
 // 利用者向けの公開機能ではない(sitemap除外: specs/hub-site/requirements.md#機能要件-5)。
@@ -21,6 +44,59 @@ const COLOR_SWATCHES: { name: string; swatch: string; use: string }[] = [
   { name: 'amber-50(バッジ背景)', swatch: 'bg-amber-50', use: 'グループバッジの背景' },
   { name: 'gray-700 / gray-400', swatch: 'bg-gray-700', use: '本文・補足テキスト' },
 ]
+
+// 旧形式(この機能より前に公開した記事。requirements.md#継続度・注目度の表示-19)の見本
+const LEGACY_TOPIC: LegacyTopic = {
+  id: 'styleguide-legacy',
+  genre: 'music',
+  heading: '新曲がストリーミングで急上昇(旧形式の見本)',
+  body: 'あるアーティストの新曲がストリーミングサービスの週間ランキングで急上昇した。SNS上での言及数も増えており、今後さらに注目を集める可能性がある。'.repeat(2),
+  sourceTitle: 'サンプル楽曲A',
+  sourceName: 'Oricon',
+  sourceUrl: 'https://example.com/oricon/a',
+}
+
+// 新形式(固定3観点)の見本(図解なし)
+const CURRENT_TOPIC: CurrentTopic = {
+  id: 'styleguide-current',
+  genre: 'anime',
+  heading: '新作アニメが配信直後に話題化(新形式の見本)',
+  sections: {
+    fact: {
+      heading: '検索数・言及数が公開直後に急上昇',
+      text: '配信開始直後から検索数・SNS言及数が急増し、ランキング上位に入った。'.repeat(3),
+      diagram: null,
+    },
+    reason: {
+      heading: '原作ファン層+新規層の両方が反応',
+      text: '原作既読層が一斉に視聴を始めたことに加え、SNSでの切り抜き拡散により新規層も流入した。'.repeat(3),
+      diagram: null,
+    },
+    caveat: {
+      heading: '放送継続による定着はまだ見通せない',
+      text: '初動の盛り上がりであり、継続的な話題化につながるかは今後数週間の動向次第である。'.repeat(3),
+      diagram: null,
+    },
+  },
+  sourceTitle: 'サンプル作品B',
+  sourceName: 'Googleトレンド',
+  sourceUrl: 'https://example.com/trends/b',
+  trend: makeTrend({ reportCount: 1, originRegion: null, currentRegions: [] }),
+}
+
+// 新形式+図解あり(mermaid)の見本(design.md「その回の記事本文を表示する処理」手順3-2)
+const CURRENT_TOPIC_WITH_DIAGRAMS: CurrentTopic = {
+  ...CURRENT_TOPIC,
+  id: 'styleguide-current-diagram',
+  sections: {
+    fact: {
+      ...CURRENT_TOPIC.sections.fact,
+      diagram: { type: 'mermaid', code: 'flowchart LR\n配信開始 --> 検索数急増 --> ランキング上位' },
+    },
+    reason: CURRENT_TOPIC.sections.reason,
+    caveat: CURRENT_TOPIC.sections.caveat,
+  },
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -58,6 +134,8 @@ export default function TrendDigestStyleguidePage() {
           <nav aria-label="パンくず(見本)" className="text-[11px] text-gray-400">
             <span className="hover:underline">べんりやつーる</span>
             <span className="mx-1">›</span>
+            <span className="hover:underline">週刊ダイジェスト一覧</span>
+            <span className="mx-1">›</span>
             <span className="hover:underline">週刊トレンド</span>
             <span className="mx-1">›</span>
             <span>週刊トレンド エンタメ編 2026年9月15日号</span>
@@ -92,6 +170,47 @@ export default function TrendDigestStyleguidePage() {
 
         <Section title="ページネーション(Pagination)">
           <Pagination currentPage={2} totalPages={3} />
+        </Section>
+
+        <Section title="継続度ラベルのバッジ(DurationBadge・全4段階)">
+          <div className="flex flex-wrap items-center gap-3">
+            {DURATION_LABEL_VALUES.map((label) => (
+              <DurationBadge key={label} label={label} />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="注目度ラベルのバッジ(HeatBadge・全3段階)">
+          <div className="flex flex-wrap items-center gap-3">
+            {HEAT_LABEL_VALUES.map((label) => (
+              <HeatBadge key={label} label={label} />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="トレンド情報の行(TrendMeta)">
+          <div className="space-y-2 rounded-2xl bg-white p-4 shadow-sm">
+            <p className="text-xs font-bold text-gray-400">地域あり・続報(2回目以降)</p>
+            <TrendMeta trend={makeTrend({ reportCount: 3, originRegion: '日本', currentRegions: ['日本', '北米'] })} />
+            <p className="mt-3 text-xs font-bold text-gray-400">地域なし・初掲載</p>
+            <TrendMeta trend={makeTrend({ reportCount: 1, originRegion: null, currentRegions: [] })} />
+          </div>
+        </Section>
+
+        <Section title="話題を取得できなかったジャンルの表示(GenreSection)">
+          <GenreSection genre="music" topics={[]} unavailable isAdmin={false} articleId="styleguide-sample" />
+        </Section>
+
+        <Section title="旧形式(単一body)のトピック表示(TopicCard)">
+          <TopicCard topic={LEGACY_TOPIC} isAdmin={false} articleId="styleguide-sample" />
+        </Section>
+
+        <Section title="新形式(固定3観点sections)のトピック表示(TopicCard・図解なし)">
+          <TopicCard topic={CURRENT_TOPIC} isAdmin={false} articleId="styleguide-sample" />
+        </Section>
+
+        <Section title="新形式のトピック表示(TopicCard・図解あり: mermaid)">
+          <TopicCard topic={CURRENT_TOPIC_WITH_DIAGRAMS} isAdmin={false} articleId="styleguide-sample" />
         </Section>
 
         <Section title="フッター(LoginStatus・未ログイン)">

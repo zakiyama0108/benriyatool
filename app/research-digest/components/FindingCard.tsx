@@ -1,9 +1,13 @@
 import type { Session } from '@supabase/supabase-js'
 import type { GenreEntry } from '../lib/sortGenres'
-import { COLLECTION_FAILURE_LABELS } from '../lib/types'
+import { COLLECTION_FAILURE_LABELS, SECTION_LABELS, isLegacyFinding } from '../lib/types'
 import FindingBadges from './FindingBadges'
 import FeedbackForm from './FeedbackForm'
 import BookmarkPanel, { type BookmarkSummary } from './BookmarkPanel'
+import DiagramView from './DiagramView'
+
+// 固定4観点(sections)の描画順。この順序で固定(content-generation/requirements.md#要約-3)
+const SECTION_ORDER = ['finding', 'basis', 'relevance', 'caveat'] as const
 
 type Props = {
   entry: GenreEntry
@@ -48,7 +52,27 @@ export default function FindingCard({ entry, articleId, isAdmin, session = null,
     <div id={finding.id} className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
       <FindingBadges genre={finding.genre} impact={finding.impact} isPreprint={finding.isPreprint} />
       <h3 className="mt-2 text-base font-bold leading-relaxed">{finding.heading}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-gray-700">{finding.body}</p>
+      {isLegacyFinding(finding) ? (
+        // 旧形式(この機能より前に公開した記事)。単一のbodyをそのまま1段落で表示する(requirements.md#運営者向けフィードバック-14)
+        <p className="mt-2 text-sm leading-relaxed text-gray-700">{finding.body}</p>
+      ) : (
+        // 新形式。固定4観点をfinding→basis→relevance→caveatの順で、固定ラベル→見出し→本文を常時表示する
+        // (requirements.md#運営者向けフィードバック-14)。diagramがnullでない観点は本文の下にDiagramViewを表示する
+        // (requirements.md#運営者向けフィードバック-15)
+        <div className="mt-2 space-y-3">
+          {SECTION_ORDER.map((key) => {
+            const section = finding.sections[key]
+            return (
+              <div key={key}>
+                <p className="text-[11px] font-semibold text-teal-500">{SECTION_LABELS[key]}</p>
+                <h4 className="text-sm font-semibold text-gray-800">{section.heading}</h4>
+                <p className="mt-1 text-sm leading-relaxed text-gray-700">{section.text}</p>
+                <DiagramView diagram={section.diagram} />
+              </div>
+            )
+          })}
+        </div>
+      )}
       <p className="mt-2 text-xs leading-relaxed text-gray-500">影響度の根拠: {finding.impactReason}</p>
       <p className="mt-3 text-xs leading-relaxed text-gray-400">
         詳しくは元の論文・発表を読む:{' '}

@@ -1,4 +1,4 @@
-// 見出し・本文生成の失敗分類・リトライ制御(仕様: content-generation/design.md「見出し・本文を書く処理」
+// 見出し・本文生成の失敗分類・リトライ制御(仕様: content-generation/design.md「見出し・固定3観点を書く処理」
 // 手順8・「エラーハンドリング」、weekly-publish/design.md「1回分の記事を生成する処理」手順4、
 // weekly-publish/requirements.md#掲載件数の保証-4)。
 //
@@ -9,10 +9,10 @@
 // trend-digestとの違い: 採用候補全件の生成が失敗しても例外を投げず「生成に失敗した枠」として返す
 // (weekly-publish/requirements.md#掲載件数の保証-4「採用0件でも記事を作り配信する」方針との一貫性のため。
 // 例外を投げるのは利用上限への到達〈QuotaExhaustedError〉だけ)
-import { isValidBodyLength, isValidHeading } from './bodyValidation'
+import { isValidSectionsLength, isValidHeading } from './bodyValidation'
 import type { Candidate } from './candidateTypes'
 import { buildPrediction, type GeneratedContent } from './buildPrediction'
-import type { Prediction } from './types'
+import type { CurrentPrediction } from './types'
 
 // Claude Code CLI(`claude -p ... --output-format json`)の応答のうち、分類に使うフィールドのみを型にする
 export type ClaudeCliResponse = {
@@ -37,13 +37,13 @@ function isQuotaExhausted(res: ClaudeCliResponse): boolean {
 
 function isUsableContent(value: unknown): value is GeneratedContent {
   if (typeof value !== 'object' || value === null) return false
-  const v = value as { heading?: unknown; body?: unknown }
+  const v = value as { heading?: unknown; sections?: unknown }
   if (!isValidHeading(v.heading)) return false
-  if (!isValidBodyLength(v.body)) return false
+  if (!isValidSectionsLength(v.sections)) return false
   return true
 }
 
-// CLI応答を成功/一時的失敗/利用枠枯渇の3種に分類する(content-generation/design.md「見出し・本文を書く処理」
+// CLI応答を成功/一時的失敗/利用枠枯渇の3種に分類する(content-generation/design.md「見出し・固定3観点を書く処理」
 // 手順8・「エラーハンドリング」)
 export function classifyGenerationResult(res: ClaudeCliResponse): ClassifiedResult {
   if (isQuotaExhausted(res)) {
@@ -64,7 +64,7 @@ export function classifyGenerationResult(res: ClaudeCliResponse): ClassifiedResu
     return { kind: 'transient', detail: `応答のJSONをパースできませんでした: ${text}` }
   }
   if (!isUsableContent(parsed)) {
-    return { kind: 'transient', detail: '見出しが空・100字超、または本文の分量が不正(160〜480字の範囲外)な応答でした' }
+    return { kind: 'transient', detail: '見出しが空・100字超、または固定3観点(sections)が不完全・分量が不正(160〜480字の範囲外)な応答でした' }
   }
   return { kind: 'ok', content: parsed }
 }
@@ -79,7 +79,9 @@ export class QuotaExhaustedError extends Error {
 
 export type GenerateCallFn = (candidate: Candidate) => Promise<ClaudeCliResponse>
 
-export type GeneratedPrediction = { candidate: Candidate; prediction: Prediction }
+// buildPredictionは常にCurrentPrediction(sections形式)を返す(LegacyPrediction〈body形式〉は
+// この機能より前に公開した過去記事専用で、新規生成では作られない)
+export type GeneratedPrediction = { candidate: Candidate; prediction: CurrentPrediction }
 export type GenerationFailure = { candidate: Candidate; detail: string }
 export type GeneratePredictionsResult = {
   succeeded: GeneratedPrediction[]

@@ -25,3 +25,10 @@
   - TDD対象外(静的な文言追記のため)
   - `specs/legal/requirements.md`の知的財産の項目に条項を追記する
   - `app/legal/page.tsx`の「4. 知的財産」セクションに条項本文を追記する
+
+## 図解
+
+- Task 7: 図解データの検証(仕様: requirements.md#図解-12〜13、design.md「図解を生成する処理」)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合はいずれも有効、`code`が空文字・空白のみ・type不明(`image`等)・オブジェクトでない値の場合は不正と判定することを確認するテストを書く
+  - 🟢 `app/news-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
+  - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)Task 12〜13を参照

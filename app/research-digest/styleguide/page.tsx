@@ -66,16 +66,23 @@ const generationFailedEntry: GenreEntry = {
 }
 
 const sampleArticle: Article = {
-  id: '2026-10-05',
+  id: '2026-10-05-body-life',
+  edition: 'body-life',
   date: '2026-10-05',
   findings: [
     sampleFinding,
-    preprintFinding,
+    { ...sampleFinding, id: 'education-parenting', genre: 'education-parenting', heading: '朝食の内容が午前中の学習集中力に影響する可能性', impact: 'medium', isPreprint: true },
     { ...sampleFinding, id: 'medical-health', genre: 'medical-health', heading: '食後の散歩が血糖値の上昇を抑える可能性', impact: 'medium' },
   ],
   emptyGenres: [],
 }
-const emptyArticle: Article = { id: '2026-09-28', date: '2026-09-28', findings: [], emptyGenres: [] }
+const emptyArticle: Article = {
+  id: '2026-09-26-science-society',
+  edition: 'science-society',
+  date: '2026-09-26',
+  findings: [],
+  emptyGenres: [],
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -114,6 +121,8 @@ export default function ResearchDigestStyleguidePage() {
         <Section title="ヘッダー(パンくず見本)">
           <nav aria-label="パンくず(見本)" className="text-[11px] text-gray-400">
             <span className="hover:underline">べんりやつーる</span>
+            <span className="mx-1">›</span>
+            <span className="hover:underline">週刊ダイジェスト一覧</span>
             <span className="mx-1">›</span>
             <span className="hover:underline">週刊研究発見</span>
             <span className="mx-1">›</span>
