@@ -9,7 +9,7 @@ import {
   isValidSummaryDetailLength,
   isValidImportance,
 } from '../../../app/ai-dev-digest/lib/summaryValidation'
-import type { SummarySection, TopicSummary } from '../../../app/ai-dev-digest/lib/types'
+import type { SummarySection, TopicSummaryWithWhatsNew, TopicSummaryWithDomain } from '../../../app/ai-dev-digest/lib/types'
 
 // 有効な範囲(40〜140字)のteaserを持つセクションを生成する(detail合計の分量検証に集中するため)
 function makeSections(detailLengths: number[]): SummarySection[] {
@@ -110,8 +110,9 @@ describe('要約のセクション内容検証 - 各セクションのheading/te
   })
 })
 
-// 有効な4観点(teaser・detailとも有効範囲)のTopicSummaryを、指定した観点だけ上書きして生成する
-function makeSummary(overrides: Partial<TopicSummary> = {}): TopicSummary {
+// 有効な4観点(teaser・detailとも有効範囲)のTopicSummaryWithWhatsNew(旧形式)を、
+// 指定した観点だけ上書きして生成する
+function makeSummary(overrides: Partial<TopicSummaryWithWhatsNew> = {}): TopicSummaryWithWhatsNew {
   const perspective = (prefix: string, detailLength = 250) => ({
     heading: `${prefix}見出し`,
     teaser: prefix.repeat(60),
@@ -133,9 +134,9 @@ describe('固定4観点(TopicSummary)の分量検証 - 4キーの存在・各観
   })
 
   it('benefit/whatsNew/how/howToUseのいずれかのキーが欠けているとき、無効と判定されること', () => {
-    const summary = makeSummary() as Partial<TopicSummary>
+    const summary = makeSummary() as Partial<TopicSummaryWithWhatsNew>
     delete summary.whatsNew
-    expect(isValidSummaryDetailLength(summary as TopicSummary)).toBe(false)
+    expect(isValidSummaryDetailLength(summary as TopicSummaryWithWhatsNew)).toBe(false)
   })
 
   it('いずれかの観点のheadingが空文字のとき、無効と判定されること', () => {
@@ -236,5 +237,59 @@ describe('重要度(importance)の検証 - 1〜5の整数であることを確�
 
   it('importanceがundefinedのとき、無効と判定されること', () => {
     expect(isValidImportance(undefined)).toBe(false)
+  })
+})
+
+// 有効な4観点(teaser・detailとも有効範囲、domainsも有効)のTopicSummaryWithDomain(新形式)を、
+// 指定した観点だけ上書きして生成する
+function makeSummaryWithDomain(overrides: Partial<TopicSummaryWithDomain> = {}): TopicSummaryWithDomain {
+  const perspective = (prefix: string, detailLength = 250) => ({
+    heading: `${prefix}見出し`,
+    teaser: prefix.repeat(60),
+    detail: prefix.repeat(detailLength),
+  })
+  return {
+    domain: { ...perspective('あ'), domains: ['backend'] },
+    benefit: perspective('い'),
+    how: perspective('う'),
+    howToUse: perspective('え'),
+    ...overrides,
+  }
+}
+
+// 仕様: specs/ai-dev-digest/content-generation/requirements.md#要約-5、specs/ai-dev-digest/content-generation/requirements.md#要約-12、specs/ai-dev-digest/content-generation/requirements.md#開発領域-15、specs/ai-dev-digest/content-generation/requirements.md#開発領域-16、specs/ai-dev-digest/content-generation/design.md#要約の分量を検証する処理(決定的なコード)
+describe('固定4観点の新旧フォーマット移行(hasDomainPerspective) - domain(新形式)/whatsNew(旧形式)のどちらの4キー構成も受け付ける', () => {
+  it('domain/benefit/how/howToUseの4キー構成(新形式)で、domainsも有効範囲のとき、有効と判定されること', () => {
+    expect(isValidSummaryDetailLength(makeSummaryWithDomain())).toBe(true)
+  })
+
+  it('benefit/whatsNew/how/howToUseの4キー構成(旧形式)のとき、引き続き有効と判定されること(既存記事データとの後方互換)', () => {
+    expect(isValidSummaryDetailLength(makeSummary())).toBe(true)
+  })
+
+  it('domain.domainsが空配列のとき、無効と判定されること', () => {
+    const summary = makeSummaryWithDomain({
+      domain: { heading: 'あ見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: [] },
+    })
+    expect(isValidSummaryDetailLength(summary)).toBe(false)
+  })
+
+  it('domain.domainsが未定義の値を含むとき、無効と判定されること', () => {
+    const summary = makeSummaryWithDomain({
+      domain: {
+        heading: 'あ見出し',
+        teaser: 'あ'.repeat(60),
+        detail: 'あ'.repeat(250),
+        domains: ['backend', 'unknown-domain'] as TopicSummaryWithDomain['domain']['domains'],
+      },
+    })
+    expect(isValidSummaryDetailLength(summary)).toBe(false)
+  })
+
+  it('domain.domainsが複数件(フロントエンド・バックエンドの両方にまたがる等)のとき、有効と判定されること', () => {
+    const summary = makeSummaryWithDomain({
+      domain: { heading: 'あ見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: ['frontend', 'backend'] },
+    })
+    expect(isValidSummaryDetailLength(summary)).toBe(true)
   })
 })

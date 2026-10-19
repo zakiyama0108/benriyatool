@@ -58,3 +58,19 @@
   - ページ下部にログイン状態表示(`LoginStatus`。[bookmark/tasks.md](../bookmark/tasks.md)Task 8で実装)を配置し、`getSession`/`onAuthChange`/`signInWithGoogle`/`signOut`を配線する
   - 専用枠の基準未達トピックが1件以上ある場合、記事冒頭に注記文を表示する
   - page.tsx自体はNext.jsのルーティング用ファイルのためカバレッジ計測対象外(vitest.config.mtsの既存除外設定に従う)。新規テストは追加せず、Task 4〜10のユニットテストで担保する
+
+## 図解・固定ラベル
+
+- Task 12: 固定ラベル(kicker)の表示(仕様: requirements.md#記事本文表示-3、design.md「その週の記事本文を表示する処理」)
+  - 🔴 各観点の見出しの上に`PERSPECTIVE_LABELS`の固定ラベル(例:「何が起きたか」)が表示されることを確認するテストを書く(Task 7のテストに追加する形でよい)
+  - 🟢 `app/news-digest/components/TopicSection.tsx`を修正し、各観点ブロックの先頭に固定ラベルを表示する
+
+- Task 13: 図解の表示(仕様: requirements.md#記事本文表示-13、design.md「その週の記事本文を表示する処理」)
+  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されることを確認するテストを書く
+  - 🟢 `app/news-digest/components/DiagramView.tsx`を実装し、`mermaid`パッケージを新規導入する(`npm install mermaid`)。`TopicSection.tsx`から各観点の`diagram`を渡して配置する
+
+## パンくず
+
+- Task 14: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🔴 共通`Breadcrumb`コンポーネント(article-list/tasks.mdのTask 7で新設)に`current`(記事タイトル)を渡した場合、アプリ名「重要ニュースダイジェスト」が`/news-digest`へのリンクになり、currentがリンクなしの現在地として表示されることを確認するテストを書く(`__tests__/news-digest/components/Breadcrumb.test.tsx`)
+  - 🟢 `app/news-digest/components/ArticleDetailView.tsx`の既存パンくずを共通`Breadcrumb`コンポーネントの呼び出しに置き換える

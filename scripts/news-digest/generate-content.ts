@@ -16,6 +16,9 @@
 // requirements.md#掲載件数の保証-2)。
 // 認証はAnthropic APIの従量課金ではなく運営者個人のClaude Code Pro/Maxサブスクリプション
 // (CLAUDE_CODE_OAUTH_TOKEN)を使う(weekly-publish/design.md「実行環境の前提」)。
+// あわせて、各観点の図解(diagram、Mermaid図のみ)を検証する(requirements.md#図解-12〜13、
+// design.md「図解を生成する処理」)。不正な形式は`null`に差し替え、この検証はisUsableContent
+// (分量検証)より前に行う
 //
 // 実行方法: CLAUDE_CODE_OAUTH_TOKEN=xxx npx tsx scripts/news-digest/generate-content.ts <selection.jsonのパス> <candidateIndex>
 import fs from 'node:fs'
@@ -24,6 +27,7 @@ import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { pathToFileURL } from 'node:url'
 import { isUsableContent, isQuotaExhaustionError, type GeneratedContent } from '../../app/news-digest/lib/generateContent'
+import { isValidAgentDiagram } from '../../app/news-digest/lib/diagramValidation'
 import type { SelectedTopic, SelectionResult } from '../../app/news-digest/lib/candidateTypes'
 
 const execFileAsync = promisify(execFile)
@@ -42,6 +46,9 @@ const MAX_ATTEMPTS = 2
 // design.md「要約を書く処理」のガードレール文言をそのまま転記する
 // (weekly-publishの実行指示に必ず含める運用。requirements.md#エージェントの逸脱防止-6の具体化)
 const GUARDRAIL = `この記事で扱ってよい話題は、content-selectionの採用基準に基づき選定された候補のみである。要約(導入文・詳細文とも)は独自の章立てで再構成した解説とし、原文の段落構成・表現の順序をそのままなぞってはならない。原文の詳細な数値・結論を網羅的に転記してはならない。`
+
+// 固定4観点。この4キー・この順序で固定(content-generation/requirements.md#要約-4)
+const SUMMARY_KEYS = ['whatHappened', 'whyItMatters', 'background', 'outlook'] as const
 
 function buildPrompt(candidate: SelectedTopic, requirements: string, design: string): string {
   return `あなたは「重要ニュース週刊ダイジェスト」の記事執筆を担当するエージェントです。以下の要件定義・設計に厳密に従って、指定された候補の紹介記事を日本語で執筆してください。
@@ -62,9 +69,11 @@ ${GUARDRAIL}
 - 元URL: ${candidate.url}
 - 元記事の公開日時: ${candidate.publishedAt}
 
+流れ・分岐・手順・時系列のような構造を示すのに適した観点があれば、Mermaid記法の図(\`{"type": "mermaid", "code": "Mermaid記法の文字列"}\`)を該当する観点の\`diagram\`に設定してください(requirements.md#図解-12)。理解が容易な単純な事実関係のみの観点でMermaid図が不要な場合は、その観点の\`diagram\`を\`null\`にしてください。
+
 WebFetch/WebSearchツールで元URLの内容を把握したうえで、次のJSON形式のみを出力してください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けず、JSONオブジェクト単体で応答してください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文や選択肢を返してはいけません(返答する相手がいません)。** 元URLの内容を十分に取得できなかった場合でも、確認できた情報の範囲で書けるところまで書いてJSONを返してください。それも困難な場合は無理に内容を創作せず、\`summary\`を\`null\`にしたJSON(\`{"heading": "...", "importance": 1, "summary": null}\`)を返してください(いずれの場合も聞き返さない):
 
-{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"whatHappened": {"heading": "結論・要点を含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文"}, "whyItMatters": {"heading": "...", "teaser": "...", "detail": "..."}, "background": {"heading": "...", "teaser": "...", "detail": "..."}, "outlook": {"heading": "...", "teaser": "...", "detail": "..."}}}`
+{"heading": "この記事から何が得られるか(結論・要点)が伝わる見出し(原文タイトルの逐語的な言い換えにとどめない)", "importance": 4, "summary": {"whatHappened": {"heading": "結論・要点を含む見出し", "teaser": "60〜120字程度の導入文", "detail": "展開表示する詳細文", "diagram": {"type": "mermaid", "code": "flowchart LR\\n..."}}, "whyItMatters": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}, "background": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}, "outlook": {"heading": "...", "teaser": "...", "detail": "...", "diagram": null}}}`
 }
 
 // Claude Code CLIを非対話モード(-p)で1回呼び出し、応答テキスト(result)を返す。
@@ -114,9 +123,10 @@ export async function callClaudeCode(prompt: string): Promise<string> {
   }
 }
 
-// エージェント応答テキストからJSONオブジェクトを抽出・検証する。抽出・パース・検証いずれかに
-// 失敗した場合はnullを返す(design.md「要約を書く処理」手順10、design.md「エラーハンドリング」)
-function parseGeneratedContent(responseText: string): GeneratedContent | null {
+// エージェント応答テキストからJSONオブジェクトを抽出し、観点ごとのdiagram(Mermaid図のみ)が
+// 正しい形式かを検証する。抽出・パース・分量検証いずれかに失敗した場合はnullを返す
+// (design.md「要約を書く処理」手順10、design.md「エラーハンドリング」)
+function parseAndResolveGeneratedContent(responseText: string): GeneratedContent | null {
   const match = responseText.match(/\{[\s\S]*\}/)
   if (!match) return null
   let parsed: unknown
@@ -125,6 +135,24 @@ function parseGeneratedContent(responseText: string): GeneratedContent | null {
   } catch {
     return null
   }
+
+  if (typeof parsed === 'object' && parsed !== null) {
+    const summary = (parsed as { summary?: unknown }).summary
+    if (typeof summary === 'object' && summary !== null) {
+      const summaryRecord = summary as Record<string, { diagram?: unknown } | undefined>
+      for (const key of SUMMARY_KEYS) {
+        const perspective = summaryRecord[key]
+        if (!perspective || typeof perspective !== 'object') continue
+        const rawDiagram = perspective.diagram
+        if (rawDiagram === undefined) continue // 観点自体がdiagramキーを返していない(省略)
+        if (!isValidAgentDiagram(rawDiagram)) {
+          console.error(`図解データの形式が不正なため無視します(${key}): ${JSON.stringify(rawDiagram)}`)
+          perspective.diagram = null
+        }
+      }
+    }
+  }
+
   return isUsableContent(parsed) ? parsed : null
 }
 
@@ -137,7 +165,7 @@ async function generateWithRetry(
 ): Promise<GeneratedContent | null> {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const responseText = await callClaudeCode(buildPrompt(candidate, requirements, design))
-    const content = parseGeneratedContent(responseText)
+    const content = parseAndResolveGeneratedContent(responseText)
     if (content) return content
     console.error(
       `候補の生成に失敗しました(${attempt}/${MAX_ATTEMPTS}回目): ${candidate.sourceName} - ${candidate.heading}`

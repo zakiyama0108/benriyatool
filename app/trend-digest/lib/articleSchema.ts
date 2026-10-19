@@ -1,17 +1,28 @@
-import type { Article, Edition, Genre, Topic } from './types'
+import type { Article, Diagram, Edition, Genre, Topic, TopicSections, TopicTrend } from './types'
 import { GENRE_ORDER } from './types'
-import { BODY_MIN_LENGTH, BODY_MAX_LENGTH, isValidTopicBodyLength } from './bodyValidation'
+import type { DurationLabel, HeatLabel } from './historyTypes'
+import { BODY_MIN_LENGTH, BODY_MAX_LENGTH, isValidSectionsLength } from './bodyValidation'
 
 // 記事データ(JSONファイル)のスキーマ検証(仕様: design.md「バリデーション」)。
 // エージェントが生成する入力の事故を早期に検知するため、ビルド時にここで例外を投げて
 // next buildを失敗させる(article-detail/design.md#エラーハンドリング)。
-// 本文の分量検証はcontent-generationがオーナーのbodyValidation.tsに委ねる(重複実装しない)
+// 本文(固定3観点)の分量検証はcontent-generationがオーナーのbodyValidation.tsに委ねる(重複実装しない)。
+// トピックは旧形式(単一body)・新形式(固定3観点sections)のいずれかを持つ(requirements.md#継続度・注目度の表示-19)
 
 const EDITIONS: Edition[] = ['entertainment', 'culture-lifestyle']
 const ALL_GENRES: Genre[] = [...GENRE_ORDER.entertainment, ...GENRE_ORDER['culture-lifestyle']]
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
-const MAX_TOPICS = 10
-const MAX_TOPICS_PER_GENRE = 2
+// 各ジャンルから必ず1件を掲載する仕様のため、同一ジャンルのトピックは1件までしか許容しない
+// (旧仕様は2件/ジャンルまで許容していたが、継続度・注目度対応の改訂で1件/ジャンルに変更された。
+// ただしunavailableGenresを持たない過去の記事には適用しない)
+const MAX_TOPICS_PER_GENRE = 1
+const DURATION_LABELS: DurationLabel[] = ['pre-trend', 'emerging', 'talked', 'highly-talked']
+const HEAT_LABELS: HeatLabel[] = ['high', 'normal', 'low']
+// 地域情報(originRegion・currentRegions)は収集エージェントが生成した自由文字列のため、
+// 記事データに取り込む時点でも外部入力として検証する(trend-history/design.mdのバリデーションと同じ上限)
+const REGION_MAX_LENGTH = 50
+const MAX_REGIONS = 10
+const SECTION_KEYS = ['fact', 'reason', 'caveat'] as const
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -27,9 +38,109 @@ function isHttpUrl(value: unknown): value is string {
   }
 }
 
+const CONTROL_CHAR = /[\x00-\x1F\x7F]/
+
+// 地域名として妥当な文字列か(空文字でなく50文字以内・制御文字を含まない)
+function isValidRegionString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= REGION_MAX_LENGTH && !CONTROL_CHAR.test(value)
+}
+
+// topic.trend(継続度・注目度の情報)を検証・パースする(仕様: design.md「バリデーション」)。
+// 省略可(この機能より前に公開した記事はtrendを持たないため。requirements.md#継続度・注目度の表示-18)。
+// continuationStartDateはarticleDate(記事の発行日)以前であることを検証する
+function parseTrend(raw: unknown, index: number, articleDate: string): TopicTrend | undefined {
+  if (raw === undefined) return undefined
+  if (typeof raw !== 'object' || raw === null) {
+    throw new Error(`topics[${index}].trendがオブジェクトではありません`)
+  }
+  const trend = raw as Record<string, unknown>
+
+  if (typeof trend.durationLabel !== 'string' || !DURATION_LABELS.includes(trend.durationLabel as DurationLabel)) {
+    throw new Error(`topics[${index}].trend.durationLabelが未定義の値です: ${String(trend.durationLabel)}`)
+  }
+  if (typeof trend.heatLabel !== 'string' || !HEAT_LABELS.includes(trend.heatLabel as HeatLabel)) {
+    throw new Error(`topics[${index}].trend.heatLabelが未定義の値です: ${String(trend.heatLabel)}`)
+  }
+  if (typeof trend.continuationDays !== 'number' || !Number.isInteger(trend.continuationDays) || trend.continuationDays < 0) {
+    throw new Error(`topics[${index}].trend.continuationDaysは0以上の整数である必要があります: ${String(trend.continuationDays)}`)
+  }
+  if (typeof trend.continuationStartDate !== 'string' || !DATE_FORMAT.test(trend.continuationStartDate)) {
+    throw new Error(`topics[${index}].trend.continuationStartDateがYYYY-MM-DD形式ではありません: ${String(trend.continuationStartDate)}`)
+  }
+  if (trend.continuationStartDate > articleDate) {
+    throw new Error(
+      `topics[${index}].trend.continuationStartDateが記事のdate(${articleDate})より後になっています: ${trend.continuationStartDate}`
+    )
+  }
+  if (typeof trend.reportCount !== 'number' || !Number.isInteger(trend.reportCount) || trend.reportCount < 1) {
+    throw new Error(`topics[${index}].trend.reportCountは1以上の整数である必要があります: ${String(trend.reportCount)}`)
+  }
+  if (trend.originRegion !== null && !isValidRegionString(trend.originRegion)) {
+    throw new Error(`topics[${index}].trend.originRegionが不正です(nullまたは1〜${REGION_MAX_LENGTH}文字の制御文字を含まない文字列): ${JSON.stringify(trend.originRegion)}`)
+  }
+  if (!Array.isArray(trend.currentRegions) || trend.currentRegions.length > MAX_REGIONS) {
+    throw new Error(`topics[${index}].trend.currentRegionsは${MAX_REGIONS}件以内の配列である必要があります`)
+  }
+  for (const region of trend.currentRegions) {
+    if (!isValidRegionString(region)) {
+      throw new Error(`topics[${index}].trend.currentRegionsの要素が不正です(1〜${REGION_MAX_LENGTH}文字の制御文字を含まない文字列): ${String(region)}`)
+    }
+  }
+
+  return {
+    durationLabel: trend.durationLabel as DurationLabel,
+    heatLabel: trend.heatLabel as HeatLabel,
+    continuationDays: trend.continuationDays,
+    continuationStartDate: trend.continuationStartDate,
+    reportCount: trend.reportCount,
+    originRegion: trend.originRegion,
+    currentRegions: trend.currentRegions as string[],
+  }
+}
+
+// 新形式の各観点のdiagram(仕様: article-detail/design.md「バリデーション」)を検証・パースする。
+// null、または{type:'mermaid',code}(codeが空文字でない)のいずれかであること
+// (2026-10改定: 画像による図解は廃止し、Mermaid図のみを図解として扱う)
+function parseDiagram(raw: unknown, index: number, sectionKey: string): Diagram | null {
+  if (raw === null) return null
+  if (typeof raw !== 'object') {
+    throw new Error(`topics[${index}].sections.${sectionKey}.diagramが不正です: ${JSON.stringify(raw)}`)
+  }
+  const diagram = raw as Record<string, unknown>
+
+  if (diagram.type === 'mermaid') {
+    if (!isNonEmptyString(diagram.code)) {
+      throw new Error(`topics[${index}].sections.${sectionKey}.diagram.codeが空文字です`)
+    }
+    return { type: 'mermaid', code: diagram.code }
+  }
+  throw new Error(`topics[${index}].sections.${sectionKey}.diagram.typeが不正です(mermaidのみ許可): ${String(diagram.type)}`)
+}
+
+// 新形式(固定3観点)のsectionsを検証・パースする(仕様: content-generation/requirements.md#要約-3、
+// article-detail/design.md「バリデーション」)。分量検証自体はbodyValidation.isValidSectionsLengthに委ねる
+function parseSections(raw: unknown, index: number): TopicSections {
+  if (!isValidSectionsLength(raw)) {
+    throw new Error(`topics[${index}].sectionsが不正です(fact/reason/caveatの3キーが必要で、各heading/textは空文字不可、text連結で${BODY_MIN_LENGTH}〜${BODY_MAX_LENGTH}字である必要があります)`)
+  }
+  const record = raw as Record<string, { heading: string; text: string; diagram?: unknown }>
+
+  const sections = {} as TopicSections
+  for (const key of SECTION_KEYS) {
+    const section = record[key]
+    sections[key] = {
+      heading: section.heading,
+      text: section.text,
+      diagram: parseDiagram(section.diagram ?? null, index, key),
+    }
+  }
+  return sections
+}
+
 // topics[index]1件を検証・パースする(仕様: article-detail/design.md「バリデーション」)。
-// editionはジャンルが対象9ジャンルに属するかの照合に使う
-function parseTopic(raw: unknown, index: number, edition: Edition): Topic {
+// editionはジャンルが対象ジャンルに属するかの照合に、articleDateはtrend.continuationStartDateの
+// 妥当性検証に使う。body(旧形式)・sections(新形式)はどちらか一方のみを持つ(requirements.md#継続度・注目度の表示-19)
+function parseTopic(raw: unknown, index: number, edition: Edition, articleDate: string): Topic {
   if (typeof raw !== 'object' || raw === null) {
     throw new Error(`topics[${index}]がオブジェクトではありません`)
   }
@@ -43,18 +154,11 @@ function parseTopic(raw: unknown, index: number, edition: Edition): Topic {
   const genre = topic.genre as Genre
   if (!GENRE_ORDER[edition].includes(genre)) {
     throw new Error(
-      `topics[${index}].genre(${genre})はedition(${edition})に対応する9ジャンルに含まれていません`
+      `topics[${index}].genre(${genre})はedition(${edition})に対応するジャンルに含まれていません`
     )
   }
 
   if (!isNonEmptyString(topic.heading)) throw new Error(`topics[${index}].headingが空文字です`)
-
-  if (!isNonEmptyString(topic.body)) throw new Error(`topics[${index}].bodyが空文字です`)
-  if (!isValidTopicBodyLength(topic.body)) {
-    throw new Error(
-      `topics[${index}].bodyの文字数が不正です(${BODY_MIN_LENGTH}〜${BODY_MAX_LENGTH}字である必要があります): ${topic.body.length}字`
-    )
-  }
 
   if (!isNonEmptyString(topic.sourceTitle)) throw new Error(`topics[${index}].sourceTitleが空文字です`)
   if (!isNonEmptyString(topic.sourceName)) throw new Error(`topics[${index}].sourceNameが空文字です`)
@@ -62,15 +166,69 @@ function parseTopic(raw: unknown, index: number, edition: Edition): Topic {
     throw new Error(`topics[${index}].sourceUrlがhttp/https形式の絶対URLではありません: ${String(topic.sourceUrl)}`)
   }
 
+  const trend = parseTrend(topic.trend, index, articleDate)
+
+  if ('body' in topic) {
+    // 旧形式(この機能より前に公開した記事。requirements.md#継続度・注目度の表示-19)
+    if (!isNonEmptyString(topic.body)) throw new Error(`topics[${index}].bodyが空文字です`)
+    if (topic.body.length < BODY_MIN_LENGTH || topic.body.length > BODY_MAX_LENGTH) {
+      throw new Error(
+        `topics[${index}].bodyの文字数が不正です(${BODY_MIN_LENGTH}〜${BODY_MAX_LENGTH}字である必要があります): ${topic.body.length}字`
+      )
+    }
+
+    return {
+      id: topic.id,
+      genre,
+      heading: topic.heading,
+      body: topic.body,
+      sourceTitle: topic.sourceTitle,
+      sourceName: topic.sourceName,
+      sourceUrl: topic.sourceUrl,
+      ...(trend !== undefined ? { trend } : {}),
+    }
+  }
+
+  // 新形式(固定3観点。requirements.md#継続度・注目度の表示-19)
+  const sections = parseSections(topic.sections, index)
   return {
     id: topic.id,
     genre,
     heading: topic.heading,
-    body: topic.body,
+    sections,
     sourceTitle: topic.sourceTitle,
     sourceName: topic.sourceName,
     sourceUrl: topic.sourceUrl,
+    ...(trend !== undefined ? { trend } : {}),
   }
+}
+
+// unavailableGenres(情報源から話題を取得できなかったジャンル)を検証・パースする(仕様:
+// design.md「バリデーション」)。省略可(この機能より前に公開した記事は持たないため、
+// requirements.md#継続度・注目度の表示-17)。省略時は全ジャンル網羅の検証を行わない
+function parseUnavailableGenres(raw: unknown, edition: Edition, topicGenres: Set<Genre>): Genre[] | undefined {
+  if (raw === undefined) return undefined
+  if (!Array.isArray(raw)) throw new Error('unavailableGenresは配列である必要があります')
+
+  const seen = new Set<Genre>()
+  for (const value of raw) {
+    if (typeof value !== 'string' || !ALL_GENRES.includes(value as Genre)) {
+      throw new Error(`unavailableGenresに未定義のジャンルが含まれています: ${String(value)}`)
+    }
+    const genre = value as Genre
+    if (!GENRE_ORDER[edition].includes(genre)) {
+      throw new Error(`unavailableGenres(${genre})はedition(${edition})に対応するジャンルに含まれていません`)
+    }
+    if (seen.has(genre)) {
+      throw new Error(`unavailableGenresにジャンル(${genre})が重複しています`)
+    }
+    seen.add(genre)
+    if (topicGenres.has(genre)) {
+      throw new Error(`unavailableGenres(${genre})がtopicsのジャンルと重複しています`)
+    }
+  }
+
+  return raw as Genre[]
 }
 
 // 記事データ(JSON)を検証・パースする。違反時は例外を投げる(next buildを失敗させる想定)。
@@ -101,13 +259,14 @@ export function parseArticle(raw: unknown, filename: string): Article {
     throw new Error(`${filename}: idとファイル名が一致しません(id: ${data.id})`)
   }
 
-  if (!Array.isArray(data.topics) || data.topics.length < 1 || data.topics.length > MAX_TOPICS) {
+  const maxTopics = GENRE_ORDER[edition].length
+  if (!Array.isArray(data.topics) || data.topics.length < 1 || data.topics.length > maxTopics) {
     throw new Error(
-      `${filename}: topicsは1件以上${MAX_TOPICS}件以下である必要があります(実際: ${Array.isArray(data.topics) ? data.topics.length : '配列以外'}件)`
+      `${filename}: topicsは1件以上${maxTopics}件以下である必要があります(実際: ${Array.isArray(data.topics) ? data.topics.length : '配列以外'}件)`
     )
   }
 
-  const topics = data.topics.map((topic, index) => parseTopic(topic, index, edition))
+  const topics = data.topics.map((topic, index) => parseTopic(topic, index, edition, data.date as string))
 
   const ids = topics.map((topic) => topic.id)
   const uniqueIds = new Set(ids)
@@ -115,15 +274,37 @@ export function parseArticle(raw: unknown, filename: string): Article {
     throw new Error(`${filename}: topics内でidが重複しています`)
   }
 
-  const countByGenre = new Map<Genre, number>()
-  for (const topic of topics) {
-    countByGenre.set(topic.genre, (countByGenre.get(topic.genre) ?? 0) + 1)
-  }
-  for (const [genre, count] of countByGenre) {
-    if (count > MAX_TOPICS_PER_GENRE) {
-      throw new Error(`${filename}: ジャンル(${genre})のトピックが${MAX_TOPICS_PER_GENRE}件を超えています(実際: ${count}件)`)
+  const topicGenres = new Set(topics.map((topic) => topic.genre))
+  const unavailableGenres = parseUnavailableGenres(data.unavailableGenres, edition, topicGenres)
+
+  // unavailableGenresを持つ記事(この機能以降に公開した記事)は、topics+unavailableGenresが
+  // その編の全ジャンルと過不足なく一致することを検証する(requirements.md#継続度・注目度の表示-17)。
+  // 持たない記事(過去の記事)は網羅の検証をしない
+  if (unavailableGenres !== undefined) {
+    // 1ジャンル1件の検証も同様に、unavailableGenresを持つ記事にだけ適用する。持たない過去の記事は
+    // 公開後に書き換えるとフィードバックのtopic_idがずれるため、従来どおり同一ジャンル複数件を受け入れる
+    const countByGenre = new Map<Genre, number>()
+    for (const topic of topics) {
+      countByGenre.set(topic.genre, (countByGenre.get(topic.genre) ?? 0) + 1)
+    }
+    for (const [genre, count] of countByGenre) {
+      if (count > MAX_TOPICS_PER_GENRE) {
+        throw new Error(`${filename}: ジャンル(${genre})のトピックが${MAX_TOPICS_PER_GENRE}件を超えています(実際: ${count}件)`)
+      }
+    }
+
+    const covered = new Set([...topicGenres, ...unavailableGenres])
+    const missing = GENRE_ORDER[edition].filter((genre) => !covered.has(genre))
+    if (missing.length > 0) {
+      throw new Error(`${filename}: topics・unavailableGenresのどちらにも含まれないジャンルがあります: ${missing.join(', ')}`)
     }
   }
 
-  return { id: data.id, edition, date: data.date, topics }
+  return {
+    id: data.id,
+    edition,
+    date: data.date,
+    topics,
+    ...(unavailableGenres !== undefined ? { unavailableGenres } : {}),
+  }
 }

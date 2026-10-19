@@ -1,0 +1,25 @@
+{
+  "id": "2026-09-29-entertainment",
+  "edition": "entertainment",
+  "date": "2026-09-29",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "music",
+      "heading": "INI「You Know What To Do」がBillboard JAPAN Hot 100で首位に登場",
+      "body": "Billboard JAPAN Hot 100の最新チャートで、INIの「You Know What To Do」が1位になりました。前回のチャートには順位がなく、今回あらためて首位という高い位置でランクインした形です。前週まで首位にいたのはEBiDANの「Yes! 東京」で、今回は2位に一つ下がっています。首位の顔ぶれが入れ替わったことが、今週の音楽シーンの動きを象徴していると言えそうです。このチャートは、CDなどの販売、ダウンロード、ストリーミングといった複数の指標を合算して作られるため、リリース直後に勢いが数字へ表れやすい特徴があります。新曲がすぐ1位につけたことは、グループへの注目の高さを映すものと受け取れます。詳しい順位や指標の内訳は、出典のBillboard JAPAN Hot 100の公式ページ(https://www.billboard-japan.com/charts/detail?a=hot100)で確認してください。",
+      "sourceTitle": "1 前回：- チャートイン：2 You Know What To Do INI 全国推定売上枚数 総合ポイント数 13,048 詳細・購入はこちら 2",
+      "sourceName": "Billboard JAPAN Hot 100",
+      "sourceUrl": "https://www.billboard-japan.com/charts/detail?a=hot100"
+    },
+    {
+      "id": "topic-2",
+      "genre": "music",
+      "heading": "Number_i、3曲収録のシングルでセールス首位 Hot 100でも存在感",
+      "body": "Number_iの『REBON / BUGS LIFE / DIGITAL GIRL』が、Billboard JAPANのシングル・セールスで首位に立ったと報じられ、音楽ファンの間で話題になっています。3曲をまとめた一枚で、初週の売上は30万枚を超える規模とされています。注目したいのは、その勢いがセールスだけにとどまらない点です。総合チャートのHot 100でも収録曲の「BUGS LIFE」が10週にわたってランクインしており、リリース後も聴かれ続けていることがうかがえます。パッケージの購入と日々の配信・再生が同時に動いている状況が、今週の首位という結果を後押しした形です。詳しい集計の内訳や順位は、出典のBillboard JAPAN Hot 100で確認してください。",
+      "sourceTitle": "【ビルボード】Number_i『REBON / BUGS LIFE / DIGITAL GIRL』30.4万枚でシングル・セールス首位獲得",
+      "sourceName": "Billboard JAPAN Hot 100",
+      "sourceUrl": "https://www.billboard-japan.com/charts/detail?a=hot100"
+    }
+  ]
+}

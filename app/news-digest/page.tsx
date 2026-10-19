@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getAllArticles } from './lib/articles'
 import { paginate } from './lib/pagination'
 import ArticleListView from './components/ArticleListView'
+import Breadcrumb from './components/Breadcrumb'
 
 // 仕様: requirements.md#メタ情報-1
 const TITLE = '重要ニュースダイジェスト｜総合・経済・神奈川・育児を毎週自動収集'
@@ -28,6 +29,7 @@ export default function ArticleListPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white">
       <div className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8 sm:py-10">
+        <Breadcrumb />
         <header>
           <h1 className="text-xl font-bold tracking-tight sm:text-2xl">重要ニュースダイジェスト</h1>
           <p className="mt-1 text-sm leading-relaxed text-gray-500">

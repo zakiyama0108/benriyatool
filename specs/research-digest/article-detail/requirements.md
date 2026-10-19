@@ -1,0 +1,81 @@
+# 要件定義: 記事詳細ページ
+
+## サマリ
+その回(編ごと)の研究発見の記事(1ジャンル1本、対象編の5ジャンルだけ。現在は最大5本)を表示する。各記事には、ジャンル・影響度(大・中・小)のバッジ、要約、影響度の根拠、出典リンクを付ける。並び順は「影響度順」と「ジャンル順」を読者が切り替えられる(future-digestと同じ)。ログイン中の運営者本人は、記事ごとにフィードバックを残せる。
+
+## 概要
+- 機能名: 記事詳細ページ
+- 目的: その回の研究を、生活への影響の大きさが分かる形で表示する。運営者が選定基準を振り返るためのフィードバックも、その場で残せるようにする
+- 優先度: 高
+
+## ユーザーストーリー
+- 訪問者として、生活への影響が大きい研究から順に読みたい
+- 訪問者として、決まったジャンル順に読むこともしたい
+- 訪問者として、気になった研究の元の論文・発表を出典リンクから読みたい
+- 運営者本人として、ログインした状態で記事を読みながら、選定への意見をその場で残し、あとで基準の見直しに使いたい
+
+## ユースケース図
+```mermaid
+flowchart LR
+    visitor["訪問者"]
+    admin["運営者本人（ログイン済み）"]
+    readArticle["記事を読む"]
+    switchOrder["並び順を切り替える"]
+    openSource["出典リンクを開く"]
+    sendFeedback["フィードバックを送る"]
+
+    visitor --> readArticle
+    visitor --> switchOrder
+    visitor --> openSource
+    admin --> readArticle
+    admin --> sendFeedback
+```
+上記は俯瞰用の図。正となる文章は下記「機能要件」「ビジネスルール・制約」。
+
+## 機能要件
+
+### 記事本文の表示
+- [1] その回の記事タイトル(編のラベルを含む。[content-generation/requirements.md#記事の構成-7](../content-generation/requirements.md))・公開日を表示する〔提案〕
+- [2] その回に採用された研究(対象編の5ジャンルだけ。現在は最大5本)を、それぞれジャンル・影響度のバッジ、見出し、本文、影響度の根拠、出典(論文名または発表元・元URLへのリンク)とセットで表示する〔提案〕
+- [3] 候補が見つからなかったジャンルは、ジャンルのバッジとあわせて「候補が見つかりませんでした」と表示する([content-selection/requirements.md#候補が見つからないジャンル](../content-selection/requirements.md))
+- [4] 収集の処理自体が失敗したジャンルは、ジャンルのバッジとあわせて分類ラベル([content-selection/requirements.md#収集失敗](../content-selection/requirements.md))を含む「今回は記事を収集できませんでした」旨の表示にする。候補が見つからなかったジャンル([3])とは異なる文言で表示し、読者が区別できるようにする
+- [5] 要約の生成に失敗した記事は「今回は記事を用意できませんでした」と表示する([weekly-publish/requirements.md#掲載件数の保証](../weekly-publish/requirements.md))
+- [6] 候補が見つからなかったジャンル([3])・収集に失敗したジャンル([4])・生成に失敗した記事([5])は、影響度順ではいずれも末尾に、ジャンル順では本来の位置に並べる
+
+### 並び順の切り替え
+- [7] 並び順を「影響度順」と「ジャンル順」の2通りから切り替えられるようにする(根拠: /requirementでの決定)
+- [8] 影響度順: 影響度の大きい順(大→中→小)に並べる。同じ影響度の中では、下記[9]のジャンル順に並べる
+- [9] ジャンル順: [content-selection/requirements.md#ジャンル](../content-selection/requirements.md)の順に並べる
+- [10] ページを開いたときの並び順は影響度順とする(根拠: 「影響の大きいものから」読めるようにするという/requirementでの要望に合わせるため)
+
+### 運営者向けフィードバック
+- [11] 各記事の下に、フィードバック入力欄(自由記述。1000字まで)を表示する。入力欄は、運営者本人がGoogle OIDCでログインしている場合だけ表示する
+- [12] 送信すると、対象の記事(回のID・記事の識別子)と入力内容を紐づけてデータベースに保存し、保存できたことが分かる表示にする
+- [13] 入力欄が空、または空白文字だけの場合は送信できない。1000字を超える場合も送信できない
+- [14] 要約が固定4観点(何が分かったか/なぜそう結論づけられたのか/暮らしへの関わり/注意点、この順序で固定。[content-generation/requirements.md#要約](../content-generation/requirements.md))で構成される記事は、観点ごとに固定ラベル(観点名そのもの)・結論文(見出し)・本文を常時表示する(展開操作は設けない)。この機能より前に公開した記事(単一の`body`文字列のみを持つ記事)は、従来どおり本文をそのまま1つの段落として表示する(過去記事を書き換えない)
+- [15] 観点、または記事全体について図解([content-generation/requirements.md#図解](../content-generation/requirements.md))が生成されている場合、対応する本文の近くに表示する。生成されていない場合は何も表示しない
+
+### パンくずナビゲーション
+- [1] 記事詳細ページのパンくずに「週刊ダイジェスト一覧」階層を追加し、べんりやつーる › 週刊ダイジェスト一覧(`/blog`) › 週刊研究発見 › 記事タイトルの4階層で表示する(`/blog`からブログハブへ戻れるようにするため) **🟡〔提案〕**
+
+## ビジネスルール・制約
+
+### 表示分量・著作権への配慮
+- [1] 各記事の本文は200〜400字程度とし、元記事の全文は転記しない。出典は必ず表示する([content-generation/requirements.md#著作権への配慮](../content-generation/requirements.md))
+
+### フィードバックの保存・権限
+- [2] フィードバックの保存は、trend-digestと同じINSERT専用の最小権限パターン([docs/adr/0001-user-input-database.md](../../../docs/adr/0001-user-input-database.md)、`authenticated`ロール)をとる。ただしINSERTできるのは運営者本人(下記[3]の`admin_emails`)に限り、データベース側(RLS)でも本人以外からの書き込みを拒否する(画面の表示切り替えだけに頼らない)
+- [3] 入力欄の表示・非表示は、既存の運営者判定(`admin_emails`許可リスト、[ADR-0006](../../../docs/adr/0006-admin-screen-oidc-rls.md)、`app/lib/adminAuth.ts`のisAuthorizedAdmin())で出し分ける
+- [4] 保存されたフィードバックは、公開画面のどこにも表示しない
+
+## 依存関係
+- 表示する記事は[content-selection/requirements.md](../content-selection/requirements.md)で選ばれ、[content-generation/requirements.md](../content-generation/requirements.md)のルールで書かれる
+- 読者の付箋は[bookmark/requirements.md](../bookmark/requirements.md)で定める
+- フィードバックは[source-review/requirements.md](../source-review/requirements.md)の月次見直しで使われる
+- 図解のレンダリング(Mermaid)は[news-digest/article-detail/design.md](../../news-digest/article-detail/design.md)と同じ方式を踏襲する
+
+## スコープ外
+- フィードバックへの返信・公開表示、訪問者向けのコメント欄
+- フィードバックの一覧・検索画面(運営者はデータベースを直接確認する)
+- 影響度順・ジャンル順以外の並び順、ジャンルでの絞り込み
+- 図解の有無・内容に関する運営者フィードバックへの個別対応(他の要約内容と同じく、月次見直しでまとめて調整する)

@@ -70,3 +70,13 @@
 
 - Task 15: WebSearchジャンルの独立言及基準の更新(仕様: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)、design.md「WebSearchジャンルの候補を収集・判定する処理」)(TDD対象外。Task 6と同じ理由)
   - `scripts/trend-digest/collect-websearch-candidates.ts`のプロンプトを更新する。独立した言及元にSNS投稿・口コミ増加を含めること、単一メディアの特集記事のみでは採用しないこと、`minIndependentSources`(3件)未満は候補にしないこと、言及元の内訳を`note`に含めて返すことを反映する
+
+- Task 16: アニメを併用ジャンル(固定リスト+WebSearch)に変更(仕様: requirements.md#選定方式-7、requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-9、requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11、design.md「併用ジャンル(アニメ)の候補を収集・判定する処理」)
+  - `app/trend-digest/lib/watchlistTypes.ts`の`SelectionMethod`に`'hybrid'`を追加し、`HybridGenreCriteria`(`fixedList`・`webSearch`をそれぞれ持つ)を`GenreCriteria`に追加する(TDD対象外。型定義のみのため)
+  - `content/trend-digest/watchlist.json`のanimeエントリを`method: 'hybrid'`に変更し、`sources`をFilmarksアニメ話題ランキング(`filmarksAnimeTrend`)・AniLab日本ウィークリーアニメランキング(`anilabJapanWeekly`)の2件に、`searchHints`をdesign.mdの初期値に更新する。`content/trend-digest/criteria.json`のanimeエントリをdesign.mdの`hybrid`形式に更新する
+  - 🔴 実際に取得したHTMLを`__tests__/trend-digest/fixtures/sourceParsers/`に保存し、`filmarksAnimeTrend`・`anilabJapanWeekly`がタイトル・順位(AniLabは前週比の順位変動の表記も)を正しく抽出することを確認するテストを書く
+  - 🟢 `scripts/trend-digest/sourceParsers/filmarksAnimeTrend.ts`・`anilabJapanWeekly.ts`を実装し、`scripts/trend-digest/fetchSourcePage.ts`の`HTML_PARSERS`に登録する。あわせて、animeを`NETFLIX_CATEGORY_BY_GENRE`から外す(Netflixデータをアニメの情報源として使わなくなったため、対応付けの欠落による例外は発生しなくなる)
+  - 🔴 `scripts/trend-digest/collect-and-select.ts`の`collectGenreObservations`が、`method: 'hybrid'`のジャンルで固定リスト側(`genreCriteria.fixedList`)・WebSearch側(`genreCriteria.webSearch`)の両方を呼び出し、観測項目を1つの配列に結合すること、いずれか一方の観測が0件でも他方の観測は結果に残ること、結合後の各観測項目の`method`が収集元(`fixed-list`/`websearch`)を正しく反映することを確認するテストを書く
+  - 🟢 `collectGenreObservations`に`hybrid`分岐を実装する
+  - 🔴 `scripts/trend-digest/collect-websearch-candidates.ts`の`collectWebSearchGenre`が、`method: 'hybrid'`のジャンルで`genreCriteria.webSearch`を使って収集できること(`method !== 'websearch'`の例外を`hybrid`では投げないこと)を確認するテストを書く
+  - 🟢 `collectWebSearchGenre`の分岐を更新する
