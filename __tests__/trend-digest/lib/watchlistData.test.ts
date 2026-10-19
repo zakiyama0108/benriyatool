@@ -13,6 +13,7 @@ const FIXED_LIST_GENRES = [
   'music', 'japanese-movie', 'foreign-movie', 'japanese-drama', 'foreign-drama', 'variety',
   'streaming-video', 'books-comics', 'buzzwords', 'games', 'travel',
 ]
+// fashion・gadgetsは編集部キュレーションの記事しか情報源がなく客観データを持たないためWebSearchジャンル(requirements.md#選定方式-4)
 const WEBSEARCH_GENRES = ['sns-buzz', 'gourmet', 'hobby', 'fashion', 'gadgets', 'economy-money', 'dev-trends']
 // アニメは固定リスト+WebSearchを併用する併用ジャンル(requirements.md#選定方式-7)
 const HYBRID_GENRES = ['anime']
@@ -148,12 +149,25 @@ describe('WebSearchジャンルの検索の手がかり(searchHints)データ - 
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-2
+// グルメ・流行りの趣味・ファッション・ガジェット家電は2026-10の月次見直しで、候補0件が続いていた実績を踏まえ
+// 既定(3件)より低い2件に調整済み(criteria.jsonでジャンルごとに調整可能。要件はこの個別調整を許容する)
+const DEFAULT_MIN_INDEPENDENT_SOURCES_GENRES = WEBSEARCH_GENRES.filter(
+  (g) => !['gourmet', 'hobby', 'fashion', 'gadgets'].includes(g)
+)
 describe('WebSearchジャンルの独立言及の最低件数(minIndependentSources)の既定値 - ニュース性の高い単発の話題を誤って採用しないよう既定で3件以上とする', () => {
-  it('WebSearchジャンルのminIndependentSourcesが既定の3件以上であること', () => {
-    for (const genre of WEBSEARCH_GENRES) {
+  it('既定値を使うWebSearchジャンルのminIndependentSourcesが3件以上であること', () => {
+    for (const genre of DEFAULT_MIN_INDEPENDENT_SOURCES_GENRES) {
       const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
       if (genreCriteria.method !== 'websearch') throw new Error(`${genre}はwebsearchジャンルではありません`)
       expect(genreCriteria.minIndependentSources).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('グルメ・流行りの趣味・ファッション・ガジェット家電は、2026-10の月次見直しによりminIndependentSourcesが2件に調整されていること', () => {
+    for (const genre of ['gourmet', 'hobby', 'fashion', 'gadgets']) {
+      const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
+      if (genreCriteria.method !== 'websearch') throw new Error(`${genre}はwebsearchジャンルではありません`)
+      expect(genreCriteria.minIndependentSources).toBe(2)
     }
   })
 
@@ -162,6 +176,23 @@ describe('WebSearchジャンルの独立言及の最低件数(minIndependentSour
       const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
       if (genreCriteria.method !== 'hybrid') throw new Error(`${genre}はhybridジャンルではありません`)
       expect(genreCriteria.webSearch.minIndependentSources).toBeGreaterThanOrEqual(3)
+    }
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-12
+describe('地域枠(グルメ)のfocusAreas - 運営者フィードバックを受けた対象エリアがcriteria.jsonに設定されていること', () => {
+  it('グルメのfocusAreasが小田原・茅ヶ崎・横浜であること', () => {
+    const genreCriteria = criteria.genreCriteria.gourmet
+    if (genreCriteria.method !== 'websearch') throw new Error('gourmetはwebsearchジャンルではありません')
+    expect(genreCriteria.focusAreas).toEqual(['小田原', '茅ヶ崎', '横浜'])
+  })
+
+  it('グルメ以外のジャンルはfocusAreasを持たないこと', () => {
+    for (const genre of WEBSEARCH_GENRES.filter((g) => g !== 'gourmet')) {
+      const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
+      if (genreCriteria.method !== 'websearch') throw new Error(`${genre}はwebsearchジャンルではありません`)
+      expect(genreCriteria.focusAreas).toBeUndefined()
     }
   })
 })

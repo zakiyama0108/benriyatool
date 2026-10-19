@@ -41,7 +41,7 @@
       "sources": [{ "name": "Google公式トレンドRSS(日本)", "url": "https://trends.google.com/trending/rss?geo=JP", "format": "structured-rss", "region": "japan" }] },
     { "genre": "gourmet", "edition": "culture-lifestyle", "label": "グルメ", "method": "websearch",
       "sources": [],
-      "searchHints": ["SNS 口コミ 急増 飲食店", "話題 食トレンド 自然発生 SNS", "macaroniトレンド 話題の食べ方"] },
+      "searchHints": ["SNS 口コミ 急増 飲食店", "話題 食トレンド 自然発生 SNS", "macaroniトレンド 話題の食べ方", "小田原 茅ヶ崎 横浜 話題の飲食店"] },
     { "genre": "hobby", "edition": "culture-lifestyle", "label": "流行りの趣味", "method": "websearch",
       "sources": [],
       "searchHints": ["新しい趣味 SNS 話題 広がり", "ホビー トレンド 複数メディア言及"] },

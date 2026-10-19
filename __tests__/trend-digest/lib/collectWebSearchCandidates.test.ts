@@ -117,6 +117,25 @@ describe('WebSearchジャンルの応答分類 - 応答がJSON配列単体以外
   })
 })
 
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-12
+describe('地域枠(グルメ) - WebSearchの応答が申告した地域(area)を観測項目に引き継ぐ', () => {
+  it('areaを持つ話題は観測項目のareaに引き継がれ、独立情報源数の基準(meetsCriteria)は地域の話題にも同じく適用されること(フィルタはselectEditionTopics側で行うため、ここでは全件を観測項目として残す)', async () => {
+    const call: WebSearchCallFn = vi.fn().mockResolvedValue({
+      result: JSON.stringify([
+        { title: '小田原の海鮮丼', sourceName: '〇〇ニュース', sourceUrl: 'https://example.com/a', independentSourceCount: 2, area: '小田原' },
+        { title: '横浜の新店', sourceName: '△△メディア', sourceUrl: 'https://example.com/b', independentSourceCount: 1, area: '横浜' },
+        { title: '全国の話題', sourceName: '□□', sourceUrl: 'https://example.com/c', independentSourceCount: 3 },
+      ]),
+    })
+    const { observations } = await collectWebSearchCandidates(entry, criteria, call, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations.map((o) => [o.title, o.area, o.meetsCriteria])).toEqual([
+      ['小田原の海鮮丼', '小田原', false],
+      ['横浜の新店', '横浜', false],
+      ['全国の話題', undefined, true],
+    ])
+  })
+})
+
 // 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-7
 describe('WebSearch側の採用基準の解決(resolveWebSearchCriteria) - 併用ジャンル(hybrid)はgenreCriteria.webSearchを、WebSearchジャンルはそのままの基準を使う', () => {
   it('method: websearchのジャンルは、そのままの基準が返ること', () => {

@@ -29,6 +29,7 @@ type RawWebSearchTopic = {
   sourceName?: unknown
   sourceUrl?: unknown
   independentSourceCount?: unknown
+  area?: unknown
   breakdown?: unknown
   originRegion?: unknown
   currentRegions?: unknown
@@ -41,6 +42,7 @@ export type WebSearchTopic = {
   sourceName: string
   sourceUrl: string
   independentSourceCount: number
+  area?: string // 地域に紐づく話題のみ。focusAreasの地域枠判定に使う
   breakdown?: string // 言及元の内訳(例: "ニュースメディア2件+SNS言及1件"。design.md手順6)。LLMの応答にあれば使う
   // 地域情報(design.md「地域情報を判定する処理」手順2〜3、requirements.md#地域情報-16〜17)。
   // エージェントの出力に由来する自由文字列のため、想定外の形の値は「不明」として扱い、
@@ -125,6 +127,7 @@ export function classifyWebSearchResult(res: ClaudeCliResponse): ClassifiedWebSe
         sourceName: raw.sourceName,
         sourceUrl: raw.sourceUrl,
         independentSourceCount: raw.independentSourceCount,
+        ...(typeof raw.area === 'string' && raw.area.trim() !== '' ? { area: raw.area.trim() } : {}),
         ...(raw.breakdown !== undefined ? { breakdown: raw.breakdown } : {}),
         originRegion: parseRegionText(raw.originRegion),
         currentRegions: parseRegionList(raw.currentRegions),
@@ -166,6 +169,7 @@ export async function collectWebSearchCandidates(
     sourceUrl: topic.sourceUrl,
     method: 'websearch',
     strength: topic.independentSourceCount,
+    ...(topic.area !== undefined ? { area: topic.area } : {}),
     rank: null, // WebSearchジャンルの観測項目は順位を持たない(design.md「候補の型(前提)」)
     // 地域情報(design.md「地域情報を判定する処理」手順2〜3)。エージェントが判定できた範囲のみを持ち、
     // 判定できない場合はnull/空配列(=不明)のまま(requirements.md#地域情報-16)

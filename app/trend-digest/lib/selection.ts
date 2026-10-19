@@ -3,6 +3,7 @@ import { GENRE_ORDER } from './types'
 import type { Candidate, SelectedTopic, SelectionResult } from './candidateTypes'
 import type { HistoryJudgement } from './historyTypes'
 import { DURATION_LABEL_ORDER, HEAT_LABEL_ORDER } from './historyTypes'
+import type { Criteria } from './watchlistTypes'
 
 // 掲載する話題の並べ替え・各ジャンル1件の選定(仕様: requirements.md#掲載する話題の選び方-4〜8、
 // design.md「掲載する話題を選ぶ処理」)。入出力が純粋なデータのみのため通常のvitestで完全にテストできる
@@ -89,13 +90,24 @@ function toSelectedTopic(candidate: CandidateWithJudgement): SelectedTopic {
   }
 }
 
+// ジャンルの採用基準からfocusAreas(地域枠の対象エリア)を取り出す。method: 'websearch'は
+// そのまま、method: 'hybrid'はwebSearch側を見る。対象外のジャンル・未指定時は空配列
+// (requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11)
+function resolveFocusAreas(genreCriteria: Criteria['genreCriteria'][Genre] | undefined): string[] {
+  if (!genreCriteria) return []
+  if (genreCriteria.method === 'websearch') return genreCriteria.focusAreas ?? []
+  if (genreCriteria.method === 'hybrid') return genreCriteria.webSearch.focusAreas ?? []
+  return []
+}
+
 // 対象editionの各ジャンルから1件を選ぶ(requirements.md#機能要件-5、requirements.md#掲載件数-1〜3、
 // design.md「掲載する話題を選ぶ処理」)。genreObservationsに含まれないジャンル、または
 // observationsが空のジャンルは、情報源から項目を1件も取得できなかったジャンルとしてunavailableGenresに入る
 export function selectEditionTopics(
   genreObservations: GenreObservations[],
   judgements: JudgementLookup,
-  edition: Edition
+  edition: Edition,
+  criteria: Criteria
 ): SelectionResult {
   const order = GENRE_ORDER[edition]
   const topics: SelectedTopic[] = []
@@ -115,7 +127,14 @@ export function selectEditionTopics(
     const candidatesOnly = withJudgement.filter((candidate) => candidate.meetsCriteria)
     const pool = candidatesOnly.length > 0 ? candidatesOnly : withJudgement
 
-    const [best] = [...pool].sort(compareCandidates)
+    // 地域枠(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11): focusAreasが
+    // 指定されたジャンルは、対象エリアの話題がpool内に1件以上あればそこから選ぶ(1ジャンル1枠のため、
+    // 対象エリアの話題をその回の掲載枠として優先的に確保する)。対象エリアの話題がなければ通常どおりpool全体から選ぶ
+    const focusAreas = resolveFocusAreas(criteria.genreCriteria[genre])
+    const focusPool = focusAreas.length > 0 ? pool.filter((c) => c.area !== undefined && focusAreas.includes(c.area)) : []
+    const finalPool = focusPool.length > 0 ? focusPool : pool
+
+    const [best] = [...finalPool].sort(compareCandidates)
     topics.push(toSelectedTopic(best))
   }
 

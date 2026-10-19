@@ -231,7 +231,7 @@ async function main() {
     genre: g.genre,
     observations: g.observations,
   }))
-  const selectionResult = selectEditionTopics(genreObservationsForSelection, judgements, edition)
+  const selectionResult = selectEditionTopics(genreObservationsForSelection, judgements, edition, criteria)
 
   if (selectionResult.status === 'ok') {
     // 掲載する話題を候補から選んだか、採用基準に届かなかった観測項目から選んだか、選んだ話題の
