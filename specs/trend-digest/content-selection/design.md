@@ -300,15 +300,16 @@ export type SelectionResult =
   1. ジャンルごとに、その回の観測項目を「採用基準を満たした項目(候補)」と「満たさなかった項目」に分ける(requirements.md#機能要件-4の用語に従う)
   2. そのジャンルに候補が1件以上あれば、候補だけを手順4の順序で並べ、最上位の1件を掲載する話題とする
   3. 候補が0件で観測項目が1件以上あるジャンルは、**観測項目全体**を同じ順序で並べ、最上位の1件を掲載する話題とする。各ジャンルから必ず1件を掲載するため、採用基準に届く話題がない回でもそのジャンルを空にしない(requirements.md#掲載件数-1)。採用基準は「その回の掲載候補にするもの」を選ぶための基準であって掲載可否の門ではない(requirements.md#機能要件-4)。なお、採用基準に届かなかったことは記事上には明示されない。継続度ラベルは継続日数のみから決まり採用基準を満たしたかどうかとは独立のため([trend-history/requirements.md#継続度ラベル-6](../trend-history/requirements.md))、「新規ランクイン・順位上昇したときだけ候補にする」ジャンルで上位に居続けている作品が動きのない回に採用基準を満たさず観測項目から選ばれた場合、継続度ラベルは「流行前」にはならず高いラベルのまま表示されうる
-  4. 並べ替えは次の3階層で行う(requirements.md#掲載する話題の選び方-4〜6):
+  4. 地域枠(`criteria.json`の`genreCriteria.<ジャンル>.focusAreas`。現時点ではグルメのみ)が設定されているジャンルは、手順2・3で絞ったプール(候補、またはフォールバック時の観測項目全体)の中に対象エリアの話題(`area`が`focusAreas`のいずれかに一致)が1件以上あれば、そのジャンルの最終的な並べ替え対象をそのプール内の対象エリアの話題のみに絞る(全国の話題だけで掲載枠が埋まらないようにするため。requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-12)。対象エリアの話題が1件もない場合はプール全体のまま次の手順へ進む
+  5. 並べ替えは次の3階層で行う(requirements.md#掲載する話題の選び方-4〜6):
      1. 過去に一度も掲載したことがない話題(掲載回数0)を、掲載したことがある話題より先にする
      2. 掲載したことがない話題どうしは、継続度ラベルが高い順、同じなら注目度ラベルが高い順、それも同じならその回の強さが大きい順とする
      3. 掲載したことがある話題どうしは、注目度ラベルが高い順、同じなら継続度ラベルが高い順、それも同じなら掲載回数が少ない順とする
      4. ここまでですべて同じ場合は、正規化タイトルの昇順で決める(同点のときに選ばれる話題が実行のたびに変わらないようにするため)
-  5. 情報源から項目を1件も取得できなかったジャンル(取得に失敗した、または情報源が0件を返した)は、掲載する話題を持たない「取得できなかったジャンル」として選定結果に載せる。架空の話題は作らない(requirements.md#掲載件数-3)
-  6. 選んだ話題を、そのeditionのジャンルの定義順(`GENRE_ORDER`)に並べ替える(ジャンル見出しの表示順・LINE配信のトピック一覧順として使われる。[article-detail/design.md](../article-detail/design.md)・[line-broadcast/requirements.md](../line-broadcast/requirements.md)参照)
-  7. 対象editionのすべてのジャンルで項目を1件も取得できなかった場合のみ「取得できずスキップ」とする([weekly-publish/requirements.md#掲載件数の保証-1](../weekly-publish/requirements.md))
-  8. 同一の話題かどうかの突き合わせは、候補の`title`と過去記事の`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を、trend-historyと同じ正規化関数(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)にかけてから行う。正規化ルールを二重に持たず、`selection.ts`の`normalizeTitle`を両specで共用する(requirements.md#掲載する話題の選び方-8)
+  6. 情報源から項目を1件も取得できなかったジャンル(取得に失敗した、または情報源が0件を返した)は、掲載する話題を持たない「取得できなかったジャンル」として選定結果に載せる。架空の話題は作らない(requirements.md#掲載件数-3)
+  7. 選んだ話題を、そのeditionのジャンルの定義順(`GENRE_ORDER`)に並べ替える(ジャンル見出しの表示順・LINE配信のトピック一覧順として使われる。[article-detail/design.md](../article-detail/design.md)・[line-broadcast/requirements.md](../line-broadcast/requirements.md)参照)
+  8. 対象editionのすべてのジャンルで項目を1件も取得できなかった場合のみ「取得できずスキップ」とする([weekly-publish/requirements.md#掲載件数の保証-1](../weekly-publish/requirements.md))
+  9. 同一の話題かどうかの突き合わせは、候補の`title`と過去記事の`sourceTitle`([article-detail/design.md](../article-detail/design.md)「前提: 記事データの形式」参照)を、trend-historyと同じ正規化関数(前後の空白除去・全角/半角の統一・英字の大文字小文字統一)にかけてから行う。正規化ルールを二重に持たず、`selection.ts`の`normalizeTitle`を両specで共用する(requirements.md#掲載する話題の選び方-8)
 - 掲載件数の上限は設けない。掲載件数はその編のジャンル数(エンタメ編9件・カルチャー編10件)と必ず一致する(requirements.md#掲載件数-2)
 - 関連するビジネスルール: requirements.md#機能要件-5、requirements.md#掲載件数-1、requirements.md#掲載件数-2、requirements.md#掲載件数-3、requirements.md#掲載する話題の選び方-4、requirements.md#掲載する話題の選び方-5、requirements.md#掲載する話題の選び方-6、requirements.md#掲載する話題の選び方-7、requirements.md#掲載する話題の選び方-8
 

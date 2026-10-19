@@ -48,6 +48,7 @@ export type FixedListGenreCriteria = {
 export type WebSearchGenreCriteria = {
   method: 'websearch'
   minIndependentSources: number // 「独立した言及が広がっている」と判定する最低独立言及元数(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-2)
+  focusAreas?: string[] // 地域枠の対象エリア(例: グルメの小田原・茅ヶ崎・横浜)。指定時は掲載枠に1件以上その地域の話題を含める
 }
 
 // 併用ジャンルの採用基準(requirements.md#選定方式-7)。固定リスト側・WebSearch側それぞれの基準を持ち、

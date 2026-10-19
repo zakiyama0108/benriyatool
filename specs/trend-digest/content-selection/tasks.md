@@ -80,3 +80,11 @@
   - 🟢 `collectGenreObservations`に`hybrid`分岐を実装する
   - 🔴 `scripts/trend-digest/collect-websearch-candidates.ts`の`collectWebSearchGenre`が、`method: 'hybrid'`のジャンルで`genreCriteria.webSearch`を使って収集できること(`method !== 'websearch'`の例外を`hybrid`では投げないこと)を確認するテストを書く
   - 🟢 `collectWebSearchGenre`の分岐を更新する
+
+- Task 17(月次見直し・2026-10): 地域枠(グルメ)の追加、ファッション・ガジェット家電のWebSearch化、流行りの言葉の情報源修正(仕様: requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-12、requirements.md#情報源(固定リスト)、design.md「掲載する話題を選ぶ処理」)
+  - 対応1: `WebSearchGenreCriteria`に`focusAreas?: string[]`、`Candidate`に`area?: string`を追加。グルメの`criteria.json`に`focusAreas: ["小田原", "茅ヶ崎", "横浜"]`を設定し、WebSearch応答から`area`を取り込む(`collectWebSearchCandidates.ts`)
+  - 対応2(設計の見直し): 地域枠は当初「ジャンル内の絞り込み(1ジャンル最大2件)で最下位の枠を対象エリアの話題に差し替える」案で検討されていたが、同時期に[trend-history](../trend-history/requirements.md)の導入で「各ジャンル1件」の選定方式(`selectEditionTopics`)に変わっていたため、2件前提の設計をそのまま使えなくなっていた。`selectEditionTopics`に`criteria`引数を追加し、候補プールに対象エリアの話題が1件以上あればそのジャンルの最終選定対象を対象エリアの話題のみに絞る方式に設計し直した(design.md「掲載する話題を選ぶ処理」手順4参照)
+    - 🔴 対象エリアの話題が候補にあれば強さ(strength)に関わらずそちらが選ばれること、対象エリアの話題が複数あれば通常の並べ替えで最上位が選ばれること、対象エリアの候補が0件なら通常どおりプール全体から選ばれること、対象外の地域名は地域枠として扱われないこと、focusAreas未指定のジャンルでは地域による優先が働かないことを確認するテストを`__tests__/trend-digest/lib/selection.test.ts`に書く
+    - 🟢 `selectEditionTopics`に`resolveFocusAreas`を実装し、`scripts/trend-digest/collect-and-select.ts`の呼び出しに`criteria`を渡す
+  - 対応3: ファッション・ガジェット家電は、固定リストで試したWWD JAPAN・Engadget・ZOZO・価格.comの汎用HTMLパースが実績として順位表を抽出できていなかったため、WebSearchジャンル(`minIndependentSources: 2`)に変更。グルメ・流行りの趣味も候補0件が続いていた実績を踏まえ`minIndependentSources`を2に調整(`watchlist.json`・`criteria.json`・`__tests__/trend-digest/lib/watchlistData.test.ts`を更新)
+  - 対応4: 流行りの言葉は、JS描画で順位表を抽出できなかった`trends.google.co.jp/trending`から、RSSの`<item><title>`を順位化する`structured-rss`形式(`trends.google.com/trending/rss?geo=JP`)に変更
