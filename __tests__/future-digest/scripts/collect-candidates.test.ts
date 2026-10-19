@@ -2,12 +2,15 @@ import { describe, it, expect, vi } from 'vitest'
 import {
   collectForGenre,
   buildClaudeArgs,
+  buildPrompt,
   TimeoutError,
   QuotaExhaustedError,
   type ClaudeCliResponse,
   type CollectCallFn,
 } from '../../../scripts/future-digest/collect-candidates'
 import type { GenreConfig } from '../../../app/future-digest/lib/genres'
+import type { DeliveredIndex } from '../../../app/future-digest/lib/deliveredIndex'
+import type { FixedSourceHint } from '../../../app/future-digest/lib/fixedSourceTypes'
 
 const GENRE: GenreConfig = {
   id: 'technology-ai',
@@ -131,5 +134,28 @@ describe('Claude Code CLIの起動引数 - 危険な許可フラグを付けず�
     const args = buildClaudeArgs('プロンプト')
     expect(args).toContain('--allowedTools')
     expect(args[args.indexOf('--allowedTools') + 1]).toBe('WebSearch,WebFetch')
+  })
+})
+
+const EMPTY_DELIVERED: DeliveredIndex = { urls: new Set(), lines: [] }
+
+// 仕様: specs/future-digest/content-selection/requirements.md#情報源(固定リスト)-1、specs/future-digest/content-selection/design.md「ジャンルごとに候補を集める処理」手順1
+describe('収集プロンプトの組み立て - 固定情報源のヒントがある場合はプロンプトに含め、無条件に採用しないことを明示する', () => {
+  it('ヒントがある場合、見出し・URLがプロンプトに含まれること', () => {
+    const hints: FixedSourceHint[] = [{ sourceName: 'MIT Technology Review', title: '見出しA', url: 'https://www.technologyreview.com/a', publishedAt: 'Fri, 16 Oct 2026' }]
+    const prompt = buildPrompt(GENRE, HORIZONS, EMPTY_DELIVERED, '要件定義本文', '2026-10-22', hints)
+    expect(prompt).toContain('見出しA')
+    expect(prompt).toContain('https://www.technologyreview.com/a')
+    expect(prompt).toContain('無条件に採用せず')
+  })
+
+  it('ヒントがない場合(空配列)、「ヒントはありません」と分かる記載になること', () => {
+    const prompt = buildPrompt(GENRE, HORIZONS, EMPTY_DELIVERED, '要件定義本文', '2026-10-22', [])
+    expect(prompt).toContain('固定情報源のヒントはありません')
+  })
+
+  it('ヒントを渡さない場合(デフォルト引数)もヒントなしの記載になること(既存呼び出し元との互換性)', () => {
+    const prompt = buildPrompt(GENRE, HORIZONS, EMPTY_DELIVERED, '要件定義本文', '2026-10-22')
+    expect(prompt).toContain('固定情報源のヒントはありません')
   })
 })

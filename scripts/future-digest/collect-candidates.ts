@@ -13,6 +13,9 @@ import { validateCandidates } from '../../app/future-digest/lib/candidateValidat
 import type { GenreConfig } from '../../app/future-digest/lib/genres'
 import { loadGenres, getActiveGenres } from '../../app/future-digest/lib/genres'
 import type { DeliveredIndex } from '../../app/future-digest/lib/deliveredIndex'
+import type { FixedSourceHint } from '../../app/future-digest/lib/fixedSourceTypes'
+import { loadFixedSources, getFixedSourcesForGenre } from '../../app/future-digest/lib/fixedSourceTypes'
+import { fetchFixedSourceHints, fetchHttpClient, buildFixedSourceHealthLogLines } from '../../app/future-digest/lib/fetchFixedSourceHints'
 
 const execFileAsync = promisify(execFile)
 
@@ -159,7 +162,24 @@ export async function collectForGenre(
 const REQUIREMENTS_PATH = path.join(process.cwd(), 'specs/future-digest/content-selection/requirements.md')
 const CLAUDE_TIMEOUT_MS = Number(process.env.FUTURE_DIGEST_COLLECT_TIMEOUT_MS ?? 10 * 60 * 1000)
 
-function buildPrompt(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, requirements: string, scheduledPublishDate: string): string {
+// ハイブリッド化(design.md「固定情報源からヒントを集める処理」)により、7ジャンルは収集前に
+// 固定情報源から取得したヒントをプロンプトに加える。ヒントに載っているというだけで無条件に
+// 採用しないことを明示する(requirements.md#情報源(固定リスト)-1)
+function buildFixedSourceHintsSection(hints: FixedSourceHint[]): string {
+  if (hints.length === 0) {
+    return '(今回は固定情報源のヒントはありません。WebSearchで探してください)'
+  }
+  return hints.map((h) => `- [${h.sourceName}] ${h.title}${h.publishedAt ? `(${h.publishedAt})` : ''} ${h.url}`).join('\n')
+}
+
+export function buildPrompt(
+  genre: GenreConfig,
+  horizons: [Horizon, Horizon],
+  deliveredIndex: DeliveredIndex,
+  requirements: string,
+  scheduledPublishDate: string,
+  fixedSourceHints: FixedSourceHint[] = []
+): string {
   const themesNote = genre.themes ? `\n個人的注目分野のテーマ: ${genre.themes.join('、')}` : ''
   const deliveredLines = deliveredIndex.lines.length > 0 ? deliveredIndex.lines.join('\n') : '(まだ配信済みの予測はありません)'
 
@@ -180,6 +200,9 @@ ${horizons.join('、')}(いずれも上記の配信日を基準点とする。�
 # 配信済みの予測一覧(実質的に同じ内容は候補にしないこと。ジャンル/時間軸/見出し/元記事タイトルの順)
 ${deliveredLines}
 
+# 固定情報源からのヒント(参考情報。ここに載っているというだけで無条件に採用せず、他の候補と同じ採用基準で判定してください。ここに載っていない話題もWebSearchで探してよいです)
+${buildFixedSourceHintsSection(fixedSourceHints)}
+
 各時間軸ごとに、採用基準を満たす未来予測記事を最大5件探し、影響度(high/medium/low)・根拠・順位を付けてください。予測の対象時期が明示・推定できない記事、対象時期が上記の配信日から1年未満または既に過ぎている記事、噂・出典不明・断定だけの記事、Claude自身の予測は候補にしないでください。性・恋愛ジャンルの場合は、未成年が関わる内容・特定の店舗や相手を探す手助けになる情報を候補にしないでください。
 
 次のJSON形式のみで応答してください。トップレベルのキーは必ず"${horizons[0]}"と"${horizons[1]}"の2つにしてください。前後に説明文・コードブロックの装飾(\`\`\`等)を付けないでください。**この処理はヘッドレス実行のため、運営者に判断を仰ぐ質問文を返してはいけません(返答する相手がいません)。**候補が見つからない時間軸は空配列にしてください。
@@ -195,8 +218,15 @@ export function buildClaudeArgs(prompt: string): string[] {
   return ['-p', prompt, '--output-format', 'json', '--tools', 'WebSearch,WebFetch', '--allowedTools', 'WebSearch,WebFetch']
 }
 
-async function callClaudeCode(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, requirements: string, scheduledPublishDate: string): Promise<ClaudeCliResponse> {
-  const prompt = buildPrompt(genre, horizons, deliveredIndex, requirements, scheduledPublishDate)
+async function callClaudeCode(
+  genre: GenreConfig,
+  horizons: [Horizon, Horizon],
+  deliveredIndex: DeliveredIndex,
+  requirements: string,
+  scheduledPublishDate: string,
+  fixedSourceHints: FixedSourceHint[]
+): Promise<ClaudeCliResponse> {
+  const prompt = buildPrompt(genre, horizons, deliveredIndex, requirements, scheduledPublishDate, fixedSourceHints)
   try {
     const { stdout } = await execFileAsync(
       'claude',
@@ -222,10 +252,16 @@ async function callClaudeCode(genre: GenreConfig, horizons: [Horizon, Horizon], 
 
 // scripts/future-digest/collect-and-select.tsから呼ばれる、実行環境に紐づくcollectForGenreの薄いラッパー。
 // scheduledPublishDateは時間軸(近未来・中期未来等)の基準点としてプロンプトに明示する
-// (content-selection/requirements.md#時間軸)
+// (content-selection/requirements.md#時間軸)。対象ジャンルの固定情報源(ある場合のみ)から
+// ヒントを取得し、プロンプトに渡す(design.md「固定情報源からヒントを集める処理」)
 export async function collectGenre(genre: GenreConfig, horizons: [Horizon, Horizon], deliveredIndex: DeliveredIndex, scheduledPublishDate: string): Promise<CollectForGenreResult> {
   const requirements = fs.readFileSync(REQUIREMENTS_PATH, 'utf8')
-  const call: CollectCallFn = (g, h) => callClaudeCode(g, h, deliveredIndex, requirements, scheduledPublishDate)
+  const fixedSourceEntries = getFixedSourcesForGenre(loadFixedSources(), genre.id)
+  const { hints: fixedSourceHints, failures } = await fetchFixedSourceHints(fixedSourceEntries, fetchHttpClient)
+  for (const line of buildFixedSourceHealthLogLines(fixedSourceEntries, fixedSourceHints, failures)) {
+    console.error(`${genre.label}: ${line}`)
+  }
+  const call: CollectCallFn = (g, h) => callClaudeCode(g, h, deliveredIndex, requirements, scheduledPublishDate, fixedSourceHints)
   return collectForGenre(genre, horizons, call)
 }
 

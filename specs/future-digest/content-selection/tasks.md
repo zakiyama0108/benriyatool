@@ -46,3 +46,23 @@
 
 </details>
 
+## 情報源を固定リスト+WebSearchのハイブリッド化する追加タスク
+
+7ジャンルに固定情報源を追加し、収集前にヒントとして取得・プロンプトに渡す変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 10: 固定情報源の設定ファイルと型定義(仕様: requirements.md#情報源(固定リスト)-1〜5、design.md「データ設計(固定情報源)」)
+  - 🔴 `fixedSources.json`の全13件の`genreId`がgenres.jsonの有効なidと一致すること、`channel.type`が`feed`または`site-specific-html`のいずれかであること、`site-specific-html`は`parserId`が必須であること、不正な`channel.type`・`genreId`は例外になることを確認するテストを書く
+  - 🟢 `content/future-digest/fixedSources.json`(requirements.md#情報源(固定リスト)-2の13件)と`app/future-digest/lib/fixedSourceTypes.ts`を実装する
+
+- Task 11: 固定情報源からのヒント取得(仕様: design.md「固定情報源からヒントを集める処理」)
+  - 🔴 `fetchFixedSourceHints(genreId, entries, http)`について次を確認するテストを書く: `feed`形式(RSS/Atom/RDF)から見出し・URL・公開日時を抽出できること/`site-specific-html`形式は`parserId`に対応する専用パーサーを呼び出すこと(parserIdごとに1件の正常系テストを含める)/1件の取得失敗が他の情報源の結果に影響しないこと(その情報源だけが結果から除かれる)/対象ジャンルに固定情報源がない場合は空配列を返すこと/取得件数が情報源あたり10件を超えないこと
+  - 🟢 `app/future-digest/lib/fetchFixedSourceHints.ts`(feed共通パーサー・HttpClient注入はnews-digestのfetchCandidates.tsと同じ考え方)と`app/future-digest/lib/fixedSourceParsers.ts`(parserId: `amedNews`・`ipccHome`・`envPress`・`worksINews`・`ncggTopics`・`iissLatest`・`cfrLatest`)を実装する
+
+- Task 12: 収集CLIへのヒント統合(仕様: design.md「ジャンルごとに候補を集める処理」手順1)
+  - 🔴 既存の`buildPrompt`のテストファイルに追記し、固定情報源のヒントがある場合はプロンプトに見出し・URLが含まれること、ヒントがない場合(空配列)はヒント欄を含まないか「ヒントなし」と分かる記載になることを確認するテストを書く
+  - 🟢 `scripts/future-digest/collect-candidates.ts`の`buildPrompt`・`collectGenre`にヒント(`FixedSourceHint[]`)を渡す引数を追加し、プロンプトに組み込む。`scripts/future-digest/collect-and-select.ts`で`fetchFixedSourceHints`を呼び出し、ジャンルごとに`collectGenre`へ渡すように更新する
+
+</details>
+
