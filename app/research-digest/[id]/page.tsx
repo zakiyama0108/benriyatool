@@ -1,0 +1,22 @@
+import { notFound } from 'next/navigation'
+import { getAllArticles, getArticleById } from '../lib/articles'
+import ArticleDetailView from '../components/ArticleDetailView'
+
+// 記事詳細ページ(仕様: requirements.md#記事本文の表示-1、design.md「関連するファイル」)。
+// 静的エクスポートのため、ビルド時に全IDを列挙する。
+//
+// Next.js固有の挙動差分: output: 'export'構成では、generateStaticParams()が空配列だとビルドが
+// 失敗する(.claude/skills/implementation/references/nextjs-notes.md参照)。記事が1件もない
+// 運用開始直後に備え、その場合だけダミーのパスを1件返し、ページ側でnotFound()に倒す
+export function generateStaticParams() {
+  const ids = getAllArticles().map((article) => ({ id: article.id }))
+  return ids.length > 0 ? ids : [{ id: '__no-articles-yet__' }]
+}
+
+export default async function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const article = getArticleById(id)
+  if (!article) notFound()
+
+  return <ArticleDetailView article={article} />
+}

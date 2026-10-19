@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import genresData from '../../../content/future-digest/genres.json'
-import { parseGenres, loadGenres, getActiveGenres, type GenreConfig } from '../../../app/future-digest/lib/genres'
+import { parseGenres, loadGenres, getActiveGenres, EDITION_GENRES, type GenreConfig } from '../../../app/future-digest/lib/genres'
 
 function makeRawGenres(overrides: Partial<GenreConfig>[] = []): unknown {
   const base: GenreConfig[] = [
-    { id: 'technology-ai', label: 'テクノロジー・AI', description: '説明A', active: true, lineExcluded: false },
-    { id: 'sexuality-romance', label: '性・恋愛', description: '説明B', active: true, lineExcluded: true },
+    { id: 'technology-ai', label: 'テクノロジー・AI', description: '説明A', edition: 'science-tech', active: true, lineExcluded: false },
+    { id: 'sexuality-romance', label: '性・恋愛', description: '説明B', edition: 'life-society', active: true, lineExcluded: true },
   ]
   return overrides.length > 0 ? overrides : base
 }
@@ -19,8 +19,8 @@ describe('ジャンル設定ファイル - ジャンル・個人的注目分野�
 
   it('active: falseのジャンルは収集対象(getActiveGenres)から外れるが、ラベルは引けること', () => {
     const genres = parseGenres([
-      { id: 'technology-ai', label: 'テクノロジー・AI', description: '説明A', active: true, lineExcluded: true },
-      { id: 'retired-genre', label: '廃止済みジャンル', description: '説明B', active: false, lineExcluded: false },
+      { id: 'technology-ai', label: 'テクノロジー・AI', description: '説明A', edition: 'science-tech', active: true, lineExcluded: true },
+      { id: 'retired-genre', label: '廃止済みジャンル', description: '説明B', edition: 'science-tech', active: false, lineExcluded: false },
     ])
     const active = getActiveGenres(genres)
     expect(active.map((g) => g.id)).toEqual(['technology-ai'])
@@ -46,14 +46,37 @@ describe('ジャンル設定ファイル - 実データが10ジャンル(性・�
   })
 })
 
+// 仕様: specs/future-digest/content-selection/requirements.md#機能要件-6、specs/future-digest/content-selection/requirements.md#編成とジャンルの割り当て-1、specs/future-digest/content-selection/requirements.md#編成とジャンルの割り当て-2
+describe('編成とジャンルの割り当て - 10ジャンルをサイエンス・テクノロジー編/くらし・社会編に5件ずつ固定で分ける', () => {
+  it('各ジャンルがscience-techまたはlife-societyのeditionを持つこと', () => {
+    for (const genre of genresData as GenreConfig[]) {
+      expect(['science-tech', 'life-society']).toContain(genre.edition)
+    }
+  })
+
+  it('EDITION_GENRESがサイエンス・テクノロジー編5件・くらし・社会編5件に分かれること', () => {
+    expect(EDITION_GENRES['science-tech']).toHaveLength(5)
+    expect(EDITION_GENRES['life-society']).toHaveLength(5)
+  })
+
+  it('EDITION_GENRESがgenres.jsonのedition属性どおりに振り分けられること', () => {
+    const expected: Record<string, string[]> = { 'science-tech': [], 'life-society': [] }
+    for (const genre of genresData as GenreConfig[]) {
+      expected[genre.edition].push(genre.id)
+    }
+    expect(EDITION_GENRES['science-tech']).toEqual(expected['science-tech'])
+    expect(EDITION_GENRES['life-society']).toEqual(expected['life-society'])
+  })
+})
+
 // 仕様: specs/future-digest/content-selection/design.md「データ設計(ジャンル・注目テーマの設定ファイル)」
 describe('ジャンル設定の検証 - 不正なジャンル設定を検知して例外を投げる(ビルド時に壊れた設定を弾くため)', () => {
   it('idが重複する場合に例外になること', () => {
     expect(() =>
       parseGenres(
         makeRawGenres([
-          { id: 'technology-ai', label: 'A', description: '説明', active: true, lineExcluded: true },
-          { id: 'technology-ai', label: 'B', description: '説明', active: true, lineExcluded: false },
+          { id: 'technology-ai', label: 'A', description: '説明', edition: 'science-tech', active: true, lineExcluded: true },
+          { id: 'technology-ai', label: 'B', description: '説明', edition: 'science-tech', active: true, lineExcluded: false },
         ]),
       ),
     ).toThrow()
@@ -61,7 +84,7 @@ describe('ジャンル設定の検証 - 不正なジャンル設定を検知し�
 
   it('labelが空の場合に例外になること', () => {
     expect(() =>
-      parseGenres(makeRawGenres([{ id: 'technology-ai', label: '', description: '説明', active: true, lineExcluded: true }])),
+      parseGenres(makeRawGenres([{ id: 'technology-ai', label: '', description: '説明', edition: 'science-tech', active: true, lineExcluded: true }])),
     ).toThrow()
   })
 
@@ -73,6 +96,7 @@ describe('ジャンル設定の検証 - 不正なジャンル設定を検知し�
             id: 'personal-interest',
             label: '個人的注目分野',
             description: '説明',
+            edition: 'life-society',
             themes: [1, 2] as unknown as string[],
             active: true,
             lineExcluded: true,
@@ -86,7 +110,7 @@ describe('ジャンル設定の検証 - 不正なジャンル設定を検知し�
     expect(() =>
       parseGenres(
         makeRawGenres([
-          { id: 'technology-ai', label: 'A', description: '説明', active: true, lineExcluded: 'true' as unknown as boolean },
+          { id: 'technology-ai', label: 'A', description: '説明', edition: 'science-tech', active: true, lineExcluded: 'true' as unknown as boolean },
         ]),
       ),
     ).toThrow()
@@ -94,7 +118,22 @@ describe('ジャンル設定の検証 - 不正なジャンル設定を検知し�
 
   it('lineExcluded: trueのジャンルが1件もない場合に例外になること', () => {
     expect(() =>
-      parseGenres([{ id: 'technology-ai', label: 'A', description: '説明', active: true, lineExcluded: false }]),
+      parseGenres([{ id: 'technology-ai', label: 'A', description: '説明', edition: 'science-tech', active: true, lineExcluded: false }]),
     ).toThrow()
+  })
+
+  it('editionが2値以外の場合に例外になること', () => {
+    expect(() =>
+      parseGenres(
+        makeRawGenres([
+          { id: 'technology-ai', label: 'A', description: '説明', edition: 'other-edition' as unknown as GenreConfig['edition'], active: true, lineExcluded: true },
+        ]),
+      ),
+    ).toThrow()
+  })
+
+  it('editionが未指定の場合に例外になること', () => {
+    const raw = [{ id: 'technology-ai', label: 'A', description: '説明', active: true, lineExcluded: true }]
+    expect(() => parseGenres(raw)).toThrow()
   })
 })

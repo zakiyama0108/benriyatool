@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import Link from 'next/link'
 import type { Article } from '../lib/types'
 import { HORIZON_LABELS, horizonsForIssue } from '../lib/types'
 import { buildArticleTitle } from '../lib/articleTitle'
@@ -12,6 +11,7 @@ import { fetchBookmarksByArticle, type BookmarkSummary } from '../lib/bookmarks'
 import SortToggle from './SortToggle'
 import PredictionCard from './PredictionCard'
 import LoginStatus from './LoginStatus'
+import Breadcrumb from './Breadcrumb'
 
 type Props = {
   article: Article
@@ -105,24 +105,14 @@ export default function ArticleDetailView({ article }: Props) {
     })
   }
 
-  const title = buildArticleTitle(article.date)
+  const title = buildArticleTitle(article.date, article.edition)
   const horizons = horizonsForIssue(article.issueNumber)
   const slots = sortSlots(article, order)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-slate-50/40 to-white">
       <article className="mx-auto max-w-2xl space-y-5 px-4 py-6 sm:px-8 sm:py-10">
-        <nav className="text-[11px] text-gray-400">
-          <Link href="/" className="hover:underline">
-            べんりやつーる
-          </Link>
-          <span className="mx-1">›</span>
-          <Link href="/future-digest" className="hover:underline">
-            週刊未来予測
-          </Link>
-          <span className="mx-1">›</span>
-          <span>{title}</span>
-        </nav>
+        <Breadcrumb current={title} />
 
         <header>
           <h1 className="text-xl font-bold leading-relaxed tracking-tight sm:text-2xl">{title}</h1>

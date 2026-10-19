@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-12",
+  "topics": [
+    {
+      "id": "topic-1",
+      "heading": "Claude CodeのPreToolUseフックで、危険なコマンドの実行前チェックを自作できるようになった",
+      "sourceType": "official",
+      "sourceName": "Anthropic",
+      "sourceUrl": "https://docs.claude.com/en/docs/claude-code/hooks",
+      "belowCriteria": false,
+      "sourcePublishedAt": "2026-10-11T09:00:00.000Z",
+      "importance": 4,
+      "summary": {
+        "domain": {
+          "heading": "保守運用・セキュリティ領域で、危険なコマンド実行を人の目より前に止められるようになる",
+          "teaser": "領域は保守運用・セキュリティ。これまでレビューや承認プロンプトで防いでいた事故を、実行前フックで自動的に止める作業に置き換えられる。",
+          "detail": "対象は保守運用・セキュリティの領域。従来は`rm -rf`のような破壊的コマンドの実行を防ぐ手段が、都度の承認プロンプトを手で確認することに依存していた。PreToolUseフックを導入すると、この「人が都度確認する」作業を「決めたルールに違反したら自動的に止める」仕組みに置き換えられる。承認プロンプトをなくすわけではなく、危険なパターンだけを機械的に一次フィルタする層を追加する変更になる。",
+          "domains": ["security", "maintenance"],
+          "diagram": null
+        },
+        "benefit": {
+          "heading": "承認プロンプトを見落としても、危険なコマンドは実行されない保険がかかる",
+          "teaser": "見落としによる事故を、コマンド実行前の自動チェックで未然に防げるようになる保険がかかる。",
+          "detail": "AIエージェントに作業を任せる際、承認プロンプトの文面を毎回きちんと読めるとは限らない。PreToolUseフックは、Bashツールが実行される直前にスクリプトを挟み、あらかじめ決めたルール(例: `rm -rf`・`git push --force`・本番環境変数の書き換えなど)に該当する場合はツール呼び出し自体を拒否できる。承認を急いで見落としたときの最後の保険として機能する点が最大のメリット。",
+          "diagram": null
+        },
+        "how": {
+          "heading": "ツール呼び出しの直前にフックスクリプトが割り込み、終了コードで許可・拒否を返す",
+          "teaser": "ツール実行の直前にフックスクリプトを割り込ませ、終了コード0で許可・0以外で拒否という単純な仕組みで動く。",
+          "detail": "`.claude/settings.json`の`hooks.PreToolUse`にスクリプトのパスを登録すると、Bashツールなどが実行される直前にそのスクリプトが標準入力でツール名・コマンド文字列を受け取って呼ばれる。スクリプトが終了コード0を返せば実行が進み、0以外を返すと該当のツール呼び出しがブロックされ、標準エラー出力の内容がそのままAIへのフィードバックとして渡される。承認プロンプトを置き換えるのではなく、その手前に機械的なチェック層を追加する構成。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "sequenceDiagram\n  participant Agent as AIエージェント\n  participant Hook as PreToolUseフック\n  participant Bash as Bashツール\n  Agent->>Hook: コマンド実行を要求\n  alt ルールに違反\n    Hook-->>Agent: 終了コード1 + 理由を返す(拒否)\n  else ルールに該当しない\n    Hook->>Bash: 実行を許可\n    Bash-->>Agent: 実行結果を返す\n  end"
+          }
+        },
+        "howToUse": {
+          "heading": "今すぐ試す価値がある。設定ファイルに1つスクリプトを登録するだけで導入できる",
+          "teaser": "`.claude/settings.json`にフック用のシェルスクリプトを1つ登録するだけで、今の環境にそのまま追加できる。",
+          "detail": "今すぐ試す価値があります。手順は次の3つです。\n\n1. リポジトリに`.claude/hooks/block-dangerous.sh`を作成し、標準入力から受け取ったコマンド文字列が禁止パターンに一致したら`exit 1`、それ以外は`exit 0`を返すようにする\n2. `.claude/settings.json`に以下を追記する\n\n```\n{\"hooks\": {\"PreToolUse\": [{\"matcher\": \"Bash\", \"hooks\": [{\"type\": \"command\", \"command\": \".claude/hooks/block-dangerous.sh\"}]}]}}\n```\n\n3. 禁止パターンに該当するコマンドをあえて実行させ、ブロックされることを確認する\n\n推奨設定は、禁止パターンを`rm -rf`・`git push --force`・`git reset --hard`・本番環境変数ファイル(`.env.production`等)への書き込みの4つに絞ること。これ以上細かく増やすと誤検知で正常な作業まで止めてしまい、逆に少なすぎると保険にならないため、まずこの4つから始めるのが効果と運用コストのバランスが良いです。\n\n設定項目の正式な一覧・サンプルスクリプトは[公式ドキュメント(具体例が豊富なHooksリファレンス)](https://docs.claude.com/en/docs/claude-code/hooks)にまとまっているため、自分のルールに合わせて書き換えるだけで導入できます。",
+          "diagram": null
+        }
+      }
+    }
+  ]
+}

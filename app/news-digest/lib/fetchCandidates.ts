@@ -51,38 +51,64 @@ function parseFeedEntries(xml: string): CollectedEntry[] {
   return entries
 }
 
+// 日付らしき文字列(YYYY-MM-DD/YYYY/MM/DD/YYYY年M月D日)をテキストから1件抽出する
+function parseDateFromText(text: string): Date | null {
+  const dateMatch =
+    text.match(/(\d{4})-(\d{1,2})-(\d{1,2})/) ??
+    text.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})/) ??
+    text.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/)
+  if (!dateMatch) return null
+  const [, year, month, day] = dateMatch
+  const parsedDate = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00+09:00`)
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate
+}
+
+// 見出し(<a>タグのテキスト)とリンク先を1件抽出する
+function extractHeadingAnchor(html: string): { href: string; title: string } | null {
+  const match = html.match(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/)
+  if (!match) return null
+  const [, href, rawTitle] = match
+  const title = rawTitle.replace(/<[^>]*>/g, '').trim()
+  return title ? { href, title } : null
+}
+
+function resolveLink(href: string, baseUrl: string): string | null {
+  try {
+    return new URL(href, baseUrl).toString()
+  } catch {
+    return null
+  }
+}
+
 // 公式RSSがない情報源の公開ページ(HTML)から新着項目を雑駁に抽出する。
-// <li>要素の中の<a>タグ(見出し・リンク)と、同じ<li>内に現れる日付らしき文字列
-// (YYYY-MM-DD/YYYY/MM/DD/YYYY年M月D日)の組を新着項目とみなす簡易パーサー
 // (要件はHTML構造の実装方法を定めていないため設計判断。サイト構造が大きく変わった場合は個別に対応する)
+// 対応する2パターン:
+//   1. <li>要素内に見出し(<a>タグ)・日付が両方含まれるパターン
+//   2. <dt>日付</dt><dd>...<a>見出し</a>...</dd>の定義リスト形式
+//      (神奈川県公式サイトのお知らせ一覧がこの形式。他の自治体サイトにも多い構造のため汎用的に対応する)
 function parseOfficialPageEntries(html: string, baseUrl: string): CollectedEntry[] {
   const entries: CollectedEntry[] = []
+
   const listItems = html.match(/<li\b[\s\S]*?<\/li>/g) ?? []
-
   for (const item of listItems) {
-    const titleMatch = item.match(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/)
-    if (!titleMatch) continue
-    const [, href, rawTitle] = titleMatch
-    const title = rawTitle.replace(/<[^>]*>/g, '').trim()
-    if (!title) continue
+    const anchor = extractHeadingAnchor(item)
+    if (!anchor) continue
+    const parsedDate = parseDateFromText(item)
+    if (!parsedDate) continue
+    const link = resolveLink(anchor.href, baseUrl)
+    if (!link) continue
+    entries.push({ title: anchor.title, link, publishedAt: parsedDate.toISOString() })
+  }
 
-    const dateMatch =
-      item.match(/(\d{4})-(\d{1,2})-(\d{1,2})/) ??
-      item.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})/) ??
-      item.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/)
-    if (!dateMatch) continue
-    const [, year, month, day] = dateMatch
-    const parsedDate = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00+09:00`)
-    if (Number.isNaN(parsedDate.getTime())) continue
-
-    let link: string
-    try {
-      link = new URL(href, baseUrl).toString()
-    } catch {
-      continue
-    }
-
-    entries.push({ title, link, publishedAt: parsedDate.toISOString() })
+  const dtDdPairs = html.matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/g)
+  for (const [, dtContent, ddContent] of dtDdPairs) {
+    const parsedDate = parseDateFromText(dtContent)
+    if (!parsedDate) continue
+    const anchor = extractHeadingAnchor(ddContent)
+    if (!anchor) continue
+    const link = resolveLink(anchor.href, baseUrl)
+    if (!link) continue
+    entries.push({ title: anchor.title, link, publishedAt: parsedDate.toISOString() })
   }
 
   return entries

@@ -1,10 +1,11 @@
 import type { Session } from '@supabase/supabase-js'
-import type { Topic } from '../lib/types'
+import { PERSPECTIVE_LABELS, type Topic } from '../lib/types'
 import { formatSourcePublishedAt } from '../lib/formatSourcePublishedAt'
 import CategoryBadge from './CategoryBadge'
 import ImportanceStars from './ImportanceStars'
 import FeedbackForm from './FeedbackForm'
 import BookmarkPanel, { type BookmarkSummary } from './BookmarkPanel'
+import DiagramView from './DiagramView'
 
 // 固定4観点(summary)の描画順。この順序で固定(content-generation/requirements.md#要約-4)
 const SUMMARY_ORDER = ['whatHappened', 'whyItMatters', 'background', 'outlook'] as const
@@ -23,8 +24,10 @@ type Props = {
 // 「ログイン状態に応じてフィードバック入力欄の表示を切り替える処理」、bookmark/design.md
 // 「コンポーネント設計」)。画面設計はai-dev-digestのTopicSection.tsxを踏襲する
 // (SourceBadge相当をCategoryBadgeに置き換え、YoutubeEmbedは持たない)。固定4観点はこの順序
-// (whatHappened→whyItMatters→background→outlook)で常時、見出し(h3)+導入文(teaser)を表示し、
-// <details><summary>詳細を見る</summary>詳細文(detail)</details>で展開表示する。
+// (whatHappened→whyItMatters→background→outlook)で常時、固定ラベル(PERSPECTIVE_LABELS。
+// requirements.md#記事本文表示-3)→見出し(h3、結論文)→導入文(teaser)を表示し、
+// <details><summary>詳細を見る</summary>詳細文(detail)+図解(DiagramView)</details>で展開表示する
+// (requirements.md#記事本文表示-13)。
 // **DBの読み取り(SELECT)は一切行わない**。isAuthorizedAdmin(admin_emailsのSELECT)の呼び出しは
 // ArticleDetailView側の責務とし、ここでは渡されたisAdminの値だけでフィードバック欄の表示を切り替える。
 // 付箋操作(BookmarkPanel)はセッションの有無だけで表示を切り替える
@@ -46,11 +49,15 @@ export default function TopicSection({ topic, session, isAdmin, articleDate, boo
           const perspective = topic.summary[key]
           return (
             <div key={key}>
+              <p data-testid="perspective-kicker" className="text-[11px] font-semibold text-teal-500">
+                {PERSPECTIVE_LABELS[key]}
+              </p>
               <h3 className="text-sm font-semibold text-gray-800">{perspective.heading}</h3>
               <p className="mt-1 text-sm leading-relaxed text-gray-700">{perspective.teaser}</p>
               <details className="mt-1">
                 <summary className="cursor-pointer text-xs font-semibold text-teal-600">詳細を見る</summary>
                 <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{perspective.detail}</p>
+                <DiagramView diagram={perspective.diagram} />
               </details>
             </div>
           )

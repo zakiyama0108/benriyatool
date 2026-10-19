@@ -1,7 +1,7 @@
 # 設計: LINE公式アカウントでの新着記事の自動配信
 
 ## サマリ
-[weekly-publish](../weekly-publish/design.md)の週次記事PRがmainへ自動マージされると、`main`へのpush(記事JSONの新規追加)をきっかけに独立したワークフローが起動する。記事ページが本番で開けることを確認してから、既存の「AI駆動開発ニュース」のLINE公式アカウントで友だち全員にブロードキャスト配信する。本文は「【週刊未来予測】」+日付・その回の時間軸・ジャンルごとの代表見出し(影響度順、性・恋愛のジャンルと掲載した予測が1本もないジャンル〈候補なし・収集失敗・生成失敗〉は除く)・記事ページへのリンク1本で組み立てる。
+[weekly-publish](../weekly-publish/design.md)の週次記事PRがmainへ自動マージされると、`main`へのpush(記事JSONの新規追加)をきっかけに独立したワークフローが起動する。記事ページが本番で開けることを確認してから、既存の「AI駆動開発ニュース」のLINE公式アカウントで友だち全員にブロードキャスト配信する。本文は「【週刊未来予測】」+編のラベル+日付・その回の時間軸・ジャンルごとの代表見出し(影響度順、性・恋愛のジャンルと掲載した予測が1本もないジャンル〈候補なし・収集失敗・生成失敗〉は除く)・記事ページへのリンク1本で組み立てる。
 
 主要な設計判断:
 - 配信の仕組み(pushトリガー・新規追加ファイルだけを対象・公開待ち・リトライしない)はtrend-digestのline-broadcastと同じ構成で、共有モジュール`app/lib/waitForPageAvailable.ts`をそのまま使う
@@ -38,12 +38,12 @@
 ### 配信メッセージを組み立てる処理
 - 対象: 1回分の記事データと代表見出し
 - 手順:
-  1. 1行目を「【週刊未来予測】YYYY年M月D日号」、2行目を「今回の時間軸: 近未来・長期未来」のようにする(requirements.md#配信内容-2)
+  1. 1行目を「【週刊未来予測】<編のラベル> YYYY年M月D日号」(例:「【週刊未来予測】サイエンス・テクノロジー編 2026年10月1日号」)、2行目を「今回の時間軸: 近未来・長期未来」のようにする(buildBroadcastTitle(edition, date)で組み立てる。requirements.md#配信内容-2)
   2. 代表見出しを「・【影響度 大/ジャンル名】見出し」の形で1行ずつ並べる(requirements.md#配信内容-3)。その回の予測が0件(採用0件の回)の場合は、この行の代わりに「今週は掲載できる予測がありませんでした」の1行を入れる(requirements.md#配信内容-7。下記「エラーハンドリング」)
   3. 末尾に「記事を読む」と記事詳細ページのURL(`https://benriyatool.com/future-digest/<id>`)を1本だけ付ける。予測ごとの出典URLは含めない(requirements.md#配信内容-6)
   4. 書式の例:
      ```
-     【週刊未来予測】2026年10月1日号
+     【週刊未来予測】サイエンス・テクノロジー編 2026年10月1日号
      今回の時間軸: 近未来・長期未来
 
      ・【影響度 大/テクノロジー・AI】<見出し>
@@ -51,7 +51,7 @@
      ・【影響度 中/地政学】<見出し>
 
      記事を読む
-     https://benriyatool.com/future-digest/2026-10-01
+     https://benriyatool.com/future-digest/2026-10-01-science-tech
      ```
   5. 代表見出しは有効なジャンルの数(性・恋愛を除く。現在は最大9件)で各見出しも短いため、LINEのテキストメッセージの文字数上限(5000字)を超えない見込み。切り詰め処理は設けず、万一超えた場合はAPIのエラーとして下記エラーハンドリングに従う
 - 関連するビジネスルール: requirements.md#配信内容-1〜7
@@ -98,7 +98,7 @@ sequenceDiagram
 
 ```
 .github/workflows/future-digest-line-broadcast.yml (新規)
-app/future-digest/lib/buildBroadcastMessage.ts (新規: selectRepresentatives・buildBroadcastTitle・buildBroadcastMessage)
+app/future-digest/lib/buildBroadcastMessage.ts (編成分割で変更: selectRepresentatives・buildBroadcastTitle(edition, date)・buildBroadcastMessage)
 app/future-digest/lib/articleUrl.ts (新規: 記事詳細ページのURLの導出。配信本文と公開待ちで共有する)
 scripts/future-digest/broadcast-line.ts (新規: 記事を読み込み、公開待ち→LINEへ送信するCLI)
 app/lib/waitForPageAvailable.ts (既存: 公開待ちの共有モジュール)

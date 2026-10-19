@@ -1,0 +1,78 @@
+{
+  "id": "2026-10-05-body-life",
+  "edition": "body-life",
+  "date": "2026-10-05",
+  "findings": [
+    {
+      "id": "medical-health",
+      "genre": "medical-health",
+      "heading": "肥満で心臓病のある人、週1回の注射で心筋梗塞や脳卒中などが約2割減少",
+      "body": "肥満や過体重で心血管疾患のある人が、週1回のセマグルチド注射を受けると、心筋梗塞・脳卒中・心血管死といった重大な出来事が約2割減ることが示された。糖尿病のない1万7千人超を対象に、薬と偽薬を無作為に割り付けて比べた大規模ランダム化比較試験である。体重を減らす薬が、体重や数値の改善にとどまらず心臓病の再発予防にもつながる可能性を示した点が重要だ。一方で、対象は心血管疾患の既往がある人に限られ、そうでない人や糖尿病のある人に同じ効果があるとは言えない。副作用や長期の影響は、今回は元論文の全文を確認できていないため触れていない。使うかどうかは医師など専門家と相談して決める前提で、この結果は目安として受け止めたい。",
+      "impact": "high",
+      "impactReason": "肥満や過体重で心血管疾患のある多数の人に対し、週1回の注射で心筋梗塞・脳卒中・心血管死が約20%減る(ハザード比0.80)ことを、1万7千人超の大規模ランダム化比較試験で示したため。",
+      "sourceTitle": "Semaglutide and Cardiovascular Outcomes in Obesity without Diabetes",
+      "sourceName": "The New England Journal of Medicine",
+      "sourceUrl": "https://www.nejm.org/doi/full/10.1056/NEJMoa2307563",
+      "doi": "10.1056/nejmoa2307563",
+      "publishedYear": 2023,
+      "isPreprint": false
+    },
+    {
+      "id": "nutrition-food",
+      "genre": "nutrition-food",
+      "heading": "食塩をカリウム入りの代替塩に替えると、脳卒中や心血管の病気、死亡が減った",
+      "body": "中国の農村部で、脳卒中の経験がある人や高血圧のある高齢者など約2万1千人を対象に、5年ほど追跡したランダム化試験です。普段の食塩を、カリウムを含む代替塩に替えたグループと、これまで通りの食塩を使い続けたグループを比べました。その結果、代替塩のグループでは脳卒中や心血管イベントが少なく、死亡も減っていました。調味料を替えるだけで済むため、減塩に苦労してきた人にとって取り入れやすい方法といえます。ただし、対象は特定の地域と集団で、食習慣の異なる人にも同じ効果が出るかは、この研究だけでは分かりません。カリウムの摂りすぎが心配な人もいます。腎臓の病気がある人などは、使う前に医療者へ相談する必要があります。詳しくは元の論文をご覧ください。",
+      "impact": "high",
+      "impactReason": "約2万1千人を5年ほど追跡した大規模ランダム化試験で、食塩をカリウム入り代替塩に替えるだけで脳卒中・心血管イベント・死亡が減り、多くの人が食卓で簡単に実践できるため。",
+      "sourceTitle": "Effect of Salt Substitution on Cardiovascular Events and Death",
+      "sourceName": "New England Journal of Medicine",
+      "sourceUrl": "https://doi.org/10.1056/NEJMoa2105675",
+      "doi": "10.1056/nejmoa2105675",
+      "publishedYear": 2021,
+      "isPreprint": false
+    },
+    {
+      "id": "psychology-brain",
+      "genre": "psychology-brain",
+      "heading": "ウォーキングやヨガ、筋トレなどの運動は、うつ症状の改善と関連することが大規模な統合解析で示された",
+      "body": "うつ症状に対する運動の効果を調べるため、運動を比較した無作為化比較試験を集めて統合するネットワークメタ解析が行われた。対象は218件の試験、のべ14,170人分である。その結果、ウォーキングやジョギング、ヨガ、筋トレといった身近な運動が、運動をしない場合に比べてうつ症状の軽減につながる傾向が示された。特別な設備がなくても始めやすい運動が含まれるため、日常の過ごし方を見直す際の一つの手がかりになる。ただし、統合した試験ごとに対象者や運動の内容、期間が異なり、結果のばらつきや試験の質には慎重な見方が必要で、効果の大きさをそのまま当てはめることはできない。うつ症状で悩んでいる場合は、運動の取り入れ方も含め、医療機関や専門家に相談してほしい。詳しくは元の論文を参照してほしい。",
+      "impact": "high",
+      "impactReason": "14,170人・218件の試験を統合した大規模解析で、ウォーキングやジョギング、ヨガ、筋トレといった身近な運動がうつ症状の改善に有効と示され、多くの人の生活に取り入れやすい。",
+      "sourceTitle": "Effect of exercise for depression: systematic review and network meta-analysis of randomised controlled trials",
+      "sourceName": "BMJ",
+      "sourceUrl": "https://doi.org/10.1136/bmj-2023-075847",
+      "doi": "10.1136/bmj-2023-075847",
+      "publishedYear": 2024,
+      "isPreprint": false
+    },
+    {
+      "id": "sleep-exercise",
+      "genre": "sleep-exercise",
+      "heading": "1日約7,000歩の人は、歩数の少ない人より死亡や心疾患、認知症などのリスクが低い傾向がある",
+      "body": "歩数計などで測った歩数と健康の関連を調べた研究を、世界規模で集めて統合した解析です。成人を追跡した24のコホート(31件の研究)を対象に、歩数が増えるほどリスクがどう変わるかを調べました。その結果、1日7,000歩前後の人は、歩数がごく少ない人に比べて、全死亡、心血管疾患、認知症、抑うつ症状、転倒などのリスクが低い傾向でした。多くの項目で、効果は5,000〜7,000歩あたりまでが特に大きく、そこから先は伸びが緩やかになっていました。1万歩にこだわらなくても、まず7,000歩前後を目安にできそうです。ただし、これは歩数と健康の関連を示したもので、歩けば必ず防げるという因果の証明ではありません。項目によっては研究数が少なく、確実性が低いものもあります。年齢別の分析もされていません。",
+      "impact": "high",
+      "impactReason": "31件の研究(24コホート)を統合した大規模メタ解析で、1日約7,000歩という誰でも実践できる目安が、死亡・心血管疾患・認知症などのリスク低下と関連しており、影響を受ける人が非常に多く確からしさも中程度以上と評価されているため。",
+      "sourceTitle": "Daily steps and health outcomes in adults: a systematic review and dose-response meta-analysis",
+      "sourceName": "The Lancet Public Health",
+      "sourceUrl": "https://oar.baker.edu.au/103623",
+      "doi": "10.1016/s2468-2667(25)00164-1",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "education-parenting",
+      "genre": "education-parenting",
+      "heading": "個別・少人数の指導は、幼児期から高校までの学力を平均して確かに伸ばすことが、多数の実験の統合で分かった",
+      "body": "就学前から高校までの子どもを対象に、教員や補助職員、ボランティア、保護者などが1対1や少人数で行う指導の効果を、過去のランダム化実験をまとめて統計的に統合するメタ分析で調べた研究です。96件の実験を対象とし、学力への効果は平均で約0.37SDと、一貫して実質的なプラスでした。指導者が教員や補助職員の場合、また授業時間内に行う場合、さらに低学年で、効果が大きい傾向がありました。読解と算数の効果は全体ではほぼ同程度です。家庭や学校で学習支援を考える際の参考になります。ただし0.37SDはあくまで平均で、プログラムの内容や実施環境によって効果は大きく変わります。どの家庭や学校にも同じ効果が出るとは限らないため、目安として受け止めてください。",
+      "impact": "high",
+      "impactReason": "就学前から高校までの96件のランダム化実験を統合し、個別・少人数指導が学力を平均0.37SD伸ばすと示した大規模な分析で、家庭や学校の学習支援に広く応用できる。",
+      "sourceTitle": "The Impressive Effects of Tutoring on PreK-12 Learning: A Systematic Review and Meta-Analysis of the Experimental Evidence",
+      "sourceName": "NBER Working Paper 27476(Nickow, Oreopoulos, Quan)",
+      "sourceUrl": "https://www.nber.org/papers/w27476",
+      "doi": "10.3386/w27476",
+      "publishedYear": 2020,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}

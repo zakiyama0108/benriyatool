@@ -1,16 +1,17 @@
 # タスク分解: 未来予測記事の要約・記事執筆のルール
 
+> 全8件(Task 1〜Task 8)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 - Task 1: 本文・見出しの検証(仕様: requirements.md#要約-3、design.md「生成結果を検証する処理」)
   - 🔴 本文が160字未満・480字超で`false`、160字・480字ちょうどで`true`になること、見出し・本文が`null`・空で不正になること、見出しが100字超で不正になることを確認するテストを書く
   - 🟢 `app/future-digest/lib/bodyValidation.ts`に`BODY_MIN_LENGTH`/`BODY_MAX_LENGTH`/`isValidBodyLength`/`isValidHeading`を実装する
 
-- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-7、design.md「記事タイトルを導出する処理」)
+- Task 2: 記事タイトルの導出(仕様: requirements.md#記事の構成-8、design.md「記事タイトルを導出する処理」)
   - 🔴 `2026-10-01`から「週刊未来予測 2026年10月1日号」、`2026-12-24`から「週刊未来予測 2026年12月24日号」が作られること(月・日をゼロ埋めしない)を確認するテストを書く
   - 🟢 `app/future-digest/lib/articleTitle.ts`に`buildArticleTitle(date)`を実装する
 
-- Task 3: 予測1本分の組み立て(仕様: requirements.md#記事の構成-6、design.md「記事データの1本分を組み立てる処理」)
+- Task 3: 予測1本分の組み立て(仕様: requirements.md#記事の構成-7、design.md「記事データの1本分を組み立てる処理」)
   - 🔴 選定時の値(ジャンル・時間軸・影響度・根拠・対象時期・出典)がそのまま引き継がれ、見出し・本文だけが生成結果から入ること、予測IDが`<genre>--<horizon>`になることを確認するテストを書く
   - 🟢 `app/future-digest/lib/buildPrediction.ts`に`buildPrediction(candidate, generated)`を実装する
 
@@ -28,3 +29,33 @@
 - Task 7: 利用規約への条項追記(仕様: requirements.md#利用規約への反映-3、design.md「利用規約への反映」)(TDD対象外。静的な文言の変更のため)
   - `app/legal/page.tsx`の「4. 知的財産」のtrend-digest向け条項を、週刊トレンド・週刊未来予測・週刊研究発見の3つを対象とする文面に改める(research-digestの同タスクと1回の変更で行う)
   - `specs/legal/requirements.md`の知的財産の仕様リンクに本specを追加する
+
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+記事タイトルに編のラベルを追加する変更。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 8: 記事タイトルの導出を編対応にする(仕様: requirements.md#記事の構成-8、design.md「記事タイトルを導出する処理」)
+  - 🔴 Task 2の`buildArticleTitle`のテストを、第2引数`edition`を渡す形に書き直し、`science-tech`なら「週刊未来予測 サイエンス・テクノロジー編 2026年10月1日号」、`life-society`なら「週刊未来予測 くらし・社会編 2026年10月4日号」になることを確認するケースに差し替える
+  - 🟢 `app/future-digest/lib/articleTitle.ts`の`buildArticleTitle(date, edition)`を実装する(呼び出し元のgenerate-content.ts・write-article.tsも合わせて更新する)
+
+</details>
+
+## 固定3観点・図解への移行
+
+単一の`body`を固定3観点(`when`/`basis`/`impact`)に再構成し、図解機能(Mermaid)を追加する。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 9: 固定3観点への移行(仕様: requirements.md#要約-1〜5、design.md「見出し・固定3観点を書く処理」「生成結果を検証する処理」)
+  - 🔴 分量検証のテストを、単一`body`ではなく`sections: {when, basis, impact}`(各`{heading, text}`)を検証する形に書き換える(3観点の`text`を連結した文字数で160〜480字を判定)
+  - 🟢 `app/future-digest/lib/bodyValidation.ts`の`isValidBodyLength(body)`を`isValidSectionsLength(sections)`に置き換える(呼び出し元の`articleSchema.ts`・`buildPrediction.ts`も追随)
+
+- Task 10: 図解データの検証(仕様: requirements.md#図解-6、design.md「見出し・固定3観点を書く処理」手順12)
+  - 🔴 `diagram`が`null`の場合・`{type:'mermaid', code: '非空文字'}`の場合はいずれも有効、`code`が空文字・空白のみ・type不明(`image`等)・オブジェクトでない値の場合は不正と判定することを確認するテストを書く
+  - 🟢 `app/future-digest/lib/diagramValidation.ts`に`isValidAgentDiagram(value: unknown)`を実装する
+  - 画面側の表示タスク(固定ラベル・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
+
+</details>

@@ -1,0 +1,78 @@
+{
+  "id": "2026-10-12-body-life",
+  "edition": "body-life",
+  "date": "2026-10-12",
+  "findings": [
+    {
+      "id": "medical-health",
+      "genre": "medical-health",
+      "heading": "高血圧を地域の医療者が薬と生活指導で管理すると、認知症が約15%減った",
+      "body": "血圧が高いまま放置されている約3.4万人を対象に、地域ごとに振り分けて比べた試験です。地域の医療者が薬の調整と生活指導を行った側は、行わなかった側より認知症になる人が約15%少なく、重い有害事象も減りました。個人ではなく地域単位でくじ引きのように分けているため、結果に偏りが出にくい調べ方です。血圧をきちんと管理することが、将来の認知症の予防にもつながる可能性を示しています。ただし、対象者や追跡期間は限られており、別の国や集団にも同じ効果が当てはまるとは限りません。どの治療が自分に合うかは、必ず医師に相談してください。",
+      "impact": "high",
+      "impactReason": "血圧が高いまま放置されている人は世界に多く、地域の医療者が薬の調整と生活指導を行うだけで認知症が15%減り、重い有害事象も減ったため、影響を受ける人の多さと確からしさ(約3.4万人のクラスターRCT)が際立つ。",
+      "sourceTitle": "Blood pressure reduction and all-cause dementia in people with uncontrolled hypertension: an open-label, blinded-endpoint, cluster-randomized trial",
+      "sourceName": "Nature Medicine",
+      "sourceUrl": "https://www.nature.com/articles/s41591-025-03616-8",
+      "doi": "10.1038/s41591-025-03616-8",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "nutrition-food",
+      "genre": "nutrition-food",
+      "heading": "ガイドラインに沿った食事でも、加工度の低い食品中心のほうが体重と体脂肪が多く減った",
+      "body": "健康的な食事ガイドラインに沿った食事でも、加工度の低い食品中心のほうが、超加工食品中心より体重と体脂肪が多く減ることが示された。50人が8週間ずつ両方の食事を順に試す方法で比べており、同じ人の変化を比べるため、個人差の影響を抑えやすい。日々の食べ物選びで、栄養の目安に加えて加工の度合いも見る手がかりになる。ただし対象は50人と小規模で、期間も8週間と短く、長期の効果は確かめられていない。結果をそのまま誰にでも当てはめることはできない。",
+      "impact": "medium",
+      "impactReason": "食事ガイドラインに沿った食事で、加工度の低い食品中心の食事は超加工食品中心より体重と体脂肪が多く減り、日々の食べ物選びに直結するが、対象は50人・8週間と小規模で長期の効果は未確認のため。",
+      "sourceTitle": "Ultraprocessed or minimally processed diets following healthy dietary guidelines on weight and cardiometabolic health: a randomized, crossover trial",
+      "sourceName": "Nature Medicine",
+      "sourceUrl": "https://www.nature.com/articles/s41591-025-03842-0",
+      "doi": "10.1038/s41591-025-03842-0",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "psychology-brain",
+      "genre": "psychology-brain",
+      "heading": "うつ病の心理療法の効果は、治療後も数年続く可能性が大規模な統合解析で示された",
+      "body": "うつ病に対する心理療法の効果は、治療が終わった後も数年にわたって続く可能性が示された。この結論は、心理療法を調べた191の試験、約3.4万人分の結果をまとめて再分析した研究によるものだ。小さな試験では見えにくい長期の傾向を、多数の結果を合わせて確かめた点が、判断の大きな根拠になっている。うつ病は多くの人が経験し得る身近な不調で、治療を知るうえで、短期だけでなく長く続く効果も一つの手がかりになる。ただし、まとめ直しの研究は元の試験の質や対象者の違いに左右され、効果の大きさは人や療法によって異なり得る。ここでは公開情報の範囲で紹介しており、詳しい条件は元の論文で確認してほしい。",
+      "impact": "high",
+      "impactReason": "うつ病は多くの人が経験し得る身近な不調で、心理療法の効果が数年続くと大規模な統合解析(191試験・約3.4万人)で示され、治療を選ぶ際の判断に直結するため。",
+      "sourceTitle": "Long-term effects of psychotherapies for depression: an advanced meta-analysis",
+      "sourceName": "World Psychiatry",
+      "sourceUrl": "https://doi.org/10.1002/wps.70065",
+      "doi": "10.1002/wps.70065",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "sleep-exercise",
+      "genre": "sleep-exercise",
+      "heading": "運動習慣のない人でも、日常で息が上がる1〜2分の活動を1日数回挟むと、死亡リスクが低い傾向",
+      "body": "運動の習慣がない人でも、日常の中で息が上がる1〜2分ほどの活動を1日に数回挟む人は、そうでない人より亡くなるリスクが低い傾向が見られた。英国の約2万5千人が手首の活動量計を1週間つけ、その後約7年の経過を追って比べた結果である。階段を急いで上るといった生活の中の動きでも、短く積み重ねれば意味がある可能性があり、まとまった運動時間を取りにくい人には心強い知見だ。ただし観察研究のため、活動が原因で長生きしたとまでは言えない。参加者は中高年が中心で、もともとの健康状態の違いも影響し得る。結果を過信せず、無理のない範囲で受け止めたい。",
+      "impact": "high",
+      "impactReason": "運動習慣のない人でも、日常の中で1日3回ほど1〜2分の息が上がる活動(階段を急いで上るなど)をするだけで、死亡リスクが大きく下がる傾向が示され、多くの人がすぐ試せるため。",
+      "sourceTitle": "Association of wearable device-measured vigorous intermittent lifestyle physical activity with mortality",
+      "sourceName": "Nature Medicine",
+      "sourceUrl": "https://doi.org/10.1038/s41591-022-02100-x",
+      "doi": "10.1038/s41591-022-02100-x",
+      "publishedYear": 2022,
+      "isPreprint": false
+    },
+    {
+      "id": "education-parenting",
+      "genre": "education-parenting",
+      "heading": "親が絵本の読み方を学ぶと、1〜6歳の子どもの言葉の力が小〜中程度伸びる",
+      "body": "親に絵本を一緒に読むコツを教える取り組みが、子どもの言葉の発達を後押しするかを調べた研究です。無作為に groups を分けて比べた19件の試験、約2,600人の結果をまとめて分析しました。その結果、話す力も理解する力も、控えめながら伸びる傾向が見られました。親の読み聞かせの腕前そのものも、大きく上がっていました。幼い子のいる家庭で、普段の絵本の時間に取り入れやすい内容です。ただし、実施の量が少ないと子どもへの効果はわずかでした。1〜6歳が対象で、効果の大きさは控えめです。また、ここで示されたのは全体の傾向であり、どの子にも同じ効果が出るとは限りません。なお、この要約は公開されている要旨の範囲で書いており、研究の限界の詳細は全文で確かめられていません。",
+      "impact": "medium",
+      "impactReason": "親が絵本を一緒に読む方法を学ぶ介入は、1〜6歳の子どもの言葉の力を小〜中程度伸ばすことが19件のランダム化試験の統合で示された。幼い子を持つ多くの家庭が取り入れやすい一方、効果は実施の量が少ないと小さく、効果の大きさは控えめである。",
+      "sourceTitle": "Shared Picture Book Reading Interventions for Child Language Development: A Systematic Review and Meta-Analysis",
+      "sourceName": "Child Development(Dowdall ら)",
+      "sourceUrl": "https://academic.oup.com/chidev/article/91/2/e383/8258062",
+      "doi": "10.1111/cdev.13225",
+      "publishedYear": 2020,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}

@@ -82,6 +82,65 @@ describe('情報源からの候補収集 - 公式RSS・公開ページから直�
     })
   })
 
+  it('<dt>日付</dt><dd>...<a>見出し</a>...</dd>形式(定義リスト)の公式ページでも、直近1週間以内の新着項目を候補として抽出できること(神奈川県公式サイトのお知らせ一覧がこの形式のため)', async () => {
+    const html = `<html><body><dl>
+      <dt>2026年9月12日</dt><dd><a href="/docs/press/2.html">新着のお知らせ(dt/dd形式)</a></dd>
+      <dt>2026年9月5日</dt><dd><a href="/docs/press/3.html">8日前のお知らせ(対象外)</a></dd>
+    </dl></body></html>`
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(html) })
+
+    const candidates = await fetchOfficialPageCandidates(
+      kanagawaPrefEntry,
+      'https://www.pref.kanagawa.jp/news/index.html',
+      http,
+      NOW
+    )
+
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]).toMatchObject({
+      sourceId: 'kanagawa-pref',
+      category: 'kanagawa',
+      heading: '新着のお知らせ(dt/dd形式)',
+      url: 'https://www.pref.kanagawa.jp/docs/press/2.html',
+    })
+  })
+
+  it('<dt>/<dd>形式で、<dt>内に日付らしき文字列が見つからない組は候補から除外されること', async () => {
+    const html = `<html><body><dl>
+      <dt>更新情報</dt><dd><a href="/docs/press/4.html">日付のないお知らせ(対象外)</a></dd>
+      <dt>2026年9月12日</dt><dd><a href="/docs/press/5.html">新着のお知らせ</a></dd>
+    </dl></body></html>`
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(html) })
+
+    const candidates = await fetchOfficialPageCandidates(
+      kanagawaPrefEntry,
+      'https://www.pref.kanagawa.jp/news/index.html',
+      http,
+      NOW
+    )
+
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]).toMatchObject({ heading: '新着のお知らせ' })
+  })
+
+  it('<dt>/<dd>形式で、<dd>内に<a>タグが見つからない組は候補から除外されること', async () => {
+    const html = `<html><body><dl>
+      <dt>2026年9月12日</dt><dd>リンクのない告知文(対象外)</dd>
+      <dt>2026年9月12日</dt><dd><a href="/docs/press/6.html">新着のお知らせ</a></dd>
+    </dl></body></html>`
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(html) })
+
+    const candidates = await fetchOfficialPageCandidates(
+      kanagawaPrefEntry,
+      'https://www.pref.kanagawa.jp/news/index.html',
+      http,
+      NOW
+    )
+
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]).toMatchObject({ heading: '新着のお知らせ' })
+  })
+
   it('1つの情報源の取得が失敗しても、その情報源だけを除外して他の情報源の候補は返ること', async () => {
     const okXml = rssXml([{ title: '取得できた記事', link: 'https://www3.nhk.or.jp/news/c.html', pubDate: 'Fri, 11 Sep 2026 00:00:00 +0900' }])
     const fetchText = vi.fn().mockImplementation((url: string) => {

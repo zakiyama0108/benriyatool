@@ -71,3 +71,12 @@
   - [x] `ai-dev-digest`の記事詳細(`getAllArticles()`の件数分)・2ページ目以降のページネーションURLも動的に列挙されることを確認する
   - [x] `npm run lint` / `npm test` / `npm run build`(静的エクスポート)で`out/sitemap.xml`が生成されることを確認する
   - [x] `output: 'export'`構成では`sitemap.ts`に`export const dynamic = 'force-static'`が必須と判明(ビルドエラーで発覚)。`nextjs-notes.md`に追記済み
+
+## ダイジェストハブ(/blog)への導線集約(2026-10-09)
+
+`ai-dev-digest`・`news-digest`・`trend-digest`・`future-digest`・`research-digest`の5アプリが本番公開済みとなったが、Task 7の掲載漏れ防止ルールのとおり5アプリ分の個別カードを追加すると、トップページの情報量が埋まってしまう。そのため5アプリには個別カードを持たせず、`/blog`(配信曜日付きの一覧。[specs/blog/digest-hub/requirements.md](../blog/digest-hub/requirements.md))への1枚のカードに集約する。`specs/blog/digest-hub`の実装着手と同じPRで対応する。
+
+- [x] Task 11: 5アプリの個別カードを追加せず、`/blog`への1枚のカードに差し替える(仕様コメント: `specs/hub-site/requirements.md#機能要件-2`)
+  - [x] 🔴 Red: `__tests__/page.test.tsx`に、ai-dev-digest/news-digest/trend-digest/future-digest/research-digestへの個別リンクが存在しないこと・`/blog`へのリンクが1つだけ表示されることを検証するテストを書く
+  - [x] 🟢 Green: `app/page.tsx`に`/blog`へのカード(「週刊ダイジェスト一覧」)を追加する
+  - [x] requirements.mdの機能要件[2]に5アプリ集約の例外ルールを追記し、機能要件[4](ファビコン)・メタ情報の参照リストに`/blog`の行を追加する

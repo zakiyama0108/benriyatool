@@ -49,3 +49,8 @@
 
 - Task 10: プライバシーポリシーの更新(仕様: requirements.md#依存関係)(TDD対象外。静的な文言の追記)
   - `app/legal/page.tsx`のプライバシーポリシーの付箋メモの記載に、週刊未来予測を加える(news-digest・ai-dev-digestの記載パターンに合わせる)。`specs/legal/requirements.md`の仕様リンクに本specを追加する
+
+## パンくず
+
+- Task 11: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🟢 `app/future-digest/bookmarks/page.tsx`の既存パンくずを共通`Breadcrumb`コンポーネント(`current="付箋一覧"`)の呼び出しに置き換える(テストは[article-list/tasks.md](../article-list/tasks.md)のTask 11で担保済みの`Breadcrumb`コンポーネント自体のテストを参照)

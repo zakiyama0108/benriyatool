@@ -1,5 +1,6 @@
 # タスク分解: 記事詳細ページ
 
+> 全13件(Task 1〜Task 13)
 > TDDで進める。各タスクは 🔴 Red(失敗するテストを書く) → 🟢 Green(最小実装) → 🔵 Refactor の順で進める。
 
 ## データ基盤
@@ -57,3 +58,43 @@
 - Task 12: 記事詳細ページ(仕様: design.md「画面設計」)
   - `app/research-digest/[id]/page.tsx`を実装する(`generateStaticParams`で全記事IDを列挙し、タイトル・公開日を出して`ArticleDetailView`へ渡す)
   - page.tsxはカバレッジ計測対象外。Task 2〜11のテストで担保する
+
+## 週1回配信を週2回(2編)に分割する追加タスク
+
+`Edition`型・`EDITION_GENRES`の追加と、`id`/記事タイトルの編対応。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 13: 型定義・スキーマ検証・読み込みの編対応(仕様: requirements.md#記事本文の表示-1〜2、design.md「前提: 記事データの形式」「バリデーション」)
+  - 🔴 Task 2のテストに、`Edition`型(`'body-life'`/`'science-society'`)・`EDITION_LABELS`・`EDITION_GENRES`(genres.jsonのedition属性から編ごとのジャンルID配列を作る)を確認するケースを追加する
+  - 🟢 `app/research-digest/lib/types.ts`に`Edition`/`EDITION_LABELS`/`EDITION_GENRES`を追加する
+  - 🔴 Task 3の`parseArticle`のテストに、`id`が`<date>-<edition>`形式であること、`edition`が2値のいずれかであること、各研究・各掲載できなかったジャンルの`genre`が`EDITION_GENRES[edition]`に含まれない場合に例外になることを確認するケースを追加する
+  - 🟢 `app/research-digest/lib/articleSchema.ts`の`parseArticle`を上記の検証に対応させる
+  - 🔴 Task 12の`page.tsx`のテスト(または`generateStaticParams`相当の確認)に、IDが`<date>-<edition>`形式で列挙されることを確認するケースを追加する
+  - 🟢 `app/research-digest/[id]/page.tsx`を更新する
+
+</details>
+
+## 固定4観点・図解への移行
+
+〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 14: 固定4観点の型と表示(仕様: requirements.md#運営者向けフィードバック-14、design.md「前提: 記事データの形式」「その回の記事本文を表示する処理」手順3-1)
+  - 🔴 `isLegacyFinding`が`body`を持つ研究で`true`、`sections`を持つ研究で`false`を返すことを確認するテストを書く
+  - 🟢 `app/research-digest/lib/types.ts`に`Diagram`/`FindingSection`/`FindingSections`/`SECTION_LABELS`/`LegacyFinding`/`CurrentFinding`/`isLegacyFinding`を追加する
+  - 🔴 `isLegacyFinding(finding)`が`true`の場合は`body`がそのまま1段落で表示されること、`false`の場合は`finding`→`basis`→`relevance`→`caveat`の順に`SECTION_LABELS`の固定ラベル→`heading`→`text`が表示されることを確認するテストを書く
+  - 🟢 `app/research-digest/components/FindingCard.tsx`を修正し、`isLegacyFinding`で表示を分岐する
+
+- Task 15: 図解の表示(仕様: requirements.md#運営者向けフィードバック-15、design.md「その回の記事本文を表示する処理」手順3-2)
+  - 🔴 `diagram`が`null`の場合は何も描画されないこと、`{type:'mermaid'}`の場合はMermaidコンテナが描画されることを確認するテストを書く(news-digestのDiagramViewテストと同じ内容)
+  - 🟢 `app/research-digest/components/DiagramView.tsx`を実装する(news-digestが導入済みの`mermaid`パッケージをそのまま利用)。`FindingCard.tsx`から新形式の各観点の`diagram`を渡して配置する
+
+</details>
+
+## パンくず
+
+- Task 16: パンくずに「週刊ダイジェスト一覧」階層を追加(仕様: requirements.md#パンくずナビゲーション-1)
+  - 🔴 共通`Breadcrumb`コンポーネント(article-list/tasks.mdのTask 11で新設)に`current`(記事タイトル)を渡した場合、アプリ名「週刊研究発見」が`/research-digest`へのリンクになり、currentがリンクなしの現在地として表示されることを確認するテストを書く(`__tests__/research-digest/components/Breadcrumb.test.tsx`)
+  - 🟢 `app/research-digest/components/ArticleDetailView.tsx`の既存パンくずを共通`Breadcrumb`コンポーネントの呼び出しに置き換える

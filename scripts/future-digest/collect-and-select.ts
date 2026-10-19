@@ -2,21 +2,23 @@
 // weekly-publish/design.md「1回分の記事を生成する処理」手順2〜3)。TDD対象外
 // (Task1〜6の関数を順に呼ぶだけで、ジャンルの合流・採用・検証ロジックはTask4〜6で、
 // 警告判定ロジックはweekly-publish/tasks.mdのTask1でテスト済みのため。tasks.md Task7参照)。
-// GitHub Actions(weekly-publish)が本来の配信日を引数に渡してこのスクリプトを呼び出す。
+// GitHub Actions(weekly-publish)が対象編・本来の配信日を引数に渡してこのスクリプトを呼び出す。
 // 標準出力は選定結果のJSONのみとし、実行状況のログはstderrに出す
 //
-// 実行方法: npx tsx scripts/future-digest/collect-and-select.ts <配信日 YYYY-MM-DD>
+// 実行方法: npx tsx scripts/future-digest/collect-and-select.ts <science-tech|life-society> <配信日 YYYY-MM-DD>
 import fs from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { loadGenres, getActiveGenres } from '../../app/future-digest/lib/genres'
+import { loadGenres, getActiveGenres, EDITION_GENRES } from '../../app/future-digest/lib/genres'
 import { nextIssueNumber } from '../../app/future-digest/lib/issue'
-import { horizonsForIssue } from '../../app/future-digest/lib/types'
+import { horizonsForIssue, type Edition } from '../../app/future-digest/lib/types'
 import { buildDeliveredIndex } from '../../app/future-digest/lib/deliveredIndex'
 import { selectSlots, type CollectionFailedGenre } from '../../app/future-digest/lib/selectSlots'
 import { shouldAlertOperator } from '../../app/future-digest/lib/shouldAlertOperator'
 import { collectGenre } from './collect-candidates'
 import type { Candidate } from '../../app/future-digest/lib/candidateTypes'
 import { getAllArticles } from '../../app/future-digest/lib/articles'
+
+const EDITIONS: Edition[] = ['science-tech', 'life-society']
 
 function writeGithubOutput(name: string, value: string) {
   const outputPath = process.env.GITHUB_OUTPUT
@@ -28,19 +30,22 @@ function writeGithubOutput(name: string, value: string) {
 }
 
 async function main() {
-  const scheduledPublishDate = process.argv[2]
-  if (!scheduledPublishDate) {
-    console.error('使い方: collect-and-select.ts <配信日 YYYY-MM-DD>')
+  const edition = process.argv[2] as Edition | undefined
+  const scheduledPublishDate = process.argv[3]
+  if (!edition || !EDITIONS.includes(edition) || !scheduledPublishDate) {
+    console.error('使い方: collect-and-select.ts <science-tech|life-society> <配信日 YYYY-MM-DD>')
     process.exit(1)
+    return
   }
 
   const articles = getAllArticles()
-  const issueNumber = nextIssueNumber(articles)
+  const issueNumber = nextIssueNumber(articles, edition)
   const horizons = horizonsForIssue(issueNumber)
-  const deliveredIndex = buildDeliveredIndex(articles)
-  const genres = getActiveGenres(loadGenres())
+  const deliveredIndex = buildDeliveredIndex(articles) // 配信済み判定は編をまたいで全記事を対象にする(content-selection/requirements.md#配信済みの記事・予測の除外-1)
+  const editionGenreIds = new Set(EDITION_GENRES[edition])
+  const genres = getActiveGenres(loadGenres()).filter((g) => editionGenreIds.has(g.id))
 
-  console.error(`配信日: ${scheduledPublishDate} / 回数: ${issueNumber} / 時間軸: ${horizons.join('、')} / 有効ジャンル数: ${genres.length}`)
+  console.error(`編: ${edition} / 配信日: ${scheduledPublishDate} / 回数: ${issueNumber} / 時間軸: ${horizons.join('、')} / 有効ジャンル数: ${genres.length}`)
 
   const allCandidates: Candidate[] = []
   const collectionFailedGenres: CollectionFailedGenre[] = []
@@ -97,7 +102,7 @@ async function main() {
   }
   writeGithubOutput('alert', String(alert))
 
-  process.stdout.write(JSON.stringify({ scheduledPublishDate, issueNumber, horizons, slots }, null, 2) + '\n')
+  process.stdout.write(JSON.stringify({ edition, scheduledPublishDate, issueNumber, horizons, slots }, null, 2) + '\n')
 }
 
 const isMainModule = process.argv[1] != null && import.meta.url === pathToFileURL(process.argv[1]).href

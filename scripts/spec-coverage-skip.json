@@ -4731,6 +4731,26 @@
   },
   {
     "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > DurationBadge",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDurationBadge.test.tsx(requirements.md#継続度・注目度の表示-10〜11・13)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > HeatBadge",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはHeatBadge.test.tsx(requirements.md#継続度・注目度の表示-12〜13)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > TrendMeta",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはTrendMeta.test.tsx(requirements.md#継続度・注目度の表示-14〜16)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > DiagramView",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDiagramView.test.tsx(requirements.md#継続度・注目度の表示-20)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/article-detail/design.md",
     "item": "状態管理",
     "reason": "ページの状態設計(useStateの持ち方)の説明で、tasks.md Task9の判断によりpage.tsx/ArticleDetailView.tsx自体はユニットテスト対象外とし、配下のGenreSection/TopicCard/FeedbackFormの各テストで担保するため"
   },
@@ -4786,6 +4806,21 @@
   },
   {
     "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "継続度・注目度の表示の扱い [7]",
+    "reason": "「色だけに頼らず文字ラベルも併記する」という文字表示の部分はDurationBadge.test.tsx/HeatBadge.test.tsxで担保済みだが、「段階ごとに色で見分けが付く」という配色自体の妥当性は見た目の判断でユニットテストでは検証できないため、localhost実機での目視確認に委ねる"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "継続度・注目度の表示の扱い [8]",
+    "reason": "継続度ラベル・注目度ラベルを見た目で区別するという配色・形状のトーン指定で、Tailwindでの実装確認はlocalhost実機での目視確認に委ねるため(DurationBadgeは暖色系の塗りつぶし・HeatBadgeは寒色系の枠線という区別はHeatBadge.tsx/DurationBadge.tsxの実装コメント参照)"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
+    "item": "表示分量・著作権配慮(図解) [9]",
+    "reason": "表示分量・著作権配慮[1]と同一の数値境界(160〜480字、目安200〜400字)を新形式(sections)向けに言い換えたもので、境界値自体はbodyValidation.test.ts(isValidSectionsLength)・articleSchema.test.tsでテスト済み。表示分量・著作権配慮[1]と同じ理由により本項目自体は追加のテスト対象を持たない"
+  },
+  {
+    "specFile": "trend-digest/article-detail/requirements.md",
     "item": "依存関係",
     "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
   },
@@ -4817,7 +4852,7 @@
   {
     "specFile": "trend-digest/content-selection/requirements.md",
     "item": "機能要件 [2]",
-    "reason": "エンタメ編・カルチャー編の実行タイミング(火曜・金曜)の説明で、実際のスケジュール実行はweekly-publish(仕様確認中)側の責務であり、本specのコードとして検証可能な振る舞いを持たないため"
+    "reason": "エンタメ編・カルチャー編の実行タイミング(火曜・金曜)の説明で、実際のスケジュール実行はweekly-publish側の責務であり、本specのコードとして検証可能な振る舞いを持たないため"
   },
   {
     "specFile": "trend-digest/content-selection/requirements.md",
@@ -4871,8 +4906,23 @@
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
+    "item": "サイトごとの専用パーサー(`scripts/trend-digest/sourceParsers/`)",
+    "reason": "design.mdの処理フローの見出しで、各サイト専用パーサーの実際の振る舞いはsourceParsers.test.ts(requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜9)でテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "併用ジャンル(アニメ)の候補を収集・判定する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#選定方式-7でcollect-and-select.test.ts(collectGenreObservations)がテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
     "item": "WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)",
     "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-1等でcollectWebSearchCandidates.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "trend-digest/content-selection/design.md",
+    "item": "全観測項目を履歴へ記録する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-3でwriteObservationLog.test.ts・trend-history側の各テストがテスト済みのため"
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
@@ -4922,7 +4972,27 @@
   {
     "specFile": "trend-digest/content-generation/requirements.md",
     "item": "要約 [3]",
+    "reason": "固定3観点(急上昇の事実/なぜ注目されたか/確からしさ・注意点)それぞれで何を書くかという執筆内容の指示で、コードで自動検証できないため(design.mdの「見出し・固定3観点を書く処理」手順3〜5でプロンプトに指示を反映する。3キー固定であること自体はisValidSectionsLength・articleSchema.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "要約 [4]",
+    "reason": "「なぜ注目されたか」観点で背景が特定できない場合は推測で断定せず正直に書くという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・固定3観点を書く処理」のプロンプトに指示を反映する)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "要約 [5]",
     "reason": "本文は原文の構成・表現をなぞらず独自の視点で再構成し、原文の詳細な数値・全文を網羅的に転記しないという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdのエラーハンドリング参照。分量の上下限のみコードで強制する)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "続報の執筆 [10]",
+    "reason": "続報の「なぜ注目されたか」観点を前回から何が変わったかを軸に書くという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・固定3観点を書く処理」手順6でプロンプトに継続度・注目度の情報と指示を反映する。完全一致の重複投稿だけはisDuplicateOfLastPublishedReasonで機械的に検知する。requirements.md#エージェントの逸脱防止-7・generateContent.test.ts参照)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "続報の執筆 [11]",
+    "reason": "続報でも前回の記事を読んでいない読者に通じる最小限の説明を各観点に含めるという執筆内容の質に関する要件で、コードで自動検証できないため(design.mdの「見出し・固定3観点を書く処理」手順6でプロンプトに指示を反映する)"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
@@ -4937,12 +5007,12 @@
   {
     "specFile": "trend-digest/content-generation/requirements.md",
     "item": "著作権への配慮(根拠) [2]",
-    "reason": "機能要件#要約-3と同一の制約を根拠とともに明記した記述で、要約-3と同じ理由によりコードで自動検証できないため"
+    "reason": "機能要件#要約-5と同一の制約を根拠とともに明記した記述で、要約-5と同じ理由によりコードで自動検証できないため"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
     "item": "著作権への配慮(根拠) [3]",
-    "reason": "出典明記の要件は機能要件#要約-4と同一の内容で、具体的な検証はarticleSchema.test.ts(該当要約-4の参照)で担保するため"
+    "reason": "出典明記の要件は機能要件#要約-6と同一の内容で、具体的な検証はarticleSchema.test.ts(該当要約-6の参照)で担保するため"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
@@ -4953,6 +5023,11 @@
     "specFile": "trend-digest/content-generation/requirements.md",
     "item": "エージェントの逸脱防止 [5]",
     "reason": "エージェントに適用するガードレール文言の記述で、コードとして実装・テストしないため(weekly-publishの実行指示に含める運用上の対応。scripts/trend-digest/generate-content.tsにガードレール文言をそのまま転記している)"
+  },
+  {
+    "specFile": "trend-digest/content-generation/requirements.md",
+    "item": "エージェントの逸脱防止 [6]",
+    "reason": "渡された継続度ラベル・注目度ラベル・継続日数・報告回数・地域と異なる段階・期間・地域を本文に書かないという執筆内容の質に関する要件で、コードで自動検証できないため(ガードレール文言・プロンプトへの継続度情報の反映で指示する。scripts/trend-digest/generate-content.ts参照)"
   },
   {
     "specFile": "trend-digest/content-generation/requirements.md",
@@ -4981,8 +5056,8 @@
   },
   {
     "specFile": "trend-digest/content-generation/design.md",
-    "item": "見出し・本文を書く処理(エージェントの推論)",
-    "reason": "エージェント(GitHub Actionsから呼び出すClaude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsでテスト済み)"
+    "item": "見出し・固定3観点を書く処理(エージェントの推論)",
+    "reason": "エージェント(GitHub Actionsから呼び出すClaude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類・図解データの妥当性検証以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsで、図解データの妥当性検証はdiagramValidation.test.tsでテスト済み)"
   },
   {
     "specFile": "trend-digest/content-generation/design.md",
@@ -5043,6 +5118,11 @@
     "specFile": "trend-digest/weekly-publish/requirements.md",
     "item": "実行 [3]",
     "reason": "実行主体がGitHub Actionsであり、候補収集・判定・要約・記事執筆をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+  },
+  {
+    "specFile": "trend-digest/weekly-publish/requirements.md",
+    "item": "実行 [5]",
+    "reason": "観測ログのみのPRを(a)正常スキップ(b)生成失敗(c)通常公開のいずれでも必ずコミット・PR作成・自動マージするというワークフロー実行順序の要件で、.github/workflows/trend-digest-weekly.ymlのステップ順序という宣言的な定義でありユニットテスト対象を持たないため(collect-and-select.tsが観測ログの書き出しを選定・生成より先に行う実装はcollect-and-select.ts内のコメント参照)"
   },
   {
     "specFile": "trend-digest/weekly-publish/requirements.md",
@@ -6071,6 +6151,36 @@
   },
   {
     "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解 [12]",
+    "reason": "図解が理解の助けになるかをエージェントが判断するという執筆内容の質に関する要件で、コードで自動検証できないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解 [13]",
+    "reason": "内容に応じてMermaid/生成画像のどちらの形式にするかをエージェントが判断するという執筆内容の質に関する要件で、コードで自動検証できないため(diagramがnull・mermaid・imageのいずれかの正しい形であることはapp/news-digest/lib/diagramValidation.tsのisValidAgentDiagramでテスト済み)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解 [14]",
+    "reason": "Nano Banana呼び出しの失敗時フォールバックで、scripts/news-digest/generateDiagram.tsはTDD対象外のため(tasks.md Task8。外部API呼び出し・ファイル書き込みのオーケストレーションで、失敗時にdiagramをnullに差し替えるtry/catchとして実装するのみ)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解 [15]",
+    "reason": "概念図のレイアウト種別・アイコン名・ラベルの指定方法を定義する執筆内容の質に関する要件で、コードで自動検証できないため(diagramの形自体はapp/news-digest/lib/diagramValidation.tsのisValidAgentDiagramでテスト済み)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解の生成(アイコン図のSVG描画) [8]",
+    "reason": "概念図をコードで決定的にSVG描画するというアーキテクチャ上の決定の記述で、app/news-digest/lib/renderDiagramSvg.tsに実装するのみでテスト対象を持たないため(固定アイコン名の集合自体はdiagramIcons.ts参照)"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
+    "item": "図解の生成(アイコン図のSVG描画) [9]",
+    "reason": "ローカルでのSVG組み立てのみで外部APIを呼ばないという設計上の帰結の記述で、コードとして実装・検証する対象を持たないため"
+  },
+  {
+    "specFile": "news-digest/content-generation/requirements.md",
     "item": "ビジネスルール・制約",
     "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },
@@ -6552,7 +6662,7 @@
   {
     "specFile": "trend-digest/trend-history/design.md",
     "item": "地域情報を判定する処理",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#地域情報-15〜16でfetchFixedListCandidates.test.ts・historySchema.test.tsがテスト済みのため"
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#地域情報-16〜17でfetchFixedListCandidates.test.ts・historySchema.test.tsがテスト済みのため"
   },
   {
     "specFile": "trend-digest/trend-history/design.md",
@@ -6576,8 +6686,8 @@
   },
   {
     "specFile": "trend-digest/trend-history/design.md",
-    "item": "掲載実績(掲載回数・直近掲載時の継続度ラベル)を求める処理",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#掲載実績の追跡-13〜14でpublishRecords.test.tsがテスト済みのため"
+    "item": "掲載実績(掲載回数・直近掲載時の継続度ラベル・直近掲載時の本文)を求める処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#掲載実績の追跡-13〜15でpublishRecords.test.tsがテスト済みのため"
   },
   {
     "specFile": "trend-digest/trend-history/design.md",
@@ -6610,74 +6720,64 @@
     "reason": "観測件数・ラベルごとの件数をstderrに記録するCLIの説明で、出力自体はrequirements.md側の項目を持たないため個別にテストする(tasks.md Task 14)"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
+    "specFile": "trend-digest/trend-history/requirements.md",
     "item": "サマリ",
-    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "処理フロー",
-    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "表示する行を組み立てる処理",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-1〜3・-5、requirements.md#表示の順序-6でbuildSourceDirectory.test.tsがテスト済みのため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "採用基準を日本語にする処理",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-4〜5でbuildSourceDirectory.test.tsがテスト済みのため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "ログイン状態に応じて表示を切り替える処理",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#閲覧できる人-1・-3でpage.test.tsxがテスト済みのため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "機能要件 [5]",
+    "reason": "「下記「継続度ラベル」に従って継続の長さを判定する」という参照のみの記述で、具体的な判定基準は継続度ラベル[1]〜[7](judgeDurationLabel.test.ts等)で個別にテスト済みのため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "エラーハンドリング",
-    "reason": "ウォッチリストのスキーマ違反をビルド時に失敗させる方針・ログイン確認失敗時の表示方針の記述で、個別の振る舞いはpage.test.tsxでテスト済みのため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "機能要件 [6]",
+    "reason": "「下記「注目度ラベル」に従って今の強さを判定する」という参照のみの記述で、具体的な判定基準は注目度ラベル[8]〜[12](judgeHeatLabel.test.ts等)で個別にテスト済みのため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "関連するファイル(抜粋)",
-    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "機能要件 [7]",
+    "reason": "「下記「掲載実績の追跡」参照」という参照のみの記述で、具体的な算出方法は掲載実績の追跡[13]〜[15](publishRecords.test.ts)で個別にテスト済みのため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "画面設計",
-    "reason": "UIレイアウトの説明見出しで、個別の表示要件はrequirements.md#機能要件-1〜4の各テストで担保済みのため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "画面遷移図",
-    "reason": "画面の状態遷移を俯瞰するMermaid図で、正となる文章はdesign.md「ログイン状態に応じて表示を切り替える処理」にあり、図自体はテスト対象の振る舞いを持たないため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "継続度ラベル [5]",
+    "reason": "日数の区切り(14日・30日・90日)を選んだ根拠の説明で、具体的な日数境界そのものは継続度ラベル[1]〜[4](judgeDurationLabel.test.ts)でテスト済みのため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "コンポーネント設計",
-    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "履歴データの保持期間 [18]",
+    "reason": "履歴データを削除・自動アーカイブしないという不作為の要件で、対応するテスト(削除機能が存在しないことの検証)を持たない。削除・アーカイブ処理自体を実装していないことはコードレビューで担保する"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "コンポーネント設計 > SourceTable",
-    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはSourceTable.test.tsxでテスト済みのため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
   },
   {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "状態管理",
-    "reason": "画面の状態(確認中/ログイン促し/閲覧不可/一覧/確認エラー)の持ち方の説明で、状態ごとの表示はpage.test.tsxでテスト済みのため"
-  },
-  {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "セキュリティ",
-    "reason": "静的配信では表示制御がデータの秘匿ではないこと・編集手段を持たないこと・サイトマップ除外の方針の記述で、リンクのスキーム制限とサイトマップ除外は個別にテストする(tasks.md Task 4・7)"
-  },
-  {
-    "specFile": "trend-digest/source-directory/design.md",
-    "item": "ログ",
-    "reason": "画面からのログ出力を行わないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
+    "specFile": "trend-digest/trend-history/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
   },
   {
     "specFile": "future-digest/content-selection/requirements.md",
@@ -6698,6 +6798,16 @@
     "specFile": "future-digest/content-selection/requirements.md",
     "item": "ユースケース図",
     "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "機能要件 [7]",
+    "reason": "サイエンス・テクノロジー編は木曜、くらし・社会編は日曜にそれぞれ独立して実行するという実行タイミングの要件で、「実行タイミングはweekly-publish/requirements.mdに従う」と本文中に明記されているとおり、実際のcron設定・配信曜日の算出はweekly-publish側の責務(.github/workflows/future-digest-weekly.yml、scheduledPublishDate.test.ts)であり、本specのコードとして検証可能な振る舞いを持たない"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
+    "item": "編成とジャンルの割り当て [3]",
+    "reason": "くらし・社会編を日曜に割り当てた理由(木曜からの間隔の均等さ)の説明文で、曜日の割り当て自体(日曜)はweekly-publish/design.md「実行環境の前提」のcron設定・scheduledPublishDate.test.tsでテスト済みのため、ここでは根拠の記録のみ"
   },
   {
     "specFile": "future-digest/content-selection/requirements.md",
@@ -6788,6 +6898,36 @@
     "specFile": "future-digest/content-selection/design.md",
     "item": "サマリ",
     "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項",
+    "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 編成の分け方",
+    "reason": "genres.jsonのedition属性で編成を固定2分割する方式を選んだ理由を記録した設計判断の表の1行で、採用した案(edition属性による固定分割)自体はgenres.test.ts・types.test.tsのEDITION_GENRESのテストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 編ごとのジャンル割り当て",
+    "reason": "10ジャンルを5ジャンルずつ2編に振り分けた具体的な組み合わせを選んだ理由を記録した設計判断の表の1行で、実際の割り当て(content/future-digest/genres.jsonのedition属性)自体はgenres.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 配信済み判定の対象範囲",
+    "reason": "配信済み判定を編をまたいで全記事対象に行う方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はdeliveredIndex.test.ts(buildDeliveredIndexに渡す記事一覧がgetAllArticles()の全記事であること)・collect-and-select.ts(TDD対象外)で担保されているため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > `issueNumber`(回数)の数え方",
+    "reason": "回数を編ごとに独立してカウントする方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はissue.test.tsのnextIssueNumber(articles, edition)のテストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 編の判定方法",
+    "reason": "編の判定をweekly-publishのワークフロー側で行いCLI引数で渡す方式を選んだ理由を記録した設計判断の表の1行で、実際の判定処理は.github/workflows/future-digest-weekly.yml(TDD対象外。tasks.md「週1回配信を週2回に分割する追加タスク」Task8)が担うため、本specのコードとしてテスト対象を持たない"
   },
   {
     "specFile": "future-digest/content-selection/design.md",
@@ -6946,7 +7086,7 @@
   },
   {
     "specFile": "future-digest/content-generation/design.md",
-    "item": "見出し・本文を書く処理(エージェントの推論)",
+    "item": "見出し・固定3観点を書く処理(エージェントの推論)",
     "reason": "エージェント(Claude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsでテスト済み)"
   },
   {
@@ -6957,7 +7097,7 @@
   {
     "specFile": "future-digest/content-generation/design.md",
     "item": "記事データの1本分を組み立てる処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-6でbuildPrediction.test.tsによりテスト済みのため"
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-7でbuildPrediction.test.tsによりテスト済みのため"
   },
   {
     "specFile": "future-digest/content-generation/design.md",
@@ -7116,6 +7256,11 @@
   },
   {
     "specFile": "future-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > DiagramView",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDiagramView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "future-digest/article-detail/design.md",
     "item": "コンポーネント設計 > FeedbackForm",
     "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはFeedbackForm.test.tsxでテスト済みのため"
   },
@@ -7212,21 +7357,26 @@
   {
     "specFile": "future-digest/weekly-publish/requirements.md",
     "item": "実行 [2]",
-    "reason": "実行主体がGitHub Actionsであり、収集・選定・要約をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+    "reason": "くらし・社会編のバッチを毎週日曜に1回実行するという運用スケジュールの要件(編成分割で追加)で、.github/workflows/future-digest-weekly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md「週1回配信を週2回に分割する追加タスク」Task8参照。実行 [1]と同じ理由)"
   },
   {
     "specFile": "future-digest/weekly-publish/requirements.md",
     "item": "実行 [3]",
+    "reason": "実行主体がGitHub Actionsであり、収集・選定・要約をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/requirements.md",
+    "item": "実行 [4]",
     "reason": "作った記事をJSONのコンテンツファイルとしてリポジトリに追加しビルド時に取り込むという静的サイト構成の要件で、write-article.ts(TDD対象外のCLI。tasks.md Task3)がファイル書き出しを担うためユニットテスト対象を持たないため"
   },
   {
     "specFile": "future-digest/weekly-publish/requirements.md",
-    "item": "公開フロー [4]",
+    "item": "公開フロー [5]",
     "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、`gh pr create`/`gh pr merge --auto`の呼び出し自体はユニットテスト対象を持たないため(tasks.md Task5のワークフロー本体に該当。実際の疎通確認はTask6のSecrets設定後の初回実行で行う)"
   },
   {
     "specFile": "future-digest/weekly-publish/requirements.md",
-    "item": "公開フロー [5]",
+    "item": "公開フロー [6]",
     "reason": "CI失敗時にマージせず原因を記録するという運用フローの要件で、GitHub標準の仕組み(PRコメント)に委ねるためこのリポジトリのコードとして実装しないため"
   },
   {
@@ -7268,6 +7418,26 @@
     "specFile": "future-digest/weekly-publish/design.md",
     "item": "サマリ",
     "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/design.md",
+    "item": "決定事項",
+    "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/design.md",
+    "item": "決定事項 > くらし・社会編の配信時刻",
+    "reason": "日曜09:43 JSTを選んだ理由を記録した設計判断の表の1行で、採用した案(編ごとに異なる配信曜日・時刻)自体はscheduledPublishDate.test.ts(getScheduledPublishDateのscience-tech/life-society別テストケース)でテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/design.md",
+    "item": "決定事項 > 記事ID・ファイル名の形式",
+    "reason": "`<date>-<edition>`形式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はassembleArticle.test.ts・articleSchema.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/weekly-publish/design.md",
+    "item": "決定事項 > 編の判定方法",
+    "reason": "github.event.scheduleから編を判定する方法を選んだ理由を記録した設計判断の表の1行で、実際の判定処理は.github/workflows/future-digest-weekly.yml(TDD対象外。tasks.md「週1回配信を週2回に分割する追加タスク」Task8)が担うため、ユニットテスト対象を持たない"
   },
   {
     "specFile": "future-digest/weekly-publish/design.md",
@@ -7873,5 +8043,1390 @@
     "specFile": "future-digest/source-review/design.md",
     "item": "ログ",
     "reason": "月次実行ごとの集計結果をGitHub Actionsのワークフロー実行ログに記録するという記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "サマリ",
+    "reason": "機能の概要を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図の見出しで、正は「機能要件」「ビジネスルール・制約」であるため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "見直しの実行 [2]",
+    "reason": "見直しの対象領域(選定領域・生成領域)を宣言する要件で、ヘッドレスClaude Codeへの指示内容でありコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "見直しの実行 [3]",
+    "reason": "各フィードバックを選定領域・生成領域・どちらでもないに振り分けるというヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "見直しの実行 [4]",
+    "reason": "材料の定義とPR作成可否・変更案作成の判断基準というヘッドレスClaude Codeへの指示内容に関する要件で、エージェントの推論に委ねる部分でありコードとして実装・テストしないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "承認フロー [6]",
+    "reason": "見直し案のPRを自動マージせず運営者が確認してマージするという要件で、ワークフロー実装(research-digest-monthly.yml)がgh pr merge --autoを一切呼ばないという不作為によって担保され、対応するテスト(存在しないことの検証)を持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "ビジネスルール・制約 [1]",
+    "reason": "見直しの実行頻度を月1回とするという運用スケジュールの要件で、.github/workflows/research-digest-monthly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task4)"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "ビジネスルール・制約 [2]",
+    "reason": "見直し案にPR本文として判断材料の表を含めるという、エージェントが作成するPR本文の記述内容に関する要件で、コードとして実装・テストしないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "ビジネスルール・制約 [3]",
+    "reason": "生成領域の見直し案が著作権への配慮・研究結果を誇張しない制約を弱めてはならないという制約で、ヘッドレスClaude Codeが見直し案を検討する際の推論に委ねる部分でありコードとして実装・テストしないため。生成された見直し案PR自体の内容は運営者のレビューで確認される"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "実行環境の前提",
+    "reason": "月次GitHub Actionsワークフローへの認証情報(PAT・OAuthトークン・SUPABASE_READONLY_DB_URL)設定方針・cron設定の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため(利用上限到達時の再実行の冪等チェックの判定式自体はapp/research-digest/lib/shouldSkipMonthlyRetry.tsでテスト済み)"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "見直しの材料を集める処理",
+    "reason": "候補なしが続いているジャンルの集計・research_digest_feedbackのSELECTを行うcollectReviewData.tsの手順記述で、DB接続・ファイルI/Oを伴う集計スクリプトのためTDD対象外(tasks.md Task2)。枠の集計ロジック自体はapp/research-digest/lib/reviewRecords.tsでテスト済み"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "見直し案を作る処理(エージェントの推論)",
+    "reason": "エージェント(GitHub Actionsから起動するヘッドレスClaude Code)の推論に委ねる見直し案の検討手順の説明で、コードとして実装しないため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "見直し案をPRとして出す処理",
+    "reason": "ブランチ作成・PR作成・自動マージしない方針というGitHub運用フローの記述で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "エラーハンドリング",
+    "reason": "DB接続失敗時のフォールバック・テスト等が通らない変更案を作れなかった場合の対応方針の記述で、ワークフロー・エージェントの実行制御に関する運用上の対応でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "データベース設計",
+    "reason": "新規テーブルはなく既存のbenriyatool_readonly向けSELECTポリシーを利用するという参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "セキュリティ",
+    "reason": "SUPABASE_READONLY_DB_URLの管理方針・フィードバックSELECTの利用目的限定・変更対象パスの限定という運用上の方針の記述で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "research-digest/source-review/design.md",
+    "item": "ログ",
+    "reason": "月次実行ごとの集計結果をGitHub Actionsのワークフロー実行ログに記録するという記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "採用基準 [1]",
+    "reason": "学術誌の論文・公式発表であり元の出典を確かめられるかの判定はClaude Code CLIの推論(WebFetchでの確認)に委ねる要件で、コードとして自動検証できないため。sourceUrlがhttp(s)の絶対URLであることだけはcandidateValidation.test.tsでテスト済み"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "採用基準 [2]",
+    "reason": "発表の時期を問わないという方針の記述で、収集プロンプトに時期の絞り込みを入れないこと自体は自動検証できないため。発表年の妥当性(1900年以上・実行日の年以下)の検証はcandidateValidation.test.tsでテスト済み"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "採用基準 [4]",
+    "reason": "出典を確かめられない話題・宣伝目的の発表の除外判定はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "影響度 [2]",
+    "reason": "影響度判定の3つの観点(影響を受ける人の多さ等)はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため。判定結果の値の妥当性(high・medium・lowのいずれか)はcandidateValidation.test.tsでテスト済み"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "データ取得方法 [1]",
+    "reason": "WebSearch・WebFetchの範囲にとどめる運用方針の記述で、Claude CLIへの許可ツール設定はbuildClaudeArgsのテスト(design.mdのセキュリティ)で固定しており、この項目自体に固有のテスト対象がないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "収集状況の記録 [1]",
+    "reason": "実行ログへの出力方針の記述で、scripts/research-digest/collect-and-select.tsのconsole.error呼び出し(TDD対象外のCLI。tasks.md Task 6)という運用上の記録であり、ユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "決定事項",
+    "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "決定事項 > 編成の分け方",
+    "reason": "genres.jsonのedition属性で編成を固定2分割する方式を選んだ理由を記録した設計判断の表の1行で、採用した案(edition属性による固定分割)自体はgenres.test.tsのEDITION_GENRESのテストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "決定事項 > 編ごとのジャンル割り当て",
+    "reason": "10ジャンルを5ジャンルずつ2編に振り分けた具体的な組み合わせを選んだ理由を記録した設計判断の表の1行で、実際の割り当て(content/research-digest/genres.jsonのedition属性)自体はgenres.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "決定事項 > 配信済み判定の対象範囲",
+    "reason": "配信済み判定を編をまたいで全記事対象に行う方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はdeliveredIndex.test.ts(buildDeliveredIndexに渡す記事一覧がgetAllArticles()の全記事であること)・collect-and-select.ts(TDD対象外)で担保されているため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "決定事項 > 編の判定方法",
+    "reason": "編の判定をweekly-publishのワークフロー側で行いCLI引数で渡す方式を選んだ理由を記録した設計判断の表の1行で、実際の判定処理は.github/workflows/research-digest-weekly.yml(TDD対象外。tasks.md「週1回配信を週2回に分割する追加タスク」Task8)が担うため、本specのコードとしてテスト対象を持たない"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "データ設計(ジャンルの設定ファイル)",
+    "reason": "型定義・JSON初期値の宣言で、実際の値・構造の妥当性はgenres.test.tsで、Candidate/GenreResultの実際の振る舞いはcandidateValidation.test.ts・selectGenres.test.ts・collect-candidates.test.tsの各テストで検証されるため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "配信済みの一覧を作る処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#配信済みの研究の除外-1でdeliveredIndex.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "ジャンルごとに候補を集める処理(エージェントの推論)",
+    "reason": "エージェント(Claude Code CLI)の推論に委ねる収集手順の説明で、応答の分類・やり直し・候補単位のバリデーション以外はコードとして実装・テストしないため(分類ロジックはcollect-candidates.test.tsで、候補検証はcandidateValidation.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "ジャンルごとに1本を採用する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#機能要件-3〜4等でselectGenres.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "収集状況を記録する処理",
+    "reason": "実行ログ出力(TDD対象外のcollect-and-select.ts)の説明で、判定結果の書き出し先であるshouldAlertOperatorの判定ロジック自体はweekly-publish/tasks.mdのTask 1でテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "バリデーション",
+    "reason": "design.mdの検証ルールの説明で、実際の振る舞いはcandidateValidation.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "エラーハンドリング",
+    "reason": "収集失敗の分類・やり直し・利用上限到達時の打ち切りの記述で、個別の振る舞いはcollect-candidates.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "セキュリティ",
+    "reason": "許可ツールの範囲・外部文字列の検証方針の記述で、許可ツールはbuildClaudeArgsのテスト(collect-candidates.test.ts)で、文字列の検証はcandidateValidation.test.tsで固定済みで、この見出し自体は追加のテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/content-selection/design.md",
+    "item": "ログ",
+    "reason": "収集・選定結果を標準エラー出力に記録するCLI(scripts/research-digest/collect-and-select.ts・collect-candidates.ts)の説明で、TDD対象外の薄いラッパー(tasks.md Task 6)のため"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機の説明とユースケース図省略の理由を示す見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "要約 [4]",
+    "reason": "元の論文・記事の構成・表現をなぞらないという執筆内容の質に関する要件で、コードで自動検証できないため(ガードレール文言と月次見直しでの運営者の確認に委ねる。分量の上下限のみコードで強制する)"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "要約 [5]",
+    "reason": "誇張しない・個別の治療判断を勧めないという執筆内容の質に関する要件で、コードで自動検証できないため(ガードレール文言と月次見直しでの運営者の確認に委ねる)"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "著作権への配慮 [1]",
+    "reason": "著作権法上のリスクの法的根拠・ai-dev-digestとの方針踏襲を説明する記述で、テスト対象の振る舞いを持たないため(出典の必須化はarticleSchema.test.tsで検証済み)"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "利用規約への反映 [2]",
+    "reason": "TDD対象外の静的な文言追加のみのため(tasks.md Task 7)。反映内容はspecs/legal/requirements.md・app/legal/page.tsxへの追記で担保する"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "内容の逸脱防止 [3]",
+    "reason": "元の論文・発表に書かれている範囲にとどめるという執筆内容の質に関する要件で、コードで自動検証できないため(ガードレール文言と月次見直しでの運営者の確認に委ねる)"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "見出し・固定4観点を書く処理(エージェントの推論)",
+    "reason": "エージェント(Claude Code CLI)の推論に委ねる執筆手順の説明で、生成結果の分量検証・応答の分類・図解データの妥当性検証以外はコードとして実装・テストしないため(分類ロジックはgenerateContent.test.tsで、図解データの検証はdiagramValidation.test.tsでテスト済み)"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "生成結果を検証する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#要約-2〜3でbodyValidation.test.ts・generateContent.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "記事データの1本分を組み立てる処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-7でbuildFinding.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "記事タイトルを導出する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事の構成-8でarticleTitle.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "エラーハンドリング",
+    "reason": "検証失敗・JSON抽出失敗・生成拒否をその1本の生成失敗として扱う旨の記述で、応答の分類・除外の振る舞いはgenerateContent.test.tsでテスト済みで、見出し・本文の内容の質はコードで保証できない限界の明記であるため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "セキュリティ",
+    "reason": "許可ツールはbuildClaudeArgsのテスト(generate-content.test.ts)で固定済みで、表示はReactの標準エスケープに委ね、著作権リスク対応は個別にテスト済みのため、この見出し自体は追加のテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "ログ",
+    "reason": "生成過程の実行ログ出力方針の記述で、TDD対象外のscripts/research-digest/generate-content.tsのconsole.error呼び出しであり、対応するテストが存在しないのが正しいため"
+  },
+  {
+    "specFile": "research-digest/content-generation/design.md",
+    "item": "利用規約への反映",
+    "reason": "requirements.mdの条項文言をそのまま転記した見出しで、実際の反映はapp/legal/page.tsx・specs/legal/requirements.mdへの追記(TDD対象外、tasks.md Task 7)で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "前提: 記事データの形式(この機能が定義する共有スキーマ)",
+    "reason": "記事データ型の定義そのものであり、個々のフィールドの振る舞いはtypes.test.ts・articleSchema.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "記事データを読み込む処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#記事本文の表示-1〜2でarticles.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "表示するジャンルの一覧を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#記事本文の表示-6、requirements.md#並び順の切り替え-8〜9でsortGenres.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "その回の記事本文を表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#記事本文の表示-1〜6等でArticleDetailView.test.tsx・FindingCard.test.tsx等によりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "ログイン状態に応じてフィードバック入力欄の表示を切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#運営者向けフィードバック-11でArticleDetailView.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "フィードバックを送信する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#運営者向けフィードバック-12〜13でFeedbackForm.test.tsx・saveFeedback.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "バリデーション",
+    "reason": "バリデーションの各項目はarticleSchema.test.tsで検証済み(describe直前の仕様コメントで参照)。フィードバック入力内容の検証はrequirements.md#運営者向けフィードバック-13でFeedbackForm.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "エラーハンドリング",
+    "reason": "スキーマ違反の例外はarticleSchema.test.ts、送信失敗の文言・二重送信防止はFeedbackForm.test.tsxで、それぞれ対応するビジネスルール側の参照でテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "ファイル配置の一覧であり、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル・RLSのSQL定義であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用(deploy.ymlのmigrateジョブ)で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル)",
+    "reason": "テーブル・RLSのSQL定義であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネントのprops・役割の一覧で、各コンポーネントは個別のテストで検証済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "状態管理",
+    "reason": "並び順の状態はArticleDetailView.test.tsx(requirements.md#並び順の切り替え-7・10)、送信状態はFeedbackForm.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "セキュリティ",
+    "reason": "RLS(SQL)・Reactの標準エスケープ・外部リンクのrel属性(FindingCard.test.tsxで検証済み)による対策で、独立したテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "ログ",
+    "reason": "コンソール出力の方針。運営者判定失敗時のconsole.errorはArticleDetailView.test.tsxで検証済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "画面設計",
+    "reason": "見た目・レイアウトの設計であり、自動テストではなく実装後のlocalhostでの画面レビューで確認するため(design.mdに明記)"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > id",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > created_at",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > is_test",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > article_id",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > finding_id",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "research_digest_feedback(新規テーブル) > comment",
+    "reason": "テーブルのカラム定義(SQL)であり、TDD対象外(tasks.md Task 1)。マイグレーションのCI適用で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > ArticleDetailView",
+    "reason": "コンポーネントのprops・役割の表の行で、ArticleDetailView.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > SortToggle",
+    "reason": "コンポーネントのprops・役割の表の行で、SortToggle.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > FindingCard",
+    "reason": "コンポーネントのprops・役割の表の行で、FindingCard.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > FindingBadges",
+    "reason": "コンポーネントのprops・役割の表の行で、FindingBadges.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/design.md",
+    "item": "コンポーネント設計 > FeedbackForm",
+    "reason": "コンポーネントのprops・役割の表の行で、FeedbackForm.test.tsxで対応するビジネスルール側の参照によりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図であり、正となる文章(機能要件・ビジネスルール)側で個別にテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "表示分量・著作権への配慮 [1]",
+    "reason": "本文の分量(160〜480字)の数値境界はdesign.md#バリデーションとしてarticleSchema.test.tsでテスト済み。出典の表示はFindingCard.test.tsx(requirements.md#記事本文の表示-2)で検証済み。「原文の全文転記はしない」は生成側(content-generation)の執筆ルールで、表示側に検証対象がないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "フィードバックの保存・権限 [4]",
+    "reason": "保存したフィードバックを一切表示・一覧化しないという不作為の要件で、対応するテスト(存在しないことの検証)を持たない。公開画面のコンポーネントがcommentを参照する実装が存在しないことで担保するため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-detail/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "サマリ",
+    "reason": "機能の概要を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "実行 [1]",
+    "reason": "毎週月曜の朝(日本時間)に収集・選定・要約・記事の組み立てを1回実行するという運用スケジュールの要件で、.github/workflows/research-digest-weekly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task5)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "実行 [2]",
+    "reason": "科学・社会編のバッチを毎週土曜に1回実行するという運用スケジュールの要件(編成分割で追加)で、.github/workflows/research-digest-weekly.ymlのcron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md「週1回配信を週2回に分割する追加タスク」Task8参照。実行 [1]と同じ理由)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "実行 [3]",
+    "reason": "実行主体がGitHub Actionsであり、収集・選定・要約をClaude Code CLIのヘッドレス実行に委ねるという役割分担の要件で、収集・選定・組み立てロジック自体は各specのテストで担保しつつCLI呼び出し自体はユニットテスト対象を持たないため(weekly-publish/design.mdの「実行環境の前提」参照)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "実行 [4]",
+    "reason": "作った記事をJSONのコンテンツファイルとしてリポジトリに追加しビルド時に取り込むという静的サイト構成の要件で、write-article.ts(TDD対象外のCLI。tasks.md Task3)がファイル書き出しを担うためユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "公開フロー [5]",
+    "reason": "PR作成・CI成功後の自動マージというGitHub運用フローの要件で、`gh pr create`/`gh pr merge --auto`の呼び出し自体はユニットテスト対象を持たないため(tasks.md Task5のワークフロー本体に該当。実際の疎通確認はTask6のSecrets設定後の初回実行で行う)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "公開フロー [6]",
+    "reason": "CI失敗時にマージせず原因を記録するという運用フローの要件で、GitHub標準の仕組み(PRコメント)に委ねるためこのリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "配信スケジュール [3]",
+    "reason": "両編の具体的な配信時刻を既存digestのワークフローと時間帯がかぶらないように設計で決めるという設計への委任の要件で、実際の時刻(からだ・くらし編07:43 JST・科学・社会編11:43 JST)は.github/workflows/research-digest-weekly.ymlのcron設定・weekly-publish/design.md「実行環境の前提」が担うため、ユニットテスト対象を持たない"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "利用上限への到達時の再実行 [1]",
+    "reason": "利用上限到達時に本番の12・24・36時間後の最大3回自動的に再試行するという運用スケジュールの要件で、.github/workflows/research-digest-weekly.ymlの3本のscheduled cron設定という宣言的な定義でありユニットテスト対象を持たないため(tasks.md Task5)。再実行の冪等判定ロジック自体はshouldSkipRetry.test.tsでテスト済み"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "利用上限への到達時の再実行 [3]",
+    "reason": "3回の再実行すべてで公開に至らなかった場合に自動再実行を打ち切り、以降は運営者が手動でworkflow_dispatchを起動するという運用方針の要件で、4本目以降の自動再実行cronが存在しないという宣言的な設計でありユニットテスト対象を持たないため(tasks.md Task5)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "利用上限への到達時の再実行 [4]",
+    "reason": "打ち切り時に部分的な結果を持ち越さず再実行時に最初からやり直すという実行順序の要件で、publishジョブが毎回collect-and-select.tsから起動し直すという宣言的な手順でありユニットテスト対象を持たないため(tasks.md Task5)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "自動マージの範囲 [1]",
+    "reason": "完全自動マージの対象をresearch-digest/articles/**ブランチに限定するという要件で、GitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる設計(weekly-publish/design.md「PRを自動マージする処理」参照)であり、ユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "決定事項",
+    "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "決定事項 > 科学・社会編の配信時刻",
+    "reason": "土曜11:43 JSTを選んだ理由を記録した設計判断の表の1行で、採用した案(編ごとに異なる配信曜日・時刻)自体はscheduledPublishDate.test.ts(getScheduledPublishDateのbody-life/science-society別テストケース)でテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "決定事項 > 記事ID・ファイル名の形式",
+    "reason": "`<date>-<edition>`形式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はassembleArticle.test.ts・articleSchema.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "決定事項 > 編の判定方法",
+    "reason": "github.event.scheduleから編を判定する方法を選んだ理由を記録した設計判断の表の1行で、実際の判定処理は.github/workflows/research-digest-weekly.yml(TDD対象外。tasks.md「週1回配信を週2回に分割する追加タスク」Task8)が担うため、ユニットテスト対象を持たない"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "実行環境の前提",
+    "reason": "GitHub Actionsのcron設定・Secrets(PAT・OAuthトークン)の管理方針の記述で、Actions Secretsの設定という運用上の前提でありコードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "配信日を求める処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#利用上限への到達時の再実行-5でscheduledPublishDate.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "1回分の記事を生成する処理",
+    "reason": "ブランチ作成・collect-and-select.ts/generate-content.ts/write-article.tsの呼び出し順序というワークフロー本体の手順の記述で、記事データの組み立てロジック自体はassembleArticle.test.tsで、生成失敗の分類・リトライ・除外・打ち切りロジック自体はgenerateContent.test.tsで、警告判定ロジック自体はshouldAlertOperator.test.tsでテスト済みのため(weekly-publish側の手順記述自体はGitHub Actionsのワークフロー定義でありユニットテスト対象を持たない)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "利用上限への到達時に再実行する処理",
+    "reason": "再実行cronの起動順序・PR存在確認(gh pr list)というワークフロー本体の運用手順の記述で、冪等判定ロジック自体はshouldSkipRetry.test.tsで、配信日の算出自体はscheduledPublishDate.test.tsでテスト済みのため(gh pr listによるPR存在確認はTDD対象外の運用チェックとdesign.md自身が明記している)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "PRを作成しCIの結果を待つ処理",
+    "reason": "GitHub上のPR作成・auto-merge設定に関する運用手順の記述で、このリポジトリのコードとして実装しないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "PRを自動マージする処理(完全自動マージの例外運用)",
+    "reason": "自動マージ範囲の限定はGitHub Rulesetsの技術的な設定ではなくワークフロー自身の運用規律に委ねる旨の設計判断の記述で、コードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "CI失敗時に記録する処理",
+    "reason": "PRへのコメント自動追記等の運用手順の記述で、GitHub Actionsのワークフロー側の振る舞いでありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "収集失敗を運営者に警告する処理",
+    "reason": "PR作成後にワークフロー内で非ゼロ終了するステップを実行するという運用手順の記述で、警告が必要かどうかの判定ロジック自体はshouldAlertOperator.test.tsでテスト済みのため(ジョブを失敗表示にする処理自体はGitHub Actionsのステップ定義でありユニットテスト対象を持たない)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "エラーハンドリング",
+    "reason": "CI失敗時の扱い・記事生成処理自体の中断時の扱いの記述で、ワークフローの実行制御に関する運用上の対応でありユニットテスト対象を持たないため(生成失敗の分類・リトライ・除外・打ち切りロジック自体はgenerateContent.test.tsで、同じ配信日の記事ファイルが既にある場合に上書きしない判定はwrite-article.ts〈TDD対象外〉でテスト済みの範囲外)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "セキュリティ",
+    "reason": "GitHub Actions Secretsで保持するPAT・OAuthトークンの管理方針、workflow_dispatch入力の検証方針の記述で、検証ロジック自体はscheduledPublishDate.test.tsのvalidateScheduledPublishDateでテスト済みのため(env:経由で渡す運用自体は宣言的なワークフロー定義でありユニットテスト対象を持たない)"
+  },
+  {
+    "specFile": "research-digest/weekly-publish/design.md",
+    "item": "ログ",
+    "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "サマリ",
+    "reason": "機能の全体像を述べた要約の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "記事一覧をページ分けする処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#ビジネスルール・制約-2でテスト済みのため(tasks.md Task 1)"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "各回に載せる見出しを選ぶ処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#一覧表示-2、requirements.md#一覧表示-3でテスト済みのため(tasks.md Task 2)"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "エラーハンドリング",
+    "reason": "存在しないページ番号・記事データのスキーマ違反時の扱いの記述で、静的エクスポートのビルド挙動・article-detail側のバリデーションに委ねる方針のため、本specの新規テスト対象を持たない"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "画面設計",
+    "reason": "画面構成の記述で、実際の振る舞いはArticleListView.test.tsx・ArticleCard.test.tsx・Pagination.test.tsx・ListLoginStatus.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "画面遷移図",
+    "reason": "俯瞰用の図で、正となる文章(画面設計の箇条書き)は別途ArticleCard.test.tsx等でテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "コンポーネント設計 > ArticleListView",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはArticleListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "コンポーネント設計 > ArticleCard",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはArticleCard.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "コンポーネント設計 > Pagination",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはPagination.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "セキュリティ",
+    "reason": "article-detail/design.mdと同じ前提(記事データは訪問者入力ではない)に基づき追加リスクはないという記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/design.md",
+    "item": "ログ",
+    "reason": "静的生成された結果を返すだけで実行時に出力すべきログはないという方針の記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/article-list/requirements.md",
+    "item": "サマリ",
+    "reason": "機能の全体像を述べた要約の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/article-list/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/requirements.md",
+    "item": "メタ情報 [5]",
+    "reason": "Next.jsのmetadata exportによる静的なtitle/description定義であり、ユニットテストではなくビルド・目視確認で担保するため"
+  },
+  {
+    "specFile": "research-digest/article-list/requirements.md",
+    "item": "ビジネスルール・制約 [1]",
+    "reason": "一覧用の別要約を作らないという設計方針の記述で、実装(見出しを記事データからそのまま引く)自体がselectCardHeadings.test.tsで担保するロジックの前提であり、否定的な制約(作らないこと)自体を検証するテストは設けないため"
+  },
+  {
+    "specFile": "research-digest/article-list/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/article-list/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "記事内の自分の付箋をまとめて取得する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#記事への付箋-1・5、requirements.md#表示範囲・権限-1でArticleDetailView.test.tsx経由でテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "新規に付箋を貼る処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#記事への付箋-1〜4・6でBookmarkPanel.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "付箋を編集する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#記事への付箋-4、requirements.md#付箋の編集・削除-7でBookmarkPanel.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "付箋を削除する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#付箋の編集・削除-8でBookmarkPanel.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "付箋一覧を表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#付箋の一覧-9・13〜14でBookmarkListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "付箋一覧からの編集・削除",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#付箋の一覧-12でBookmarkListItem.test.tsx・BookmarkListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "バリデーション",
+    "reason": "design.mdのバリデーション方針のまとめ記述で、個別の振る舞いはrequirements.md#記事への付箋-2〜3経由のBookmarkPanel.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "データベース設計",
+    "reason": "テーブル定義の参照情報を束ねるメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "research_digest_bookmarks(新規)",
+    "reason": "テーブル定義のメタ見出しで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "research_digest_bookmarks(新規) > id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1の実機確認事項)"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "research_digest_bookmarks(新規) > user_id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1の実機確認事項)"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "research_digest_bookmarks(新規) > article_id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1の実機確認事項)"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "research_digest_bookmarks(新規) > memo",
+    "reason": "DBカラム定義(200文字までのCHECK制約)で、アプリコードの振る舞いではないため。画面側の入力制限はrequirements.md#文字数・件数-3経由でBookmarkPanel.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "research_digest_bookmarks(新規) > created_at",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task1の実機確認事項)"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "research_digest_bookmarks(新規) > updated_at",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。アプリ側が明示的に現在時刻をセットする挙動はbookmarks.test.tsのupdateBookmark関連テストで担保済み"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "画面設計",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはBookmarkPanel.test.tsx/BookmarkListView.test.tsx/BookmarkListItem.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "記事詳細ページへの追加(article-detailの画面)",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはFindingCard.test.tsx/BookmarkPanel.test.tsxでテスト済みのため。ログイン中のみ表示する切り替えはArticleDetailView.test.tsxでテスト済み"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "付箋一覧ページ(新規: `/research-digest/bookmarks`)",
+    "reason": "表示レイアウトの記述で、表示項目・操作の振る舞いはBookmarkListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "コンポーネント設計",
+    "reason": "配下の表の行に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "コンポーネント設計 > BookmarkPanel",
+    "reason": "Props定義の表セルで、実際の振る舞いはBookmarkPanel.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "コンポーネント設計 > BookmarkListItem",
+    "reason": "Props定義の表セルで、実際の振る舞いはBookmarkListItem.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "コンポーネント設計 > BookmarkListView",
+    "reason": "Props定義の表セルで、実際の振る舞いはBookmarkListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "状態管理",
+    "reason": "画面のローカル状態の持ち方・状態遷移図の記述で、個別の振る舞いはBookmarkPanel.test.tsx/BookmarkListView.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "セキュリティ",
+    "reason": "RLSによる本人限定アクセスの記述。DB側の担保でアプリ単体テスト対象外(マイグレーション適用後の実機確認で担保。tasks.md Task1の実機確認事項)"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "ログ",
+    "reason": "失敗時にコンソール出力する方針の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "サマリ",
+    "reason": "この章だけで概略をつかむためのメタ要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "ユースケース図",
+    "reason": "アクターとできることの俯瞰図(Mermaid)で、ユーザーストーリー・機能要件が正であり、図見出し自体はテスト対象外"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "表示範囲・権限 [2]",
+    "reason": "既存のGoogle OIDCログイン基盤(app/lib/adminAuth.ts)を再利用するという方針の記述で、その基盤自体は他specで実装・テスト済みのため、本specとしての新規テスト対象を持たない"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/bookmark/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "実行環境の前提",
+    "reason": "ワークフローファイルを分割する設計判断・チャネルアクセストークンのActions Secrets管理方針の記述で、コードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "配信対象の記事を決める処理",
+    "reason": "GitHub Actionsのpushトリガー・パスフィルタ・git diffによる新規追加ファイル判定、workflow_dispatch入力(env経由・YYYY-MM-DD形式の検証)というワークフロー自身の実行制御の記述で、コードとして実装しないため(tasks.md Task 4、TDD対象外)"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "配信メッセージを組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#配信内容-1〜6でbuildBroadcastMessage.test.tsでテスト済み"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "配信する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#配信タイミング・方式-7〜8、requirements.md#無料枠と配信失敗時の扱い-4でbroadcast-line.test.tsでテスト済みのため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "セキュリティ",
+    "reason": "GitHub Actions Secretsで保持するチャネルアクセストークンの管理方針の記述で、運用設定に関する事項でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/design.md",
+    "item": "ログ",
+    "reason": "GitHub Actionsのワークフロー実行ログに記録する項目の記述で、運用上の記録でありユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "配信タイミング・方式 [9]",
+    "reason": "配信は週1回・友だち全員への一斉配信とし、利用上限到達での再実行時も公開日に1回だけ配信するという要件で、ワークフロー内のgit diffによる新規追加ファイル判定(tasks.md Task 4、TDD対象外)で実現するためユニットテスト対象を持たない"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "配信タイミング・方式 [10]",
+    "reason": "自動配信の失敗時に運営者がworkflow_dispatch(記事ID指定)で手動再送できるという要件で、GitHub Actionsのワークフロー定義(tasks.md Task 4、TDD対象外)で実現するためユニットテスト対象を持たない。指定された記事データが存在しない場合の失敗はbroadcast-line.test.tsでテスト済み"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "アカウント・配信主体 [1]",
+    "reason": "配信元を新規開設せず既存のLINE公式アカウントに相乗りするという運用上の意思決定で、新しいSecretを発行しない構成(design.md「実行環境の前提」)であり実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [2]",
+    "reason": "LINE公式アカウントの無料プラン(月200通)を既存4アプリ・研究発見の配信と共有する前提の運用上の確認事項で、運営者の事前試算による確認手順でありコードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [3]",
+    "reason": "無料枠の残量をLINE Official Account Managerの利用量ページで運営者が定期的に確認するという運用手順の記述で、監視の自動化を設けない方針のためコードとしてのテスト対象を持たない"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "無料枠と配信失敗時の扱い [4]",
+    "reason": "配信失敗時に原因を記録し運営者が把握できるようにするという要件で、broadcast-line.tsの標準エラー出力によるログ記録・GitHub Actionsの実行結果表示で実現するためユニットテスト対象を持たない"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "research-digest/line-broadcast/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "research-digest/bookmark/design.md",
+    "item": "research_digest_bookmarks(新規) > finding_id",
+    "reason": "DBカラム定義で、アプリコードの振る舞いではないため。RLSの実挙動はマイグレーション適用後の実機確認で担保する(tasks.md Task 1の実機確認事項)"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図で、正となる文章(ユーザーストーリー・機能要件)はrequirements.md#ダイジェストカード一覧・#情報源一覧への導線の各テストで担保済みのため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "決定事項",
+    "reason": "決定事項の表を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため(各論点は個別の「決定事項 > ...」項目で扱う)"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "ダイジェストカード一覧を表示する処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ダイジェストカード一覧、requirements.md#情報源一覧への導線でdigestApps.test.ts・page.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "エラーハンドリング",
+    "reason": "実行時エラーは発生しない想定(全データがビルド時に確定した定数)という記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "コンポーネント設計 > `DigestAppCard`",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはDigestAppCard.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "セキュリティ",
+    "reason": "外部入力を扱わない静的ページで新たなリスクはないという記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "ログ",
+    "reason": "完全に静的なページで独自のログ出力は設けないという記述で、対応するテストが存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/digest-hub/design.md",
+    "item": "画面設計",
+    "reason": "UIレイアウトの説明見出しで、個別の表示要件はrequirements.md#ダイジェストカード一覧・#情報源一覧への導線の各テストで担保済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "サマリ",
+    "reason": "requirements.mdのサマリで、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "利用者視点の動機を説明する見出しで、テスト可能な仕様ではないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "ユースケース図",
+    "reason": "俯瞰用の図で、正となる文章(機能要件・ビジネスルール・制約)は各テストで担保済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "依存関係",
+    "reason": "他specへの参照の記述で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/requirements.md",
+    "item": "スコープ外",
+    "reason": "対応しないと決めた機能の宣言であり、実装もテストも存在しないのが正しい状態のため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "サマリ",
+    "reason": "design.mdの設計要約で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "決定事項",
+    "reason": "決定事項の表を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため(各論点は個別の「決定事項 > ...」項目で扱う)"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "決定事項 > 5アプリのデータ形状差への対応",
+    "reason": "5アプリそれぞれ個別の変換関数を持つという設計判断の記録で、各変換関数自体の振る舞いはbuildAiDevDigestSources.test.ts・buildNewsDigestSources.test.ts・buildTrendDigestSources.test.ts・buildFutureDigestSources.test.ts・buildResearchDigestSources.test.tsの個別テストでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "ログイン状態に応じて表示を切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#閲覧できる人でpage.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "アプリごとの表示行を組み立てる処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#ジャンルごとの情報源・採用基準の表でbuildAiDevDigestSources.test.ts等の各build*.test.tsによりテスト済み"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "タブを切り替える処理",
+    "reason": "design.mdの処理フローはテストから参照しない設計方針のため。対応するビジネスルールはrequirements.md#アプリ切り替えタブでSourceTabs.test.tsx・page.test.tsxによりテスト済み"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "エラーハンドリング",
+    "reason": "権限確認の失敗時の表示方針・実データ破損時はビルド時検知という記述で、個別の振る舞いはpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "セキュリティ",
+    "reason": "既存の運営者専用ページと同じ認証を使うという方針の記述で、権限確認自体の振る舞いはpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "ログ",
+    "reason": "権限確認の失敗だけをconsole.errorに記録するという記述で、対応する振る舞いはpage.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "画面設計",
+    "reason": "UIレイアウトの説明見出しで、個別の表示要件はrequirements.md#アプリ切り替えタブ・#ジャンルごとの情報源・採用基準の表の各テストで担保済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "コンポーネント設計",
+    "reason": "コンポーネント一覧(Props/役割)を束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "コンポーネント設計 > `SourceTabs`",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはSourceTabs.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "コンポーネント設計 > `SourceTable`",
+    "reason": "コンポーネント一覧表の参照情報で、実際の振る舞いはSourceTable.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "blog/source-directory/design.md",
+    "item": "状態管理",
+    "reason": "ページの状態設計(useStateの持ち方)の説明で、phaseの遷移はpage.test.tsx、selectedAppIdの遷移はpage.test.tsx・SourceTabs.test.tsxでテスト済みのため"
   }
 ]
