@@ -1,0 +1,15 @@
+[
+  { "genreId": "technology-ai", "name": "McKinsey Digital Insights", "channel": { "type": "feed", "url": "https://www.mckinsey.com/insights/rss" } },
+  { "genreId": "technology-ai", "name": "MIT Technology Review", "channel": { "type": "feed", "url": "https://www.technologyreview.com/feed/" } },
+  { "genreId": "medical-health", "name": "WHO Newsroom", "channel": { "type": "feed", "url": "https://www.who.int/rss-feeds/news-english.xml" } },
+  { "genreId": "medical-health", "name": "AMED", "channel": { "type": "site-specific-html", "url": "https://www.amed.go.jp/news/index.html", "parserId": "amedNews" } },
+  { "genreId": "environment-energy", "name": "IPCC News", "channel": { "type": "site-specific-html", "url": "https://www.ipcc.ch/", "parserId": "ipccHome" } },
+  { "genreId": "environment-energy", "name": "環境省報道発表", "channel": { "type": "site-specific-html", "url": "https://www.env.go.jp/press/index.html", "parserId": "envPress" } },
+  { "genreId": "space-science", "name": "NASA News Releases", "channel": { "type": "feed", "url": "https://www.nasa.gov/news-release/feed/" } },
+  { "genreId": "space-science", "name": "JAXAプレスリリース", "channel": { "type": "feed", "url": "https://www.jaxa.jp/rss/press_j.rdf" } },
+  { "genreId": "geopolitics", "name": "IISS Online Analysis", "channel": { "type": "site-specific-html", "url": "https://www.iiss.org/latest/", "parserId": "iissLatest" } },
+  { "genreId": "geopolitics", "name": "CFR Latest", "channel": { "type": "site-specific-html", "url": "https://www.cfr.org/latest", "parserId": "cfrLatest" } },
+  { "genreId": "economy-work", "name": "経済産業省ニュースリリース", "channel": { "type": "feed", "url": "https://www.meti.go.jp/ml_index_release_atom.xml" } },
+  { "genreId": "economy-work", "name": "リクルートワークス研究所", "channel": { "type": "site-specific-html", "url": "https://www.works-i.com/news/index.html", "parserId": "worksINews" } },
+  { "genreId": "personal-interest", "name": "国立長寿医療研究センター お知らせ", "channel": { "type": "site-specific-html", "url": "https://www.ncgg.go.jp/topics/", "parserId": "ncggTopics" } }
+]

@@ -6931,6 +6931,21 @@
   },
   {
     "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 固定情報源の扱い方",
+    "reason": "固定情報源をヒントとしてClaudeに渡し採否判定自体はClaudeに残す方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はscripts/future-digest/collect-candidates.tsのbuildPromptのテスト(ヒントがプロンプトに含まれ「無条件に採用せず」と明示されること)で検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "決定事項 > 固定情報源のHTML構造への対応",
+    "reason": "site-specific-html形式の情報源ごとに専用パーサー(parserId)を持つ方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はfixedSourceParsers.test.ts・fetchFixedSourceHints.test.tsで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "データ設計(固定情報源)",
+    "reason": "型定義・JSON初期値の宣言で、実際の値・構造の妥当性はfixedSourceTypes.test.tsで、取得・パースの振る舞いはfetchFixedSourceHints.test.ts・fixedSourceParsers.test.tsの各テストで検証されるため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
     "item": "データ設計(ジャンル・注目テーマの設定ファイル)",
     "reason": "型定義・JSON初期値の宣言で、実際の値・構造の妥当性はgenres.test.tsで、Candidate/SlotResultの実際の振る舞いはcandidateValidation.test.ts・selectSlots.test.ts・collect-candidates.test.tsの各テストで検証されるため"
   },
@@ -6938,6 +6953,11 @@
     "specFile": "future-digest/content-selection/design.md",
     "item": "処理フロー",
     "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/design.md",
+    "item": "固定情報源からヒントを集める処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#情報源(固定リスト)-1〜5・requirements.md#データ取得方法-2でfetchFixedSourceHints.test.ts・fixedSourceParsers.test.tsによりテスト済みのため"
   },
   {
     "specFile": "future-digest/content-selection/design.md",
