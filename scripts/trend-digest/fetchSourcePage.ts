@@ -23,9 +23,19 @@ import { famitsu } from './sourceParsers/famitsu'
 import { jalan } from './sourceParsers/jalan'
 import { filmarksAnimeTrend } from './sourceParsers/filmarksAnimeTrend'
 import { anilabJapanWeekly } from './sourceParsers/anilabJapanWeekly'
+import { kworbSpotifyJapan } from './sourceParsers/kworbSpotifyJapan'
+import { rakutenTravelSales } from './sourceParsers/rakutenTravelSales'
+import { kakakuRanking } from './sourceParsers/kakakuRanking'
+import { yahooRealtimeSearch } from './sourceParsers/yahooRealtimeSearch'
+import { tabelogRank } from './sourceParsers/tabelogRank'
+import { yahooFinanceVolumeIncrease } from './sourceParsers/yahooFinanceVolumeIncrease'
+import { nikkeiAccessRanking } from './sourceParsers/nikkeiAccessRanking'
+import { githubTrending } from './sourceParsers/githubTrending'
+import { hatenaBookmarkIt } from './sourceParsers/hatenaBookmarkIt'
 import {
   parseNetflixTsv,
-  parseGoogleTrendsRss,
+  parseRssTitlesInOrder,
+  parseAtomTitlesInOrder,
   parseSteamMostPlayed,
   resolveSteamRanking,
   type NetflixCategory,
@@ -91,6 +101,15 @@ const HTML_PARSERS: Record<string, (html: string) => ReturnType<typeof billboard
   jalan,
   filmarksAnimeTrend,
   anilabJapanWeekly,
+  kworbSpotifyJapan,
+  rakutenTravelSales,
+  kakakuRanking,
+  yahooRealtimeSearch,
+  tabelogRank,
+  yahooFinanceVolumeIncrease,
+  nikkeiAccessRanking,
+  githubTrending,
+  hatenaBookmarkIt,
 }
 
 // Netflix公式Top10データ(structured-tsv)のcategory列は"Films"/"TV"の2種類のみで、アニメ専用の
@@ -151,7 +170,12 @@ export async function dispatchFixedListSource(
     }
     case 'structured-rss': {
       const xml = await fetchHtml(source.url)
-      const items = parseGoogleTrendsRss(xml)
+      const items = parseRssTitlesInOrder(xml)
+      return { providesRankChange: false, items }
+    }
+    case 'structured-atom': {
+      const xml = await fetchHtml(source.url)
+      const items = parseAtomTitlesInOrder(xml)
       return { providesRankChange: false, items }
     }
     case 'structured-json-api': {

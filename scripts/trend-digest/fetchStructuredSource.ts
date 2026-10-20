@@ -77,17 +77,41 @@ export function parseNetflixTsv(tsv: string, country: string, category: NetflixC
   return items
 }
 
-// --- structured-rss: Google公式トレンドRSS ---
-// (`trends.google.com/trending/rss?geo=JP`。実際に取得して確認した構造: <item>ごとに<title>を
-// 持ち、フィード内の並び順がそのまま話題性の強さの順になっている。明示的な順位番号は
-// フィード自体に無いため、掲載順を現在順位として採用する)
-export function parseGoogleTrendsRss(xml: string): RankedItem[] {
+// --- structured-rss: RSS 2.0形式の情報源(Google公式トレンドRSS・Zenn公式トレンドRSS) ---
+// (いずれも<item>ごとに<title>を持ち、フィード内の並び順がそのまま話題性の強さの順になっている。
+// 明示的な順位番号はフィード自体に無いため、掲載順を現在順位として採用する。
+// Google公式トレンドRSSはプレーンテキストの<title>だが、Zenn公式トレンドRSSは
+// <title><![CDATA[...]]></title>の形式のため、両方に対応できるようCDATAの有無を問わず
+// タイトル本文を取り出す)
+function extractTitleText(titleTag: string): string {
+  const cdataMatch = titleTag.match(/<!\[CDATA\[([\s\S]*?)\]\]>/)
+  return (cdataMatch ? cdataMatch[1] : titleTag).trim()
+}
+
+export function parseRssTitlesInOrder(xml: string): RankedItem[] {
   const items: RankedItem[] = []
   const itemBlocks = xml.match(/<item>[\s\S]*?<\/item>/g) ?? []
   itemBlocks.forEach((block, index) => {
-    const titleMatch = block.match(/<title>([^<]+)<\/title>/)
+    const titleMatch = block.match(/<title>([\s\S]*?)<\/title>/)
     if (!titleMatch) return
-    const title = titleMatch[1].trim()
+    const title = extractTitleText(titleMatch[1])
+    if (!title) return
+    items.push({ title, currentRank: index + 1 })
+  })
+  return items
+}
+
+// --- structured-atom: Atom形式の情報源(Qiita人気記事フィード) ---
+// (`qiita.com/popular-items/feed`。実際に取得して確認した構造: <entry>ごとに<title>を持ち、
+// RSSの<item>と同様フィード内の並び順がそのまま人気順になっている。Atomは<item>ではなく
+// <entry>を使う点だけがRSSと異なるため、parseRssTitlesInOrderとは別の関数として用意する)
+export function parseAtomTitlesInOrder(xml: string): RankedItem[] {
+  const items: RankedItem[] = []
+  const entryBlocks = xml.match(/<entry>[\s\S]*?<\/entry>/g) ?? []
+  entryBlocks.forEach((block, index) => {
+    const titleMatch = block.match(/<title>([\s\S]*?)<\/title>/)
+    if (!titleMatch) return
+    const title = extractTitleText(titleMatch[1])
     if (!title) return
     items.push({ title, currentRank: index + 1 })
   })
