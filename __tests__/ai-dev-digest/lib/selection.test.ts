@@ -19,6 +19,7 @@ const criteria: Criteria = {
   qiitaMinLikes: 30,
   qiitaMaxAgeDays: 60,
   zennMinLikes: 30,
+  hfPapersMinUpvotes: 20,
   minIndividualBlogBodyChars: 150,
   topicExcludeKeywords: [],
   duplicateSuppressionSourceTypes: ['individual-blog'],
@@ -97,6 +98,19 @@ describe('採用基準の判定 - Zennの新着記事は公開ページのいい
   })
 })
 
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-17
+describe('採用基準の判定 - Hugging Face Papersの論文はupvotes数20以上を採用候補にする', () => {
+  it('upvotes数がちょうど20件のとき、基準を満たすこと', () => {
+    const candidate = baseCandidate({ sourceType: 'hf-papers', metricValue: 20 })
+    expect(meetsCriteria(candidate, criteria)).toBe(true)
+  })
+
+  it('upvotes数が19件(閾値未満)のとき、基準を満たさないこと', () => {
+    const candidate = baseCandidate({ sourceType: 'hf-papers', metricValue: 19 })
+    expect(meetsCriteria(candidate, criteria)).toBe(false)
+  })
+})
+
 // 仕様: specs/ai-dev-digest/content-selection/design.md#採用基準を判定する処理
 describe('基準からの乖離内容の文言生成 - 基準を満たさない候補について、どれだけ届いていないかを説明文にする', () => {
   it('Qiitaでいいね数18件・基準30件のとき、「いいね数18件(基準30件に12件不足)」のような乖離内容になること(article-detail/design.mdの例文自体は算術上の誤記のため、正しい差分値で検証する)', () => {
@@ -107,6 +121,11 @@ describe('基準からの乖離内容の文言生成 - 基準を満たさない�
   it('Zennでいいね数10件・基準30件のとき、「いいね数10件(基準30件に20件不足)」のような乖離内容になること', () => {
     const candidate = baseCandidate({ sourceType: 'zenn', metricValue: 10 })
     expect(describeShortfall(candidate, criteria)).toBe('いいね数10件(基準30件に20件不足)')
+  })
+
+  it('Hugging Face Papersでupvotes数12件・基準20件のとき、「upvotes12件(基準20件に8件不足)」のような乖離内容になること', () => {
+    const candidate = baseCandidate({ sourceType: 'hf-papers', metricValue: 12 })
+    expect(describeShortfall(candidate, criteria)).toBe('upvotes12件(基準20件に8件不足)')
   })
 
   it('個人YouTubeで再生回数500回・基準(直近平均1000×1.2倍=1200回)のとき、乖離内容に再生回数と基準値が含まれること', () => {

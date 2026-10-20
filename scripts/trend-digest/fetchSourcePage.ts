@@ -36,6 +36,9 @@ import {
 export const BROWSER_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
 
+// 1サイトの応答なしで収集処理全体が止まるのを防ぐための上限(/fixで追加)
+const FETCH_TIMEOUT_MS = 20_000
+
 // Content-Typeヘッダーのcharsetパラメータを読み取る(design.md手順1)
 function charsetFromContentType(contentType: string | null): string | null {
   if (!contentType) return null
@@ -69,7 +72,7 @@ export function decodeHtml(buffer: ArrayBuffer, contentTypeHeader: string | null
 
 // 公開ページを取得し、文字コードを正しく変換したHTML文字列を返す
 export async function fetchHtml(url: string): Promise<string> {
-  const res = await fetch(url, { headers: { 'User-Agent': BROWSER_USER_AGENT } })
+  const res = await fetch(url, { headers: { 'User-Agent': BROWSER_USER_AGENT }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
   if (!res.ok) throw new Error(`${url} の取得に失敗しました(status: ${res.status})`)
   const buffer = await res.arrayBuffer()
   return decodeHtml(buffer, res.headers.get('content-type'))
@@ -114,6 +117,7 @@ const STEAM_NAME_RESOLUTION_LIMIT = 15
 const fetchSteamAppName: SteamAppNameFetcher = async (appid) => {
   const res = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}&filters=basic`, {
     headers: { 'User-Agent': BROWSER_USER_AGENT },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   })
   if (!res.ok) return null
   const data = (await res.json()) as Record<string, { success?: boolean; data?: { name?: string } }>

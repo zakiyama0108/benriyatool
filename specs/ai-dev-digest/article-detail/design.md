@@ -10,7 +10,7 @@
 
 ```ts
 // app/ai-dev-digest/lib/types.ts
-export type SourceType = 'official' | 'individual-youtube' | 'individual-blog' | 'qiita' | 'zenn'
+export type SourceType = 'official' | 'individual-youtube' | 'individual-blog' | 'qiita' | 'zenn' | 'hf-papers'
 
 // 【旧形式】要約の章立て1セクション分。2026-08以前に生成された既存記事データのみが使う
 // (content-generation/requirements.md#著作権への配慮-9)。新規生成では使わない

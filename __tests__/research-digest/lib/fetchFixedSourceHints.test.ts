@@ -44,6 +44,45 @@ describe('固定情報源からのヒント取得 - RSS/Atom/RDFは共通パー�
     expect(hints[0].publishedAt).not.toBeNull()
   })
 
+  it('<title>と<![CDATA[の間に改行がある整形済みXMLでもタイトルを抽出できること', async () => {
+    const xml = `<?xml version="1.0"?><rss><channel><item>
+<title>
+<![CDATA[
+改行を含むCDATAタイトル
+]]>
+</title>
+<link>https://www.nature.com/articles/cdata</link>
+<pubDate>Mon, 19 Oct 2026 00:00:00 +0000</pubDate>
+</item></channel></rss>`
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(xml) })
+
+    const { hints } = await fetchGenreHints('psychology-brain', [feedEntry], http, {})
+
+    expect(hints).toHaveLength(1)
+    expect(hints[0].title).toBe('改行を含むCDATAタイトル')
+  })
+
+  it('タイトル・URLに含まれるHTML実体参照をデコードすること', async () => {
+    const xml = `<?xml version="1.0"?><rss><channel><item><title>A &amp; B の研究</title><link>https://www.nature.com/articles/b?x=1&amp;y=2</link><pubDate>Mon, 19 Oct 2026 00:00:00 +0000</pubDate></item></channel></rss>`
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(xml) })
+
+    const { hints } = await fetchGenreHints('psychology-brain', [feedEntry], http, {})
+
+    expect(hints).toHaveLength(1)
+    expect(hints[0].title).toBe('A & B の研究')
+    expect(hints[0].url).toBe('https://www.nature.com/articles/b?x=1&y=2')
+  })
+
+  it('Atomの<link>が複数ある場合、rel="self"ではなくrel="alternate"のURLを採用すること', async () => {
+    const xml = `<?xml version="1.0"?><feed><entry><title>Atomエントリ</title><link rel="self" href="https://api.example.com/feed/1"/><link rel="alternate" href="https://www.nature.com/articles/atom-1"/><updated>2026-10-19T00:00:00Z</updated></entry></feed>`
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(xml) })
+
+    const { hints } = await fetchGenreHints('psychology-brain', [feedEntry], http, {})
+
+    expect(hints).toHaveLength(1)
+    expect(hints[0].url).toBe('https://www.nature.com/articles/atom-1')
+  })
+
   it('site-specific-html形式はparserIdに対応する専用パーサーを呼び出すこと', async () => {
     const html = '<html>ダミー</html>'
     const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(html) })

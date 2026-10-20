@@ -18,7 +18,7 @@ import { isValidTeaserLength, isValidDetailLength, isValidSummaryDetailLength, i
 // エージェントが生成する入力の事故を早期に検知するため、ビルド時にここで例外を投げて
 // next buildを失敗させる(article-detail/design.md#エラーハンドリング)
 
-const SOURCE_TYPES: SourceType[] = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn']
+const SOURCE_TYPES: SourceType[] = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn', 'hf-papers']
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 const MAX_TOPICS = 5
 

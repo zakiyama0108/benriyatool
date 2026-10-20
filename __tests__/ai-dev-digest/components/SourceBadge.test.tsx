@@ -9,10 +9,11 @@ const LABELS: Record<SourceType, string> = {
   'individual-blog': '個人ブログ',
   qiita: 'Qiita',
   zenn: 'Zenn',
+  'hf-papers': 'Hugging Face Papers',
 }
 
 // 仕様: specs/ai-dev-digest/article-detail/requirements.md#記事本文表示-5
-describe('情報源種別バッジ - 各トピックの発信元の種別(公式組織/個人YouTube/個人ブログ/Qiita/Zenn)を日本語で表示する', () => {
+describe('情報源種別バッジ - 各トピックの発信元の種別(公式組織/個人YouTube/個人ブログ/Qiita/Zenn/Hugging Face Papers)を日本語で表示する', () => {
   for (const [sourceType, label] of Object.entries(LABELS) as [SourceType, string][]) {
     it(`sourceTypeが"${sourceType}"のとき、「${label}」というラベルが表示されること`, () => {
       render(<SourceBadge sourceType={sourceType} />)

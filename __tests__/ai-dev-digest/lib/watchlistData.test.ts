@@ -17,22 +17,33 @@ const EXPECTED_NAMES = [
   'GitHub',
   'Google Developers',
   'VS Code',
+  'Hugging Face Blog',
+  'Google DeepMind',
+  'Mistral AI',
+  'Microsoft AI (Source)',
   'Andrej Karpathy',
   'Fireship',
   'Cole Medin',
   'freeCodeCamp',
   'Dave Ebbelaar',
+  'Two Minute Papers',
+  'Yannic Kilcher',
+  'IndyDevDan',
+  'AICodeKing',
   'Simon Willison',
   'Interconnects (Nathan Lambert)',
   'Martin Fowler / Thoughtworks',
+  'Chip Huyen',
+  'Latent Space',
   'Qiita',
   'Zenn',
+  'Hugging Face Papers',
 ]
 
-// 仕様: specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-1、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Anthropic、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-OpenAI、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-LangChain、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-AWS、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-DeepLearning.AI、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-GitHub、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Google Developers、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-VS Code、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-AndrejKarpathy、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Fireship、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-ColeMedin、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-freeCodeCamp、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-DaveEbbelaar、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-SimonWillison、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Interconnects (Nathan Lambert)、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Martin Fowler / Thoughtworks、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Qiita、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Zenn
-describe('情報源ウォッチリストのデータ - requirements.mdの表と完全一致する18件の固定リストであること', () => {
-  it('ウォッチリストがちょうど18件であること(記載以外の情報源をエージェントが自律的に追加しない固定リスト運用)', () => {
-    expect(watchlist).toHaveLength(18)
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-1、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Anthropic、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-OpenAI、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-LangChain、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-AWS、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-DeepLearning.AI、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-GitHub、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Google Developers、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-VS Code、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Hugging Face Blog、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Google DeepMind、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Mistral AI、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Microsoft AI (Source)、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Andrej Karpathy、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Fireship、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Cole Medin、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-freeCodeCamp、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Dave Ebbelaar、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Two Minute Papers、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Yannic Kilcher、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-IndyDevDan、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-AICodeKing、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Simon Willison、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Interconnects (Nathan Lambert)、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Martin Fowler / Thoughtworks、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Chip Huyen、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Latent Space、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Qiita、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Zenn、specs/ai-dev-digest/content-selection/requirements.md#情報源(ウォッチリスト)-Hugging Face Papers
+describe('情報源ウォッチリストのデータ - requirements.mdの表と完全一致する29件の固定リストであること', () => {
+  it('ウォッチリストがちょうど29件であること(記載以外の情報源をエージェントが自律的に追加しない固定リスト運用)', () => {
+    expect(watchlist).toHaveLength(29)
   })
 
   for (const name of EXPECTED_NAMES) {
@@ -54,13 +65,14 @@ describe('採用基準データの構造 - watchlist-reviewによる更新後も
     expect(criteria.dailyTopicCount.max).toBeGreaterThanOrEqual(criteria.dailyTopicCount.min)
   })
 
-  it('YouTube・Qiita・Zennの各種閾値が妥当な範囲(正の数、平均超過倍率は1倍超)であること', () => {
+  it('YouTube・Qiita・Zenn・Hugging Face Papersの各種閾値が妥当な範囲(正の数、平均超過倍率は1倍超)であること', () => {
     expect(criteria.youtubeRecentVideoWindow).toBeGreaterThan(0)
     expect(criteria.youtubeCandidateVideoCount).toBeGreaterThan(0)
     expect(criteria.youtubeAboveAverageRatio).toBeGreaterThan(1)
     expect(criteria.qiitaMinLikes).toBeGreaterThanOrEqual(0)
     expect(criteria.qiitaMaxAgeDays).toBeGreaterThan(0)
     expect(criteria.zennMinLikes).toBeGreaterThanOrEqual(0)
+    expect(criteria.hfPapersMinUpvotes).toBeGreaterThanOrEqual(0)
     expect(criteria.minIndividualBlogBodyChars).toBeGreaterThan(0)
   })
 
@@ -73,7 +85,7 @@ describe('採用基準データの構造 - watchlist-reviewによる更新後も
   })
 
   it('duplicateSuppressionSourceTypesが配列で、各要素がCandidate.sourceTypeとして有効な種別であること', () => {
-    const validSourceTypes = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn']
+    const validSourceTypes = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn', 'hf-papers']
     expect(Array.isArray(criteria.duplicateSuppressionSourceTypes)).toBe(true)
     for (const sourceType of criteria.duplicateSuppressionSourceTypes) {
       expect(validSourceTypes).toContain(sourceType)
