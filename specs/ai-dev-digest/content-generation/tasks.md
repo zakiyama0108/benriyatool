@@ -68,3 +68,16 @@ Topic型の`LegacyTopic`/`CurrentTopic`化・記事スキーマ検証(`types.ts`
   - 画面側の表示タスク(固定ラベル・開発領域タグ・DiagramView)は[article-detail/tasks.md](../article-detail/tasks.md)を参照
 
 </details>
+
+## 要約の分量・開発領域の値を生成時点で検知し、リトライ・除外の対象にする(2026-10改定)
+
+直近3日連続でAI駆動開発ダイジェストの日次生成が失敗し記事が公開されない事象が発生。原因はTask 10で実装した分量・開発領域の値検証(`isValidSummaryDetailLength`)が、生成直後の`isUsableContent`(Task 11)では呼ばれておらず、書き出し直前の`parseArticle`(ビルド時バリデーション)でのみ検知されていたため、1候補の分量超過・開発領域の値不正がリトライ・除外(Task 9)の対象にならず、その日全体の記事生成が失敗していた不具合の修正。〔提案〕
+
+<details><summary>詳細を開く</summary>
+
+- Task 15: `isUsableContent`に分量・開発領域の値検証を組み込む(仕様: content-generation/design.md「要約の分量を検証する処理」手順7、content-generation/design.md「エラーハンドリング」、daily-publish/design.md「1日分の記事を生成する処理」手順4、daily-publish/design.md「エラーハンドリング」)
+  - 🔴 いずれかの観点の`teaser`が40字未満・140字超、4観点の`detail`合計が800字未満・1700字超、`domain.domains`に未定義の開発領域の値を含む応答が、いずれも`classifyGenerationResult`で`transient`(一時的失敗)に分類されることを確認するテストを`__tests__/ai-dev-digest/lib/generateContent.test.ts`に追加する
+  - 🟢 `app/ai-dev-digest/lib/generateContent.ts`の`isUsableContent`が、既存の形状チェック(非空文字確認)に加えて`summaryValidation.ts`の`isValidSummaryDetailLength`を呼び出すようにする(同じ検証ロジックをTask 10から再利用し、新規の定数・ロジックは追加しない)。これにより、Task 9のリトライ・除外ロジックが分量・開発領域の値不正にもそのまま適用される
+  - 書き出し直前の`parseArticle`(Task 5)による再検証は、リトライ・除外をすべて経ても不正なデータが書き出されないことを確認する最終防衛として変更せず維持する
+
+</details>

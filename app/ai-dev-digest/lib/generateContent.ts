@@ -5,7 +5,7 @@
 // Claude Code CLIのヘッドレス起動そのもの(execFile)はscripts/ai-dev-digest/generate-content.tsが担い、
 // 本モジュールは「CLIの応答をどう分類し、失敗した候補をどう扱うか」という決定的ロジックのみを持つ
 // (CLI呼び出しを注入できる形にしてvitestで完全にテストする)。
-import { isValidImportance } from './summaryValidation'
+import { isValidImportance, isValidSummaryDetailLength } from './summaryValidation'
 import type { Importance, TopicSummary } from './types'
 import type { SelectedTopic } from './candidateTypes'
 
@@ -83,6 +83,13 @@ function isUsableContent(value: unknown): value is GeneratedContent {
     const domain = summary.domain as { domains?: unknown }
     if (!Array.isArray(domain.domains) || domain.domains.length === 0) return false
   }
+
+  // 導入文・詳細文の分量(teaser 40〜140字・detail合計800〜1700字)・開発領域(domains)の値の妥当性も
+  // ここで検証する(content-generation/design.md「要約の分量を検証する処理」手順3・4・7。2026-10改定:
+  // 従来はこの検証をwrite-article.ts実行時のparseArticle(ビルド時バリデーション)に委ねており、
+  // 1候補の分量超過・開発領域の値不正をリトライ・除外の対象にできず、その日全体の生成が失敗していた)
+  if (!isValidSummaryDetailLength(v.summary as TopicSummary)) return false
+
   return true
 }
 
