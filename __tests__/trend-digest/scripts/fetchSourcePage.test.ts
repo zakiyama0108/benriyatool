@@ -5,6 +5,12 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+// fetchに渡されたオプション(第2引数)を型安全に取り出すためのヘルパー
+type FetchCallOptions = { headers?: Record<string, string>; signal?: AbortSignal }
+function fetchOptionsOf(mockFetch: ReturnType<typeof vi.fn>): FetchCallOptions {
+  return mockFetch.mock.calls[0][1] as FetchCallOptions
+}
+
 // 仕様: specs/trend-digest/content-selection/requirements.md#データ取得方法-2
 describe('公開ページの文字コード変換 - Content-Type/metaのcharset指定に従ってHTMLをデコードする(UTF-8決め打ちで読まない)', () => {
   it('Content-Typeヘッダーにcharset=shift_jisが指定されている場合、Shift-JISとしてデコードされること', () => {
@@ -46,9 +52,9 @@ describe('公開ページの取得 - 一般的なブラウザのUser-Agentを付
 
     await fetchHtml('https://example.com/page')
 
-    expect(mockFetch).toHaveBeenCalledWith('https://example.com/page', {
-      headers: { 'User-Agent': BROWSER_USER_AGENT },
-    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockFetch.mock.calls[0][0]).toBe('https://example.com/page')
+    expect(fetchOptionsOf(mockFetch).headers).toEqual({ 'User-Agent': BROWSER_USER_AGENT })
   })
 
   it('取得に失敗した場合(status不正)、例外を投げること', async () => {
@@ -56,5 +62,21 @@ describe('公開ページの取得 - 一般的なブラウザのUser-Agentを付
     vi.stubGlobal('fetch', mockFetch)
 
     await expect(fetchHtml('https://example.com/broken')).rejects.toThrow()
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#データ取得方法-1
+describe('公開ページの取得 - 1サイトの応答なしで収集処理全体が止まらないよう、fetchにタイムアウトを設定する', () => {
+  it('fetchHtmlがAbortSignalを渡してfetchを呼び出すこと', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => 'text/html; charset=utf-8' },
+      arrayBuffer: () => Promise.resolve(new TextEncoder().encode('<html></html>').buffer),
+    })
+    vi.stubGlobal('fetch', mockFetch)
+
+    await fetchHtml('https://example.com/page')
+
+    expect(fetchOptionsOf(mockFetch).signal).toBeInstanceOf(AbortSignal)
   })
 })

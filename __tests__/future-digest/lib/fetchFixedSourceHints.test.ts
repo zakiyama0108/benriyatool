@@ -83,6 +83,38 @@ describe('固定情報源からのヒント取得 - feed/site-specific-htmlの�
 
     expect(hints).toHaveLength(10)
   })
+
+  it('タイトルが200字を超える場合は切り詰めること(research-digestのsanitizeHintと同じ考え方)', async () => {
+    const longTitle = 'あ'.repeat(250)
+    const xml = rssXml([{ title: longTitle, link: 'https://www.technologyreview.com/long', pubDate: 'Fri, 16 Oct 2026 18:00:00 +0000' }])
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(xml) })
+
+    const { hints } = await fetchFixedSourceHints([feedEntry], http)
+
+    expect(hints[0].title.length).toBe(200)
+  })
+
+  it('タイトルに制御文字を含む場合は除くこと(プロンプトインジェクション対策)', async () => {
+    const nullChar = String.fromCharCode(0)
+    const escChar = String.fromCharCode(27)
+    const delChar = String.fromCharCode(127)
+    const controlCharTitle = `不正${nullChar}な${escChar}タイトルです${delChar}`
+    const xml = rssXml([{ title: controlCharTitle, link: 'https://www.technologyreview.com/ctrl', pubDate: 'Fri, 16 Oct 2026 18:00:00 +0000' }])
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(xml) })
+
+    const { hints } = await fetchFixedSourceHints([feedEntry], http)
+
+    expect(hints[0].title).toBe('不正なタイトルです')
+  })
+
+  it('urlがhttp/https以外の候補は除外されること', async () => {
+    const xml = rssXml([{ title: '不正なURL', link: 'javascript:alert(1)', pubDate: 'Fri, 16 Oct 2026 18:00:00 +0000' }])
+    const http = makeHttp({ fetchText: vi.fn().mockResolvedValue(xml) })
+
+    const { hints } = await fetchFixedSourceHints([feedEntry], http)
+
+    expect(hints).toEqual([])
+  })
 })
 
 // 仕様: specs/future-digest/content-selection/design.md「固定情報源からヒントを集める処理」手順4

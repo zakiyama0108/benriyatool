@@ -14,10 +14,13 @@ export type HttpClient = {
 export const BROWSER_USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
 
+// 1サイトの応答なしで収集処理全体が止まるのを防ぐための上限(/fixで追加)
+const FETCH_TIMEOUT_MS = 20_000
+
 // fetch()をそのまま使う本番用HttpClient(scripts/research-digest/collect-and-select.tsから利用)
 export const fetchHttpClient: HttpClient = {
   async fetchText(url) {
-    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_USER_AGENT } })
+    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_USER_AGENT }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
     if (!res.ok) throw new Error(`${url} の取得に失敗しました(status: ${res.status})`)
     return res.text()
   },
@@ -36,17 +39,46 @@ const MAX_HINTS_PER_SOURCE = 10
 // プロンプトに埋め込む前の文字数上限(design.md「セキュリティ」)
 const MAX_TITLE_LENGTH = 200
 
+// &amp;等のHTML実体参照をデコードする(主要な名前付き参照+数値参照)。フィード配信元が
+// タイトル・URLにエスケープした文字をそのまま埋め込むことがあるため、生のまま残さない
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(parseInt(dec, 10)))
+    .replace(/&amp;/g, '&')
+}
+
+// Atomの<link>要素からリンク先を抜き出す。rel="alternate"を最優先し(rel省略時もAtom仕様上
+// alternate扱いのため次点)、rel="self"(フィード自身のAPI用URL)等を誤って拾わないようにする
+function extractAtomLink(block: string): string | undefined {
+  const tags = block.match(/<link\b[^>]*\/?>/g) ?? []
+  const candidates = tags
+    .map((tag) => ({ href: tag.match(/href="([^"]*)"/)?.[1], rel: tag.match(/rel="([^"]*)"/)?.[1] }))
+    .filter((c): c is { href: string; rel: string | undefined } => Boolean(c.href))
+
+  return (
+    candidates.find((c) => c.rel === 'alternate')?.href ??
+    candidates.find((c) => c.rel === undefined)?.href ??
+    candidates[0]?.href
+  )
+}
+
 // RSS/Atom/RDFの<item>/<entry>を雑駁に抽出する(news-digestのparseFeedEntriesと同じ考え方の簡易パーサー)
 function parseFeedItems(xml: string): RawFixedSourceItem[] {
   const items: RawFixedSourceItem[] = []
   const blocks = xml.match(/<(item|entry)\b[\s\S]*?<\/\1>/g) ?? []
 
   for (const block of blocks) {
-    const title = block.match(/<title[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/)?.[1]?.trim()
+    const rawTitle = block.match(/<title[^>]*>\s*(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?\s*<\/title>/)?.[1]?.trim()
+    const title = rawTitle ? decodeHtmlEntities(rawTitle) : undefined
     const rssLink = block.match(/<link>([\s\S]*?)<\/link>/)?.[1]?.trim()
-    const atomLink = block.match(/<link[^>]*href="([^"]+)"/)?.[1]?.trim()
     const rdfLink = block.match(/rdf:about="([^"]+)"/)?.[1]?.trim()
-    const url = rssLink || atomLink || rdfLink
+    const rawUrl = rssLink || extractAtomLink(block) || rdfLink
+    const url = rawUrl ? decodeHtmlEntities(rawUrl) : undefined
     const dateText = block.match(/<(?:pubDate|updated|published|dc:date)>([\s\S]*?)<\/(?:pubDate|updated|published|dc:date)>/)?.[1]?.trim()
     const parsedDate = dateText ? new Date(dateText) : null
     const publishedAt = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : null

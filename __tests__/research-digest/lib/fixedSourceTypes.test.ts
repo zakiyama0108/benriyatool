@@ -69,10 +69,19 @@ describe('固定情報源の検証 - 不正な設定をビルド時に検知す�
       parseFixedSources(
         [
           { genreId: 'medical-health', name: 'A', channel: { type: 'feed', url: 'https://example.com/feed' } },
-          { genreId: 'medical-health', name: 'B', channel: { type: 'site-specific-html', url: 'https://example.com', parserId: 'exampleParser' } },
+          { genreId: 'medical-health', name: 'B', channel: { type: 'site-specific-html', url: 'https://example.com', parserId: 'jmaPress' } },
         ],
         VALID_GENRE_IDS,
       ),
     ).not.toThrow()
+  })
+
+  it('site-specific-htmlのparserIdが登録済みパーサーに対応しない場合に例外になること(typoを実行時まで検知できない問題の対策)', () => {
+    expect(() =>
+      parseFixedSources(
+        [{ genreId: 'medical-health', name: 'A', channel: { type: 'site-specific-html', url: 'https://example.com', parserId: 'notRegisteredParser' } }],
+        VALID_GENRE_IDS,
+      ),
+    ).toThrow(/parserId/)
   })
 })
