@@ -169,6 +169,45 @@ describe('classifyGenerationResult - 🧭開発領域観点(domain)を含む新�
     const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', importance: 4, summary }) }
     expect(classifyGenerationResult(res).kind).toBe('transient')
   })
+
+  // 仕様: specs/ai-dev-digest/content-generation/design.md「要約の分量を検証する処理」手順3・4・7(2026-10改定)。
+  // 従来はisUsableContentが各観点のheading/teaser/detailの非空文字しか見ておらず、分量・開発領域の値の不正は
+  // write-article.ts実行時のparseArticle(ビルド時バリデーション)まで検知できず、その日全体の生成が失敗していた
+  it('いずれかの観点のteaserが40字未満の応答はtransientに分類する(分量不正を生成時点で検知する)', () => {
+    const summary = validSummaryWithDomain({
+      benefit: { heading: 'い見出し', teaser: 'い'.repeat(10), detail: 'い'.repeat(250) },
+    })
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', importance: 4, summary }) }
+    expect(classifyGenerationResult(res).kind).toBe('transient')
+  })
+
+  it('いずれかの観点のteaserが140字を超える応答はtransientに分類する(分量不正を生成時点で検知する)', () => {
+    const summary = validSummaryWithDomain({
+      benefit: { heading: 'い見出し', teaser: 'い'.repeat(150), detail: 'い'.repeat(250) },
+    })
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', importance: 4, summary }) }
+    expect(classifyGenerationResult(res).kind).toBe('transient')
+  })
+
+  it('4観点のdetail合計が800字未満の応答はtransientに分類する(分量不正を生成時点で検知する)', () => {
+    const perspective = (prefix: string) => ({ heading: `${prefix}見出し`, teaser: prefix.repeat(60), detail: prefix.repeat(50) })
+    const summary = {
+      domain: { ...perspective('あ'), domains: ['backend'] },
+      benefit: perspective('い'),
+      how: perspective('う'),
+      howToUse: perspective('え'),
+    }
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', importance: 4, summary }) }
+    expect(classifyGenerationResult(res).kind).toBe('transient')
+  })
+
+  it('domain.domainsに未定義の開発領域の値を含む応答はtransientに分類する(ビルド時バリデーションまで波及させない)', () => {
+    const summary = validSummaryWithDomain({
+      domain: { heading: 'あ見出し', teaser: 'あ'.repeat(60), detail: 'あ'.repeat(250), domains: ['other-business'] },
+    })
+    const res: ClaudeCliResponse = { result: JSON.stringify({ heading: '見出し', importance: 4, summary }) }
+    expect(classifyGenerationResult(res).kind).toBe('transient')
+  })
 })
 
 // 仕様: specs/ai-dev-digest/daily-publish/requirements.md#掲載件数の保証-3
