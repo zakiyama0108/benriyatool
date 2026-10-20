@@ -203,6 +203,23 @@ describe('記事ページの公開待ち - 記事詳細ページへのHTTP GET�
     }
   })
 
+  it('既定のtimeoutMs(20分)を超えても200が返らない場合、公開待ちを打ち切ること(2026-10-14のデプロイ遅延による配信失敗を踏まえ、10分から延長)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(buildResponse(404))
+    const sleep = vi.fn().mockResolvedValue(undefined)
+
+    // timeoutMs・pollIntervalMsを明示的に渡さず、既定値のまま打ち切り境界を検証する
+    const result = await waitForPageAvailable('https://benriyatool.com/news-digest/2026-10-14', {
+      fetch: fetchMock,
+      sleep,
+    })
+
+    expect(result.available).toBe(false)
+    if (result.available) throw new Error('unreachable')
+    expect(result.elapsedMs).toBeGreaterThanOrEqual(1_200_000)
+    // 既定pollIntervalMs(15秒)で1,200,000msに達するまでの試行回数(81回)
+    expect(fetchMock).toHaveBeenCalledTimes(81)
+  })
+
   it('GETがrequestTimeoutMsを超えて応答しない場合、タイムアウトしてネットワークエラー扱いになること(応答しない相手への張り付きを防ぐ)', async () => {
     // fetchのinitに渡されたAbortSignalが実際にabortされたらrejectする、fetch本来のタイムアウト
     // 挙動を模したモック。requestTimeoutMsを小さい値にすることで実時間をほぼ使わずに検証する

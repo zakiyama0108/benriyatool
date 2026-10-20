@@ -1,11 +1,31 @@
 # 設計: LINE公式アカウントでの新着記事自動配信
 
 ## サマリ
-日次記事のマージ(mainへのpush、`content/ai-dev-digest/articles/*.json`の新規追加)をトリガーに、独立したGitHub Actionsワークフロー(`ai-dev-digest-line-broadcast.yml`)が起動する。記事詳細ページが本番サイトで実際に閲覧可能になったことを確認してから、運営者が屋号名義で開設するLINE公式アカウントへブロードキャストメッセージ(記事タイトル・トピック見出し一覧・記事リンク)を配信する。待機処理(`app/lib/waitForPageAvailable.ts`)はnews-digest・trend-digestの配信とも共通のため、本specの設計が3アプリの「正」となる。
+日次記事のマージ(mainへのpush、`content/ai-dev-digest/articles/*.json`の新規追加)をトリガーに、独立したGitHub Actionsワークフロー(`ai-dev-digest-line-broadcast.yml`)が起動する。記事詳細ページが本番サイトで実際に閲覧可能になったことを確認してから、運営者が屋号名義で開設するLINE公式アカウントへブロードキャストメッセージ(記事タイトル・トピック見出し一覧・記事リンク)を配信する。待機処理(`app/lib/waitForPageAvailable.ts`)はnews-digest・trend-digestの配信とも共通のため、本specの設計が3アプリの「正」となる。〔合意〕
+
+## 決定事項
+
+| 論点 | 選んだ案 | 採らなかった案 | 理由 | 影響範囲 | 出所 |
+|---|---|---|---|---|---|
+| ワークフローの配置 | 独立した新規ワークフロー`ai-dev-digest-line-broadcast.yml` | `ai-dev-digest-daily.yml`に配信ジョブを追加 | auto-mergeの完了タイミングは`publish`ジョブの実行中には確定しないため、`push`イベントを直接トリガーにできる独立ファイルの方が「マージ完了を別途ポーリングする」複雑さを避けられる | 実行環境の前提 | 〔合意〕 |
+| リダイレクトの扱い | `fetch`既定の`redirect: 'follow'`のまま追う | `redirect: 'manual'`や厳密な`status === 200`判定 | `trailingSlash: true`により本番の正準URLは常に3xx経由で解決されるため、`manual`や厳密な200判定では公開済みでも観測できず必ず時間切れになる | 記事ページの公開を待つ処理 | 〔合意〕 |
+| `timeoutMs`の値 | `1200000`(20分) | `600000`(10分)のまま維持 | 2026-10-14にnews-digest配信で`deploy.yml`のmigrateジョブが失敗しデプロイが完了しないまま10分で打ち切られ配信失敗した。デプロイ失敗自体は別途`deploy.yml`側で対処するが、デプロイが単純に長引く場合への備えとしても10分の余裕は小さいため延長する | 記事ページの公開を待つ処理(待機パラメータと根拠) | **🟡〔提案〕** |
+| 待機処理の実装場所 | 配信CLI(`broadcast-line.ts`、TypeScript)側 | ワークフローYAMLのシェルループ | YAMLのシェルループはこのリポジトリのvitestでテストできないが、TypeScript側なら`fetch`を差し替えて決定的にテストできる | 記事ページの公開を待つ処理 | 〔合意〕 |
+
+<details><summary>詳細を開く</summary>
+
+| 論点 | 選んだ案 | 採らなかった案 | 理由 | 影響範囲 | 出所 |
+|---|---|---|---|---|---|
+| 試行ごとのログ出力方式 | `onAttempt`コールバックで呼び出し元へ結果を渡す | `waitForPageAvailable`自身が`console`出力する | `app/`配下は`no-console`の対象で`npm run lint`が失敗するため、`console`を使えるのは`scripts/`配下の呼び出し元のみ | 記事ページの公開を待つ処理 / ログ | 〔合意〕 |
+| CDN/HTTPキャッシュの回避 | `cache: 'no-store'`に加え`Cache-Control: no-cache`ヘッダーを付与 | `cache: 'no-store'`のみ | Node標準の`fetch`(undici)は`cache: 'no-store'`だけではHTTPキャッシュ実装を持たずヘッダーも追加しないため、単独では中間キャッシュ回避の効果が実質的に得られない | 記事ページの公開を待つ処理 | 〔合意〕 |
+
+</details>
 
 ## 実行環境の前提(初導入のため明記する設計判断)
 
-配信は[daily-publish](../daily-publish/design.md)の`ai-dev-digest-daily.yml`にジョブを追加するのではなく、独立した新規ワークフロー`.github/workflows/ai-dev-digest-line-broadcast.yml`とする。
+配信は[daily-publish](../daily-publish/design.md)の`ai-dev-digest-daily.yml`にジョブを追加するのではなく、独立した新規ワークフロー`.github/workflows/ai-dev-digest-line-broadcast.yml`とする。〔合意〕
+
+<details><summary>詳細を開く</summary>
 
 - **別ファイルに分ける理由**: `ai-dev-digest-daily.yml`の`publish`ジョブは記事PRの作成とauto-mergeの有効化までを行うが、実際のマージはそのジョブの実行が終わった後、`ci.yml`の完了を待って非同期に行われる(auto-mergeの仕組み上、CI成功のタイミングはジョブ実行中には確定しない)。そのため「PRがmainへ自動マージされた直後」というタイミングを`publish`ジョブの内部で待ち受けることはできない。GitHubの`push`イベント(`branches: main`、`paths: content/ai-dev-digest/articles/*.json`)を使えば、実際にmainへマージされた瞬間をそのまま起動条件にでき、マージ完了を別途ポーリングする複雑さを避けられる。この`push`トリガーは`ai-dev-digest-daily.yml`の`schedule`/`workflow_run`トリガーとは種別が異なるため、同一ファイルに同居させるより別ファイルに分ける方が単純である(requirements.md#配信タイミング・方式-5は「同じワークフロー(または後続ジョブ)」を許容しており、別ファイルもこの要件を満たす設計判断とする)
 - 配信スクリプトは既存の収集・選定スクリプトと同じ置き場所の慣習に従い`scripts/ai-dev-digest/`配下に置く
@@ -13,9 +33,16 @@
 - このワークフローはGitHubへの書き込み(コミット・PR作成等)を一切行わないため、[daily-publish](../daily-publish/design.md)が使う書き込み用PAT(`AI_DEV_DIGEST_GH_PAT`)は使わない。リポジトリのチェックアウトのみが必要なため、ワークフロー既定の`GITHUB_TOKEN`で足りる
 - 運用開始前に、`LINE_CHANNEL_ACCESS_TOKEN`が実際にリポジトリのActions Secretsに設定されていることを確認する(daily-publish/design.mdと同様、コードで強制できない前提条件のため運用手順として確認する)
 
+</details>
+
 ## 処理フロー
 
 ### 配信タイミングをトリガーする処理
+
+`main`ブランチへの記事ファイル新規追加pushを検知し、既存ファイルの変更では起動しない。〔合意〕
+
+<details><summary>詳細を開く</summary>
+
 - 対象: `main`ブランチへのpush(daily-publishの日次記事PRが自動マージされた結果として発生するpush)
 - 手順:
   1. `content/ai-dev-digest/articles/*.json`パターンに一致するファイルへの変更を含む、`main`ブランチへのpushでのみワークフローを起動する(GitHub Actionsのパスフィルタ)
@@ -24,7 +51,14 @@
   4. 新規追加ファイルが見つかった場合、そのファイル名(`<date>.json`)から対象日付を取り出し、以降の処理に渡す(通常は1件。複数件見つかった場合も同様にそれぞれの日付に対して以降の処理を順に行う)
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-5、requirements.md#配信タイミング・方式-6
 
+</details>
+
 ### 配信メッセージ本文を組み立てる処理
+
+記事データをパースし、タイトル・トピック見出し全件・記事リンクを改行区切りの本文に組み立てる。〔合意〕
+
+<details><summary>詳細を開く</summary>
+
 - 対象: 新規追加された記事データ(`content/ai-dev-digest/articles/<date>.json`)
 - 手順:
   1. 記事データを読み込み、[article-detail/design.md](../article-detail/design.md)が定めるスキーマ(`parseArticle`)でパースする(不正なデータの場合は後述エラーハンドリングに従う)
@@ -45,7 +79,14 @@
   6. LINE Messaging APIのテキストメッセージには文字数上限(公式ドキュメント上5000文字)があるが、トピック件数は最大5件・各見出しも短文であるため、通常の記事データでこの上限を超過する可能性は低いと見込まれる。本specでは上限超過への特別な切り詰め処理は設けず、万一超過した場合は後述のエラーハンドリング(LINE配信APIがエラーを返した場合の扱い)に従う
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
+</details>
+
 ### 記事ページの公開を待つ処理
+
+配信前にリンク先URLへHTTP GETし、200になるまでポーリングする(`timeoutMs`で打ち切り)。待機パラメータは3アプリ共通(ai-dev-digest/news-digest/trend-digest)で、本specが「正」。〔合意〕
+
+<details><summary>詳細を開く</summary>
+
 - 対象: 組み立てたメッセージ本文に含まれる記事詳細ページのURL(`https://benriyatool.com/ai-dev-digest/<date>`)
 - 背景: このワークフローと本番デプロイ([deploy.yml](../../../.github/workflows/deploy.yml))は、mainへの**同じpushで並列に起動する**。デプロイ側は全テスト実行とビルドを挟むため必ず後から完了し、配信の方が先に終わる。確認せずに配信すると、記事ページがまだ配信網に載っていない時間帯にリンクを通知してしまう(requirements.md#配信タイミング・方式-8)
 - 手順:
@@ -56,16 +97,23 @@
   5. 試行ごとの結果(経過秒数・HTTPステータス)は、待機関数自身がログ出力するのではなく、呼び出し元へ結果を渡すコールバック引数(`onAttempt`)を通じて伝える。`app/lib/waitForPageAvailable.ts`自体は`console`出力を一切持たない。実際の実行ログへの記録(`console.error`)は、呼び出し元である配信CLI(`scripts/<app>/broadcast-line.ts`)側が`onAttempt`を受け取って行う(根拠: `eslint.config.mjs`は`no-console: "warn"`をリポジトリ全体に適用し、`no-console: "off"`の例外は`scripts/**/*.mjs`と`scripts/{ai-dev-digest,news-digest,trend-digest}/**/*.ts`のみで、`app/`配下に置く`waitForPageAvailable.ts`が素朴に`console.*`を呼ぶと`npm run lint`(`--max-warnings=0`)が失敗するため。同じ形の先例として`app/ai-dev-digest/lib/generateContent.ts`の`generateTopics`が持つ`onExcluded`コールバック(除外した候補を呼び出し元へ通知し、scripts側が`console.error`でActionsログに残す)がある)
 - 待機パラメータと根拠:
   - `pollIntervalMs = 15000`(15秒) … デプロイ完了からリンク通知までの遅れをこの粒度に抑える。これ以上短くしても本番サイトへのリクエストが増えるだけで得られる精度に見合わない
-  - `timeoutMs = 600000`(10分) … 2026-09-22時点の実測でmainへのpushからデプロイ完了まで約2分7秒(うち全テスト実行が約66秒)。今後テストが増えても収まるよう実測の5倍弱(2分7秒×5≒10分35秒であり、10分はこれよりやや短い)を上限とする。GitHub Actionsのジョブ既定タイムアウト(6時間)に対しては十分小さい
+  - `timeoutMs = 1200000`(20分) … 当初は2026-09-22時点の実測(mainへのpushからデプロイ完了まで約2分7秒)の5倍弱で10分としていたが、2026-10-14のnews-digest配信で`deploy.yml`のmigrateジョブが失敗(`supabase/setup-cli@v1`の`version: latest`解決がGitHub APIのレート制限に抵触)しデプロイ自体が完了しないまま10分で打ち切られ、配信が失敗した(このデプロイ失敗自体は`deploy.yml`側でSupabase CLIのバージョンを固定することで対処する。`.github/workflows/deploy.yml`参照)。デプロイが単純に長引く場合への備えとしても10分の余裕は小さいため、20分に延長する。GitHub Actionsのジョブ既定タイムアウト(6時間)に対しては十分小さい **🟡〔提案〕**
   - `requestTimeoutMs = 10000`(10秒) … 1回のGETに許す上限時間。Node標準の`fetch`(undici)はリクエスト全体のタイムアウトを持たないため、`AbortSignal.timeout(requestTimeoutMs)`で明示的に打ち切る(これがないと応答しない相手に当たった場合1試行が数分〜数時間ブロックし、`timeoutMs`による打ち切りが効かなくなる)。静的ページの応答としては十分余裕がある値とし、`pollIntervalMs`(15秒)より短くすることで1試行が次のポーリングを追い越さないようにする。タイムアウト時は下記手順3の「ネットワークエラー」と同じ扱いにする
-  - 複数記事が同時公開された場合の考慮: 配信CLIは記事ごとに順に待機するため(3アプリ共通の考え方。daily-publishは日付ごとに記事を順次処理するが、複数記事が同一pushに含まれるかどうかのトリガー条件自体はアプリごとに異なる)、同一pushで複数の記事データが新規追加された場合、最悪の場合の合計待機時間は`timeoutMs`(10分)×記事件数まで伸びうる
-- テストからの注入(3アプリ共通): 各アプリの配信CLI(`scripts/{ai-dev-digest,news-digest,trend-digest}/broadcast-line.ts`の`broadcastArticle(articlePath, accessToken, waitSettings?)`)に、待機の設定(`pollIntervalMs`・`timeoutMs`・`sleep`)を差し替えるための任意引数を1つ足し、そのまま`waitForPageAvailable`へ渡す。既定値は本番用(15秒・10分)のままとし、テストだけが短い値やフェイクの`sleep`を渡せるようにする(これがないと、時間切れの挙動を検証するテストが実時間で10分待つことになり書けない)。2026-09-22時点ではtrend-digestのみこの形にしていたが、2026-09-26にai-dev-digest・news-digestの配信CLIも同じ形へ揃え、`broadcastArticle`をexportしてCLIレベルのテスト(`__tests__/{ai-dev-digest,news-digest,trend-digest}/scripts/broadcast-line.test.ts`)を追加した(「公開確認でGETしたURL == 配信本文に載るURL」という不変条件がCLI単体でも検証されるようにするため)
+  - 複数記事が同時公開された場合の考慮: 配信CLIは記事ごとに順に待機するため(3アプリ共通の考え方。daily-publishは日付ごとに記事を順次処理するが、複数記事が同一pushに含まれるかどうかのトリガー条件自体はアプリごとに異なる)、同一pushで複数の記事データが新規追加された場合、最悪の場合の合計待機時間は`timeoutMs`(20分)×記事件数まで伸びうる
+- テストからの注入(3アプリ共通): 各アプリの配信CLI(`scripts/{ai-dev-digest,news-digest,trend-digest}/broadcast-line.ts`の`broadcastArticle(articlePath, accessToken, waitSettings?)`)に、待機の設定(`pollIntervalMs`・`timeoutMs`・`sleep`)を差し替えるための任意引数を1つ足し、そのまま`waitForPageAvailable`へ渡す。既定値は本番用(15秒・20分)のままとし、テストだけが短い値やフェイクの`sleep`を渡せるようにする(これがないと、時間切れの挙動を検証するテストが実時間で20分待つことになり書けない)。2026-09-22時点ではtrend-digestのみこの形にしていたが、2026-09-26にai-dev-digest・news-digestの配信CLIも同じ形へ揃え、`broadcastArticle`をexportしてCLIレベルのテスト(`__tests__/{ai-dev-digest,news-digest,trend-digest}/scripts/broadcast-line.test.ts`)を追加した(「公開確認でGETしたURL == 配信本文に載るURL」という不変条件がCLI単体でも検証されるようにするため)
 - 実装場所の判断: 待機をワークフローYAMLのシェルループではなく配信CLI(`broadcast-line.ts`)側に置く。YAMLのシェルループはこのリポジトリのvitestでテストできないのに対し、TypeScript側なら`fetch`を差し替えて「404が続いたあと200になったら送る」「時間切れなら送らない」を決定的にテストできるため(`scripts/trend-digest/fetchSourcePage.ts`と同じ置き方の考え方)
 - 公開確認のGETは`fetch`に`cache: 'no-store'`を指定し、加えて`Cache-Control: no-cache`リクエストヘッダーを付けて行い、CDN/HTTPキャッシュを避ける(デプロイ前の404がキャッシュされると、デプロイ後も404を掴み続けて無駄に待つ・時間切れになるおそれがあるため)。Node標準の`fetch`(undici)は`cache: 'no-store'`だけではHTTPキャッシュ実装を持たずリクエストヘッダーも追加しないため、CDN/中間キャッシュを避ける効果が実質的に得られない。このヘッダーは認証情報ではないため、下記「セキュリティ」の「認証情報を一切付けない」には抵触しない
 - 待機処理自体は3アプリ(ai-dev-digest / news-digest / trend-digest)で共通のため、サイト全体で共有する`app/lib/waitForPageAvailable.ts`に置く(CLAUDE.md「フォルダ構成」のサイト全体に関わるものは`app/`直下に置く規約に従う)
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-8〜9
 
+</details>
+
 ### LINEブロードキャストメッセージを送信する処理
+
+組み立てた本文をLINE Messaging APIのブロードキャストエンドポイントへPOSTする。失敗してもリトライしない。〔合意〕
+
+<details><summary>詳細を開く</summary>
+
 - 対象: 組み立てたメッセージ本文
 - 手順:
   1. LINE Messaging APIのブロードキャストメッセージ送信エンドポイント(`POST https://api.line.me/v2/bot/message/broadcast`)へ、`Authorization: Bearer <チャネルアクセストークン>`ヘッダーを付けてリクエストする(友だち全員への一斉配信。セグメント配信は行わない。requirements.md#配信タイミング・方式-7)。実装時に[LINE Developers公式ドキュメント](https://developers.line.biz/ja/reference/messaging-api/#send-broadcast-message)でエンドポイント・リクエスト形式の最新仕様を確認する
@@ -74,14 +122,24 @@
   4. レスポンスが失敗の場合(月間無料通数超過によるエラー・その他一時的なAPIエラーいずれも)、リトライはせず、下記エラーハンドリングに従う
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-3〜5
 
+</details>
+
 ## エラーハンドリング
+
+公開待ちタイムアウト・パース失敗・LINE API失敗のいずれも配信を行わず、リトライせず実行ログに記録する。〔合意〕
+
+<details><summary>詳細を開く</summary>
 
 - 既定の待機時間(`timeoutMs`)内に記事ページの公開を確認できなかった場合、配信を行わずワークフローのステップを異常終了させる(requirements.md#配信タイミング・方式-9)。「開けないリンクを送ってしまう」ことの方が「その回の配信が飛ぶ」ことより読者への影響が大きいと判断したため、公開が確認できない限り送らない側に倒す。この場合もリトライは行わず、`waitForPageAvailable`の戻り値に含まれる「最後に観測したHTTPステータス」と「経過時間(ミリ秒)」を実行ログに記録する(戻り値の形は上記「記事ページの公開を待つ処理」手順4参照)
 - 記事データのパースに失敗した場合(通常は発生しない想定。article-detailのビルド時バリデーションを既に通過したデータのはずだが、念のため防御的に検証する)、配信を行わずワークフローのステップを異常終了させる
 - LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-4〜5)。このワークフローは記事公開(daily-publishのPRマージ)が完了した**後**に、ファイルが分離された独立のワークフローとして起動するため、配信の失敗がdaily-publishの処理(記事公開)自体に影響を及ぼす経路はそもそも存在しない(requirements.mdビジネスルール[4])
 - 配信失敗時の記録方法: [daily-publish](../daily-publish/design.md)の「CI失敗時に記録する処理」はPRコメントとして記録するが、本処理はPRマージ後(PRが既にクローズ済み)に実行されるためコメント先のPRが存在しない。専用のGitHub Issue作成等の追加の通知手段は設けず、GitHub Actionsのワークフロー実行結果(失敗)と実行ログの内容で運営者が把握する方式とする(daily-publish/design.mdの「記事生成処理自体が例外で中断した場合」(PR自体が作られない失敗をGitHub Actionsの実行結果で把握する)と同じ考え方。無料枠が月200通と少なく配信失敗の発生頻度は低いと見込まれ、追加の通知基盤を持つコストに見合わないと判断した。要件[6]が定める「原因を記録し、運営者が把握できるようにする」は、失敗したステップ名・HTTPステータス・エラーレスポンス概要を実行ログに出力することで満たす)
 
+</details>
+
 ## 関連するファイル(抜粋)
+
+<details><summary>詳細を開く</summary>
 
 ```
 .github/workflows/ai-dev-digest-line-broadcast.yml (新規: mainへのpush(content/ai-dev-digest/articles/*.jsonの新規追加)をトリガーに配信を実行するワークフロー)
@@ -94,7 +152,13 @@ app/ai-dev-digest/lib/articleSchema.ts (既存: parseArticleを利用)
 content/ai-dev-digest/articles/<date>.json (既存: 配信内容の元データ)
 ```
 
+</details>
+
 ## セキュリティ
+
+チャネルアクセストークンはActions Secretsで管理し、配信本文は記事データのみから組み立てる。公開確認のGETに認証情報は付けない。〔合意〕
+
+<details><summary>詳細を開く</summary>
 
 - チャネルアクセストークン(`LINE_CHANNEL_ACCESS_TOKEN`)は、このリポジトリのActions Secretsとして暗号化保存する(暗号化され、ワークフロー実行時以外は値を参照できないGitHubの標準機能。daily-publishの各Secretsと同じ扱い)
 - トークンの発行自体は運営者がLINE Developersコンソールで事前に手動で行う(requirements.mdビジネスルール[2]、本specの自動化対象には含めない)。漏えい時は運営者がLINE Developersコンソールでトークンを再発行し、Secretsを更新する運用とする
@@ -103,9 +167,17 @@ content/ai-dev-digest/articles/<date>.json (既存: 配信内容の元データ)
 - 配信は友だち全員への一斉配信(ブロードキャスト)のみを行い、個々の友だちを識別・追跡する情報(ユーザーID等)を扱わない(requirements.mdスコープ外「セグメント配信、パーソナライズ配信」)
 - 公開確認のGET(`app/lib/waitForPageAvailable.ts`)は認証情報を一切付けない(LINE APIへのリクエストとヘッダーを共有しない)
 
+</details>
+
 ## ログ
+
+対象日付・配信結果をワークフロー実行ログに記録する。チャネルアクセストークンは一切出力しない。〔合意〕
+
+<details><summary>詳細を開く</summary>
 
 - ワークフロー実行ごとに、対象日付・配信対象トピック数・LINE APIへのリクエスト結果(成功/失敗)をGitHub Actionsのワークフロー実行ログに記録する(標準出力への記録で足り、追加のログ基盤は持たない。daily-publishと同じ方針)
 - 記事ページ公開待ちの試行ごとのログ(経過秒数・HTTPステータス)は、配信CLI(`scripts/ai-dev-digest/broadcast-line.ts`)が`waitForPageAvailable`に渡す`onAttempt`コールバックの中で`console.error`により出力する。`app/lib/waitForPageAvailable.ts`自体は`console`を使わない(上記「記事ページの公開を待つ処理」手順5参照)
 - 配信に失敗した場合は、HTTPステータス・エラーレスポンス概要も合わせて記録する(上記エラーハンドリング「配信失敗時の記録方法」参照)
 - リクエストヘッダー(`Authorization: Bearer <チャネルアクセストークン>`)はいかなる場合もログに出力しない(将来の実装変更でトークンが誤ってログに残ることを防ぐための明記)
+
+</details>

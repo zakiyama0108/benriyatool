@@ -48,3 +48,9 @@
   - 🟢 `scripts/news-digest/broadcast-line.ts`を、trend-digestの`broadcastArticle(articlePath, accessToken, waitSettings?)`と同じ形にリファクタする(`main()`はそれを呼ぶだけにする)。既存の挙動(標準エラー出力の内容・終了コード・`onAttempt`での`console.error`出力・時間切れ時にLINE APIを呼ばないこと)は変えない
   - 🔵 リファクタ
   - 追加したテストが実際に退行を検出できることを確認する(公開確認のURLを`buildArticleUrl`以外に変える・公開確認のGETに`Authorization`を付ける、のそれぞれでテストが落ちることを確認してから元に戻す)
+
+## 2026-10-20 追加(timeoutMs延長・デプロイ失敗への対処)
+
+- Task F: 記事ページ公開待ちのタイムアウト延長(仕様: [ai-dev-digest/line-broadcast/design.md](../../ai-dev-digest/line-broadcast/design.md)「記事ページの公開を待つ処理」「待機パラメータと根拠」)
+  - 背景: 2026-10-14のnews-digest配信で`deploy.yml`のmigrateジョブが失敗しデプロイが完了しないまま`timeoutMs`(当時10分)で打ち切られ配信が失敗した。3アプリ共通の対応内容は[ai-dev-digest/line-broadcast/tasks.md](../../ai-dev-digest/line-broadcast/tasks.md)のTask Fを参照(`app/lib/waitForPageAvailable.ts`の`DEFAULT_TIMEOUT_MS`を10分から20分へ変更する1つの実装であり、着手はいずれか1アプリで1回のみでよい)
+  - デプロイ自体が失敗するケース(今回の直接の原因)は`timeoutMs`の延長では救えないため、`.github/workflows/deploy.yml`の`supabase/setup-cli@v1`のバージョン固定も同じPRで対処する

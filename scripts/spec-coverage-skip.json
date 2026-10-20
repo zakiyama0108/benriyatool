@@ -9523,5 +9523,45 @@
     "specFile": "blog/source-directory/design.md",
     "item": "状態管理",
     "reason": "ページの状態設計(useStateの持ち方)の説明で、phaseの遷移はpage.test.tsx、selectedAppIdの遷移はpage.test.tsx・SourceTabs.test.tsxでテスト済みのため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "決定事項",
+    "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "決定事項 > ワークフローの配置",
+    "reason": "独立ワークフローファイルに分ける方式を選んだ理由を記録した設計判断の表の1行で、ワークフロー定義自体はTDD対象外(.github/workflows/ai-dev-digest-line-broadcast.yml)のため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "決定事項 > リダイレクトの扱い",
+    "reason": "redirect: 'follow'のまま3xxを追う方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はwaitForPageAvailable.test.tsの3xxリダイレクトのテストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "決定事項 > `timeoutMs`の値",
+    "reason": "既定timeoutMsを10分から20分に延長した理由を記録した設計判断の表の1行で、採用した値自体はwaitForPageAvailable.test.tsの既定値テストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "決定事項 > 待機処理の実装場所",
+    "reason": "待機ロジックを配信CLI側(TypeScript)に置く方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はwaitForPageAvailable.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "決定事項 > 試行ごとのログ出力方式",
+    "reason": "onAttemptコールバック経由でログ出力する方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はwaitForPageAvailable.test.tsのonAttemptのテストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "ai-dev-digest/line-broadcast/design.md",
+    "item": "決定事項 > CDN/HTTPキャッシュの回避",
+    "reason": "Cache-Control: no-cacheヘッダーを付与する方式を選んだ理由を記録した設計判断の表の1行で、採用した案自体はwaitForPageAvailable.test.tsのキャッシュヘッダーのテストで検証済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "news-digest/line-broadcast/design.md",
+    "item": "決定事項",
+    "reason": "3アプリ共通の決定事項はai-dev-digest/line-broadcast/design.mdが正であることを示す参照のみの1行で、本spec固有のテスト対象を持たないため"
   }
 ]

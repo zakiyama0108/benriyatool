@@ -19,9 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # versionはバージョン番号を固定する(2026-10-14・2026-10-19に`version: latest`が
+      # 未認証のGitHub API呼び出しでレート制限に抵触しmigrateジョブごと失敗する事象が発生したため。
+      # 固定することでAPI解決自体をスキップできる。新しいCLI機能が必要になったら都度値を上げる)
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: '2.121.0'
 
       # SUPABASE_DB_URLはSession PoolerのURI(セッションモード・ポート5432)。
       # GitHub ActionsランナーはIPv6不可のため、IPv4対応のPooler経由で接続する(直接続はIPv6のみ)
