@@ -128,3 +128,8 @@ export function mextHoudou(html: string): RawFixedSourceItem[] {
   }
   return items
 }
+
+// site-specific-htmlのparserIdからパース関数を引く辞書(fixedSourceTypes.tsの読み込み時検証、
+// scripts/research-digest/collect-and-select.tsのHtmlParsers注入の両方で使う。future-digestの
+// SITE_SPECIFIC_PARSERSと同じ考え方)
+export const SITE_SPECIFIC_PARSERS = { jmaPress, dietitianNews, aistResearch, naoNews, nedoNews, mextHoudou }

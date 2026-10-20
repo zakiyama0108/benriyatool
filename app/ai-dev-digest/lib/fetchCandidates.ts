@@ -13,16 +13,19 @@ export type HttpClient = {
   fetchText: (url: string) => Promise<string>
 }
 
+// 1サイトの応答なしで収集処理全体が止まるのを防ぐための上限(/fixで追加)
+const FETCH_TIMEOUT_MS = 20_000
+
 // fetch()をそのまま使う本番用HttpClient(scripts/ai-dev-digest/collect-and-select.tsから利用)
 export const fetchHttpClient: HttpClient = {
   async fetchJson(url) {
-    const res = await fetch(url)
+    const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
     if (!res.ok) throw new Error(`${url} の取得に失敗しました(status: ${res.status})`)
     const data: unknown = await res.json()
     return data
   },
   async fetchText(url) {
-    const res = await fetch(url)
+    const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
     if (!res.ok) throw new Error(`${url} の取得に失敗しました(status: ${res.status})`)
     return res.text()
   },
