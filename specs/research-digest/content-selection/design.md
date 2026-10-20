@@ -113,7 +113,7 @@ export type FixedSourceHint = {
 
 - sleep-exercise(睡眠・運動)・economics-behavioral(経済・行動科学)は対象のエントリーを持たない(requirements.md#情報源(固定リスト)-3)
 - NAO・MEXTは年を含まないURL(`/news/`・`/b_menu/houdou/`)を使う。年を含むURL(`/news/science/2026/`等)は年が変わるたびに陳腐化するため避ける(/fixで確認。いずれも年なしURLで同じ一覧が取得できることを確認済み)
-- `genreId`は`genres.json`の有効なidと一致すること、`channel.type`が`feed`または`site-specific-html`のいずれかであること、`site-specific-html`は`parserId`が必須であることを読み込み時に検証する(不正な場合は例外)
+- `genreId`は`genres.json`の有効なidと一致すること、`channel.type`が`feed`または`site-specific-html`のいずれかであること、`site-specific-html`は`parserId`が必須かつ`fixedSourceParsers.ts`に登録済みのパーサーに対応することを読み込み時に検証する(不正な場合は例外。`parserId`のtypoを実行時まで検知できず静かに失敗する問題への対策)**🟡〔提案〕**
 
 ## 処理フロー
 
@@ -124,7 +124,7 @@ export type FixedSourceHint = {
   2. 取得できなかった情報源(一時的な障害・HTML構造の変化等)は、その情報源だけをヒントから除外して処理を続ける(1件の取得失敗でそのジャンルの収集処理自体は止めない。requirements.md#データ取得方法-2)
   3. 取得したヒント(発信者名・見出し・元URL・公開日時)を、下記「ジャンルごとに候補を集める処理」のプロンプトに手がかりとして渡す。ヒントに載っているというだけで無条件に採用されるわけではなく、Claudeが他の候補と同じ採用基準で判定する(requirements.md#情報源(固定リスト)-1)
   4. 情報源ごとの取得件数・取得失敗を標準エラー出力に記録する
-- 実行主体: `scripts/research-digest/collect-candidates.ts`
+- 実行主体: `scripts/research-digest/collect-and-select.ts`
 - 関連するビジネスルール: requirements.md#情報源(固定リスト)-1〜4、requirements.md#データ取得方法-2
 
 ### 配信済みの一覧を作る処理

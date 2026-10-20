@@ -3,7 +3,7 @@
 // (architecture.md#3-設計方針)。article-list・content-selection・content-generation・
 // daily-publish・watchlist-reviewはこの形式を共通して参照する
 
-export type SourceType = 'official' | 'individual-youtube' | 'individual-blog' | 'qiita' | 'zenn'
+export type SourceType = 'official' | 'individual-youtube' | 'individual-blog' | 'qiita' | 'zenn' | 'hf-papers'
 
 // 要約の章立て1セクション分(content-generation/requirements.md#要約-2〜5)
 export type SummarySection = {

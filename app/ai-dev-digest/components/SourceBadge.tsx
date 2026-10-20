@@ -11,6 +11,7 @@ const LABELS: Record<SourceType, string> = {
   'individual-blog': '個人ブログ',
   qiita: 'Qiita',
   zenn: 'Zenn',
+  'hf-papers': 'Hugging Face Papers',
 }
 
 export default function SourceBadge({ sourceType }: Props) {

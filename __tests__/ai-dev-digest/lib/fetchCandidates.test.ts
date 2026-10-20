@@ -4,6 +4,7 @@ import {
   fetchRssCandidates,
   fetchQiitaCandidates,
   fetchZennCandidates,
+  fetchHfPapersCandidates,
   fetchAllCandidates,
   buildSourceHealthLogLines,
 } from '../../../app/ai-dev-digest/lib/fetchCandidates'
@@ -18,6 +19,7 @@ const criteria: Criteria = {
   qiitaMinLikes: 30,
   qiitaMaxAgeDays: 60,
   zennMinLikes: 30,
+  hfPapersMinUpvotes: 20,
   minIndividualBlogBodyChars: 150,
   topicExcludeKeywords: [],
   duplicateSuppressionSourceTypes: ['individual-blog'],
@@ -335,6 +337,45 @@ describe('Zennからの候補収集 - RSSで新着を検知し公開ページの
     })
 
     const candidates = await fetchZennCandidates(http)
+    expect(candidates).toHaveLength(0)
+  })
+})
+
+// 仕様: specs/ai-dev-digest/content-selection/requirements.md#データ取得方法-1、specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-17
+describe('Hugging Face Papersからの候補収集 - 公式API(daily_papers)の論文一覧をCandidate型に変換する', () => {
+  it('upvotes数がmetricValueに変換され、論文ページURLがhuggingface.co/papers/<id>の形式になること', async () => {
+    const http = makeHttp({
+      fetchJson: vi.fn().mockResolvedValue([
+        {
+          paper: {
+            id: '2610.12345',
+            title: 'Example Paper Title',
+            upvotes: 42,
+            publishedAt: '2026-10-19T00:00:00.000Z',
+          },
+        },
+      ]),
+    })
+
+    const candidates = await fetchHfPapersCandidates(http)
+    expect(candidates).toHaveLength(1)
+    expect(candidates[0]).toMatchObject({
+      sourceType: 'hf-papers',
+      heading: 'Example Paper Title',
+      url: 'https://huggingface.co/papers/2610.12345',
+      metricValue: 42,
+    })
+  })
+
+  it('idまたはtitleを欠く論文は候補から除外されること', async () => {
+    const http = makeHttp({
+      fetchJson: vi.fn().mockResolvedValue([
+        { paper: { title: 'IDがない論文', upvotes: 10, publishedAt: '2026-10-19T00:00:00.000Z' } },
+        { paper: { id: '2610.99999', upvotes: 10, publishedAt: '2026-10-19T00:00:00.000Z' } },
+      ]),
+    })
+
+    const candidates = await fetchHfPapersCandidates(http)
     expect(candidates).toHaveLength(0)
   })
 })

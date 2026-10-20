@@ -25,6 +25,24 @@ describe('固定情報源の設定ファイル - genres.jsonの有効なジャ�
     ).toThrow(/parserId/)
   })
 
+  it('site-specific-htmlのparserIdが登録済みパーサーに対応しない場合に例外になること(typoを実行時まで検知できない問題の対策)', () => {
+    expect(() =>
+      parseFixedSources(
+        [{ genreId: 'technology-ai', name: 'サンプル', channel: { type: 'site-specific-html', url: 'https://example.com', parserId: 'notRegisteredParser' } }],
+        VALID_GENRE_IDS
+      )
+    ).toThrow(/parserId/)
+  })
+
+  it('site-specific-htmlのparserIdが登録済みパーサーに対応する場合は例外にならないこと', () => {
+    expect(() =>
+      parseFixedSources(
+        [{ genreId: 'technology-ai', name: 'サンプル', channel: { type: 'site-specific-html', url: 'https://example.com', parserId: 'amedNews' } }],
+        VALID_GENRE_IDS
+      )
+    ).not.toThrow()
+  })
+
   it('feed形式はparserIdなしで正常にパースできること', () => {
     const entries = parseFixedSources([{ genreId: 'technology-ai', name: 'サンプル', channel: { type: 'feed', url: 'https://example.com/rss' } }], VALID_GENRE_IDS)
     expect(entries).toEqual<FixedSourceEntry[]>([{ genreId: 'technology-ai', name: 'サンプル', channel: { type: 'feed', url: 'https://example.com/rss' } }])

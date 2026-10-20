@@ -11,7 +11,7 @@ export type Candidate = {
   heading: string // 原文タイトル
   url: string // 元URL
   publishedAt: string // ISO 8601形式の公開日時
-  // 採用基準の判定に使う数値。qiita/zennはいいね数、individual-youtubeは再生回数。
+  // 採用基準の判定に使う数値。qiita/zennはいいね数、hf-papersはupvotes数、individual-youtubeは再生回数。
   // official/individual-blogは常に基準を満たすため判定には使わない(0でよい)
   metricValue: number
   // individual-youtubeのみ: 候補群を除いた直後のyoutubeRecentVideoWindow本の平均再生回数。

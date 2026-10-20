@@ -9,9 +9,17 @@ export type HttpClient = {
   fetchText: (url: string) => Promise<string>
 }
 
+// 一般的なブラウザのUser-Agent(ボット判定回避目的の偽装ではなく、User-Agent未設定を理由に
+// 一律ブロックするサイトへの通常アクセスのため。research-digest・trend-digestのBROWSER_USER_AGENTと同じ考え方)
+export const BROWSER_USER_AGENT =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
+
+// 1サイトの応答なしで収集処理全体が止まるのを防ぐための上限(/fixで追加)
+const FETCH_TIMEOUT_MS = 20_000
+
 export const fetchHttpClient: HttpClient = {
   async fetchText(url) {
-    const res = await fetch(url)
+    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_USER_AGENT }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
     if (!res.ok) throw new Error(`${url} の取得に失敗しました(status: ${res.status})`)
     return res.text()
   },
@@ -20,6 +28,9 @@ export const fetchHttpClient: HttpClient = {
 // 情報源あたりのヒント上限(design.md「固定情報源からヒントを集める処理」手順1。
 // プロンプトの肥大化を防ぐため)
 const MAX_HINTS_PER_SOURCE = 10
+
+// プロンプトに埋め込む前の文字数上限(design.md「セキュリティ」)
+const MAX_TITLE_LENGTH = 200
 
 // RSS/Atom/RDFの<item>/<entry>を雑駁に抽出する共通パーサー(news-digestのfetchCandidates.tsの
 // parseFeedEntriesと同じ考え方)。本specは記事の公開時期を問わないため(requirements.md#採用基準-3)、
@@ -58,6 +69,19 @@ function parseEntry(text: string, entry: FixedSourceEntry): RawHint[] {
 
 export type FixedSourceFetchFailure = { sourceName: string; message: string }
 
+// 制御文字を除き、長さの上限で切り詰め、http/https以外のURLは候補から除く
+// (design.md「セキュリティ」。プロンプトインジェクション・異常に長い文字列の混入を防ぐ。
+// research-digestのsanitizeHintと同じ考え方)
+function sanitizeHint(sourceName: string, raw: RawHint): FixedSourceHint | null {
+  const title = raw.title
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, MAX_TITLE_LENGTH)
+  if (title === '') return null
+  if (!/^https?:\/\//.test(raw.url)) return null
+  return { sourceName, title, url: raw.url, publishedAt: raw.publishedAt }
+}
+
 // 対象ジャンルの固定情報源からヒントを取得する。1件の取得失敗はその情報源だけを除外して続行する
 // (design.md「固定情報源からヒントを集める処理」手順2)。対象ジャンルに固定情報源がない場合は
 // 空配列を返す。失敗した情報源はfailuresで返し、ログ出力はscripts層に委ねる
@@ -70,7 +94,10 @@ export async function fetchFixedSourceHints(
     entries.map(async (entry) => {
       const text = await http.fetchText(entry.channel.url)
       const raw = parseEntry(text, entry)
-      return raw.slice(0, MAX_HINTS_PER_SOURCE).map((r) => ({ sourceName: entry.name, title: r.title, url: r.url, publishedAt: r.publishedAt }))
+      return raw
+        .map((r) => sanitizeHint(entry.name, r))
+        .filter((h): h is FixedSourceHint => h !== null)
+        .slice(0, MAX_HINTS_PER_SOURCE)
     })
   )
 

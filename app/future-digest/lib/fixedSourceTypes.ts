@@ -1,5 +1,6 @@
 import fixedSourcesData from '../../../content/future-digest/fixedSources.json'
 import { loadGenres } from './genres'
+import { SITE_SPECIFIC_PARSERS } from './fixedSourceParsers'
 
 // 固定情報源の設定ファイルの読み込み・検証(仕様: content-selection/requirements.md#情報源(固定リスト)-1〜5、
 // content-selection/design.md「データ設計(固定情報源)」)。genres.tsと同じ考え方で、不正な設定は
@@ -24,12 +25,15 @@ export type FixedSourceHint = {
 
 const CHANNEL_TYPES = ['feed', 'site-specific-html']
 
-// fixedSources.jsonの生データを検証してFixedSourceEntry[]にする(design.md「データ設計(固定情報源)」)
-export function parseFixedSources(raw: unknown, validGenreIds: string[]): FixedSourceEntry[] {
+// fixedSources.jsonの生データを検証してFixedSourceEntry[]にする(design.md「データ設計(固定情報源)」)。
+// validParserIdsは未指定の場合SITE_SPECIFIC_PARSERSの登録済みparserIdを使う(typoがあっても実行時まで
+// 検知できず静かに失敗する問題の対策。design.md「データ設計(固定情報源)」)
+export function parseFixedSources(raw: unknown, validGenreIds: string[], validParserIds: string[] = Object.keys(SITE_SPECIFIC_PARSERS)): FixedSourceEntry[] {
   if (!Array.isArray(raw)) {
     throw new Error('fixedSources.jsonは配列である必要があります')
   }
   const validGenreIdSet = new Set(validGenreIds)
+  const validParserIdSet = new Set(validParserIds)
 
   return raw.map((item, index) => {
     const e = item as Record<string, unknown>
@@ -48,8 +52,13 @@ export function parseFixedSources(raw: unknown, validGenreIds: string[]): FixedS
     if (!CHANNEL_TYPES.includes(channel.type as string)) {
       throw new Error(`fixedSources.json[${name}]: channel.typeが不正です(feedまたはsite-specific-htmlである必要があります): ${String(channel.type)}`)
     }
-    if (channel.type === 'site-specific-html' && (typeof channel.parserId !== 'string' || channel.parserId.trim() === '')) {
-      throw new Error(`fixedSources.json[${name}]: site-specific-htmlにはparserIdが必須です`)
+    if (channel.type === 'site-specific-html') {
+      if (typeof channel.parserId !== 'string' || channel.parserId.trim() === '') {
+        throw new Error(`fixedSources.json[${name}]: site-specific-htmlにはparserIdが必須です`)
+      }
+      if (!validParserIdSet.has(channel.parserId)) {
+        throw new Error(`fixedSources.json[${name}]: parserId「${channel.parserId}」に対応する登録済みパーサーがありません`)
+      }
     }
     return { genreId, name, channel: channel as FixedSourceChannel }
   })
