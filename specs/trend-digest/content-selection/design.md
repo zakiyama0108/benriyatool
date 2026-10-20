@@ -1,7 +1,7 @@
 # 設計: ジャンル別情報源と採用基準
 
 ## サマリ
-19ジャンルを「固定リストジャンル」(12ジャンル、実際の消費・行動を集計した客観データをコードで定量判定)と「WebSearchジャンル」(7ジャンル、Claude Code CLIのWebSearchによるLLM判定)に分け、エンタメ編9ジャンル・カルチャー編10ジャンルの項目を収集する。取得した項目は採用基準の判定前の全件を[trend-history](../trend-history/design.md)の観測ログへ書き出し、そこで判定された継続度ラベル・注目度ラベル・掲載実績を使って各ジャンルから1件ずつを選ぶ。判定基準の数値・情報源は`content/trend-digest/watchlist.json`・`criteria.json`に機械可読データとして持ち、[source-review](../source-review/requirements.md)の月次見直しで更新する(データ設計・処理フロー・図は下記参照)。
+19ジャンルを「固定リストジャンル」(11ジャンル、実際の消費・行動を集計した客観データをコードで定量判定)・「WebSearchジャンル」(2ジャンル、Claude Code CLIのWebSearchによるLLM判定)・「併用ジャンル」(6ジャンル、固定リストとWebSearchをOR条件で併用。2026-10次の情報源複数化見直しでアニメ以外にも拡大)に分け、エンタメ編9ジャンル・カルチャー編10ジャンルの項目を収集する。取得した項目は採用基準の判定前の全件を[trend-history](../trend-history/design.md)の観測ログへ書き出し、そこで判定された継続度ラベル・注目度ラベル・掲載実績を使って各ジャンルから1件ずつを選ぶ。判定基準の数値・情報源は`content/trend-digest/watchlist.json`・`criteria.json`に機械可読データとして持ち、[source-review](../source-review/requirements.md)の月次見直しで更新する(データ設計・処理フロー・図は下記参照)。
 
 初回配信の実運用で、汎用の正規表現1つで全情報源のHTMLを解析する方式が、JS描画・Bot対策・サイトごとに異なる順位表現(テキスト/CSSクラス/画像)に対応できず、ほぼ全滅した。この反省を踏まえ、情報源は「構造化データ(TSV/RSS/公式Web API)」を最優先し、それが無い場合のみ「サイトごとの専用パーサー」を用意する方針を採る(下記「データ設計」参照)。
 
@@ -9,8 +9,8 @@
 
 architecture.mdが定める2つの選定方式を、実装形態として次のように役割分担する(要件は方式の呼び名までは決めているが実装形態は指定していないため設計判断):
 
-- **固定リストジャンル(12ジャンル)**: 「対象作品・話題が採用基準を満たすか」の判定は決定的なコード(TypeScript純粋関数)で行う。実際の売上・視聴・検索行動を集計した客観データという構造化された情報源を前提にしており、順位・新規ランクイン等の比較は算術的に検証可能なため
-- **WebSearchジャンル(7ジャンル)**: 「独立した言及が広がっているか」の判定自体をClaude Code CLIのヘッドレス実行(WebSearchツール使用)に委ねる。客観集計データが存在せず、性質の異なる複数の言及元(メディア記事・SNS・口コミ)を横断した意味的な判断が必要なため、コード化になじまない
+- **固定リストジャンル(11ジャンル)・併用ジャンルの固定リスト側(6ジャンル)**: 「対象作品・話題が採用基準を満たすか」の判定は決定的なコード(TypeScript純粋関数)で行う。実際の売上・視聴・検索行動を集計した客観データという構造化された情報源を前提にしており、順位・新規ランクイン等の比較は算術的に検証可能なため
+- **WebSearchジャンル(2ジャンル)・併用ジャンルのWebSearch側(6ジャンル)**: 「独立した言及が広がっているか」の判定自体をClaude Code CLIのヘッドレス実行(WebSearchツール使用)に委ねる。客観集計データが存在せず、性質の異なる複数の言及元(メディア記事・SNS・口コミ)を横断した意味的な判断が必要なため、コード化になじまない
 - 掲載する話題の選び方(各ジャンル1件)は、両方式で共通の決定的なコードとして実装する(継続度ラベル・注目度ラベル・掲載実績の比較で完結するため)
 
 ## データ設計(ウォッチリスト・採用基準)
@@ -24,7 +24,7 @@ architecture.mdが定める2つの選定方式を、実装形態として次の�
 import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
 import type { HistoryCriteria } from './historyTypes' // trend-history/design.mdが定義する継続度・注目度の判定に使う値
 
-export type SelectionMethod = 'fixed-list' | 'websearch' | 'hybrid' // hybridは固定リストとWebSearchを併用するジャンル専用(requirements.md#選定方式-7。現時点ではアニメのみ)
+export type SelectionMethod = 'fixed-list' | 'websearch' | 'hybrid' // hybridは固定リストとWebSearchを併用するジャンル専用(requirements.md#選定方式-7・8。アニメ・SNSバズり・グルメ・ガジェット・家電・経済・お金・開発手法・開発サービスの6ジャンルが対象)
 
 // 固定リストジャンルの情報源が、どの取得・パース処理を使うかを表す
 // (初回配信で汎用の正規表現1パターンが実際のサイト構造に対応しきれなかった反省から、
@@ -69,7 +69,7 @@ export type WebSearchGenreCriteria = {
 }
 
 // 併用ジャンルの採用基準(requirements.md#選定方式-7)。固定リスト側・WebSearch側それぞれの基準を持ち、
-// いずれか一方を満たせば候補にする(OR条件)。現時点ではアニメのみが対象
+// いずれか一方を満たせば候補にする(OR条件)。アニメ・SNSバズり・グルメ・ガジェット・家電・経済・お金・開発手法・開発サービスの6ジャンルが対象
 export type HybridGenreCriteria = {
   method: 'hybrid'
   fixedList: Omit<FixedListGenreCriteria, 'method'>
@@ -94,7 +94,8 @@ export type Criteria = {
   "genres": [
     { "genre": "music", "edition": "entertainment", "label": "音楽", "method": "fixed-list",
       "sources": [
-        { "name": "Billboard JAPAN Hot 100", "url": "https://www.billboard-japan.com/charts/detail?a=hot100", "format": "site-specific-html", "parserId": "billboardJapan", "region": "japan" }
+        { "name": "Billboard JAPAN Hot 100", "url": "https://www.billboard-japan.com/charts/detail?a=hot100", "format": "site-specific-html", "parserId": "billboardJapan", "region": "japan" },
+        { "name": "kworb.net Spotify Japanデイリーチャート", "url": "https://kworb.net/spotify/country/jp_daily.html", "format": "site-specific-html", "parserId": "kworbSpotifyJapan", "region": "japan" }
       ] },
     { "genre": "japanese-movie", "edition": "entertainment", "label": "日本映画", "method": "fixed-list",
       "sources": [
@@ -125,17 +126,29 @@ export type Criteria = {
       "sources": [
         { "name": "トーハン週間ベストセラー", "url": "https://www.tohan.jp/bestsellers/", "format": "site-specific-html", "parserId": "tohan", "region": "japan" },
         { "name": "日販週間ベストセラー", "url": "https://www.nippan.co.jp/ranking/weekly/", "format": "site-specific-html", "parserId": "nippan", "region": "japan" }
-      ] },    { "genre": "sns-buzz", "edition": "culture-lifestyle", "label": "SNSバズり", "method": "websearch",
+      ] },
+    { "genre": "sns-buzz", "edition": "culture-lifestyle", "label": "SNSバズり", "method": "hybrid",
+      "sources": [
+        { "name": "Yahoo!リアルタイム検索", "url": "https://search.yahoo.co.jp/realtime", "format": "site-specific-html", "parserId": "yahooRealtimeSearch", "region": "japan" }
+      ],
       "searchHints": ["Xで話題 バズり 複数メディア", "TikTok 投稿 話題 反響", "Instagram Threads 投稿 話題", "ねとらぼ grape TREND Sirabee SNS 話題"] },
     { "genre": "buzzwords", "edition": "culture-lifestyle", "label": "流行りの言葉", "method": "fixed-list",
       "sources": [{ "name": "Google公式トレンドRSS(日本)", "url": "https://trends.google.com/trending/rss?geo=JP", "format": "structured-rss", "region": "japan" }] },
-    { "genre": "gourmet", "edition": "culture-lifestyle", "label": "グルメ", "method": "websearch",
-      "searchHints": ["SNS 口コミ 急増 飲食店", "話題 食トレンド 自然発生 SNS", "macaroniトレンド 話題の食べ方"] },
+    { "genre": "gourmet", "edition": "culture-lifestyle", "label": "グルメ", "method": "hybrid",
+      "sources": [
+        { "name": "食べログ人気ランキング", "url": "https://tabelog.com/rank/", "format": "site-specific-html", "parserId": "tabelogRank", "region": "japan" }
+      ],
+      "searchHints": ["SNS 口コミ 急増 飲食店", "話題 食トレンド 自然発生 SNS", "macaroniトレンド 話題の食べ方", "小田原 茅ヶ崎 横浜 話題の飲食店"] },
     { "genre": "hobby", "edition": "culture-lifestyle", "label": "流行りの趣味", "method": "websearch",
+      "sources": [],
       "searchHints": ["新しい趣味 SNS 話題 広がり", "ホビー トレンド 複数メディア言及"] },
     { "genre": "fashion", "edition": "culture-lifestyle", "label": "ファッション", "method": "websearch",
+      "sources": [],
       "searchHints": ["SNS 口コミ 急増 ファッションアイテム", "FASHION PRESS WWD JAPAN トレンド 話題"] },
-    { "genre": "gadgets", "edition": "culture-lifestyle", "label": "ガジェット・家電", "method": "websearch",
+    { "genre": "gadgets", "edition": "culture-lifestyle", "label": "ガジェット・家電", "method": "hybrid",
+      "sources": [
+        { "name": "価格.com家電カテゴリランキング", "url": "https://kakaku.com/ranking/kaden/", "format": "site-specific-html", "parserId": "kakakuRanking", "region": "japan" }
+      ],
       "searchHints": ["SNS 口コミ 急増 ガジェット 家電", "GIZMODO 家電Watch ITmedia 話題の製品"] },
     { "genre": "games", "edition": "culture-lifestyle", "label": "ゲーム", "method": "fixed-list",
       "sources": [
@@ -143,16 +156,36 @@ export type Criteria = {
         { "name": "ファミ通.com売上ランキング", "url": "https://www.famitsu.com/ranking/game-sales", "format": "site-specific-html", "parserId": "famitsu", "region": "japan" }
       ] },
     { "genre": "travel", "edition": "culture-lifestyle", "label": "旅行・観光", "method": "fixed-list",
-      "sources": [{ "name": "じゃらんnet人気ランキング", "url": "https://www.jalan.net/news/", "format": "site-specific-html", "parserId": "jalan", "region": "japan" }] },
-    { "genre": "economy-money", "edition": "culture-lifestyle", "label": "経済・お金", "method": "websearch",
+      "sources": [
+        { "name": "じゃらんnet人気ランキング", "url": "https://www.jalan.net/news/", "format": "site-specific-html", "parserId": "jalan", "region": "japan" },
+        { "name": "楽天トラベル国内ツアー売れ筋ランキング", "url": "https://travel.rakuten.co.jp/ranking/sales/package/", "format": "site-specific-html", "parserId": "rakutenTravelSales", "region": "japan" }
+      ] },
+    { "genre": "economy-money", "edition": "culture-lifestyle", "label": "経済・お金", "method": "hybrid",
+      "sources": [
+        { "name": "Yahoo!ファイナンス出来高増加率ランキング", "url": "https://finance.yahoo.co.jp/stocks/ranking/volumeIncrease?market=all", "format": "site-specific-html", "parserId": "yahooFinanceVolumeIncrease", "region": "japan" },
+        { "name": "日経電子版アクセスランキング", "url": "https://www.nikkei.com/access/", "format": "site-specific-html", "parserId": "nikkeiAccessRanking", "region": "japan" }
+      ],
       "searchHints": ["流行っている節約術 SNS 口コミ", "話題のクーポン サービス 複数メディア", "LIMO ファイナンシャルフィールド 話題の節約"] },
-    { "genre": "dev-trends", "edition": "culture-lifestyle", "label": "開発手法・開発サービス", "method": "websearch",
+    { "genre": "dev-trends", "edition": "culture-lifestyle", "label": "開発手法・開発サービス", "method": "hybrid",
+      "sources": [
+        { "name": "Zenn公式トレンドRSS", "url": "https://zenn.dev/feed", "format": "structured-rss", "region": "japan" },
+        { "name": "Qiita人気記事フィード", "url": "https://qiita.com/popular-items/feed", "format": "structured-atom", "region": "japan" },
+        { "name": "GitHub Trending", "url": "https://github.com/trending", "format": "site-specific-html", "parserId": "githubTrending", "region": "overseas" },
+        { "name": "はてなブックマークITカテゴリ", "url": "https://b.hatena.ne.jp/hotentry/it", "format": "site-specific-html", "parserId": "hatenaBookmarkIt", "region": "japan" }
+      ],
       "searchHints": ["ソフトウェア開発 手法 潮流 複数メディア", "開発者 注目のサービス SNS 言及", "開発チーム 進め方 変化 議論"] }
   ]
 }
 ```
 
-補足(情報源から外したサイト): Oricon週間チャート・ZOZOTOWN人気ランキング・Engadget日本版(2022年サイト閉鎖)・るるぶ&more!トップページ・Googleトレンド急上昇ワードページ・Yahoo!検索急上昇ワードページは、いずれもJS描画・Bot対策・サイト閉鎖のいずれかで機械的な取得ができないため情報源から外した。旅行・観光のるるぶ&more!は記事一覧ページ(`rurubu.jp/andmore/article`)であれば取得できる可能性があるため、[source-review](../source-review/requirements.md)で追加候補として再検証する。
+補足(情報源から外したサイト・2026-09時点): Oricon週間チャート・ZOZOTOWN人気ランキング・Engadget日本版(2022年サイト閉鎖)・るるぶ&more!トップページ・Googleトレンド急上昇ワードページ・Yahoo!検索急上昇ワードページは、いずれもJS描画・Bot対策・サイト閉鎖のいずれかで機械的な取得ができないため情報源から外した。旅行・観光のるるぶ&more!は記事一覧ページ(`rurubu.jp/andmore/article`)であれば取得できる可能性があるため、[source-review](../source-review/requirements.md)で追加候補として再検証する。
+
+補足(2026-10次の情報源複数化見直しで検証し見送った候補): いずれも実際にcurlで取得して判定した(WebFetchのみに頼らない)。
+- **FlixPatrol(海外ドラマ・サブスク動画)**: Cloudflareのbot対策により`curl -A "Mozilla/5.0"`で403(Just a moment...のチャレンジページ)。安定した取得ができないため見送り
+- **ZOZOTOWN・楽天市場(ファッション)**: いずれも403(楽天市場は「アクセスが集中しております」の案内ページ)。[選定方式](requirements.md#選定方式)-4が既に固定リスト化しない理由としているとおり
+- **Box Office Mojo(海外映画)**: 週末データが`/weekend/<ISO週番号>/`形式の動的URLで、直近の完了済み週末を特定するにはISO週計算ロジックの新規実装が必要。海外映画は既に映画.com全米ランキング・Filmarksの2情報源で複数化済みのため、実装コストに対して効果が見込みにくく今回は見送り。ISO週計算の実装自体は難しくないため、海外映画の複数化ニーズが高まった場合は[source-review](../source-review/requirements.md)で再検討する
+- **ホットペッパーグルメAPI(グルメ)**: 無料だがAPIキー登録が必要(他の情報源は認証不要)。運営者の判断で今回は見送り、食べログの公開ランキングページのみを追加した
+- **価格.com(ガジェット・家電)**: PR#327(2026-10月次見直し)でHTMLパース失敗を理由にWebSearchジャンルへ変更済みだったが、今回`kakaku.com/ranking/kaden/`(家電カテゴリに絞ったページ)を実際に取得・検証したところ、Shift-JISデコード後に`<p class="ranknum">`等の構造化ランキングが実在することを確認した。PR#327時点の失敗は、総合ランキングページ(`/ranking/`。家電以外の商品も混在する)を見ていたこと、またはShift-JIS変換漏れが原因と推測される。運営者の判断で再導入し、固定リストだけでは拾えなかった場合の保険としてWebSearchも継続する(hybrid化)
 
 補足(ビデオリサーチのURL): ビデオリサーチが提供する「最新ドラマ視聴データ速報」ミニサイト(`tvrating/daily/drama/`)はドラマ専用で、バラエティに対応する同形式のページは存在しない。日本ドラマ・バラエティの両ジャンルとも、ジャンルごとのセクション(見出し「ドラマ」「バラエティ」)を持つ「視聴人数ランキング」ページ(`videor.co.jp/audience/`)を情報源とする(視聴率(%)ではなく視聴人数(万人)の順位だが、同じくビデオリサーチが集計する実視聴に基づく客観データであり、上位何位以内という判定方法は変わらない)。
 
@@ -174,16 +207,16 @@ export type Criteria = {
     "variety": { "method": "fixed-list", "rankThreshold": 5 },
     "streaming-video": { "method": "fixed-list", "newEntryOrRisingRank": true },
     "books-comics": { "method": "fixed-list", "rankThreshold": 5, "newEntryOrRisingRank": true },
-    "sns-buzz": { "method": "websearch", "minIndependentSources": 3 },
+    "sns-buzz": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 3 } },
     "buzzwords": { "method": "fixed-list", "rankThreshold": 10 },
-    "gourmet": { "method": "websearch", "minIndependentSources": 3 },
-    "hobby": { "method": "websearch", "minIndependentSources": 3 },
-    "fashion": { "method": "websearch", "minIndependentSources": 3 },
-    "gadgets": { "method": "websearch", "minIndependentSources": 3 },
+    "gourmet": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 2, "focusAreas": ["小田原", "茅ヶ崎", "横浜"] } },
+    "hobby": { "method": "websearch", "minIndependentSources": 2 },
+    "fashion": { "method": "websearch", "minIndependentSources": 2 },
+    "gadgets": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 2 } },
     "games": { "method": "fixed-list", "rankThreshold": 10 },
     "travel": { "method": "fixed-list", "rankThreshold": 10 },
-    "economy-money": { "method": "websearch", "minIndependentSources": 3 },
-    "dev-trends": { "method": "websearch", "minIndependentSources": 3 }
+    "economy-money": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 3 } },
+    "dev-trends": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 3 } }
   },
   "history": { "...": "継続度ラベル・注目度ラベルの判定に使う値。キーと初期値・その根拠は trend-history/design.md「履歴データの形式」が定義する" }
 }
@@ -243,7 +276,7 @@ export type SelectionResult =
 ```
 
 ### 固定リストジャンルの候補を収集・判定する処理(決定的なコード)
-- 対象: `watchlist.json`の`method: 'fixed-list'`の11ジャンルと、`method: 'hybrid'`の1ジャンル(アニメ)の固定リスト側(実行対象のeditionのジャンルのうち該当するもの)。アニメの採用基準は`criteria.json`の`genreCriteria.anime.fixedList`を使う(下記「併用ジャンル(アニメ)の候補を収集・判定する処理」参照)
+- 対象: `watchlist.json`の`method: 'fixed-list'`の11ジャンルと、`method: 'hybrid'`の6ジャンル(アニメ・SNSバズり・グルメ・ガジェット・家電・経済・お金・開発手法・開発サービス)の固定リスト側(実行対象のeditionのジャンルのうち該当するもの)。併用ジャンルの採用基準は`criteria.json`の`genreCriteria.<ジャンル>.fixedList`を使う(下記「併用ジャンルの候補を収集・判定する処理」参照)
 - 手順:
   1. ジャンルごとに登録された各情報源を、`format`に応じた取得処理で取得する。取得・パースに失敗した場合はその情報源だけを除外して処理を続ける(1件の取得失敗で編全体の収集を止めない)
      - `structured-tsv`/`structured-rss`/`structured-json-api`: 公式の構造化データをそのまま取得しパースする(HTML解析を要さないため最も安定している)
@@ -259,21 +292,22 @@ export type SelectionResult =
 - 関連するビジネスルール: requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1〜8、requirements.md#情報源の地域区分-1、requirements.md#データ取得方法-1〜2、requirements.md#情報源の健全性監視-1
 
 ### サイトごとの専用パーサー(`scripts/trend-digest/sourceParsers/`)
-- 初回配信の実運用で、1つの正規表現パーサーで全HTML情報源を解析する方式は、サイトごとに異なる順位表現(プレーンテキスト・CSSクラス名・画像スプライト等)に対応できず機能しなかった。このためサイトごとに専用のパース関数を用意する(`billboardJapan.ts`/`kogyoTsushin.ts`/`eigaCom.ts`/`filmarks.ts`/`videoResearch.ts`(videoResearchDrama/videoResearchVarietyの2関数を持つ)/`tohan.ts`/`nippan.ts`/`famitsu.ts`/`jalan.ts`/`filmarksAnimeTrend.ts`/`anilabJapanWeekly.ts`の11ファイル)
+- 初回配信の実運用で、1つの正規表現パーサーで全HTML情報源を解析する方式は、サイトごとに異なる順位表現(プレーンテキスト・CSSクラス名・画像スプライト等)に対応できず機能しなかった。このためサイトごとに専用のパース関数を用意する(`billboardJapan.ts`/`kogyoTsushin.ts`/`eigaCom.ts`/`filmarks.ts`/`videoResearch.ts`(videoResearchDrama/videoResearchVarietyの2関数を持つ)/`tohan.ts`/`nippan.ts`/`famitsu.ts`/`jalan.ts`/`filmarksAnimeTrend.ts`/`anilabJapanWeekly.ts`/`kworbSpotifyJapan.ts`/`rakutenTravelSales.ts`/`yahooRealtimeSearch.ts`/`tabelogRank.ts`/`kakakuRanking.ts`/`yahooFinanceVolumeIncrease.ts`/`nikkeiAccessRanking.ts`/`githubTrending.ts`/`hatenaBookmarkIt.ts`の20ファイル。**🟡〔提案〕**)
+- 2026-10次の情報源複数化見直しで追加した9ファイルのうち、Yahoo!リアルタイム検索(`yahooRealtimeSearch.ts`)はCSSクラス名がビルドごとに変わるNext.jsアプリのため、famitsu.tsと同じ方針でDOM構造ではなく埋め込みJSON(`__NEXT_DATA__`)から値を取る。Yahoo!ファイナンス(`yahooFinanceVolumeIncrease.ts`)もCSSモジュール由来のハッシュ付きクラス名(`RankingTable__rank__3dXJ`等)を持つため、クラス名の前方一致で判定し完全一致にしない(ビルドでハッシュが変わっても追随できるようにするため)。価格.com(`kakakuRanking.ts`)・食べログ(`tabelogRank.ts`)は、順位表示部に入れ子の`<li>`/`<table>`が存在し単純な非貪欲マッチでは手前で途切れるため、次の行の開始タグが来るまでを1件分として切り出す方式にしている(**🟡〔提案〕**)
 - 各パーサーは`(html: string) => RankedItem[]`の形の純粋関数とし、そのサイトのHTML構造(セレクタ・CSSクラス名等)に関する実装コメントを関数ごとに残す(トーハンは順位がCSSクラス名(`rank-1st`等)で、日販は順位が数値テキスト+前週比の方向を表すCSSクラス名(`is-new`/`is-up`/`is-down`/`is-stay`)の組で表現されている点、AniLabは前週比の順位変動が「順位を◯上げて」のような文中表記である点など、サイト固有の癖はコメントで明示する)。実際のHTML構造検証は疎通確認(週次実行結果)で代替する方針は維持する(`fetchSourcePage.ts`の既存コメント参照)
 - サイト構造が変わりパーサーが機能しなくなった場合は、そのパーサーだけを[source-review](../source-review/requirements.md)の月次見直しで修正する(1サイトの構造変更が他ジャンルに波及しない)
 
-### 併用ジャンル(アニメ)の候補を収集・判定する処理(決定的なコード)
-- 対象: `watchlist.json`の`method: 'hybrid'`のジャンル(アニメ)
-- 手順:
-  1. 上記「固定リストジャンルの候補を収集・判定する処理」を、アニメの`sources`(Filmarksアニメ・AniLab)と`genreCriteria.anime.fixedList`だけを対象に実行する
-  2. 下記「WebSearchジャンルの候補を収集・判定する処理」を、アニメの`searchHints`と`genreCriteria.anime.webSearch`だけを対象に実行する
-  3. 手順1・2で得た観測項目をそのまま1つの配列に結合する(いずれかの手順で採用基準を満たした項目は候補として扱う。OR条件。requirements.md#選定方式-7)。結合後の配列は他の固定リストジャンル・WebSearchジャンルの観測項目と同じ形(`method`が項目ごとに`fixed-list`/`websearch`のいずれかを持つ)のため、後続の「掲載する話題を選ぶ処理」・trend-historyの観測ログ記録は変更を要しない
+### 併用ジャンルの候補を収集・判定する処理(決定的なコード)
+- 対象: `watchlist.json`の`method: 'hybrid'`の6ジャンル(アニメ・SNSバズり・グルメ・ガジェット・家電・経済・お金・開発手法・開発サービス。2026-10次の情報源複数化見直しでアニメ以外にも拡大。**🟡〔提案〕**)
+- 手順(`collectGenreObservations`がジャンル単位で実行。6ジャンルとも同じ処理で、ジャンルごとに`sources`・`searchHints`・`genreCriteria.<ジャンル>.fixedList`/`webSearch`が異なるだけ):
+  1. 上記「固定リストジャンルの候補を収集・判定する処理」を、そのジャンルの`sources`と`genreCriteria.<ジャンル>.fixedList`だけを対象に実行する
+  2. 下記「WebSearchジャンルの候補を収集・判定する処理」を、そのジャンルの`searchHints`と`genreCriteria.<ジャンル>.webSearch`だけを対象に実行する
+  3. 手順1・2で得た観測項目をそのまま1つの配列に結合する(いずれかの手順で採用基準を満たした項目は候補として扱う。OR条件。requirements.md#選定方式-7・8)。結合後の配列は他の固定リストジャンル・WebSearchジャンルの観測項目と同じ形(`method`が項目ごとに`fixed-list`/`websearch`のいずれかを持つ)のため、後続の「掲載する話題を選ぶ処理」・trend-historyの観測ログ記録は変更を要しない
   4. 同じ正規化タイトルの話題が固定リスト側・WebSearch側の両方で見つかった場合も、重複を除かずそのまま2件の観測として保持する(trend-history側が選定方式ごとに1件へ寄せる。[trend-history/design.md](../trend-history/design.md)「その回の観測を履歴に記録する処理」手順3)
-- 関連するビジネスルール: requirements.md#選定方式-7、requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-9、requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11
+- 関連するビジネスルール: requirements.md#選定方式-7・8、requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-9〜14、requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-4・5・8・9・10・11
 
 ### WebSearchジャンルの候補を収集・判定する処理(エージェントの推論)
-- 対象: `watchlist.json`の`method: 'websearch'`の7ジャンルと、`method: 'hybrid'`の1ジャンル(アニメ)のWebSearch側(実行対象のeditionのジャンルのうち該当するもの)。アニメの採用基準は`criteria.json`の`genreCriteria.anime.webSearch`を使う(上記「併用ジャンル(アニメ)の候補を収集・判定する処理」参照)
+- 対象: `watchlist.json`の`method: 'websearch'`の2ジャンルと、`method: 'hybrid'`の6ジャンルのWebSearch側(実行対象のeditionのジャンルのうち該当するもの)。併用ジャンルの採用基準は`criteria.json`の`genreCriteria.<ジャンル>.webSearch`を使う(上記「併用ジャンルの候補を収集・判定する処理」参照)
 - 手順:
   1. ジャンルごとの`searchHints`を手がかりに、Claude Code CLIのヘッドレス実行(WebSearchツール)で話題を検索する。検索の切り口は固定の少数サイトに限定せず、複数の異なる角度(ニュースメディア・まとめメディア・SNS上の言及・口コミ)から広く探索する(requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-3)
   2. **採用基準の判定を行う前に、検索で見つかった話題を上位`maxObservationsPerSource`件まで「その回の観測」として保持する**(話題の名称・独立言及元の数)。以降の手順で`minIndependentSources`未満として候補から外れた話題も含め、これらはすべて[trend-history](../trend-history/design.md)の観測ログへ記録する(requirements.md#機能要件-3、[trend-history/requirements.md#機能要件](../trend-history/requirements.md)-1〜4)。言及元が1件しかない段階の話題を記録しないと、後に3件へ伸びたときの初回検知日が実態より後ろにずれ、継続日数が過小評価されるため
@@ -336,6 +370,18 @@ scripts/trend-digest/sourceParsers/billboardJapan.ts, kogyoTsushin.ts, eigaCom.t
 scripts/trend-digest/fetchStructuredSource.ts (新規: structured-tsv/structured-rss/structured-json-apiの取得・パース)
 scripts/trend-digest/collect-websearch-candidates.ts (既存: 独立言及元の定義・minIndependentSources引き上げ・観測項目の保持・地域情報の収集をプロンプト/応答形式に反映。collectWebSearchGenreはhybridジャンルのwebSearch側も扱う)
 scripts/trend-digest/collect-and-select.ts (既存: 観測ログの書き出しと、継続度・注目度にもとづく選定の呼び出しを追加。collectGenreObservationsはhybridジャンルで固定リスト側・WebSearch側の両方を呼び出し結合する)
+```
+
+2026-10次の情報源複数化見直し(本PR)で変更したファイル:
+
+```
+content/trend-digest/watchlist.json (既存: music・travelへの補助情報源追加、sns-buzz・gourmet・gadgets・economy-money・dev-trendsのmethodをwebsearchからhybridへ変更し固定リスト側のsourcesを追加)
+content/trend-digest/criteria.json (既存: 上記5ジャンルのgenreCriteriaをwebsearch形式からhybrid形式(fixedList+webSearch)へ変更)
+app/trend-digest/lib/watchlistTypes.ts (既存: FixedListSourceFormatへstructured-atomを追加)
+scripts/trend-digest/fetchSourcePage.ts (既存: 新規9パーサーの登録、structured-rss/structured-atomディスパッチの更新)
+scripts/trend-digest/fetchStructuredSource.ts (既存: parseGoogleTrendsRssをparseRssTitlesInOrderへ改称してCDATA対応・Zenn RSSと共用、parseAtomTitlesInOrderを新規追加)
+scripts/trend-digest/sourceParsers/kworbSpotifyJapan.ts, rakutenTravelSales.ts, kakakuRanking.ts, yahooRealtimeSearch.ts, tabelogRank.ts, yahooFinanceVolumeIncrease.ts, nikkeiAccessRanking.ts, githubTrending.ts, hatenaBookmarkIt.ts (新規: サイトごとの専用パーサー9件)
+__tests__/trend-digest/fixtures/sourceParsers/, __tests__/trend-digest/fixtures/structuredSources/ (新規: 上記9パーサー+Zenn/Qiitaの実HTMLフィクスチャ)
 ```
 
 `selection.ts`は入出力が純粋なデータ(候補配列・判定結果→選定結果)のみのため、通常のvitestで完全にテストできる。`sourceParsers/`配下の各パーサーは、実際に取得したHTMLをテストフィクスチャとして保存し(`__tests__/trend-digest/fixtures/sourceParsers/`)、それを入力とした純粋関数のテストとして書く(サイトごとに構造が異なるため、パーサー単位で決定的にテストできる)。`fetchSourcePage.ts`・`fetchStructuredSource.ts`は外部ページ・APIへのHTTP呼び出しを伴うため、レスポンス形状のパース・エラー処理・文字コード変換のみをモックしたテストの対象とし、実際の外部通信を伴う疎通確認は週次実行結果([weekly-publish](../weekly-publish/design.md))で代替する。`collect-websearch-candidates.ts`はClaude Code CLIのヘッドレス起動そのものであり、決定的なテストは書かず(ai-dev-digestのcontent-generationと同じ考え方)、応答形式の分類ロジックのみをテスト対象にする。

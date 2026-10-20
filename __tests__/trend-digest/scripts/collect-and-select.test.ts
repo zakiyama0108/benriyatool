@@ -42,7 +42,7 @@ const hybridCriteria: GenreCriteria = {
   webSearch: { minIndependentSources: 3 },
 }
 
-// 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-7、specs/trend-digest/content-selection/design.md「併用ジャンル(アニメ)の候補を収集・判定する処理」
+// 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-7、specs/trend-digest/content-selection/design.md「併用ジャンルの候補を収集・判定する処理」
 describe('併用ジャンル(hybrid)の観測項目収集(collectGenreObservations) - 固定リスト側・WebSearch側の両方を呼び出し、観測項目を1つの配列に結合する', () => {
   it('固定リスト側・WebSearch側それぞれの観測項目が1つの配列に結合されること', async () => {
     const fetchFixedList: FixedListFetcher = vi.fn().mockResolvedValue({

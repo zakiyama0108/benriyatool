@@ -180,7 +180,7 @@ content/trend-digest/criteria.json         # 採用基準・継続度/注目度�
 |---|---|
 | Supabase(`trend_digest_feedback`テーブル) | 運営者フィードバックの保存 |
 | Supabase Auth(Google OIDC) | 記事詳細ページのフィードバック入力欄の表示切り替え(運営者判定。既存の`admin_emails`・`isAuthorizedAdmin()`を再利用) |
-| Oricon・Billboard JAPAN・Netflix公式Top10(top10.netflix.com)・トーハン週間ベストセラー・Googleトレンド急上昇ワード・Yahoo!検索急上昇ワード・WWD JAPAN・ZOZOTOWN・価格.com・Engadget日本版・Steam・ファミ通.com・じゃらんnet/るるぶ&more! | 固定リストジャンルの情報源データ取得([content-selection/requirements.md](content-selection/requirements.md)) |
+| Billboard JAPAN・kworb.net・興行通信社・映画.com・Filmarks・ビデオリサーチ・Netflix公式Top10(netflix.com/tudum)・AniLab・トーハン・日販・Google公式トレンドRSS・Yahoo!リアルタイム検索・食べログ・価格.com・Steam・ファミ通.com・じゃらんnet・楽天トラベル・Yahoo!ファイナンス・日経電子版・Zenn・Qiita・GitHub Trending・はてなブックマーク | 固定リストジャンル・併用ジャンルの固定リスト側の情報源データ取得([content-selection/requirements.md](content-selection/requirements.md)) |
 | Web検索(Claude Code CLIのWebSearch) | 決まった集計元がないジャンル(開発手法・開発サービスを含む)の候補収集([content-selection/requirements.md](content-selection/requirements.md)) |
 | GitHub Actions | 記事生成([weekly-publish](weekly-publish/requirements.md))・見直し提案([source-review](source-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤 |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | weekly-publishの候補収集・翻訳・要約生成、source-reviewの見直し案検討に、いずれもヘッドレス起動で使用 |
@@ -208,4 +208,5 @@ content/trend-digest/criteria.json         # 採用基準・継続度/注目度�
 | 報告回数 | 同じ話題が通算で何回目の掲載かを表す数。2回目以降の掲載で記事へ表示し、掲載する話題の並べ替えにも使う。[trend-history](trend-history/requirements.md)で定義 |
 | 固定リストジャンル | 公式ランキング・チャート等の決まった情報源を持ち、定量的なコード判定で採用可否を決めるジャンル。[content-selection](content-selection/requirements.md)で定義 |
 | WebSearchジャンル | 決まった集計元がなく、Claude Code CLIのWebSearchによる探索的収集とLLM判定で「動きがあったか」を決めるジャンル。[content-selection](content-selection/requirements.md)で定義 |
+| 併用ジャンル | 固定リストとWebSearchの両方を持ち、いずれか一方の採用基準を満たせば候補にする(OR条件)ジャンル。アニメ・SNSバズり・グルメ・ガジェット・家電・経済・お金・開発手法・開発サービスの6ジャンルが対象。[content-selection](content-selection/requirements.md)で定義 |
 | GitHub Actions | スケジュール実行・pushトリガー実行のワークフロー基盤。週2回の記事生成([weekly-publish](weekly-publish/requirements.md))・月次の見直し提案([source-review](source-review/requirements.md))・LINE新着記事配信([line-broadcast](line-broadcast/requirements.md))の実行主体 |
