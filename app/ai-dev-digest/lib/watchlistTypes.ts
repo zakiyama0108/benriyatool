@@ -30,7 +30,7 @@ export type Criteria = {
   // Qiita記事を採用候補にする公開後の経過日数の上限(requirements.md#採用基準-7)
   qiitaMaxAgeDays: number
   zennMinLikes: number // requirements.md#採用基準-8
-  // Hugging Face Papersの論文を採用候補にするupvotes数の下限(requirements.md#採用基準-hf-papers)
+  // Hugging Face Papersの論文を採用候補にするupvotes数の下限(requirements.md#採用基準-17)
   hfPapersMinUpvotes: number
   // 個人ブログ(individual-blog)の投稿を採用候補にする、公式RSS本文のHTMLタグ除去後の
   // 最小文字数。この未満の投稿は収集時点で除外する(requirements.md#採用基準-6)

@@ -65,13 +65,14 @@ describe('採用基準データの構造 - watchlist-reviewによる更新後も
     expect(criteria.dailyTopicCount.max).toBeGreaterThanOrEqual(criteria.dailyTopicCount.min)
   })
 
-  it('YouTube・Qiita・Zennの各種閾値が妥当な範囲(正の数、平均超過倍率は1倍超)であること', () => {
+  it('YouTube・Qiita・Zenn・Hugging Face Papersの各種閾値が妥当な範囲(正の数、平均超過倍率は1倍超)であること', () => {
     expect(criteria.youtubeRecentVideoWindow).toBeGreaterThan(0)
     expect(criteria.youtubeCandidateVideoCount).toBeGreaterThan(0)
     expect(criteria.youtubeAboveAverageRatio).toBeGreaterThan(1)
     expect(criteria.qiitaMinLikes).toBeGreaterThanOrEqual(0)
     expect(criteria.qiitaMaxAgeDays).toBeGreaterThan(0)
     expect(criteria.zennMinLikes).toBeGreaterThanOrEqual(0)
+    expect(criteria.hfPapersMinUpvotes).toBeGreaterThanOrEqual(0)
     expect(criteria.minIndividualBlogBodyChars).toBeGreaterThan(0)
   })
 
@@ -84,7 +85,7 @@ describe('採用基準データの構造 - watchlist-reviewによる更新後も
   })
 
   it('duplicateSuppressionSourceTypesが配列で、各要素がCandidate.sourceTypeとして有効な種別であること', () => {
-    const validSourceTypes = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn']
+    const validSourceTypes = ['official', 'individual-youtube', 'individual-blog', 'qiita', 'zenn', 'hf-papers']
     expect(Array.isArray(criteria.duplicateSuppressionSourceTypes)).toBe(true)
     for (const sourceType of criteria.duplicateSuppressionSourceTypes) {
       expect(validSourceTypes).toContain(sourceType)
