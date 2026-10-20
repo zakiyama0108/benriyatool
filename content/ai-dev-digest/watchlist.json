@@ -61,6 +61,30 @@
     "channels": [{ "type": "rss", "feedUrl": "https://code.visualstudio.com/feed.xml" }]
   },
   {
+    "id": "huggingface-blog",
+    "category": "official",
+    "name": "Hugging Face Blog",
+    "channels": [{ "type": "rss", "feedUrl": "https://huggingface.co/blog/feed.xml" }]
+  },
+  {
+    "id": "google-deepmind",
+    "category": "official",
+    "name": "Google DeepMind",
+    "channels": [{ "type": "rss", "feedUrl": "https://deepmind.google/blog/rss.xml" }]
+  },
+  {
+    "id": "mistral-ai",
+    "category": "official",
+    "name": "Mistral AI",
+    "channels": [{ "type": "rss", "feedUrl": "https://mistral.ai/news/rss" }]
+  },
+  {
+    "id": "microsoft-ai-source",
+    "category": "official",
+    "name": "Microsoft AI (Source)",
+    "channels": [{ "type": "rss", "feedUrl": "https://news.microsoft.com/source/topics/ai/feed/" }]
+  },
+  {
     "id": "karpathy",
     "category": "individual-youtube",
     "name": "Andrej Karpathy",
@@ -91,6 +115,30 @@
     "channels": [{ "type": "youtube", "channelId": "@daveebbelaar" }]
   },
   {
+    "id": "two-minute-papers",
+    "category": "individual-youtube",
+    "name": "Two Minute Papers",
+    "channels": [{ "type": "youtube", "channelId": "@TwoMinutePapers" }]
+  },
+  {
+    "id": "yannic-kilcher",
+    "category": "individual-youtube",
+    "name": "Yannic Kilcher",
+    "channels": [{ "type": "youtube", "channelId": "@YannicKilcher" }]
+  },
+  {
+    "id": "indydevdan",
+    "category": "individual-youtube",
+    "name": "IndyDevDan",
+    "channels": [{ "type": "youtube", "channelId": "@IndyDevDan" }]
+  },
+  {
+    "id": "aicodeking",
+    "category": "individual-youtube",
+    "name": "AICodeKing",
+    "channels": [{ "type": "youtube", "channelId": "@aicodeking" }]
+  },
+  {
     "id": "simon-willison",
     "category": "individual-blog",
     "name": "Simon Willison",
@@ -110,6 +158,18 @@
     "channels": [{ "type": "rss", "feedUrl": "https://martinfowler.com/feed.atom" }]
   },
   {
+    "id": "chip-huyen",
+    "category": "individual-blog",
+    "name": "Chip Huyen",
+    "channels": [{ "type": "rss", "feedUrl": "https://huyenchip.com/feed.xml" }]
+  },
+  {
+    "id": "latent-space",
+    "category": "individual-blog",
+    "name": "Latent Space",
+    "channels": [{ "type": "rss", "feedUrl": "https://www.latent.space/feed" }]
+  },
+  {
     "id": "qiita",
     "category": "platform",
     "name": "Qiita",
@@ -120,5 +180,11 @@
     "category": "platform",
     "name": "Zenn",
     "channels": [{ "type": "platform-zenn" }]
+  },
+  {
+    "id": "huggingface-papers",
+    "category": "platform",
+    "name": "Hugging Face Papers",
+    "channels": [{ "type": "platform-hf-papers" }]
   }
 ]
