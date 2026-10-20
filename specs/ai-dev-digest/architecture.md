@@ -177,7 +177,7 @@ content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-re
 | Supabase(`ai_dev_digest_feedback`テーブル) | 運営者フィードバックの保存 |
 | Supabase(`ai_dev_digest_bookmarks`テーブル、2026-08追加) | ログイン中の読者本人の付箋(自由記述メモ)の保存 |
 | Supabase Auth(Google OIDC) | 記事詳細ページ・付箋一覧ページのログイン(2026-08: 運営者限定から読者全員が対象に拡大)。フィードバック入力欄の表示切り替え(運営者判定、既存admin authと同じ仕組みを流用)にも利用 |
-| YouTube公式API・各社公式RSSフィード・各社公式ブログ・Qiita公式API・Zenn公式RSS | 情報源データの取得([content-selection/requirements.md#データ取得方法](content-selection/requirements.md)) |
+| YouTube公式API・各社公式RSSフィード・各社公式ブログ・Qiita公式API・Zenn公式RSS・Hugging Face公式API(2026-10追加) | 情報源データの取得([content-selection/requirements.md#データ取得方法](content-selection/requirements.md)) |
 | GitHub Actions | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む) |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | daily-publishの翻訳・要約生成、watchlist-reviewの見直し案検討に、いずれもヘッドレス起動で使用(2026-08第2次改定。当初はAnthropic APIの従量課金呼び出しだったが、サブスクリプション利用枠内で完結させるため変更) |
 | LINE Messaging API | 新着記事のLINE公式アカウントからの一斉配信([line-broadcast](line-broadcast/requirements.md)) |

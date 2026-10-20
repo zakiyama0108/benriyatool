@@ -13,7 +13,7 @@
 ## 機能要件
 
 ### 情報源(ウォッチリスト)
-- [1] 対象とする情報源は次の18件に限定する(固定リスト運用とし、記載以外の発信者・組織をエージェントが自律的に追加することはしない)
+- [1] 対象とする情報源は次の29件に限定する(固定リスト運用とし、記載以外の発信者・組織をエージェントが自律的に追加することはしない。2026-10改定: 各カテゴリが少数の情報源に依存しないよう11件を追加)
 
 | 名称 | 区分 | チャンネル |
 |---|---|---|
@@ -25,16 +25,27 @@
 | GitHub | 公式組織 | 公式ブログ(github.blog。Copilot・コーディングエージェント等) |
 | Google Developers | 公式組織 | 公式ブログ(blog.google の開発者向けカテゴリ) |
 | VS Code | 公式組織 | 公式ブログ(code.visualstudio.com。エディタのAI機能リリースノート等) |
+| Hugging Face Blog | 公式組織 | 公式ブログ(huggingface.co/blog) |
+| Google DeepMind | 公式組織 | 公式ブログ(deepmind.google/blog) |
+| Mistral AI | 公式組織 | 公式ブログ(mistral.ai/news) |
+| Microsoft AI (Source) | 公式組織 | 公式ブログ(news.microsoft.com/source のAIカテゴリ) |
 | Andrej Karpathy | 個人YouTube | YouTube |
 | Fireship | 個人YouTube | YouTube |
 | Cole Medin | 個人YouTube | YouTube |
 | freeCodeCamp | 個人YouTube | YouTube |
 | Dave Ebbelaar | 個人YouTube | YouTube |
+| Two Minute Papers | 個人YouTube | YouTube(AI論文の解説) |
+| Yannic Kilcher | 個人YouTube | YouTube(AI・ML研究の解説) |
+| IndyDevDan | 個人YouTube | YouTube(AIエージェント型コーディング) |
+| AICodeKing | 個人YouTube | YouTube(AIコーディングツールの比較) |
 | Simon Willison | 個人ブログ | 個人ブログ(simonwillison.net) |
 | Interconnects (Nathan Lambert) | 個人ブログ | 個人ブログ(interconnects.ai) |
 | Martin Fowler / Thoughtworks | 個人ブログ | 個人ブログ(martinfowler.com) |
+| Chip Huyen | 個人ブログ | 個人ブログ(huyenchip.com) |
+| Latent Space | 個人ブログ | 個人ブログ(latent.space) |
 | Qiita | プラットフォーム | プラットフォーム全体(いいね数上位) |
 | Zenn | プラットフォーム | プラットフォーム全体(いいね数上位) |
+| Hugging Face Papers | プラットフォーム | 公式API(daily_papers。upvotes数上位。[17]参照) |
 
 - [2] X(Twitter)は対象に含めない(根拠: 公式APIが有料(Basic tier月額$100〜)で、無料枠では発信者のフォロワー数取得や検索が実質できないため)。X中心の発信者(LangChain CEOのHarrison Chase等)は、LangChain公式の発信でカバーする
 - [3] ポッドキャストそのものは今回のスコープに含めない(根拠: 音声のトランスクリプト取得に実装コストがかかるため。将来検討)。個人ブログの公式RSSにポッドキャスト回の告知が混ざることがあるが、これらは本文が極端に短いため[6]の本文量による除外で候補から落ちる
@@ -45,6 +56,7 @@
 - [6] 個人ブログ(種別`individual-blog`)は、新着投稿を原則として採用候補にする。ただし公式RSSが返す本文が`minIndividualBlogBodyChars`文字(初期値150)未満の投稿は、要約に足る情報がないため採用候補にしない(この閾値の主目的はポッドキャスト回の告知など本文がほぼ無い投稿の除外だが、引用・リンク論評のような短い正当な投稿を巻き込む可能性があるため、除外は記録に残して月次見直しで閾値の妥当性を検証できるようにする(design.md「ログ」))
 - [7] Qiitaは、直近`qiitaMaxAgeDays`日(初期値60。約2ヶ月)以内に公開された記事のうち、いいね数30以上のものを採用候補にする(根拠: 公開直後の記事はいいねが付く前で採用条件を満たしにくく、いいねが集まるまでの時間を見込んで対象期間に幅を持たせる。対象期間を広げると同じ記事が複数日にわたり条件を満たしうるが、[14]の掲載済み除外で日をまたいだ再掲は防ぐ)
 - [8] Zennの新着記事は、公式RSSフィードで新着を発見し、要約のために開く記事の公開ページに表示されているいいね数を読み取って、30以上のものを採用候補にする(根拠: Zennには公式のいいね数取得APIがなく、非公式APIの利用は避ける方針のため。要約のためにどのみち開く公開ページの表示値を使うことで、非公式APIを使わずに済む)
+- [17] Hugging Face Papersは、公式API(`daily_papers`)が直近分として返す論文のうち、`hfPapersMinUpvotes`(初期値20)以上のupvotes数を持つものを採用候補にする(2026-10追加。根拠: Hugging Face Papersは研究者コミュニティによる日次の注目論文一覧で、upvotes数がQiita・Zennのいいね数と同様に人気度を表す構造化データとして取得できる。QiitaのようなAPI呼び出し側での経過日数の絞り込みは行わない(APIが返す一覧自体が直近分に限られているため)。初期閾値20は、調査時点(2026-10-18)に取得できた直近50件のupvotes分布(0〜44件、上位2割が概ね15件以上)を踏まえた暫定値で、他の採用基準の初期値と同じく運用実績を見て月次見直しで調整する)
 
 ### 1日の掲載件数
 - [9] 1日のダイジェストに含めるトピック数は3〜5件とする

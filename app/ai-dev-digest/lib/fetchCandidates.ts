@@ -34,7 +34,7 @@ export const fetchHttpClient: HttpClient = {
 export type SourceCollectionStat = {
   sourceId: string
   sourceName: string
-  channel: 'youtube' | 'rss' | 'qiita' | 'zenn'
+  channel: 'youtube' | 'rss' | 'qiita' | 'zenn' | 'hf-papers'
   ok: boolean // フィード/APIの取得自体に成功したか(失敗時はその情報源だけ除外して続行)
   count: number // 収集できた候補件数
 }
@@ -287,6 +287,33 @@ export async function fetchZennCandidates(http: HttpClient): Promise<Candidate[]
   return candidates
 }
 
+type HfPaperItem = { paper?: { id?: string; title?: string; upvotes?: number; publishedAt?: string } }
+
+// Hugging Face Papers公式API(daily_papers)から直近の論文一覧とupvotes数を取得する
+// (requirements.md#採用基準-17)。upvotes数の閾値(hfPapersMinUpvotes)判定は選定処理側(selection.ts)で
+// 行うため、ここでは絞り込まない。エンドポイント自体が直近の掲載分のみを返すため、
+// Qiitaのような経過日数での絞り込みも不要
+export async function fetchHfPapersCandidates(http: HttpClient): Promise<Candidate[]> {
+  const items = (await http.fetchJson('https://huggingface.co/api/daily_papers')) as HfPaperItem[]
+  if (!Array.isArray(items)) return []
+
+  const candidates: Candidate[] = []
+  for (const item of items) {
+    const paper = item.paper
+    if (!paper?.id || !paper.title || !paper.publishedAt) continue
+    candidates.push({
+      sourceId: 'huggingface-papers',
+      sourceName: 'Hugging Face Papers',
+      sourceType: 'hf-papers',
+      heading: paper.title,
+      url: `https://huggingface.co/papers/${paper.id}`,
+      publishedAt: new Date(paper.publishedAt).toISOString(),
+      metricValue: paper.upvotes ?? 0,
+    })
+  }
+  return candidates
+}
+
 // 情報源ごとの取得件数を、月次見直し用の実行ログ行に整形する(requirements.md#情報源の健全性監視-2、
 // design.md「ログ」)。取得失敗・0件だった情報源はWARN付きにして無言停止に気づけるようにする
 export function buildSourceHealthLogLines(stats: SourceCollectionStat[]): string[] {
@@ -335,6 +362,8 @@ export async function fetchAllCandidates(
         tasks.push({ sourceId: entry.id, sourceName: entry.name, channel: 'qiita', run: () => fetchQiitaCandidates(http, criteria) })
       if (channel.type === 'platform-zenn')
         tasks.push({ sourceId: entry.id, sourceName: entry.name, channel: 'zenn', run: () => fetchZennCandidates(http) })
+      if (channel.type === 'platform-hf-papers')
+        tasks.push({ sourceId: entry.id, sourceName: entry.name, channel: 'hf-papers', run: () => fetchHfPapersCandidates(http) })
     }
   }
 

@@ -6,6 +6,7 @@
   "qiitaMinLikes": 30,
   "qiitaMaxAgeDays": 60,
   "zennMinLikes": 30,
+  "hfPapersMinUpvotes": 20,
   "minIndividualBlogBodyChars": 150,
   "topicExcludeKeywords": [
     "医療",

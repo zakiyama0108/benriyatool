@@ -74,3 +74,18 @@
 - Task 14: 情報源ごとの取得件数ログ(仕様: requirements.md#情報源の健全性監視-2、design.md「ログ」)
   - 🔴 収集処理が情報源ごとの件数を返し、0件の情報源が警告として区別できることをテストする(`fetchAllCandidates`の戻り値または集計関数の単体テスト)
   - 🟢 `fetchAllCandidates`が情報源ごとの取得件数を集計できるようにし、`collect-and-select.ts`が0件の情報源を`WARN`付きでstderrに出力する
+
+## 情報源の複数化(requirements.md#情報源(ウォッチリスト)-1・採用基準-17。2026-10)
+
+- Task 15: ウォッチリストの拡張(仕様: requirements.md#情報源(ウォッチリスト)-1)
+  - TDD対象外(データ変更)。`content/ai-dev-digest/watchlist.json`を18件→29件に拡張する:
+    - 公式組織(`official`)に`huggingface-blog`・`google-deepmind`・`mistral-ai`・`microsoft-ai-source`を追加
+    - 個人YouTube(`individual-youtube`)に`two-minute-papers`・`yannic-kilcher`・`indydevdan`・`aicodeking`を追加
+    - 個人ブログ(`individual-blog`)に`chip-huyen`・`latent-space`を追加(調査時点の候補だった`a16z`は、実装前の最終確認で公式RSSが404になっていたため見送り)
+  - `__tests__/ai-dev-digest/lib/watchlistData.test.ts`の件数・EXPECTED_NAMESを29件に追随させる
+
+- Task 16: Hugging Face Papersの新規実装(仕様: requirements.md#情報源(ウォッチリスト)-1、requirements.md#採用基準-17、design.md「情報源から候補を収集する処理」「採用基準を判定する処理」)
+  - 🔴 公式API(`daily_papers`)のレスポンスがupvotes数をmetricValueに持つCandidateに変換されること、論文ページURLが`https://huggingface.co/papers/<id>`形式になること、id・title・publishedAtを欠く論文は候補から除外されることをテストする(`fetchCandidates.test.ts`)。あわせてupvotes数が`hfPapersMinUpvotes`以上/未満で`meetsCriteria`/`describeShortfall`の判定が変わることをテストする(`selection.test.ts`)
+  - 🟢 `app/ai-dev-digest/lib/fetchCandidates.ts`に`fetchHfPapersCandidates(http)`を実装し`fetchAllCandidates`に`platform-hf-papers`チャンネルとして統合する。`selection.ts`の`meetsCriteria`/`describeShortfall`/`shortfallRatio`に`hf-papers`のcaseを追加する
+  - `WatchlistChannel`に`{ type: 'platform-hf-papers' }`、`SourceType`に`'hf-papers'`、`Criteria`に`hfPapersMinUpvotes: number`を追加する(TDD対象外。型定義・データのみのため)。`content/ai-dev-digest/watchlist.json`に`huggingface-papers`(`category: 'platform'`)、`criteria.json`に`hfPapersMinUpvotes: 20`を追加する
+  - `app/ai-dev-digest/lib/articleSchema.ts`の`SOURCE_TYPES`、`app/ai-dev-digest/components/SourceBadge.tsx`の`LABELS`に`hf-papers`を追加する(いずれもTypeScriptの網羅性チェックで漏れが検知される)
