@@ -63,7 +63,7 @@ export function isTopicExcluded(candidate: Candidate, criteria: Criteria): boole
 // - official/individual-blog: 発信量が少なく信頼性が高いため無条件で採用候補にする(requirements.md#採用基準-4、#採用基準-6)
 // - individual-youtube: チャンネルごとの規模差を吸収するため、直近平均再生回数の
 //   youtubeAboveAverageRatio倍を「明確に上回る」場合のみ採用候補にする(超える、ではなく上回る=同値は不可。requirements.md#採用基準-5)
-// - qiita/zenn: いいね数がそれぞれの閾値以上なら採用候補にする(requirements.md#採用基準-7、#採用基準-8)
+// - qiita/zenn/hf-papers: いいね数・upvotes数がそれぞれの閾値以上なら採用候補にする(requirements.md#採用基準-7、#採用基準-8、#採用基準-17)
 export function meetsCriteria(candidate: Candidate, criteria: Criteria): boolean {
   switch (candidate.sourceType) {
     case 'official':
@@ -77,6 +77,8 @@ export function meetsCriteria(candidate: Candidate, criteria: Criteria): boolean
       return candidate.metricValue >= criteria.qiitaMinLikes
     case 'zenn':
       return candidate.metricValue >= criteria.zennMinLikes
+    case 'hf-papers':
+      return candidate.metricValue >= criteria.hfPapersMinUpvotes
   }
 }
 
@@ -91,6 +93,10 @@ export function describeShortfall(candidate: Candidate, criteria: Criteria): str
     case 'zenn': {
       const shortfall = criteria.zennMinLikes - candidate.metricValue
       return `いいね数${candidate.metricValue}件(基準${criteria.zennMinLikes}件に${shortfall}件不足)`
+    }
+    case 'hf-papers': {
+      const shortfall = criteria.hfPapersMinUpvotes - candidate.metricValue
+      return `upvotes${candidate.metricValue}件(基準${criteria.hfPapersMinUpvotes}件に${shortfall}件不足)`
     }
     case 'individual-youtube': {
       const threshold = Math.round((candidate.recentAverageViews ?? 0) * criteria.youtubeAboveAverageRatio)
@@ -121,6 +127,8 @@ function shortfallRatio(candidate: Candidate, criteria: Criteria): number {
       return (criteria.qiitaMinLikes - candidate.metricValue) / criteria.qiitaMinLikes
     case 'zenn':
       return (criteria.zennMinLikes - candidate.metricValue) / criteria.zennMinLikes
+    case 'hf-papers':
+      return (criteria.hfPapersMinUpvotes - candidate.metricValue) / criteria.hfPapersMinUpvotes
     case 'individual-youtube': {
       const threshold = (candidate.recentAverageViews ?? 0) * criteria.youtubeAboveAverageRatio
       if (threshold === 0) return 1

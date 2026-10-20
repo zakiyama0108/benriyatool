@@ -14,7 +14,7 @@
 
 ウォッチリスト・採用基準は本specの`requirements.md`(人間が読む正の仕様)と、実行時にコードが読み込む機械可読データの二重管理とする。[watchlist-review](../watchlist-review/requirements.md)の月次見直しPRは、**同じ変更を`requirements.md`とこの機械可読データの両方に加える**(片方だけの変更はレビューで差し戻す)。
 
-- `content/ai-dev-digest/watchlist.json` — requirements.md#情報源(ウォッチリスト)-1の18件をそのまま構造化したもの
+- `content/ai-dev-digest/watchlist.json` — requirements.md#情報源(ウォッチリスト)-1の29件をそのまま構造化したもの
 - `content/ai-dev-digest/criteria.json` — requirements.md#採用基準(種別ごとの定量判定)・#話題の関連性・#情報源内の重複掲載の抑制・#掲載済み記事の再掲抑制で使う数値・設定
 
 ```ts
@@ -30,6 +30,7 @@ export type WatchlistEntry = {
     | { type: 'rss'; feedUrl: string }
     | { type: 'platform-qiita' }
     | { type: 'platform-zenn' }
+    | { type: 'platform-hf-papers' }
   >
 }
 
@@ -41,6 +42,7 @@ export type Criteria = {
   qiitaMinLikes: number // requirements.md#採用基準-7
   qiitaMaxAgeDays: number // Qiita記事を採用候補にする公開後の経過日数の上限(requirements.md#採用基準-7)
   zennMinLikes: number // requirements.md#採用基準-8
+  hfPapersMinUpvotes: number // Hugging Face Papersの論文を採用候補にするupvotes数の下限(requirements.md#採用基準-17)
   minIndividualBlogBodyChars: number // 個人ブログ投稿を採用候補にする本文の最小文字数(requirements.md#採用基準-6)
   topicExcludeKeywords: string[] // 原文タイトルに含まれると候補から除外するキーワード(requirements.md#話題の関連性-12)
   duplicateSuppressionSourceTypes: SourceType[] // 同一情報源・同日の重複を1件に絞る対象種別(requirements.md#情報源内の重複掲載の抑制-13)
@@ -57,6 +59,7 @@ export type Criteria = {
   "qiitaMinLikes": 30,
   "qiitaMaxAgeDays": 60,
   "zennMinLikes": 30,
+  "hfPapersMinUpvotes": 20,
   "minIndividualBlogBodyChars": 150,
   "topicExcludeKeywords": ["医療", "ヘルスケア", "診断", "healthcare", "medical", "clinical"],
   "duplicateSuppressionSourceTypes": ["individual-blog"]
@@ -67,13 +70,14 @@ export type Criteria = {
 ## 処理フロー
 
 ### 情報源から候補を収集する処理
-- 対象: `watchlist.json`に登録された18件の情報源
+- 対象: `watchlist.json`に登録された29件の情報源
 - 手順:
   1. 種別ごとに公式API・公式RSSフィード・公開ページの閲覧の範囲でデータを取得する(requirements.md#データ取得方法-1)
      - 公式組織・個人YouTube: YouTube Data API(公式)で対象チャンネルの動画と再生回数を取得する。個人YouTubeは直近`youtubeCandidateVideoCount`本を採用候補として、それに続く`youtubeRecentVideoWindow`本を平均再生回数の算出対象として取得する(requirements.md#採用基準-5)。公式組織のYouTubeは最新1本のみ
      - 公式組織のブログ・個人ブログ: 公式RSS/Atomフィードを取得する。個人ブログ(種別`individual-blog`)は、フィードが返す本文(`content:encoded`/`summary`/`description`/atomの`content`)からHTMLタグを除いた文字数が`minIndividualBlogBodyChars`未満の投稿を、この時点で候補から除外する(requirements.md#採用基準-6。Zennのいいね数を読めない記事を収集時点で除外するのと同じ扱い)。除外した投稿は、件数と元URLを標準エラー出力に「本文量により除外」として記録する(閾値が短い正当な投稿(引用・リンク論評など)を巻き込んでいないかを月次見直しで検証できるようにする)
      - Qiita: 公式APIで記事といいね数・公開日時を取得する。公開が新しい順に、`qiitaMaxAgeDays`日より古い記事に到達するまでページを辿る(requirements.md#採用基準-7)
      - Zenn: 公式RSSフィードで新着記事を検知し、各記事の公開ページ(HTML)を開いていいね数の表示値を読み取る(requirements.md#採用基準-8)
+     - Hugging Face Papers: 公式API(`https://huggingface.co/api/daily_papers`)で直近分の論文一覧とupvotes数を取得する(requirements.md#採用基準-17。2026-10追加)。このAPI自体が直近掲載分のみを返すため、Qiitaのような経過日数での絞り込みは行わない
   2. 取得できなかった情報源(一時的な障害・レート制限等)は、その情報源だけを候補から除外して処理を続ける(1件の取得失敗で日次実行全体を止めない)
   3. 取得した各候補について、発信者名・見出し(原文タイトル)・元URL・公開日時・種別ごとの判定用の数値(再生回数/いいね数、個人YouTubeは併せて候補群を除いた直後の動画群の平均再生回数)を記録する
   4. 情報源ごとの収集件数(取得失敗・0件はその旨)を標準エラー出力に記録する(requirements.md#情報源の健全性監視-2)
@@ -97,8 +101,9 @@ export type Criteria = {
   3. 個人ブログ(`individual-blog`)の新着は無条件で基準を満たすと判定する(requirements.md#採用基準-6。本文が短い投稿は収集時点で既に除外済み)
   4. Qiitaの記事はいいね数が`qiitaMinLikes`以上なら基準を満たすと判定する(requirements.md#採用基準-7。公開後`qiitaMaxAgeDays`日以内という期間の絞り込みは収集時点で済んでいる)
   5. Zennの新着記事はいいね数が`zennMinLikes`以上なら基準を満たすと判定する(requirements.md#採用基準-8)
-  6. 判定結果(基準を満たすか)と、満たさない場合はどれだけ乖離しているか(例: 「いいね数18件(基準30件に12件不足)」)を候補に記録する
-- 関連するビジネスルール: requirements.md#採用基準-4〜8
+  6. Hugging Face Papersの論文はupvotes数が`hfPapersMinUpvotes`以上なら基準を満たすと判定する(requirements.md#採用基準-17。2026-10追加)
+  7. 判定結果(基準を満たすか)と、満たさない場合はどれだけ乖離しているか(例: 「いいね数18件(基準30件に12件不足)」)を候補に記録する
+- 関連するビジネスルール: requirements.md#採用基準-4〜8、requirements.md#採用基準-17
 
 ### 掲載済み記事を除外する処理(決定的なコード)
 - 対象: 収集した候補すべて(話題の関連性フィルタ・重複抑制・採用基準の判定より前に適用する)
@@ -155,7 +160,7 @@ content/ai-dev-digest/criteria.json (新規: 採用基準の数値)
 app/ai-dev-digest/lib/watchlistTypes.ts (新規: 型定義)
 app/ai-dev-digest/lib/candidateTypes.ts (新規: Candidate/SelectionResultの型定義)
 app/ai-dev-digest/lib/selection.ts (新規: 採用基準判定・1日分の選定ロジック。純粋関数でテスト可能)
-app/ai-dev-digest/lib/fetchCandidates.ts (新規: 各情報源への問い合わせ処理。YouTube Data API/RSS/Qiita API呼び出し)
+app/ai-dev-digest/lib/fetchCandidates.ts (新規: 各情報源への問い合わせ処理。YouTube Data API/RSS/Qiita API/Hugging Face Papers API呼び出し)
 scripts/ai-dev-digest/collect-and-select.ts (fetchCandidates+selectionを実行しJSONを標準出力するCLI。掲載済み記事URLの読み込み(content/ai-dev-digest/articles/*.json)もここで行う。GitHub Actionsのワークフローから呼び出される)
 ```
 
