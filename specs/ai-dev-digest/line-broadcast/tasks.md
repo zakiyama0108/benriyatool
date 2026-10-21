@@ -76,6 +76,10 @@
 
 ## 2026-10-20 追加(timeoutMs延長・デプロイ失敗への対処)
 
+記事ページ公開待ちのタイムアウトを10分から20分へ延長する変更。**🟡〔提案〕**
+
+<details><summary>詳細を開く</summary>
+
 - Task F: 記事ページ公開待ちのタイムアウト延長(仕様: design.md「記事ページの公開を待つ処理」「待機パラメータと根拠」)
   - 背景: 2026-10-14のnews-digest配信で、同じpushをトリガーに起動する`deploy.yml`のmigrateジョブが`supabase/setup-cli@v1`のGitHub APIレート制限で失敗し、デプロイ自体が完了しないまま`timeoutMs`(当時10分)で打ち切られ配信が失敗した
   - ビジネスルール・仕様の変更は伴わない(`timeoutMs`の既定値のみの変更)
@@ -83,3 +87,5 @@
   - 🟢 `app/lib/waitForPageAvailable.ts`の`DEFAULT_TIMEOUT_MS`を`600_000`(10分)から`1_200_000`(20分)に変更する
   - 🔵 リファクタ(`scripts/{ai-dev-digest,news-digest,trend-digest}/broadcast-line.ts`のコメントが参照する既定値の文言も揃えて直す)
   - デプロイ自体が失敗するケース(今回の直接の原因)は`timeoutMs`の延長では救えないため、`.github/workflows/deploy.yml`の`supabase/setup-cli@v1`のバージョンを固定し根本原因を別途解消する(TDD対象外。GitHub Actionsのワークフロー定義の変更のため)
+
+</details>
