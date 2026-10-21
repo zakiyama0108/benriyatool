@@ -27,7 +27,7 @@ flowchart LR
     gha["GitHub Actions\n(5アプリの記事生成ワークフロー)"]
     notify["失敗を検知してLINEで知らせる"]
     zaki["運営者(zaki)"]
-    gha -->|実行結果(workflow_run)| notify
+    gha -->|実行結果（workflow_run）| notify
     notify -->|LINE pushメッセージ| zaki
 ```
 
