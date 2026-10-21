@@ -66,10 +66,17 @@ describe('固定リストジャンルの情報源ディスパッチ - formatに�
     expect(anilabResult.providesRankChange).toBe(true)
   })
 
-  it('format: structured-rssの場合、Google公式トレンドRSSのパース結果が反映されること', async () => {
+  it('format: structured-rssの場合、RSSフィードのパース結果が反映されること', async () => {
     mockFetchOnce(readStructuredFixture('googleTrends.xml'))
     const result = await dispatchFixedListSource(sourceOf({ format: 'structured-rss' }), 'buzzwords')
     expect(result.items).toHaveLength(10)
+    expect(result.providesRankChange).toBe(false)
+  })
+
+  it('format: structured-atomの場合、Atomフィード(Qiita人気記事)のパース結果が反映されること', async () => {
+    mockFetchOnce(readStructuredFixture('qiitaPopular.xml'))
+    const result = await dispatchFixedListSource(sourceOf({ format: 'structured-atom' }), 'dev-trends')
+    expect(result.items.length).toBeGreaterThan(0)
     expect(result.providesRankChange).toBe(false)
   })
 

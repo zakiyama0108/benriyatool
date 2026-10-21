@@ -88,3 +88,17 @@
     - 🟢 `selectEditionTopics`に`resolveFocusAreas`を実装し、`scripts/trend-digest/collect-and-select.ts`の呼び出しに`criteria`を渡す
   - 対応3: ファッション・ガジェット家電は、固定リストで試したWWD JAPAN・Engadget・ZOZO・価格.comの汎用HTMLパースが実績として順位表を抽出できていなかったため、WebSearchジャンル(`minIndependentSources: 2`)に変更。グルメ・流行りの趣味も候補0件が続いていた実績を踏まえ`minIndependentSources`を2に調整(`watchlist.json`・`criteria.json`・`__tests__/trend-digest/lib/watchlistData.test.ts`を更新)
   - 対応4: 流行りの言葉は、JS描画で順位表を抽出できなかった`trends.google.co.jp/trending`から、RSSの`<item><title>`を順位化する`structured-rss`形式(`trends.google.com/trending/rss?geo=JP`)に変更
+
+- Task 18(情報源複数化・2026-10): music・travelへの補助情報源追加、sns-buzz・gourmet・gadgets・economy-money・dev-trendsの併用ジャンル化(仕様: requirements.md#選定方式-8、requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-1・8・10〜14、design.md「併用ジャンルの候補を収集・判定する処理」)
+  - 候補URLはすべて`curl -A "Mozilla/5.0"`で実際に取得し、構造化されたランキング・一覧が実在することを確認したうえで採用した(WebFetchのみに頼らない)。FlixPatrol(海外ドラマ・サブスク動画)・ZOZOTOWN・楽天市場(ファッション)はいずれもbot対策で403となり採用を見送った(design.md「補足(2026-10次の情報源複数化見直しで検証し見送った候補)」参照)
+  - `app/trend-digest/lib/watchlistTypes.ts`の`FixedListSourceFormat`に`'structured-atom'`を追加する(Qiita人気記事フィードがAtom形式のため。TDD対象外。型定義のみ)
+  - `scripts/trend-digest/fetchStructuredSource.ts`の`parseGoogleTrendsRss`を`parseRssTitlesInOrder`に改称し、`<title><![CDATA[...]]></title>`形式(Zenn公式トレンドRSS)にも対応させる。Atom形式(`<entry><title>`)用に`parseAtomTitlesInOrder`を新規追加する
+    - 🔴 CDATAありのRSS(Zenn)・CDATAなしのRSS(Google)がいずれもタイトル・掲載順どおりの順位で抽出できること、Atomの`<entry>`からも同様に抽出できることを確認するテストを書く
+    - 🟢 上記2関数を実装する
+  - `scripts/trend-digest/sourceParsers/`に9パーサーを新規追加する: `kworbSpotifyJapan.ts`(音楽)・`rakutenTravelSales.ts`(旅行・観光)・`yahooRealtimeSearch.ts`(SNSバズり。CSSクラス名がビルドごとに変わるNext.jsアプリのため`__NEXT_DATA__`のJSONから抽出)・`tabelogRank.ts`(グルメ)・`kakakuRanking.ts`(ガジェット・家電)・`yahooFinanceVolumeIncrease.ts`・`nikkeiAccessRanking.ts`(経済・お金)・`githubTrending.ts`・`hatenaBookmarkIt.ts`(開発手法・開発サービス)
+    - 🔴 実際に取得したHTMLを`__tests__/trend-digest/fixtures/sourceParsers/`に保存し、各パーサーがタイトル・順位を正しく抽出することを確認するテストを書く。価格.com・食べログは順位表示部に入れ子の`<table>`/`<li>`があり単純な非貪欲マッチでは手前で途切れるため、20件すべてが欠落なく抽出されることを明示的に確認する
+    - 🟢 9パーサーを実装し、`scripts/trend-digest/fetchSourcePage.ts`の`HTML_PARSERS`に登録する
+  - `content/trend-digest/watchlist.json`を更新する: music・travelに2件目の情報源(kworb.net・楽天トラベル)を追加。sns-buzz・gourmet・gadgets・economy-money・dev-trendsの`method`を`websearch`から`hybrid`に変更し、固定リスト側の`sources`を追加する(既存の`searchHints`は変更しない)
+  - `content/trend-digest/criteria.json`を更新する: 上記5ジャンルの`genreCriteria`を`websearch`形式から`hybrid`形式(`fixedList: { rankThreshold: 10 }` + 既存の`webSearch`設定をそのまま移す)に変更する
+    - 🔴 `__tests__/trend-digest/lib/watchlistData.test.ts`を更新する。`WEBSEARCH_GENRES`を`['hobby', 'fashion']`に、`HYBRID_GENRES`を`['anime', 'sns-buzz', 'gourmet', 'gadgets', 'economy-money', 'dev-trends']`に変更し、sns-buzz・gourmetが固定の情報源を持つこと、fashionは持たずgadgetsは持つことを確認するテストに更新する
+  - `scripts/trend-digest/collect-and-select.ts`の`collectGenreObservations`・`scripts/trend-digest/collect-websearch-candidates.ts`の`collectWebSearchGenre`は、`method: 'hybrid'`をジャンル名に関わらず汎用的に処理する実装(Task 16でアニメ用に実装済み)のため変更不要。既存の`__tests__/trend-digest/scripts/collect-and-select.test.ts`のテストケースをアニメ以外のジャンルでも成立することの確認に使う

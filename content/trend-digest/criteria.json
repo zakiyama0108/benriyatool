@@ -10,16 +10,16 @@
     "variety": { "method": "fixed-list", "rankThreshold": 5 },
     "streaming-video": { "method": "fixed-list", "newEntryOrRisingRank": true },
     "books-comics": { "method": "fixed-list", "rankThreshold": 5, "newEntryOrRisingRank": true },
-    "sns-buzz": { "method": "websearch", "minIndependentSources": 3 },
+    "sns-buzz": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 3 } },
     "buzzwords": { "method": "fixed-list", "rankThreshold": 10 },
-    "gourmet": { "method": "websearch", "minIndependentSources": 2, "focusAreas": ["小田原", "茅ヶ崎", "横浜"] },
+    "gourmet": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 2, "focusAreas": ["小田原", "茅ヶ崎", "横浜"] } },
     "hobby": { "method": "websearch", "minIndependentSources": 2 },
     "fashion": { "method": "websearch", "minIndependentSources": 2 },
-    "gadgets": { "method": "websearch", "minIndependentSources": 2 },
+    "gadgets": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 2 } },
     "games": { "method": "fixed-list", "rankThreshold": 10 },
     "travel": { "method": "fixed-list", "rankThreshold": 10 },
-    "economy-money": { "method": "websearch", "minIndependentSources": 3 },
-    "dev-trends": { "method": "websearch", "minIndependentSources": 3 }
+    "economy-money": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 3 } },
+    "dev-trends": { "method": "hybrid", "fixedList": { "rankThreshold": 10 }, "webSearch": { "minIndependentSources": 3 } }
   },
   "history": {
     "emergingMinDays": 14,
