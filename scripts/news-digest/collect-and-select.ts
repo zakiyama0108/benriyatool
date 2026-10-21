@@ -2,7 +2,9 @@
 // (tasks.md Task7。fetchCandidates/選定ロジック自体はTask3〜5でテスト済みの薄い呼び出しであり、
 // エージェント呼び出し自体もプロンプト組み立てに検証可能な決定的ロジックがないため)。
 // 応答のJSONパース・フォールバックのみapp/news-digest/lib/judgeCandidates.tsに切り出してテストする
-// (tasks.md Task6)。
+// (tasks.md Task6)。ただしcallClaudeCodeのCLI起動方式(stdin経由でのプロンプト受け渡し)は決定的
+// ロジックのため__tests__/news-digest/scripts/collect-and-select.test.tsでexecFileをモックして
+// 検証する(tasks.md Task11)。
 //
 // 各情報源から新着候補を収集 → 掲載済み記事を除外 → カテゴリごとにClaude Code CLI(`claude -p`)を
 // ヘッドレス起動してグループ化・採用基準判定 → 件数上限を適用、までを行い、選定結果JSONを
@@ -12,7 +14,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
+import { pathToFileURL } from 'node:url'
 import { fetchAllCandidates, fetchHttpClient, buildSourceHealthLogLines } from '../../app/news-digest/lib/fetchCandidates'
 import { excludeAlreadyPublished, selectWeeklyTopics } from '../../app/news-digest/lib/selection'
 import { parseAgentJudgment, toJudgedCandidates } from '../../app/news-digest/lib/judgeCandidates'
@@ -21,8 +23,6 @@ import type { Candidate, JudgedCandidate } from '../../app/news-digest/lib/candi
 import type { Article } from '../../app/news-digest/lib/types'
 import watchlistData from '../../content/news-digest/watchlist.json'
 import criteriaData from '../../content/news-digest/criteria.json'
-
-const execFileAsync = promisify(execFile)
 
 const watchlist = watchlistData as WatchlistEntry[]
 const criteria: Criteria = criteriaData
@@ -59,31 +59,35 @@ ${list}
 ${RESPONSE_FORMAT_NOTE}(この専用枠では配列の要素は最大1件です)`
 }
 
-// Claude Code CLIを非対話モード(-p)で1回呼び出し、応答テキスト(result)を返す。
-// 起動自体に失敗した場合も例外を投げず空文字を返し、呼び出し元のparseAgentJudgmentが
-// 「候補なし」として扱う(1カテゴリの判定失敗で週次実行全体を止めない。design.md「エラーハンドリング」)
-async function callClaudeCode(prompt: string): Promise<string> {
-  try {
-    const { stdout } = await execFileAsync(
+// Claude Code CLIを非対話モード(-p)で1回呼び出し、応答テキスト(result)を返す。プロンプトはCLI引数
+// ではなく標準入力(stdin)経由で渡す。総合・経済/ビジネスのように候補数が多いカテゴリでは、全候補を
+// 埋め込んだプロンプト文字列が長大になりCLI引数として渡すとOSのコマンドライン引数長の上限を超え、
+// spawn E2BIGでCLI起動自体に失敗していた(2026-10-20の週次実行で発生し総合・経済/ビジネスが
+// 候補0件になった。tasks.md Task11参照)。起動自体に失敗した場合も例外を投げず空文字を返し、
+// 呼び出し元のparseAgentJudgmentが「候補なし」として扱う(1カテゴリの判定失敗で週次実行全体を
+// 止めない。design.md「エラーハンドリング」)
+export function callClaudeCode(prompt: string): Promise<string> {
+  return new Promise((resolve) => {
+    const child = execFile(
       'claude',
-      ['-p', prompt, '--output-format', 'json', '--dangerously-skip-permissions'],
-      { maxBuffer: 1024 * 1024 * 32 }
-    )
-    const parsed = JSON.parse(stdout) as { result?: string }
-    return parsed.result ?? ''
-  } catch (error) {
-    const withStdout = error as { stdout?: string }
-    if (withStdout.stdout) {
-      try {
-        const parsed = JSON.parse(withStdout.stdout) as { result?: string }
-        return parsed.result ?? ''
-      } catch {
-        // stdoutがJSONでない場合は下のフォールバックに回す
+      ['-p', '--output-format', 'json', '--dangerously-skip-permissions'],
+      { maxBuffer: 1024 * 1024 * 32 },
+      (error, stdout) => {
+        // execFileはプロセスが非ゼロ終了してもコールバック第2引数stdoutに標準出力をそのまま渡す
+        // (errorオブジェクトにstdoutは設定されない。util.promisify(execFile)との違いに注意)。
+        // 非ゼロ終了でも有効なJSONを出力していたケースを救済するため、errorの有無に関わらず
+        // 第2引数stdoutを使う。errorはログ用途にのみ使う
+        try {
+          const parsed = JSON.parse(stdout ?? '') as { result?: string }
+          resolve(parsed.result ?? '')
+        } catch {
+          console.error(`Claude Code CLIの起動に失敗しました: ${error ? error.message : 'stdoutがJSONとして解釈できません'}`)
+          resolve('')
+        }
       }
-    }
-    console.error(`Claude Code CLIの起動に失敗しました: ${(error as Error).message}`)
-    return ''
-  }
+    )
+    child.stdin?.end(prompt, 'utf8')
+  })
 }
 
 // カテゴリごとに候補をグループ化し、採用基準を判定する(design.md「候補をグループ化し採用基準を
@@ -173,7 +177,12 @@ async function main() {
   process.stdout.write(JSON.stringify({ date, ...result }, null, 2) + '\n')
 }
 
-main().catch((error: unknown) => {
-  console.error(error)
-  process.exit(1)
-})
+// CLIとして直接実行された場合のみmain()を起動する(テストからcallClaudeCodeをimportした際に
+// CLI(process.exit等)が動いてしまわないようにするガード。generate-content.tsと同じ方式)
+const isMainModule = process.argv[1] != null && import.meta.url === pathToFileURL(process.argv[1]).href
+if (isMainModule) {
+  main().catch((error: unknown) => {
+    console.error(error)
+    process.exit(1)
+  })
+}
