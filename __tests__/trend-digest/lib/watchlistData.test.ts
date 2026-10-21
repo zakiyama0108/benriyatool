@@ -13,10 +13,14 @@ const FIXED_LIST_GENRES = [
   'music', 'japanese-movie', 'foreign-movie', 'japanese-drama', 'foreign-drama', 'variety',
   'streaming-video', 'books-comics', 'buzzwords', 'games', 'travel',
 ]
-// fashion・gadgetsは編集部キュレーションの記事しか情報源がなく客観データを持たないためWebSearchジャンル(requirements.md#選定方式-4)
-const WEBSEARCH_GENRES = ['sns-buzz', 'gourmet', 'hobby', 'fashion', 'gadgets', 'economy-money', 'dev-trends']
-// アニメは固定リスト+WebSearchを併用する併用ジャンル(requirements.md#選定方式-7)
-const HYBRID_GENRES = ['anime']
+// 流行りの趣味・ファッションは、2026-10次の情報源複数化(source-review)でも実際の消費・行動を
+// 集計した構造化データの情報源が見つからなかったためWebSearchジャンルのまま(requirements.md#選定方式-4)
+const WEBSEARCH_GENRES = ['hobby', 'fashion']
+// アニメ(当初からの併用ジャンル)に加え、SNSバズり・グルメ・ガジェット・家電・経済・お金・
+// 開発手法・開発サービスは、2026-10次の情報源複数化で実際の人気・アクセスを集計した構造化
+// データの情報源が見つかったため、固定リスト+WebSearchを併用する併用ジャンルへ変更した
+// (requirements.md#選定方式-7)
+const HYBRID_GENRES = ['anime', 'sns-buzz', 'gourmet', 'gadgets', 'economy-money', 'dev-trends']
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#グループとジャンル-1、specs/trend-digest/content-selection/requirements.md#グループとジャンル-2、specs/trend-digest/content-selection/requirements.md#機能要件-1
 describe('対象ジャンルのデータ - 19ジャンルをエンタメ編(火曜配信・9ジャンル)とカルチャー・ライフスタイル編(金曜配信・10ジャンル)に固定リストで分ける', () => {
@@ -36,55 +40,60 @@ describe('対象ジャンルのデータ - 19ジャンルをエンタメ編(火�
   })
 })
 
-// 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-2、specs/trend-digest/content-selection/requirements.md#選定方式-3、specs/trend-digest/content-selection/requirements.md#選定方式-7
-describe('ジャンルの選定方式データ - 固定リストジャンル(11)・WebSearchジャンル(7)・併用ジャンル(1)がrequirements.mdの記載と一致する', () => {
+// 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-2、specs/trend-digest/content-selection/requirements.md#選定方式-3、specs/trend-digest/content-selection/requirements.md#選定方式-7、specs/trend-digest/content-selection/requirements.md#選定方式-8
+describe('ジャンルの選定方式データ - 固定リストジャンル(11)・WebSearchジャンル(2)・併用ジャンル(6)がrequirements.mdの記載と一致する', () => {
   it('固定リストジャンル(method: fixed-list)がrequirements.mdに記載の11ジャンルと一致すること', () => {
     const actual = watchlist.filter((e) => e.method === 'fixed-list').map((e) => e.genre).sort()
     expect(actual).toEqual([...FIXED_LIST_GENRES].sort())
   })
 
-  it('WebSearchジャンル(method: websearch)がrequirements.mdに記載の7ジャンルと一致すること', () => {
+  it('WebSearchジャンル(method: websearch)がrequirements.mdに記載の2ジャンルと一致すること', () => {
     const actual = watchlist.filter((e) => e.method === 'websearch').map((e) => e.genre).sort()
     expect(actual).toEqual([...WEBSEARCH_GENRES].sort())
   })
 
-  it('併用ジャンル(method: hybrid)がrequirements.mdに記載のアニメの1ジャンルと一致すること(アニメ専用の集計データを持つ情報源が限られるため固定リストとWebSearchを併用する)', () => {
+  it('併用ジャンル(method: hybrid)がrequirements.mdに記載の6ジャンルと一致すること(2026-10次の情報源複数化でアニメ以外にも拡大)', () => {
     const actual = watchlist.filter((e) => e.method === 'hybrid').map((e) => e.genre).sort()
     expect(actual).toEqual([...HYBRID_GENRES].sort())
   })
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-5
-describe('SNSバズりの情報源 - 各社公式APIが有料のため直接利用せず、バズりを報じるメディア記事・口コミの広がりをWebSearchで収集する', () => {
-  it('sns-buzzはWebSearchジャンルで、固定の情報源(公式APIの直接利用)を持たないこと', () => {
+describe('SNSバズりの情報源 - 各社公式APIが有料のため直接利用せず、Yahoo!リアルタイム検索(構造化データ)とバズりを報じるメディア記事・口コミの広がり(WebSearch)を併用する', () => {
+  it('sns-buzzは併用ジャンルで、Yahoo!リアルタイム検索を固定の情報源に持つこと(X・Instagram・Threads・TikTok公式APIの直接利用はしない)', () => {
     const snsBuzz = watchlist.find((e) => e.genre === 'sns-buzz')
-    expect(snsBuzz?.method).toBe('websearch')
-    expect(snsBuzz?.sources).toEqual([])
+    expect(snsBuzz?.method).toBe('hybrid')
+    expect(snsBuzz?.sources.length).toBeGreaterThan(0)
+    expect(snsBuzz?.sources.some((s) => s.name.includes('Yahoo!リアルタイム検索'))).toBe(true)
   })
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-6
-describe('グルメの情報源 - 食べログ・Rettyの店舗ランキングAPIが有料プラン前提のため直接利用せず、独立した言及の広がりをWebSearchで収集する', () => {
-  it('gourmetはWebSearchジャンルで、固定の情報源(有料APIの直接利用)を持たないこと', () => {
+describe('グルメの情報源 - 食べログ・Rettyの店舗ランキングAPIが有料プラン前提のため直接利用せず、食べログの公開ランキングページ(構造化データ)とWebSearchを併用する', () => {
+  it('gourmetは併用ジャンルで、食べログ人気ランキング(公開ページ)を固定の情報源に持つこと(有料APIの直接利用はしない)', () => {
     const gourmet = watchlist.find((e) => e.genre === 'gourmet')
-    expect(gourmet?.method).toBe('websearch')
-    expect(gourmet?.sources).toEqual([])
+    expect(gourmet?.method).toBe('hybrid')
+    expect(gourmet?.sources.some((s) => s.name.includes('食べログ'))).toBe(true)
   })
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-4
-describe('ファッション・ガジェット家電の選定方式 - 実際の売上・視聴・検索行動の集計値を伴わないため、単一メディアの特集記事を客観データの代用にせずWebSearchジャンルとする', () => {
-  it('fashion・gadgetsはWebSearchジャンルで、固定の情報源を持たないこと', () => {
-    for (const genre of ['fashion', 'gadgets']) {
-      const entry = watchlist.find((e) => e.genre === genre)
-      expect(entry?.method).toBe('websearch')
-      expect(entry?.sources).toEqual([])
-    }
+describe('ファッション・ガジェット家電の選定方式 - ファッションは客観データの情報源が見つからずWebSearchジャンルのまま、ガジェット・家電は価格.comの構造化ランキングが見つかり併用ジャンルへ変更', () => {
+  it('fashionはWebSearchジャンルで、固定の情報源を持たないこと', () => {
+    const entry = watchlist.find((e) => e.genre === 'fashion')
+    expect(entry?.method).toBe('websearch')
+    expect(entry?.sources).toEqual([])
+  })
+
+  it('gadgetsは併用ジャンルで、価格.com家電カテゴリランキングを固定の情報源に持つこと', () => {
+    const entry = watchlist.find((e) => e.genre === 'gadgets')
+    expect(entry?.method).toBe('hybrid')
+    expect(entry?.sources.some((s) => s.name.includes('価格.com'))).toBe(true)
   })
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-4、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-5、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-6、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-7、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-8、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-9、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-10、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-11
-describe('WebSearchジャンルの検索の手がかり(searchHints)データ - ジャンルごとの検索観点がrequirements.mdの記載と対応する', () => {
+describe('WebSearchジャンル・併用ジャンルの検索の手がかり(searchHints)データ - ジャンルごとの検索観点がrequirements.mdの記載と対応する', () => {
   it('SNSバズりはX・TikTok・Instagram・Threadsについての検索の手がかりを持つこと', () => {
     const entry = watchlist.find((e) => e.genre === 'sns-buzz')
     const hints = entry?.searchHints?.join(' ') ?? ''
@@ -149,12 +158,13 @@ describe('WebSearchジャンルの検索の手がかり(searchHints)データ - 
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-2
-// グルメ・流行りの趣味・ファッション・ガジェット家電は2026-10の月次見直しで、候補0件が続いていた実績を踏まえ
+// 流行りの趣味・ファッションは2026-10の月次見直しで、候補0件が続いていた実績を踏まえ
 // 既定(3件)より低い2件に調整済み(criteria.jsonでジャンルごとに調整可能。要件はこの個別調整を許容する)
-const DEFAULT_MIN_INDEPENDENT_SOURCES_GENRES = WEBSEARCH_GENRES.filter(
-  (g) => !['gourmet', 'hobby', 'fashion', 'gadgets'].includes(g)
-)
-describe('WebSearchジャンルの独立言及の最低件数(minIndependentSources)の既定値 - ニュース性の高い単発の話題を誤って採用しないよう既定で3件以上とする', () => {
+const DEFAULT_MIN_INDEPENDENT_SOURCES_GENRES = WEBSEARCH_GENRES.filter((g) => !['hobby', 'fashion'].includes(g))
+// 併用ジャンルのうちWebSearch側のminIndependentSourcesが既定(3件)より低い2件に調整されているもの
+// (2026-10以前からの調整を引き継ぐgourmet・gadgets。他の併用ジャンルは既定の3件のまま)
+const ADJUSTED_HYBRID_WEBSEARCH_GENRES = ['gourmet', 'gadgets']
+describe('WebSearchジャンル・併用ジャンルの独立言及の最低件数(minIndependentSources)の既定値 - ニュース性の高い単発の話題を誤って採用しないよう既定で3件以上とする', () => {
   it('既定値を使うWebSearchジャンルのminIndependentSourcesが3件以上であること', () => {
     for (const genre of DEFAULT_MIN_INDEPENDENT_SOURCES_GENRES) {
       const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
@@ -163,16 +173,24 @@ describe('WebSearchジャンルの独立言及の最低件数(minIndependentSour
     }
   })
 
-  it('グルメ・流行りの趣味・ファッション・ガジェット家電は、2026-10の月次見直しによりminIndependentSourcesが2件に調整されていること', () => {
-    for (const genre of ['gourmet', 'hobby', 'fashion', 'gadgets']) {
+  it('流行りの趣味・ファッションは、2026-10の月次見直しによりminIndependentSourcesが2件に調整されていること', () => {
+    for (const genre of ['hobby', 'fashion']) {
       const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
       if (genreCriteria.method !== 'websearch') throw new Error(`${genre}はwebsearchジャンルではありません`)
       expect(genreCriteria.minIndependentSources).toBe(2)
     }
   })
 
-  it('併用ジャンル(hybrid)のWebSearch側のminIndependentSourcesが既定の3件以上であること', () => {
-    for (const genre of HYBRID_GENRES) {
+  it('グルメ・ガジェット家電(併用ジャンルのWebSearch側)は、2026-10の月次見直しによりminIndependentSourcesが2件に調整されていること', () => {
+    for (const genre of ADJUSTED_HYBRID_WEBSEARCH_GENRES) {
+      const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
+      if (genreCriteria.method !== 'hybrid') throw new Error(`${genre}はhybridジャンルではありません`)
+      expect(genreCriteria.webSearch.minIndependentSources).toBe(2)
+    }
+  })
+
+  it('それ以外の併用ジャンル(アニメ・SNSバズり・経済お金・開発手法)のWebSearch側のminIndependentSourcesが既定の3件以上であること', () => {
+    for (const genre of HYBRID_GENRES.filter((g) => !ADJUSTED_HYBRID_WEBSEARCH_GENRES.includes(g))) {
       const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
       if (genreCriteria.method !== 'hybrid') throw new Error(`${genre}はhybridジャンルではありません`)
       expect(genreCriteria.webSearch.minIndependentSources).toBeGreaterThanOrEqual(3)
@@ -182,17 +200,25 @@ describe('WebSearchジャンルの独立言及の最低件数(minIndependentSour
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-12
 describe('地域枠(グルメ)のfocusAreas - 運営者フィードバックを受けた対象エリアがcriteria.jsonに設定されていること', () => {
-  it('グルメのfocusAreasが小田原・茅ヶ崎・横浜であること', () => {
+  it('グルメ(併用ジャンルのWebSearch側)のfocusAreasが小田原・茅ヶ崎・横浜であること', () => {
     const genreCriteria = criteria.genreCriteria.gourmet
-    if (genreCriteria.method !== 'websearch') throw new Error('gourmetはwebsearchジャンルではありません')
-    expect(genreCriteria.focusAreas).toEqual(['小田原', '茅ヶ崎', '横浜'])
+    if (genreCriteria.method !== 'hybrid') throw new Error('gourmetはhybridジャンルではありません')
+    expect(genreCriteria.webSearch.focusAreas).toEqual(['小田原', '茅ヶ崎', '横浜'])
   })
 
-  it('グルメ以外のジャンルはfocusAreasを持たないこと', () => {
-    for (const genre of WEBSEARCH_GENRES.filter((g) => g !== 'gourmet')) {
+  it('グルメ以外のWebSearchジャンルはfocusAreasを持たないこと', () => {
+    for (const genre of WEBSEARCH_GENRES) {
       const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
       if (genreCriteria.method !== 'websearch') throw new Error(`${genre}はwebsearchジャンルではありません`)
       expect(genreCriteria.focusAreas).toBeUndefined()
+    }
+  })
+
+  it('グルメ以外の併用ジャンルのWebSearch側はfocusAreasを持たないこと', () => {
+    for (const genre of HYBRID_GENRES.filter((g) => g !== 'gourmet')) {
+      const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
+      if (genreCriteria.method !== 'hybrid') throw new Error(`${genre}はhybridジャンルではありません`)
+      expect(genreCriteria.webSearch.focusAreas).toBeUndefined()
     }
   })
 })
@@ -211,10 +237,12 @@ describe('固定リストジャンルの情報源データ - 公式サイト・�
     }
   })
 
-  it('併用ジャンル(アニメ)は固定リスト側の情報源を複数持ち、WebSearch側の検索の手がかり(searchHints)も持つこと(いずれか一方の採用基準を満たせば候補にするOR条件のため)', () => {
-    const anime = watchlist.find((e) => e.genre === 'anime')
-    expect(anime?.sources.length).toBeGreaterThanOrEqual(2)
-    expect(anime?.searchHints?.length).toBeGreaterThan(0)
+  it('併用ジャンルは固定リスト側の情報源を1件以上持ち、WebSearch側の検索の手がかり(searchHints)も持つこと(いずれか一方の採用基準を満たせば候補にするOR条件のため)', () => {
+    for (const genre of HYBRID_GENRES) {
+      const entry = watchlist.find((e) => e.genre === genre)
+      expect(entry?.sources.length).toBeGreaterThan(0)
+      expect(entry?.searchHints?.length).toBeGreaterThan(0)
+    }
   })
 
   it('format: site-specific-htmlの情報源はすべてparserIdを持つこと', () => {
@@ -222,6 +250,16 @@ describe('固定リストジャンルの情報源データ - 公式サイト・�
       for (const source of entry.sources) {
         if (source.format === 'site-specific-html') {
           expect(source.parserId).toBeTruthy()
+        }
+      }
+    }
+  })
+
+  it('format: structured-rss/structured-atomの情報源はparserIdを持たないこと(構造化データをそのまま取得するため専用パーサーを使わない)', () => {
+    for (const entry of watchlist) {
+      for (const source of entry.sources) {
+        if (source.format === 'structured-rss' || source.format === 'structured-atom') {
+          expect(source.parserId).toBeUndefined()
         }
       }
     }
@@ -258,6 +296,19 @@ describe('採用基準データの構造 - source-reviewによる月次見直し
       if (genreCriteria.method !== 'websearch') throw new Error(`${genre}はwebsearchジャンルではありません`)
       expect(Number.isInteger(genreCriteria.minIndependentSources)).toBe(true)
       expect(genreCriteria.minIndependentSources).toBeGreaterThanOrEqual(1)
+    }
+  })
+
+  it('併用ジャンルのfixedList・webSearchの各基準値が正の整数であること', () => {
+    for (const genre of HYBRID_GENRES) {
+      const genreCriteria = criteria.genreCriteria[genre as keyof typeof criteria.genreCriteria]
+      if (genreCriteria.method !== 'hybrid') throw new Error(`${genre}はhybridジャンルではありません`)
+      expect(Number.isInteger(genreCriteria.webSearch.minIndependentSources)).toBe(true)
+      expect(genreCriteria.webSearch.minIndependentSources).toBeGreaterThanOrEqual(1)
+      if (genreCriteria.fixedList.rankThreshold !== undefined) {
+        expect(Number.isInteger(genreCriteria.fixedList.rankThreshold)).toBe(true)
+        expect(genreCriteria.fixedList.rankThreshold).toBeGreaterThan(0)
+      }
     }
   })
 })

@@ -4911,8 +4911,8 @@
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
-    "item": "併用ジャンル(アニメ)の候補を収集・判定する処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#選定方式-7でcollect-and-select.test.ts(collectGenreObservations)がテスト済みのため"
+    "item": "併用ジャンルの候補を収集・判定する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#選定方式-7・8でcollect-and-select.test.ts(collectGenreObservations)がテスト済みのため"
   },
   {
     "specFile": "trend-digest/content-selection/design.md",

@@ -3,7 +3,8 @@ import path from 'node:path'
 import { describe, it, expect, vi } from 'vitest'
 import {
   parseNetflixTsv,
-  parseGoogleTrendsRss,
+  parseRssTitlesInOrder,
+  parseAtomTitlesInOrder,
   parseSteamMostPlayed,
   resolveSteamRanking,
 } from '../../../scripts/trend-digest/fetchStructuredSource'
@@ -62,17 +63,34 @@ describe('Netflix公式Top10データ(structured-tsv)のパース - 実際に取
   })
 })
 
-// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-6、specs/trend-digest/content-selection/design.md「データ設計」FixedListSourceFormat
-describe('Google公式トレンドRSS(structured-rss)のパース - 実際に取得したRSSサンプルから話題語を掲載順に抽出する', () => {
-  const items = parseGoogleTrendsRss(readFixture('googleTrends.xml'))
-
-  it('フィード内の<item>の件数分の観測項目が取得できること', () => {
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-6、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-14、specs/trend-digest/content-selection/design.md「データ設計」FixedListSourceFormat
+describe('RSS 2.0形式(structured-rss)のパース - 実際に取得したRSSサンプルから話題語・記事見出しを掲載順に抽出する', () => {
+  it('Google公式トレンドRSS(プレーンテキストの<title>)から、フィード内の<item>の件数分・掲載順どおりに抽出できること', () => {
+    const items = parseRssTitlesInOrder(readFixture('googleTrends.xml'))
     expect(items).toHaveLength(10)
-  })
-
-  it('フィードの掲載順どおりに1位から順位が振られ、1件目のタイトルが正しく抽出されること', () => {
     expect(items[0]).toMatchObject({ currentRank: 1, title: 'ダイハツ・タント' })
     expect(items[1]).toMatchObject({ currentRank: 2, title: '京都大賞典' })
+  })
+
+  it('Zenn公式トレンドRSS(<title><![CDATA[...]]></title>形式)からも、CDATAのマーカーを含まない本文だけが抽出できること', () => {
+    const items = parseRssTitlesInOrder(readFixture('zennTrending.xml'))
+    expect(items.length).toBeGreaterThan(0)
+    expect(items[0].title).not.toMatch(/CDATA/)
+    expect(items[0]).toMatchObject({ currentRank: 1 })
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-14、specs/trend-digest/content-selection/design.md「データ設計」FixedListSourceFormat
+describe('Atom形式(structured-atom)のパース - 実際に取得したQiita人気記事フィードのサンプルから記事見出しを掲載順に抽出する', () => {
+  const items = parseAtomTitlesInOrder(readFixture('qiitaPopular.xml'))
+
+  it('フィード内の<entry>の件数分の観測項目が取得できること', () => {
+    expect(items.length).toBeGreaterThan(0)
+  })
+
+  it('フィードの掲載順どおりに1位から順位が振られること', () => {
+    expect(items[0]).toMatchObject({ currentRank: 1 })
+    expect(items[1]).toMatchObject({ currentRank: 2 })
   })
 })
 

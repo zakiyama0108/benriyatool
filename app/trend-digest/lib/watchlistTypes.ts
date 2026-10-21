@@ -5,7 +5,7 @@
 import type { Edition, Genre } from './types' // article-detail/design.mdが定義する型を再利用(重複定義しない)
 import type { HistoryCriteria } from './historyTypes' // trend-history/design.mdが定義する継続度・注目度の判定に使う値
 
-// hybridは固定リストとWebSearchを併用するジャンル専用(requirements.md#選定方式-7。現時点ではアニメのみ)
+// hybridは固定リストとWebSearchを併用するジャンル専用(requirements.md#選定方式-7・8。アニメ・SNSバズり・グルメ・ガジェット・家電・経済・お金・開発手法・開発サービスの6ジャンルが対象)
 export type SelectionMethod = 'fixed-list' | 'websearch' | 'hybrid'
 
 // 固定リストジャンルの情報源が、どの取得・パース処理を使うかを表す
@@ -13,7 +13,8 @@ export type SelectionMethod = 'fixed-list' | 'websearch' | 'hybrid'
 // 構造化データを最優先し、無い場合のみサイトごとの専用パーサーを用意する方針にした。design.md参照)
 export type FixedListSourceFormat =
   | 'structured-tsv' // 公式の構造化データ(タブ区切り)をそのまま取得する。例: Netflix公式Top10データ
-  | 'structured-rss' // 公式のRSSフィードをそのまま取得する。例: Google公式トレンドRSS
+  | 'structured-rss' // 公式のRSS 2.0フィードをそのまま取得する。例: Google公式トレンドRSS、Zenn公式トレンドRSS
+  | 'structured-atom' // 公式のAtomフィードをそのまま取得する(RSSの<item>ではなく<entry>を使う点のみ異なる)。例: Qiita人気記事フィード
   | 'structured-json-api' // 公式Web APIのJSONレスポンスをそのまま取得する。例: Steam公式Web API
   | 'site-specific-html' // サイトごとに専用のパース関数(`scripts/trend-digest/sourceParsers/<parserId>.ts`)でHTMLから抽出する
 
@@ -52,7 +53,7 @@ export type WebSearchGenreCriteria = {
 }
 
 // 併用ジャンルの採用基準(requirements.md#選定方式-7)。固定リスト側・WebSearch側それぞれの基準を持ち、
-// いずれか一方を満たせば候補にする(OR条件)。現時点ではアニメのみが対象
+// いずれか一方を満たせば候補にする(OR条件)。アニメ・SNSバズり・グルメ・ガジェット・家電・経済・お金・開発手法・開発サービスの6ジャンルが対象
 export type HybridGenreCriteria = {
   method: 'hybrid'
   fixedList: Omit<FixedListGenreCriteria, 'method'>

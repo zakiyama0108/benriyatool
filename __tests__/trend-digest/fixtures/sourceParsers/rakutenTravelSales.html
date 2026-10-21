@@ -1,0 +1,1279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="description" content="［毎週更新］泊まってよかった！泊まったお客さまが評価する、全国 国内ツアー売れ筋ホテル・旅館ランキング。今売れている注目の宿をホテル・旅館をランキング形式でご紹介！">
+<meta name="keywords" content="全国,国内ツアー売れ筋ホテル,旅館,ランキング">
+<link rel="alternate" media="handheld" type="text/html" href="http://m.travel.rakuten.co.jp/portal/i/m_sch_strk.main?disp=1"> 
+<link rel="stylesheet" type="text/css" href="https://img.travel.rakuten.co.jp/share/ranking/sales/package/css/import_review.css" media="all">
+<link rel="stylesheet" type="text/css" href="https://img.travel.rakuten.co.jp/share/common/css/thickbox.css" media="screen">
+<link rel="stylesheet" type="text/css" href="https://img.travel.rakuten.co.jp/share/rtl/css/util.calendar.css" media="all">
+<script type="text/JavaScript" src="https://img.travel.rakuten.co.jp/share/common/js/rakutenTr_commons.js"></script>
+<script type="text/javascript" src="https://img.travel.rakuten.co.jp/share/common/js/lib/jquery/jquery.js"></script>
+<script type="text/JavaScript" src="https://img.travel.rakuten.co.jp/share/common/js/rakutenTr_history.js"></script>
+<script type="text/javascript">rakutenTr_History.dispHotelHistory("domestic_air_package_list_ana");</script>
+<script type="text/javascript" src="https://img.travel.rakuten.co.jp/share/common/js/rakutenTr_thickbox.js"></script>
+<script type="text/javascript" src="https://img.travel.rakuten.co.jp/share/themes/airpack/js/rakutenTr_domesticAirPackageCarrier.js"></script>
+<script type="text/javascript" src="https://img.travel.rakuten.co.jp/share/wat/tt/mbox.js"></script>
+<title>楽天トラベル:全国 国内ツアー売れ筋ホテル・旅館ランキング</title>
+</head>
+<body>
+<!--START_HEADER-->
+<input type="hidden" id="rt-hidden-service" value="domestic-travel"><!-- SSI BEGIN:common-header_sjis.ssi -->
+<link rel="stylesheet" href="https://trv.r10s.jp/share/common/header/css/rt-common-style-pc.css?20251009" media="all and (min-width: 721px)">
+<link rel="stylesheet" href="https://trv.r10s.jp/share/common/header/css/rt-common-style-sp.css?20250813" media="all and (min-width: 0px) and (max-width: 720px)">
+<link rel="stylesheet" href="https://trv.r10s.jp/share/common/header/css/rt-common-style.css?20250730">
+<script
+type="module"
+src="https://trv.r10s.jp/share/rtl/webcomponents/commonheader/core/common-header.js?20260729"
+></script>
+
+<header class="rt-common-header-wrapper">
+    <span id="headerBannerAppDL"></span>
+    <div class="rt-common-header">
+        <div class="rt-common-header-top">
+            <nav>
+                <ul class="rt-common-help-link">
+                    <li><a href="https://travel.faq.rakuten.net/?l-id=trv_header_trvlink_faq">ヘルプ</a></li>
+                    <li><a href="https://travel.rakuten.co.jp/howto/?l-id=trv_header_trvlink_howto">ご利用ガイド</a></li>
+                    <li><a href="https://travel.rakuten.co.jp/sitemap/?l-id=trv_header_trvlink_sitemap">サイトマップ</a></li>
+                    <li class="rt-common-dropdown" data-dropdown-id="language">
+                        <div class="rt-common-dropdown__trigger" data-dropdown-trigger="language">
+                            <img src="https://trvimg.r10s.jp/share/common/header/images/icon_world.svg" alt="Language">
+                            <span>Language</span>
+                            <img src="https://trvimg.r10s.jp/share/common/header/images/icon_down_arrow.svg" alt="arrow">
+                        </div>
+                        <ul class="rt-common-dropdown__menu" data-dropdown-menu="language" id="rtcLanguageMenu">
+                            <li data-show-on-rentacar="true"><a href="https://travel.rakuten.com/?scid=wi_trv_header_lang_eng">English</a></li>
+                            <li data-show-on-rentacar="true"><a href="https://travel.rakuten.com/kor/ko-kr/?scid=wi_trv_header_lang_ko-kr">&#xB300;&#xD55C;&#xBBFC;&#xAD6D;(&#xD55C;&#xAD6D;&#xC5B4;)</a></li>
+                            <li data-show-on-rentacar="true"><a href="https://travel.rakuten.com/twn/zh-tw/?scid=wi_trv_header_lang_zh-tw">&#x53F0;&#x7063;(&#x7E41;&#x9AD4;&#x4E2D;&#x6587;)</a></li>
+                            <li data-show-on-rentacar="false"><a href="https://travel.rakuten.com/hkg/zh-hk/?scid=wi_trv_header_lang_zh-hk">&#x9999;&#x6E2F;(&#x7E41;&#x9AD4;&#x4E2D;&#x6587;)</a></li>
+                            <li data-show-on-rentacar="false"><a href="https://travel.rakuten.com/usa/zh-cn/?scid=wi_trv_header_lang_zh-cn">&#x4E2D;&#x56FD;(&#x7B80;&#x4F53;&#x4E2D;&#x6587;)</a></li>
+                            <li data-show-on-rentacar="false"><a href="https://travel.rakuten.com/tha/th-th/?scid=wi_trv_header_lang_th-th">&#xE1B;&#xE23;&#xE30;&#xE40;&#xE17;&#xE28;&#xE44;&#xE17;&#xE22; (&#xE20;&#xE32;&#xE29;&#xE32;&#xE44;&#xE17;&#xE22;)</a></li>
+                            <li data-show-on-rentacar="false"><a href="https://travel.rakuten.com/usa/id-id/?scid=wi_trv_header_lang_id-id">Bahasa Indonesia</a></li>
+                            <li data-show-on-rentacar="false"><a href="https://travel.rakuten.com/usa/vi-vn/?scid=wi_trv_header_lang_vi-vn">Ti&#x1EBF;ng Vi&#x1EC7;t</a></li>                            
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="rt-common-group-link">
+                    <li><a href="https://www.rakuten.co.jp/?scid=wi_trv_header_grplink_ichba">楽天市場</a></li>
+                    <li class="rt-common-dropdown" data-dropdown-id="group">
+                        <div class="rt-common-dropdown__trigger" data-dropdown-trigger="group">
+                            <span>楽天グループ</span>
+                            <img src="https://trvimg.r10s.jp/share/common/header/images/icon_down_arrow.svg" alt="arrow">
+                        </div>
+                        <ul class="rt-common-dropdown__menu" data-dropdown-menu="group">
+                            <li><a href="https://ad2.trafficgate.net/t/r/9091/1441/99636_99636/">楽天カード</a></li>
+                            <li><a href="https://gora.golf.rakuten.co.jp/?scid=wi_grp_gmx_trv_hetopbu_gra">楽天GORA</a></li>
+                            <li><a href="https://network.mobile.rakuten.co.jp/?scid=wi_trv_header_grplink_mobile">楽天モバイル</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="rt-common-header-main">
+            <div class="rt-common-logo">
+                <a href="https://travel.rakuten.co.jp/?l-id=trv_header_logo">
+                    <img src="https://trvimg.r10s.jp/share/common/images/travel-logo-pc.png" alt="楽天トラベル" class="rt-common-logo__pc">
+                    <img src="https://trvimg.r10s.jp/share/common/images/travel-logo-sp.png" alt="楽天トラベル" class="rt-common-logo__sp">
+                </a>
+            </div>
+            <div class="rt-common-menu">
+                <div class="rt-common-menu-actions">
+                    <ul>
+                        <li>
+                            <a href="https://favoritelist.travel.rakuten.co.jp/hotel/domestic?l-id=trv_header_func_favorite">
+                                <img src="https://trvimg.r10s.jp/share/pctop/images/favorite_login_svg.svg" alt="お気に入り">
+                                <span class="rt-common-menu-actions__text">お気に入り</span>
+                            </a>
+                        </li>
+                        <li class="rt-common-menu-actions__booking">
+                            <a href="https://auth.travel.rakuten.co.jp/fwd/memberDispatcher/staticPageLogin?service_id=t01&return_url=cgi-bin/rakuten_id_reference&_guestLoginServiceKey=guestReservation&f_next_url=https://mypage.travel.rakuten.co.jp/?l-id=trv_header_func_mypage">
+                                <img src="https://trvimg.r10s.jp/share/pctop/images/booking_login_svg.svg" alt="予約確認">
+                                <span class="rt-common-menu-actions__text">予約確認</span>
+                            </a>
+                        </li>
+                        <li id="rtcLoginMenuAction">
+                            <a href="https://img.travel.rakuten.co.jp/image/tr/hs/pctop/U1Seg/?l-id=logout_header" id="rtcLogoutButton" style="display: none;">
+                                <img src="https://trvimg.r10s.jp/share/pctop/images/logout_login_svg.svg" alt="ログアウト">
+                                <span class="rt-common-menu-actions__text">ログアウト</span>
+                            </a>
+                            <a href="https://img.travel.rakuten.co.jp/image/tr/hs/pctop/3jfBm/?l-id=login_header" id="rtcLoginButton" style="display: none;">
+                                <img src="https://img.travel.rakuten.co.jp/share/pctop/images/login_login_svg.svg" alt="ログイン">
+                                <span class="rt-common-menu-actions__text">ログイン</span>
+                            </a>
+                        </li>
+                        <li data-ratid="sidemenu" data-ratevent="click" data-ratparam="all" id="rtcDrawerMenuTrigger" class="rt-common-menu-actions__others">
+                            <a href="#">
+                                <img src="https://trvimg.r10s.jp/share/common/header/images/icon_reorder.svg" alt="メニュー">
+                                <span class="rt-common-menu-actions__text">メニュー</span>
+                                <span id="rtcUnreadCircleTrigger" class="rt-common-menu-actions__unread"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="rt-common-promotion">
+                    <a id="rt-common-header-square-banner" href="#"><img src="https://trvimg.r10s.jp/share/images/null.gif" width="170" height="53" alt="" border="0"></a>
+                </div>
+            </div>
+        </div>
+        <div id="rtcBannerTrigger" class="rt-common-member-info">
+            <div id="rtcMemberInformationSection"></div>
+            <div id="rtcBonusLevelInformationSection"></div>
+            <div id="rtcPointInformationSection"></div>
+            <div id="rtcSpecialOfferSection"></div>
+        </div>
+        <div class="rt-common-header-navigation">
+            <nav>
+                <ul>
+                    <a href="https://travel.rakuten.co.jp/?l-id=trv_header_service_dh" data-service="domestic-travel">
+                        <li>国内宿泊</li>
+                    </a>
+                    <a href="https://travel.rakuten.co.jp/package/?l-id=trv_header_service_dp" class="rt-common-dropdown__trigger" data-dropdown-trigger="service_dp" data-service="domestic-package">
+                        <li class="rt-common-dropdown" data-dropdown-id="service_dp">
+                            <span>交通＋宿</span>
+                            <img src="https://trvimg.r10s.jp/share/common/header/images/icon_down_arrow.svg" alt="arrow">
+                        </li>
+                    </a>
+                    <ul class="rt-common-dropdown__menu" data-dropdown-menu="service_dp">
+                        <li><a href="https://travel.rakuten.co.jp/package/ana/?l-id=trv_header_service_ana">ANA楽パック</a></li>
+                        <li><a href="https://travel.rakuten.co.jp/package/jal/?l-id=trv_header_service_jal">JAL楽パック</a></li>
+                        <li><a href="https://travel.rakuten.co.jp/package/jr/?l-id=trv_header_service_jr">JR楽パック</a></li>
+                    </ul>
+                    <a href="https://travel.rakuten.co.jp/cars/?l-id=trv_header_service_car" class="rt-common-dropdown__trigger" data-dropdown-trigger="service_car" data-service="domestic-rentacar">
+						<li class="rt-common-dropdown" data-dropdown-id="service_car">
+							<span>レンタカー</span>
+							<img src="https://trvimg.r10s.jp/share/common/header/images/icon_down_arrow.svg">
+						</li>
+					</a>
+					<ul class="rt-common-dropdown__menu" data-dropdown-menu="service_car">
+						<li><a href="https://travel.rakuten.co.jp/cars/?l-id=trv_header_service_car_2">レンタカー</a></li>
+						<li><a href="https://carshare.rakuten.co.jp/?scid=trv_header_service_carshare">カーシェア</a></li>
+					</ul>
+                    <a href="https://travel.rakuten.co.jp/bus/?l-id=trv_header_service_bus" data-service="domestic-bus">
+                        <li>高速バス・ツアー</li>
+                    </a>
+                    <a href="https://travel.rakuten.co.jp/kaigai/?l-id=trv_header_service_kaigai" data-service="overseas-travel">
+                        <li>海外旅行</li>
+                    </a>
+                    <a href="https://experiences.travel.rakuten.co.jp/?scid=wi_trv_header_service_experiences">
+                        <li>遊び・体験</li>
+                    </a>
+                    <a href="https://camp.travel.rakuten.co.jp/?scid=wi_trv_header_service_camp">
+                        <li>キャンプ場</li>
+                    </a>
+                    <a href="https://travel.rakuten.co.jp/coupon/?l-id=trv_header_service_coupon" data-service="coupon">
+                        <li>割引クーポン</li>
+                    </a>
+                    <a href="https://travel.rakuten.co.jp/special/furusato/?l-id=trv_header_service_furusato" data-service="hometown-tax">
+                        <li>ふるさと納税</li>
+                    </a>
+                    <a href="https://travel.rakuten.co.jp/mytrip/?l-id=trv_header_service_mytrip" data-service="travel-guide">
+                        <li>旅行ガイド</li>
+                    </a>
+                    <div class="rt-common-dropdown__trigger" data-dropdown-trigger="service_others">
+                        <li class="rt-common-dropdown" data-dropdown-id="service_others">
+                            <span>その他</span>
+                            <img src="https://trvimg.r10s.jp/share/common/header/images/icon_down_arrow.svg" alt="arrow">
+                        </li>
+                    </div>
+                    <ul class="rt-common-dropdown__menu" data-dropdown-menu="service_others">
+                        <li><a href="https://travel.rakuten.co.jp/leisure/?l-id=trv_header_service_list">特集・キャンペーン</a></li>
+                        <li><a href="https://travel.rakuten.co.jp/superdeal/?l-id=trv_header_service_deal">楽天スーパーDEAL</a></li>
+                        <li><a href="https://travel.rakuten.co.jp/special/sustainability/?l-id=trv_header_service_sus">サステナビリティ</a></li>
+                    </ul>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div id="widgetBonusModalRef" data-ratid="Level_Banner" data-ratevent="appear" data-ratparam="all"></div>
+    <div id="widgetPointupModalRef" data-ratid="Point_Banner" data-ratevent="appear" data-ratparam="all"></div>
+</header>
+
+<script>
+    "use strict";
+    
+    /**
+     * Fetches JSONP data from a given URL.
+     * @param {string} url - The URL to fetch the JSONP data from.
+     * @param {string} jsonpCallback - The name of the JSONP callback function.
+     * @returns {Promise<any>} - A promise that resolves with the JSON data or rejects with an error.
+     */
+    function fetchJsonp(url, jsonpCallback) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            const timestamp = Date.now();
+            script.src = `${url}${url.indexOf('?') === -1 ? '?' : '&'}callback=${jsonpCallback}&_=${timestamp}`;
+            script.async = true;
+
+            script.onerror = (error) => {
+                reject(error);
+            };
+
+            if (typeof window[jsonpCallback] === 'function') {
+                document.body.appendChild(script);
+            } else {
+                const errorMessage = 'Callback function not defined: ' + jsonpCallback;
+                console.error(errorMessage);
+                reject(new Error(errorMessage));
+            }
+        });
+    }
+
+    /**
+     * Sets the active state for a navigation link based on a hidden service value.
+     */
+    function setActiveNavigationLink() {
+        const hiddenInput = document.getElementById('rt-hidden-service');
+        const hiddenValue = hiddenInput?.value;
+        const navigation = document.querySelector('.rt-common-header-navigation nav ul');
+        const links = navigation?.querySelectorAll('[data-service]');
+
+        links?.forEach(link => {
+            if (hiddenValue === link.dataset.service) {
+                link.classList.add('rt-common-header-navigation__activated');
+            }
+        });
+    }
+
+    /**
+     * Handles hover effect for dropdown menus.
+     */
+    function handleDropdownHover() {
+        const dropdownMenus = document.querySelectorAll('.rt-common-dropdown__menu');
+
+        dropdownMenus.forEach(dropdownMenu => {
+            const dropdownTrigger = dropdownMenu.previousElementSibling;
+
+            dropdownMenu.addEventListener('mouseenter', () => {
+                dropdownTrigger.style.color = '#255500';
+                dropdownTrigger.style.backgroundColor = '#F3F3F3';
+            });
+
+            dropdownMenu.addEventListener('mouseleave', () => {
+                dropdownTrigger.style.color = '';
+                dropdownTrigger.style.backgroundColor = '';
+            });
+        });
+    }
+
+    /**
+     * Creates a wide banner element and inserts it into the DOM.
+     * @param {string} serviceName - The name of the service to fetch the banner configuration for.
+     */
+    function createWideBanner(serviceName) {
+        if (!serviceName) return;
+
+        const url = `//trv.r10s.jp/share/rtl/config/header.wide.${serviceName}.config.js`;
+        const jsonpCallbackName = "headerWideServiceBanner";
+
+        window[jsonpCallbackName] = function (json) {
+            const now = Date.now();
+            const startDate = new Date(json.start).getTime();
+            const endDate = new Date(json.end).getTime();
+
+            if (json.end && json.start && now >= startDate && now <= endDate) {
+                const bannerDiv = document.createElement('div');
+                bannerDiv.className = 'rt-common-wide-banner-pc';
+
+                const bannerLink = document.createElement('a');
+                bannerLink.className = 'rt-common-wide-banner';
+                bannerLink.href = json.href;
+
+                const bannerImg = document.createElement('img');
+                bannerImg.src = json.img;
+                bannerImg.alt = json.alt;
+
+                bannerLink.appendChild(bannerImg);
+                bannerDiv.appendChild(bannerLink);
+
+                const rtHeader = document.querySelector('.rt-common-header');
+                rtHeader.parentNode.insertBefore(bannerDiv, rtHeader);
+            }
+        };
+
+        if (typeof window[jsonpCallbackName] === 'function') {
+            fetchJsonp(url, jsonpCallbackName)
+                .catch(error => {
+                    console.error('Error fetching wide banner config:', error);
+                });
+        } else {
+            console.error('Callback function not defined:', jsonpCallbackName);
+        }
+    }
+
+    /**
+     * Creates a square banner element and updates its attributes.
+     * @param {string} serviceName - The name of the service to fetch the banner configuration for.
+     */
+    function createSquareBanner(serviceName) {
+        const squareBanner = document.getElementById('rt-common-header-square-banner');
+        if (!squareBanner) return;
+
+        const updateBanner = (json) => {
+            squareBanner.href = json.href;
+            const img = squareBanner.querySelector("img");
+            img.src = json.img;
+            img.alt = json.alt;
+        };
+
+        const displayDefaultBanner = () => {
+            const jsonpCallbackName = "headerSquareBanner";
+            window[jsonpCallbackName] = updateBanner;
+
+            fetchJsonp("//trv.r10s.jp/share/rtl/config/header.square.config.js", jsonpCallbackName)
+                .catch(error => {
+                    console.error('Error fetching default square banner config:', error);
+                });
+        };
+
+        if (serviceName && serviceName !== "default") {
+            const url = `//trv.r10s.jp/share/rtl/config/header.square.${serviceName}.config.js`;
+            const jsonpCallbackName = "headerSquareServiceBanner";
+
+            window[jsonpCallbackName] = (json) => {
+                const now = Date.now();
+                const startDate = new Date(json.start).getTime();
+                const endDate = new Date(json.end).getTime();
+
+                if (json.start && json.end && now >= startDate && now <= endDate) {
+                    updateBanner(json);
+                } else {
+                    displayDefaultBanner();
+                }
+            };
+
+            fetchJsonp(url, jsonpCallbackName)
+                .catch(error => {
+                    console.error('Error fetching service square banner config:', error);
+                    displayDefaultBanner();
+                });
+        } else {
+            displayDefaultBanner();
+        }
+    }
+
+    /**
+     * Filters the language options based on the service.
+     */
+    function filterLanguageOptions(serviceName) {
+        const languageMenu = document.getElementById('rtcLanguageMenu');
+        const languageItems = languageMenu?.querySelectorAll('li');
+
+        if (languageItems) {
+            languageItems.forEach(item => {
+                const aTag = item.querySelector('a');
+                let href = aTag?.getAttribute('href');
+
+                if (serviceName === 'domestic-rentacar') {
+                    const showOnRentacar = item.dataset.showOnRentacar === 'true';
+                    item.style.display = showOnRentacar ? '' : 'none';
+
+                    if (href) {
+                        if (href.includes('travel.rakuten.com/?scid=wi_trv_header_lang_eng')) {
+                            href = href.replace('travel.rakuten.com/?scid=wi_trv_header_lang_eng', 'travel.rakuten.com/cars/?scid=wi_trv_header_lang_car_eng');
+                        } else if (href.includes('travel.rakuten.com/')) {
+                            // e.g.kor/ko-kr, twn/zh-tw, zh-hk, usa/zh-cn
+                            const langCode = href.match(/travel¥.rakuten¥.com¥/([a-z]{2,3}(?:¥/[a-z]{2})?-[a-z]{2}|[a-z]{2,3})¥//)?.[1];
+                            if (langCode) {
+                                const formattedLangCode = langCode.includes('/') ? langCode.split('/')[1] : langCode;
+                                href = `https://travel.rakuten.com/cars/default/${formattedLangCode}/?scid=wi_trv_header_lang_car_${formattedLangCode}`;
+                            }
+                        }
+                        aTag.setAttribute('href', href);
+                    }
+
+                } else {
+                    item.style.display = '';
+                }
+            });
+        }
+    }
+
+    /**
+     * Removes the header banner element with the ID 'headerBannerAppDL' depends on serviceName.
+     *
+     * @param {string} serviceName - The name of the service. Depends on this, the banner will be removed.
+     */
+    function removeHeaderBanner(serviceName) {
+        if (serviceName === 'domestic-rentacar') {
+            const headerBannerAppDL = document.getElementById('headerBannerAppDL');
+            if (headerBannerAppDL) {
+                headerBannerAppDL.remove();
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Main execution block:  This code runs after the DOM is fully loaded.
+    // -----------------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        const serviceHidden = document.getElementById('rt-hidden-service');
+        const serviceName = serviceHidden?.value;
+
+        setActiveNavigationLink();
+        handleDropdownHover();
+        removeHeaderBanner(serviceName);
+        createWideBanner(serviceName);
+        createSquareBanner(serviceName);
+        filterLanguageOptions(serviceName);
+    });
+</script>
+<!-- SSI END:common-header_sjis.ssi -->
+
+<!-- Temporary Features: Add CSS and JavaScript as needed. -->
+<script src="https://travel.rakuten.co.jp/share/common/header/assets/js/optional-assets.js"></script>
+<!--END_HEADER-->
+<div id="widewrapper">
+<div id="grpLocationArea">
+<p>
+<a href="//travel.rakuten.co.jp/">楽天トラベルトップ</a>&nbsp;&gt;
+<a href="//travel.rakuten.co.jp/package/">楽パックトップ</a>&nbsp;&gt;
+<a href="//travel.rakuten.co.jp/ranking/sales/package/">国内ツアー売れ筋ホテル・旅館ランキング</a>&nbsp;&gt;
+全国&nbsp;
+</div>
+<div class="mboxDefault">
+<div id="serviceHead">
+<p class="rankTitle"><img src="https://img.travel.rakuten.co.jp/ranking/sales/package/images/rank_sales_dp_title.gif" width="950" height="48" alt="楽パック 売れ筋順ホテル・旅館ランキング 今売れている注目の宿をランキング形式でご紹介！"></p>
+<p class="switch">
+<dl class="rankExcursion">
+<dt>【注目のエリア】</dt>
+<dd><ul>
+<li><a href="https://travel.rakuten.co.jp/ranking/sales/package/hokkaido/sapporo_0007_0_0_0_0.html">札幌エリア</a></li>
+<li><a href="https://travel.rakuten.co.jp/ranking/sales/package/tokyo/">東京エリア</a></li>
+<li><a href="https://travel.rakuten.co.jp/ranking/sales/package/chiba/keiyo_0007_0_0_0_0.html">東京ディズニーリゾート（R)周辺</a></li>
+<li><a href="https://travel.rakuten.co.jp/ranking/sales/package/okinawa/">沖縄エリア</a></li>
+<li><a href="https://travel.rakuten.co.jp/ranking/sales/package/fukuoka/">福岡エリア</a></li>
+</ul></dd>
+</dl>
+<!--/#serviceHead--></div>
+<!--START_MAIN_CONTENTS-->
+<div id="title">
+<h1>全国 国内ツアー売れ筋ホテル・旅館ランキング</h1>
+<p class="explain">
+<span>【全国】【国内ツアー売れ筋ホテル・旅館】</span>
+のランキングです。
+</p>
+<p class=alert>
+※施設情報には、楽パックでは提供されないサービス、宿泊プランも含まれています。
+</p>
+<p class="update">2026年10月06日更新</p>
+</div>
+<!--/#mboxDefault--></div>
+<script type="text/javascript">mboxCreate("ranking_area_serviceHead");</script>
+<div id="broad">
+<div id="result">
+<p class="switch">
+<a href="//travel.rakuten.co.jp/ranking/">
+<span>
+全国<em>人気</em>ホテル・旅館ランキングはこちら
+</span>
+</a>
+<a href="//travel.rakuten.co.jp/ranking/sales/">
+<span>
+全国<em>売れ筋</em>ホテル・旅館ランキングはこちら
+</span>
+</a>
+</p>
+<script type="text/javascript" src="https://img.travel.rakuten.co.jp/share/ranking/sales/js/ranking_sales_display.js"></script>
+<div id="room301" class="rankbox" style="display:hidden;">
+<h2><span>国内ツアー売れ筋ランキング
+301室以上
+</span></h2>
+<dl class="paging">
+<dt>[部屋数別に見る]</dt>
+<dd>
+<ul>
+<li><em>
+301室以上
+</em></li>
+<li>
+<a href="#room101" onClick="roomDisplay('room101',1,1,1,1,1);">300〜101室</a>
+</li>
+<li>
+<a href="#room51" onClick="roomDisplay('room51',1,1,1,1,1);">100〜51室</a>
+</li>
+<li>
+<a href="#room11" onClick="roomDisplay('room11',1,1,1,1,1);">50〜11室</a>
+</li>
+<li>
+<a href="#room001" onClick="roomDisplay('room001',1,1,1,1,1);">10室以下</a>
+</li>
+</ul>
+</dd>
+</dl>
+<ol class="hotelBox">
+<!-- 第1位 -->
+<p>
+<li class="rank01">
+<a name="clip_hotel54315_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/54315/">ルネッサンスリゾートオキナワ</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate50">4.66</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/54315/review.html">お客さまの声（921件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/54315/54315.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=54315" alt="ルネッサンスリゾートオキナワ"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 恩納・名護・本部・今帰仁</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=54315&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">全室オーシャンビュー、ファミリーにおすすめリゾート。</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-54315" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="54315" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第1位 -->
+<!-- 第2位 -->
+<p>
+<li class="rank02">
+<a name="clip_hotel11052_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/11052/">ホテル日航アリビラ</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate50">4.63</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/11052/review.html">お客さまの声（1601件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/11052/11052.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=11052" alt="ホテル日航アリビラ"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 宜野湾・北谷・読谷・沖縄市・うるま</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=11052&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">JAL楽パック賞2026・ANA楽パック賞2026受賞／2026年11月〜2027年2月パティオイルミネーション開催</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-11052" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="11052" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第2位 -->
+<!-- 第3位 -->
+<p>
+<li class="rank03">
+<a name="clip_hotel78239_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/78239/">カフーリゾートフチャク　コンド・ホテル</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate50">4.63</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/78239/review.html">お客さまの声（2169件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/78239/78239.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=78239" alt="カフーリゾートフチャク　コンド・ホテル"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 恩納・名護・本部・今帰仁</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=78239&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">客室は平均で70平米の寛ぎのオーシャンビュー。全室に備え付けのバルコニーからは碧い海が広がり、美しい夕陽が包み込みます。</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-78239" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="78239" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第3位 -->
+<!-- 第4位 -->
+<p>
+<li class="rank04">
+<a name="clip_hotel19455_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/19455/">品川プリンスホテル</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate45">4.07</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/19455/review.html">お客さまの声（24864件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/19455/19455.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=19455" alt="品川プリンスホテル"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">東京都 品川・大井町・蒲田・羽田空港</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=19455&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">◆品川駅徒歩2分◆水族館や映画館もある駅近エンタメホテル！東京のパノラマビューを望む希少なロケーション♪</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-19455" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="19455" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第4位 -->
+<!-- 第5位 -->
+<p>
+<li class="rank05">
+<a name="clip_hotel30045_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/30045/">グランドメルキュール沖縄残波岬リゾート</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate45">4.18</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/30045/review.html">お客さまの声（2110件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/30045/30045.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=30045" alt="グランドメルキュール沖縄残波岬リゾート"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 宜野湾・北谷・読谷・沖縄市・うるま</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=30045&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">大人も子どもも満たされる！県内最大級のオールデイプールとオールインクルーシブ沖縄</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-30045" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="30045" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第5位 -->
+<p class="normalRank">
+<li class="rank06">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/901/">ホテルエミシア札幌</a>
+</span>
+<span class="normalAir">
+<a hotel_no="901" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第6位 -->
+<p class="normalRank">
+<li class="rank07">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/1238/">オリエンタルホテル東京ベイ</a>
+</span>
+<span class="normalAir">
+<a hotel_no="1238" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第7位 -->
+<p class="normalRank">
+<li class="rank08">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/38599/">フサキビーチリゾート　ホテル＆ヴィラズ　＜石垣島＞</a>
+</span>
+<span class="normalAir">
+<a hotel_no="38599" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第8位 -->
+<p class="normalRank">
+<li class="rank09">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/14275/">沖縄かりゆしビーチリゾート・オーシャンスパ</a>
+</span>
+<span class="normalAir">
+<a hotel_no="14275" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第9位 -->
+<p class="normalRank">
+<li class="rank10">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/1973/">ＡＮＡインターコンチネンタル石垣リゾート　ｂｙ　ＩＨＧ　＜石垣島＞</a>
+</span>
+<span class="normalAir">
+<a hotel_no="1973" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第10位 -->
+</ol>
+<p class="anchorSearch"><span class="city">&nbsp;</span></p>
+<form name="room301Form"><input type="hidden" name="f_no" value="54315,11052,78239,19455,30045,901,1238,38599,14275,1973"></form>
+</div>
+<div id="room101" class="rankbox" style="display:hidden;">
+<h2><span>国内ツアー売れ筋ランキング
+300〜101室
+</span></h2>
+<dl class="paging">
+<dt>[部屋数別に見る]</dt>
+<dd>
+<ul>
+<li>
+<a href="#room301" onClick="roomDisplay('room301',1,1,1,1,1);">301室以上</a>
+</li>
+<li><em>
+300〜101室
+</em></li>
+<li>
+<a href="#room51" onClick="roomDisplay('room51',1,1,1,1,1);">100〜51室</a>
+</li>
+<li>
+<a href="#room11" onClick="roomDisplay('room11',1,1,1,1,1);">50〜11室</a>
+</li>
+<li>
+<a href="#room001" onClick="roomDisplay('room001',1,1,1,1,1);">10室以下</a>
+</li>
+</ul>
+</dd>
+</dl>
+<ol class="hotelBox">
+<!-- 第1位 -->
+<p>
+<li class="rank01">
+<a name="clip_hotel29766_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/29766/">カヌチャベイホテル＆ヴィラズ</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate45">4.36</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/29766/review.html">お客さまの声（1488件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/29766/29766.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=29766" alt="カヌチャベイホテル＆ヴィラズ"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 恩納・名護・本部・今帰仁</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=29766&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">【楽天トラベルブロンズアワード2025受賞】やんばるの玄関口にある80万坪の広大な「街」にはリゾートの魅力が満載！</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-29766" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="29766" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第1位 -->
+<!-- 第2位 -->
+<p>
+<li class="rank02">
+<a name="clip_hotel134763_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/134763/">ダイワロイネットホテル那覇おもろまち</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate45">4.44</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/134763/review.html">お客さまの声（1732件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/134763/134763.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=134763" alt="ダイワロイネットホテル那覇おもろまち"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 那覇</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=134763&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">全室10階以上で那覇市内を見渡す眺望が魅力！最上階18階での朝食がおすすめ！大型商業施設や免税店が徒歩約3分〜5分。</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-134763" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="134763" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第2位 -->
+<!-- 第3位 -->
+<p>
+<li class="rank03">
+<a name="clip_hotel29412_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/29412/">ザ・ビーチタワー沖縄（共立リゾート）</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate45">4.46</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/29412/review.html">お客さまの声（2927件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/29412/29412.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=29412" alt="ザ・ビーチタワー沖縄（共立リゾート）"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 宜野湾・北谷・読谷・沖縄市・うるま</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=29412&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">サンセットビーチ目の前！アメリカンビレッジの最南端に位置するホテル♪お子様へおむつサービス、朝食会場ではビール飲み放題！</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-29412" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="29412" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第3位 -->
+<!-- 第4位 -->
+<p>
+<li class="rank04">
+<a name="clip_hotel151274_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/151274/">スマイルホテル那覇シティリゾート</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate40">3.97</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/151274/review.html">お客さまの声（578件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/151274/151274.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=151274" alt="スマイルホテル那覇シティリゾート"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 那覇</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=151274&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">那覇空港より車で約５分（ ｢うみそらトンネル｣経由 ）。那覇市内唯一の波の上ビーチまで徒歩約7分。</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-151274" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="151274" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第4位 -->
+<!-- 第5位 -->
+<p>
+<li class="rank05">
+<a name="clip_hotel69360_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/69360/">グランヴィリオリゾート石垣島　Ｏｃｅａｎ’ｓ　Ｗｉｎｇ　＆　Ｖｉｌｌａ　Ｇａｒｄｅｎ＜石垣島＞</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate45">4.46</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/69360/review.html">お客さまの声（1258件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/69360/69360.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=69360" alt="グランヴィリオリゾート石垣島　Ｏｃｅａｎ’ｓ　Ｗｉｎｇ　＆　Ｖｉｌｌａ　Ｇａｒｄｅｎ＜石垣島＞"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 石垣・西表・小浜島</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=69360&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">八重山諸島が望めるロケーションが自慢のオーシャンズウイングとプライベート感あふれるヴィラガーデンの2つの館がございます。</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-69360" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="69360" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第5位 -->
+<p class="normalRank">
+<li class="rank06">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/108259/">ホテルアクティブ！博多</a>
+</span>
+<span class="normalAir">
+<a hotel_no="108259" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第6位 -->
+<p class="normalRank">
+<li class="rank07">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/145419/">オリオンホテル　モトブリゾート＆スパ</a>
+</span>
+<span class="normalAir">
+<a hotel_no="145419" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第7位 -->
+<p class="normalRank">
+<li class="rank08">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/9157/">ホテルアムステルダム　ハウステンボス</a>
+</span>
+<span class="normalAir">
+<a hotel_no="9157" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第8位 -->
+<p class="normalRank">
+<li class="rank09">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/14584/">ホテルマハイナ　ウェルネスリゾートオキナワ</a>
+</span>
+<span class="normalAir">
+<a hotel_no="14584" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第9位 -->
+<p class="normalRank">
+<li class="rank10">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/849/">グランドメルキュール札幌大通公園</a>
+</span>
+<span class="normalAir">
+<a hotel_no="849" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第10位 -->
+</ol>
+<p class="anchorSearch"><span class="city">&nbsp;</span></p>
+<form name="room101Form"><input type="hidden" name="f_no" value="29766,134763,29412,151274,69360,108259,145419,9157,14584,849"></form>
+</div>
+<div id="room51" class="rankbox" style="display:hidden;">
+<h2><span>国内ツアー売れ筋ランキング
+100〜51室
+</span></h2>
+<dl class="paging">
+<dt>[部屋数別に見る]</dt>
+<dd>
+<ul>
+<li>
+<a href="#room301" onClick="roomDisplay('room301',1,1,1,1,1);">301室以上</a>
+</li>
+<li>
+<a href="#room101" onClick="roomDisplay('room101',1,1,1,1,1);">300〜101室</a>
+</li>
+<li><em>
+100〜51室
+</em></li>
+<li>
+<a href="#room11" onClick="roomDisplay('room11',1,1,1,1,1);">50〜11室</a>
+</li>
+<li>
+<a href="#room001" onClick="roomDisplay('room001',1,1,1,1,1);">10室以下</a>
+</li>
+</ul>
+</dd>
+</dl>
+<ol class="hotelBox">
+<!-- 第1位 -->
+<p>
+<li class="rank01">
+<a name="clip_hotel197781_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/197781/">アラマンダスプレンディド＜宮古島＞</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate50">4.7</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/197781/review.html">お客さまの声（46件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/197781/197781.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=197781" alt="アラマンダスプレンディド＜宮古島＞"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 宮古島・伊良部島</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=197781&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">2026年4月29日開業〜シギラセブンマイルズリゾートの新たなラグジュアリーホテル〜</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-197781" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="197781" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第1位 -->
+<!-- 第2位 -->
+<p>
+<li class="rank02">
+<a name="clip_hotel160978_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/160978/">アラマンダ　インギャーコーラルヴィレッジ＜宮古島＞</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate50">4.54</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/160978/review.html">お客さまの声（275件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/160978/160978.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=160978" alt="アラマンダ　インギャーコーラルヴィレッジ＜宮古島＞"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 宮古島・伊良部島</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=160978&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter"> 楽天トラベルシルバーアワード2024受賞★絶景の”蒼の楽園”インギャーに佇むリゾートヴィラ。</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-160978" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="160978" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第2位 -->
+<!-- 第3位 -->
+<p>
+<li class="rank03">
+<a name="clip_hotel188164_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/188164/">ＶＩＶＯＶＩＶＡ石垣島＜石垣島＞</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate50">4.51</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/188164/review.html">お客さまの声（219件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/188164/188164.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=188164" alt="ＶＩＶＯＶＩＶＡ石垣島＜石垣島＞"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 石垣・西表・小浜島</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=188164&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">【楽天トラベル シルバーアワード 2025受賞】海を眺め大人の息抜きを叶えるオーシャンフロントのコンドミニアムリゾート。</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-188164" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="188164" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第3位 -->
+<!-- 第4位 -->
+<p>
+<li class="rank04">
+<a name="clip_hotel160670_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/160670/">変なホテル舞浜　東京ベイ</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate45">4.39</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/160670/review.html">お客さまの声（1539件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/160670/160670.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=160670" alt="変なホテル舞浜　東京ベイ"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">千葉県 舞浜・浦安・船橋・幕張</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=160670&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">恐竜がお客様をお出迎え！全室バス・トイレ別！テーマパークまで車で約5分の好立地＆舞浜駅まで無料送迎あり</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-160670" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="160670" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第4位 -->
+<!-- 第5位 -->
+<p>
+<li class="rank05">
+<a name="clip_hotel166935_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/166935/">アラマハイナ　コンドホテル</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate50">4.61</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/166935/review.html">お客さまの声（582件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/166935/166935.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=166935" alt="アラマハイナ　コンドホテル"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 恩納・名護・本部・今帰仁</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=166935&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">2025年7月OPENのテーマパークは車で約25分☆水族館は車で5分！「楽天トラベルアワード2024」ブロンズアワード</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-166935" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="166935" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第5位 -->
+<p class="normalRank">
+<li class="rank06">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/164860/">変なホテル東京　銀座</a>
+</span>
+<span class="normalAir">
+<a hotel_no="164860" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第6位 -->
+<p class="normalRank">
+<li class="rank07">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/78094/">ロワジールスパタワー那覇</a>
+</span>
+<span class="normalAir">
+<a hotel_no="78094" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第7位 -->
+<p class="normalRank">
+<li class="rank08">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/164859/">変なホテル東京　西葛西</a>
+</span>
+<span class="normalAir">
+<a hotel_no="164859" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第8位 -->
+<p class="normalRank">
+<li class="rank09">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/188998/">ホテルシギラミラージュビーチフロント＜宮古島＞</a>
+</span>
+<span class="normalAir">
+<a hotel_no="188998" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第9位 -->
+<p class="normalRank">
+<li class="rank10">
+<span class="normalName">
+<a href="//travel.rakuten.co.jp/HOTEL/183576/">ＡＱＵＡＳＥＮＳＥ　Ｈｏｔｅｌ　＆　Ｒｅｓｏｒｔ</a>
+</span>
+<span class="normalAir">
+<a hotel_no="183576" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a>
+</span>
+</p>
+<!-- //第10位 -->
+</ol>
+<p class="anchorSearch"><span class="city">&nbsp;</span></p>
+<form name="room51Form"><input type="hidden" name="f_no" value="197781,160978,188164,160670,166935,164860,78094,164859,188998,183576"></form>
+</div>
+<div id="room11" class="rankbox" style="display:hidden;">
+<h2><span>国内ツアー売れ筋ランキング
+50〜11室
+</span></h2>
+<dl class="paging">
+<dt>[部屋数別に見る]</dt>
+<dd>
+<ul>
+<li>
+<a href="#room301" onClick="roomDisplay('room301',1,1,1,1,1);">301室以上</a>
+</li>
+<li>
+<a href="#room101" onClick="roomDisplay('room101',1,1,1,1,1);">300〜101室</a>
+</li>
+<li>
+<a href="#room51" onClick="roomDisplay('room51',1,1,1,1,1);">100〜51室</a>
+</li>
+<li><em>
+50〜11室
+</em></li>
+<li>
+<a href="#room001" onClick="roomDisplay('room001',1,1,1,1,1);">10室以下</a>
+</li>
+</ul>
+</dd>
+</dl>
+<ol class="hotelBox">
+<!-- 第1位 -->
+<p>
+<li class="rank01">
+<a name="clip_hotel147947_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/147947/">フェリスヴィラスイート宮古島・上野　＜宮古島＞</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate50">5</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/147947/review.html">お客さまの声（96件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/147947/147947.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=147947" alt="フェリスヴィラスイート宮古島・上野　＜宮古島＞"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 宮古島・伊良部島</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=147947&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">温水プライベートプール＆キッチン付、宮古ブルーの海に臨む別荘スタイルのリゾートヴィラ</dd>
+<div class="favorite__container-text">
+<div id="favorite-entity-147947" class="favorite__container-wrapper favorite__text-button">お気に入りに追加</div>
+</div>
+</dl>
+<dl>
+<dd class="airplan">
+<p class="packlink">
+<a hotel_no="147947" class="rtconds packagebox" HREF="javascript:void(0);">
+航空券付宿泊プラン</a></p>
+</dd>
+</dl>
+</li>&nbsp;
+<!-- //第1位 -->
+<!-- 第2位 -->
+<p>
+<li class="rank02">
+<a name="clip_hotel173144_comp"></a>
+<h3><a href="//travel.rakuten.co.jp/HOTEL/173144/">ライカムファミリーリゾートホテル（旧ヒヤグンラナイリゾート）</a></h3>
+<p class="hotelRating">
+<span class="genre sougou">総合</span>
+<span class="rate"><em class="rate40">4</em></span>
+<span class="voice"><a href="//travel.rakuten.co.jp/HOTEL/173144/review.html">お客さまの声（184件）</A></span>
+<p class="hotelPhoto"><a href="//travel.rakuten.co.jp/HOTEL/173144/173144.html"><img src="https://img.travel.rakuten.co.jp/image/imgr_90?no=173144" alt="ライカムファミリーリゾートホテル（旧ヒヤグンラナイリゾート）"></a>
+<dl class="hotelOutline">
+<dt class="hotelArea">エリア</dt>
+<dd class="hotelArea">
+<span class="city">沖縄県 宜野湾・北谷・読谷・沖縄市・うるま</span>
+<a class="thickbox" href="//web.travel.rakuten.co.jp/portal/my/simple_map.top?f_hotel_no=173144&TB_iframe=true&height=450&f_width=570px&f_height=350px&width=600">地図を見る</a>
+</dd>
+<dt class="hotelCharacter">特徴</dt>
+<dd class="hotelCharacter">全室35
