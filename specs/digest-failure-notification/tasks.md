@@ -55,11 +55,12 @@ schedule起動の失敗が、各ワークフロー・各編の「本番の36時�
 
 ### Task 5: 失敗以外のconclusion・未知のワークフロー名では通知しないと判定する(防御的ケース)
 
-対象外のconclusion、および想定外のワークフロー名(将来の名称変更等)では何もしない。
+対象外のconclusion、想定外のワークフロー名(将来の名称変更等)、および`record-ci-failure`ジョブ起因の`workflow_run`イベントでは何もしない。
 
 <details><summary>詳細を開く</summary>
 
 - 🔴 `conclusion: "success"`・`conclusion: "cancelled"`で`{ notify: false, reason: "not-failure" }`が返ること、未知の`workflowName`で`{ notify: false, reason: "unknown-workflow" }`が返ることを検証するテストを書く
+- 🔴 即時通知グループ(例: 「AI駆動開発ダイジェスト 日次記事公開」)・再実行グループ(例: 「研究発見 週次記事公開」)それぞれについて、`conclusion: "failure"`かつ`event: "workflow_run"`(各対象ワークフロー自身の`record-ci-failure`ジョブの失敗に相当)で`shouldNotify`を呼び、`{ notify: false, reason: "ci-related" }`が返ることを検証するテストを書く
 - 🟢 `shouldNotify`の先頭で`conclusion !== "failure"`を弾き、ワークフロー名がどちらのグループにも一致しない場合のフォールバックを実装する
 - 🔵 分岐全体を見直し、早期returnの順序を整理する
 
