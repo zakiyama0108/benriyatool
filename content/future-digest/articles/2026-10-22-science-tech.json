@@ -1,0 +1,320 @@
+{
+  "id": "2026-10-22-science-tech",
+  "edition": "science-tech",
+  "date": "2026-10-22",
+  "issueNumber": 3,
+  "predictions": [
+    {
+      "id": "technology-ai--near",
+      "genre": "technology-ai",
+      "horizon": "near",
+      "heading": "2030年までに、IT業務のすべてにAIが関わるようになると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年までにIT業務でAIが欠かせなくなる",
+          "text": "調査会社Gartnerは、2030年までにIT分野の仕事のすべてにAIが関わるようになると予測していると報じられている。AIを使わない業務はなくなり、開発や運用といった日常の作業にAIが組み込まれていくと考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "実績ある調査会社の予測を報道が伝えている",
+          "text": "この予測は、IT分野の調査・助言で知られるGartnerが示したもので、Intelligent CIOがその内容を報じている。実績のある調査会社の見立てであるため、確からしさは高いと位置づけられている。なお元記事の本文は今回読み込めておらず、ここでは渡された情報の範囲で記している。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "IT人材の仕事の進め方が深く変わる",
+          "text": "実現すれば、IT分野で働く人の多くが、AIを前提に仕事を進めることになると考えられている。作業の分担や必要なスキルが見直され、AIを使いこなす力が求められるようになる可能性がある。影響を受ける人が多く、変化も大きいため、影響度は大きいとされている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "2030年までにIT業務のすべてにAIが関わるとするGartnerの予測。IT分野の働き手の多くに影響し、仕事の進め方が深く変わる。実績のある調査会社の予測で確からしさも高い。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Gartner: All IT work will involve AI by 2030",
+      "sourceName": "Intelligent CIO(Gartner予測の報道)",
+      "sourceUrl": "https://www.intelligentcio.com/north-america/2025/10/21/gartner-all-it-work-will-involve-ai-by-2030/"
+    },
+    {
+      "id": "technology-ai--long",
+      "genre": "technology-ai",
+      "horizon": "long",
+      "heading": "AIの急速な進展で2050年までに成長率が上がる一方、労働参加率は下がると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2050年に向け、AIが成長と雇用の両方を動かすと予測されている",
+          "text": "2050年までの経済を対象に、AIが急速に進む場合は年平均の経済成長率が約4%まで高まると予測されている。一方で、働く人の割合を示す労働参加率は現在の6割強から5割台半ばへ下がるとの見方が示されている。AIが多くの作業で人間を上回る状況を仮定した予測である。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "立場の異なる5グループの予測を比べた研究である",
+          "text": "全米経済研究所(NBER)のワーキングペーパーとして、予測研究機関などの研究者が示している。経済学者、AI企業の従業員、AI政策の研究者、予測精度の高い予測者、一般市民の5グループに予測を尋ねて比較した。専門家同士の意見の違いは、AIがどれだけ速く進むかよりも、高度なAIが経済にどう効くかの見方の差によると分析されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[5つのグループに予測を尋ねる] --> B[急速なAI進展を仮定して条件付きで質問]\n B --> C[成長率と労働参加率を比較]\n C --> D[意見の差の原因を分析]"
+          }
+        },
+        "impact": {
+          "heading": "雇用の減少と再訓練など対策の議論が重要になると考えられている",
+          "text": "急速な進展の場合、労働参加率の低下の約半分はAIによるもので、およそ1,000万人分の雇用に相当すると見積もられている。成長が高まる反面、働き方や収入の変化が多くの人の暮らしに及ぶ可能性がある。対策では、専門家は再訓練など対象を絞った施策を強く支持し、一般市民は就業保障やベーシックインカムのような広い施策も支持していると報告されている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "経済学者・AI専門家・予測の達人らが、AIの進展が2050年までの経済成長と労働参加率に与える影響を予測した。AI専門家の想定では急速に進む場合に成長率が高くなる。多くの人の雇用と暮らしに関わり、専門家パネルの手法で確からしさも担保されている。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Forecasting the Economic Effects of AI",
+      "sourceName": "NBER / Forecasting Research Institute",
+      "sourceUrl": "https://www.nber.org/papers/w35046"
+    },
+    {
+      "id": "medical-health--near",
+      "genre": "medical-health",
+      "horizon": "near",
+      "heading": "2030年までに世界の成人の肥満者が11億人超へ、多くの国で備えが不足すると予測されている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに肥満の成人が2010年の2倍強に増えると見込まれている",
+          "text": "World Obesity Federationは、2030年までに世界の成人の肥満者が2010年の約5億2,400万人から約11億人へ、115%以上増えると予測している。BMI35以上の重い肥満も約2.5倍になると見込まれ、アフリカやアジアの一部地域で増加が特に速いと考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "国際団体が194か国の政策と医療体制を調べて示した推計",
+          "text": "同団体が2025年版の報告書で示した推計である。194か国を調べた結果、肥満対策の主要な政策を0〜1つしか持たない国が126か国あった。医療体制の準備が十分とされた国は13か国にとどまると評価している。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[194か国を調査] --> B[肥満対策の政策\n126か国が0〜1つ]\n A --> C[医療体制の準備\n十分な国は13か国]\n B --> D[備えが不足していると評価]\n C --> D"
+          }
+        },
+        "impact": {
+          "heading": "生活習慣病と医療の負担が、備えの乏しい国ほど重くなる恐れがある",
+          "text": "糖尿病や心血管疾患、がんなどの病気が増え、医療の需要が急に高まる恐れがあると考えられている。増加が速いのは備えの乏しい低・中所得国で、食品表示や課税、歩きやすい街づくりなど社会全体での対策が求められている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "肥満は世界の成人の大多数に関わり、医療費や生活習慣病の負担を深く変えうる。国別の統計に基づく推計で、実現の確からしさも高い。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "World Obesity Atlas 2025: Majority of countries unprepared for rising obesity level",
+      "sourceName": "World Obesity Federation",
+      "sourceUrl": "https://worldobesity.org/news/world-obesity-atlas-2025-majority-of-countries-unprepared-for-rising-obesity-level"
+    },
+    {
+      "id": "medical-health--long",
+      "genre": "medical-health",
+      "horizon": "long",
+      "heading": "世界の新規がん患者は2050年までに77%増え、3,500万人超になると予測されている",
+      "sections": {
+        "when": {
+          "heading": "2050年に向け、新規患者は約1.8倍になる見通し",
+          "text": "2022年に約2,000万人だった世界の新規がん患者数は、2050年には3,500万人を超え、77%増えると予測されている。増加率が大きいのは人間開発指数の低い国々で、142%増と見込まれている。患者の絶対数が最も増えるのは先進国だと考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "WHOのIARCが185か国のデータから推計している",
+          "text": "示しているのはWHOの国際がん研究機関(IARC)で、185か国・36種類のがんのデータに基づく推計である。人口の高齢化と増加が主な背景とされる。喫煙・飲酒・肥満や大気汚染といったリスク要因も増加に関わると指摘されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[人口の高齢化・増加] --> D[新規がん患者の増加]\n B[喫煙・飲酒・肥満] --> D\n C[大気汚染など環境要因] --> D\n D --> E[2050年に3,500万人超]"
+          }
+        },
+        "impact": {
+          "heading": "医療体制への負荷が高まり、早期発見や予防への投資が課題になる",
+          "text": "患者が増えれば、検診や治療、緩和ケアを担う医療体制への負荷が各国で大きくなると考えられている。体制が十分でない低所得国では、負担が2倍以上になる恐れがあるとされる。IARCは、早期診断・検診、予防、緩和ケアへの投資拡大を訴えている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "がんは世界中のあらゆる世代に関わり、医療体制への負荷も大きい。人口の高齢化と増加という確度の高い要因に基づく推計である。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "New cancer cases to soar 77 percent by 2050, WHO predicts",
+      "sourceName": "Al Jazeera(WHO国際がん研究機関〈IARC〉の推計を報道)",
+      "sourceUrl": "https://www.aljazeera.com/news/2024/2/1/new-cancer-cases-to-soar-77-percent-by-2050-who-predicts"
+    },
+    {
+      "id": "environment-energy--near",
+      "genre": "environment-energy",
+      "horizon": "near",
+      "heading": "世界のデータセンター電力需要は2030年までに約945TWhへ倍増すると予測されている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに需要が約2倍になると見込まれている",
+          "text": "世界のデータセンターの電力需要は、2030年までに現在の約2倍にあたる約945TWhへ増えると予測されている。背景には、AIの利用拡大に伴う計算処理の増加があると考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "IEAが実績と分析を踏まえて示している",
+          "text": "予測を示しているのは国際エネルギー機関(IEA)で、報告書「Energy and AI」で扱われている。2025年の需要が前年比17%増となった実績も、この見通しを裏づける材料とされている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[AI利用の拡大] --> B[計算処理の増加]\n  B --> C[データセンターの電力需要増]\n  C --> D[2030年に約945TWh]"
+          }
+        },
+        "impact": {
+          "heading": "電気料金と電力網への投資を通じて暮らしに及ぶ",
+          "text": "需要の急増は、発電設備や送電網への投資を促し、その負担が電気料金などを通じて多くの人の暮らしに関わると考えられている。電力の確保が地域や産業の競争力に影響する可能性もあり、影響度は高いと位置づけられている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "データセンターの電力需要は電気料金や電力網への投資を通じて多くの人の暮らしに関わる。IEAは2025年の需要が前年比17%増と実績でも裏づけており、確からしさも高い。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Energy and AI(世界のデータセンター電力需要は2030年までに約945TWhへ倍増)",
+      "sourceName": "IEA(国際エネルギー機関)",
+      "sourceUrl": "https://www.iea.org/reports/energy-and-ai"
+    },
+    {
+      "id": "environment-energy--long",
+      "genre": "environment-energy",
+      "horizon": "long",
+      "heading": "2050年に電力の約9割を再エネで賄う1.5°C経路をIRENAが示している",
+      "sections": {
+        "when": {
+          "heading": "2050年までに電力の大半を再エネで賄う姿が描かれている",
+          "text": "2050年までに世界の温暖化を1.5°Cに抑え、CO2排出を実質ゼロにする経路が示されている。その中で電力の約9割を再エネが担い、太陽光は14,000GW超に広がると考えられている。ただし、これは政策と投資しだいで変わるシナリオとされる。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "IRENAが現行計画との比較で必要な道筋を示している",
+          "text": "国際再生可能エネルギー機関(IRENA)が、各国の現行計画に基づくシナリオと1.5°C目標に沿うシナリオを比べて示している。すでにある技術を必要なペースで広げることを軸にしている。再エネの直接利用、電化、省エネ、グリーン水素などが解決策の大半を占めると整理されている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "巨額の投資と雇用の変化を伴い、エネルギー供給の仕組みが変わると考えられている",
+          "text": "実現には、計画より約30%多い投資が必要で、2050年までの総額は約131兆米ドルと見込まれている。資本の流れを大きく組み替える必要があるとされる。一方で、エネルギー部門の雇用は約1億2,200万人に増え、その3分の1以上を再エネ分野が占めると予測されている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "世界の電力の9割を再エネにする道筋は、エネルギー供給と脱炭素の仕組み全体を変える。ただし政策と投資しだいのシナリオなので、確からしさは中程度。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "World Energy Transitions Outlook: 1.5°C Pathway(2050年に電力の約9割を再エネで供給し、太陽光は14,000GW超へ)",
+      "sourceName": "IRENA(国際再生可能エネルギー機関)",
+      "sourceUrl": "https://www.renewableenergyworld.com/energy-business/new-project-development/irenas-world-energy-transitions-outlook-outlines-pathway-to-1-5-c/"
+    },
+    {
+      "id": "space-science--near",
+      "genre": "space-science",
+      "horizon": "near",
+      "heading": "Blue Originが2030年までに民間宇宙ステーション「Orbital Reef」の建設を目指すと考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年までの完成を目指す計画",
+          "text": "Blue Originは民間の宇宙ステーション「Orbital Reef」を2030年までに建設する計画を発表したと伝えられている。2030年ごろに見込まれるISSの退役に向けて、宇宙の拠点が民間の施設へ移っていくと考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "企業の発表と退役時期が根拠",
+          "text": "この予測を示しているのは、計画を発表したBlue Origin自身で、Space.comがその内容を報じている。背景には2030年ごろのISS退役と民間ステーションへの移行計画がある。ただし各社の計画時期は2021年当時の発表であり、遅れる可能性があるとされている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[2021年 Orbital Reef計画の発表] --> B[民間ステーションの建設]\n C[2030年ごろ ISS退役] --> D[拠点の入れ替わり]\n B --> D\n B -.-> E[計画の遅れの可能性]"
+          }
+        },
+        "impact": {
+          "heading": "宇宙での研究・産業の拠点が入れ替わる",
+          "text": "計画どおり進めば、宇宙での研究や産業の拠点が国の運営するISSから民間のステーションへ入れ替わると考えられている。一方、計画が遅れると、移行の時期や拠点の切り替えにも影響が出る可能性がある。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "2030年ごろのISS退役に向けて民間宇宙ステーションへの移行が計画されており、宇宙での研究・産業の拠点が入れ替わる。ただし各社の計画時期は2021年当時の発表で、遅れる可能性がある。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Blue Origin unveils plans to build a private space station called Orbital Reef by 2030",
+      "sourceName": "Space.com",
+      "sourceUrl": "https://www.space.com/blue-origin-unveils-orbital-reef-private-space-station"
+    },
+    {
+      "id": "space-science--long",
+      "genre": "space-science",
+      "horizon": "long",
+      "heading": "ESAは2050年までの宇宙科学の長期計画「Voyage 2050」を示していると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2050年までを見通す長期計画",
+          "text": "欧州宇宙機関(ESA)が、2050年までの宇宙科学の進め方をまとめた長期計画として「Voyage 2050」を示していると考えられている。今後数十年にわたって、宇宙・天文研究がどの方向へ進むのかという大きな枠組みを定める内容とされている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "ESA自身が示す計画で、詳細は未確認",
+          "text": "示しているのは欧州の宇宙機関であるESAで、情報源は同機関の公式ページである。予測というより計画としての性格が強い。今回は元ページの本文を確認できていないため、個別のテーマや決定の経緯までは断定できない。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "研究の方向づけに影響するが、暮らしへの直接の影響は限定的",
+          "text": "この計画どおりに進めば、今後数十年の宇宙・天文研究の優先順位や進む方向に影響すると考えられている。影響度は中程度とされている。主な影響先は研究機関や関連分野で、日常生活への直接の影響は大きくないと考えられる。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "ESAが2050年までの宇宙科学の長期計画を示しており、今後数十年の宇宙・天文研究の方向を左右する。ただし予測というより計画で、本文は未確認。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Voyage 2050",
+      "sourceName": "ESA",
+      "sourceUrl": "https://www.esa.int/Science_Exploration/Space_Science/Voyage_2050"
+    },
+    {
+      "id": "geopolitics--near",
+      "genre": "geopolitics",
+      "horizon": "near",
+      "heading": "中国は2027年までに台湾を奪取できる能力を整えつつあると、米国防総省が報告",
+      "sections": {
+        "when": {
+          "heading": "2027年が中国軍の準備目標の年とされている",
+          "text": "米国防総省の報告は、中国軍が2027年までに台湾を奪取できる能力を整えつつあると評価している。2027年は準備を終えることを目指す目標年とされ、人民解放軍はその目標に向けて着実に進んでいると考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "米国防総省の議会向け報告が根拠だが、侵攻計画はないとの見方もある",
+          "text": "示しているのは米国防総省が議会に提出した報告書で、IANSが報じた。根拠として、2024年に台湾の防空識別圏へ入る中国軍機が大きく増えたことや、台湾周辺の大規模演習で封鎖などを演練したことが挙げられている。一方、米情報機関は2027年に侵攻する計画はないとみており、中国指導部も米国の介入を退けて占領できる確信はまだ持てていないとされる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[戦争未満の威圧] --> B[ミサイル・航空攻撃]\n  B --> C[全面封鎖]\n  C --> D[水陸両用侵攻]"
+          }
+        },
+        "impact": {
+          "heading": "安全保障から半導体・貿易まで広く影響しうる",
+          "text": "台湾周辺の緊張が長引き、地域の力の均衡が変わると懸念されている。有事に至れば安全保障だけでなく半導体の供給や貿易にも影響が及び、多くの人の暮らしに響くと考えられている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "台湾有事は世界の安全保障・半導体供給・貿易に及ぶため影響を受ける人が非常に多い。米国防総省は、中国が2027年までに台湾を奪取できる能力を整えつつあると報告している。ただし米情報機関は、2027年に侵攻する計画はないとみている。",
+      "targetPeriod": "2027年まで",
+      "sourceTitle": "China building capability to seize Taiwan by 2027: US",
+      "sourceName": "IANS(米国防総省報告の報道)",
+      "sourceUrl": "https://ianslive.in/china-building-capability-to-seize-taiwan-by-2027-us--20251224211504"
+    },
+    {
+      "id": "geopolitics--long",
+      "genre": "geopolitics",
+      "horizon": "long",
+      "heading": "地政学的な分断が2050年にかけて貿易や食料の安全保障を左右すると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2050年に向け、世界秩序が3通りに分かれうるとされる",
+          "text": "2050年までの長期で、世界秩序の変化に伴う地政学的・地経学的な分断が進むと考えられている。分析は3つのシナリオを示しており、どれが現実になるかは断定されていない。分断の度合いによって、国際的な貿易のあり方や食料の確保の仕方が大きく変わりうると予測されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[現在の世界秩序の変化] --> B[シナリオ1]\n A --> C[シナリオ2]\n A --> D[シナリオ3]\n B --> E[2050年の貿易・食料安全保障]\n C --> E\n D --> E"
+          }
+        },
+        "basis": {
+          "heading": "環境・開発の研究機関がシナリオ分析で示している",
+          "text": "示しているのは、スウェーデンのストックホルム環境研究所(SEI)が関わるMistra Geopoliticsの研究である。将来を一つに絞って言い切るのではなく、複数のシナリオを並べて比べる手法で、分断が貿易や食料安全保障に及ぼす影響を分析していると紹介されている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "貿易と食料に及ぶ影響は広く深いと考えられている",
+          "text": "分断が進めば、輸入に頼る食料や物資の調達先・価格・安定性が左右され、多くの人の暮らしに影響が及ぶと考えられている。ただし結果はシナリオ次第で、どの姿になるかは分かっていない。そのため、各国や企業が複数の可能性を想定して備えることの重要性が示唆されている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "地政学的分断が2050年にかけて貿易や食料安全保障を左右すると分析しており、影響を受ける人は多く変化も深い。ただし3つのシナリオを示すもので、どれが起きるかは断定していない。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Navigating a changing world order: the future of geopolitical and geoeconomic fragmentation",
+      "sourceName": "Mistra Geopolitics / ストックホルム環境研究所(SEI)",
+      "sourceUrl": "https://www.sei.org/publications/navigating-a-changing-world-order/"
+    }
+  ],
+  "emptySlots": []
+}
