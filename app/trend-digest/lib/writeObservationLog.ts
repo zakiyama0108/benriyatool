@@ -40,13 +40,16 @@ function toObservation(candidate: Candidate, maxObservationsPerSource: number): 
 }
 
 // 情報源ごとに上位maxObservationsPerSource件までに絞る(design.md手順2)。
-// sourceNameが無い(グループ化できない)観測はそのまま残す
+// ジャンル+情報源名の組で数える(同じ情報源名を複数ジャンルが使う場合、
+// 各ジャンルの収集処理(fetchFixedListGenreCandidates等)が既にジャンルごとにこの上限を
+// 適用済みであり、ここで情報源名だけでまとめ直すと他ジャンル分と合算されて二重に絞られてしまうため)
 function capPerSource(candidates: Candidate[], maxObservationsPerSource: number): Candidate[] {
   const groups = new Map<string, Candidate[]>()
   for (const candidate of candidates) {
-    const group = groups.get(candidate.sourceName)
+    const key = `${candidate.genre}|${candidate.sourceName}`
+    const group = groups.get(key)
     if (group) group.push(candidate)
-    else groups.set(candidate.sourceName, [candidate])
+    else groups.set(key, [candidate])
   }
 
   const result: Candidate[] = []

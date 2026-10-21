@@ -173,6 +173,19 @@ describe('観測ログの書き出し時の情報源ごとの記録上限 - 情�
     expect(written.observations).toHaveLength(3)
     expect(written.observations.map((o) => o.title).sort()).toEqual(['作品1', '作品2', '作品3'])
   })
+
+  it('同じ情報源名を複数ジャンルが共有する場合、上限はジャンルごとに別々に数えること(日本映画・海外映画が同じFilmarksランキングを情報源にする場合など)', () => {
+    const japaneseMovieItems = Array.from({ length: 3 }, (_, i) =>
+      candidate({ title: `日本映画${i + 1}`, genre: 'japanese-movie', sourceName: '共有情報源', rank: i + 1, strength: 30 - i })
+    )
+    const foreignMovieItems = Array.from({ length: 3 }, (_, i) =>
+      candidate({ title: `海外映画${i + 1}`, genre: 'foreign-movie', sourceName: '共有情報源', rank: i + 1, strength: 30 - i })
+    )
+    writeObservationLog(tmpDir, '2026-09-15', 'entertainment', [...japaneseMovieItems, ...foreignMovieItems], 3)
+    const written = readWritten('2026-09-15', 'entertainment')
+    // ジャンルごとに上限3件のため、2ジャンル分で合計6件とも残る(情報源名が同じだけで合算して絞られない)
+    expect(written.observations).toHaveLength(6)
+  })
 })
 
 // 仕様: specs/trend-digest/trend-history/design.md「履歴データの形式」
