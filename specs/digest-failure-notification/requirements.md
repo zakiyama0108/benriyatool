@@ -1,7 +1,5 @@
 # 要件定義: digest-failure-notification
 
-> ステータス: 仕様確認中(未実装)
-
 ## サマリ
 
 - 運営者(zaki)の「ai-dev-digest・news-digest・trend-digest・research-digest・future-digestの5アプリで記事生成がGitHub Actions上で失敗しても、画面を開かないと気づけない」を解決する〔合意〕
