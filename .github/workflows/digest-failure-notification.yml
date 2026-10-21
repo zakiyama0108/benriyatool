@@ -1,0 +1,50 @@
+# 5アプリ(ai-dev-digest/news-digest/trend-digest/research-digest/future-digest)の
+# 記事生成ワークフローの失敗を共通で監視し、LINEで運営者個人に知らせるワークフロー
+# (仕様: specs/digest-failure-notification/requirements.md#失敗検知・通知、
+# design.md「失敗を検知して通知する処理」「再実行完了を判定する処理」
+# 「通知メッセージを組み立てて送信する処理」)。
+#
+# 対象5ワークフローのいずれかが完了すると`workflow_run`イベントで起動し、
+# scripts/digest-failure-notification/notify.tsに実行結果を渡して判定・送信を行う。
+# このワークフローはGitHubへの書き込みを一切行わないため、書き込み用PATは使わない
+# (design.md「セキュリティ」)
+name: digest-failure-notification
+
+on:
+  workflow_run:
+    workflows:
+      - AI駆動開発ダイジェスト 日次記事公開
+      - 重要ニュース週刊ダイジェスト 週次記事公開
+      - トレンドダイジェスト 週次記事公開
+      - 研究発見 週次記事公開
+      - 週刊未来予測 週次記事公開
+    types: [completed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # ci.yml・deploy.ymlと同じバージョンに揃える
+          cache: 'npm'
+
+      - run: npm ci
+
+      # workflow_runイベントの各フィールドをrun:に直接埋め込まずenv:経由で渡す
+      # (シェルインジェクションを避けるため。design.md「セキュリティ」)
+      - name: 失敗を判定しLINEで通知
+        env:
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          EVENT: ${{ github.event.workflow_run.event }}
+          CREATED_AT: ${{ github.event.workflow_run.created_at }}
+          UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
+          HTML_URL: ${{ github.event.workflow_run.html_url }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_ADMIN_USER_ID: ${{ secrets.LINE_ADMIN_USER_ID }}
+        run: npx tsx scripts/digest-failure-notification/notify.ts

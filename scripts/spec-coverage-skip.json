@@ -4911,8 +4911,8 @@
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
-    "item": "併用ジャンル(アニメ)の候補を収集・判定する処理(決定的なコード)",
-    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#選定方式-7でcollect-and-select.test.ts(collectGenreObservations)がテスト済みのため"
+    "item": "併用ジャンルの候補を収集・判定する処理(決定的なコード)",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#選定方式-7・8でcollect-and-select.test.ts(collectGenreObservations)がテスト済みのため"
   },
   {
     "specFile": "trend-digest/content-selection/design.md",
@@ -9525,6 +9525,81 @@
     "reason": "ページの状態設計(useStateの持ち方)の説明で、phaseの遷移はpage.test.tsx、selectedAppIdの遷移はpage.test.tsx・SourceTabs.test.tsxでテスト済みのため"
   },
   {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "サマリ",
+    "reason": "要件全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "概要",
+    "reason": "機能名・目的・優先度を示すメタ情報の見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "ユーザーストーリー",
+    "reason": "運営者の願望を示す1文のみの見出しで、具体的な判定条件は機能要件・ビジネスルール・制約側の個々の項目でテスト済みのため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "ユースケース図",
+    "reason": "全体像を示すmermaid図のみの見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "機能要件",
+    "reason": "配下の###見出しに実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "失敗検知・通知 [1]",
+    "reason": "監視対象が5ワークフローであることの記述で、.github/workflows/digest-failure-notification.yml(TDD対象外。tasks.md Task9)のon.workflow_run.workflowsが5ワークフロー名を列挙することと、同じ5ワークフロー名をshouldNotify.ts(IMMEDIATE_GROUP_WORKFLOW_NAMES・RETRY_GROUP_WORKFLOW_NAMES)・workflowAppNames.tsが扱うことで実現しており、YAMLのトリガー設定自体はユニットテスト対象を持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "失敗検知・通知 [2]",
+    "reason": "個別実装を追加せず共通の1つの監視ワークフローで監視することの記述で、.github/workflows/digest-failure-notification.yml(TDD対象外。tasks.md Task9)を新規1枚だけ追加し5アプリの既存ワークフローには変更を加えていないことで実現しており、「ファイルを追加していないこと」はユニットテストで検証できないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "ビジネスルール・制約",
+    "reason": "配下の###見出し(通知タイミング・通知手段)に実体があるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "通知手段 [1]",
+    "reason": "新規LINEチャネルを作らず既存の共通チャネル(LINE_CHANNEL_ACCESS_TOKEN)を使うことの記述で、notify.ts・digest-failure-notification.ymlが新規チャネル作成コードを持たずこの既存Secret名をそのまま読むことで実現しており、「新規チャネルを作っていないこと」はユニットテストで検証できないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "通知手段 [2]",
+    "reason": "運営者個人のLINE userIdの事前手動取得・Secret保存という運用手順の記述で、本spec自身が自動化対象外と明記しているため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "通知手段 [3]",
+    "reason": "既存の共通チャネルの無料プラン枠・配信予算を共有するという運営方針の記述で、新規の従量課金処理を実装しないことが前提であり、ユニットテストで検証する性質のものではないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "依存関係",
+    "reason": "LINE Messaging APIの利用可否・運営者個人のLINE userId取得(運用上の前提条件)の記述で、コードとしてのテスト対象を持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/requirements.md",
+    "item": "スコープ外",
+    "reason": "本specが対象としない範囲の列挙で、実装しない機能についてのテストは存在しないため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "サマリ",
+    "reason": "設計全体を1段落で要約した見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "決定事項",
+    "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
+  },
+  {
     "specFile": "ai-dev-digest/line-broadcast/design.md",
     "item": "決定事項",
     "reason": "設計上の論点一覧を束ねるメタ見出しで、個々の論点はサブ項目(決定事項 > ...)として別に記載されるため、見出し自体はテスト対象の振る舞いを持たないため"
@@ -9563,5 +9638,65 @@
     "specFile": "news-digest/line-broadcast/design.md",
     "item": "決定事項",
     "reason": "3アプリ共通の決定事項はai-dev-digest/line-broadcast/design.mdが正であることを示す参照のみの1行で、本spec固有のテスト対象を持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "決定事項 > 監視方式",
+    "reason": "個別実装を追加せず共通の1つの監視ワークフローで監視する案を選んだ理由を記録した設計判断の表の1行で、実際の構成は.github/workflows/digest-failure-notification.yml(TDD対象外。tasks.md Task9)が担うため、ユニットテスト対象を持たない"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "決定事項 > 「最後の再実行」の判定方法",
+    "reason": "cron時刻表との照合(許容誤差±90分)を選んだ理由を記録した設計判断の表の1行で、採用した案自体はrequirements.md#通知タイミング-2でshouldNotify.test.ts(lastRetrySlots.tsによる時刻照合)によりテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "決定事項 > 通知ロジックの実装言語",
+    "reason": "TypeScript(純粋関数+CLI)を選んだ理由を記録した設計判断の表の1行で、実装自体はshouldNotify.test.ts・buildNotificationMessage.test.ts・notify.test.tsでテスト済みのため、ここでは根拠の記録のみ"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "決定事項 > コードの配置",
+    "reason": "app/lib/digestFailureNotification/・scripts/digest-failure-notification/という配置を選んだ理由を記録した設計判断の表の1行で、フォルダ構成自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "決定事項 > 仕様書フォルダの配置",
+    "reason": "specs/digest-failure-notification/(specs/直下)という配置を選んだ理由を記録した設計判断の表の1行で、フォルダ構成自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "処理フロー",
+    "reason": "design.mdの処理フローを束ねるメタ見出しで、それ自体はテスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "失敗を検知して通知する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#通知タイミング-1・#通知タイミング-3でshouldNotify.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "再実行完了を判定する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#通知タイミング-2・#通知タイミング-3でshouldNotify.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "通知メッセージを組み立てて送信する処理",
+    "reason": "design.mdの処理フローの見出しで、対応するビジネスルールはrequirements.md#失敗検知・通知-3・#失敗検知・通知-4でbuildNotificationMessage.test.ts・notify.test.tsによりテスト済みのため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "関連するファイル(抜粋)",
+    "reason": "実装対象ファイルの一覧という参照情報で、テスト対象の振る舞いを持たないため"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "セキュリティ",
+    "reason": "Secretsの暗号化保存・書き込み用PATを使わない方針の記述で、GitHub Actions Secretsの設定という運用上の前提でありテスト対象を持たない(Authorizationヘッダーをログに出力しないことはnotify.test.tsで、本文にエラー詳細を含めないことはbuildNotificationMessage.test.tsでテスト済みの範囲)"
+  },
+  {
+    "specFile": "digest-failure-notification/design.md",
+    "item": "ログ",
+    "reason": "GitHub Actionsの実行ログに記録する項目の記述で、判定結果・LINE API呼び出し結果の記録自体はnotify.test.tsでテスト済みのため、運用上の記録方針としてはユニットテスト対象を持たない"
   }
 ]

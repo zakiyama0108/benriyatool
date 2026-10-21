@@ -133,6 +133,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 
 ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
 
+weekly-publishの記事生成ワークフロー(`news-digest-weekly.yml`)の失敗をLINEで運営者に通知する機能も、5アプリ共通の[digest-failure-notification](../digest-failure-notification/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
+
 ## 9. コンポーネント図
 ```mermaid
 flowchart LR
@@ -186,7 +188,7 @@ content/news-digest/criteria.json         # 採用基準の数値(monthly-review
 | Yahoo!ニュース(媒体別RSS) | 共同通信・産経新聞・ANN(テレビ朝日系)・FNNプライムオンライン・東洋経済オンライン・ダイヤモンド・オンライン・BUSINESS INSIDER JAPAN・神奈川新聞(カナロコ)の記事取得。各社サイトへの直接アクセスでは安定して取得できないため、Yahoo!ニュースが公式配信するRSS経由で取得する([content-selection/design.md](content-selection/design.md)) |
 | Infoseekニュース(配信社ページ) | 読売新聞・TBS NEWS DIG・日テレNEWS NNN・時事通信・ロイターの記事取得。各社サイトへの直接アクセスでは安定して取得できないため、Infoseekニュースの配信社別ページ(`news.infoseek.co.jp/publisher/<code>/`)経由で取得する([content-selection/design.md](content-selection/design.md)) |
 | WebSearch(Claude Code CLI) | 重要度判定・見落とし補完のための探索的収集(基本無料方針のため、有料の検索APIは利用しない) |
-| GitHub Actions | 記事生成([weekly-publish](weekly-publish/requirements.md))・見直し提案([monthly-review](monthly-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む) |
+| GitHub Actions | 記事生成([weekly-publish](weekly-publish/requirements.md))・見直し提案([monthly-review](monthly-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む)。weekly-publishのワークフロー(`news-digest-weekly.yml`)の失敗は5アプリ共通の[digest-failure-notification](../digest-failure-notification/requirements.md)が監視し、LINEで運営者へ通知する |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | weekly-publishの要約生成、monthly-reviewの見直し案検討に、いずれもヘッドレス起動で使用 |
 | LINE Messaging API | 新着記事のLINE公式アカウント(ai-dev-digest・trend-digestと共通)からの一斉配信([line-broadcast](line-broadcast/requirements.md)) |
 
