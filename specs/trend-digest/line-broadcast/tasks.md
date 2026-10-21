@@ -41,3 +41,14 @@
   - Task A〜Cが揃った状態で、実際の週次記事マージ(またはworkflow_dispatch)により配信ワークフローを実行し、実行ログに公開待ちのポーリングログ(試行ごとの経過秒数とHTTPステータス)が記録されることを確認する(デプロイ完了まで約2分・その間404というタイミング差はユニットテストで再現できないため、本番環境での確認が必要)
   - LINE通知の到達が本番デプロイ完了より後になり、通知に載ったリンクを開いた時点で記事ページが閲覧できることを確認する
   - 実行ログから、記事ページへのGETで実際に観測したリダイレクトのHTTPステータスコードを確認する(design.md「記事ページの公開を待つ処理」の「3xx」という記述の実際の値を裏取りする)
+
+## 2026-10-20 追加(timeoutMs延長・デプロイ失敗への対処)
+
+記事ページ公開待ちのタイムアウトを10分から20分へ延長する変更。**🟡〔提案〕**
+
+<details><summary>詳細を開く</summary>
+
+- Task F: 記事ページ公開待ちのタイムアウト延長(仕様: [ai-dev-digest/line-broadcast/design.md](../../ai-dev-digest/line-broadcast/design.md)「記事ページの公開を待つ処理」「待機パラメータと根拠」)
+  - 3アプリ共通の対応内容は[ai-dev-digest/line-broadcast/tasks.md](../../ai-dev-digest/line-broadcast/tasks.md)のTask Fを参照(`app/lib/waitForPageAvailable.ts`の`DEFAULT_TIMEOUT_MS`を10分から20分へ変更する1つの実装であり、着手はいずれか1アプリで1回のみでよい)
+
+</details>

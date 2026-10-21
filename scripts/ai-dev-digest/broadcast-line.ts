@@ -15,7 +15,7 @@ import { waitForPageAvailable } from '../../app/lib/waitForPageAvailable'
 const BROADCAST_ENDPOINT = 'https://api.line.me/v2/bot/message/broadcast'
 
 // 記事ページ公開待ちの設定を差し替えるための任意引数(design.md「記事ページの公開を待つ処理」
-// 「テストからの注入」)。既定値は本番用(waitForPageAvailable既定の15秒・10分)のままとし、
+// 「テストからの注入」)。既定値は本番用(waitForPageAvailable既定の15秒・20分)のままとし、
 // テストだけが短い値・フェイクのsleepを渡せるようにする
 export type WaitForPageAvailableSettings = {
   pollIntervalMs?: number

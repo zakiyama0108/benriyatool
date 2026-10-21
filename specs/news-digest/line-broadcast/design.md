@@ -1,19 +1,32 @@
 # 設計: LINE公式アカウントでの新着記事自動配信
 
 ## サマリ
-記事マージ(mainへのpush、`content/news-digest/articles/*.json`の新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクをai-dev-digest・trend-digestと共通のLINE公式アカウントからブロードキャスト配信する。ai-dev-digestのline-broadcastと同一の設計・配信フォーマットを踏襲し、配信元アカウント・チャネルアクセストークンも共有する。
+記事マージ(mainへのpush、`content/news-digest/articles/*.json`の新規追加)をトリガーに、独立したGitHub Actionsワークフローが記事タイトル・トピック見出し一覧・記事リンクをai-dev-digest・trend-digestと共通のLINE公式アカウントからブロードキャスト配信する。ai-dev-digestのline-broadcastと同一の設計・配信フォーマットを踏襲し、配信元アカウント・チャネルアクセストークンも共有する。〔合意〕
+
+## 決定事項
+
+3アプリ共通の決定事項(ワークフローの配置・リダイレクトの扱い・`timeoutMs`の値・待機処理の実装場所)は[ai-dev-digest/line-broadcast/design.md#決定事項](../../ai-dev-digest/line-broadcast/design.md)が正。本specに固有の決定事項はない(ai-dev-digestと同一設計の踏襲のため)。〔合意〕
 
 ## 実行環境の前提
 
-ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新規ワークフロー`.github/workflows/news-digest-line-broadcast.yml`とする(`push`イベント(`branches: main`、`paths: content/news-digest/articles/*.json`)をトリガーにする理由もai-dev-digestと同じ。マージ完了を別途ポーリングする複雑さを避けられる)。
+ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新規ワークフロー`.github/workflows/news-digest-line-broadcast.yml`とする(`push`イベント(`branches: main`、`paths: content/news-digest/articles/*.json`)をトリガーにする理由もai-dev-digestと同じ。マージ完了を別途ポーリングする複雑さを避けられる)。〔合意〕
+
+<details><summary>詳細を開く</summary>
 
 - 配信スクリプトは`scripts/news-digest/`配下に置く
 - **配信元のLINE公式アカウント・チャネルアクセストークンはai-dev-digest・trend-digestと共通のものを利用する**(requirements.mdビジネスルール[1]。新規アカウントは開設しない)。既にActions Secretsに保存済みの`LINE_CHANNEL_ACCESS_TOKEN`をそのまま参照する(news-digest専用の新しいSecretは追加しない)
 - このワークフローはGitHubへの書き込み(コミット・PR作成等)を一切行わないため、[weekly-publish](../weekly-publish/design.md)が使う書き込み用PAT(`NEWS_DIGEST_GH_PAT`)は使わない。リポジトリのチェックアウトのみが必要なため、ワークフロー既定の`GITHUB_TOKEN`で足りる
 
+</details>
+
 ## 処理フロー
 
 ### 配信タイミングをトリガーする処理
+
+`main`ブランチへの記事ファイル新規追加pushを検知し、既存ファイルの変更では起動しない。〔合意〕
+
+<details><summary>詳細を開く</summary>
+
 - 対象: `main`ブランチへのpush(weekly-publishの週次記事PRが自動マージされた結果として発生するpush)
 - 手順:
   1. `content/news-digest/articles/*.json`パターンに一致するファイルへの変更を含む、`main`ブランチへのpushでのみワークフローを起動する
@@ -22,7 +35,14 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
   4. 新規追加ファイルが見つかった場合、そのファイル名(`<date>.json`)から対象日付を取り出し、以降の処理に渡す
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-5〜6
 
+</details>
+
 ### 配信メッセージ本文を組み立てる処理
+
+記事データをパースし、タイトル・トピック見出し全件・記事リンクを改行区切りの本文に組み立てる。〔合意〕
+
+<details><summary>詳細を開く</summary>
+
 - 対象: 新規追加された記事データ(`content/news-digest/articles/<date>.json`)
 - 手順:
   1. 記事データを読み込み、[article-detail/design.md](../article-detail/design.md)が定めるスキーマ(`parseArticle`)でパースする
@@ -43,11 +63,25 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
   6. LINE Messaging APIのテキストメッセージ上限(公式ドキュメント上5000文字)への特別な切り詰め処理は設けない(トピック件数は最大7件・各見出しも短文のため超過の可能性は低い。万一超過した場合は下記エラーハンドリングに従う)
 - 関連するビジネスルール: requirements.md#配信内容-1〜4
 
+</details>
+
 ### 記事ページの公開を待つ処理
+
+配信前にリンク先URLへHTTP GETし、200になるまでポーリングする。待機の手順・パラメータ一式は3アプリ共通で、[ai-dev-digest/line-broadcast/design.md](../../ai-dev-digest/line-broadcast/design.md)が正(重複記載しない)。〔合意〕
+
+<details><summary>詳細を開く</summary>
+
 [ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)と同じ考え方で、記事詳細ページのURL(`https://benriyatool.com/news-digest/<date>`)に対してHTTP GETによる公開確認(未公開なら`pollIntervalMs`待って再試行、`timeoutMs`で打ち切り、LINE配信APIを呼ばずに異常終了)を行ってから配信する。待機の手順・待機パラメータ一式(`pollIntervalMs`・`timeoutMs`・`requestTimeoutMs`とその根拠)・リダイレクトの扱い(3xxは追う)・時間切れ時の戻り値(最後に観測したHTTPステータスと経過時間)・複数記事同時公開時の待機時間・CDN/HTTPキャッシュの回避・試行ごとのログの責務(待機関数は`onAttempt`コールバックで呼び出し元へ渡すだけで`console`を持たず、実行ログへの出力は配信CLI側が行う)は、共有モジュール`app/lib/waitForPageAvailable.ts`の実装ごとai-dev-digestと共通のため重複記載しない。
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-8〜9
 
+</details>
+
 ### LINEブロードキャストメッセージを送信する処理
+
+組み立てた本文をLINE Messaging APIのブロードキャストエンドポイントへPOSTする。失敗してもリトライしない。〔合意〕
+
+<details><summary>詳細を開く</summary>
+
 - 対象: 組み立てたメッセージ本文
 - 手順:
   1. LINE Messaging APIのブロードキャストメッセージ送信エンドポイント(`POST https://api.line.me/v2/bot/message/broadcast`)へ、`Authorization: Bearer <チャネルアクセストークン>`ヘッダーを付けてリクエストする(友だち全員への一斉配信。requirements.md#配信タイミング・方式-7)
@@ -56,14 +90,24 @@ ai-dev-digestのline-broadcast/design.mdと同じ考え方で、独立した新�
   4. レスポンスが失敗の場合、リトライはせず、下記エラーハンドリングに従う
 - 関連するビジネスルール: requirements.md#配信タイミング・方式-7、requirements.md#無料枠と配信失敗時の扱い-3〜5
 
+</details>
+
 ## エラーハンドリング
+
+公開待ちタイムアウト・パース失敗・LINE API失敗のいずれも配信を行わず、リトライせず実行ログに記録する。〔合意〕
+
+<details><summary>詳細を開く</summary>
 
 - 既定の待機時間(`timeoutMs`)内に記事ページの公開を確認できなかった場合、配信を行わずワークフローのステップを異常終了させる(requirements.md#配信タイミング・方式-9)。「開けないリンクを送ってしまう」ことの方が「その回の配信が飛ぶ」ことより読者への影響が大きいと判断したため、公開が確認できない限り送らない側に倒す。この場合もリトライは行わず、`waitForPageAvailable`の戻り値に含まれる「最後に観測したHTTPステータス」と「経過時間(ミリ秒)」を実行ログに記録する(戻り値の形は[ai-dev-digest/line-broadcast/design.md#記事ページの公開を待つ処理](../../ai-dev-digest/line-broadcast/design.md)参照)
 - 記事データのパースに失敗した場合、配信を行わずワークフローのステップを異常終了させる
 - LINE配信APIがエラーを返した場合(無料枠超過・一時的なAPIエラーいずれも)、リトライは行わずワークフローのそのステップを失敗として終了する(requirements.md#無料枠と配信失敗時の扱い-4〜5)。このワークフローは記事公開(weekly-publishのPRマージ)が完了した後に起動する独立ワークフローのため、配信の失敗が記事公開自体に影響を及ぼす経路は存在しない
 - 配信失敗時の記録方法: 専用のGitHub Issue作成等の追加の通知手段は設けず、GitHub Actionsのワークフロー実行結果(失敗)と実行ログの内容で運営者が把握する(ai-dev-digestと同じ方針。日次・週次いずれも無料枠が少なく配信失敗の発生頻度は低いと見込まれ、追加の通知基盤を持つコストに見合わないと判断した)
 
+</details>
+
 ## 関連するファイル(抜粋)
+
+<details><summary>詳細を開く</summary>
 
 ```
 .github/workflows/news-digest-line-broadcast.yml (新規: mainへのpush(content/news-digest/articles/*.jsonの新規追加)をトリガーに配信を実行するワークフロー)
@@ -76,7 +120,13 @@ app/news-digest/lib/articleSchema.ts (既存: parseArticleを利用)
 content/news-digest/articles/<date>.json (既存: 配信内容の元データ)
 ```
 
+</details>
+
 ## セキュリティ
+
+チャネルアクセストークンはai-dev-digestと共有のActions Secretsを参照する。配信本文は記事データのみから組み立てる。公開確認のGETに認証情報は付けない。〔合意〕
+
+<details><summary>詳細を開く</summary>
 
 - チャネルアクセストークン(`LINE_CHANNEL_ACCESS_TOKEN`)はai-dev-digestが既に保存済みのActions Secretsをそのまま参照する(trend-digestの配信とも共有している)。news-digest専用の新しいトークンは発行しない(requirements.mdビジネスルール[1]〜[2])
 - このワークフローはGitHubへの書き込みを一切行わないため、書き込み用PAT(`NEWS_DIGEST_GH_PAT`)は使わない。リポジトリのチェックアウトにはワークフロー既定の読み取り専用`GITHUB_TOKEN`を使う
@@ -84,8 +134,16 @@ content/news-digest/articles/<date>.json (既存: 配信内容の元データ)
 - 配信は友だち全員への一斉配信(ブロードキャスト)のみを行い、個々の友だちを識別・追跡する情報を扱わない
 - 公開確認のGET(`app/lib/waitForPageAvailable.ts`)は認証情報を一切付けない(LINE APIへのリクエストとヘッダーを共有しない)
 
+</details>
+
 ## ログ
+
+対象日付・配信結果をワークフロー実行ログに記録する。チャネルアクセストークンは一切出力しない。〔合意〕
+
+<details><summary>詳細を開く</summary>
 
 - ワークフロー実行ごとに、対象日付・配信対象トピック数・LINE APIへのリクエスト結果(成功/失敗)をGitHub Actionsのワークフロー実行ログに記録する
 - 配信に失敗した場合は、HTTPステータス・エラーレスポンス概要も合わせて記録する
 - リクエストヘッダー(`Authorization: Bearer <チャネルアクセストークン>`)はいかなる場合もログに出力しない
+
+</details>
