@@ -18,6 +18,7 @@
 |---|---|---|---|---|---|
 | 通知ロジックの実装言語 | TypeScript(純粋関数+CLI)、vitestでテスト | ワークフローYAML内で直接判定 | 時刻照合・グループ分けの分岐をCIで決定的に検証したい | 関連するファイル | **🟡〔提案〕** |
 | コードの配置 | `app/lib/digestFailureNotification/`・`scripts/digest-failure-notification/` | `app/digest-failure-notification/lib/`(アプリ扱い) | CLAUDE.mdの「サイト全体に関わるものは`app/`直下」規約に従う(5アプリ共通の監視のため特定アプリの配下ではない) | 関連するファイル | **🟡〔提案〕** |
+| 仕様書フォルダの配置 | `specs/digest-failure-notification/`(`specs/`直下) | `specs/<いずれか1アプリ名>/digest-failure-notification/`(通常の階層規約) | 5アプリ共通でどの単一アプリにも属さない運用監視機能であり、CLAUDE.mdの「サイト全体に関わるもの(ルーティング・共通レイアウト・法的ページ)は`specs/`直下」規約に準じる判断とした | フォルダ構成 | **🟡〔提案〕** |
 
 </details>
 
@@ -54,6 +55,8 @@ sequenceDiagram
 
 ### 再実行完了を判定する処理
 
+研究発見・週刊未来予測の失敗が、自動再実行(最大3回)を使い切った最後の回の失敗かどうかを時刻照合で判定する。**🟡〔提案〕**
+
 <details><summary>詳細を開く</summary>
 
 研究発見・週刊未来予測は本番cron失敗後に12時間後・24時間後・36時間後の最大3回まで自動再実行するため、どの回の失敗かを判定する。
@@ -69,6 +72,8 @@ sequenceDiagram
 
 ### 通知メッセージを組み立てて送信する処理
 
+通知対象と判定された失敗イベントの情報から通知文を組み立て、LINE Messaging APIでpush送信する。**🟡〔提案〕**
+
 <details><summary>詳細を開く</summary>
 
 - 対象: 通知対象と判定された失敗イベント
@@ -83,7 +88,7 @@ sequenceDiagram
 
 ## エラーハンドリング
 
-LINE API呼び出し失敗時はリトライせずステップを失敗させる。**🟡〔提案〕**
+LINE API呼び出し失敗時はリトライせずステップを失敗させる。失敗が短期間に繰り返しても通知の抑制は行わない(失敗頻度が低い前提のため。頻発するようになった場合は見直す)。**🟡〔提案〕**
 
 <details><summary>詳細を開く</summary>
 

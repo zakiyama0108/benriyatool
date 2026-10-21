@@ -8,7 +8,7 @@
 - 主要なルール: 自動再実行の仕組みがないワークフローは失敗時点で即時通知する。研究・未来予測は自動再実行(最大3回)を使い切ってなお失敗した場合のみ通知する〔合意〕
 - 通知手段: 新規チャネルは作らず、5アプリのLINE記事配信が既に使う共通LINE公式アカウントから、運営者個人へLINEのpushメッセージ(1:1)で送る〔合意〕
 - スコープ外: 月次見直し・LINE配信・deploy/ci等の失敗通知、LINE以外のチャネルの追加〔合意〕
-- 全体像は[ユースケース図](#ユースケース図)を参照
+- 全体像は[ユースケース図](#ユースケース図)を参照〔合意〕
 
 ## 概要
 
@@ -80,7 +80,7 @@ LINE Messaging API(既存の共通チャネル)は利用できる。運営者個
 
 <details><summary>詳細を開く</summary>
 
-- LINE Messaging API: 既存の共通LINE公式アカウント・チャネルアクセストークン(`LINE_CHANNEL_ACCESS_TOKEN`)が発行済みのため利用できる。参照: [ai-dev-digest/line-broadcast/requirements.md](../ai-dev-digest/line-broadcast/requirements.md)
+- LINE Messaging API: 既存の共通LINE公式アカウント・チャネルアクセストークン(`LINE_CHANNEL_ACCESS_TOKEN`)が発行済みのため利用できる。参照: [ai-dev-digest/line-broadcast/requirements.md#アカウント・配信主体](../ai-dev-digest/line-broadcast/requirements.md#アカウント・配信主体)
 - 運営者個人のLINE userId: 未確定。運営者(zaki)が共通LINE公式アカウントの友だち登録済みであることを前提に、userIdを特定する手動作業が必要
 
 </details>

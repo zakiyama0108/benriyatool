@@ -85,6 +85,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 
 ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
 
+weekly-publishの記事生成ワークフロー(`future-digest-weekly.yml`)の失敗をLINEで運営者に通知する機能も、5アプリ共通の[digest-failure-notification](../digest-failure-notification/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
+
 ## 9. コンポーネント図
 ```mermaid
 flowchart LR
@@ -127,7 +129,7 @@ CLAUDE.mdの一般規約(`components/`,`lib/`)どおり。trend-digestと同じ�
 |---|---|
 | Supabase(`future_digest_feedback`・`future_digest_bookmarks`テーブル) | 運営者フィードバック・読者の付箋の保存 |
 | Supabase Auth(Google OIDC) | 読者のログイン(付箋)、運営者判定(フィードバック欄の表示切り替え・INSERT権限) |
-| GitHub Actions | 週次の記事生成・月次見直し・LINE配信の実行基盤 |
+| GitHub Actions | 週次の記事生成・月次見直し・LINE配信の実行基盤。週次記事生成ワークフロー(`future-digest-weekly.yml`)の失敗は5アプリ共通の[digest-failure-notification](../digest-failure-notification/requirements.md)が監視し、LINEで運営者へ通知する |
 | McKinsey Digital Insights・MIT Technology Review・WHO Newsroom・AMED・IPCC News・環境省報道発表・NASA News Releases・JAXAプレスリリース・IISS Online Analysis・CFR Latest・経済産業省ニュースリリース・リクルートワークス研究所・国立長寿医療研究センター お知らせ | 7ジャンルの固定情報源データの取得(content-selection/requirements.md#情報源(固定リスト)) |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | WebSearchによる収集・影響度判定・重複判定・要約執筆・月次見直し案の検討、いずれもヘッドレス起動で使用 |
 | LINE Messaging API(既存の「AI駆動開発ニュース」公式アカウントに相乗り) | 新着記事の配信 |

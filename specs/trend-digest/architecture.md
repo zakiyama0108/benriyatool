@@ -129,6 +129,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 
 ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
 
+weekly-publishの記事生成ワークフロー(`trend-digest-weekly.yml`)の失敗をLINEで運営者に通知する機能も、5アプリ共通の[digest-failure-notification](../digest-failure-notification/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
+
 ## 8. コンポーネント図
 ```mermaid
 flowchart LR
@@ -182,7 +184,7 @@ content/trend-digest/criteria.json         # 採用基準・継続度/注目度�
 | Supabase Auth(Google OIDC) | 記事詳細ページのフィードバック入力欄の表示切り替え(運営者判定。既存の`admin_emails`・`isAuthorizedAdmin()`を再利用) |
 | Oricon・Billboard JAPAN・Netflix公式Top10(top10.netflix.com)・トーハン週間ベストセラー・Googleトレンド急上昇ワード・Yahoo!検索急上昇ワード・WWD JAPAN・ZOZOTOWN・価格.com・Engadget日本版・Steam・ファミ通.com・じゃらんnet/るるぶ&more! | 固定リストジャンルの情報源データ取得([content-selection/requirements.md](content-selection/requirements.md)) |
 | Web検索(Claude Code CLIのWebSearch) | 決まった集計元がないジャンル(開発手法・開発サービスを含む)の候補収集([content-selection/requirements.md](content-selection/requirements.md)) |
-| GitHub Actions | 記事生成([weekly-publish](weekly-publish/requirements.md))・見直し提案([source-review](source-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤 |
+| GitHub Actions | 記事生成([weekly-publish](weekly-publish/requirements.md))・見直し提案([source-review](source-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤。weekly-publishのワークフロー(`trend-digest-weekly.yml`)の失敗は5アプリ共通の[digest-failure-notification](../digest-failure-notification/requirements.md)が監視し、LINEで運営者へ通知する |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | weekly-publishの候補収集・翻訳・要約生成、source-reviewの見直し案検討に、いずれもヘッドレス起動で使用 |
 | LINE Messaging API | 新着記事のLINE公式アカウント(AI駆動開発ニュースと共用)からの配信([line-broadcast](line-broadcast/requirements.md)) |
 

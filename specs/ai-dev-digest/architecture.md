@@ -128,6 +128,8 @@ Next.jsの静的エクスポートをCloudflare Workersで配信する構成は�
 
 ジャンルごとの情報源・採用基準を運営者専用の1枚の表で表示する機能は、5アプリ共通の[blog/source-directory](../blog/source-directory/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
 
+daily-publishの記事生成ワークフロー(`ai-dev-digest-daily.yml`)の失敗をLINEで運営者に通知する機能も、5アプリ共通の[digest-failure-notification](../digest-failure-notification/requirements.md)が持つ(本アプリ単体のspecとしては持たない)。
+
 ## 8. コンポーネント図
 ```mermaid
 flowchart LR
@@ -178,7 +180,7 @@ content/ai-dev-digest/criteria.json         # 採用基準の数値(watchlist-re
 | Supabase(`ai_dev_digest_bookmarks`テーブル、2026-08追加) | ログイン中の読者本人の付箋(自由記述メモ)の保存 |
 | Supabase Auth(Google OIDC) | 記事詳細ページ・付箋一覧ページのログイン(2026-08: 運営者限定から読者全員が対象に拡大)。フィードバック入力欄の表示切り替え(運営者判定、既存admin authと同じ仕組みを流用)にも利用 |
 | YouTube公式API・各社公式RSSフィード・各社公式ブログ・Qiita公式API・Zenn公式RSS・Hugging Face公式API(2026-10追加) | 情報源データの取得([content-selection/requirements.md#データ取得方法](content-selection/requirements.md)) |
-| GitHub Actions | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む) |
+| GitHub Actions | 記事生成([daily-publish](daily-publish/requirements.md))・見直し提案([watchlist-review](watchlist-review/requirements.md))・LINE配信([line-broadcast](line-broadcast/requirements.md))の実行基盤(スケジュール実行・pushトリガーいずれも含む)。daily-publishのワークフロー(`ai-dev-digest-daily.yml`)の失敗は5アプリ共通の[digest-failure-notification](../digest-failure-notification/requirements.md)が監視し、LINEで運営者へ通知する |
 | Claude Code CLI(運営者個人のPro/Maxサブスクリプション認証) | daily-publishの翻訳・要約生成、watchlist-reviewの見直し案検討に、いずれもヘッドレス起動で使用(2026-08第2次改定。当初はAnthropic APIの従量課金呼び出しだったが、サブスクリプション利用枠内で完結させるため変更) |
 | LINE Messaging API | 新着記事のLINE公式アカウントからの一斉配信([line-broadcast](line-broadcast/requirements.md)) |
 
