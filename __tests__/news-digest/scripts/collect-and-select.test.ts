@@ -26,8 +26,8 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-// 仕様: specs/news-digest/content-selection/tasks.md Task11(2026-10-20の週次実行でspawn E2BIGにより
-// 総合・経済/ビジネスが候補0件になったバグの修正)
+// 仕様: specs/news-digest/content-selection/design.md「候補をグループ化し採用基準を判定する処理」「エラーハンドリング」
+// (2026-10-20の週次実行でspawn E2BIGにより総合・経済/ビジネスが候補0件になったバグの修正)
 describe('Claude Code CLI呼び出し - プロンプトをCLI引数ではなく標準入力(stdin)経由で渡すこと', () => {
   it('プロンプトがexecFileのCLI引数に含まれず、stdin.end()で渡されること(候補数が多いカテゴリでのspawn E2BIG再発防止)', () => {
     const fakeChild = createFakeChild()
@@ -65,12 +65,13 @@ describe('Claude Code CLI呼び出し - プロンプトをCLI引数ではなく�
     await expect(callClaudeCode('prompt')).resolves.toBe('')
   })
 
-  it('CLIプロセスは異常終了したがerror.stdoutが有効なJSONの場合、resultを返すこと', async () => {
+  it('CLIプロセスが非ゼロ終了したがコールバック第2引数のstdoutが有効なJSONの場合、resultを返すこと', async () => {
+    // execFile(node:child_process)は、プロセスが非ゼロ終了してもコールバック第2引数stdoutに
+    // 標準出力をそのまま渡す(errorオブジェクトにstdoutは設定されない。実機で確認済み)
     execFileMock.mockImplementation((..._args: unknown[]) => {
       const callback = _args[_args.length - 1] as ExecFileCallback
-      const error = new Error('command failed') as Error & { stdout?: string }
-      error.stdout = JSON.stringify({ result: '復旧' })
-      callback(error)
+      const error = new Error('command failed')
+      callback(error, JSON.stringify({ result: '復旧' }))
       return createFakeChild()
     })
 

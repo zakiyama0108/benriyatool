@@ -73,9 +73,12 @@ export function callClaudeCode(prompt: string): Promise<string> {
       ['-p', '--output-format', 'json', '--dangerously-skip-permissions'],
       { maxBuffer: 1024 * 1024 * 32 },
       (error, stdout) => {
-        const raw = error ? (error.stdout ?? '') : stdout
+        // execFileはプロセスが非ゼロ終了してもコールバック第2引数stdoutに標準出力をそのまま渡す
+        // (errorオブジェクトにstdoutは設定されない。util.promisify(execFile)との違いに注意)。
+        // 非ゼロ終了でも有効なJSONを出力していたケースを救済するため、errorの有無に関わらず
+        // 第2引数stdoutを使う。errorはログ用途にのみ使う
         try {
-          const parsed = JSON.parse(raw) as { result?: string }
+          const parsed = JSON.parse(stdout ?? '') as { result?: string }
           resolve(parsed.result ?? '')
         } catch {
           console.error(`Claude Code CLIの起動に失敗しました: ${error ? error.message : 'stdoutがJSONとして解釈できません'}`)
