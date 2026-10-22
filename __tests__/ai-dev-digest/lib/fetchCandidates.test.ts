@@ -306,6 +306,14 @@ describe('Qiitaからの候補収集 - 公開日時が対象期間内の記事�
     expect(candidates.map((c) => c.heading)).not.toContain('期間外の記事')
     expect(candidates).toHaveLength(99)
   })
+})
+
+// 仕様: specs/ai-dev-digest/article-detail/design.md「バリデーション」(sourceNameが空文字でないこと)。
+// Qiita APIは投稿者がQiita上で表示名を未設定の場合user.nameを空文字で返すため、取得時点で
+// フォールバックしておかないと後段のバリデーション(articleSchema.ts)で記事公開全体が失敗する
+// (2026-10-21実際の障害)
+describe('Qiitaからの候補収集 - 投稿者の表示名が空の場合もsourceNameが空文字にならないこと', () => {
+  const now = new Date('2026-08-30T00:00:00Z')
 
   it('投稿者がQiita上で表示名を未設定(user.nameが空文字)の場合、sourceNameが"Qiita"にフォールバックすること', async () => {
     const http = makeHttp({
