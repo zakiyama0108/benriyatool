@@ -306,6 +306,23 @@ describe('Qiitaからの候補収集 - 公開日時が対象期間内の記事�
     expect(candidates.map((c) => c.heading)).not.toContain('期間外の記事')
     expect(candidates).toHaveLength(99)
   })
+
+  it('投稿者がQiita上で表示名を未設定(user.nameが空文字)の場合、sourceNameが"Qiita"にフォールバックすること', async () => {
+    const http = makeHttp({
+      fetchJson: vi.fn().mockResolvedValue([
+        {
+          title: '表示名未設定ユーザーの記事',
+          url: 'https://qiita.com/example/items/noname',
+          likes_count: 10,
+          created_at: '2026-08-20T00:00:00+09:00',
+          user: { name: '' },
+        },
+      ]),
+    })
+
+    const candidates = await fetchQiitaCandidates(http, criteria, now)
+    expect(candidates[0].sourceName).toBe('Qiita')
+  })
 })
 
 // 仕様: specs/ai-dev-digest/content-selection/requirements.md#データ取得方法-1、specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-8
