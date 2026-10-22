@@ -241,7 +241,7 @@ export async function fetchQiitaCandidates(
       candidates.push({
         sourceId: 'qiita',
         // Qiita APIはユーザーが表示名未設定の場合user.nameを空文字で返すため、
-        // undefined/nullのみフォールバックする`??`では空文字がそのまま素通りしてしまう(2026-10-22実障害)
+        // undefined/nullのみフォールバックする`??`では空文字がそのまま素通りしてしまう(2026-10-21実障害)
         sourceName: item.user?.name || 'Qiita',
         sourceType: 'qiita',
         heading: item.title,
