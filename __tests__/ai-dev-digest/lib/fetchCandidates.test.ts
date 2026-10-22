@@ -308,6 +308,31 @@ describe('Qiitaからの候補収集 - 公開日時が対象期間内の記事�
   })
 })
 
+// 仕様: specs/ai-dev-digest/article-detail/design.md「バリデーション」(sourceNameが空文字でないこと)。
+// Qiita APIは投稿者がQiita上で表示名を未設定の場合user.nameを空文字で返すため、取得時点で
+// フォールバックしておかないと後段のバリデーション(articleSchema.ts)で記事公開全体が失敗する
+// (2026-10-21実際の障害)
+describe('Qiitaからの候補収集 - 投稿者の表示名が空の場合もsourceNameが空文字にならないこと', () => {
+  const now = new Date('2026-08-30T00:00:00Z')
+
+  it('投稿者がQiita上で表示名を未設定(user.nameが空文字)の場合、sourceNameが"Qiita"にフォールバックすること', async () => {
+    const http = makeHttp({
+      fetchJson: vi.fn().mockResolvedValue([
+        {
+          title: '表示名未設定ユーザーの記事',
+          url: 'https://qiita.com/example/items/noname',
+          likes_count: 10,
+          created_at: '2026-08-20T00:00:00+09:00',
+          user: { name: '' },
+        },
+      ]),
+    })
+
+    const candidates = await fetchQiitaCandidates(http, criteria, now)
+    expect(candidates[0].sourceName).toBe('Qiita')
+  })
+})
+
 // 仕様: specs/ai-dev-digest/content-selection/requirements.md#データ取得方法-1、specs/ai-dev-digest/content-selection/requirements.md#採用基準(種別ごとの定量判定)-8
 describe('Zennからの候補収集 - RSSで新着を検知し公開ページのいいね数表示値を読み取る', () => {
   const zennFeed = `<?xml version="1.0"?>
