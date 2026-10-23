@@ -33,6 +33,7 @@ import { judgeDurationLabel } from '../../app/trend-digest/lib/judgeDurationLabe
 import { judgeHeatLabel, buildGenreHeatStats } from '../../app/trend-digest/lib/judgeHeatLabel'
 import { collectPublishRecords, lookupPublishRecord } from '../../app/trend-digest/lib/publishRecords'
 import { buildHistoryLogLines } from '../../app/trend-digest/lib/historyLog'
+import { toJstDateString } from '../../app/trend-digest/lib/jstDate'
 import watchlistData from '../../content/trend-digest/watchlist.json'
 import criteriaData from '../../content/trend-digest/criteria.json'
 
@@ -164,7 +165,8 @@ async function main() {
     console.error(`WARN 対象edition(${edition})の全ジャンルで情報源から観測項目を1件も取得できませんでした`)
   }
 
-  const date = new Date().toISOString().slice(0, 10)
+  // 記事ファイルと同じJSTの実行日にする(UTCだとcron起動時刻では前日になる。jstDate.ts参照)
+  const date = toJstDateString(new Date())
 
   // その回の観測(採用基準の判定前の全件)を履歴ログへ書き出す(trend-history/design.md「その回の観測を
   // 履歴に記録する処理」)。書き出しに失敗した場合はここで例外が投げられ、記事を生成せず週次実行を
