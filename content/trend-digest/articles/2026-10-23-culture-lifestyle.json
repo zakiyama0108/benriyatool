@@ -1,0 +1,361 @@
+{
+  "id": "2026-10-23-culture-lifestyle",
+  "edition": "culture-lifestyle",
+  "date": "2026-10-23",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "sns-buzz",
+      "heading": "Yahoo!リアルタイム検索で「大型で非常に」が急上昇、語句が途中で切れており話題の中身は未確定",
+      "sections": {
+        "fact": {
+          "heading": "検索ワード「大型で非常に」の注目度は高いが、観測はまだ初日",
+          "text": "Yahoo!リアルタイム検索のトレンドで、「大型で非常に」という語句が上位に現れた。注目度は「高い」と判定されている。一方で報告は今回が1回目、継続日数は0日で、継続度は「流行前」の段階にある。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "気象情報の定型表現が切れた形で、台風報道との関連が考えられるが背景は特定できなかった",
+          "text": "「大型で非常に(強い)」は、台風の勢力を伝える気象情報でよく使われる言い回しに似ている。そのため台風関連の投稿が語句の一部で拾われた可能性はある。ただし元ページと追加調査では、この語句を直接説明する記事や投稿は確認できなかった。今回の急上昇の背景は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "台風との関連は推測にとどまり、今後の継続も見通せない",
+          "text": "台風との結び付けはあくまで推測で、実際の話題は別の内容かもしれない。語句が途中で切れているため、検索の意図も断定できない。流行前の段階で、盛り上がりが続くかどうかは分からない。詳しくは気象庁や報道機関の最新情報を確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "大型で非常に",
+      "sourceName": "Yahoo!リアルタイム検索",
+      "sourceUrl": "https://search.yahoo.co.jp/realtime",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-2",
+      "genre": "buzzwords",
+      "heading": "9月分の消費者物価指数の公表を受け、検索が急上昇",
+      "sections": {
+        "fact": {
+          "heading": "日本の急上昇ワードに登場し、検索数の目安は100件以上",
+          "text": "Googleトレンドの日本向け急上昇に登場し、検索数の目安は100件以上。継続度は「流行前」で継続日数は0日、今回が初めての掲載となる。注目度は高いと判定されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "物価の最新統計が公表され、生活への影響を確かめる人が増えたとみられる",
+          "text": "9月分の全国の消費者物価指数が公表され、生鮮食品を除く総合が前年同月比で2%を上回ったと、複数の報道機関が速報した。物価の動きは家計や金融政策の見通しに直結するため、公表直後に内容を調べる人が増えたとみられる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[9月分の統計を公表] --> B[報道機関が速報]\n  B --> C[家計や金融政策への関心]\n  C --> D[検索が急上昇]"
+          }
+        },
+        "caveat": {
+          "heading": "背景は報道見出しからの推測を含み、今後の継続は見通せない",
+          "text": "注目の理由は関連ニュースの見出しからの推測を含む。急上昇が始まったばかりの段階で、話題が今後も続くかは見通せない。正確な数値や内訳は、総務省統計局などの一次情報で確認したい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "消費者物価指数",
+      "sourceName": "Google公式トレンドRSS(日本)",
+      "sourceUrl": "https://trends.google.com/trending/rss?geo=JP",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-3",
+      "genre": "gourmet",
+      "heading": "macaroniが予測する来年のグルメ流行、ホットドッグ再注目とヌメ活が候補に",
+      "sections": {
+        "fact": {
+          "heading": "検索の急増ではなく、メディアの予測記事が話題の起点",
+          "text": "今回の候補は、グルメメディアmacaroniが公開した「2026年トレンドグルメ」の予測記事です。継続度は「流行前」、注目度は低く、継続日数は0日で、報告は今回が1回目です。主な流行地域は日本としています。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "手軽さとアレンジのしやすさ、健康志向が理由に挙がっている",
+          "text": "macaroniは、食べ歩きしやすく具材を自由に変えられるホットドッグと、海藻などぬめりのある食材に注目する「ヌメ活」を、次に来る流行の候補として挙げています。キッチンカーの定着がホットドッグ再注目の追い風になる、という見立てです。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "あくまで予測で、実際に広がるかはこれから",
+          "text": "これは編集側の予測で、すでに広く流行している状況を示すものではありません。元ページは取得できなかったため、検索で確認できた範囲での紹介です。今後どこまで定着するかは見通せません。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "macaroni予測の2026年トレンドグルメ(ホットドッグ再注目・ヌメ活など)",
+      "sourceName": "macaroni(PR TIMES配信)",
+      "sourceUrl": "https://webtan.impress.co.jp/r/prtimes/items/000000115.000005511",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": [
+          "日本"
+        ]
+      }
+    },
+    {
+      "id": "topic-4",
+      "genre": "hobby",
+      "heading": "setlog、手元の映像を編集して楽しむ投稿形式としてSNSで話題に",
+      "sections": {
+        "fact": {
+          "heading": "いまは「流行前」で、注目度はまだ低い段階",
+          "text": "今回が初めての掲載で、継続度ラベルは「流行前」、注目度は低め、継続日数は0日。現在の主な流行地域は日本。まだ小さな動きの段階にある。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "真似するだけの流行から、編集して自分らしく仕立てる流行へ",
+          "text": "出典の資料は、誰かの型をなぞるだけの消費より、手元の映像に編集を加えて創作する体験への関心が高まると見ている。setlogは、短尺のVlog形式の一つとしてその流れの中で名前が挙がっている。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "資料の見立てを含み、今後が続くかはまだ読めない",
+          "text": "背景の説明は資料の見方に基づく部分があり、「編集型ミーム」という括りも整理上の表現。流行前の段階のため、定着するかは見通せない。詳しくは出典の一次資料を参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "setlog(編集型ミームとしてSNSで広がる投稿形式)",
+      "sourceName": "博報堂(2026年上半期SNSトレンド資料)",
+      "sourceUrl": "https://www.tbwahakuhodo.co.jp/uploads/2026/06/260605_news_65dB_trend.pdf",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": [
+          "日本"
+        ]
+      }
+    },
+    {
+      "id": "topic-5",
+      "genre": "fashion",
+      "heading": "2026-27年秋冬はクラシック&エレガンスのトラッド回帰が静かに始動",
+      "sections": {
+        "fact": {
+          "heading": "まだ流行前、注目度は低い段階で初めて観測された",
+          "text": "WWDJAPANの秋冬リアルトレンド特集で取り上げられた話題で、継続度は流行前、注目度は低い、継続日数は0日。今回が1回目の掲載で、主な流行地域は日本・フランス・イタリア・アメリカ・イギリス、発祥地域は不明とされている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "長い夏の中で、素材や色で秋らしさを先取りする動きが背景",
+          "text": "記事からは、クラシックとエレガンスを軸に、端正なジャケットを主役にしたトラッドへ各ブランドが寄っていることが読み取れる。背景として触れられているのは残暑が長引く「長い夏」で、季節の端境期に秋の気分をスエードやレザー、ブラウンやグレーといった素材・色で先に見せる必要があるという事情。「愛着」ムードや手仕事感のニット、学生服由来のアイテムについては、確認できた範囲では背景を特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景の一部は読み取りによる推測で、継続は見通せない",
+          "text": "背景の説明には記事から読み取った推測を含み、「愛着」ムードなどの要素は本文で確認できていない。流行前で注目度も低い段階のため、今後どこまで広がり続くかは見通せない。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "2026-27年秋冬のクラシック&エレガンス/トラッド回帰と「愛着」ムード(手仕事感のあるニット、学生服由来のブレザー・シャツ・ネクタイ)",
+      "sourceName": "WWDJAPAN",
+      "sourceUrl": "https://www.wwdjapan.com/articles/2432267",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": [
+          "日本",
+          "フランス",
+          "イタリア",
+          "アメリカ",
+          "イギリス"
+        ]
+      }
+    },
+    {
+      "id": "topic-6",
+      "genre": "gadgets",
+      "heading": "象印の圧力IH炊飯ジャー「豪熱大火力 NW-YD10」が価格.com家電ランキングで1位に",
+      "sections": {
+        "fact": {
+          "heading": "週間の家電ランキングで総合1位、今回が初の報告",
+          "text": "価格.comの家電カテゴリ週間ランキング(10月15日〜21日)で総合1位に入った。継続度は「流行前」、継続日数は0日で、今回が1回目の報告となる。注目度は「高い」と判定されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "大火力で炊く新型炊飯器が関心を集めた可能性",
+          "text": "NW-YD10は象印の圧力IH炊飯ジャーで、2026年7月に発売された。沸とうを保つ工程で大火力をかけ、激しい対流を起こす「豪熱大火力」を特長とする。新米の季節に炊飯器を見直す人の関心を集めたのかもしれないが、1位になった決定的な理由は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の継続は見通せない",
+          "text": "新米シーズンの需要という見方は推測で、1位の背景を直接示す情報は確認できていない。継続度は「流行前」で、1週間の順位だけでは人気が続くかどうかは判断できない。詳細は価格.comなど一次情報を参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "豪熱大火力 NW-YD10",
+      "sourceName": "価格.com家電カテゴリランキング",
+      "sourceUrl": "https://kakaku.com/ranking/kaden/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-7",
+      "genre": "games",
+      "heading": "Dota 2がSteamの同時プレイヤー数ランキングで2位を維持し、注目され始めている",
+      "sections": {
+        "fact": {
+          "heading": "Steamの人気ランキングで2位、注目度は高い",
+          "text": "Steamの同時プレイヤー数ランキングで2位、ピークは約90万人規模で、先週も同順位でした。継続日数は14日で、継続度は「注目され始め」、注目度は「高い」と判定されています。今回が初めての掲載です。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "今週の背景は特定できなかった",
+          "text": "追加調査でも、10月時点の大型パッチや大会といった、今回の動きの直接の要因と言える材料は確認できませんでした。参考までに、9月上旬に秋のイベント更新があり12月初旬まで続く予定ですが、今回の動きとの関係は不明で、背景は特定できなかったと言うのが正確です。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "高水準の維持である可能性があり、今後は見通せない",
+          "text": "元データはプレイヤー数の集計で、話題になった理由までは示していません。順位は先週と同じため、急上昇というより高い水準が続いている可能性もあります。注目され始めの段階なので、この勢いがさらに続くかはまだ見通せません。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "Dota 2",
+      "sourceName": "Steam公式Web API(プレイヤー数)",
+      "sourceUrl": "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 14,
+        "continuationStartDate": "2026-10-09",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-8",
+      "genre": "travel",
+      "heading": "寝台列車「サンライズ瀬戸・出雲」のガイド記事が注目度「高い」で急上昇",
+      "sections": {
+        "fact": {
+          "heading": "注目度は高く、急上昇から14日が経過",
+          "text": "じゃらんnetの人気ランキングで注目度は「高い」と判定された。継続度は「注目され始め」の段階で、急上昇として観測されてから14日がたっている。今回が初めての掲載となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "話題の中心は料金や乗り方をまとめた案内記事だが、急上昇のきっかけは特定できなかった",
+          "text": "話題になっているのは、東京と四国・山陰を結ぶ寝台列車「サンライズ瀬戸・出雲」について、きっぷの料金や乗り方を解説した記事だ。ただし、確認できた元ページは記事一覧だった。そのため本文は読めず、記事の日付は2026年2月と表示されていた。追加調査でも、運行変更などの目立つニュースは見つからなかった。今週急上昇した直接の背景は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は未特定で、今後も続くかは見通せない",
+          "text": "背景を特定できていないため、旅行シーズンの影響などの理由は推測で断定しない。継続度は「注目され始め」で、話題がこのまま続くかはまだ見通せない。発祥地域も現在の主な流行地域も不明で、地域ごとの広がりは判断できない。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "いつか乗りたい寝台列車！「サンライズ瀬戸・出雲」きっぷ料金や乗り方など徹底ガイド",
+      "sourceName": "じゃらんnet人気ランキング",
+      "sourceUrl": "https://www.jalan.net/news/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 14,
+        "continuationStartDate": "2026-10-09",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-9",
+      "genre": "economy-money",
+      "heading": "ジニーメイMBSのETF「2649」が出来高増加率ランキングで1位に急浮上",
+      "sections": {
+        "fact": {
+          "heading": "全市場の出来高増加率ランキングで首位に入った",
+          "text": "Yahoo!ファイナンスの出来高増加率ランキングで、全市場の中で1位になった。この日の出来高は5万株超で、前日のごく少量の取引から急増している。継続日数は0日で、今回が初めての掲載となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "背景となる材料は特定できず、前日の出来高の小ささが効いた可能性",
+          "text": "追加で調べても、この急増に結びつく材料や報道は特定できなかった。ただ、このETFは普段の売買がごく薄く、前日の出来高は10株程度だった。基準が小さいと、少し取引が増えただけでも増加率は極端に大きくなる。上位に入った一因は、実需の高まりよりも基準値の小ささにある可能性がある。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は推測を含み、今後の継続も見通せない",
+          "text": "上記の理由は推測を含み、確定したものではない。継続度は流行前で、注目が続くかは今のところ見通せない。注目度ラベルは高いが、増加率の大きさが話題性の強さをそのまま表すとは限らない。投資判断をする場合は、運用会社や取引所の一次情報で確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "iシェアーズ 米国政府系機関ジニーメイMBS(H有)",
+      "sourceName": "Yahoo!ファイナンス出来高増加率ランキング",
+      "sourceUrl": "https://finance.yahoo.co.jp/stocks/ranking/volumeIncrease?market=all",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-10",
+      "genre": "dev-trends",
+      "heading": "Qiitaの人気記事に「ドパ資料」の作り方が登場、背景は特定できず",
+      "sections": {
+        "fact": {
+          "heading": "Qiita人気記事フィードに並び、注目度は高いと判定された",
+          "text": "Qiitaの人気記事フィードに載った話題で、報告は今回が1回目。継続日数は0日、継続度は「流行前」、注目度は「高い」と判定されている。記事の投稿は2026年10月21日で、地域は不明。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "「ドーパミンが出る資料」という切り口が目を引いた可能性がある",
+          "text": "記事は書き手が読者に砕けた口調で呼びかけ、ドーパミンが出るような資料の作り方を扱うと紹介している。仕様書や発表資料のような、ふだん地味になりがちな作業に刺激的な言葉を当てている。ただし、読まれた具体的な理由や、反応が広がった経緯は調べても特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は推測を含み、今後の継続も見通せない",
+          "text": "確認できたのは記事の冒頭部分だけで、具体的な作成手順や内容は把握できていない。注目された理由の見立ては推測にとどまる。継続度は「流行前」で、一過性か広がるかはまだ判断できない。詳細は元記事を参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "「ドパ資料」の作り方",
+      "sourceName": "Qiita人気記事フィード",
+      "sourceUrl": "https://qiita.com/popular-items/feed",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    }
+  ],
+  "unavailableGenres": []
+}
