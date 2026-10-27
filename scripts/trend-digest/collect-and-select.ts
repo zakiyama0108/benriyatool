@@ -33,6 +33,7 @@ import { judgeDurationLabel } from '../../app/trend-digest/lib/judgeDurationLabe
 import { judgeHeatLabel, buildGenreHeatStats } from '../../app/trend-digest/lib/judgeHeatLabel'
 import { collectPublishRecords, lookupPublishRecord } from '../../app/trend-digest/lib/publishRecords'
 import { buildHistoryLogLines } from '../../app/trend-digest/lib/historyLog'
+import { toJstDateString } from '../../app/trend-digest/lib/jstDate'
 import watchlistData from '../../content/trend-digest/watchlist.json'
 import criteriaData from '../../content/trend-digest/criteria.json'
 
@@ -114,8 +115,13 @@ export async function collectGenreObservations(
 
 async function main() {
   const edition = process.argv[2] as Edition
-  if (edition !== 'entertainment' && edition !== 'culture-lifestyle') {
-    console.error('使い方: collect-and-select.ts <entertainment|culture-lifestyle>')
+  // 実行日はワークフローが記事ID(<date>-<edition>)の算出に使ったJST日付を受け取る。スクリプト側で
+  // 改めて時刻から求めると、ワークフローの算出時点との間に日付が変わった場合に記事と観測ログの
+  // ファイル名が食い違うため(research-digest・future-digestと同じ渡し方)。省略時(ローカル実行)は
+  // 現在時刻のJST日付を使う
+  const dateArg = process.argv[3]
+  if ((edition !== 'entertainment' && edition !== 'culture-lifestyle') || (dateArg !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(dateArg))) {
+    console.error('使い方: collect-and-select.ts <entertainment|culture-lifestyle> [実行日 YYYY-MM-DD]')
     process.exit(1)
   }
 
@@ -164,7 +170,8 @@ async function main() {
     console.error(`WARN 対象edition(${edition})の全ジャンルで情報源から観測項目を1件も取得できませんでした`)
   }
 
-  const date = new Date().toISOString().slice(0, 10)
+  // 記事ファイルと同じJSTの実行日にする(UTCだとcron起動時刻では前日になる。jstDate.ts参照)
+  const date = dateArg ?? toJstDateString(new Date())
 
   // その回の観測(採用基準の判定前の全件)を履歴ログへ書き出す(trend-history/design.md「その回の観測を
   // 履歴に記録する処理」)。書き出しに失敗した場合はここで例外が投げられ、記事を生成せず週次実行を
