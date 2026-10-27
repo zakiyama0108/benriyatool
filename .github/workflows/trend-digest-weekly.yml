@@ -90,9 +90,11 @@ jobs:
       # collect-and-select.tsは対象editionの全観測項目をcontent/trend-digest/history/<id>.jsonへ
       # 書き出したうえで選定結果(SelectionResult)を標準出力する(trend-history/design.md「処理フロー」)。
       # このステップ自体が失敗した場合(観測ログの書き出し前の中断等)は観測ログが残らず、
-      # ジョブはそのまま失敗する(design.md「エラーハンドリング」。その週は欠測として扱われる)
+      # ジョブはそのまま失敗する(design.md「エラーハンドリング」。その週は欠測として扱われる)。
+      # 観測ログのファイル名を記事IDと必ず一致させるため、実行日(JST)はスクリプト側で求め直さず
+      # このワークフローで算出した値を渡す(UTC日付で書き出され1日ずれて公開に失敗した障害の再発防止)
       - name: 候補収集・採用基準判定(content-selection)
-        run: npx tsx scripts/trend-digest/collect-and-select.ts "${{ steps.edition.outputs.value }}" > /tmp/selection.json
+        run: npx tsx scripts/trend-digest/collect-and-select.ts "${{ steps.edition.outputs.value }}" "${{ steps.date.outputs.value }}" > /tmp/selection.json
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
