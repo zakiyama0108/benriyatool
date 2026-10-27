@@ -1,0 +1,291 @@
+{
+  "id": "2026-10-27-entertainment",
+  "edition": "entertainment",
+  "date": "2026-10-27",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "music",
+      "heading": "Vaundy「しわあわせ」がSpotify Japanデイリーチャートで首位に",
+      "sections": {
+        "fact": {
+          "heading": "Spotify Japanのデイリーチャートで首位に位置している",
+          "text": "Spotify Japanデイリーチャートで1位に位置していることが確認できた。前日から再生数も伸びている。継続度ラベルは「流行前」、継続日数は0日で、今回が1回目の報告。注目度は「高い」と判定されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "注目された背景は特定できなかった",
+          "text": "チャートからは、首位を保ちつつ再生数が前日より増えていることまでは読み取れる。しかし、新曲の公開やタイアップ、SNSでの拡散など、なぜ今聴かれているのかを示す情報は確認できなかった。背景は特定できなかったため、推測での断定は避ける。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は不明で、継続するかも見通せない",
+          "text": "背景が分からないため、人気の理由を断定することはできない。継続度は流行前の段階にあり、今後も続くかは見通せない。発祥地域も現在の主な流行地域も不明で、根拠は単一のチャートの観測にとどまる。詳細は出典のチャートで確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "Vaundy - しわあわせ",
+      "sourceName": "kworb.net Spotify Japanデイリーチャート",
+      "sourceUrl": "https://kworb.net/spotify/country/jp_daily.html",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-2",
+      "genre": "japanese-movie",
+      "heading": "実話ベースの感動作『ママがもうこの世界にいなくても 私の命の日記』、公開4週目で週末映画ランキング1位",
+      "sections": {
+        "fact": {
+          "heading": "公開4週目でも週末ランキング首位を維持",
+          "text": "興行通信社の週末観客動員ランキング(10月23〜25日)で1位でした。公開4週目での首位で、前週から順位は変わっていません。報告は今回が初めてで、継続度は「流行前」、継続日数は0日、注目度は「高い」とされています。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "実話ベースの物語と豪華な顔ぶれが重なった",
+          "text": "原作は、バラエティ番組の密着取材でも知られた遠藤和さんの手記です。がんの宣告を受けた母が、我が子への思いを綴った実話ベースの物語を描いています。川口春奈さんが主演し、主題歌はVaundyが担当するなど話題の要素も多く、公開から週を重ねても観客を集めているとみられます。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は推測を含み、今後の継続は見通せない",
+          "text": "首位の理由を直接説明する記述は元ページにはなく、上記の背景は作品情報からの推測を含みます。また継続度は「流行前」の段階で、この勢いが今後も続くかはまだ見通せません。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "ママがもうこの世界にいなくても 私の命の日記",
+      "sourceName": "興行通信社CINEMAランキング通信(国内)",
+      "sourceUrl": "https://www.kogyotsushin.com/archives/weekend/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-3",
+      "genre": "foreign-movie",
+      "heading": "『クレイフェイス』が全米ランキングに初登場1位",
+      "sections": {
+        "fact": {
+          "heading": "公開直後の週末でいきなりの首位",
+          "text": "映画.com全米ランキングで、10月下旬の週末に初登場1位を記録した。継続日数は0日で、今回が1回目の報告となる。注目度ラベルは「注目度 高い」。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "ハロウィン期に公開されたDCのホラー作品",
+          "text": "DCユニバースのホラー作品として、ハロウィンの時期に全米公開されたことが背景にあるとみられる。日本では10月30日公開予定で、公開を前に海外での初動へ関心が集まっている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[10月23日 全米公開] --> B[初週末に全米1位]\n  B --> C[10月30日 日本公開予定]"
+          }
+        },
+        "caveat": {
+          "heading": "初動だけの情報で、流行はまだ見通せない",
+          "text": "ここでの情報は公開直後の一時点のものだ。継続度ラベルは「流行前」で、人気が続くかはまだ分からない。注目された理由の説明は、公開時期や作品の位置づけからの推測を含む。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "クレイフェイス",
+      "sourceName": "映画.com全米ランキング",
+      "sourceUrl": "https://eiga.com/ranking/us/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-4",
+      "genre": "japanese-drama",
+      "heading": "日曜劇場「VIVANT」、視聴人数ランキングのドラマ部門で1位に",
+      "sections": {
+        "fact": {
+          "heading": "ドラマ視聴人数ランキングで首位を記録",
+          "text": "ビデオリサーチのドラマ視聴人数ランキングで、10月5〜11日の集計週に1位となった。平均視聴人数は1100万人台。話題としての報告は今回が1回目で、継続度ラベルは「流行前」、継続日数は0日、注目度は「高い」と判定されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "続編が日曜劇場枠で2クール連続放送中",
+          "text": "続編は7月下旬から日曜劇場枠で2クール連続で放送されており、前作の直後から物語が再開する構成になっている。堺雅人さんら主要キャストが続投していることもあり、前作から追ってきた視聴者を引き込みやすい状況とみられる。ただし、この週に限った押し上げ要因を示す報道は確認できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の推移は見通せない",
+          "text": "上記の背景は放送状況からの推測を含み、公式発表で裏付けたものではない。継続度は「流行前」の段階で、人気が続くかはまだ見通せない。完結編の映画化といった話も噂の域を出ないため、確定情報として扱わないほうがよい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "日曜劇場・ＶＩＶＡＮＴ",
+      "sourceName": "ビデオリサーチ 視聴人数ランキング(ドラマ)",
+      "sourceUrl": "https://www.videor.co.jp/audience/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-5",
+      "genre": "foreign-drama",
+      "heading": "Netflix日本のシリーズTop10に「PoliticaLupin」が初登場",
+      "sections": {
+        "fact": {
+          "heading": "Netflix公式Top10の日本・シリーズ部門で観測された",
+          "text": "Netflix公式Top10(日本・シリーズ)のデータに「PoliticaLupin」が現れた。今回が初めての報告で、継続度は流行前、継続日数は0日。注目度は高いと判定されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "急上昇の背景は特定できなかった",
+          "text": "元データは順位などの数値が中心で、作品の内容や話題になった理由は書かれていない。追加で検索もしたが、この題名に結び付く確かな情報は見つからず、背景は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は未確認で、流行前のため先行きも見通せない",
+          "text": "背景が分からないため、なぜ注目されたのかは断定できない。現在は流行前の段階で、今後も注目が続くかは見通せない。発祥地域や主な流行地域も不明なので、詳細はNetflix公式の情報を確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "PoliticaLupin",
+      "sourceName": "Netflix公式Top10データ(シリーズ・日本)",
+      "sourceUrl": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-6",
+      "genre": "anime",
+      "heading": "TRIGGER制作の続編「サイバーパンク: エッジランナーズ2」がNetflixで配信開始、アニメ一覧の先頭に",
+      "sections": {
+        "fact": {
+          "heading": "Filmarksの話題アニメ一覧で先頭に載った",
+          "text": "Filmarksアニメの「話題のおすすめアニメ」一覧で、この作品が先頭に掲載されていた。通算の報告回数は今回が1回目。継続度は流行前で継続日数は0日、注目度は「高い」と判定されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "10月20日の世界独占配信開始が引き金とみられる",
+          "text": "シーズン2は10月20日からNetflixで世界独占配信が始まった。制作は前作と同じTRIGGERで、前作のファンの関心が配信開始に合わせて一気に集まったと考えられる。夏に配信日が発表されてから約2か月の期待が、公開直後の視聴や感想の投稿として表れた可能性もある。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[6月 2026年秋の配信を告知] --> B[8月 10月20日の配信日を発表]\n  B --> C[10月20日 Netflixで世界独占配信開始]\n  C --> D[Filmarksの話題一覧で先頭に]"
+          }
+        },
+        "caveat": {
+          "heading": "背景は配信時期からの推測で、今後の継続は未知数",
+          "text": "ここで挙げた理由は配信開始とのタイミングからの推測であり、注目が高まった直接の要因を確かめたわけではない。継続度は流行前の段階なので、話題が続くかはまだ見通せない。発祥地域や現在の主な流行地域も不明のままである。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "サイバーパンク: エッジランナーズ2",
+      "sourceName": "Filmarksアニメ 話題のおすすめアニメ",
+      "sourceUrl": "https://filmarks.com/list-anime/trend",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-7",
+      "genre": "variety",
+      "heading": "「笑点」がバラエティの視聴人数ランキングで1位に登場",
+      "sections": {
+        "fact": {
+          "heading": "直近の集計週でバラエティ1位に掲載された",
+          "text": "ビデオリサーチの視聴人数ランキング(バラエティ)で、2026年10月5日〜11日の週に「笑点」が1位に掲載されている。平均視聴人数は約800万人弱の推計で、検索数の観測では注目度は「高い」とされる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "背景は今回の調査では特定できなかった",
+          "text": "渡された情報源はランキングの数値が中心で、急に注目された理由を示す記載はなかった。日曜夕方の定番番組が上位に入るのは自然だが、それが今回の話題化の理由かどうかは確認できていない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "継続は見通せず、理由の説明は推測を含む",
+          "text": "継続度は「流行前」で継続日数は0日、今回が初回の報告である。発祥地域も現在の主な流行地域も不明で、今後も話題が続くかは判断できない。推測を含む点に注意してほしい。詳細は出典のランキングページを参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "笑点",
+      "sourceName": "ビデオリサーチ 視聴人数ランキング(バラエティ)",
+      "sourceUrl": "https://www.videor.co.jp/audience/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-8",
+      "genre": "books-comics",
+      "heading": "絵本『パンどろぼうとさすらいラーメン』がトーハン週間ベストセラーで1位に",
+      "sections": {
+        "fact": {
+          "heading": "トーハンの週間総合ランキングで首位を記録",
+          "text": "トーハンの週間ベストセラー(2026年10月20日調べ)で総合1位に入りました。報告は今回が1回目で、注目度は「高い」、継続度は「流行前」、継続日数は0日です。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "人気シリーズの最新作が9月に出て、勢いが続いたとみられる",
+          "text": "KADOKAWAが9月16日に刊行した、人気絵本「パンどろぼう」シリーズの最新作です。新キャラクターのラーメンが登場する点も話題を呼び、発売後は重版も決まったと報じられています。シリーズの固定ファンの購入が首位につながったと考えられます。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[9月16日 新作刊行] --> B[発売後に重版決定]\n B --> C[10月20日調べで総合1位]"
+          }
+        },
+        "caveat": {
+          "heading": "1位の背景は推測を含み、人気が続くかはまだ見通せない",
+          "text": "首位の理由は発売時期や報道からの推測で、購入者層などの裏付けまでは確認できていません。継続度は「流行前」の段階のため、来週以降も上位を保つかは今後の推移を見る必要があります。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "パンどろぼうとさすらいラーメン",
+      "sourceName": "トーハン週間ベストセラー",
+      "sourceUrl": "https://www.tohan.jp/bestsellers/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    }
+  ],
+  "unavailableGenres": [
+    "streaming-video"
+  ]
+}
