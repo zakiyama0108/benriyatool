@@ -1,0 +1,195 @@
+{
+  "id": "2026-10-24-science-society",
+  "edition": "science-society",
+  "date": "2026-10-24",
+  "findings": [
+    {
+      "id": "environment-climate",
+      "genre": "environment-climate",
+      "heading": "2023年の熱波で世界の約17.8万人が亡くなり、その半数強は人為的な気候変動によると推定された",
+      "sections": {
+        "finding": {
+          "heading": "熱波による死亡の半数強は気候変動が原因と推定",
+          "text": "2023年の熱波に関連する死亡は世界で推定約17.8万人にのぼった。そのうち約54%は、人間活動による気候変動に起因すると見積もられた。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "過去の気温と死亡の関係を、2023年の世界にあてはめて比べた",
+          "text": "67の国・地域の2,013地点で、過去の暑さと死亡の関係を調べた。その関係を2023年の各地にあてはめ、実際の気候と、人間活動による温暖化がなかったと仮定した気候とで死亡数を比べた。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[2,013地点の過去の気温と死亡のデータ] --> B[暑さと死亡の関係を推定]\n  B --> C[2023年の世界各地にあてはめる]\n  C --> D[実際の気候での死亡数]\n  C --> E[温暖化がない仮定での死亡数]\n  D --> F[差を気候変動の影響とみなす]\n  E --> F"
+          }
+        },
+        "relevance": {
+          "heading": "猛暑は世界中の人に関わる健康リスク",
+          "text": "熱波による死亡は一部の地域だけの話ではなく、特に南欧や東欧では人口あたりの割合が高かった。暑い時期の室温管理や体調への気配りなど、日々の暑さ対策が身近な問題だと捉え直すきっかけになる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "数字は幅のある推定で、仮定にも左右される",
+          "text": "結果は統計モデルによる推定で、気候変動の寄与も約46〜61%という幅がある。「温暖化がなかった世界」という仮定との比較なので、その置き方で値は変わりうる。ここでは要旨の範囲で確認した内容であり、詳しくは原論文を読んでほしい。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "2023年の熱波による超過死亡を67の国・地域の2,013地点で推定した研究で、約17.8万人の死亡のうち約54%が人為的な気候変動によると示した。猛暑は世界中の多くの人に関わり、暑さ対策という暮らしの行動にも直結するため影響度は大と判定した。",
+      "sourceTitle": "Global excess deaths associated with heatwaves in 2023 and the contribution of human-induced climate change",
+      "sourceName": "The Innovation",
+      "sourceUrl": "https://flore.unifi.it/handle/2158/1435977",
+      "doi": "10.1016/j.xinn.2025.101110",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "ai-it",
+      "genre": "ai-it",
+      "heading": "AIチャットボットに健康相談をしても、病気の見当や適切な行動の選択は検索などより良くならなかった",
+      "sections": {
+        "finding": {
+          "heading": "AIに相談しても判断力は上がらなかった",
+          "text": "健康の悩みをAIチャットボットに相談しても、病気の見当をつけたり取るべき行動を選んだりする力は、検索など普段の方法を使う場合より良くならなかった。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "参加者を無作為に分けて比べたから",
+          "text": "英国の1,298人を無作為に分け、10の模擬の症状シナリオについて、AIを使う人と通常の方法を使う人の判断を比べた。くじ引きのように分けたため、差を使った手段の違いとして比べやすい。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[英国の1,298人] --> B{無作為に分ける}\n  B --> C[AIチャットボットを使う]\n  B --> D[検索など通常の方法を使う]\n  C --> E[10の模擬シナリオで判断]\n  D --> E\n  E --> F[病気の特定と行動の選択を比べる]"
+          }
+        },
+        "relevance": {
+          "heading": "手軽な相談相手でも、答えを鵜呑みにしない",
+          "text": "AIに健康相談をする人は増えており、手軽な相談相手として頼る場面は身近だ。ただ、答えをそのまま判断の根拠にせず、不安が強いときは医療機関や公的な相談窓口に確認する姿勢が大切になる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "模擬シナリオでの結果で、一般化には限りがある",
+          "text": "対象は10の模擬シナリオと英国の参加者に限られ、実際に体調が悪い人が本当に困っている場面とは異なる可能性がある。AIの種類や使い方が変われば結果も変わりうるため、今回の結果を広げすぎない方がよい。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "AIチャットボットに健康相談をする人は今や非常に多く、英国の1,298人を無作為に分けた実験で、使っても病気の特定や適切な行動の選択が検索など通常の方法より良くならないと分かったため、身近で影響が広い一方、対象は10の模擬シナリオに限られるので中程度と判定した。",
+      "sourceTitle": "Reliability of LLMs as medical assistants for the general public: a randomized preregistered study",
+      "sourceName": "Nature Medicine",
+      "sourceUrl": "https://www.nature.com/articles/s41591-025-04074-y",
+      "doi": "10.1038/s41591-025-04074-y",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "economics-behavioral",
+      "genre": "economics-behavioral",
+      "heading": "月1,000ドルを3年間無条件で配ると、働く時間が週1〜2時間減り、その分は主に余暇に回った",
+      "sections": {
+        "finding": {
+          "heading": "給付を受けた人は仕事が減り、余暇が増えた",
+          "text": "低所得の人に毎月1,000ドルを3年間、条件なしで渡したところ、少額を渡された人たちに比べて働く人の割合がやや下がり、労働時間も週1〜2時間ほど減りました。空いた時間の多くは余暇に充てられ、職の質などに目立った変化はありませんでした。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[月1,000ドルを3年間無条件で給付] --> B[働く時間が週1〜2時間減る]\n B --> C[増えた時間の多くは余暇に]\n B --> D[職の質に目立った変化なし]"
+          }
+        },
+        "basis": {
+          "heading": "くじ引きで分けた大人数の比較が決め手",
+          "text": "対象者をくじ引きで大額の給付グループと少額の給付グループに分けて比べました。どちらも似た条件の人たちなので、違いは給付額によるものと考えやすくなります。アンケートに加え、公的な記録やスマホのデータも使って働き方を調べています。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "現金給付や最低所得保障の議論の材料になる",
+          "text": "お金を無条件で渡す制度が、人の働き方をどれだけ変えるのかを考える具体的な手がかりになります。給付を受けた家庭の配偶者も同じくらい働く時間を減らしており、制度を考える際は世帯全体への影響も見る必要があることを示しています。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "対象は限られ、比較相手も少額給付",
+          "text": "対象は米国2州の低所得者で、他の地域や人々にそのまま当てはまるとは限りません。比べた相手は給付なしではなく少額の給付を受けたグループです。労働時間などは本人の回答に頼る部分もあります。なお、この研究は査読を経た学術誌に掲載されています。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "月1,000ドルを3年間無条件で配る無作為化実験(約3,000人)で、働く時間が週1〜2時間減り余暇が増えたことが分かり、現金給付や最低所得保障の議論に直結する、規模の大きい確かな結果だから。",
+      "sourceTitle": "The Employment Effects of a Guaranteed Income: Experimental Evidence from Two U.S. States",
+      "sourceName": "NBER Working Paper 32719(The Quarterly Journal of Economics 2026掲載)",
+      "sourceUrl": "https://www.nber.org/papers/w32719",
+      "doi": "10.1093/qje/qjag042",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "space-physics",
+      "genre": "space-physics",
+      "heading": "核融合炉EASTで、従来の限界を超える高密度のプラズマを立ち上げられる可能性が示された",
+      "sections": {
+        "finding": {
+          "heading": "プラズマの密度の壁を大きく超えられた",
+          "text": "中国の実験装置EASTで、これまで運転の目安とされてきた密度の限界を明らかに上回る高密度のプラズマが得られました。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "立ち上げ方を変えて実験で確かめた",
+          "text": "電波による加熱を併用して立ち上げ、事前に入れるガスの量や加熱の強さを変えながら密度を測りました。不純物が減り壁際の温度が下がる傾向も確認され、理論モデルの予測とも合っていました。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[電波加熱を併用して立ち上げ] --> B[不純物が少なく壁際が低温]\n  B --> C[密度の限界が上昇]\n  C --> D[理論の予測領域に到達]"
+          }
+        },
+        "relevance": {
+          "heading": "将来の核融合発電に向けた一歩",
+          "text": "高密度で運転できれば核融合炉の性能向上につながる可能性があり、将来のエネルギー供給に波及しえます。ただ、私たちの暮らしが変わるのはまだ先です。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "1つの装置での結果で、確認は今後",
+          "text": "結果は1つの装置のもので、加熱の出力が限られるため上限の理由は区別できていません。放電ごとに壁の状態が変わる点や、モデルの仮定が多い点も限界で、他の装置での再現が必要です。",
+          "diagram": null
+        }
+      },
+      "impact": "low",
+      "impactReason": "核融合発電の実現に関わる成果で将来のエネルギー供給に波及しうるが、実験装置での結果で、生活が変わるのはまだ先であり、再現も今後の確認が必要なため。",
+      "sourceTitle": "Accessing the density-free regime with ECRH-assisted ohmic start-up on EAST",
+      "sourceName": "Science Advances",
+      "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12757026/",
+      "doi": null,
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "materials-energy",
+      "genre": "materials-energy",
+      "heading": "温暖化が進んでも、2019〜2023年製のEV電池の寿命低下は平均3%にとどまると示された",
+      "sections": {
+        "finding": {
+          "heading": "電池の改良が、温暖化による劣化の悪影響を上回る",
+          "text": "気温の上昇でEVの電池は傷みやすくなると心配されてきた。しかし2019〜2023年製の電池では、温暖化が進んでも寿命の低下は平均で3%ほどにとどまると示された。電池の技術改良が、気候による劣化の影響を打ち消す方向に働くという結論である。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "実車の長期観察ではなく、コンピューターでの試算",
+          "text": "この結論は、気候の変化と電池の改良の度合いを計算モデルに組み込み、電池の寿命がどう変わるかを見積もって導かれた。実際に何年も走らせて確かめた結果ではなく、試算にもとづく。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "EVの購入を考える人には安心材料の一つになる",
+          "text": "暑い地域や今後の温暖化を理由に、EVの電池寿命を心配している人にとって、考えるうえでの材料の一つになる。ただし一般的な傾向を示した研究で、個々の車の電池の状態を保証するものではない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "モデル計算であり、対象車種は2種類のみ",
+          "text": "結果は計算による見積もりで、対象とした車種が2種類に限られる。ほかの車種や走らせ方、実際に長く使った場合にも同じ結果になるかは、この研究だけでは分からない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "世界中のEV利用者に関わる話題で、温暖化が進んでも2019〜2023年製の電池は寿命の低下が平均3%にとどまると示した。ただしモデル計算で、対象車種が2種類に限られる。",
+      "sourceTitle": "Technological improvements in EV batteries offset climate-induced durability challenges",
+      "sourceName": "Nature Climate Change(ミシガン大学の公式発表)",
+      "sourceUrl": "https://seas.umich.edu/news/improved-ev-battery-technology-will-outmatch-degradation-climate-change",
+      "doi": "10.1038/s41558-026-02579-z",
+      "publishedYear": 2026,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}

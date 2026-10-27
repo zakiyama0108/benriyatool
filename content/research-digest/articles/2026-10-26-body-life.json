@@ -1,0 +1,198 @@
+{
+  "id": "2026-10-26-body-life",
+  "edition": "body-life",
+  "date": "2026-10-26",
+  "findings": [
+    {
+      "id": "medical-health",
+      "genre": "medical-health",
+      "heading": "大腸内視鏡検診を1回受けると、13年後の大腸がんの診断は約2割減ったが、死亡の減少は確かとはいえなかった",
+      "sections": {
+        "finding": {
+          "heading": "診断は減ったが、死亡の減少ははっきりしない",
+          "text": "55〜64歳の人たちを長く追った結果、大腸内視鏡検診に招かれた人は、招かれなかった人より大腸がんと診断される割合が約2割低くなりました。一方、大腸がんによる死亡の減少は、偶然とは区別できない程度でした。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "くじ引きで2グループに分け、長く比べた",
+          "text": "約8万5千人をくじ引きのように無作為に分け、検診に招くグループと招かないグループを約13年追って比べました。分け方が公平なので、差が検診によるものかどうかを判断しやすい方法です。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[55〜64歳 約8万5千人] --> B{無作為に分ける}\n B --> C[検診に招く]\n B --> D[招かない]\n C --> E[約13年追う]\n D --> E\n E --> F[診断と死亡を比べる]"
+          }
+        },
+        "relevance": {
+          "heading": "検診を考える材料の一つになる",
+          "text": "大腸内視鏡検診を受けるかどうかを考える人にとって、診断を減らす効果が長期で示されたことは判断材料の一つです。ただし死亡への効果は確かでないため、受診の判断は医療者に相談してください。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "死亡への効果は結論が出ていない",
+          "text": "死亡の減少が確かとはいえなかった点が最大の限界で、さらに長い追跡で変わる可能性もあります。対象は55〜64歳の人に限られ、他の年代や集団にそのまま当てはまるとは限りません。なお本論文は査読済みで、査読前ではありません。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "55〜64歳の約8万5千人を13年追った無作為化試験で、大腸内視鏡検診を1回受けると大腸がんの診断は約2割減ったが、死亡の減少は統計的に確かとはいえなかった。検診を受けるかどうかを考える多くの人に関わる結果である。",
+      "sourceTitle": "Long-term effects of colonoscopy screening on colorectal cancer incidence and mortality: a multicountry, population-based randomised controlled trial",
+      "sourceName": "The Lancet",
+      "sourceUrl": "https://doi.org/10.1016/S0140-6736(26)00508-8",
+      "doi": "10.1016/s0140-6736(26)00508-8",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "nutrition-food",
+      "genre": "nutrition-food",
+      "heading": "甘味料入り飲料でも水でも、2年間の減量・体重維持の経過に目立った差はなかった",
+      "sections": {
+        "finding": {
+          "heading": "2年後の体重の減り方に、飲料の違いによる明確な差は見られなかった",
+          "text": "甘味料入りの飲料を飲む群と水を飲む群を比べたところ、2年後の体重の減り方に統計的な差は見られませんでした。どちらの群も、減らした体重をおおむね保てていました。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "くじ引きで二群に分け、約2年追いかけて比べた",
+          "text": "体重が気になる成人493人をくじ引きのように二つの群へ分け、同じ減量プログラムを受けてもらいました。飲み物の種類以外の条件をそろえて長く追った点が、結論の決め手です。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[成人493人を無作為に二群へ] --> B[最初の約3か月: 毎週の減量指導]\n B --> C[その後約10か月: 月1回の面談]\n C --> D[最後の1年: 自主的に継続]\n D --> E[2年時点で体重を比較]"
+          }
+        },
+        "relevance": {
+          "heading": "ダイエット飲料への不安を考える一つの材料になる",
+          "text": "甘味料入りの飲み物は体重に不利ではないかと気にする人は多いはずです。減量に取り組む場面で、水と甘味料入り飲料とで体重の経過が同程度だったという、判断の参考になる結果です。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "最後まで残った人は約半数で、業界団体の資金も入っている",
+          "text": "2年後の評価を受けられたのは約半数にとどまり、実施地域も英国の一地域です。米国の飲料業界団体から資金提供も受けているため、結果は割り引いて受け止める必要があります。なお、この論文は査読前ではありません。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "ダイエット飲料の習慣がある多くの人に関わる話題で、493人を2年追った無作為化試験だが、104週時点で評価を受けられたのは約半数(220人)で、業界団体の資金提供もあるため確からしさは中程度である。",
+      "sourceTitle": "Effect of non-nutritive sweetened beverages v. water on body weight: long-term results of a randomised controlled trial",
+      "sourceName": "British Journal of Nutrition",
+      "sourceUrl": "https://www.cambridge.org/core/journals/british-journal-of-nutrition/article/effect-of-nonnutritive-sweetened-beverages-v-water-on-body-weight-longterm-results-of-a-randomised-controlled-trial/60CB3ACE5AB706DB882C89E8C1B05318",
+      "doi": "10.1017/s0007114526108150",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "psychology-brain",
+      "genre": "psychology-brain",
+      "heading": "電話での短い訓練で、高齢者の孤独感が1年後もわずかに下がった",
+      "sections": {
+        "finding": {
+          "heading": "電話の訓練で孤独感が小さく下がった",
+          "text": "電話で行う行動活性化やマインドフルネスの訓練を受けた高齢者は、1年後も、傾聴中心の電話支援を受けた人より孤独感がわずかに低かった。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "くじ引きで分けて約1年追って比べた",
+          "text": "一人暮らしで孤独を感じる香港の高齢者1,000人超を、くじ引きのように3つのグループへ分けて約1年追った。条件をそろえて比べているので、訓練の違いによる差とみなしやすい。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[孤独を感じる一人暮らしの高齢者] --> B{くじ引きで3グループに分ける}\n B --> C[行動活性化の電話訓練]\n B --> D[マインドフルネスの電話訓練]\n B --> E[傾聴中心の電話支援]\n C --> F[約1年後の孤独感を比べる]\n D --> F\n E --> F"
+          }
+        },
+        "relevance": {
+          "heading": "電話だけで届く孤独対策の手がかり",
+          "text": "特別な機器がなくても電話で受けられ、研修を受けた高齢のボランティアが担えた。インターネットを使わない人にも届く孤独対策を考える手がかりになる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "差は小さく、途中でやめた人も多い",
+          "text": "差は小さく、1年の間に約6割が途中で抜けた。対象は香港の経済的に困窮した高齢者に限られ、他の地域の人にも当てはまるかは分からない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "孤独は多くの高齢者に関わり、電話で受けられる短い訓練で12か月後も孤独感が下がったが、効果の大きさは小さく、途中でやめた人も多かったため「中」と判定した。",
+      "sourceTitle": "Behavioral Activation and Mindfulness Interventions in Reducing Loneliness and Improving Well-Being in Older Adults: The HEAL-HOA Randomized Clinical Trial",
+      "sourceName": "JAMA Network Open",
+      "sourceUrl": "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2844641",
+      "doi": "10.1001/jamanetworkopen.2025.57170",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "sleep-exercise",
+      "genre": "sleep-exercise",
+      "heading": "寝る時刻と起きる時刻がそろっている人ほど、追跡期間中の死亡リスクが低い傾向にあった",
+      "sections": {
+        "finding": {
+          "heading": "睡眠時間より「規則正しさ」のほうが死亡リスクをよく説明した",
+          "text": "約6万人を数年追跡した結果、就寝・起床の時刻が毎日そろっている人ほど亡くなる割合が低い傾向がありました。睡眠の長さよりも規則性のほうが、死亡リスクの違いをうまく説明できたといいます。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "腕時計型の機器で1週間の眠りを測り、その後の死亡を追った",
+          "text": "英国の中高年の人々が手首に計測器を1週間着け、毎日の睡眠と覚醒の時刻がどれだけ一定かを数値にしました。その後、平均6年あまり追跡して亡くなった人を調べ、規則性の高い群と低い群を比べています。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[約6万人が手首の計測器を1週間装着] --> B[睡眠・覚醒時刻の規則性を数値化]\n  B --> C[平均6年あまり追跡]\n  C --> D[規則性の高低で死亡の割合を比較]"
+          }
+        },
+        "relevance": {
+          "heading": "睡眠の「長さ」に加えて「時刻」にも目を向けるきっかけに",
+          "text": "毎日同じ時間帯に寝起きすることは、特別な道具や費用なしに意識できる生活習慣の一つです。睡眠時間の確保だけでなく、休日も含めた生活リズムを振り返る材料になります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "原因とまでは言えず、対象や計測にも偏りがある",
+          "text": "観察研究のため、規則的な睡眠が死亡リスクを下げると断定はできません。計測は1週間だけで、対象は主に高齢の白人でした。他の人々にも当てはまるかは、さらなる検証が必要です。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "睡眠時間だけでなく就寝・起床の時刻をそろえることが死亡リスクの低さと関連し、誰でも今日から生活に取り入れられる一方、観察研究(約6.1万人)のため因果までは言えない。",
+      "sourceTitle": "Sleep regularity is a stronger predictor of mortality risk than sleep duration: A prospective cohort study",
+      "sourceName": "Sleep(PubMed Central掲載版)",
+      "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10782501",
+      "doi": "10.1093/sleep/zsad253",
+      "publishedYear": 2023,
+      "isPreprint": false
+    },
+    {
+      "id": "education-parenting",
+      "genre": "education-parenting",
+      "heading": "学校でスマホを鍵付きポーチにしまうと使用は大きく減るが、学力への平均的な効果はほぼゼロだった",
+      "sections": {
+        "finding": {
+          "heading": "スマホ使用は減ったが、成績は平均では変わらなかった",
+          "text": "施錠できるポーチで授業中のスマホをしまう取り組みは、使用を大きく減らした。一方、学力への平均的な効果はほぼゼロだった。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[ポーチを導入] --> B[スマホ使用が大きく減る]\n  B --> C[学力への平均的な効果はほぼゼロ]"
+          }
+        },
+        "basis": {
+          "heading": "導入した学校と未導入の学校を比べた",
+          "text": "学校ごとに導入時期が違う点を利用し、導入前後の変化を未導入の学校と比べた。位置情報の記録、教員への調査、テスト成績、学校の記録など、全米規模の資料を組み合わせている。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "学校のスマホ対策を考える材料になる",
+          "text": "学校のスマホ対策を考える材料になる。使用は減るが成績向上の決め手とは言えない。導入1年目は懲戒が増え、生徒の幸福感が下がる兆しもあったが、その後は薄れたとされる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "査読前で、長期の影響はまだ分からない",
+          "text": "査読前の論文であり、今後の検討で結論が変わる可能性がある。幸福感や集中力は自己申告に頼っている。ポーチ最大手の企業の販売記録も使われている。長期の影響は確定していない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "全米規模のデータで、学校でスマホを鍵付きポーチにしまう取り組みは使用を大きく減らす一方、学力への平均的な効果はほぼゼロと示され、多くの家庭や学校の方針に関わるが、査読前で効果も限定的なため。",
+      "sourceTitle": "The Effects of School Phone Bans: National Evidence from Lockable Pouches",
+      "sourceName": "NBER Working Paper 35132",
+      "sourceUrl": "https://www.nber.org/papers/w35132",
+      "doi": "10.3386/w35132",
+      "publishedYear": 2026,
+      "isPreprint": true
+    }
+  ],
+  "emptyGenres": []
+}
