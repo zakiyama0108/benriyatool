@@ -1,0 +1,323 @@
+{
+  "id": "2026-10-29-science-tech",
+  "edition": "science-tech",
+  "date": "2026-10-29",
+  "issueNumber": 4,
+  "predictions": [
+    {
+      "id": "technology-ai--mid",
+      "genre": "technology-ai",
+      "horizon": "mid",
+      "heading": "量子コンピューティングは2035年にかけて商用化の転換点を迎え、最大2.7兆ドルの経済価値を生むと考えられている",
+      "sections": {
+        "when": {
+          "heading": "2035年まで、量子の商用化が本格的に進むと予測されている",
+          "text": "マッキンゼーは、量子コンピューティングが2035年にかけて商用化の転換点を迎えると考えている。金融・創薬・素材など幅広い産業で活用が広がると予測しているが、実現の時期にはなお不確実性が残るとされている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "コンサルティング大手が経済価値の試算を根拠に示している",
+          "text": "この予測を示しているのは、経営コンサルティング会社のマッキンゼー・アンド・カンパニーである。量子技術の動向をまとめた「Quantum Technology Monitor 2026」の中で、2035年までに生まれる経済価値を最大2.7兆ドルと見積もっている。ただし時期の見通しには幅があるとされている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "幅広い産業に波及する一方、時期の読みにくさが課題になる",
+          "text": "予測どおりに進めば、金融・創薬・素材といった分野で計算の使い方が大きく変わり、サービスや製品の開発に影響が及ぶと考えられている。一方で実現時期が読みにくいため、企業や社会は動向を見ながら備える判断を求められるとみられる。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "量子コンピューティングは金融・創薬・素材など幅広い産業に及び、マッキンゼーは2035年までの経済価値を最大2.7兆ドルと見積もる。ただし実現時期には不確実性が残る。",
+      "targetPeriod": "2035年まで",
+      "sourceTitle": "Quantum Technology Monitor 2026: A commercial tipping point",
+      "sourceName": "McKinsey & Company",
+      "sourceUrl": "https://www.mckinsey.com/featured-insights/themes/celebrating-a-century-of-quantum-breakthroughs"
+    },
+    {
+      "id": "technology-ai--ultra-long",
+      "genre": "technology-ai",
+      "horizon": "ultra-long",
+      "heading": "変革的AIが2100年までに実現する確率は約3分の2と、ある論者は見積もっている",
+      "sections": {
+        "when": {
+          "heading": "今世紀中に実現する可能性が高いと見られている",
+          "text": "科学技術の進歩を担う人間の活動をほぼ自動化できる「変革的AI」について、2036年までに1割強、2060年までに約半分、2100年までに約3分の2の確率で現れると考えられている。実現すれば、世界の主役が人間以外に移りうるとも述べられている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[2036年まで 約10%以上] --> B[2060年まで 約50%]\n  B --> C[2100年まで 約3分の2]"
+          }
+        },
+        "basis": {
+          "heading": "Cold Takesの著者が、複数の視点から検討して示した見立て",
+          "text": "情報源はHolden Karnofskyによる個人ブログのシリーズ記事である。「突飛すぎる」という直感的な反論に対し、投資量や研究期間に基づく推計、長期の経済成長の加速、AIの誇大広告の歴史といった論点を順に検討し、立証責任を過度に重く課す必要はないと論じている。ただし推計の前提には大きな不確実性が残ると認めている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "実現すれば社会構造そのものが変わりうる",
+          "text": "変革的AIが現れた場合、経済や科学技術の進み方が大きく変わり、社会の仕組みが根本から作り替えられる可能性があると考えられている。影響を受ける人の数も変化の深さも極めて大きい一方、時期や規模は不確実で、断定はできないとされている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "社会構造を根本から変えうる変革的AIが今世紀中(2100年まで)に実現する確率を約3分の2とする見立てで、影響を受ける人の数も変化の深さも極めて大きい。ただし、推計の前提には大きな不確実性がある。",
+      "targetPeriod": "2100年まで",
+      "sourceTitle": "Forecasting transformative AI: the \"biological anchors\" method in a nutshell / Most Important Century series",
+      "sourceName": "Cold Takes(Holden Karnofsky)",
+      "sourceUrl": "https://www.cold-takes.com/forecasting-transformative-ai-whats-the-burden-of-proof"
+    },
+    {
+      "id": "medical-health--mid",
+      "genre": "medical-health",
+      "horizon": "mid",
+      "heading": "2045年までに世界の糖尿病の成人は約8人に1人に増えると予測されている",
+      "sections": {
+        "when": {
+          "heading": "2045年に成人の約8人に1人が糖尿病になる見通し",
+          "text": "国際糖尿病連合は、2045年までに糖尿病のある成人が約7億8千万人に達し、成人の約8人に1人に当たると予測している。2021年時点より約5割近く増える計算で、人口の伸びの約2倍の速さとされる。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "各国データを集めたIDFの推計が根拠",
+          "text": "示しているのは国際糖尿病連合(IDF)で、各国のデータを集めた「糖尿病アトラス」の推計に基づく。新しいデータが得られるたびに数字が上方修正されてきたという。診断を受けていない人も多く、実態はさらに大きい可能性があるとされる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[各国のデータ] --> B[IDF糖尿病アトラス]\n B --> C[現在の患者数の推計]\n C --> D[2045年までの予測]"
+          }
+        },
+        "impact": {
+          "heading": "医療費の増大と合併症の広がりが懸念される",
+          "text": "患者が増えると医療費の負担が重くなり、心臓病や腎不全、失明などの合併症で健康寿命が縮む人が増えると考えられている。特に低所得の国々ではインスリンを入手しにくい人が多く、格差が広がる恐れがある。IDFは検診の充実や若い世代への予防、治療へのアクセス拡大を各国政府に求めている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "糖尿病は世界の成人の約8人に1人に及ぶ見通しで、影響を受ける人が非常に多く、医療費や健康寿命への影響も深い。人口増の約2倍の速さで増えるという推計で、確からしさも高い。",
+      "targetPeriod": "2045年まで",
+      "sourceTitle": "Diabetes now affects one in 10 adults worldwide",
+      "sourceName": "国際糖尿病連合(IDF)",
+      "sourceUrl": "https://idf.org/news-and-resources/news/diabetes-now-affects-one-in-10-adults-worldwide/"
+    },
+    {
+      "id": "medical-health--ultra-long",
+      "genre": "medical-health",
+      "horizon": "ultra-long",
+      "heading": "2081〜2100年にかけて、気候変動による熱関連死亡が大幅に増えると考えられている",
+      "sections": {
+        "when": {
+          "heading": "今世紀半ばからの増加が世紀末まで続くとの見通し",
+          "text": "2081〜2100年にかけて、気候変動による熱関連の死亡が大幅に増えると予測されている。報じられた報告では今世紀半ばまでに大きく増える見通しも示されており、その傾向が世紀末の時期まで続くという見方である。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "Lancet Countdownの報告で、どの排出シナリオでも増加を示す",
+          "text": "この予測は、Lancet Countdownの報告をAxiosが報じた内容に基づく。排出シナリオによって増え方の差は大きいものの、いずれのシナリオでも熱関連死亡が増えることを示していると伝えられている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[複数の排出シナリオ] --> B[増え方の差は大きい]\n  B --> C[いずれも熱関連死亡は増加]"
+          }
+        },
+        "impact": {
+          "heading": "世界中の高齢者を中心に健康被害が広がると考えられている",
+          "text": "世界中の高齢者が特に影響を受けると予測されている。猛暑時の医療や見守りの体制が各地で重い課題になるとみられる。排出シナリオによって増え方に差があるため、今後の排出の推移が被害の大きさを左右すると考えられている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "気候変動による熱関連死亡が今世紀末にかけて大幅に増えるという見通しで、世界中の高齢者が影響を受ける。排出シナリオによって差は大きいが、いずれも増加を示す。",
+      "targetPeriod": "2081〜2100年",
+      "sourceTitle": "Climate change report: Heat-related deaths on track to rise 370% by mid-century(2081〜2100年の見通しを含む)",
+      "sourceName": "Lancet Countdown(Axios報道)",
+      "sourceUrl": "https://www.axios.com/2023/11/14/climate-change-heat-related-deaths-surge-lancet-report"
+    },
+    {
+      "id": "environment-energy--mid",
+      "genre": "environment-energy",
+      "horizon": "mid",
+      "heading": "政府は2040年度に再エネを4〜5割、原発を2割程度とする電源構成を目指すと考えられている",
+      "sections": {
+        "when": {
+          "heading": "2040年度に再エネが電源の主役に近づく見通し",
+          "text": "2025年2月に閣議決定された第7次エネルギー基本計画では、2040年度の電源構成について、再エネを4〜5割程度、原子力を2割程度、火力を3〜4割程度とする見通しが示されている。2023年度は火力が約7割を占めており、そこから大きく組み替える姿が描かれていると考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "政府が電力需要の増加と脱炭素目標を根拠に示している",
+          "text": "示しているのは政府で、AIの普及によるデータセンターや半導体工場の増加で電力需要が増えるとの推計と、温室効果ガスを2040年度に2013年度比73%減らす目標が背景にあると説明されている。そのため、脱炭素電源である再エネと原子力を最大限活用する方針だと解説されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[AI普及による電力需要の増加] --> C[第7次エネルギー基本計画]\n B[温室効果ガス削減目標] --> C\n C --> D[再エネ4〜5割]\n C --> E[原子力2割程度]\n C --> F[火力3〜4割程度]"
+          }
+        },
+        "impact": {
+          "heading": "電気を使う全国民と産業の前提が変わる可能性がある",
+          "text": "実現すれば、家庭や企業が使う電気の中身が大きく変わると考えられている。原子力の目標達成には既存原発のほぼ全ての再稼働が必要との試算があり、再エネでは国民負担の抑制や地域との共生、出力変動への対応が課題とされる。電気料金への具体的な影響は示されておらず、意見公募では原発回帰への批判も目立ったという。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "2040年度の電源構成で再エネを4〜5割、原子力を2割程度とする政府計画で、電気を使う全国民と産業に影響する。計画は閣議決定済みで、実現の確からしさも高い。",
+      "targetPeriod": "2040年度",
+      "sourceTitle": "第7次エネルギー基本計画(2040年度の電源構成見通し)の解説",
+      "sourceName": "科学技術振興機構 サイエンスポータル",
+      "sourceUrl": "https://scienceportal.jst.go.jp/newsflash/20250227_n01/"
+    },
+    {
+      "id": "environment-energy--ultra-long",
+      "genre": "environment-energy",
+      "horizon": "ultra-long",
+      "heading": "2100年までの気温上昇は、各国の目標を実施しても2.3〜2.5℃、現行政策では2.8℃に達すると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2100年までに2℃台半ばから後半の気温上昇が見込まれている",
+          "text": "2100年までの世界の気温上昇は、各国が掲げる削減目標(NDC)をすべて実施した場合で2.3〜2.5℃、現行の政策のままなら2.8℃になると見られている。報告書の表題は、世界全体の取り組みが不十分なままだと気温目標の達成が危うくなると警告している。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "国連機関が複数のシナリオで排出量の差を分析している",
+          "text": "この見通しを示しているのは、国連環境計画(UNEP)が公表した「排出ギャップ報告書2025」である。各国の目標と現行政策という前提の異なる複数のシナリオを比べ、それぞれの気温上昇の幅を示している。国連機関による分析であることが、予測の確からしさを支えていると考えられる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[UNEPの排出ギャップ報告書2025] --> B[NDCをすべて実施]\n A --> C[現行政策のまま]\n B --> D[2100年までに2.3〜2.5℃上昇]\n C --> E[2100年までに2.8℃上昇]"
+          }
+        },
+        "impact": {
+          "heading": "全人類に及ぶ長期的な影響が懸念されている",
+          "text": "この予測どおりに進めば、気温上昇の影響は特定の地域や産業にとどまらず、全人類の暮らしや社会に及ぶと考えられている。そのため、各国の削減目標を引き上げ、確実に実施できるかが今後の焦点になると位置づけられている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "UNEPは、各国の削減目標(NDC)をすべて実施しても2100年までの気温上昇は2.3〜2.5℃、現行政策のままなら2.8℃と見ている。全人類に及ぶ影響の大きさと、国連機関が複数のシナリオで示した確からしさから高と判定した。",
+      "targetPeriod": "2100年まで",
+      "sourceTitle": "Emissions Gap Report 2025: Off Target – Continued collective inaction puts global temperature goal at risk",
+      "sourceName": "UNEP(国連環境計画)",
+      "sourceUrl": "https://pure.iiasa.ac.at/20971"
+    },
+    {
+      "id": "space-science--mid",
+      "genre": "space-science",
+      "horizon": "mid",
+      "heading": "NASA長官は、月での活動を足場に2040年より前の有人火星探査が可能になると考えている",
+      "sections": {
+        "when": {
+          "heading": "2040年より前に有人火星探査が視野に入るとされる",
+          "text": "NASAのアイザックマン長官は、2040年より前に有人火星ミッションが可能になるとの見通しを示している。その手前として、2028年に宇宙飛行士を月面へ戻し、2027年には月面基地の工事を始める計画が語られている。月で持続的な運用を確立することが前提とされている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[2027年 月面基地の工事開始] --> B[2028年 宇宙飛行士が月面へ]\n B --> C[月で持続的な運用を確立]\n C --> D[2040年より前 有人火星探査が可能に]"
+          }
+        },
+        "basis": {
+          "heading": "NASAのトップが、月を実証の場とする考えを述べた",
+          "text": "この見通しを示しているのは、NASA長官本人である。月を火星への「実証の場」と位置づけ、水の抽出や燃料製造、通信、建設技術などを月で試すと説明している。一方、火星到達時期を詳しく算定した根拠は示されておらず、条件付きの見通しで確からしさは中程度とみられる。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "人類の活動領域が月から火星へ広がる可能性がある",
+          "text": "実現すれば、人類の活動領域が地球と月の周辺から火星へ広がり、宇宙開発の位置づけが大きく変わると考えられている。民間企業の参画や、中国との開発競争も続くとみられ、資源利用や宇宙技術の発展が進む可能性がある。ただし予算や技術面の条件次第で時期は変わりうる。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "NASA長官が、月面での継続的な活動を築いたうえで2040年より前に有人火星探査が可能になると述べた。人類の活動領域が変わるほど影響が深い。ただし条件付きの見通しで、実現の確からしさは中程度。",
+      "targetPeriod": "2040年より前",
+      "sourceTitle": "Exclusive: NASA leader Jared Isaacman on next steps for Artemis, lunar base, space race",
+      "sourceName": "Scripps News(各地方局配信)",
+      "sourceUrl": "https://kmph.com/news/nation-world/exclusive-nasa-leader-jared-isaacman-on-next-steps-for-artemis-lunar-base-space-race-earth-crew-lunar-astronauts-mars-president-donald-trump-rocket"
+    },
+    {
+      "id": "space-science--ultra-long",
+      "genre": "space-science",
+      "horizon": "ultra-long",
+      "heading": "約10億年後、太陽の増光で地球の大気の酸素が急減し、複雑な生命が生きにくくなると考えられている",
+      "sections": {
+        "when": {
+          "heading": "約10億年後に酸素が急減すると予測されている",
+          "text": "地球の酸素に富んだ大気は、今からおよそ10億年後に急激に減り始めると予測されている。地表の水が失われるまでの居住可能期間に比べると、酸素のある時代は2〜3割ほどにとどまるとされる。酸素を使う複雑な生命は、その後は維持しにくくなると考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "日米の研究者がシミュレーションで示した",
+          "text": "日本と米国の研究者らが、炭素・酸素・リン・硫黄の循環や気候、地表とマントルの相互作用を計算機でモデル化し、国際学術誌に発表した。生物圏のある場合とない場合の両方を検討し、似た結果になったという。酸素の持続期間は、岩石の化学組成や火山ガスの放出の釣り合いにより強く左右されると指摘されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[太陽が明るくなる] --> B[岩石の風化が加速]\n B --> C[大気中のCO2が減る]\n C --> D[光合成が減る]\n D --> E[酸素濃度が低下]"
+          }
+        },
+        "impact": {
+          "heading": "生命の将来に関わるが、生活への実感は薄い",
+          "text": "酸素呼吸をする複雑な生命が地球で生きられなくなる可能性は、生命の将来という根源的な問いに関わる。ただし10億年先の話であり、現在の暮らしに直接の影響はない。一方、酸素を生命の目印とする系外惑星の探査では、生命のいる星を見逃しかねないとの示唆もあると紹介されている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "太陽が明るくなる影響で、約10億年後に大気中の酸素が急減し、多くの生命が生きられなくなるとシミュレーションで示された。生命の将来という根源的な問いに関わる。ただし時期が極めて遠く、生活への実感は薄い。",
+      "targetPeriod": "約10億年後",
+      "sourceTitle": "A lack of oxygen will wipe out life on Earth in a billion years",
+      "sourceName": "The Conversation",
+      "sourceUrl": "https://theconversation.com/a-lack-of-oxygen-will-wipe-out-life-on-earth-in-a-billion-years-156241"
+    },
+    {
+      "id": "geopolitics--mid",
+      "genre": "geopolitics",
+      "horizon": "mid",
+      "heading": "2035年の世界の勢力図は、一極・二極・多極など6通りが想定されていると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2035年の世界秩序を6つの姿で描いている",
+          "text": "2035年の世界の勢力図について、一極・二極・多極など6通りの姿が整理されている。どれか一つが起こると断定するものではなく、複数の可能性を並べて示す内容と考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "財団と研究所による戦略立案用のシナリオ",
+          "text": "ドイツのベルテルスマン財団とフラウンホーファー研究所が、将来の国際秩序をシナリオとして整理したものとされる。個別の出来事を言い当てる予測ではなく、備えを検討するための枠組みという位置づけで、実現の確からしさは限られると考えられる。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "安全保障や貿易への影響が大きいと考えられている",
+          "text": "どの形になっても、世界の安全保障や貿易のあり方に大きく響くと考えられている。欧州にとっては、複数の勢力図を想定して外交や経済の備えを検討する材料になるとみられる。ただしシナリオである以上、そのまま実現するとは限らない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "ベルテルスマン財団とフラウンホーファー研究所が、2035年の世界の勢力図を一極・二極・多極など6通りに整理している。世界の安全保障や貿易への影響は大きい。ただし予測ではなく戦略立案用のシナリオなので、実現の確からしさは限られる。",
+      "targetPeriod": "2035年",
+      "sourceTitle": "Global Block Formation? Implications of the New World (Dis)Order for Europe",
+      "sourceName": "Bertelsmann Stiftung",
+      "sourceUrl": "https://www.bertelsmann-stiftung.de/de/publikationen/publikation/did/global-block-formation-implications-of-the-new-world-disorder-for-europe"
+    },
+    {
+      "id": "geopolitics--ultra-long",
+      "genre": "geopolitics",
+      "horizon": "ultra-long",
+      "heading": "2100年に向けて、メキシコが米国の覇権に挑むと予測されている",
+      "sections": {
+        "when": {
+          "heading": "2050年代の大戦を経て、2070年代にメキシコとの対立が深まるとされる",
+          "text": "フリードマン氏は、21世紀を通じて米国の優位は続くとみている。一方で2050年代には大国間の大きな戦争が起き、2070年代ごろには米国南西部の人口構成の変化を背景にメキシコとの全面的な衝突に至ると考えられている。2100年に向けて、メキシコが米国の覇権に挑む構図になると予測している。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[21世紀前半: 米国の優位が続く] --> B[2050年代: 大国間の大戦]\n  B --> C[2070年代: 南西部の人口変化を背景にメキシコと衝突]\n  C --> D[2100年に向けて: メキシコが米国の覇権に挑む]"
+          }
+        },
+        "basis": {
+          "heading": "地政学アナリストが、周期・地理・人口などから導いた長期予測",
+          "text": "この予測を示しているのは地政学アナリストのジョージ・フリードマン氏で、著書『The Next 100 Years』にまとめられている。約20年周期の変動と、地理・人口・技術・軍事の要素を土台にしている。書評は、ロシアや中国の台頭の見立てを評価する一方、気候変動などの要因を軽く見ていると指摘している。さらに、根拠とする歴史的傾向の選び方に恣意性があるとも評されている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "実現すれば影響は大きいが、確からしさは低い見方にとどまる",
+          "text": "実現すれば、米国と隣国の関係や、移民・国境をめぐる政策に大きな影響が及ぶと考えられる。ただし、予測が数十年先に及ぶこと、根拠の選び方に恣意性があると評されていることから、実現の確からしさは低い。確定した将来像ではなく、長期の地政学を考える際の一つの見方として受け止めるのがよいと考えられる。",
+          "diagram": null
+        }
+      },
+      "impact": "low",
+      "impactReason": "地政学アナリストのジョージ・フリードマン氏は、2100年に向けて米国の覇権にメキシコが挑むと予想している。実現すれば影響は大きいが、根拠となる歴史的傾向の選び方に恣意性があると評され、実現の確からしさは低い。",
+      "targetPeriod": "2100年まで",
+      "sourceTitle": "Review Of The Next 100 Years: Assessing George Friedman's Geopolitical Forecasts",
+      "sourceName": "The Friday Times",
+      "sourceUrl": "https://www.thefridaytimes.com/18-Nov-2025/review-next-100-years-assessing-george-friedman-s-geopolitical-forecasts"
+    }
+  ],
+  "emptySlots": []
+}
