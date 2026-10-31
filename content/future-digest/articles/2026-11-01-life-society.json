@@ -1,0 +1,309 @@
+{
+  "id": "2026-11-01-life-society",
+  "edition": "life-society",
+  "date": "2026-11-01",
+  "issueNumber": 5,
+  "predictions": [
+    {
+      "id": "economy-work--near",
+      "genre": "economy-work",
+      "horizon": "near",
+      "heading": "2030年までにAIエージェントとロボットが年約2.9兆ドルの経済価値を生み、米国の仕事のスキルが大きく変わると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに、AIエージェントとロボットが大きな経済価値を生むと見込まれている",
+          "text": "2030年までの比較的近い期間に、AIエージェントとロボットが米国で年約2.9兆ドルの経済価値を生み出すと予測されている。現在の技術でも、米国の労働時間の約57%は自動化できる可能性があるとされ、仕事の進め方が広い範囲で見直されると考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "マッキンゼー・グローバル・インスティテュートが、仕事の自動化可能性の分析から示している",
+          "text": "示しているのは、マッキンゼーの経済研究部門であるMcKinsey Global Instituteである。現行技術で自動化できる労働時間の割合を見積もる分析が根拠になっている。ただし57%は技術的に可能な範囲であり、実際にどれだけ雇用が失われるかを予測した数字ではない。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[現行技術で自動化できる可能性<br/>労働時間の約57%] --> B[AIエージェントとロボットの活用]\n B --> C[2030年までに年約2.9兆ドルの経済価値]\n A -.-> D[雇用喪失の予測ではない]"
+          }
+        },
+        "impact": {
+          "heading": "働く人の多くが影響を受け、求められるスキルが大きく変わると考えられている",
+          "text": "影響を受ける人が多く、仕事に必要なスキルが大きく変わると考えられている。人が行う作業の一部をAIやロボットが担い、人はそれらと組み合わせて働く形が広がる可能性がある。そのため、学び直しや職場での役割分担の見直しが社会全体の課題になると見られている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "米国の労働時間の約57%は現行技術で自動化できる可能性があり、AIエージェントとロボットが2030年までに年約2.9兆ドルの経済価値を生むとしている。影響を受ける人は多く、仕事のスキルが大きく変わる。ただし57%は技術的な可能性で、実際の雇用喪失の予測ではない。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Agents, robots, and us: Skill partnerships in the age of AI",
+      "sourceName": "McKinsey Global Institute",
+      "sourceUrl": "https://www.mckinsey.com/mgi/our-research/agents-robots-and-us-skill-partnerships-in-the-age-of-ai"
+    },
+    {
+      "id": "economy-work--long",
+      "genre": "economy-work",
+      "horizon": "long",
+      "heading": "OECDは2060年までに人口減で一人当たりGDPの成長が大きく鈍ると見ている",
+      "sections": {
+        "when": {
+          "heading": "2060年にかけて成長率が下がると見られている",
+          "text": "OECDは、2060年までの長い期間で、多くの国の生産年齢人口が減り、働く人の割合も下がっていくと見ている。その結果、一人当たりGDPの成長は、OECD全体で年1%程度(2006〜19年)から年0.6%程度(2024〜60年)へ鈍ると試算している。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[生産年齢人口の減少] --> B[就業者の割合が低下]\n B --> C[一人当たりGDP成長が鈍化]\n C --> D[OECD全体で年1%から年0.6%へ]"
+          }
+        },
+        "basis": {
+          "heading": "公的な国際機関の人口・雇用の推計が根拠",
+          "text": "この見方を示しているのは、先進国が加盟する国際機関のOECDである。雇用見通しの報告書の中で、人口構成の変化と就業の動向をもとに将来の成長を試算している。日本や韓国などは特に生産年齢人口の減り方が大きいとされ、公的機関の推計である点で確からしさは高いと考えられている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "働き方や社会保障のあり方が問われると考えられる",
+          "text": "成長が鈍れば、賃金の伸びや税収、年金・医療など社会保障を支える力に影響が及ぶと考えられている。対象となる人口が広く、生活への影響も深いため、高齢者や女性の就労、働く期間の延長といった労働参加の拡大が重要な課題になると見られている。詳しくは元の報告書を確認してほしい。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "OECDは、日本・韓国などで生産年齢人口が減り、就業者の割合が下がることで、一人当たりGDP成長が大きく鈍ると見ている。OECD全体では、年1%(2006〜19年)から年0.6%(2024〜60年)に下がるとの試算。対象人口が広く、生活への影響も深い。公的な国際機関の推計で、確からしさも高い。",
+      "targetPeriod": "2060年まで",
+      "sourceTitle": "OECD Employment Outlook 2025",
+      "sourceName": "OECD",
+      "sourceUrl": "https://www.oecd.org/en/publications/oecd-employment-outlook-2025_194a947b-en"
+    },
+    {
+      "id": "society-population-life--near",
+      "genre": "society-population-life",
+      "horizon": "near",
+      "heading": "2030年までに世界の約6人に1人が60歳以上になると、WHOは見通している",
+      "sections": {
+        "when": {
+          "heading": "2030年には60歳以上が約14億人に達する見通し",
+          "text": "WHOは、2030年までに世界の約6人に1人が60歳以上になると見ている。2020年に約10億人だった60歳以上は、約14億人へ増えると考えられている。この流れは2050年まで続き、割合は2015年の12%から22%近くへ高まるとも示されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[\"2020年: 約10億人\"] --> B[\"2030年: 約14億人(6人に1人)\"]\n  B --> C[\"2050年: 約21億人\"]"
+          }
+        },
+        "basis": {
+          "heading": "WHOが、各国で進む高齢者の増加と寿命の延びを根拠に示している",
+          "text": "示しているのは世界の保健分野を担う国際機関のWHOである。根拠として、すべての国で高齢者の人数と割合が増えていることや、平均寿命が延びていることを挙げている。ただし、推計の具体的な手法までは詳しく示されていない。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "医療・介護など社会の仕組み全体に見直しが求められると考えられている",
+          "text": "すべての国が、保健や社会の制度を高齢化に合わせて整える課題に直面するとされる。健康に過ごせる期間の割合が変わらなければ、延びた年数の多くが不健康な状態になる恐れがあり、本人にも社会にも負担が大きくなる。複数の病気を抱える人が増えることも想定されている。こうした見通しは影響を受ける人が非常に多く、人口構成に基づく推計のため確からしさも高いとされ、影響度は大きいと位置づけられる。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "世界の約6人に1人が60歳以上になるという見通しで、影響を受ける人が非常に多い。年金・医療・介護・労働力など社会の仕組み全体に及び、人口構成に基づく推計なので実現の確からしさも高い。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Ageing and health",
+      "sourceName": "WHO(世界保健機関)",
+      "sourceUrl": "https://www.who.int/news-room/fact-sheets/detail/ageing-and-health"
+    },
+    {
+      "id": "society-population-life--long",
+      "genre": "society-population-life",
+      "horizon": "long",
+      "heading": "世界の65歳以上は2060年までに人口の約2割になり、高齢化は多くの国で進むと考えられている",
+      "sections": {
+        "when": {
+          "heading": "2060年に向け、世界の高齢化は倍近く進む見通し",
+          "text": "2060年までに、世界で65歳以上が占める割合は2025年の10.5%から19.6%へ、ほぼ倍になると見込まれている。2025年には高齢者の割合が0〜5歳の子どもの割合を初めて上回ったとされる。欧州は最も高齢な地域のままと考えられている。一方、高齢者の人数ではアフリカが欧州を上回ると予測されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[2025年: 65歳以上 10.5%] --> B[高齢者が0〜5歳の子どもを上回る]\n  B --> C[2060年: 65歳以上 19.6%]"
+          }
+        },
+        "basis": {
+          "heading": "米国国勢調査局が人口推計を基に示している",
+          "text": "示しているのは米国国勢調査局で、米国国立老化研究所の支援を受けた報告書「An Aging World: 2025」にまとまっている。同局の国際データベースや各国の健康・退職に関する調査などを土台にした人口推計であり、確定した数字ではなく将来の見通しだと位置づけられている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "社会保障・労働・家族の形が問い直される可能性がある",
+          "text": "高齢者の比率が高まると、年金・医療・介護の財源や担い手をどう確保するかが多くの国で課題になると考えられている。85歳以上の人口が、多くの国で4倍になるとの予測もあり、長寿に伴う健康面の備えも問われる。米国は高齢化しても世界の約半数の国より若いとされ、国ごとに影響の出方は異なるとみられる。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "65歳以上の割合が世界で2025年の10.5%から2060年には19.6%へ上がるという見通しで、ほぼ全ての国と人に関わる。社会保障・労働・家族の形を変え、人口推計に基づくため確からしさも高い。",
+      "targetPeriod": "2060年まで",
+      "sourceTitle": "By 2060, U.S. Population Will Be Younger Than Almost Half the World's Countries Despite Continued Growth of Older Adults(An Aging World: 2025)",
+      "sourceName": "米国国勢調査局(U.S. Census Bureau)",
+      "sourceUrl": "https://www.census.gov/library/stories/2026/09/an-aging-world.html"
+    },
+    {
+      "id": "sexuality-romance--near",
+      "genre": "sexuality-romance",
+      "horizon": "near",
+      "heading": "2030年までに中国の30〜39歳男性の2割超が未婚のままになると推計されている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに30代男性の2割超が未婚と推計",
+          "text": "出生時の男児の割合が高くなったことを背景に、2030年までに中国の30〜39歳の男性の20%超が生涯結婚しないままになると推計されている。結婚相手を得にくい男性は、とくに低所得の省に多く集まるとも見込まれている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "人口学者が結婚パターンの持続を前提に推計",
+          "text": "示したのはSharygin氏、Ebenstein氏、Das Gupta氏の研究チームで、2013年に人口学の専門誌へ掲載された。女性がより豊かな地域へ移り、将来性のある男性を選ぶ傾向が続くと仮定して、未婚男性の割合と地理的な分布を試算している。ただし推計は2010年の古いモデルに基づき、前提に左右される。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[男児の割合が高い出生] --> B[結婚相手が不足]\n C[女性は豊かな地域へ移動] --> B\n D[女性は将来性のある男性を選好] --> B\n B --> E[2030年に30代男性の2割超が未婚]\n E --> F[低所得の省に集中]"
+          }
+        },
+        "impact": {
+          "heading": "老後の支え手を欠く男性が低所得地域に偏る懸念",
+          "text": "配偶者や子の支えがないまま高齢期を迎える男性が増え、公的な社会保障への依存が強まると考えられている。未婚男性が特定の地域に集まると社会の不安定化を招きかねないとされ、制度の対象拡大と中央政府による財源の強化が必要になると提言されている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "中国の男性の結婚難は、人口規模が大きく、婚姻や家族形成の変化が社会に深く及ぶ。ただし推計は2010年の古いモデルで、前提に左右される。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Sharygin, Ebenstein & Das Gupta: 2030年までに中国の30〜39歳男性の20%超が未婚のままになるとの推計(Implications of China's future bride shortage)",
+      "sourceName": "Hebrew University of Jerusalem 研究データベース(CRIS)",
+      "sourceUrl": "https://cris.huji.ac.il/en/publications/implications-of-chinas-future-bride-shortage-for-the-geographical/"
+    },
+    {
+      "id": "sexuality-romance--long",
+      "genre": "sexuality-romance",
+      "horizon": "long",
+      "heading": "2050年までに中国で35〜59歳の未婚男性が約3,000万人に達すると考えられている",
+      "sections": {
+        "when": {
+          "heading": "未婚の中年男性が2050年に約3,000万人へ増えると予測",
+          "text": "中国では、35〜59歳の未婚男性が2020年ごろに約1,500万人となり、2050年には約3,000万人に達すると予測されている。結婚できない、あるいは国外に花嫁を求める男性が増え続けるという見方である。なお元記事の見出しは「2030年」だが、本文の推計は2050年を対象にしている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[2020年ごろ<br/>未婚男性 約1,500万人] --> B[2050年<br/>未婚男性 約3,000万人]"
+          }
+        },
+        "basis": {
+          "heading": "中国社会科学院の研究者が人口動態から推計",
+          "text": "推計を示したのは中国社会科学院の研究者で、2017年にPTI通信が報じた。根拠は、男児が多く生まれる出生性比の偏りが続いてきたこと、低学歴・低所得の男性ほど結婚しにくいこと、高学歴の女性に独身を選ぶ人が増えていることである。ただし古い報道であり、前提となる人口動態しだいで結果は変わると考えられる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart TD\n  A[出生性比の偏り] --> D[結婚相手を得にくい男性が増加]\n  B[低学歴・低所得層で未婚が多い] --> D\n  C[高学歴女性の独身志向] --> D\n  D --> E[2050年に約3,000万人と推計]"
+          }
+        },
+        "impact": {
+          "heading": "性暴力や人身売買、年金負担などの社会問題が懸念される",
+          "text": "専門家は、独身男性が増えると、性暴力や女性・子どもの人身売買、将来の年金負担といった社会問題が深刻になるおそれがあると警告している。農村部の男性が、ベトナムなど近隣の国から花嫁を迎える動きも指摘されている。恋愛・結婚のあり方や家族の形、社会保障の設計にまで影響が及ぶ可能性があると考えられている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "中国社会科学院の研究者が、2050年に35〜59歳の未婚男性が約3,000万人に達すると推計している。影響を受ける人数は多く、生活・社会の変化も深いが、2017年の古い報道で、前提となる人口動態に左右される。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "30 mn Chinese men may end up single by 2030",
+      "sourceName": "The Tribune (PTI配信)",
+      "sourceUrl": "https://www.tribuneindia.com/news/archive/world/30-mn-chinese-men-may-end-up-single-by-2030-364017"
+    },
+    {
+      "id": "personal-interest--long",
+      "genre": "personal-interest",
+      "horizon": "long",
+      "heading": "世界の平均寿命は2050年までに約5年延び約78.1歳になるが、健康寿命の伸びは小さいと予測されている",
+      "sections": {
+        "when": {
+          "heading": "2050年までに平均寿命は約78.1歳へ延びるとみられる",
+          "text": "2050年までに、世界の平均寿命は現在より5年近く延び、約78.1歳に達すると予測されている。一方で、健康に過ごせる期間を示す健康寿命の伸びは小さく、64.8歳から67.4歳にとどまるとの見方が示されている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "IHMEが医学誌ランセットで示した推計である",
+          "text": "この予測を示しているのは、保健指標評価研究所(IHME)である。世界の健康状態を分析する研究の成果として、医学誌ランセットに関連する形で公表されたものと考えられている。従来の傾向を延ばした推計で、若返り技術などは前提にしていない。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[現在] --> B[2050年]\n B --> C[平均寿命 約78.1歳]\n B --> D[健康寿命 64.8歳から67.4歳]\n C --> E[差が残る]\n D --> E"
+          }
+        },
+        "impact": {
+          "heading": "長生きと健康な期間の差が社会の課題になりうる",
+          "text": "寿命の伸びに比べて健康寿命の伸びが小さい場合、病気や介護を抱えながら過ごす期間が長くなると考えられる。世界中の人に関わる話であり、医療や介護の負担、働き方や老後の備えの見直しを迫られる可能性がある。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "世界の平均寿命は2050年に約78.1歳へ延びる一方、健康寿命の伸びは小さい(64.8歳から67.4歳)との予測。世界中の人に関わり、実現の確からしさも比較的高い。ただし若返り技術ではなく従来の延長線上の予測であり、配信済みの2100年までの寿命予測とも近いため中とした。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Global life expectancy to increase by nearly five years by 2050 (IHME / Lancet)",
+      "sourceName": "IHME(保健指標評価研究所)",
+      "sourceUrl": "https://healthdata.org/node/11453"
+    },
+    {
+      "id": "other--near",
+      "genre": "other",
+      "horizon": "near",
+      "heading": "世界の災害は2030年までに年約560件へ増えると、国連機関が見通していると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに災害が1日約1.5件のペースになると予測されている",
+          "text": "国連機関は、世界で起こる災害の件数が2030年までに年あたり約560件、1日に換算すると約1.5件へ増えていくと見通していると考えられている。対象時期は今から数年先の2030年までで、遠い将来の話ではなく近い未来の予測として示されている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "国連防災機関UNDRRが報告書で警告している",
+          "text": "この予測を示しているのは、国連で防災を担うUNDRRと考えられている。2022年の世界評価報告書をもとに、災害の増加を放置すれば人類が「自滅の螺旋」に陥りかねないと警告したと、マレーシアの報道機関Free Malaysia Todayが伝えている。なお、本稿では元記事の本文を十分に確認できておらず、根拠の詳細は渡された情報の範囲にとどめている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "極度の貧困層が約3,760万人増え、暮らしへの打撃が深いと見られている",
+          "text": "災害の増加により、影響を受ける人が非常に多くなると考えられている。加えて、極度の貧困状態に置かれる人が約3,760万人増えるとも予測されており、被害は一時的な損害にとどまらず、生活の基盤そのものを揺るがすおそれがあると見られている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[\"災害の増加\\n年約560件・1日約1.5件\"] --> B[\"被災する人の増加\"]\n  B --> C[\"極度の貧困層が\\n約3,760万人増加\"]\n  C --> D[\"暮らしへの深い影響\"]"
+          }
+        }
+      },
+      "impact": "high",
+      "impactReason": "世界の災害が2030年までに年約560件(1日に約1.5件)へ増えると国連機関が見通し、影響を受ける人が非常に多い。さらに極度の貧困層が約3,760万人増えるとされ、暮らしへの影響も深い。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "UN warns humanity of 'spiral of self-destruction' as disasters rise(UNDRR Global Assessment Report 2022)",
+      "sourceName": "UNDRR / Free Malaysia Today",
+      "sourceUrl": "https://fmtv5.freemalaysiatoday.com/category/world/2022/04/26/un-warns-humanity-of-spiral-of-self-destruction-as-disasters-rise"
+    },
+    {
+      "id": "other--long",
+      "genre": "other",
+      "horizon": "long",
+      "heading": "気候変動により、2050年までに最大2億1,600万人が国内での移住を迫られると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年ごろから表れ、2050年にかけて広がるとされる",
+          "text": "世界銀行は、2050年までに6つの地域で最大2億1,600万人が自国内での移動を余儀なくされる可能性があると予測している。人が大きく流出する地域は早ければ2030年ごろから現れ、その後の20年で拡大・深刻化すると考えられている。最も多い地域はサハラ以南アフリカで、次いで東アジア・太平洋、南アジアが続くという。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[2030年ごろ<br>流出の中心地が出現] --> B[2030年代〜2040年代<br>地域が拡大・深刻化]\n  B --> C[2050年まで<br>最大2億1,600万人が国内移動]"
+          }
+        },
+        "basis": {
+          "heading": "世界銀行が、シナリオに基づく分析で示している",
+          "text": "この予測は世界銀行が2021年9月に公表した報告書によるもので、2018年版の分析を対象地域を広げて更新したものである。水不足、作物の収穫量の低下、海面上昇によって住みにくくなる地域と、新しい生計を築きやすい都市・農村を特定する手法がとられている。ただし、排出削減の進み方次第で規模は大きく変わるため、数字は前提に左右される。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart TD\n  S[排出削減と開発の進み方] -->|迅速で協調的な取り組み| L[移動の規模を最大約8割減らせる可能性]\n  S -->|対策が進まない場合| H[最大2億1,600万人規模]"
+          }
+        },
+        "impact": {
+          "heading": "生活の基盤が揺らぎ、都市や地域社会の対応が問われる",
+          "text": "実現すれば、農業や水に頼る暮らしが成り立たなくなる地域から多くの人が移り、受け入れ先の都市や農村では住まいや仕事、公共サービスへの需要が高まると考えられている。報告書は、排出削減に加え、気候による移動を開発計画に組み込み、事前に備えることが被害を抑える鍵になると指摘している。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "2050年までに気候変動で最大2億1,600万人が国内で移住を迫られるとの世界銀行の推計で、影響を受ける人が多く、社会の変化も深い。ただし排出削減の度合いで規模が大きく変わる(最大約8割減)ため、実現の確からしさは前提次第。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Climate change could force 216 million people to migrate within their own countries by 2050",
+      "sourceName": "World Bank",
+      "sourceUrl": "https://www.worldbank.org/en/news/press-release/2021/09/13/climate-change-could-force-216-million-people-to-migrate-within-their-own-countries-by-2050"
+    }
+  ],
+  "emptySlots": [
+    {
+      "genre": "personal-interest",
+      "horizon": "near",
+      "reason": "generation-failed"
+    }
+  ]
+}
