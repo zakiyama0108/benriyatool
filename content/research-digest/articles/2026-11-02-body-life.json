@@ -1,0 +1,198 @@
+{
+  "id": "2026-11-02-body-life",
+  "edition": "body-life",
+  "date": "2026-11-02",
+  "findings": [
+    {
+      "id": "medical-health",
+      "genre": "medical-health",
+      "heading": "スタチンの副作用は、添付文書の66項目のうち薬との関連が確認されたのは4つだけだった",
+      "sections": {
+        "finding": {
+          "heading": "副作用とされる症状の大半は、薬が原因とは確認されなかった",
+          "text": "添付文書に載っている66の副作用を調べた結果、スタチンとの関連がはっきり確認できたのは4つだけだった。それ以外の症状は、薬との関連が確認されなかった。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "偽薬との比較を大規模にまとめて調べた",
+          "text": "本物の薬と見た目が同じ偽薬を、本人も医師も知らされずに使った試験を23件集め、約15万人分のデータをまとめて比べた。くじ引きでグループを分けるので、薬以外の違いが結果に混ざりにくい。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[参加者をくじ引きで分ける] --> B[スタチン]\n  A --> C[偽薬]\n  B --> D[症状の出方を比べる]\n  C --> D\n  D --> E[差があった副作用は4つ]"
+          }
+        },
+        "relevance": {
+          "heading": "副作用への不安を考える材料になる",
+          "text": "スタチンを使っている人や使うか迷っている人が、副作用への不安を整理するときの手がかりになる。飲むか続けるかは、自分の状況を知る医師や薬剤師と相談して決める必要がある。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "結果は参加者全体の傾向で、個人に当てはまるとは限らない",
+          "text": "査読を経た論文だが、対象は試験に参加した人たちで、実際の患者すべてを代表するとは限らない。関連が確認されなかった症状が、特定の個人に起きないという意味でもない。詳しくは元の論文を読んでほしい。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "スタチンを使う(または迷っている)世界中の多くの人に関わり、無作為化二重盲検試験23件・約15万人の統合解析で、添付文書にある66の副作用のうちスタチンとの関連が確認されたのは4つだけと示され、服薬の判断を変えうるため。",
+      "sourceTitle": "Lancet掲載のスタチン副作用に関する無作為化二重盲検試験の個人データ統合解析(オックスフォード大学Oxford Population Health、Reith・Collinsら)",
+      "sourceName": "The Lancet",
+      "sourceUrl": "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(25)01578-8/fulltext",
+      "doi": "10.1016/s0140-6736(25)01578-8",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "nutrition-food",
+      "genre": "nutrition-food",
+      "heading": "超加工食品をよく食べる人ほど、心血管病や糖尿病などになりやすい関連が約880万人の統合解析で示された",
+      "sections": {
+        "finding": {
+          "heading": "食べる量が多いほど、複数の病気のリスクが高い傾向",
+          "text": "超加工食品を多く食べる人ほど、心血管病や糖尿病、全死亡など複数の健康問題のリスクが高い関連が、多数の研究を束ねた解析で示された。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "51の追跡調査を束ね、量とリスクの関係を見た",
+          "text": "世界各地の51の追跡調査から、約880万人分のデータを集めて合わせ、食べる量が増えるほどリスクがどう変わるかを調べた。大勢のデータを合わせることで、偶然の偏りに結果が左右されにくくなる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[51の追跡調査] --> B[約880万人分を統合]\n B --> C[食べる量ごとにリスクを比較]\n C --> D[量が多いほどリスクが高い関連]"
+          }
+        },
+        "relevance": {
+          "heading": "日々の食事を振り返る材料になる",
+          "text": "加工度の高い食品が食事の中でどれくらいを占めているかを意識するきっかけになる。ただし特定の食品を避けるべきかを決める根拠ではなく、食事全体のバランスを考える材料にとどまる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "因果関係までは示せていない",
+          "text": "観察研究を束ねた結果なので、食べたことが原因で病気になったと証明されたわけではない。生活習慣や経済状況など、ほかの違いが影響した可能性も残る。本論文は査読を経た掲載誌のものだが、詳しくは元の論文を確認してほしい。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "超加工食品を多く食べる人ほど心血管病・糖尿病・全死亡などのリスクが高い関連が約880万人の統合解析で示され、影響を受ける人は非常に多いが、観察研究のため因果は示せず、確からしさは中程度にとどまる。",
+      "sourceTitle": "Ultra-processed food consumption and risk of multiple chronic diseases among 8,819,894 adults from 51 prospective cohorts: a dose-response meta-analysis",
+      "sourceName": "Family Medicine and Community Health(BMJ Group)",
+      "sourceUrl": "https://fmch.bmj.com/lookup/doi/10.1136/fmch-2026-003925",
+      "doi": "10.1136/fmch-2026-003925",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "psychology-brain",
+      "genre": "psychology-brain",
+      "heading": "幻覚薬の長続きする抗うつ様の効果は、脳内の特定の情報経路を介している可能性が動物実験で示された",
+      "sections": {
+        "finding": {
+          "heading": "効果の鍵は、受容体から先の「β-アレスチン」経路だった",
+          "text": "幻覚を起こす薬(サイケデリクス)が動物に示す、長く続く抗うつ様の効果は、脳の5-HT2A受容体からβ-アレスチンという細胞内の情報経路が働くことを介していると報告された。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[幻覚薬が5-HT2A受容体に作用] --> B[β-アレスチン経路が働く]\n B --> C[長続きする抗うつ様の効果]"
+          }
+        },
+        "basis": {
+          "heading": "マウスとサルの実験で、経路と行動の変化の関係を調べた",
+          "text": "マウスとサルを使った基礎実験で、この経路の働きと、気分の落ち込みに似た状態が和らぐ行動の変化との結びつきを調べ、結論を導いている。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "幻覚を伴わない薬づくりの手がかりになりうる",
+          "text": "将来、幻覚を起こさずに気分へ働く薬を設計する手がかりになる可能性がある。ただし今は基礎研究の段階で、日々の暮らしがすぐ変わる話ではない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "人での効果は未確認で、動物の行動からの推定にとどまる",
+          "text": "対象はマウスとサルで、人に同じ効果があるかは確かめられていない。「抗うつ様」も動物の行動からの推定である。一つの研究結果であり、今後の追試や検証が必要だ。薬の使用を考える材料にはならない。",
+          "diagram": null
+        }
+      },
+      "impact": "low",
+      "impactReason": "マウスとサルでの基礎研究で、幻覚を伴わない抗うつ薬の設計につながる可能性はあるが、人での効果は未確認で、日々の生活への影響はまだ小さい。",
+      "sourceTitle": "Sustained antidepressant-like effects of psychedelics through 5-HT2AR–β-arrestin signaling",
+      "sourceName": "Nature Neuroscience",
+      "sourceUrl": "https://www.nature.com/articles/s41593-026-02497-5",
+      "doi": "10.1038/s41593-026-02497-5",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "sleep-exercise",
+      "genre": "sleep-exercise",
+      "heading": "毎日5分の運動を足すか座る時間を30分減らすだけでも、早死にの減少につながる可能性が示された",
+      "sections": {
+        "finding": {
+          "heading": "ほんの少しの活動の変化でも、死亡の減少につながりうる",
+          "text": "1日に5分ほど強めの運動を足す、あるいは座っている時間を30分ほど減らす。この程度の小さな変化でも、集団全体では亡くなる人が減る可能性があると推定された。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "腕時計型の機器で測った大勢の記録を合わせて調べた",
+          "text": "活動量を加速度計という機器で実際に測った約13万5千人の追跡記録を、複数の調査から集めて同じ方法で分析した。自己申告より正確な記録を多数そろえたことが、結論の支えになっている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[複数の追跡調査の記録] --> C[約13万5千人分を統合]\n B[英国バイオバンクの記録] --> C\n C --> D[活動量と死亡の関係を分析]\n D --> E[小さな変化での死亡減少を推定]"
+          }
+        },
+        "relevance": {
+          "heading": "大きな運動でなくても、日常の小さな積み重ねに意味がある",
+          "text": "長時間の運動や厳しい目標でなくても、少し体を動かす、座りっぱなしを減らすといった身近な工夫に意味がありそうだと分かる。運動が苦手な人にも取り組みやすい目安になる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "死亡の減少は推定で、因果関係までは確かめられていない",
+          "text": "示された死亡の減少は、データをもとにしたモデルによる推定にすぎない。観察による研究のため、活動の変化が直接の原因だとは断定できない。個人の健康状態によって適した活動量は異なるので、結果を過信しないことが大切だ。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "加速度計で測った約13万5千人(7コホートの約4万人と英国バイオバンクの約9万5千人)の追跡データを統合した大規模解析で、1日5分の中〜高強度の運動の上乗せや座る時間30分の短縮という誰でも取り組める小さな変化の効果を示したが、死亡の減少はモデルによる推定で、因果関係は確かめられていない。",
+      "sourceTitle": "Deaths potentially averted by small changes in physical activity and sedentary time: an individual participant data meta-analysis of prospective cohort studies",
+      "sourceName": "The Lancet",
+      "sourceUrl": "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(25)02219-6/fulltext",
+      "doi": "10.1016/s0140-6736(25)02219-6",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "education-parenting",
+      "genre": "education-parenting",
+      "heading": "子どもの問題行動に対する親向けプログラムの効果は、近年は下がらず横ばいと分かった",
+      "sections": {
+        "finding": {
+          "heading": "効果は一時下がった後、今は横ばい",
+          "text": "子どもの問題行動に対する親向けの行動プログラムの効果は、当初は小さくなっていきましたが、その後は安定していました。今のところ、再び下がり続けてはいない一方、高まっている証拠もありません。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[当初] -->|効果が小さくなる| B[その後]\n B -->|安定して横ばい| C[現在]\n C -.->|高まる証拠はなし| D[効果向上は今後の課題]"
+          }
+        },
+        "basis": {
+          "heading": "世界の試験をまとめて比べた",
+          "text": "36か国で行われた244件の比較試験を集め、約2万9千の家族分の結果を年代順に並べて変化を調べました。近年の試験は条件をより厳しく整えているのに、効果は落ちていませんでした。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "子育て支援の根拠は今も保たれている",
+          "text": "親を支える行動プログラムが、以前より効きにくくなったわけではないと分かりました。子育て支援を考える家庭や地域にとって、これまでの支援の根拠が崩れていないという確認になります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "効果が高まる見通しまでは示されていない",
+          "text": "効果が初期に下がった理由は、調べた試験や対象者の特徴では説明できませんでした。この結果は過去の試験をまとめた分析であり、個々の家庭への効き方を保証するものではありません。効果を高める方法は今後の検証課題とされています。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "子どもの問題行動に対する親向けプログラムの効果は、244件の試験・約2.9万家族の統合で、近年は低下せず安定していると分かり、子育て支援の根拠として影響を受ける家庭は多いが、効果が高まる証拠はなく生活の変化は中程度のため。",
+      "sourceTitle": "Have parenting programs for disruptive child behavior become less effective?",
+      "sourceName": "Journal of Child Psychology and Psychiatry (PubMed)",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/40968482/",
+      "doi": "10.1111/jcpp.70049",
+      "publishedYear": 2026,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}
