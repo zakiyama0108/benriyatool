@@ -39,9 +39,10 @@
       "sources": [
         { "name": "Yahoo!リアルタイム検索", "url": "https://search.yahoo.co.jp/realtime", "format": "site-specific-html", "parserId": "yahooRealtimeSearch", "region": "japan" }
       ],
-      "searchHints": ["Xで話題 バズり 複数メディア", "TikTok 投稿 話題 反響", "Instagram Threads 投稿 話題", "ねとらぼ grape TREND Sirabee SNS 話題"] },
-    { "genre": "buzzwords", "edition": "culture-lifestyle", "label": "流行りの言葉", "method": "fixed-list",
-      "sources": [{ "name": "Google公式トレンドRSS(日本)", "url": "https://trends.google.com/trending/rss?geo=JP", "format": "structured-rss", "region": "japan" }] },
+      "searchHints": ["Xで話題 バズり 複数メディア", "TikTok 投稿 話題 反響", "Instagram Threads 投稿 話題", "ねとらぼ grape TREND Sirabee SNS 話題", "画像 動画 付き投稿 拡散 リポスト 万件 話題", "動画 再生回数 急増 TikTok Xで拡散"] },
+    { "genre": "buzzwords", "edition": "culture-lifestyle", "label": "流行りの言葉", "method": "websearch",
+      "sources": [],
+      "searchHints": ["若者言葉 流行語 スラング 今年 流行り", "Z世代 流行語 ランキング 新語", "SNS 若者 使われている 言葉 意味 流行", "ギャル語 ネットスラング 新しい言葉 話題"] },
     { "genre": "gourmet", "edition": "culture-lifestyle", "label": "グルメ", "method": "hybrid",
       "sources": [
         { "name": "食べログ人気ランキング", "url": "https://tabelog.com/rank/", "format": "site-specific-html", "parserId": "tabelogRank", "region": "japan" }
@@ -49,10 +50,10 @@
       "searchHints": ["SNS 口コミ 急増 飲食店", "話題 食トレンド 自然発生 SNS", "macaroniトレンド 話題の食べ方", "小田原 茅ヶ崎 横浜 話題の飲食店"] },
     { "genre": "hobby", "edition": "culture-lifestyle", "label": "流行りの趣味", "method": "websearch",
       "sources": [],
-      "searchHints": ["新しい趣味 SNS 話題 広がり", "ホビー トレンド 複数メディア言及"] },
+      "searchHints": ["新しい趣味 SNS 話題 広がり", "ホビー トレンド 複数メディア言及", "今流行っている趣味 20代 30代 始める人が増加", "趣味 ブーム 市場 拡大 ニュース", "アウトドア 手芸 DIY 推し活 新ブーム SNS"] },
     { "genre": "fashion", "edition": "culture-lifestyle", "label": "ファッション", "method": "websearch",
       "sources": [],
-      "searchHints": ["SNS 口コミ 急増 ファッションアイテム", "FASHION PRESS WWD JAPAN トレンド 話題"] },
+      "searchHints": ["SNS 口コミ 急増 ファッションアイテム", "FASHION PRESS WWD JAPAN トレンド 話題", "今季 流行り 着こなし 古着 靴 バッグ SNS 品薄", "ファッション ブランド コラボ 完売 話題", "韓国 欧米 ファッション 日本で流行 取り入れる人が増加"] },
     { "genre": "gadgets", "edition": "culture-lifestyle", "label": "ガジェット・家電", "method": "hybrid",
       "sources": [
         { "name": "価格.com家電カテゴリランキング", "url": "https://kakaku.com/ranking/kaden/", "format": "site-specific-html", "parserId": "kakakuRanking", "region": "japan" }
