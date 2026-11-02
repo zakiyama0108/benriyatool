@@ -6866,6 +6866,11 @@
   },
   {
     "specFile": "future-digest/content-selection/requirements.md",
+    "item": "採用基準 [4]",
+    "reason": "一般論か独自性のある予測かの判定はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため"
+  },
+  {
+    "specFile": "future-digest/content-selection/requirements.md",
     "item": "影響度 [2]",
     "reason": "影響度判定の3つの観点(影響を受ける人の多さ等)はClaude Code CLIの推論に委ねる要件で、コードとして自動検証できないため。判定結果の値の妥当性(大・中・小のいずれか)はcandidateValidation.test.tsでテスト済み"
   },
