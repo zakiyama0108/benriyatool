@@ -32,6 +32,22 @@ export function excludeAlreadyPublished(candidates: Candidate[], publishedUrls: 
   return candidates.filter((candidate) => !normalizedPublished.has(normalizeUrl(candidate.url)))
 }
 
+// 発表時点の気象状況を伝える記事を示す見出しの語(requirements.md#発表時点の状況を伝える気象情報の除外-9)
+const WEATHER_KEYWORDS = ['気象', '警報', '注意報', '天気', '大雨', '豪雨', '台風', '暴風', '大雪', '雨']
+// 気象情報を「過去のもの」とみなす経過時間。週次実行の2日前までの天候情報は公開時点で既に過ぎているため48時間とする
+const STALE_WEATHER_MS = 48 * 60 * 60 * 1000
+
+// 気象関連の見出しで、公開から48時間以上経過した候補を除外する
+// (requirements.md#発表時点の状況を伝える気象情報の除外-9)。公開日時が解釈できない候補は残す
+export function excludeStaleWeatherInfo(candidates: Candidate[], now: Date): Candidate[] {
+  return candidates.filter((candidate) => {
+    if (!WEATHER_KEYWORDS.some((keyword) => candidate.heading.includes(keyword))) return true
+    const publishedMs = Date.parse(candidate.publishedAt)
+    if (Number.isNaN(publishedMs)) return true
+    return now.getTime() - publishedMs < STALE_WEATHER_MS
+  })
+}
+
 // 総合・経済/ビジネス: 2社以上の裏付けがある候補(meetsCriteria: true)を公開日時が新しい順に
 // weeklyTopicCountMaxまで採用する。0件のカテゴリはその週その カテゴリの掲載なしとする
 // (requirements.md#1週あたりの掲載件数-7。架空の話題を作らない)

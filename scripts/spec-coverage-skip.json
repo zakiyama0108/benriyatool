@@ -9698,5 +9698,10 @@
     "specFile": "digest-failure-notification/design.md",
     "item": "ログ",
     "reason": "GitHub Actionsの実行ログに記録する項目の記述で、判定結果・LINE API呼び出し結果の記録自体はnotify.test.tsでテスト済みのため、運用上の記録方針としてはユニットテスト対象を持たない"
+  },
+  {
+    "specFile": "news-digest/content-selection/design.md",
+    "item": "発表時点の状況を伝える気象情報を除外する処理(決定的なコード)",
+    "reason": "処理の手順説明で、判定ロジック自体はrequirements.md#発表時点の状況を伝える気象情報の除外-9のテスト(selection.test.ts)で検証済みのため"
   }
 ]

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeUrl, excludeAlreadyPublished, selectWeeklyTopics } from '../../../app/news-digest/lib/selection'
+import { normalizeUrl, excludeAlreadyPublished, excludeStaleWeatherInfo, selectWeeklyTopics } from '../../../app/news-digest/lib/selection'
 import type { Candidate, JudgedCandidate } from '../../../app/news-digest/lib/candidateTypes'
 import type { Criteria } from '../../../app/news-digest/lib/watchlistTypes'
 
@@ -142,5 +142,30 @@ describe('全カテゴリが掲載なしの週の扱い - 候補不足により�
     expect(result.status).toBe('skipped')
     if (result.status !== 'skipped') throw new Error('unreachable')
     expect(typeof result.reason).toBe('string')
+  })
+})
+
+// 仕様: specs/news-digest/content-selection/requirements.md#発表時点の状況を伝える気象情報の除外-9
+describe('発表時点の状況を伝える気象情報の除外 - 気象関連の見出しで公開から48時間以上経過した候補を除外する', () => {
+  const now = new Date('2026-10-28T00:00:00Z')
+
+  it('気象関連の見出しで48時間以上前に公開された候補は除外されること', () => {
+    const old = baseCandidate({ heading: '神奈川は27日朝にかけ雨が続く', publishedAt: '2026-10-25T23:00:00Z' })
+    expect(excludeStaleWeatherInfo([old], now)).toEqual([])
+  })
+
+  it('気象関連の見出しでも48時間未満なら残ること', () => {
+    const recent = baseCandidate({ heading: '大雨警報が発表', publishedAt: '2026-10-27T12:00:00Z' })
+    expect(excludeStaleWeatherInfo([recent], now)).toHaveLength(1)
+  })
+
+  it('気象に関係ない見出しは古くても残ること', () => {
+    const other = baseCandidate({ heading: '保育所の入所申込み', publishedAt: '2026-10-22T00:00:00Z' })
+    expect(excludeStaleWeatherInfo([other], now)).toHaveLength(1)
+  })
+
+  it('公開日時が解釈できない気象関連の候補は誤って除外しないこと', () => {
+    const invalid = baseCandidate({ heading: '台風の見込み', publishedAt: 'invalid' })
+    expect(excludeStaleWeatherInfo([invalid], now)).toHaveLength(1)
   })
 })
