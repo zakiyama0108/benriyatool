@@ -1,0 +1,359 @@
+{
+  "id": "2026-11-06-culture-lifestyle",
+  "edition": "culture-lifestyle",
+  "date": "2026-11-06",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "sns-buzz",
+      "heading": "「無償トレード」がYahoo!リアルタイム検索のトレンド1位に登場",
+      "sections": {
+        "fact": {
+          "heading": "リアルタイム検索のトレンド欄で1位に表示された",
+          "text": "Yahoo!リアルタイム検索のトレンド欄で「無償トレード」が1位に表示されていた。注目度は高い一方、継続日数は0日で、流行前の段階にある。今回が初めての掲載となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "背景は特定できなかった",
+          "text": "元ページでは関連投稿の内容を確認できず、追加で検索しても背景を示す情報は見つからなかった。一般にはプロ野球などで、対価なしに選手を移籍させる取引を指す言葉だが、今回その文脈かどうかは確認できていない。したがって、話題になった理由は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "中身も今後も見通せない段階",
+          "text": "背景が分からないため、何について盛り上がっているのか、今後も広がるのかは見通せない。流行前の段階であり、一過性で終わる可能性もある。詳しい状況は、リアルタイム検索で実際の投稿を確かめてほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "無償トレード",
+      "sourceName": "Yahoo!リアルタイム検索",
+      "sourceUrl": "https://search.yahoo.co.jp/realtime",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-06",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-2",
+      "genre": "buzzwords",
+      "heading": "サッカー欧州カンファレンスリーグの「ヘタフェ対ブライトン」戦が急上昇ワードに",
+      "sections": {
+        "fact": {
+          "heading": "検索数の目安は「100+」で、観測は初回",
+          "text": "Googleトレンド(日本)での検索数の目安は「100+」。継続度ラベルは流行前、継続日数は0日、報告回数は1回目で、注目度は高いと判定されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "欧州カンファレンスリーグの試合が行われ、結果が報じられたことが背景とみられる",
+          "text": "スペインのヘタフェとイングランドのブライトンがUEFAカンファレンスリーグで対戦した試合が背景とみられる。関連ニュースではブライトンが1対0で勝利したと伝えられており、試合結果への関心が検索につながったと考えられる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の継続は見通せない",
+          "text": "検索のきっかけは関連ニュースからの推測を含み、日本でなぜ注目されたのかまでは特定できなかった。流行前の段階で、単発の試合話題として終わる可能性もあり、今後の継続は見通せない。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "getafe vs brighton",
+      "sourceName": "Google公式トレンドRSS(日本)",
+      "sourceUrl": "https://trends.google.com/trending/rss?geo=JP",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-06",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-3",
+      "genre": "gourmet",
+      "heading": "ドバイ発のピスタチオ入りチョコが、SNS映えを背景に日本でも注目され始めている",
+      "sections": {
+        "fact": {
+          "heading": "今回が初回の掲載で、継続度は「流行前」",
+          "text": "掲載は今回が1回目で、継続度ラベルは「流行前」、注目度は「低い」、継続日数は0日です。発祥はアラブ首長国連邦(ドバイ)で、現在の主な流行地域は日本を含む世界各地とされています。出典はmacaroni(PR TIMES掲載)です。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "サクサク食感と断面の見た目が、動画で広まりやすかったとみられる",
+          "text": "ピスタチオペーストとカダイフ(中東の麺状の生地)を板チョコに詰めた商品で、噛んだ時の食感と割った断面の見た目が特徴です。この特徴が短い動画と相性がよく、SNSで世界に広まり、日本でも取り扱う店が出てきたとみられます。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[ドバイ発の商品] --> B[食感と断面が動画向き]\n  B --> C[SNSで世界に拡散]\n  C --> D[日本でも取り扱いが登場]"
+          }
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の定着は見通せない",
+          "text": "ここで述べた広まり方は、複数の情報からの推測を含みます。継続度は「流行前」の段階で、定着するのか一過性で終わるのかは現時点では見通せません。詳しくは出典元をご確認ください。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "ドバイチョコ(ドバイ風チョコ)",
+      "sourceName": "macaroni(PR TIMES掲載)",
+      "sourceUrl": "https://webtan.impress.co.jp/r/prtimes/items/000000115.000005511",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-06",
+        "reportCount": 1,
+        "originRegion": "アラブ首長国連邦(ドバイ)",
+        "currentRegions": [
+          "日本",
+          "世界各地"
+        ]
+      }
+    },
+    {
+      "id": "topic-4",
+      "genre": "hobby",
+      "heading": "W杯に合わせてPANINIのカード・ステッカー人気が高まる、との予測が話題に",
+      "sections": {
+        "fact": {
+          "heading": "今回が初回の報告で、まだ流行前の段階",
+          "text": "報告は今回が1回目で、継続日数は0日。継続度は「流行前」、注目度は低い段階にある。現在の主な流行地域はヨーロッパで、発祥地域は不明。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "W杯の盛り上がりと結びついた人気予測が背景",
+          "text": "DIMEのホビー予測が、W杯に合わせたPANINIのトレーディングカードとステッカーの人気上昇を挙げた。参加国が増えて裾野が広がる見込みであることに加え、レアが出やすい「プリズム」カードは値上がりして投資対象にもなりうる、という見立てだ。FIFA公式ライセンスを持つ同社の商品が、大会の話題と結びつきやすい点も背景にある。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "媒体の予測に基づく話題で、継続は見通せない",
+          "text": "この背景は2026年2月時点の媒体による予測であり、実際にどこまで盛り上がったかは確認できていない。流行前の段階のため、今後も続くかは見通せない。詳細は出典元の記事を参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "サッカーW杯に合わせたPANINI(パニーニ)のカード・ステッカー人気",
+      "sourceName": "DIME",
+      "sourceUrl": "https://dime.jp/genre/2068263/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-06",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": [
+          "ヨーロッパ"
+        ]
+      }
+    },
+    {
+      "id": "topic-5",
+      "genre": "fashion",
+      "heading": "秋冬は「愛着」がムードに。手編み・刺しゅうニットと学生服由来の服が象徴",
+      "sections": {
+        "fact": {
+          "heading": "今回が初掲載で、まだ流行前の段階",
+          "text": "今回が通算1回目の掲載で、継続度は「流行前」、注目度は「低い」、継続日数は0日。話題の広がりを示す観測はまだ乏しい段階にある。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "ファッション誌が秋冬の中心ムードに「愛着」を据えた",
+          "text": "WWDJAPANの秋冬トレンドブックが、シーズンの中心ムードに「愛着」を挙げたことが背景。思いを込めた手編みや刺しゅうのニット、学生服を起点にしたブレザーやシャツがその象徴とされた。新しさより、受け継ぐ感覚や懐かしさに価値を置く流れを示している。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "一媒体の分析で、広がりはこれから",
+          "text": "これは特定の媒体が示した分析であり、一般の検索や購買で広がったことまでは確認できていない。発祥地域も現在の主な流行地域も不明。詳しい記事は有料のものが多く全容は未確認のため、今後定着するかはまだ見通せない。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "「愛着」ムードの秋冬トレンド(手編み刺しゅうニット、学生服由来のブレザー・シャツ)",
+      "sourceName": "WWDJAPAN(2026-27年秋冬トレンドブック)",
+      "sourceUrl": "https://webtan.impress.co.jp/r/prtimes/items/000000187.000080364",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-06",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-6",
+      "genre": "gadgets",
+      "heading": "価格.com家電ランキングで日立の白くまくん RAS-AJ2226S(W)が3位に浮上",
+      "sections": {
+        "fact": {
+          "heading": "注目され始めの段階で、直近の集計では3位に入った",
+          "text": "価格.comの家電カテゴリーランキング(10月29日〜11月4日集計)で3位でした。継続度は「注目され始め」で継続日数は14日、注目度は「高い」で、今回が初めての掲載です。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "背景は特定できなかったが、価格面の手頃さが関係している可能性がある",
+          "text": "ランキングは製品ページへのアクセスや価格比較、レビューの活動を集計したものです。急上昇の直接の理由は、追加で調べても特定できませんでした。最安価格が4万円台後半という手頃さや、操作の分かりやすさを評価する口コミは見つかりましたが、これらは人気との因果が確認できたものではありません。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は推測を含み、人気が続くかはまだ見通せない",
+          "text": "「なぜ注目されたか」は裏付けが取れていない推測を含みます。参考にした口コミの一部は近い型番のものです。継続度は「注目され始め」の段階なので、今後も上位に残るかは分かりません。購入を考える場合は、価格.comの最新の情報を確認してください。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "白くまくん RAS-AJ2226S(W) [スターホワイト]",
+      "sourceName": "価格.com家電カテゴリランキング",
+      "sourceUrl": "https://kakaku.com/ranking/kaden/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 14,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-7",
+      "genre": "games",
+      "heading": "Wallpaper EngineがSteamのプレイヤー数ランキングで4位に定着",
+      "sections": {
+        "fact": {
+          "heading": "プレイヤー数ランキング4位で、順位は前週と変わらない",
+          "text": "Steamのプレイヤー数ランキングでWallpaper Engineは4位に入り、前週も同じ4位だった。集計日のピークは約11万人。話題としての観測は28日間続いていて、継続度は「注目され始め」、注目度は「普通」。週刊トレンドで取り上げるのは今回が初めてである。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "押し上げた具体的な出来事は特定できなかった",
+          "text": "このランキングは遊んだ人数の集計なので、新作の発売のような単発の出来事よりも、日常的に起動され続けるソフトの強さが表れている可能性がある。ただ、今回確認できた資料からは、この順位を直近で押し上げた具体的な出来事は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "「常時起動型だから上位」は推測で、先の見通しも立たない",
+          "text": "「常時起動型だから上位に来る」という説明は推測であり、確かな理由ではない。順位が前週から動いていないため、急上昇というより高い位置で安定している状態と見るのが妥当である。継続度は「注目され始め」の段階で、今後も話題が続くかは見通せない。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "Wallpaper Engine",
+      "sourceName": "Steam公式Web API(プレイヤー数)",
+      "sourceUrl": "https://api.steampowered.com/ISteamChartsService/GetMostPlayedGames/v1/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "normal",
+        "continuationDays": 28,
+        "continuationStartDate": "2026-10-09",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-8",
+      "genre": "travel",
+      "heading": "関西の秋のコスモス畑を巡る特集記事が、じゃらんnetで注目され始めている",
+      "sections": {
+        "fact": {
+          "heading": "注目され始めの段階で、28日間観測されている",
+          "text": "じゃらんnet人気ランキングで見かけた話題で、今回が初の掲載(1回目)です。継続度は「注目され始め」、注目度は「普通」で、観測から28日が経っています。発祥地域と現在の主な流行地域はどちらも不明です。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "見頃シーズンと旅行計画の時期が重なったとみられる",
+          "text": "記事は関西のコスモス名所17か所を、2026年の見頃情報とあわせて紹介する特集です。関西のコスモスは例年9月下旬から11月上旬が見頃で、10月前半から中旬に重なりやすいとされています。万博記念公園など各地で10月にコスモス関連のイベントも予定されており、秋の行楽先を探す人の関心が集まったと考えられます。ただし、ランキングの順位が上がった直接の要因は確認できていません。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[9月下旬: 開花が始まる] --> B[10月前半〜中旬: 見頃を迎えやすい]\n B --> C[11月上旬: 見納めの時期]"
+          }
+        },
+        "caveat": {
+          "heading": "季節要因による推測を含み、今後の継続は見通せない",
+          "text": "背景の説明は季節性からの推測で、順位上昇の理由を断定したものではありません。コスモスの開花は天候で前後するため、お出かけ前に各施設の公式情報を確認してください。見頃が終わる11月上旬以降は関心が落ち着く可能性があります。出典はじゃらんnet人気ランキングです。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "【関西】秋の絶景「コスモス畑」名所おすすめ17選。2026年の見頃もチェック！",
+      "sourceName": "じゃらんnet人気ランキング",
+      "sourceUrl": "https://www.jalan.net/news/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "normal",
+        "continuationDays": 28,
+        "continuationStartDate": "2026-10-09",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-9",
+      "genre": "economy-money",
+      "heading": "新顔のREIT連動ETF「530A」が出来高急増率で全市場1位に",
+      "sections": {
+        "fact": {
+          "heading": "出来高が前日の約5,000倍に膨らみ、ランキング首位へ",
+          "text": "11月5日のYahoo!ファイナンス出来高増加率ランキングで、このETFは全市場の1位に入った。出来高は前日のわずか11株から5万株超へ急増している。継続度は「流行前」、注目度は「高い」で、継続日数は7日、今回が1回目の報告となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "急増の直接の理由は特定できなかった",
+          "text": "背景は調べても特定できなかった。このETFは東証REIT指数に連動し、2026年3月に上場した比較的新しい銘柄とされる。上場から日が浅く普段の売買がごく少ないため、取引が少し増えただけでも倍率が極端に大きくなりやすい。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "倍率の大きさは人気の高まりとは限らない",
+          "text": "倍率の大きさは前日の出来高が極端に小さかった影響が大きく、人気の高まりそのものを示すとは限らない。背景の説明には推測を含む。流行前の段階で、今後も続くかは見通せない。詳細は元のランキングや取引所の公式情報で確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "NZAM 上場投信 東証REIT指数(2・5・8・11月決算型)",
+      "sourceName": "Yahoo!ファイナンス出来高増加率ランキング",
+      "sourceUrl": "https://finance.yahoo.co.jp/stocks/ranking/volumeIncrease?market=all",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 7,
+        "continuationStartDate": "2026-10-30",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-10",
+      "genre": "dev-trends",
+      "heading": "Qiitaで「AI駆動開発の次の段階」を掲げたソフトウェアファクトリーの記事が注目",
+      "sections": {
+        "fact": {
+          "heading": "公開直後のQiita記事が注目度「高い」で急浮上した",
+          "text": "Qiitaの人気記事フィードに、2026年11月4日公開の記事として登場した。通算の報告回数は1回目で、継続度は流行前、継続日数は0日。注目度は高いと判定されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "AIにコードを書かせる段階から、開発の仕組み全体を回す段階へ関心が移っているとみられる",
+          "text": "AI支援でコードを書く段階から、開発の仕組み全体を工場のように回す段階へ関心が移りつつあることが背景とみられる。著者はClaude Code開発者の記事に刺激を受けて書いたと述べており、AIの使い方をめぐる議論の流れの中で読まれたようだ。ただし記事の詳細な主張までは確認できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の継続はまだ見通せない",
+          "text": "記事の冒頭しか確認できておらず、注目された理由は推測を含む。登場したばかりで継続度は流行前のため、今後も続くかは見通せない。地域は不明。詳細は元記事を参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "AI駆動開発の次の段階: ソフトウェアファクトリー",
+      "sourceName": "Qiita人気記事フィード",
+      "sourceUrl": "https://qiita.com/popular-items/feed",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-06",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    }
+  ],
+  "unavailableGenres": []
+}
