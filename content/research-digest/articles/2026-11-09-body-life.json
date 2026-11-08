@@ -1,0 +1,192 @@
+{
+  "id": "2026-11-09-body-life",
+  "edition": "body-life",
+  "date": "2026-11-09",
+  "findings": [
+    {
+      "id": "medical-health",
+      "genre": "medical-health",
+      "heading": "心臓・腎臓・代謝の不調が進んだ人は、その後にがんと診断される割合が2〜3割高かった",
+      "sections": {
+        "finding": {
+          "heading": "不調が進んだ段階ほど、がんの診断が増えていた",
+          "text": "心臓・血管、腎臓、代謝(血糖や脂質など)の不調が重なって進んだ段階(ステージ3〜4)の人では、そうでない人に比べ、その後にがんと診断される割合が25〜30%ほど高い結果でした。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "日本全国の大規模な健診・請求記録を追跡した",
+          "text": "日本の保険請求データから約140万人分を集め、不調の進み具合ごとにグループ分けして、約3年余りの間にがんと診断された人の割合を比べています。人数が多いため、偶然とは考えにくい差として見えてきました。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "健診の結果を、がんへの備えとしても見直すきっかけに",
+          "text": "血圧・血糖・腎機能などの健診結果は、心臓病だけでなくがんの面でも気にかける材料になる可能性があります。健診やがん検診を定期的に受ける大切さを、あらためて考える手がかりになります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "関連は示されたが、原因とまでは言えない",
+          "text": "観察研究のため、不調ががんを招いたとは断定できません。追跡は約3.4年と短く、日本の保険データに基づく結果です。個々の人にそのまま当てはまるとは限らず、結果は過信せず受け止める必要があります。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "約140万人の保険請求データという規模で、心血管・腎・代謝の不調が進んだ段階(ステージ3〜4)でがんリスクが25〜30%高まると示され、健診での早めの対策につながるが、観察研究で追跡も約3.4年と短く、因果は示せない。",
+      "sourceTitle": "Association Between Cardiovascular-Kidney-Metabolic Syndrome and Cancer Development: Insights From a Nationwide Database Study in Japan",
+      "sourceName": "Circulation: Population Health and Outcomes(東京大学の研究者ら、米国心臓協会)",
+      "sourceUrl": "https://www.ahajournals.org/doi/10.1161/CIRCOUTCOMES.125.012921",
+      "doi": "10.1161/circoutcomes.125.012921",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "nutrition-food",
+      "genre": "nutrition-food",
+      "heading": "英国の約10万人を追った研究で、健康的な食事パターンをよく守る人は死亡リスクが低く、遺伝的な体質によらず当てはまった",
+      "sections": {
+        "finding": {
+          "heading": "どの健康的な食事でも死亡リスクは低め",
+          "text": "5種類の健康的な食事パターンのどれでも、よく守る人は死亡リスクが約2割低い傾向でした。長寿に関わる遺伝的な体質の違いがあっても、この傾向は変わりませんでした。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "大人数を長く追って比べた",
+          "text": "英国の約10万人について、普段の食事内容を調べ、約10年にわたり亡くなった人の割合を追いました。食事の守り方で人を分けて比べ、遺伝的な体質も加味して確かめています。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[約10万人の食事と遺伝情報を調べる] --> B[約10年追跡]\n B --> C[食事の守り方で群を比較]\n C --> D[よく守る群は死亡リスクが低め]"
+          }
+        },
+        "relevance": {
+          "heading": "食習慣を見直す手がかりになる",
+          "text": "特定の食事法だけが正解ではなく、複数の健康的な食事に共通する考え方を日々の食事に取り入れることが、長い目で見て役立つ可能性を示唆します。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "因果関係までは言えない観察研究",
+          "text": "食事と寿命の関連を観察した研究であり、食事が原因だと断定はできません。対象は英国の人々で、他の地域や集団に同じように当てはまるかは分かりません。食事内容の自己申告による誤差も含まれ得ます。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "英国の約10万人を約10年追った研究で、5種類の健康的な食事パターンのどれでも、よく守る人は死亡リスクが約18〜24%低く、遺伝的な体質にかかわらず当てはまったため、多くの人の食習慣の見直しにつながるが、観察研究である。",
+      "sourceTitle": "Healthy dietary patterns, longevity genes, and life expectancy: A prospective cohort study",
+      "sourceName": "Science Advances",
+      "sourceUrl": "https://www.science.org/doi/10.1126/sciadv.ads7559",
+      "doi": "10.1126/sciadv.ads7559",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "psychology-brain",
+      "genre": "psychology-brain",
+      "heading": "慢性疾患のある人の抑うつ・不安・ストレスは、認知行動療法でもマインドフルネスでも和らぐ傾向が示された",
+      "sections": {
+        "finding": {
+          "heading": "どちらの心のケアも、気持ちの負担を軽くする傾向があった",
+          "text": "糖尿病やがんなど慢性疾患のある成人を対象にした研究を集めて分析したところ、認知行動療法もマインドフルネスも、抑うつ・不安・ストレスの改善にはっきりつながる結果が出ました。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "多数の試験をまとめ、疾患ごとに分けて確かめた",
+          "text": "約2万3,600人分、107件の無作為化試験(くじ引きのように参加者を振り分ける試験)をまとめて分析しました。さらに病気の種類ごとに分けて見ており、偏りの少ない比較がしやすい作りです。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[107件の無作為化試験を集める] --> B[約2万3,600人分をまとめて分析]\n B --> C[病気の種類ごとに分けて確認]\n C --> D[抑うつ・不安・ストレスの変化を比べる]"
+          }
+        },
+        "relevance": {
+          "heading": "心のケアの選択肢を知る手がかりになる",
+          "text": "慢性疾患と付き合う人やその家族にとって、体の治療とあわせて心の負担にも目を向ける価値があり、心のケアには複数の方法があると知る手がかりになります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "比較は間接的で、確からしさは中程度",
+          "text": "二つの方法を直接比べた結果ではなく、別々の試験をもとにした間接的な比較です。試験ごとのばらつきも大きく、確からしさは中程度にとどまります。個々の人に同じ効果が出るとは限りません。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "糖尿病やがんのある成人約2万3,600人分・107件の無作為化試験を統合した結果、認知行動療法とマインドフルネスのどちらも抑うつ・不安・ストレスをはっきり改善し、慢性疾患のある多くの人の心のケアの選び方に役立つが、比較は間接的で試験間のばらつきも大きいため確からしさは中程度である。",
+      "sourceTitle": "Mindfulness-based interventions and cognitive behavioral therapy for depression, anxiety, and stress in adults with chronic conditions: a stratified subgroup meta-analysis",
+      "sourceName": "npj Mental Health Research",
+      "sourceUrl": "https://www.nature.com/articles/s44184-026-00216-3",
+      "doi": "10.1038/s44184-026-00216-3",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "sleep-exercise",
+      "genre": "sleep-exercise",
+      "heading": "筋トレは週90〜119分ほどの人で、約30年の追跡中の死亡が13%少なかった",
+      "sections": {
+        "finding": {
+          "heading": "筋トレが週90〜119分前後の人は、全体の死亡が少なめだった",
+          "text": "筋トレを週に90〜119分ほどしていた人は、ほとんどしない人より追跡期間中の死亡が約13%少なくなっていました。120分を超えても、上乗せの差は見られませんでした。有酸素運動も多い人は、さらに差が大きくなっていました。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "約15万人を長年追いかけて比べた",
+          "text": "米国の大規模な健康調査に参加した約15万人に、2年ごとに運動の時間を尋ねました。その答えと、最長で約30年の間に亡くなったかどうかを突き合わせ、運動量ごとのグループで比べています。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[約15万人が参加] --> B[2年ごとに運動時間を回答]\n B --> C[最長約30年追跡]\n C --> D[運動量別に死亡の少なさを比較]"
+          }
+        },
+        "relevance": {
+          "heading": "筋トレは長く続ける運動の選択肢になる",
+          "text": "ウォーキングなどの有酸素運動に加えて、筋トレも組み合わせる意味がありそうだと示す結果です。ただ、短時間でも差が見られたため、まずは無理のない範囲で運動の習慣を考える手がかりになります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "運動が原因とまでは言えない",
+          "text": "運動量は本人の申告で、観察しただけの研究です。そのため、筋トレが死亡を減らしたとは断定できません。参加者は女性が多く、運動1回の長さや強度も分かっていません。なお、査読前ではなく学術誌に掲載された論文です。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "ウェイトトレーニングなど筋トレをする人は多く、週90〜119分で全死亡が13%低いという具体的な目安を示す約15万人・最長30年の追跡だが、自己申告に基づく観察研究のため因果は断定できない。",
+      "sourceTitle": "Long-term resistance training with all-cause and cause-specific mortality: assessing dose-response and joint associations with aerobic physical activity",
+      "sourceName": "British Journal of Sports Medicine(BMJ Group公式発表)",
+      "sourceUrl": "https://bmjgroup.com/90-120-weekly-minutes-of-strength-training-may-be-optimal-for-lowering-death-risk/",
+      "doi": "10.1136/bjsports-2025-110503",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "education-parenting",
+      "genre": "education-parenting",
+      "heading": "学力支援の効果が時間とともに薄れる仕組みを、42研究・677の効果の数値から調べた",
+      "sections": {
+        "finding": {
+          "heading": "支援の効果が薄れる背景を探る研究",
+          "text": "学力に課題のある子を支える取り組みは、実施直後に出た効果が時間とともに薄れることがあります。この研究は、その薄れ方の背景にどんな仕組みがあるのかを整理することを目的にした統合研究です。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "多数の研究をまとめて比べた",
+          "text": "個々の研究を1つずつ見るのではなく、42の研究から得られた677件の効果の数値をまとめて分析しています。多くの研究を横断して比べることで、1つの研究だけでは見えにくい傾向を探る方法です。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "直後の成果が続くとは限らない",
+          "text": "補習や学習支援を受けた直後に成果が見えても、その後も続くとは限らないことを意識するきっかけになります。ただし、家庭や学校でどう対処すればよいかという直接の方法までは、この研究は示していません。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "概要の範囲での紹介で、詳細は元論文で",
+          "text": "この要約は公開されている題名と概要の範囲に基づいており、薄れる仕組みの具体的な中身までは扱っていません。統合研究は、元になる個々の研究の質や条件にも左右されます。査読を経た論文ですので、詳しくは元の論文をご確認ください。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "学校での補習などの効果が、なぜ時間とともに薄れるのかを42研究・677効果量の統合で調べた結果で、学力に課題のある子の支援を考える家庭や学校に関わるが、直接の対処法までは示していない。",
+      "sourceTitle": "On the mechanisms of intervention effect fade-out: A meta-analytic review of interventions targeting at-risk students' achievement",
+      "sourceName": "Psychological Bulletin",
+      "sourceUrl": "https://doi.org/10.1037/bul0000516",
+      "doi": "10.1037/bul0000516",
+      "publishedYear": 2026,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}
