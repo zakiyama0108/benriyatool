@@ -1,0 +1,326 @@
+{
+  "id": "2026-11-12-science-tech",
+  "edition": "science-tech",
+  "date": "2026-11-12",
+  "issueNumber": 6,
+  "predictions": [
+    {
+      "id": "technology-ai--mid",
+      "genre": "technology-ai",
+      "horizon": "mid",
+      "heading": "技術専門家の6割超が、2035年までにAIが人間の特性に深い変化をもたらすと見ている",
+      "sections": {
+        "when": {
+          "heading": "2035年までに人間の特性が大きく変わると見込まれている",
+          "text": "2035年までの約10年間で、AIの普及が人間らしさを形づくる特性や能力を大きく変えると考えられている。社会的・感情的な知性、深く考える力、共感、主体性などは弱まりやすいと見られている。一方、好奇心や学習、問題解決、創造性は伸びるとの見方も出ている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "米大学の研究機関が、専門家300人超の回答から示した",
+          "text": "米エロン大学のImagining the Digital Future Centerが2025年に公表した報告書に基づく。世界の技術専門家300人超へ、人間の12の特性が2035年までにどう変わるかを尋ねた。回答者の6割強が深い変化を見込み、良い面と悪い面が同程度とみる人が半数だった。ただし無作為抽出ではない標本で、統計的な代表性はないとされている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[技術専門家300人超に調査] --> B[人間の12の特性を2035年まで予測]\n B --> C{全体の見立て}\n C --> D[良し悪しが同程度]\n C --> E[悪化]\n C --> F[改善]"
+          }
+        },
+        "impact": {
+          "heading": "AIへの依存が、人間関係や自信のあり方を左右しかねない",
+          "text": "実現すれば、AIに考えることや人付き合いを任せる場面が増え、思考力や共感、自分の能力への自信が揺らぐ恐れがあると指摘されている。人間であることの証明が必要になる状況も懸念されている。他方、雑務をAIが担い、人が体験や精神面に時間を使えるようになるという期待もあるとされる。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "技術専門家300人超の調査で、AIが人間の思考力・共感・主体性などに2035年までに深い影響を与えると見込まれている。影響を受ける人は非常に多く、生活への変化も深い。一方で調査は代表性のない標本で、実現の確からしさは限定的。",
+      "targetPeriod": "2035年まで",
+      "sourceTitle": "Report: Technology experts worry about the future of being human in the AI Age (Being Human in 2035)",
+      "sourceName": "Elon University Imagining the Digital Future Center",
+      "sourceUrl": "https://www.elon.edu/u/news/2025/04/02/report-technology-experts-worry-about-the-future-of-being-human-in-the-ai-age/"
+    },
+    {
+      "id": "technology-ai--ultra-long",
+      "genre": "technology-ai",
+      "horizon": "ultra-long",
+      "heading": "専門家と予測の達人の調査で、2100年までに多数がAGIの存在を認めるとの見方が示されている",
+      "sections": {
+        "when": {
+          "heading": "2100年までにAGIが存在するとの見方が多数",
+          "text": "2100年までの長い期間を対象に、多数のパネリストがAGI(汎用人工知能)の存在を認めるだろうと予測していると考えられている。ただし、具体的な到来年や、どの水準をAGIと呼ぶかの詳細は、ここでは元記事の範囲で断定できない。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "専門家と予測の達人を対象にした調査が根拠",
+          "text": "この見方を示しているのは、Forecasting Research Instituteが実施した調査(LEAP第8回)である。AIの専門家と、予測精度の高い「予測の達人」の双方に意見を尋ね、AI到達時期の見通しを更新した結果とされる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[AI専門家] --> C[LEAP第8回調査]\n B[予測の達人] --> C\n C --> D[AI到達時期の見通しを更新]\n D --> E[2100年までに多数がAGIを認めるとの見方]"
+          }
+        },
+        "impact": {
+          "heading": "実現すれば社会全体に及ぶが不確実性は大きい",
+          "text": "AGIが実現すれば、仕事や経済、教育など社会全体に及ぶ変化になると考えられている。一方で2100年までという長期の予測であり、不確実性は大きい。そのため影響度は中程度と位置づけられ、将来の備えを考える際の一つの目安として受け止めるのがよいと考えられる。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "専門家と予測の達人の調査で、2100年までに多数のパネリストがAGIの存在を認めるとの見方が示されている。実現すれば社会全体に及ぶ変化だが、長期の予測で不確実性が大きい。",
+      "targetPeriod": "2100年まで",
+      "sourceTitle": "Experts and Superforecasters Update Their AI Timelines (LEAP Wave 8)",
+      "sourceName": "Forecasting Research Institute",
+      "sourceUrl": "https://forecastingresearch.substack.com/p/leap-wave-8-ai-timelines"
+    },
+    {
+      "id": "medical-health--mid",
+      "genre": "medical-health",
+      "horizon": "mid",
+      "heading": "高齢化で前立腺がんの患者が2040年までに世界で倍増すると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2040年までに患者数が約2倍になると見込まれている",
+          "text": "Lancet委員会は、2040年までに世界の前立腺がん患者が2020年の約140万人から約290万人へほぼ倍増し、死亡も約70万人に増えると予測している。主因は世界的な高齢化と考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "国際的な専門家の委員会が、人口の高齢化を根拠に推計している",
+          "text": "予測を示しているのは、医学誌The Lancetに設置された前立腺がんの委員会である。年齢が上がるほど発症しやすいというがんの性質と、各国の人口が高齢化していく見通しを組み合わせて、将来の患者数と死亡数を見積もっていると考えられる。人口動態に基づく推計のため、確からしさは比較的高いとされている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[世界的な高齢化] --> B[高齢男性の増加]\n B --> C[患者数の増加\n2020年 約140万人\n2040年 約290万人]\n C --> D[死亡も増加\n約70万人]"
+          }
+        },
+        "impact": {
+          "heading": "検査や治療の体制づくりが各国で課題になると考えられる",
+          "text": "患者が倍増すれば、検査や診断、治療を担う医療現場への負担が大きくなると考えられている。委員会は、急増に備えて医療体制を計画的に整えることの重要性を示している。影響を受ける人は多い一方、対象は男性の特定のがんに限られるため、社会全体への影響度は中程度とされている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "高齢化で世界の前立腺がん患者が2020年の約140万人から2040年に約290万人へ倍増し、死亡も約70万人に増える見通しで、影響を受ける人は多く、確からしさも比較的高い。ただし対象は男性の特定のがんに限られるため中とした。",
+      "targetPeriod": "2040年まで",
+      "sourceTitle": "The Lancet Commission on prostate cancer: planning for the surge in cases",
+      "sourceName": "The Lancet(Lancet Commission on prostate cancer)",
+      "sourceUrl": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7617369/"
+    },
+    {
+      "id": "medical-health--ultra-long",
+      "genre": "medical-health",
+      "horizon": "ultra-long",
+      "heading": "2100年までに世界の健康を脅かす17の要因があり、肥満の影響が最大になると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2100年までの健康損失で、肥満が最大の要因と見られている",
+          "text": "Lancet委員会の報告は、2100年までの世界の健康を損なう要因として17の脅威を挙げたと伝えられている。その中でも肥満は、失われる健康な年数の予測が最も大きいと見られている。AIの悪用や核戦争のような存続に関わる脅威や、教育水準の低さ、所得格差も上位に入ると考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "専門家委員会が、健康損失の大きさを基準に脅威を整理した",
+          "text": "示しているのは、専門家で構成されたLancet委員会で、To Vimaがその報告を紹介している。世界疾病負担のデータをもとに、健康な年数の損失を指標として、2100年までに大きな損失をもたらす脅威を選んだとされる。ただし数値は報道経由であり、遠い将来の不確実性も大きい。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[世界疾病負担などのデータ] --> B[健康な年数の損失を指標に試算]\n B --> C[2100年までに影響の大きい17の脅威を選定]\n C --> D[肥満の損失が最大と予測]"
+          }
+        },
+        "impact": {
+          "heading": "脅威は互いに関連するため、分野をまたぐ対策が求められると考えられている",
+          "text": "委員会は、脅威は互いに関わり合っており、対策も公衆衛生、環境、教育、経済、安全保障にまたがって進める必要があると述べているとされる。実現すれば、医療だけでなく教育や格差の是正が将来の健康を左右する、という見方が広がる可能性がある。一方で、将来は確定しておらず、今の判断しだいで変わり得るとも説明されている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "Lancetの委員会が、2100年までの世界の健康を脅かす17の要因を挙げ、肥満の影響が最大になると見ている。世界の多くの人に関わる話だが、数値は報道経由で、2100年という遠い将来の不確実性も大きいため中とした。",
+      "targetPeriod": "2100年まで",
+      "sourceTitle": "17 threats that could shape global health by 2100",
+      "sourceName": "To Vima(Lancet委員会の報告を紹介)",
+      "sourceUrl": "https://www.tovima.com/science/17-threats-that-could-shape-global-health-by-2100/"
+    },
+    {
+      "id": "environment-energy--mid",
+      "genre": "environment-energy",
+      "horizon": "mid",
+      "heading": "2032年ごろ、世界の発電量で太陽光が石炭とガスを抜いて最大の電源になると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2032年に太陽光が最大の電源になる見通し",
+          "text": "2032年までに、世界の発電量で太陽光が石炭と天然ガスを上回り、最大の電源になると予測されている。2025年時点では石炭が最大で、太陽光はまだ1割弱にとどまる。その後も石炭やガスは完全には消えず、2050年ごろにも一定の割合で残ると見込まれている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[\"2025年: 石炭が最大の電源\"] --> B[\"2032年: 太陽光が最大に\"]\n  B --> C[\"2050年: 太陽光と風力が中心、化石燃料も残る\"]"
+          }
+        },
+        "basis": {
+          "heading": "BloombergNEFのエネルギー見通しが根拠",
+          "text": "示しているのは調査会社BloombergNEFの2026年版エネルギー見通しで、米紙Washington Examinerが紹介している。感染症の流行や戦争などの相次ぐエネルギー危機で供給の脆弱さが露わになり、各国が電源の多様化を進めていること、現在のクリーンエネルギー導入ペースが続くことが前提とされている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "電源の多様化が進み、電力網の整備が課題になる",
+          "text": "世界の電力の担い手が移ることで、供給が特定の燃料に偏るリスクが和らぐと考えられている。一方、電気の役割が大きくなるため、電力網の整備や供給力の確保が重要になる。データセンターの電力需要も今後2倍以上に増えるとされ、需給の課題になりうる。米国は政策の影響で移行が相対的に遅れると見込まれている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "世界の電力の担い手が石炭・ガスから太陽光へ移る見通しで、影響を受ける人が多く、エネルギー供給の形が深く変わる。電力需要の増加が続くため確からしさも高い。",
+      "targetPeriod": "2032年まで",
+      "sourceTitle": "Solar to dominate power sector over coal and gas by 2032, report suggests",
+      "sourceName": "Washington Examiner(BloombergNEFの見通しを紹介)",
+      "sourceUrl": "https://www.washingtonexaminer.com/policy/energy-and-environment/4574135/solar-to-dominate-power-over-coal-gas-2032-per-report/"
+    },
+    {
+      "id": "environment-energy--ultra-long",
+      "genre": "environment-energy",
+      "horizon": "ultra-long",
+      "heading": "グリーンランドの融解水で大西洋の海洋大循環は大きく弱まるが、停止はしないと考えられている",
+      "sections": {
+        "when": {
+          "heading": "2100年に向けて強く弱まり、停止はしないとみられる",
+          "text": "グリーンランドから流れ込む融解水の影響で、大西洋の海洋大循環(AMOC)は2100年ごろまでに大きく弱まると予測されている。2300年までの見通しも含まれている。一方で、循環が完全に止まる事態にはならないというのが、この研究の見方とされている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "融解水の影響を調べた研究結果として報じられた",
+          "text": "この予測は、グリーンランドの融解水が大西洋の主要な海流に及ぼす影響を調べた研究の結果として、科学ニュースメディアのLive Scienceが伝えている。ただし、用いられた手法や研究者・機関の詳細は、確認できた範囲では分からなかった。AMOCが完全に停止するかどうかは研究によって見解が分かれており、確からしさは中程度とされている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[グリーンランドの融解水が増える] --> B[大西洋の海洋大循環が弱まる]\n B --> C{停止するか}\n C -->|この研究の見方| D[大きく弱まるが停止はしない]\n C -->|別の研究| E[停止の可能性を指摘]"
+          }
+        },
+        "impact": {
+          "heading": "欧州の気候や世界の降水に広く影響すると考えられている",
+          "text": "AMOCが弱まると、欧州の気候や世界の降水パターンに影響が及ぶと考えられている。影響の範囲は広く、変化も深いとされる。完全な停止は避けられるとしても、気候の変化に合わせた備えが長期的に求められる可能性がある。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "大西洋の海洋大循環(AMOC)の弱まりは、欧州の気候や世界の降水パターンに及ぶ。影響範囲は広く変化も深いが、完全な停止かどうかは研究によって見解が分かれ、確からしさは中程度。",
+      "targetPeriod": "2100年まで(2300年までの見通しを含む)",
+      "sourceTitle": "Greenland meltwater will drive a 'strong weakening, but not a shutdown' of key Atlantic currents, study finds",
+      "sourceName": "Live Science",
+      "sourceUrl": "https://www.livescience.com/planet-earth/rivers-oceans/greenland-meltwater-will-drive-a-strong-weakening-but-not-a-shutdown-of-key-atlantic-currents-study-finds"
+    },
+    {
+      "id": "space-science--mid",
+      "genre": "space-science",
+      "horizon": "mid",
+      "heading": "宇宙空間で重力波を捉える初の計画LISAが、2035年の打ち上げを目指して建設段階に入った",
+      "sections": {
+        "when": {
+          "heading": "2035年に打ち上げ、2037年ごろから科学観測が始まる見込み",
+          "text": "欧州宇宙機関(ESA)は2024年1月にLISA計画を正式に採択した。2035年に3機の衛星をAriane 6ロケットで打ち上げ、2037年ごろから科学観測に入ると考えられている。3機は正三角形の編隊を組み、レーザーで互いの距離の微小な変化を測って、宇宙から重力波を捉える構想だ。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[2024年 ESAが採択] --> B[建設・製造]\n B --> C[2035年 打ち上げ]\n C --> D[2037年ごろ 科学観測]"
+          }
+        },
+        "basis": {
+          "heading": "ESAが主導し、NASAや欧州各国が装置を分担する",
+          "text": "この予測を示しているのはESAで、正式採択という公的な意思決定が根拠になっている。実際の開発は加盟国の宇宙機関やNASA、国際的な研究者の連合が分担する。試験質量や干渉計、センサーは欧州各国が、レーザーや望遠鏡はNASAが受け持つとされ、実現の確からしさは高いと見られている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "宇宙論・天文学の理解を広げるが、影響は主に研究分野",
+          "text": "巨大ブラックホールの合体や宇宙誕生直後の痕跡を捉え、宇宙の膨張や銀河の成り立ちの理解を大きく変えうると考えられている。一方、直接の恩恵を受けるのは主に研究者や関連産業で、一般の暮らしへの影響は限られるとされる。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "宇宙から重力波を観測する初の計画で、宇宙論や天文学の理解を大きく変えうる。ESAが正式に採択して建設段階に入っており、実現の確からしさも高い。ただし、直接影響を受けるのは主に研究者や関連産業に限られる。",
+      "targetPeriod": "2035年打ち上げ予定(2037年ごろから科学観測)",
+      "sourceTitle": "Capturing the ripples of spacetime: LISA gets go-ahead",
+      "sourceName": "ESA(欧州宇宙機関)",
+      "sourceUrl": "https://www.esa.int/Science_Exploration/Space_Science/Capturing_the_ripples_of_spacetime_LISA_gets_go-ahead"
+    },
+    {
+      "id": "space-science--ultra-long",
+      "genre": "space-science",
+      "horizon": "ultra-long",
+      "heading": "天の川銀河とアンドロメダ銀河の衝突は、約40億〜50億年後に起こるかどうかも五分五分と考えられている",
+      "sections": {
+        "when": {
+          "heading": "約40億〜50億年後の衝突説は、確実とは言えなくなった",
+          "text": "天の川銀河は隣のアンドロメダ銀河と、約40億〜50億年後に衝突すると長らく考えられてきた。ただし最新の再検証では、今後100億年のうちに衝突する確率は約50%にとどまると予測されている。接近してもいったんすれ違い、遠い将来に合体する経路や、ほとんど近づかない経路も想定されている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "ハッブルとガイアの観測を使い、10万回の模擬計算で確かめた",
+          "text": "ESAが紹介した研究は、ヘルシンキ大学の研究者らが中心となり、Nature Astronomy誌に発表された。ハッブル宇宙望遠鏡の10年以上の観測とガイアのデータを組み合わせ、観測の誤差も含めて将来の動きを多数の条件で繰り返し計算している。大マゼラン雲など周辺の銀河の重力の影響も考慮されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart TD\n  A[ハッブルとガイアの観測データ] --> B[誤差を含めて10万回のシミュレーション]\n  B --> C{今後100億年の動き}\n  C -->|約半数| D[接近してすれ違い、のちに合体]\n  C -->|残り| E[ほとんど接近しない]"
+          }
+        },
+        "impact": {
+          "heading": "暮らしへの直接の影響はなく、銀河の将来像の見直しにつながる",
+          "text": "実現するのは数十億年以上先で、現在の暮らしや社会に直接の影響はないと考えられる。一方で、銀河の将来を一つの運命として語る説明は見直しを迫られ、教育や科学解説でも「確率で語る」姿勢が広がる可能性がある。研究チームは将来はまだ未解決の問いであり、より精密な観測が必要だとしている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "天の川銀河の将来にかかわる壮大なテーマで、関心を持つ読者は多い。ただし、2025年のHubbleとGaiaによる再検証では、衝突する確率は今後100億年で五分五分とされ、確からしさは限定的になった。",
+      "targetPeriod": "約40億〜50億年後",
+      "sourceTitle": "Hubble and Gaia revisit fate of our galaxy",
+      "sourceName": "ESA(欧州宇宙機関)",
+      "sourceUrl": "https://www.esa.int/Science_Exploration/Space_Science/Hubble_and_Gaia_revisit_fate_of_our_galaxy"
+    },
+    {
+      "id": "geopolitics--mid",
+      "genre": "geopolitics",
+      "horizon": "mid",
+      "heading": "2036年までに米中が競う不安定な世界になり、台湾有事や核拡散への懸念が強まると専門家は考えている",
+      "sections": {
+        "when": {
+          "heading": "2036年に向け、米中の競争と安全保障上のリスクが高まるとみられている",
+          "text": "2036年までの10年間について、米国か中国のどちらか一方だけが圧倒的な大国になるとみる専門家は少数にとどまると考えられている。大半は、米中が並び立つ世界か、多くの国が力を持つ世界を想定している。中国が武力で台湾の掌握を試みるとみる人は約7割に上り、新たに核を持つ国が出るとみる人も8割を超える。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "専門家約450人への意識調査が根拠になっている",
+          "text": "示しているのは米国の政策シンクタンクのアトランティック・カウンシルである。2025年末に、72か国の地政学や未来予測の専門家約450人へ調査を行い、各項目への賛否を割合で集計したと説明されている。ただし回答者には米国籍や欧米出身者が多く偏りもあるため、確定した未来図ではなく、専門家の見方の集計として読む必要がある。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "安全保障と国際協調の揺らぎが暮らしに及ぶ可能性がある",
+          "text": "予測どおりに進めば、台湾周辺での緊張は貿易や半導体の供給、物価に影響しうると考えられている。国連や世界貿易機関の影響力が弱まるとみる人も多く、紛争や貿易摩擦を調整する仕組みが働きにくくなる懸念がある。各国が防衛や経済安全保障への負担を増やす可能性も指摘されている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "世界72か国の専門家約450人への調査で、米中の覇権競争、台湾をめぐる有事、核拡散、国際機関の弱体化といった多くの人に及ぶ変化を、10年後に向けて具体的な割合で示している。ただし専門家の意見調査なので、実現の確からしさは中程度である。",
+      "targetPeriod": "2036年まで",
+      "sourceTitle": "Welcome to 2036: What the world could look like in ten years, according to nearly 450 experts",
+      "sourceName": "Atlantic Council",
+      "sourceUrl": "https://www.atlanticcouncil.org/content-series/atlantic-council-strategy-paper-series/welcome-to-2036/"
+    },
+    {
+      "id": "geopolitics--ultra-long",
+      "genre": "geopolitics",
+      "horizon": "ultra-long",
+      "heading": "このまま温暖化が進むと、2100年までにエネルギー・移住・転換点をめぐる対立が強まると考えられている",
+      "sections": {
+        "when": {
+          "heading": "今世紀末までに3つの火種が強まると見られている",
+          "text": "現在の排出経路が続けば、2100年ごろまでに気温が2〜3℃上がると想定されている。その結果、エネルギー供給への脅威、気候移民をめぐる国境の緊張、地球システムの転換点という3つの火種が地政学を揺さぶると予測されている。特に転換点は、今世紀中に超える可能性があるとされる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[2100年までに気温2〜3℃上昇] --> B[エネルギー供給への脅威]\n A --> C[移住と国境の緊張]\n A --> D[地球システムの転換点]\n B --> E[地政学の不安定化]\n C --> E\n D --> E"
+          }
+        },
+        "basis": {
+          "heading": "コロンビア大学の研究所による定性的な論考である",
+          "text": "コロンビア大学のグローバル・エネルギー政策センターが、国際機関の試算や近年の災害事例を引きながら論じている。ただし地政学上の帰結は、数値で予測したものではなく定性的な見立てにとどまる。気候交渉や安全保障の議論ではこれらの火種が軽く扱われている、との問題意識も示されている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "影響を受ける人は非常に多いが、帰結は不確実",
+          "text": "沿岸の施設や電力網が打撃を受け、国境をまたぐエネルギーや水の資源をめぐる対立が強まると考えられている。気候による移住が増える一方、受け入れの国際ルールは整っておらず、各国で反発が高まる可能性も指摘されている。転換点を越えると被害が連鎖し、元に戻せなくなるおそれがあるともされる。大規模な排出削減が進まなければ、緊張はさらに高まると警告されている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "このまま進むと2100年までに気温が2〜3℃上がり、エネルギー安全保障・移住・国境の不安定化・地球システムの転換点を通じて地政学が揺らぐと、コロンビア大学の研究所が論じている。影響を受ける人は非常に多い。一方で、地政学的な帰結は定性的な論考にとどまる。",
+      "targetPeriod": "2100年まで",
+      "sourceTitle": "3 Coming Flashpoints in Climate Geopolitics",
+      "sourceName": "Columbia University Center on Global Energy Policy",
+      "sourceUrl": "https://www.energypolicy.columbia.edu/3-coming-flashpoints-in-climate-geopolitics"
+    }
+  ],
+  "emptySlots": []
+}
