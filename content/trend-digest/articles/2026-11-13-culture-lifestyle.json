@@ -1,0 +1,331 @@
+{
+  "id": "2026-11-13-culture-lifestyle",
+  "edition": "culture-lifestyle",
+  "date": "2026-11-13",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "sns-buzz",
+      "heading": "「大規模障害」がYahoo!リアルタイム検索で急上昇、ただし何の障害かは未特定",
+      "sections": {
+        "fact": {
+          "heading": "検索トレンドの上位に「大規模障害」が登場した",
+          "text": "Yahoo!リアルタイム検索のトレンドで「大規模障害」が上位に入った。通算1回目の掲載で、継続度ラベルは流行前、継続日数は0日。注目度は「高い」と区分されている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "背景となる障害は特定できなかった",
+          "text": "確認できたページには、何の障害かを示す投稿や記事の記載がなかった。同じ一覧に「outlook障害」も並んでいたが、両者の関係は示されておらず、背景は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "一般語のため背景は不明で、今後の継続も見通せない",
+          "text": "特定のサービス名を伴わない一般的な語のため、複数の障害報告が重なっている可能性もある。現時点は流行前の段階で、話題が続くかどうかは見通せない。詳しい状況は各サービスの公式情報で確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "大規模障害",
+      "sourceName": "Yahoo!リアルタイム検索",
+      "sourceUrl": "https://search.yahoo.co.jp/realtime",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-13",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-2",
+      "genre": "buzzwords",
+      "heading": "東京湾の「海ほたる」が急上昇、相次ぐ施設閉鎖の報道が背景か",
+      "sections": {
+        "fact": {
+          "heading": "検索数は500+、報告は初回で流行前の段階",
+          "text": "Googleトレンド(日本)で「海ほたる」が急上昇した。検索数の目安は500+で、注目度は「高い」。報告は今回が1回目で、継続日数は0日、継続度は「流行前」にあたる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "閉鎖が相次いだというニュースが関心を集めたとみられる",
+          "text": "関連ニュースでは、海ほたるのパーキングエリアで施設の閉鎖が異例の回数に上ったと報じられている。駐車場での迷惑行為が一因という指摘もある。この報道が検索を押し上げたとみられる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[駐車場での迷惑行為が指摘される] --> B[施設の閉鎖が相次ぐ]\n B --> C[異例の事態としてニュース化]\n C --> D[検索数が急上昇]"
+          }
+        },
+        "caveat": {
+          "heading": "因果は報道ベースで、今後の継続は見通せない",
+          "text": "上の背景は関連ニュースの見出しから読み取った推測を含み、確定した事実とは限らない。流行前で継続日数も0日のため、関心が続くかは分からない。詳しくは出典の報道を確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "海ほたる",
+      "sourceName": "Google公式トレンドRSS(日本)",
+      "sourceUrl": "https://trends.google.com/trending/rss?geo=JP",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-13",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-3",
+      "genre": "gourmet",
+      "heading": "ラスカ小田原3階に8店舗の新しい食のゾーンが開業",
+      "sections": {
+        "fact": {
+          "heading": "今回が初掲載で、流行はこれからの段階",
+          "text": "週刊トレンドでの掲載は今回が1回目。継続度ラベルは「流行前」、注目度ラベルは「注目度 低い」、継続日数は0日で、発祥も現在の流行地域も日本とされている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "駅直結の増床エリアに新店が集まったことが注目点",
+          "text": "ラスカ小田原の3階エントランスの増床エリアに、2026年6月25日、新しい食のゾーンが開業した。小田原エリア初出店を含む8店舗がまとまって入る点が、地元の買い物客や訪れる人の関心を集めたとみられる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の広がりも見通せない",
+          "text": "ここまでの背景は開業情報からの推測を含み、検索が増えた直接の理由は特定できなかった。指定の出典ページでは該当内容を確認できず、別の開業情報で補っている。継続度は流行前で先行きは不明なため、最新の営業情報は施設の公式発表で確認したい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "ラスカ小田原 3階の新しい食のゾーン(8店舗、2026年6月25日オープン)",
+      "sourceName": "ウォーカープラス",
+      "sourceUrl": "https://www.walkerplus.com/article/166861/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "low",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-13",
+        "reportCount": 1,
+        "originRegion": "日本",
+        "currentRegions": [
+          "日本"
+        ]
+      }
+    },
+    {
+      "id": "topic-4",
+      "genre": "hobby",
+      "heading": "大人が玩具を買う「キダルト」需要が拡大、収集・自己表現の対象に",
+      "sections": {
+        "fact": {
+          "heading": "調査会社が玩具の注目トレンドとして挙げた段階で、まだ流行前",
+          "text": "Euromonitor Internationalが玩具・ゲーム分野の主要トレンドの一つに挙げた話題で、今回が1回目の掲載です。継続度は流行前、継続日数は0日、注目度は普通です。発祥地域は不明で、現在は英国、欧州、米国が主な流行地域とされています。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "懐かしさと自己表現を求める大人が、玩具市場の成長を押し上げている",
+          "text": "元資料では、大人の消費者が市場の成長要因になりつつあるとされています。理由として、懐かしいキャラクターが不確実な時代に安心感を与えること、玩具が子ども向けの娯楽から高級な収集・自己表現の対象へ広がったことが挙げられています。購入の場がソーシャルコマースに移り、希少性や限定販売が価値を高める点も背景です。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[懐かしさ・安らぎへの需要] --> D[大人の玩具購入が拡大]\n B[収集・自己表現の対象化] --> D\n C[ソーシャルコマースと限定販売] --> D"
+          }
+        },
+        "caveat": {
+          "heading": "ブラインドボックスやぬいぐるみの個別動向は元資料で確認できていない",
+          "text": "元資料はキダルト全般の動きを述べたもので、ブラインドボックスやぬいぐるみ収集そのものについての直接の記述は確認できませんでした。両者との関係は関連事例からの読み取りを含みます。継続度は流行前のため、今後も続くかは見通せません。詳細は出典の原資料をご確認ください。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "キダルト(大人のコレクター)向けブラインドボックス・ぬいぐるみ収集",
+      "sourceName": "Euromonitor International",
+      "sourceUrl": "https://www.euromonitor.com/top-five-trends-in-toys-and-games/report",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "normal",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-13",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": [
+          "英国",
+          "欧州",
+          "米国"
+        ]
+      }
+    },
+    {
+      "id": "topic-5",
+      "genre": "gadgets",
+      "heading": "AirPods Pro 3が価格.comの家電ランキングで首位に",
+      "sections": {
+        "fact": {
+          "heading": "直近1週間のランキングで1位を獲得",
+          "text": "価格.comの家電カテゴリランキング(11月5日〜11日)でイヤホン・ヘッドホン部門の本機が首位に入った。継続日数は21日で、掲載報告は今回が初めて。注目度は高い水準にある。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "人気の決定的な理由は特定できなかった",
+          "text": "このランキングは価格比較ページへのアクセスやレビュー、クチコミ掲示板の動き、ショップ閲覧などを総合して決まる。本機はクチコミの投稿数が多く、関心を集めているとみられるが、元ページに人気の理由は書かれておらず、背景は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "まだ流行の入り口で、先行きは見通せない",
+          "text": "継続度は「注目され始め」の段階で、この人気が続くかは判断できない。理由も特定できていないため、売れ行きの要因を断定することは避けたい。購入を検討する場合は、最新の価格や仕様を一次情報で確かめてほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "AirPods Pro 3 MFHP4J/A",
+      "sourceName": "価格.com家電カテゴリランキング",
+      "sourceUrl": "https://kakaku.com/ranking/kaden/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 21,
+        "continuationStartDate": "2026-10-23",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-6",
+      "genre": "games",
+      "heading": "『Minecraft』Switch 2版が週間売上ランキングで3位に",
+      "sections": {
+        "fact": {
+          "heading": "売上ランキング上位に入り、35日間観測されている",
+          "text": "ファミ通.comの売上ランキング(集計期間は2026年10月26日〜11月1日)で、Switch 2版が3位に入った。継続度は「話題」、注目度は「高い」で、35日間にわたって観測されており、今回の掲載は1回目となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "定番作とSwitch 2版の購入需要が重なった可能性があるが、直接の要因は不明",
+          "text": "長く遊ばれてきた定番作であることに加え、Switch 2対応版が新たな購入先として売れ続けていることが、上位に入った理由として考えられる。ただし、今週の順位を押し上げた具体的な出来事(大型更新やイベントなど)は、追加で調べても特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は推測を含み、今後の継続は見通せない",
+          "text": "上の背景は推測を含むため、順位の理由を断定することはできない。ランキングは販売本数に基づく1週間の集計であり、次週以降も上位を保つかどうかは現時点では分からない。詳しい数字や他の順位は、ファミ通.comの一次情報で確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "Minecraft",
+      "sourceName": "ファミ通.com売上ランキング",
+      "sourceUrl": "https://www.famitsu.com/ranking/game-sales",
+      "trend": {
+        "durationLabel": "talked",
+        "heatLabel": "high",
+        "continuationDays": 35,
+        "continuationStartDate": "2026-10-09",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-7",
+      "genre": "travel",
+      "heading": "鹿児島土産の人気ランキング記事が、35日にわたり静かに話題に",
+      "sections": {
+        "fact": {
+          "heading": "鹿児島土産のランキングが35日間話題として観測された",
+          "text": "鹿児島土産のランキング記事が、継続日数35日にわたり話題として観測された。継続度ラベルは「話題」、注目度は「注目度 普通」で、今回が1回目の報告となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "背景は特定できなかったが、土産選びの手がかりとして読まれた可能性",
+          "text": "この記事は、地元民の視点と編集部のおすすめを組み合わせ、定番の鹿児島土産を選ぶ手がかりとして整理したものとされる。ただし元ページでは本文を確認できず、なぜこの期間に関心が集まったのかという背景は特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は断定できず、今後の広がりも見通せない",
+          "text": "急上昇の理由は確認できていないため、断定は避けたい。継続度は「話題」で注目度も普通の段階にあり、今後さらに広がるかは見通せない。発祥地域・現在の主な流行地域も不明なので、詳しくは出典の記事を参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "鹿児島で人気のお土産ランキング15選｜地元民が選ぶ「本当に喜ばれる」定番商品＆編集…",
+      "sourceName": "じゃらんnet人気ランキング",
+      "sourceUrl": "https://www.jalan.net/news/",
+      "trend": {
+        "durationLabel": "talked",
+        "heatLabel": "normal",
+        "continuationDays": 35,
+        "continuationStartDate": "2026-10-09",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-8",
+      "genre": "economy-money",
+      "heading": "米国債ETF「376A」が出来高増加率で1位に、前日7株から2万株超へ",
+      "sections": {
+        "fact": {
+          "heading": "出来高が前日の約3,100倍に膨らみ、ランキング首位に立った",
+          "text": "Yahoo!ファイナンスの出来高増加率ランキングで1位となった。出来高は前日の7株から22,007株へ増え、増加率は約3,144倍だった。報告は今回が1回目で、継続日数は0日、継続度は流行前、注目度は高いとされている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "背景は特定できなかったが、出来高が元々極小だったことが数字を押し上げた可能性がある",
+          "text": "この銘柄は米国の残存7〜10年の国債に連動するETFで、為替リスクの75%をヘッジする設計とされる。追加で調べても、出来高が急増した具体的な理由は確認できなかった。前日の出来高が7株とごく小さく、少しの売買でも増加率が大きく出やすい点は、順位を押し上げた一因と考えられる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[前日の出来高 7株] --> B[当日の出来高 22,007株]\n B --> C[増加率ランキングで1位]"
+          }
+        },
+        "caveat": {
+          "heading": "理由は推測を含み、今後の継続は見通せない",
+          "text": "上記の背景は推測を含み、急増の原因は確認できていない。継続度は流行前で継続日数も0日のため、注目が続くかはまだ分からない。投資判断には使わず、商品の内容は運用会社の公式情報を確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "(NEXT FUNDS)ブルームバーグ米国国債(7-10年)(75%H有)",
+      "sourceName": "Yahoo!ファイナンス出来高増加率ランキング",
+      "sourceUrl": "https://finance.yahoo.co.jp/stocks/ranking/volumeIncrease?market=all",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-13",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-9",
+      "genre": "dev-trends",
+      "heading": "AWS公式エミュレーター登場で、CDK/Terraformのスタックがどこまで動くかを試す記事が注目",
+      "sections": {
+        "fact": {
+          "heading": "Qiita人気記事フィードで急上昇し、現在は流行前の段階",
+          "text": "Qiita人気記事フィードに載った記事で、継続度ラベルは「流行前」、継続日数は0日、報告回数は今回が1回目です。注目度ラベルは「高い」で、発祥地域と現在の主な流行地域はどちらも不明です。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "AWSが公式エミュレーターを出した直後で、実用性への関心が高まった",
+          "text": "フィードの記載では、11月11日にAWSがAWS Emulatorを公式にリリースしました。AWSアカウントがなくても、SDKやCLIの呼び出し先をローカルやCI上のエミュレーターに向けられます。そのため、手元のCDKやTerraformの構成がどこまで流用できるかを検証した記事に関心が集まったとみられます。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "検証結果は未確認で、背景の説明には推測を含む",
+          "text": "フィードの本文が途中で切れており、スタックがどこまで動いたかという検証結果そのものは確認できていません。注目の理由の説明も推測を含みます。継続日数0日の流行前の段階なので、話題が続くかどうかは見通せません。対応範囲の詳細は公式情報や元記事で確かめてください。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "【AWS】AWS EmulatorでCDK/Terraformのスタックはどこまで動くか【AWSEmulator】",
+      "sourceName": "Qiita人気記事フィード",
+      "sourceUrl": "https://qiita.com/popular-items/feed",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-13",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    }
+  ],
+  "unavailableGenres": [
+    "fashion"
+  ]
+}
