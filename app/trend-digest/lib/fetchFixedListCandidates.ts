@@ -185,10 +185,13 @@ export async function fetchFixedListGenreCandidates(
       method: 'fixed-list',
       strength: 100 - primary.currentRank, // design.md手順6。順位が高いほど大きい値
       rank: primary.currentRank, // design.md手順7。strengthからの逆算ではなく順位そのものを持つ
-      // 発祥地域・主な流行地域はランキング情報源からは判定できないため「不明」のままにする
-      // (design.md「地域情報を判定する処理」手順3)。日本での強度・海外での強度は情報源のregionから集計する
+      // 発祥地域はランキング情報源からは判定できないため「不明」のままにする
+      // (design.md「地域情報を判定する処理」手順3)。主な流行地域は、日本の情報源のランキングに
+      // 載っていた事実から「日本」と確定できる(requirements.md#情報源の地域区分-3)。海外の情報源は
+      // 国を特定できない(Steam・GitHub等は全世界集計)ため推測せず不明のままにする。
+      // 日本での強度・海外での強度は情報源のregionから集計する
       originRegion: null,
-      currentRegions: [],
+      currentRegions: sorted.some((item) => item.region === 'japan') ? ['日本'] : [],
       strengthJapan: countByRegion(sorted, registeredRegions, 'japan'),
       strengthOverseas: countByRegion(sorted, registeredRegions, 'overseas'),
       meetsCriteria: judged.matched,

@@ -11,11 +11,13 @@ const ALL_GENRES = [...GENRE_ORDER.entertainment, ...GENRE_ORDER['culture-lifest
 
 const FIXED_LIST_GENRES = [
   'music', 'japanese-movie', 'foreign-movie', 'japanese-drama', 'foreign-drama', 'variety',
-  'streaming-video', 'books-comics', 'buzzwords', 'games', 'travel',
+  'streaming-video', 'books-comics', 'games', 'travel',
 ]
 // 流行りの趣味・ファッションは、2026-10次の情報源複数化(source-review)でも実際の消費・行動を
-// 集計した構造化データの情報源が見つからなかったためWebSearchジャンルのまま(requirements.md#選定方式-4)
-const WEBSEARCH_GENRES = ['hobby', 'fashion']
+// 集計した構造化データの情報源が見つからなかったためWebSearchジャンルのまま(requirements.md#選定方式-4)。
+// 流行りの言葉は、2026-11の月次見直しで、Googleトレンドが若者言葉・スラング・流行語ではなく一般の
+// 急上昇検索語を返すという運営者フィードバックを受け、固定リストからWebSearchジャンルへ移行した(requirements.md#選定方式-3)
+const WEBSEARCH_GENRES = ['hobby', 'fashion', 'buzzwords']
 // アニメ(当初からの併用ジャンル)に加え、SNSバズり・グルメ・ガジェット・家電・経済・お金・
 // 開発手法・開発サービスは、2026-10次の情報源複数化で実際の人気・アクセスを集計した構造化
 // データの情報源が見つかったため、固定リスト+WebSearchを併用する併用ジャンルへ変更した
@@ -41,13 +43,13 @@ describe('対象ジャンルのデータ - 19ジャンルをエンタメ編(火�
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#選定方式-2、specs/trend-digest/content-selection/requirements.md#選定方式-3、specs/trend-digest/content-selection/requirements.md#選定方式-7、specs/trend-digest/content-selection/requirements.md#選定方式-8
-describe('ジャンルの選定方式データ - 固定リストジャンル(11)・WebSearchジャンル(2)・併用ジャンル(6)がrequirements.mdの記載と一致する', () => {
-  it('固定リストジャンル(method: fixed-list)がrequirements.mdに記載の11ジャンルと一致すること', () => {
+describe('ジャンルの選定方式データ - 固定リストジャンル(10)・WebSearchジャンル(3)・併用ジャンル(6)がrequirements.mdの記載と一致する', () => {
+  it('固定リストジャンル(method: fixed-list)がrequirements.mdに記載の10ジャンルと一致すること', () => {
     const actual = watchlist.filter((e) => e.method === 'fixed-list').map((e) => e.genre).sort()
     expect(actual).toEqual([...FIXED_LIST_GENRES].sort())
   })
 
-  it('WebSearchジャンル(method: websearch)がrequirements.mdに記載の2ジャンルと一致すること', () => {
+  it('WebSearchジャンル(method: websearch)がrequirements.mdに記載の3ジャンルと一致すること', () => {
     const actual = watchlist.filter((e) => e.method === 'websearch').map((e) => e.genre).sort()
     expect(actual).toEqual([...WEBSEARCH_GENRES].sort())
   })
@@ -310,5 +312,27 @@ describe('採用基準データの構造 - source-reviewによる月次見直し
         expect(genreCriteria.fixedList.rankThreshold).toBeGreaterThan(0)
       }
     }
+  })
+})
+
+// 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-13、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-10、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(WebSearchジャンル)-4
+describe('2026-11月次見直し - 流行りの言葉は若者言葉・スラング・流行語を検索するWebSearchジャンル、SNSバズりは上位5位以内かつ画像・動画付き投稿の拡散を探す', () => {
+  it('流行りの言葉は固定の情報源を持たず(Googleトレンドを使わず)、若者言葉・スラング・流行語についての検索の手がかりを持つこと', () => {
+    const entry = watchlist.find((e) => e.genre === 'buzzwords')
+    expect(entry?.method).toBe('websearch')
+    expect(entry?.sources).toEqual([])
+    const hints = entry?.searchHints?.join(' ') ?? ''
+    expect(hints).toMatch(/若者言葉/)
+    expect(hints).toMatch(/スラング/)
+    expect(hints).toMatch(/流行語/)
+  })
+
+  it('SNSバズりの固定リスト側は上位5位以内に絞り、WebSearch側は画像・動画付き投稿の拡散についての検索の手がかりを持つこと', () => {
+    const genreCriteria = criteria.genreCriteria['sns-buzz']
+    if (genreCriteria.method !== 'hybrid') throw new Error('sns-buzzは併用ジャンルではありません')
+    expect(genreCriteria.fixedList.rankThreshold).toBe(5)
+    const hints = watchlist.find((e) => e.genre === 'sns-buzz')?.searchHints?.join(' ') ?? ''
+    expect(hints).toMatch(/画像/)
+    expect(hints).toMatch(/動画/)
   })
 })

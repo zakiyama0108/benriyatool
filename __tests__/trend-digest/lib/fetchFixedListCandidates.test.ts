@@ -124,21 +124,7 @@ describe('固定リストジャンルの採用基準判定 - 書籍・漫画は�
 })
 
 // 仕様: specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-6、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-7、specs/trend-digest/content-selection/requirements.md#ジャンルごとの情報源・採用基準(固定リストジャンル)-8
-describe('固定リストジャンルの採用基準判定 - 流行りの言葉・ゲーム・旅行観光は上位ランクインの項目を候補にし、掲載されている項目自体が話題性のあるものに限られるため追加の定性的な絞り込みは行わない', () => {
-  it('流行りの言葉(上位10位以内)は、10位以内の語が候補になり圏外は候補にならないこと', async () => {
-    const criteria: FixedListGenreCriteria = { method: 'fixed-list', rankThreshold: 10 }
-    const entry = entryOf('buzzwords', [{ name: 'Google公式トレンドRSS(日本)', url: 'https://example.com/trends' }])
-    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
-      providesRankChange: false,
-      items: [
-        { title: '流行語A', currentRank: 10 },
-        { title: '圏外語B', currentRank: 11 },
-      ],
-    })
-    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
-    expect(observations.filter((o) => o.meetsCriteria).map((o) => o.title)).toEqual(['流行語A'])
-  })
-
+describe('固定リストジャンルの採用基準判定 - ゲーム・旅行観光は上位ランクインの項目を候補にし、掲載されている項目自体が話題性のあるものに限られるため追加の定性的な絞り込みは行わない', () => {
   it('ゲーム(上位10位以内)は、10位以内の新作・話題作が候補になり圏外は候補にならないこと', async () => {
     const criteria: FixedListGenreCriteria = { method: 'fixed-list', rankThreshold: 10 }
     const entry = entryOf('games', [{ name: 'ファミ通.com売上ランキング', url: 'https://example.com/famitsu' }])
@@ -329,7 +315,7 @@ describe('地域情報の収集(固定リストジャンル側) - 情報源の�
     expect(observations[0].strengthOverseas).toBe(0)
   })
 
-  it('発祥地域・主な流行地域はランキング情報源からは判定できないため「不明」のままになること', async () => {
+  it('発祥地域はランキング情報源からは判定できないため「不明」のままになること', async () => {
     const entry: WatchlistEntry = {
       genre: 'japanese-movie',
       edition: 'entertainment',
@@ -343,6 +329,57 @@ describe('地域情報の収集(固定リストジャンル側) - 情報源の�
     })
     const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
     expect(observations[0].originRegion).toBeNull()
+  })
+
+  // 仕様: specs/trend-digest/content-selection/requirements.md#情報源の地域区分-3
+  it('日本の情報源のランキングに載っていた項目は、現在の主な流行地域が「日本」になること(2026-11月次見直し。地域不明の割合が全ジャンルでほぼ100%だったため)', async () => {
+    const entry: WatchlistEntry = {
+      genre: 'japanese-movie',
+      edition: 'entertainment',
+      label: '日本映画',
+      method: 'fixed-list',
+      sources: [{ name: '国内情報源', url: 'https://example.com/jp', region: 'japan' }],
+    }
+    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
+      providesRankChange: false,
+      items: [{ title: '映画A', currentRank: 1 }],
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].currentRegions).toEqual(['日本'])
+  })
+
+  it('海外の情報源だけで検出された項目は、国を特定できないため現在の主な流行地域は「不明」(空配列)のままになること', async () => {
+    const entry: WatchlistEntry = {
+      genre: 'games',
+      edition: 'culture-lifestyle',
+      label: 'ゲーム',
+      method: 'fixed-list',
+      sources: [{ name: '海外情報源', url: 'https://example.com/global', region: 'overseas' }],
+    }
+    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
+      providesRankChange: false,
+      items: [{ title: 'ゲームA', currentRank: 1 }],
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
     expect(observations[0].currentRegions).toEqual([])
+  })
+
+  it('日本・海外の両方の情報源で検出された項目は、現在の主な流行地域が「日本」のみになること(海外側は国が特定できない)', async () => {
+    const entry: WatchlistEntry = {
+      genre: 'games',
+      edition: 'culture-lifestyle',
+      label: 'ゲーム',
+      method: 'fixed-list',
+      sources: [
+        { name: '国内情報源', url: 'https://example.com/jp', region: 'japan' },
+        { name: '海外情報源', url: 'https://example.com/global', region: 'overseas' },
+      ],
+    }
+    const fetchSource: SourceFetcher = vi.fn().mockResolvedValue({
+      providesRankChange: false,
+      items: [{ title: 'ゲームA', currentRank: 1 }],
+    })
+    const { observations } = await fetchFixedListGenreCandidates(entry, criteria, new Set(), fetchSource, MAX_OBSERVATIONS_PER_SOURCE)
+    expect(observations[0].currentRegions).toEqual(['日本'])
   })
 })
