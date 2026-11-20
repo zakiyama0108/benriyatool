@@ -1,0 +1,294 @@
+{
+  "id": "2026-11-15-life-society",
+  "edition": "life-society",
+  "date": "2026-11-15",
+  "issueNumber": 7,
+  "predictions": [
+    {
+      "id": "economy-work--near",
+      "genre": "economy-work",
+      "horizon": "near",
+      "heading": "米国では2030年までに、AIと自動化で約1,040万人(約6%)の仕事が失われると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに米国の雇用の約6%が自動化で失われる見通し",
+          "text": "Forresterは、2030年までにAIと自動化によって米国の雇用の約6%、人数にして約1,040万人分が失われると予測している。自動化による雇用減のうち生成AIが占める割合は、以前の予測より大きい約半分になると見ている。仕事の中身が大きく変わる職種は、置き換えられる分の3倍強に当たる2割ほどと考えられている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[2030年までの米国の雇用] --> B[AI・自動化で失われる仕事 約6%]\n A --> C[仕事の中身が大きく変わる職種 約20%]\n B --> D[約1,040万人分]"
+          }
+        },
+        "basis": {
+          "heading": "Forresterのアナリストが、顧客企業との対話などを根拠に示している",
+          "text": "予測を示したのは調査会社Forresterの主席アナリストで、詳細は同社の報告書にまとまっているとされる。根拠には、AIによる人員削減を掲げながら準備が整っていない企業が多いという顧客との対話や、過去の予測が外れた例の検証が挙げられている。ブログ記事に統計モデルの詳しい手法は示されておらず、純増減の見方は予測機関で分かれる。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "急な大量失業ではなく、働き方が段階的に変わると考えられている",
+          "text": "記事は、今後数年で仕事の大半は引き続き人が担い、AIは作業や業務の流れの一部を引き受けるにとどまると見ている。現在の人員削減の多くは財務上の理由で、AIがその口実にされている面もあるとの指摘だ。企業にはAIを使いこなせる人材への投資が求められ、働く人には仕事の進め方の変化への対応が必要になると考えられている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "米国で2030年までにAI・自動化で約1,040万人(約6%)の仕事が失われるという具体的な試算で、影響を受ける人が多く、働き方の変化も深い。ただし米国限定で、純増減の見方は予測機関で分かれ、確からしさは中程度。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "AI And Automation Will Take 6% Of US Jobs By 2030",
+      "sourceName": "Forrester",
+      "sourceUrl": "https://www.forrester.com/blogs/ai-and-automation-will-take-6-of-us-jobs-by-2030"
+    },
+    {
+      "id": "economy-work--long",
+      "genre": "economy-work",
+      "horizon": "long",
+      "heading": "主要8カ国の退職後資金の不足額は、2050年までに世界GDPに迫る規模へ膨らむと考えられている",
+      "sections": {
+        "when": {
+          "heading": "2050年までに不足額が急拡大するとみられている",
+          "text": "2050年までの長期を対象に、主要8カ国で退職後の生活に必要な資金と実際の備えとの差が広がり続けると予測されている。不足額は約400兆ドルと試算され、世界のGDPの約108%に相当する規模になると考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "世界経済フォーラムがMercerと共同で試算している",
+          "text": "この予測は世界経済フォーラムが、コンサルティング会社のMercerと共同で示したものである。主要8カ国を対象に、将来の退職後資金の不足額を見積もる試算とされる。ただし公表は2017年と古く、前提の置き方によって数字が変わりうる点に注意が必要である。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "年金制度と働く期間の見直しにつながる可能性がある",
+          "text": "この試算どおりに進めば、高齢者と現役世代の双方に影響が及ぶと考えられている。年金制度の持続性が問われ、老後の備えを自分で増やす必要性や、働く期間を延ばす選択が広がる可能性がある。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "主要8カ国の退職後資金の不足額が2050年までに約400兆ドル(世界GDPの約108%)に膨らむという試算で、各国の高齢者と現役世代の双方に及び、年金制度と働く期間を左右する。公表は2017年と古く、前提次第で数字が変わる。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Global Pension Timebomb: Funding Gap Set to Dwarf World GDP",
+      "sourceName": "世界経済フォーラム(Mercerと共同)",
+      "sourceUrl": "https://www.weforum.org/media/global-pension-timebomb-funding-gap-set-to-dwarf-world-gdp/"
+    },
+    {
+      "id": "society-population-life--near",
+      "genre": "society-population-life",
+      "horizon": "near",
+      "heading": "2030年までに米国で65歳以上が人口の約5人に1人になると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに米国の高齢化が一段と進むと予測されている",
+          "text": "2030年までに、米国の65歳以上の人口が全体の約5人に1人を占めるようになると考えられている。高齢化は今後数年にわたって着実に進む見通しとされている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "人口統計に基づく、確度の高い見通しとされている",
+          "text": "米国を対象に、S&P Global Market Intelligenceが人口統計に基づいて示した見通しとされる。人口構成は短期間で急には変わりにくく、すでに生まれている世代の年齢から先を見通せる。そのため、予測の確度は比較的高いと考えられている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "医療・年金・労働市場に変化が及ぶが、日本への直接の影響は限られる",
+          "text": "高齢者の割合が高まると、医療や年金の負担のほか、労働市場の構成も変わっていくと考えられている。ただし対象は米国であり、日本の読者の暮らしへの直接の影響はやや限られるとみられる。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "米国の高齢化は人口の多くの人に及び、医療・年金・労働市場の変化も深いが、高齢化の見通し自体は人口統計に基づいて確度が高い。ただし米国が対象で、日本の読者への直接の影響はやや限られる。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "1 in 5 Americans to be 65 years old or older by 2030",
+      "sourceName": "S&P Global Market Intelligence",
+      "sourceUrl": "https://www.spglobal.com/marketintelligence/en/news-insights/latest-news-headlines/1-in-5-americans-to-be-65-years-old-or-older-by-2030-86270288"
+    },
+    {
+      "id": "society-population-life--long",
+      "genre": "society-population-life",
+      "horizon": "long",
+      "heading": "2050年、子のいない高齢者が約1,049万人に増え、親族に頼れない暮らしが広がると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2050年に子のいない高齢者は現在の約1.9倍になる見通し",
+          "text": "2050年にかけて、子のいない高齢者が約1,049万人と、現在の約1.9倍に増えると見込まれている。未婚の高齢者も大きく増え、親族を頼れない人が目立つ社会になると考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "公的な世帯推計をもとにした試算",
+          "text": "日本総合研究所の研究員が、国立社会保障・人口問題研究所の世帯数の将来推計を土台に試算している。人口推計に基づくため、実現の確からしさは高いとされる。背景として、未婚化の進行が指摘されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[社人研の世帯数将来推計] --> B[日本総研が試算]\n B --> C[子のいない高齢者 約1,049万人]\n B --> D[未婚の高齢者の増加]\n C --> E[2050年に現在の約1.9倍]\n D --> E"
+          }
+        },
+        "impact": {
+          "heading": "親族を前提とした支援の仕組みの見直しが急務",
+          "text": "現在の介護や医療の仕組みは、子など親族が支え手になることを前提にしている。親族がいない高齢者が増えると、介護サービスの利用手続き、終末期医療の意思決定、亡くなった後の対応で支え手が不足すると考えられている。仕組みの見直しが急務だと指摘されている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "社人研の推計を基に、2050年に子のいない高齢者が約1,049万人(現在の約1.9倍)へ増えると試算している。介護・看取り・住まいなど暮らしの土台に関わり、人口推計に基づくため実現の確からしさも高い。",
+      "targetPeriod": "2050年",
+      "sourceTitle": "頼れる親族がいない高齢者が今後急増(リサーチ・アイ No.2024-007)",
+      "sourceName": "日本総合研究所",
+      "sourceUrl": "https://www.jri.co.jp/page.jsp?id=107780"
+    },
+    {
+      "id": "sexuality-romance--near",
+      "genre": "sexuality-romance",
+      "horizon": "near",
+      "heading": "デートアプリの世界収益は2030年に約89億ドルへ、緩やかに伸びると予測されている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに収益が約89億ドルへ緩やかに伸びる見通し",
+          "text": "デートアプリの世界収益は、2024年の60億ドル超から2030年には約89億ドルに達すると予測されている。ダウンロード数は2019年以降減っているが、料金の引き上げや新しい課金の仕組みによって、収益は伸びると考えられている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[2024年 60億ドル超] --> B[料金の引き上げ・新しい課金モデル]\n  B --> C[2030年 約89億ドル]\n  D[ダウンロード数は減少傾向] -.-> B"
+          }
+        },
+        "basis": {
+          "heading": "民間調査会社の推計を、業界メディアが紹介している",
+          "text": "数値の出どころは、調査会社Business of Appsの2025年版レポートである。Global Dating Insightsがこれを紹介する際には、あくまで多数のデータの一つの解釈にすぎないと注意を促している。そのため確からしさには限りがある。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "出会いの場は広く変わるが、変化の幅は小さいと考えられている",
+          "text": "利用者は世界で3億人超とされ、出会いの入口として広く使われている。ただ収益の伸びは緩やかで、暮らしが大きく変わる予測ではない。人気はTinderからHingeのような真剣な出会い向けのアプリや、特定の層に向けた小規模なサービスへ移りつつある。スワイプ疲れなどをきっかけに、アプリの使い方や選び方が少しずつ変わっていくと考えられている。",
+          "diagram": null
+        }
+      },
+      "impact": "low",
+      "impactReason": "デートアプリの収益は2030年に約89億ドルへ緩やかに伸びる見通しで、出会いの場への影響は広いものの変化は小さい。ただし民間調査の推計で、確からしさは限られる。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Global dating app revenues top $6 billion, likely primed to grow",
+      "sourceName": "Global Dating Insights(Business of Appsの推計を紹介)",
+      "sourceUrl": "https://www.globaldatinginsights.com/featured/global-dating-app-revenues-top-6-billion-likely-primed-to-grow/"
+    },
+    {
+      "id": "sexuality-romance--long",
+      "genre": "sexuality-romance",
+      "horizon": "long",
+      "heading": "イタリアでは2047年に、子のいない夫婦が子のいる夫婦を上回ると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2047年に夫婦の多数派が入れ替わる見通し",
+          "text": "イタリアの世帯は2050年にかけて小さく分散していくと予測されている。子のいない夫婦は全国で2047年に子のいる夫婦を上回るとされる。地域差も大きく、北部は2038年、中部は2044年に先行し、南部は届かないと見込まれている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[2038年 北部で逆転] --> B[2044年 中部で逆転]\n B --> C[2047年 全国で逆転]\n C --> D[2050年 単身者は約1,160万人]"
+          }
+        },
+        "basis": {
+          "heading": "国の統計機関Istatの推計に基づく",
+          "text": "この予測は、イタリアの国の統計機関Istatによる世帯の将来推計を、経済紙Il Sole 24 Oreが報じたものである。出生率の低下と、出産可能な年代の人口が減ることが背景とされている。ただし、報じられた範囲では推計の前提やシナリオの詳細までは示されていない。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "単身世帯の増加で、支え合いの形が変わる可能性",
+          "text": "世帯の平均人数は約2.2人から約2人へ縮むと見込まれ、一人暮らしは約16%増えると考えられている。特に高齢の女性が目立つとされ、見守りや介護、住まいの形が問われる可能性がある。影響は大きいが対象は1か国のため、影響度は中とされている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "イタリアの世帯の形が2050年までに大きく変わる見通しを、国の統計機関Istatが示している。2047年には子のいない夫婦が子のいる夫婦を上回り、単身者は約1,160万人に増える。影響を受ける人は多く、変化も深いが、対象は1か国に限られる。",
+      "targetPeriod": "2050年まで(2047年に子なし夫婦が子あり夫婦を上回る)",
+      "sourceTitle": "Falling birth rates: by 2050 there will be more childless couples than those with children",
+      "sourceName": "Il Sole 24 Ore(Istat推計の報道)",
+      "sourceUrl": "https://en.ilsole24ore.com/art/falling-birth-rates-by-2050-there-will-be-more-childless-couples-than-those-with-children-AJcXBez"
+    },
+    {
+      "id": "personal-interest--near",
+      "genre": "personal-interest",
+      "horizon": "near",
+      "heading": "消費者向けARグラスの出荷が2030年に3,000万台前後へ、ディスプレイなし型が普及を牽引すると予測",
+      "sections": {
+        "when": {
+          "heading": "2030年に向け、出荷は100万台未満から3,000万台前後へ拡大すると見込まれている",
+          "text": "調査会社は、消費者向けARグラスの出荷が2024年の100万台に満たない水準から、2030年には3,000万台前後まで伸びると予測している。年平均で8割を超える成長が続く見通しで、中心は表示機能を持たない軽量なAIグラス型になると考えられている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[\"2024年<br/>100万台未満\"] --> B[\"2026年以降<br/>新製品の投入\"]\n  B --> C[\"2030年<br/>3,000万台前後\"]"
+          }
+        },
+        "basis": {
+          "heading": "ABI Researchが市場データに基づく見通しとして示している",
+          "text": "示しているのは調査会社ABI Researchで、ARハードウェア市場のデータに基づく見通しとして2026年1月に公表した。アナリストは、翻訳や撮影、音声での道案内に使えるディスプレイなし型が普及のカギになると述べている。軽さに加え、小型化や省電力の技術進歩、新製品の投入も後押しすると見ている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "日常使いする人は増えるが、生活の変化の深さは中程度とみられる",
+          "text": "この予測どおりに進めば、翻訳や撮影、道案内といった機能を眼鏡の形で日常的に使う人が増えると考えられる。影響を受ける人は多い一方、普及の中心は表示機能のない型のため、生活の変化の深さは中程度にとどまると見られている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "消費者向けARグラスの出荷が2030年に約3,000万台規模になるという見通しで、日常的にARグラスを使う人が増える可能性を示す。影響を受ける人は多いが、ディスプレイなし型が中心で、生活の変化の深さは中程度と判断した。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Robust Growth Expected in Consumer AR Glasses as Shipments Near 30 Million by 2030, Driven by No-Display Designs",
+      "sourceName": "ABI Research",
+      "sourceUrl": "https://www.abiresearch.com/press/robust-growth-expected-in-consumer-ar-glasses-as-shipments-near-30-million-by-2030-driven-by-no-display-designs"
+    },
+    {
+      "id": "other--near",
+      "genre": "other",
+      "horizon": "near",
+      "heading": "2030年までに世界の淡水需要が供給を約4割上回ると専門家が警告",
+      "sections": {
+        "when": {
+          "heading": "2030年までに水の需給ギャップが広がると見られている",
+          "text": "2030年までに、世界の淡水の需要が供給を約40%上回る可能性があると考えられている。水の需給のギャップが世界規模で広がるという見通しで、今後数年のうちに水不足が深刻になる懸念が示されている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "国際的な専門家委員会の報告を根拠にしている",
+          "text": "この予測は、水の経済学を検討する国際的な専門家委員会(Global Commission on the Economics of Water)の報告として示されたものだ。世界経済フォーラムがその内容を紹介している。専門家による需給の見通しとして、多くの機関が引用していると位置づけられている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "暮らし・食料・産業の全体に影響が及ぶと考えられている",
+          "text": "水は暮らし・食料・産業のすべてに関わるため、需給が厳しくなれば影響を受ける人は非常に多くなると考えられている。飲み水の確保、農業、工場の稼働など幅広い分野で、水をどう確保し分け合うかが課題になる可能性がある。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "水は暮らし・食料・産業のすべてに関わるため影響を受ける人が非常に多い。需給ギャップの見通しは国際的な専門家委員会によるもので、多くの機関が引用している。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Global freshwater demand will exceed supply 40% by 2030, experts warn",
+      "sourceName": "World Economic Forum(Global Commission on the Economics of Waterの報告を紹介)",
+      "sourceUrl": "https://weforum.org/agenda/2023/03/global-freshwater-demand-will-exceed-supply-40-by-2030-experts-warn"
+    },
+    {
+      "id": "other--long",
+      "genre": "other",
+      "horizon": "long",
+      "heading": "2050年までに水不足が世界の食料生産の半分超とGDPを揺るがすと考えられている",
+      "sections": {
+        "when": {
+          "heading": "2050年に向け、対策なしなら食料と経済の両方が危うくなる",
+          "text": "2050年ごろまでに、水の総貯蔵量が減る地域で食料生産が不安定になると予測されている。そうした地域に暮らす、あるいは食料を頼る人は約30億人にのぼり、世界の食料生産の半分超が危うくなると考えられている。対策が取られない場合、各国のGDPも下押しされるとの見通しだ。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "世界水経済委員会の報告書が複数の要因の重なりを指摘している",
+          "text": "示しているのは世界水経済委員会の報告書で、WTO事務局長らが共同議長を務める。気候変動による降雨パターンの変化や気温上昇、貯水量の減少、清潔な水や衛生設備の不足が重なると見ている。ただし記事は算出方法の詳細までは示しておらず、水の総量は足りるとするFAOなどの見方もあるため、確からしさには幅がある。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[気候変動・降雨の変化] --> D[水の貯蔵量の減少]\n B[気温上昇] --> D\n C[水・衛生設備へのアクセス不足] --> E[暮らしの悪化]\n D --> F[食料生産への打撃]\n F --> G[GDPの減少]\n E --> G"
+          }
+        },
+        "impact": {
+          "heading": "食料供給と経済、とくに低所得国と貧困層への打撃が懸念される",
+          "text": "実現すれば食料供給の不安定化が心配され、低所得国ほど経済への打撃が大きくなると見られている。清潔な水や衛生の不足は生活環境の悪化にもつながりうる。報告書は水を世界の公共財として管理し直すことや、有害な補助金の見直しを挙げ、貧困層への支援も重視している。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "世界の食料生産の半分超と各国のGDPに影響しうる見通しで、影響を受ける人が非常に多い。ただし、水の総量は足りるとするFAOなどの見方もあり、確からしさには幅がある。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Water crisis threatening world food production, economic stability by 2050",
+      "sourceName": "Gulf News(Global Commission on the Economics of Waterの報告を紹介)",
+      "sourceUrl": "https://gulfnews.com/world/europe/water-crisis-threatening-world-food-production-economic-stability-by-2050-1.1729138992007"
+    }
+  ],
+  "emptySlots": [
+    {
+      "genre": "personal-interest",
+      "horizon": "long",
+      "reason": "no-candidate"
+    }
+  ]
+}
