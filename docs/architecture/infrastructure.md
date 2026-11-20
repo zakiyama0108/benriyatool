@@ -46,7 +46,7 @@ flowchart LR
 flowchart LR
     dev["開発者"]
     repo["GitHubリポジトリ"]
-    actions["GitHub Actions"]
+    actions["GitHub Actions<br>PR CI・mainデプロイ・週次ヘルスチェック"]
     workers["Cloudflare Workers<br>本番配信"]
     db[("Supabase Postgres")]
 
@@ -66,7 +66,7 @@ mainマージから本番反映までの経路の詳細は[デプロイメント
 | Cloudflare Workers | Next.js静的エクスポート(`out/`)の配信。カスタムドメイン`benriyatool.com`のみで公開(workers.devサブドメインは無効) | [wrangler.toml](../../wrangler.toml) |
 | Supabase Postgres | ユーザー入力・計算結果の保存。anonキーはINSERTのみ、閲覧はRLSで許可された運営者のみ | [ADR-0001](../adr/0001-user-input-database.md)、[ADR-0006](../adr/0006-admin-screen-oidc-rls.md) |
 | Supabase Auth | 管理画面の運営者ログイン(Google OIDC) | [ADR-0006](../adr/0006-admin-screen-oidc-rls.md) |
-| GitHub Actions | PR時のCI(lint+spec-coverage・変更影響テスト・ビルドを並列実行)、mainマージ時のマイグレーション適用+全テスト+デプロイ、週次のSupabaseヘルスチェック | [ADR-0003](../adr/0003-db-schema-migration-ci.md)、[ADR-0008](../adr/0008-ci-changed-tests-and-parallel-jobs.md)、[deployment.md](deployment.md) |
+| GitHub Actions | PR時のCI(lint+spec-coverage・変更影響テスト・ビルドを並列実行)、mainマージ時のマイグレーション適用+全テスト+静的サイトのデプロイ、週次のSupabaseヘルスチェック | [ADR-0003](../adr/0003-db-schema-migration-ci.md)、[ADR-0008](../adr/0008-ci-changed-tests-and-parallel-jobs.md)、[ADR-0009](../adr/0009-stop-generative-workflows.md)、[deployment.md](deployment.md) |
 
 spotify-playlistが利用するSpotify Web APIは、利用者のブラウザから直接呼び出され運営者のインフラを経由しない(課金・運用管理の対象にもならない)ため、この表の対象外とする。詳細は[spotify-playlist/architecture.md](../../specs/spotify-playlist/architecture.md)を参照。
 
