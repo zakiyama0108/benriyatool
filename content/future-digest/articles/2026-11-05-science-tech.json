@@ -1,0 +1,323 @@
+{
+  "id": "2026-11-05-science-tech",
+  "edition": "science-tech",
+  "date": "2026-11-05",
+  "issueNumber": 5,
+  "predictions": [
+    {
+      "id": "technology-ai--near",
+      "genre": "technology-ai",
+      "horizon": "near",
+      "heading": "2030年までに、AIエージェントを監視する「ガーディアンエージェント」が関連市場の1〜1.5割を占めると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに監視役のAIが市場の一角を占める",
+          "text": "米調査会社Gartnerは、2030年までに、他のAIエージェントを見張る「ガーディアンエージェント」が、エージェント型AI市場の10〜15%を占めるようになると予測している。企業でAIエージェントが意思決定や業務を担う場面が広がるにつれ、その動きを監督する専用の仕組みが、新しい市場として育つと考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "Gartnerが、AI普及に伴う統制の必要性から見通した",
+          "text": "この予測を示しているのは、IT分野の調査・助言を手がけるGartnerである。入手できた情報はプレスリリース転載の見出しなどに限られるため、詳しい算出方法までは確認できていない。AIエージェントの導入が進むほど、誤作動や想定外の行動を監視・是正する需要が高まるという見方が、根拠の中心にあると考えられる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[AIエージェントの普及] --> B[意思決定の自動化が進む]\n B --> C[暴走・誤作動への懸念]\n C --> D[ガーディアンエージェントの需要]\n D --> E[2030年に市場の10〜15%]"
+          }
+        },
+        "impact": {
+          "heading": "企業のAI統制が、新たな市場と責任の分野になる",
+          "text": "予測どおりに進めば、多くの企業や利用者がAIエージェントの判断を前提に動く一方で、その行動を監視する仕組みの導入も求められるようになると考えられている。意思決定の自動化がガバナンスの深い変化を伴うため、影響度は大きいとされる。AIを使う側には、任せる範囲や責任の所在をあらためて整理する必要が生じる可能性がある。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "AIエージェントの普及で企業の意思決定の自動化が進む一方、その暴走を監視する仕組みが新市場になるという見通しで、影響を受ける企業・利用者が多く、ガバナンスの深い変化を伴う。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Gartner Predicts that Guardian Agents will Capture 10-15% of the Agentic AI Market by 2030",
+      "sourceName": "Gartner(プレスリリースの転載)",
+      "sourceUrl": "https://www.albawaba.com/business/pr/gartner-predicts-guardian-agents-will-1606657"
+    },
+    {
+      "id": "technology-ai--long",
+      "genre": "technology-ai",
+      "horizon": "long",
+      "heading": "生成AIは米国の生産性とGDPの水準を2055年に約3%、2075年に3.7%押し上げると試算されている",
+      "sections": {
+        "when": {
+          "heading": "押し上げ効果は数十年かけて積み上がると予測されている",
+          "text": "生成AIによって米国の生産性とGDPの水準が、2055年に約3%、2075年には3.7%高まると考えられている。上乗せ幅の勢いは2030年代初頭に最も強くなり、その後は弱まる見通しだ。普及が行き渡ると成長率は従来の水準へ戻り、長期的にはほとんど変わらないと予測されている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[現在: 効果はごくわずか] --> B[2030年代初頭: 上乗せの勢いがピーク]\n B --> C[2055年: 水準が約3%上昇]\n C --> D[2075年: 水準が3.7%上昇]\n D --> E[成長率は従来水準に近づく]"
+          }
+        },
+        "basis": {
+          "heading": "ペンシルベニア大学のモデルが過去の技術普及を参考に試算している",
+          "text": "示しているのは、ペンシルベニア大学ウォートン校の予算モデル(PWBM)の分析だ。業務をタスク単位で捉える経済学の枠組みを使い、AIで自動化できる業務の割合や企業のコスト削減効果に仮定を置いている。普及の速さはパソコンやインターネットなど過去の技術を参考にしている。初期データが乏しいため、結果は大きく変わりうると説明されている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "働き方は変わるが、経済の伸びが劇的に変わるとは見られていない",
+          "text": "経済全体の水準は底上げされるものの、成長率そのものは長期でほぼ変わらず、変化の大きさは控えめだと考えられている。専門職や事務・管理の分野は影響を受けやすく、雇用の伸びが鈍る兆しも指摘されている。新しい製品や仕事の創出は試算に含まれておらず、実際の暮らしへの影響は試算と異なる可能性がある。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "生成AIが米国の生産性とGDPの水準を2055年に約3%、2075年に3.7%押し上げるという試算で、経済全体に及ぶ。ただし成長率は長期的にほぼ変わらず、変化の大きさは控えめで、米国のモデル試算である点にも限りがある。",
+      "targetPeriod": "2055年・2075年まで",
+      "sourceTitle": "The Projected Impact of Generative AI on Future Productivity Growth",
+      "sourceName": "Penn Wharton Budget Model(ペンシルベニア大学ウォートン校)",
+      "sourceUrl": "https://budgetmodel.wharton.upenn.edu/p/2025-09-08-the-projected-impact-of-generative-ai-on-future-productivity-growth/"
+    },
+    {
+      "id": "medical-health--near",
+      "genre": "medical-health",
+      "horizon": "near",
+      "heading": "近視の人は2030年までに世界で約33.6億人に増えると考えられている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに近視人口が急増すると見られている",
+          "text": "2030年までに、世界の近視の人は約33.6億人に達すると予測されている。これは世界の約3人に1人にあたる規模とされる。高齢化と人口増加が重なり、視力の問題を抱える人が全体として増えていくという見通しの中で、近視もその一つとして紹介されている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "WHOの世界視覚報告を紹介する記事が根拠",
+          "text": "示しているのはWHOの世界視覚報告で、Devexがその内容を紹介している。ただし、元になる推計は2016年のもので、やや古い点には注意が必要とされる。WHOの報告も同様の2030年の見通しを示しており、確からしさは比較的高いと考えられている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[2016年の推計] --> B[WHO世界視覚報告]\n B --> C[Devexが紹介]\n C --> D[2030年に約33.6億人の見通し]"
+          }
+        },
+        "impact": {
+          "heading": "視力ケアの需要が大きく膨らむ可能性がある",
+          "text": "実現すれば、眼鏡やコンタクトレンズ、眼科での検診や治療を必要とする人が世界で大幅に増えると考えられている。学校や職場での視力対策、ケアを受けられる体制づくりも課題になりうる。影響を受ける人が非常に多いため、影響度は大きいとされている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "世界の約3人に1人が近視になる規模で、影響を受ける人が非常に多い。WHOの報告も同様の2030年の見通しを示していて、確からしさも高い。ただし根拠は2016年の古い推計。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "WHO report: aging and population growth challenges for vision care(近視は2030年までに約33.6億人へ増えると紹介)",
+      "sourceName": "Devex(WHO世界視覚報告の紹介)",
+      "sourceUrl": "https://www.devex.com/news/aging-and-population-growth-challenges-for-vision-care-who-report-95763"
+    },
+    {
+      "id": "medical-health--long",
+      "genre": "medical-health",
+      "horizon": "long",
+      "heading": "2050年に向け、世界の健康課題は非感染性疾患が中心になっていくと予測されている",
+      "sections": {
+        "when": {
+          "heading": "2050年までに、病気の中心が非感染性疾患へ移ると考えられている",
+          "text": "2022年から2050年にかけて、世界の平均寿命や病気の負担が変わっていくと予測されている。感染症などに代わり、非感染性疾患が人々の健康問題の中心になっていく流れが想定されている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "国際研究グループが204の国・地域を対象に示した査読付き予測",
+          "text": "GBD 2021 Forecasting Collaboratorsが、医学誌The Lancetで発表した予測である。204の国・地域を対象に、疾病負担が今後どう推移するかを複数のシナリオで示している。専門家の査読を経た大規模な研究である。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "医療体制と暮らしの健康管理の見直しが問われると考えられている",
+          "text": "予測の対象は全世界で、どの国の人にも関わる変化とされている。長く付き合う病気への対応が医療体制の大きな課題になり、個人の健康管理や、継続的な医療・介護を支える仕組みの見直しが求められると考えられている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "204の国・地域を対象に、世界の平均寿命や病気の負担が2050年に向けてどう変わるかを示した、査読付きの大規模予測。全世界の人に関わり、非感染性疾患への移行という生活や医療体制の深い変化を伴う。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Burden of disease scenarios for 204 countries and territories, 2022–2050",
+      "sourceName": "The Lancet(GBD 2021 Forecasting Collaborators)",
+      "sourceUrl": "https://eprints.whiterose.ac.uk/id/eprint/212723/1/PIIS0140673624006858.pdf"
+    },
+    {
+      "id": "environment-energy--near",
+      "genre": "environment-energy",
+      "horizon": "near",
+      "heading": "現行の規制のままでは、石油・ガス由来のメタン排出は2030年までに約2割しか減らないとIEAは見ている",
+      "sections": {
+        "when": {
+          "heading": "2030年までの削減は約2割にとどまる見通し",
+          "text": "IEAは、現行の規制が続く場合、石油・ガス由来のメタン排出は2030年までに約2割しか減らないと見ている。この水準では、世界メタン誓約が掲げる削減目標には届かないと考えられている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "IEAが規制の現状を前提に分析している",
+          "text": "この予測を示しているのは国際エネルギー機関(IEA)で、情報源は報告書「Global Methane Tracker 2026」である。分析は各国の規制が現状のまま続くことを前提にしている。そのため、実現の確からしさは中程度とされている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "気候目標の達成可否に直結し、影響は世界全体に及ぶ",
+          "text": "削減が想定どおりに進まない場合、気候目標を達成できるかどうかに直結すると考えられている。影響は特定の国や地域にとどまらず、世界全体に及ぶと見られている。今後は、規制の強化がどこまで進むかが焦点になると考えられている。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "IEAは、現行の規制では石油・ガス由来のメタン排出が2030年までに約2割しか減らず、世界メタン誓約の目標に届かないと見ている。気候目標の達成可否に直結し、影響は世界全体に及ぶ。ただし分析は規制の現状を前提としており、実現の確からしさは中程度。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Global Methane Tracker 2026",
+      "sourceName": "IEA",
+      "sourceUrl": "https://iea.blob.core.windows.net/assets/8a2639fd-7883-4fe7-bbe7-4f97bc39e2ff/GlobalMethaneTracker2026.pdf"
+    },
+    {
+      "id": "environment-energy--long",
+      "genre": "environment-energy",
+      "horizon": "long",
+      "heading": "世界原子力協会は、各国の目標が達成されれば2050年までに世界の原子力容量が3倍に届くと見ている",
+      "sections": {
+        "when": {
+          "heading": "2050年までに原子力容量は3倍化の目標を上回りうる",
+          "text": "世界原子力協会(WNA)は、各国政府の目標や建設中・計画中の案件を積み上げると、2050年の世界の原子力容量は約1,446GWeに達し、COP28で掲げられた3倍化の水準を超えると見ている。ただし、既存の原子炉を長く運転し続けることが前提になっている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "各国の目標の積み上げと、IEAとの比較が根拠",
+          "text": "示しているのは原子力業界の団体であるWNAだ。根拠は、3倍化宣言に参加した国々や各国政府の公表目標の積み上げである。一方で、IEAのネットゼロシナリオ(約1,079GWe)より強気な数字になっている。業界団体の推計であり推進寄りなので、確からしさは限定的と考えられる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[各国政府の2050年目標] --> C[WNAの積み上げ推計]\n B[運転中・建設中・計画中の容量] --> C\n C --> D[約1,446GWe]\n D --> E[COP28の3倍化目標を上回る]\n F[IEAネットゼロシナリオ 約1,079GWe] -.より控えめ.-> D"
+          }
+        },
+        "impact": {
+          "heading": "電力の脱炭素を支える一方、実現は条件次第",
+          "text": "実現すれば、低炭素で安定した電力源が増え、電力供給と脱炭素の両面で役割が大きくなると考えられている。ただし、建設ペースの大幅な加速や資金・人材の確保、規制改革が必要とされる。中国や米国など一部の国の動向に左右されるため、目標が未達に終わる可能性も指摘されている。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "世界原子力協会(WNA)は、各国の目標が達成されれば世界の原子力容量が2050年に約1,446GWeとなり、COP28の「3倍化」目標を上回ると見ている。電力供給と脱炭素に深く関わる。ただし業界団体の推計で推進寄りであり、IEAのネットゼロシナリオ(約1,079GWe)より強気なため、確からしさは限定的。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Tripling of nuclear capacity is achievable, says World Nuclear Association",
+      "sourceName": "World Nuclear News",
+      "sourceUrl": "https://world-nuclear-news.org/articles/tripling-of-nuclear-capacity-is-achievable-says-world-nuclear-association"
+    },
+    {
+      "id": "space-science--near",
+      "genre": "space-science",
+      "horizon": "near",
+      "heading": "2030年までの宇宙への打ち上げは、供給過剰にも不足にもなり得るとコンサルティング会社が見ている",
+      "sections": {
+        "when": {
+          "heading": "2030年までの打ち上げ需給は、シナリオで大きく分かれると考えられている",
+          "text": "2030年ごろまでの期間に、衛星を宇宙へ運ぶロケットの打ち上げ能力が需要に対して余るのか、足りなくなるのかが論点になっていると考えられている。衛星コンステレーション(多数の衛星を連携させる仕組み)の整備や新型ロケットの登場しだいで、結果は大きく変わり得るとされる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[2030年までの衛星需要] --> B{新型ロケットの供給は間に合うか}\n B -->|需要を上回る| C[打ち上げ能力が過剰]\n B -->|需要に追いつかない| D[打ち上げ能力が不足]"
+          }
+        },
+        "basis": {
+          "heading": "経営コンサルティング会社が需給のシナリオ分析として示している",
+          "text": "この見方は、航空宇宙・防衛分野の分析を手がけるMcKinsey & Companyの記事で示されていると考えられている。需要側と供給側の複数の想定を比べるシナリオの形をとっており、予測には幅がある。そのため、確からしさは中程度とみるのが妥当とされている。",
+          "diagram": null
+        },
+        "impact": {
+          "heading": "通信・観測・宇宙ごみ対策など幅広い生活分野に関わると考えられている",
+          "text": "打ち上げが増えて衛星の数が増えれば、通信や地球観測のサービスが広がる可能性があると考えられている。一方で、宇宙ごみ(軌道上の不要物)への対策も重要になるとされる。逆に打ち上げ能力が不足すれば、こうしたサービスの整備が遅れる可能性もある。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "衛星の数が増えると通信や観測、宇宙ごみ対策など多くの人の生活に関わる。ただし予測はシナリオで大きく幅があり、確からしさは中程度。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Space launch: Are we heading for oversupply or a shortfall?",
+      "sourceName": "McKinsey & Company",
+      "sourceUrl": "https://www.mckinsey.com/industries/aerospace-and-defense/our-insights/space-launch-are-we-heading-for-oversupply-or-a-shortfall"
+    },
+    {
+      "id": "space-science--long",
+      "genre": "space-science",
+      "horizon": "long",
+      "heading": "月面経済は2050年までに最大5,660億ドル規模になりうると、Deloitteの試算が示している",
+      "sections": {
+        "when": {
+          "heading": "2050年までの累計で数千億ドル規模と見込まれている",
+          "text": "2050年までの期間に、月面で人類が持続的に活動することで生まれる経済価値が、累計で約3,430億〜5,660億ドルに達しうると考えられている。幅が大きいのは、インフラや商業需要の立ち上がりの速さで結果が変わるためとされる。初期の収益は輸送分野が最大になると見込まれている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "Deloitteが6分野のインフラ整備を軸に試算している",
+          "text": "この試算はDeloitteの報告書によるもので、InvestmentNewsが紹介している。輸送、エネルギー・電力、通信・航法、月面移動、建設、生命維持の6分野を必要なインフラとして整理している。水氷があるとみられる月の南極が注目され、今後20年ほどで400件超の月ミッションが計画されている点も背景とされる。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[月面インフラ6分野] --> B[輸送]\n A --> C[エネルギー・電力]\n A --> D[通信・航法]\n A --> E[月面移動]\n A --> F[建設]\n A --> G[生命維持]\n B --> H[2050年までに約3,430億〜5,660億ドル]\n C --> H\n D --> H\n E --> H\n F --> H\n G --> H"
+          }
+        },
+        "impact": {
+          "heading": "宇宙産業や関連市場に長期的な波及が期待される一方、実現には不確実性が残る",
+          "text": "実現すれば、国家安全保障、月面由来のデータやサービス、新素材、宇宙製造、科学的発見などの派生市場が広がると考えられている。ただしこれらは短期の収益源とは位置づけられていない。技術上の障壁、需要が未実証であること、規制の不確実性により、実現が遅れたり縮小したりする可能性も指摘されている。どの国や企業が先行するかは、記事では示されていない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "月面の経済活動は、宇宙開発や関連産業に長期的に大きな影響を与えうる。ただし予測額には幅があり、実現の確からしさは中程度。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Lunar economy could be worth $566 billion. Who gets there first?",
+      "sourceName": "InvestmentNews(Deloitteの試算を紹介)",
+      "sourceUrl": "https://www.investmentnews.com/alternatives/lunar-economy-could-be-worth-566-billion-who-gets-there-first/267990"
+    },
+    {
+      "id": "geopolitics--near",
+      "genre": "geopolitics",
+      "horizon": "near",
+      "heading": "中国の核弾頭は2030年までに1,000発超へ増えると米国防総省が見ている",
+      "sections": {
+        "when": {
+          "heading": "2030年までに中国の核戦力は1,000発超に達するとみられている",
+          "text": "米国防総省の報告書は、中国の作戦配備済み核弾頭が2024年半ば時点で600発超にのぼり、2030年までに1,000発を超えると予測している。増強は2030年以降も続き、少なくとも2035年までは拡大すると見込まれている。ただし2035年時点の到達点は、中国自身がまだ定めている途中だとして不確実性も認められている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "毎年の報告書が、施設や新型装備の動きを根拠に示している",
+          "text": "予測を示しているのは米国防総省で、毎年の中国軍事力報告書で同じ見通しを繰り返している。根拠には、福建省の霞浦にある高速増殖炉の完成と建設の進行、次世代の原子力潜水艦の建造、極超音速兵器を載せうるミサイルの存在などが挙げられている。中国側は、核開発は戦略的安全の保障のためだと主張している。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[核物質の生産能力の拡大] --> D[弾頭数の増加]\n B[次世代の原子力潜水艦] --> D\n C[極超音速兵器など新型の運搬手段] --> D\n D --> E[2030年までに1,000発超と予測]"
+          }
+        },
+        "impact": {
+          "heading": "軍拡競争と核抑止の不安定化が世界の安全保障に及びうる",
+          "text": "報告書は、中国が限定的な報復能力から、大規模な打撃を与えうる能力へ移ることを示唆していると読める。核保有国どうしの均衡が崩れれば、軍拡競争や危機時の誤算が起きやすくなり、世界中の安全保障に影響すると考えられている。米国は、衝突を避けるために軍同士の対話の窓口を保つ方針とされる。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "核保有国どうしの均衡が崩れ、軍拡競争や核の抑止の不安定化を通じて世界中の安全保障に影響しうる。米国防総省が毎年の報告書で繰り返し示しており、確からしさも比較的高い。",
+      "targetPeriod": "2030年まで",
+      "sourceTitle": "Pentagon Says Chinese Nuclear Arsenal Still Growing",
+      "sourceName": "Arms Control Association",
+      "sourceUrl": "https://www.armscontrol.org/act/2025-01/news/pentagon-says-chinese-nuclear-arsenal-still-growing"
+    },
+    {
+      "id": "geopolitics--long",
+      "genre": "geopolitics",
+      "horizon": "long",
+      "heading": "生態系の危機で2050年までに10億人超が移住を迫られうると、平和研究機関が警告",
+      "sections": {
+        "when": {
+          "heading": "2050年までに31か国で10億人超が移住を迫られるおそれがある",
+          "text": "2050年までに、食料や水の不足といった生態系の危機に紛争や社会不安が重なり、31か国で10億人を超える人々が住む場所を離れざるをえなくなる可能性があると考えられている。食料不安に直面する人は現在より約5割増え、水不足の影響を受ける人も大きく増える見通しとされる。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "平和研究機関が、各国の耐性を評価して示した",
+          "text": "オーストラリア発の平和研究機関である経済平和研究所(IEP)が、国連などの国際データを使い、157か国が気温上昇や人口増加、食料不安などの生態系ショックにどこまで耐えられるかを評価した。その結果として、この予測を示している。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[生態系ショック\n食料不安・水不足・気温上昇] --> B[紛争・社会不安]\n  B --> C[大規模な移住]\n  C --> D[周辺国・安定した国への流入]"
+          }
+        },
+        "impact": {
+          "heading": "移民の増加や紛争、国家の不安定化につながると懸念されている",
+          "text": "中東や南アジア、アフリカの国々で影響が大きく、水や食料をめぐる争いが増えると考えられている。生態系のリスクが比較的小さい欧州や北米でも、難民の流入が増えると予測されている。気候による避難民を受け入れる国際的な義務は現状では定まっておらず、受け入れの議論が各国の課題になるとされる。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "生態系の危機で10億人超が避難を迫られうるとの見通しで、影響を受ける人が非常に多く、移民・紛争・国家の不安定化など国際秩序への影響も深い。ただし推計の幅が大きく、確からしさは中程度。",
+      "targetPeriod": "2050年まで",
+      "sourceTitle": "Ecological crises could displace more than 1 billion people by 2050, report",
+      "sourceName": "VICE(Institute for Economics & Peaceのエコロジカル脅威レポートを紹介)",
+      "sourceUrl": "https://www.vice.com/en/article/ecological-crises-could-displace-more-than-1-billion-people-by-2050-report/"
+    }
+  ],
+  "emptySlots": []
+}

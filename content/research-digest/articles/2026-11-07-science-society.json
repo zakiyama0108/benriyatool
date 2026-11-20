@@ -1,0 +1,195 @@
+{
+  "id": "2026-11-07-science-society",
+  "edition": "science-society",
+  "date": "2026-11-07",
+  "findings": [
+    {
+      "id": "environment-climate",
+      "genre": "environment-climate",
+      "heading": "米国の大西洋・メキシコ湾沿岸で、約1,750万人が洪水リスク「非常に高い」と評価された",
+      "sections": {
+        "finding": {
+          "heading": "沿岸の都市で多くの人が高い洪水リスクにさらされている",
+          "text": "米国の大西洋岸とメキシコ湾岸の沿岸都市を調べたところ、約1,750万人が洪水リスク「非常に高い」と評価された。二つの海岸のリスクの現れ方を比べた研究である。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "機械学習で二つの海岸の都市を比べた",
+          "text": "機械学習の手法を使って沿岸の都市ごとに洪水リスクを推定した。大西洋側とメキシコ湾側を並べて見比べることで、リスクが特に高い都市を洗い出している。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "住まいの備えや地域の対策を考える材料になる",
+          "text": "沿岸に住む人にとっては、自宅周辺の備えや自治体の洪水対策を考える手がかりになる。ただし、この結果で日々の暮らしが直ちに変わるわけではない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "推定であり、対象は米国の沿岸に限られる",
+          "text": "機械学習による推定なので、実際の被害を予測したものではない。対象は米国の二つの海岸に限られ、日本など他の地域へそのまま当てはめることはできない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "米国の大西洋・メキシコ湾沿岸で約1,750万人が洪水リスク「非常に高い」と評価され、影響を受ける人は多い。ただし機械学習による推定で、生活の変化は住まいの備えや自治体の対策に限られる。",
+      "sourceTitle": "A tale of two coasts: Unveiling US Gulf and Atlantic coastal cities at high flood risk",
+      "sourceName": "Science Advances(アラバマ大学、Dey・Shao)",
+      "sourceUrl": "https://doi.org/10.1126/sciadv.aec2079",
+      "doi": "10.1126/sciadv.aec2079",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "ai-it",
+      "genre": "ai-it",
+      "heading": "AI音声の見抜きやすさは変わらず、本物の声まで疑う人が増えている",
+      "sections": {
+        "finding": {
+          "heading": "偽物は見抜けるが、本物の声を疑いがちになった",
+          "text": "音声ディープフェイクを人が聞き分ける力は、数年前とほぼ同じだった。一方で、本物の声を本物と正しく判断できる割合は下がった。著者らは、偽音声が見抜けなくなったというより、本物まで疑う傾向が強まったと見ている。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "大勢の聞き取り結果を、数年前の研究と比べた",
+          "text": "約1,800人が多数の音声を聞いて本物か偽物かを判定した。判定は3万件を超える。AI音声を作る仕組みも百種類以上を使った。その結果を2021年の同種の研究と並べ、偽物と本物それぞれの正答率の変化を調べている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[大勢が音声を聞いて判定] --> B[2021年の研究と比較]\n B --> C[偽物の見抜きやすさはほぼ同じ]\n B --> D[本物の正答率は低下]\n D --> E[本物を疑う傾向が強まったと解釈]"
+          }
+        },
+        "relevance": {
+          "heading": "電話などで本物の声が信じてもらえにくくなるかもしれない",
+          "text": "電話詐欺では偽の声に騙されることが心配されてきた。この研究は、本物の声まで疑われやすくなる点も問題になりうると示す。家族や職場からの本物の連絡が信用されにくくなる場面も考えられる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "査読前で、追試も確認されていない",
+          "text": "この論文は査読前のプレプリントで、他の研究者による確認はまだ済んでいない。本物を疑う傾向が増えたという説明は著者らの解釈である。実験の詳しい条件は確認できておらず、日本語話者や実際の通話場面にそのまま当てはまるかも分からない。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "音声ディープフェイクは電話詐欺などで誰もが接しうる脅威で、本物の音声まで疑う傾向が示された点は生活への影響が大きいが、査読前で追試も未確認のため「中」とした。",
+      "sourceTitle": "Eroding Trust in Real Speech: A Large-Scale Study of Human Audio Deepfake Perception",
+      "sourceName": "arXiv(Müller & Choong)",
+      "sourceUrl": "https://arxiv.org/abs/2605.26136",
+      "doi": "10.48550/arxiv.2605.26136",
+      "publishedYear": 2026,
+      "isPreprint": true
+    },
+    {
+      "id": "economics-behavioral",
+      "genre": "economics-behavioral",
+      "heading": "週4日勤務を6か月試した働き手で、燃え尽きが減り満足度が上がった",
+      "sections": {
+        "finding": {
+          "heading": "週4日勤務で、燃え尽きが減り満足度が高まった",
+          "text": "週4日勤務を試した企業の働き手では、燃え尽きを感じる度合いが減り、仕事や生活への満足度が高まる傾向が示された。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "大人数を半年間にわたって調べた",
+          "text": "約2,900人の働き手、141社が約6か月間にわたり週4日勤務を試し、その間の働き手の状態が調べられた。多くの人と企業を一定期間見た点が、結論の支えになっている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n  A[141社が参加] --> B[約6か月間 週4日勤務を試す]\n  B --> C[約2,900人の状態を調べる]\n  C --> D[燃え尽きの減少と満足度の向上]"
+          }
+        },
+        "relevance": {
+          "heading": "働き方を考える参考材料になる",
+          "text": "働く時間を減らす選択肢が、心身の負担や満足感の面で意味を持ちうることを示している。自分の勤め先の制度や、今後の働き方を考える際の参考材料になる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "自主参加のため、効果とは言い切れない",
+          "text": "参加は企業の自主的な申し出によるもので、参加者を無作為に分けてはいない。そのため、週4日勤務そのものの効果とは言い切れず、他の企業や職場でも同じ結果になるとは限らない。査読を経た論文だが、結果は慎重に受け止めたい。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "週4日勤務という働き方の見直しは多くの働き手に関わり、生活の変化も大きい。約2,900人・141社の6か月の試行で燃え尽きの減少と満足度の向上が示された。ただし参加企業の自主参加で無作為化されていない点で確からしさは限られる。",
+      "sourceTitle": "Work time reduction via a four-day week finds improvements in workers' well-being",
+      "sourceName": "Nature Human Behaviour",
+      "sourceUrl": "https://doi.org/10.1038/s41562-025-02259-6",
+      "doi": "10.1038/s41562-025-02259-6",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "space-physics",
+      "genre": "space-physics",
+      "heading": "GPSなしの海上でも、重力の地図と照らして船の位置を海里級で割り出せた",
+      "sections": {
+        "finding": {
+          "heading": "衛星測位なしで、重力から船位置を補正できた",
+          "text": "衛星測位(GNSS)を使わず、船で測った重力の値を重力の地図と照らし合わせて、位置のずれを海里級に抑えられたと報告された。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[船上の量子重力計で重力を測る] --> B[重力の地図と照合]\n B --> C[慣性航法のずれを補正]\n C --> D[海里級の位置精度]"
+          }
+        },
+        "basis": {
+          "heading": "実際の船で長い航路を試した",
+          "text": "全長29mほどの船に装置を載せ、83kmの航路で衛星測位を使わずに試した。温度管理や調整をしない船室でも動かした点が決め手になっている。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "測位が使えない時の備えになりうる",
+          "text": "電波の妨害や途絶で衛星測位が使えない海上でも、航行の安全や物流を支える補助手段になる可能性がある。ただし今すぐ身近で使えるわけではない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "査読前で、実用化はこれから",
+          "text": "この論文は専門家の審査(査読)を経ていないプレプリントである。試験は1隻の船での結果で、地図の精度にも左右されるため、広く通用するかは今後の検証を待つ必要がある。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "衛星の測位(GNSS)が使えない海上でも、重力の地図と照らして船の位置を海里級の精度で割り出せると実船で示され、将来の航行の安全や物流の備えにつながるが、プレプリントで実用化はこれからである。",
+      "sourceTitle": "GNSS-free quantum gravity-aided navigation and fine-scale marine surveying with a strapdown quantum gravimeter",
+      "sourceName": "arXiv (quant-ph)",
+      "sourceUrl": "https://arxiv.org/abs/2608.25563",
+      "doi": "10.48550/arxiv.2608.25563",
+      "publishedYear": 2026,
+      "isPreprint": true
+    },
+    {
+      "id": "materials-energy",
+      "genre": "materials-energy",
+      "heading": "AIが充電のしかたを調整すると、EV電池の寿命が充電時間そのままで約23%延びた",
+      "sections": {
+        "finding": {
+          "heading": "充電時間を変えずに、電池の寿命が約23%延びた",
+          "text": "チャルマース工科大学の研究チームは、AIで充電電流を細かく調整する方法を開発した。従来の方法と同じ約24分の充電時間のまま、電気自動車用電池が使える期間を約23%延ばせたという。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "電池の状態に合わせて、AIが試行錯誤で充電を学んだ",
+          "text": "AIは、電池を傷めにくく、かつ早く充電できる電流を試行錯誤で学んだ。電池の健康状態に応じた電圧の目安は、実験で確かめた。寿命の長さは、精密なコンピューター上の模擬で、従来法と比べて調べている。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[電池の健康状態を実験で調べる] --> B[AIが充電電流の調整を試行錯誤で学ぶ]\n B --> C[模擬環境で寿命を従来法と比較]\n C --> D[実物の電池での試験は今後]"
+          }
+        },
+        "relevance": {
+          "heading": "電池が長持ちすれば、EVの維持費や資源の負担が減るかもしれない",
+          "text": "電池が長持ちすれば、交換の費用や廃棄される電池が減り、EVを長く使いやすくなる可能性がある。ソフトウェアの更新で導入できる可能性も示されているが、実際に使えるようになる時期は示されていない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "結果の大半は模擬によるもので、実機での確認はこれから",
+          "text": "寿命の評価は主にコンピューター上の模擬で、実物の電池での試験は今後の課題である。電池の種類や温度によって特性が変わるため、同じ効果がどの電池でも得られるとは限らない。査読前ではないが、過信は禁物である。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "電気自動車の急速充電に関わる研究で、電池の寿命が約23%延び、充電時間もほぼ同じだった。ただし結果の大半はシミュレーションで、実機での検証はこれからのため、確からしさは限られる。",
+      "sourceTitle": "AI extends EV battery lifetime by nearly 23 percent — without increasing charging time(論文: Lifelong Reinforcement Learning for Health-Aware Fast Charging of Lithium-ion Batteries)",
+      "sourceName": "チャルマース工科大学(Chalmers University of Technology)公式ニュース",
+      "sourceUrl": "https://www.chalmers.se/en/current/news/e2-ai-extends-ev-battery-lifetime-by-nearly-23-percent-without-increasing-charging-time/",
+      "doi": null,
+      "publishedYear": 2026,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}

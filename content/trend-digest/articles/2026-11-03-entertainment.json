@@ -1,0 +1,320 @@
+{
+  "id": "2026-11-03-entertainment",
+  "edition": "entertainment",
+  "date": "2026-11-03",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "music",
+      "heading": "MAZZELの「Touch」がBillboard JAPAN Hot 100で初登場1位",
+      "sections": {
+        "fact": {
+          "heading": "Hot 100で初登場にして首位を獲得",
+          "text": "Billboard JAPAN Hot 100で、MAZZELの「Touch」が前回順位なしの初登場で1位に入りました。合計ポイントは1万点台前半です。通算の報告回数は1回目で、継続度は「流行前」、継続日数は0日、注目度は「高い」と判定されています。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "ドラマ主題歌としての露出が追い風になった可能性",
+          "text": "チャートのページ自体には、話題になった理由の記載がありません。追加で調べたところ、この曲はTOKAI TV/フジテレビ系の土曜ドラマ「再生のうずめ」の主題歌とされています。10月下旬のダウンロード速報でも2位に入っており、ドラマ放送とダウンロード需要が重なって初登場1位につながった、と考えるのが自然です。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は推測を含み、今後の継続はまだ見通せない",
+          "text": "ドラマ主題歌が要因という見方は、複数の情報から組み立てた推測で、公式に確認した因果関係ではありません。継続度は「流行前」なので、この勢いが続くかどうかは現時点では分かりません。発祥地域・主な流行地域も不明です。詳細は出典のBillboard JAPANを確認してください。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "Touch",
+      "sourceName": "Billboard JAPAN Hot 100",
+      "sourceUrl": "https://www.billboard-japan.com/charts/detail?a=hot100",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-03",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-2",
+      "genre": "japanese-movie",
+      "heading": "『耳をすませば』4Kリマスター版が公開され、上映中ランキングで上位に入った",
+      "sections": {
+        "fact": {
+          "heading": "公開後まもなく、上映中作品の中で注目度が高い位置に入った",
+          "text": "Filmarksの上映中一覧で、注目度の高い作品として上位に表示された。注目度ラベルは「高い」で、継続日数は7日、継続度は「流行前」、報告は今回が1回目。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "10月23日の4Kリマスター公開が、鑑賞の動きを後押ししたとみられる",
+          "text": "2026年10月23日に4Kデジタルリマスター版が劇場公開され、IMAX上映も案内された。過去作の高画質での再上映が、懐かしむ世代と初めて大画面で観る層の双方の関心を集めたと考えられる。レビューでは映像の美しさと、主人公が人との関わりで成長する物語への言及が目立つ。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[10月23日 4Kリマスター公開] --> B[IMAX上映も案内]\n B --> C[映像美と物語への感想が増加]\n C --> D[上映中ランキングで注目度が上昇]"
+          }
+        },
+        "caveat": {
+          "heading": "背景は公開時期からの推測を含み、継続性はまだ見通せない",
+          "text": "注目の理由は公開時期と感想の傾向からの推測で、検索急上昇の直接の要因までは特定できていない。継続度は「流行前」の段階で、地域の傾向も不明。上映期間の終了とともに熱が引く可能性もあり、今後の推移を見守る必要がある。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "耳をすませば 4Kデジタルリマスター",
+      "sourceName": "Filmarks上映中ランキング",
+      "sourceUrl": "https://filmarks.com/list/now",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 7,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-3",
+      "genre": "foreign-movie",
+      "heading": "A24配給の長尺ドキュメンタリー『ユー・キャン・シー・エブリシング』が全米首位に",
+      "sections": {
+        "fact": {
+          "heading": "全米ランキング首位で、注目度は高い",
+          "text": "映画.com全米ランキングで首位に立ち、注目度は「高い」状態が7日間続いている。継続度は「流行前」で、今回が初の掲載となる。発祥地域・現在の主な流行地域はいずれも不明。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "公開3週目での首位という意外性が話題を呼んだ",
+          "text": "前週の2位から首位に上がり、しかも公開3週目での首位という点が目を引く。実在の起業家を題材にした3時間超のドキュメンタリーで、低予算の作品が予想外に伸びたことが話題の中心とみられる。配給はA24。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景の一部は推測を含み、今後の継続は見通せない",
+          "text": "ここで述べた背景は、元のランキング記事の記載にもとづく推測を含む。継続度は流行前の段階にあり、この話題が今後も続くかどうかは見通せない。詳細は出典の映画.comを確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "ユー・キャン・シー・エブリシング（原題）",
+      "sourceName": "映画.com全米ランキング",
+      "sourceUrl": "https://eiga.com/ranking/us/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 7,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-4",
+      "genre": "japanese-drama",
+      "heading": "朝ドラ新作『ブラッサム』が視聴人数ランキングで週間2位に登場",
+      "sections": {
+        "fact": {
+          "heading": "放送開始から間もない朝ドラが、週間ランキング上位に入った",
+          "text": "ビデオリサーチの週間ドラマ視聴人数ランキング(10月12〜18日)で、朝の放送枠が2位に入った。平均視聴人数は900万人台。継続日数は0日で、継続度は「流行前」、注目度は「高い」。今回が1回目の報告となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "始まったばかりの2026年度後期の朝ドラとして、注目を集めたとみられる",
+          "text": "本作は9月28日に始まった朝ドラで、作家・宇野千代をモデルに、主人公の波乱の人生を描く。石橋静河の主演やYOASOBIの主題歌も、放送前から告知されていた。ただし、これらが今回の順位に直結したかはランキングからは読み取れない。新作の開始直後という点からの推測を含む。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "1週間の観測だけでは、流行として続くかはまだ見通せない",
+          "text": "順位は一つの週の結果にすぎず、継続度も「流行前」の段階にある。朝ドラは毎日放送される定番の枠であり、一時的な話題なのか定着するのかは、今後の推移を見る必要がある。発祥地域と現在の主な流行地域は、いずれも不明である。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "連続テレビ小説・ブラッサム",
+      "sourceName": "ビデオリサーチ 視聴人数ランキング(ドラマ)",
+      "sourceUrl": "https://www.videor.co.jp/audience/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-03",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-5",
+      "genre": "foreign-drama",
+      "heading": "Netflix日本のシリーズ部門に「LOST10」が登場、まだ流行前の段階",
+      "sections": {
+        "fact": {
+          "heading": "Netflix日本のシリーズTop10データで「LOST10」を確認",
+          "text": "NetflixのTop10データ(日本・シリーズ)で「LOST10」が確認された。継続度は「流行前」、注目度は「注目度 普通」で、継続日数は7日、今回が1回目の掲載となる。発祥地域と現在の主な流行地域はいずれも不明で、検索数の目安も示せない。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "新作ドラマの放送・配信開始が背景にある可能性",
+          "text": "報道によると、同名の新作ドラマ『LOST10』は横浜流星さん主演で10月16日からTBSで放送が始まり、Netflixでの配信も決まったという。この配信開始がランキング入りの一因とみられるが、順位の詳細までは確認できず、両者の結び付きは推測を含む。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、人気が続くかはまだ見通せない",
+          "text": "上記の背景は検索で得た報道に基づく推測を含み、ジャンル分類(海外ドラマ)とも食い違う可能性がある。継続度は流行前の段階で、今後も上位に残るかは見通せない。順位や視聴時間などの詳細は、出典のNetflix公式データで確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "LOST10",
+      "sourceName": "Netflix公式Top10データ(シリーズ・日本)",
+      "sourceUrl": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "normal",
+        "continuationDays": 7,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-6",
+      "genre": "anime",
+      "heading": "秋アニメ『ホタルの嫁入り』がFilmarksの話題一覧に登場",
+      "sections": {
+        "fact": {
+          "heading": "話題入りして7日、今回が初の掲載",
+          "text": "Filmarksの話題のアニメ一覧に7日間にわたって登場しており、今回が初めての掲載です。継続度は「流行前」、注目度は「高い」と判定されています。発祥地域と現在の主な流行地域は不明です。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "新作放送の開始と原作人気が重なった",
+          "text": "2026年10月9日にフジテレビのノイタミナ枠で放送が始まった新作です。殺し屋と余命わずかな令嬢という強い設定が目を引いたとみられます。原作は電子コミック大賞2024で大賞を受賞した人気作で、アニメ化への期待が元々高かったことも背景にありそうです。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[原作の人気] --> C[10月9日に放送開始]\n B[強い設定の物語] --> C\n C --> D[Filmarksの話題一覧に登場]"
+          }
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の継続は見通せない",
+          "text": "ここで挙げた背景は放送時期や原作の人気から考えた推測で、視聴者の反応を直接確かめたものではありません。レビューでは評価が分かれています。流行前の段階のため、話題が今後も続くかは見通せません。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "ホタルの嫁入り",
+      "sourceName": "Filmarksアニメ 話題のおすすめアニメ",
+      "sourceUrl": "https://filmarks.com/list-anime/trend",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 7,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-7",
+      "genre": "variety",
+      "heading": "「世界まる見え！テレビ特捜部２時間ＳＰ」が視聴人数ランキングのバラエティ部門に登場",
+      "sections": {
+        "fact": {
+          "heading": "初めて報告された、注目度「高い」の話題",
+          "text": "ビデオリサーチのバラエティ視聴人数ランキングで「世界まる見え！テレビ特捜部２時間ＳＰ」が話題として検出された。今回が1回目の報告で、注目度は「高い」、継続度は「流行前」、継続日数は0日となっている。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "多くの人が視聴した結果がランキングに表れたとみられる",
+          "text": "視聴した人の多さがランキング上位という形で表れ、それが今週の注目につながったと考えられる。ただし、番組内のどの企画が反響を呼んだのかなど、具体的な背景は今回の調査では特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の継続は見通せない",
+          "text": "注目の理由は推測を含むため断定できない。継続度は「流行前」で、一度きりの話題で終わるのか盛り上がりが続くのかは現時点では分からない。発祥地域・主な流行地域も不明である。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "世界まる見え！テレビ特捜部２時間ＳＰ",
+      "sourceName": "ビデオリサーチ 視聴人数ランキング(バラエティ)",
+      "sourceUrl": "https://www.videor.co.jp/audience/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-03",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-8",
+      "genre": "streaming-video",
+      "heading": "Netflix日本の映画Top10に「Black Showman」が登場、背景は未確認",
+      "sections": {
+        "fact": {
+          "heading": "Netflix日本の映画Top10データに登場し、注目度は高いと判定",
+          "text": "Netflix公式Top10データの日本の映画部門に「Black Showman」がランクインし、注目度は「高い」と判定された。継続度は「流行前」で継続日数は0日。今回が1回目の掲載となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "話題化の背景は特定できなかった",
+          "text": "元データを取得できず、追加のWeb検索でも作品の公開情報を確認できなかったため、なぜ今週ランクインしたのかという背景は特定できなかった。配信開始直後の話題なのか、出演者や原作に由来するのかは、確認できていないため断定を避ける。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は未確認で、今後の継続も見通せない段階",
+          "text": "背景が確認できていないため、この解説は事実の提示にとどまる。流行前の段階であり、話題が続くかどうかは見通せない。発祥地域・現在の主な流行地域はいずれも不明。詳しくはNetflix公式Top10の元データを参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "Black Showman",
+      "sourceName": "Netflix公式Top10データ(映画・日本)",
+      "sourceUrl": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-03",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-9",
+      "genre": "books-comics",
+      "heading": "雑誌「anan No.2516 Special Edition」が週間ベストセラー総合2位に登場",
+      "sections": {
+        "fact": {
+          "heading": "トーハンの週間総合ランキングで2位に入った",
+          "text": "トーハンの週間ベストセラー(2026年10月27日調べ)の総合ランキングで2位に入った。継続度ラベルは「流行前」、継続日数は0日で、今回が1回目の報告となる。注目度ラベルは「注目度 高い」。発祥地域・現在の主な流行地域はどちらも不明。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "順位を押し上げた具体的な背景は特定できなかった",
+          "text": "追加で調べても、今号の表紙や特集など、上位に入った理由を示す情報は見つからず、背景は特定できなかった。ランキングページに載っているのは書名・出版社(マガジンハウス)・価格といった基本情報だけで、内容の説明はない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は未確認で、人気が続くかも見通せない",
+          "text": "背景が分からないため、なぜ売れているのかは推測の域を出ない。継続度が「流行前」の段階なので、この人気が来週以降も続くかは今のところ見通せない。内容の詳細は出版元などの一次情報で確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "anan No.2516 Special Edition",
+      "sourceName": "トーハン週間ベストセラー",
+      "sourceUrl": "https://www.tohan.jp/bestsellers/",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-03",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    }
+  ],
+  "unavailableGenres": []
+}

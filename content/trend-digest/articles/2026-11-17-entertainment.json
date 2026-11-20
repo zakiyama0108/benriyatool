@@ -1,0 +1,320 @@
+{
+  "id": "2026-11-17-entertainment",
+  "edition": "entertainment",
+  "date": "2026-11-17",
+  "topics": [
+    {
+      "id": "topic-1",
+      "genre": "music",
+      "heading": "Ayumu Imazu「結び」がSpotify日本の日次チャートで上位に浮上",
+      "sections": {
+        "fact": {
+          "heading": "チャート上位に入り、今回が初の掲載",
+          "text": "Spotify日本の日次チャートで2位前後に位置している。今回が初めての報告で、継続日数は21日。継続度は「注目され始め」、注目度は「高い」と判定されている。検索数ではなく、配信チャートで観測された動きである。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "伸びた背景は特定できなかった",
+          "text": "参照したチャートは順位と再生数を示すだけで、なぜ聴かれているのかは書かれていない。追加で検索もしたが、ドラマ・SNS・新曲発表といった背景を裏付ける情報は見つからなかった。そのため、話題化のきっかけは特定できなかったと正直に記す。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は不明で、今後の継続も見通せない",
+          "text": "背景を断定できないため、本記事は順位という観測事実だけに基づいている。継続度は「注目され始め」の段階で、上位が今後も続くかは見通せない。流行している地域の広がりも不明。詳しくは出典のチャートを参照してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "Ayumu Imazu - 結び",
+      "sourceName": "kworb.net Spotify Japanデイリーチャート",
+      "sourceUrl": "https://kworb.net/spotify/country/jp_daily.html",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 21,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-2",
+      "genre": "japanese-movie",
+      "heading": "『ゴジラ-0.0』が公開直後から映画ランキング首位を走り、注目が高まっている",
+      "sections": {
+        "fact": {
+          "heading": "約2週間、話題が続き注目度は高い",
+          "text": "話題が観測され始めてから14日が経ち、継続度は「注目され始め」、注目度は「高い」です。今回が初めての掲載(1回目)で、興行通信社の週末ランキングでは首位に位置しています。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "新作への期待と、初登場1位からの首位維持が重なった",
+          "text": "山崎貴監督による人気シリーズの新作として、公開前から関心を集めていたとみられます。公開直後に初登場1位となり、2週目の週末も首位を保ったことで、一過性ではない勢いが伝わりました。日本と北米の両方で初週末1位になったという報道も、話題を押し上げた要因と考えられます。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[新作への期待] --> B[初登場1位]\n B --> C[2週目も首位維持]\n C --> D[国内外で話題が拡大]"
+          }
+        },
+        "caveat": {
+          "heading": "背景には推測を含み、今後の継続は見通せない",
+          "text": "背景の説明は報道や公開情報にもとづく推測を含みます。継続度は「注目され始め」の段階で、この勢いがどこまで続くかはまだ分かりません。詳しい数字は出典の一次情報で確認してください。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "ゴジラ-０.０",
+      "sourceName": "興行通信社CINEMAランキング通信(国内)",
+      "sourceUrl": "https://www.kogyotsushin.com/archives/weekend/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 14,
+        "continuationStartDate": "2026-11-03",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-3",
+      "genre": "foreign-movie",
+      "heading": "ノーラン監督の新作「オデュッセイア」が洋画の上映中ランキングで注目を集める",
+      "sections": {
+        "fact": {
+          "heading": "公開から約2か月、検索の急上昇が21日続いている",
+          "text": "Filmarksの上映中ランキングで急上昇が確認され、継続度は「注目され始め」、継続日数は21日、注目度は「高い」と判定された。今回が1回目の掲載で、発祥地域も現在の主な流行地域も不明である。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "ノーラン作品への期待と撮影手法への関心が重なったとみられる",
+          "text": "クリストファー・ノーラン監督の新作で、日本では9月11日に公開された。全編IMAX撮影という触れ込みや、CGに頼らない撮影への評価、予告編の現代的な英語の台詞をめぐる議論が、公開前後の関心を押し上げたと報じられている。古代ギリシャの神話を題材にした冒険譚という分かりやすさも、幅広い層に届いた要因と考えられる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は報道からの推測を含み、今後の継続は見通せない",
+          "text": "注目の理由は報道やレビューから推測したもので、検索の急上昇との因果までは確認できていない。継続度は「注目され始め」の段階にあり、話題がこの先も続くかは見通せない。興行成績などの具体的な数字も確認していないため、詳細は出典で確かめてほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "オデュッセイア",
+      "sourceName": "Filmarks上映中ランキング",
+      "sourceUrl": "https://filmarks.com/list/now",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 21,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-4",
+      "genre": "japanese-drama",
+      "heading": "大河ドラマ『豊臣兄弟！』、視聴人数ランキングで上位に入り注目され始める",
+      "sections": {
+        "fact": {
+          "heading": "視聴人数ランキングの上位に入り、急上昇は21日間続いている",
+          "text": "ビデオリサーチの視聴人数ランキング(ドラマ)で、NHK大河ドラマ『豊臣兄弟！』が上位に入っているのが確認されました。トレンド上の急上昇は21日間続いています。今回が初めての掲載で、注目度は高い水準です。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "毎週の放送で多くの人が視聴した結果が、順位に表れた",
+          "text": "10月下旬から11月初めの放送回がドラマ部門で3位に入りました。日曜夜に全国で放送される大河ドラマを、多くの人が実際に見ていたことが数字に出た形です。ただし今回の情報源が示すのは視聴人数の順位までです。検索が急上昇した直接のきっかけ(特定の展開や出演者の話題など)は特定できませんでした。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は断定できず、今後の継続も見通せない段階",
+          "text": "順位だけから話題化の理由は断定できないため、上の説明には推測が含まれます。継続度は「注目され始め」の段階で、この勢いが続くかはまだ分かりません。流行している地域も不明です。詳しい数値は出典の一次情報で確認してください。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "豊臣兄弟！",
+      "sourceName": "ビデオリサーチ 視聴人数ランキング(ドラマ)",
+      "sourceUrl": "https://www.videor.co.jp/audience/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 21,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-5",
+      "genre": "foreign-drama",
+      "heading": "Netflix日本のシリーズTop10に韓国ミステリーホラー『Dead-End Job』が登場",
+      "sections": {
+        "fact": {
+          "heading": "日本向けシリーズTop10に初めて登場した",
+          "text": "Netflix公式の日本向けシリーズTop10データに『Dead-End Job』が現れた。報告は今回が1回目で、継続度は流行前、継続日数は0日、注目度は普通という位置づけ。発祥地域と現在の主な流行地域は不明で、兆しを捉えた段階にとどまる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "10月30日配信開始の新作として視聴が集まった可能性",
+          "text": "2026年10月30日にNetflixで配信が始まった全8話の韓国ミステリーホラー。借金を抱えた男が高収入の仕事に就くものの、その業務が命懸けだったという筋立てで、イ・ジェウクら人気俳優の出演も注目材料とみられる。配信開始から日が浅く、新作として視聴が伸びたと考えられる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測を含み、今後の継続は見通せない",
+          "text": "上位入りの理由は新作配信によるものと推測しており、日本での反響を直接示す情報までは確認できていない。流行前の段階のため、今後もランキング上位に残るかは現時点では見通せない。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "Dead-End Job",
+      "sourceName": "Netflix公式Top10データ(シリーズ・日本)",
+      "sourceUrl": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "normal",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-17",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-6",
+      "genre": "anime",
+      "heading": "放送開始から2年の『チ。 ―地球の運動について―』が、Filmarksの話題アニメで上位に浮上",
+      "sections": {
+        "fact": {
+          "heading": "21日間の観測で「注目され始め」、注目度は高い",
+          "text": "Filmarksアニメの話題作一覧で上位に入っている状態が、21日間にわたって観測された。継続度は「注目され始め」、注目度は「高い」と判定されている。今回が初めての掲載となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "急上昇の決定的な理由は特定できなかった",
+          "text": "出典ページには急上昇の理由の記載がなく、追加で調べても直近の決定的な出来事は確認できなかった。ただし2026年6月からはプラネタリウム版が全国の科学館などで順次公開されている。こうした関連企画が作品を思い出させる一因になった可能性はある。ただし裏付けはなく、背景は特定できなかったというのが正直なところだ。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "背景は推測の域を出ず、継続も見通せない",
+          "text": "プラネタリウム版との関係は推測であり、因果関係は確認できていない。継続度は「注目され始め」の段階にとどまるため、今後も話題が続くかどうかは見通せない。詳細は出典の一次情報で確認してほしい。(出典: Filmarksアニメ 話題のおすすめアニメ https://filmarks.com/list-anime/trend)",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "チ。 ―地球の運動について―",
+      "sourceName": "Filmarksアニメ 話題のおすすめアニメ",
+      "sourceUrl": "https://filmarks.com/list-anime/trend",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 21,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-7",
+      "genre": "variety",
+      "heading": "「ポツンと一軒家」がバラエティの視聴人数ランキングで2位、注目され始めている",
+      "sections": {
+        "fact": {
+          "heading": "視聴人数ランキング2位で、注目度は高い",
+          "text": "ビデオリサーチのバラエティ部門で2位に入り、注目度は「高い」と判定された。継続度は「注目され始め」で、観測から21日が経ち、今回が1回目の掲載となる。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "背景は特定できなかった",
+          "text": "元ページには順位と視聴人数の数値しか載っておらず、話題になった理由は書かれていない。追加で検索しても、今回の上昇を説明する全国規模の出来事は確認できなかった。11月初旬の放送回が多くの人に見られたことは確かだ。ただし、なぜこの時期に注目が高まったのかは分からない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "理由は未確認で、今後の継続も見通せない",
+          "text": "理由は確認できておらず、推測で断定はできない。継続度が「注目され始め」の段階なので、この勢いが続くかどうかも判断できない。発祥地域と主な流行地域はいずれも不明だ。詳しくは出典の一次情報を確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "ポツンと一軒家",
+      "sourceName": "ビデオリサーチ 視聴人数ランキング(バラエティ)",
+      "sourceUrl": "https://www.videor.co.jp/audience/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "high",
+        "continuationDays": 21,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-8",
+      "genre": "streaming-video",
+      "heading": "Netflix映画『余命一年、男をかう』が日本のTop10に登場",
+      "sections": {
+        "fact": {
+          "heading": "Netflix日本の映画Top10データに名前が出た",
+          "text": "Netflix公式Top10データ(映画・日本)で、この作品が急上昇として観測された。報告は今回が1回目で、継続度は「流行前」、継続日数は0日。注目度は「高い」と判定されている。発祥地域と現在の主な流行地域は不明。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "11月5日の世界配信開始が背景とみられる",
+          "text": "この作品は吉川トリコさんの小説が原作です。柴咲コウさんと赤楚衛二さんが主演し、Netflixで2026年11月5日に独占配信が始まりました。余命宣告を受けた40歳の女性が、ホストの男性にお金を払って関わるという筋書きです。配信開始と人気俳優の共演が、視聴ランキング入りにつながった可能性があります。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[原作小説] --> B[映画化]\n B --> C[11月5日 Netflix配信開始]\n C --> D[日本の映画Top10に登場]"
+          }
+        },
+        "caveat": {
+          "heading": "ランキング上位の理由は推測を含み、今後は未知数",
+          "text": "配信開始との関係は公開情報からの推測で、ランキングの順位や視聴数との因果までは確認できていない。継続度は「流行前」で、今後も話題が続くかは現時点では見通せない。順位の詳細はNetflix公式データで確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "One Year to Live, Buy a Man",
+      "sourceName": "Netflix公式Top10データ(映画・日本)",
+      "sourceUrl": "https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv",
+      "trend": {
+        "durationLabel": "pre-trend",
+        "heatLabel": "high",
+        "continuationDays": 0,
+        "continuationStartDate": "2026-11-17",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    },
+    {
+      "id": "topic-9",
+      "genre": "books-comics",
+      "heading": "年末の定番「家計ノート2027」が書籍ランキング上位に浮上",
+      "sections": {
+        "fact": {
+          "heading": "トーハンの総合ランキングで4位に入った",
+          "text": "トーハンの週間ベストセラー総合ランキング(11月10日調べ)で4位に入った。小学館刊で、本体価格は282円の家計簿。継続度は「注目され始め」、注目度は普通で、継続日数は21日、報告回数は今回が1回目。",
+          "diagram": null
+        },
+        "reason": {
+          "heading": "翌年用の家計簿を買う季節に入ったことが背景とみられる",
+          "text": "年末が近づくと、翌年用の家計簿や手帳を買う人が増える。300円に満たない価格で手に取りやすいことも、順位を押し上げた可能性がある。一方で、この本だけに起きた特別なきっかけ(メディア露出など)は、今回の調査では特定できなかった。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "季節需要という見方は推測で、今後の継続も見通せない",
+          "text": "背景として挙げた季節需要は推測を含む。流行はまだ「注目され始め」の段階で、上位が続くかは分からない。発祥地域も現在の主な流行地域も不明で、全国的な傾向かどうかは判断できない。詳細はトーハンの一次情報で確認してほしい。",
+          "diagram": null
+        }
+      },
+      "sourceTitle": "いちばんかんたん いちばんお値うち 家計ノート2027",
+      "sourceName": "トーハン週間ベストセラー",
+      "sourceUrl": "https://www.tohan.jp/bestsellers/",
+      "trend": {
+        "durationLabel": "emerging",
+        "heatLabel": "normal",
+        "continuationDays": 21,
+        "continuationStartDate": "2026-10-27",
+        "reportCount": 1,
+        "originRegion": null,
+        "currentRegions": []
+      }
+    }
+  ],
+  "unavailableGenres": []
+}
