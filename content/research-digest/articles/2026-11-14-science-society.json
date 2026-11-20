@@ -1,0 +1,165 @@
+{
+  "id": "2026-11-14-science-society",
+  "edition": "science-society",
+  "date": "2026-11-14",
+  "findings": [
+    {
+      "id": "ai-it",
+      "genre": "ai-it",
+      "heading": "パスキーへの切り替えは、適切な場面での案内によって増えることが約3,700人の試験で示された",
+      "sections": {
+        "finding": {
+          "heading": "適切な場面での案内が、パスキーの利用を有意に増やした",
+          "text": "パスワードに代わるパスキーは、あまり広まっていません。この研究では、利用者に切り替えを促す「ナッジ」と呼ばれる案内を、ふさわしい場面で出すと、パスキーを使う人が有意に増えることが示されました。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "実際のサービスで、案内の有無を無作為に分けて比べた",
+          "text": "まず専門家15人に聞き取りをして、有効そうな案内の候補を整理しました。次に、実在するオンラインの医療サービスで3,680人を案内あり・なしなどに無作為に振り分け、結果を比べました。登録時、ログイン時、復旧時、設定画面、利用中の5つの場面で検証しています。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[専門家15人への聞き取り] --> B[案内の候補を整理]\n B --> C[3,680人を無作為に振り分け]\n C --> D[5つの場面で案内の効果を比較]\n D --> E[適切な場面ならパスキー利用が増加]"
+          }
+        },
+        "relevance": {
+          "heading": "ネットサービスの安全性と使いやすさの改善につながりうる",
+          "text": "ログイン画面などで切り替えを勧められる機会は、今後さらに増えるかもしれません。パスワードの使い回しや覚える負担が減れば、多くの人にとって安全で手間の少ない利用につながる可能性があります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "1つの医療サービスでの試験で、細かな効果は未確認",
+          "text": "試験の場は1つの医療サービスに限られるため、他の種類のサービスでも同じ結果になるとは限りません。場面ごとの効果の差や効果の大きさといった詳細は、要旨だけでは確認できていません。査読を経た発表ですが、詳しくは元の論文をご覧ください。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "パスワードに代わるパスキーを、ログイン時や登録時などの案内(ナッジ)でどう広められるかを、3,680人のランダム化比較試験で確かめた研究で、ネットサービスを使う多くの人の安全性と使いやすさに関わる。ただし、1つのヘルスケアサービス上の試験で、数値の詳細は要旨だけでは確認できていない。",
+      "sourceTitle": "Moving Beyond Passwords: Investigating the Effect of Digital Nudges on Passkey Adoption",
+      "sourceName": "CHI 2026(ACM CHI Conference on Human Factors in Computing Systems)/レーゲンスブルク大学",
+      "sourceUrl": "https://epub.uni-regensburg.de/79370/",
+      "doi": "10.1145/3772318.3791425",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "economics-behavioral",
+      "genre": "economics-behavioral",
+      "heading": "行動科学を踏まえたメールで、学生ローンの延滞が減り、返済負担の軽い返済プランの申請が増えた",
+      "sections": {
+        "finding": {
+          "heading": "届け方の工夫だけで、延滞が減った",
+          "text": "行動科学の知見を踏まえて作った案内メールを借り手に送ると、ローンの延滞が減りました。返済負担の軽い返済プランを申請する人も増えました。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "約1,277万人規模の現場実験で確かめた",
+          "text": "2023年に、約1,277万人の学生ローン借り手を対象にした大規模な現場実験が行われました。実験室ではなく実際の返済の場面で、延滞や申請の動きを確かめています。人数が非常に多いため、結果の信頼性は比較的高いといえます。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[約1,277万人の借り手] --> B[行動科学を踏まえたメール]\n B --> C[延滞が減る]\n B --> D[軽い返済プランの申請が増える]"
+          }
+        },
+        "relevance": {
+          "heading": "お金の手続きの案内は、伝え方で行動が変わりうる",
+          "text": "返済や各種手続きの案内は、内容だけでなく伝え方でも人の行動が変わりうることを示しています。金融機関や行政の通知が分かりやすく改善されていく流れにつながるかもしれません。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "1人あたりの効果は小さく、他の場面には当てはまらない可能性",
+          "text": "査読を経た研究ですが、1人あたりの効果は小さいものです。対象は学生ローンの借り手に限られます。ほかの借入や状況でも同じ結果になるとは限りません。メールだけで返済の問題が解決するわけでもありません。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "2023年の約1,277万人の学生ローン借り手を対象とした大規模フィールド実験(査読済み)で、行動科学を踏まえたメールが延滞を減らし返済負担の軽い返済プランの申請を増やしたが、1人あたりの効果は小さい。",
+      "sourceTitle": "Behavioral nudges prevent loan delinquencies at scale: A 13-million-person field experiment",
+      "sourceName": "Proceedings of the National Academy of Sciences (PNAS)",
+      "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11789030",
+      "doi": "10.1073/pnas.2416708122",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "space-physics",
+      "genre": "space-physics",
+      "heading": "地球の磁場が大きく弱まると、低緯度の航空路で宇宙線による被ばくが増えうるとの試算",
+      "sections": {
+        "finding": {
+          "heading": "磁場の弱まりで宇宙線の防御が減り、飛行中の被ばくが増えうる",
+          "text": "約4万1千年前に地球の磁場が大きく弱まった時期を想定して計算したところ、宇宙線を防ぐ力が落ちました。現在は被ばくが少ない低緯度の航空路で、飛行中に受ける放射線量が大きく増えうるという結果です。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[地球の磁場が大きく弱まる] --> B[宇宙線を防ぐ力が低下]\n B --> C{航空路の位置}\n C -->|低緯度| D[被ばく量が大きく増えうる]\n C -->|一部の高緯度| E[かえって減る場合もある]"
+          }
+        },
+        "basis": {
+          "heading": "当時の磁場の推定をもとに、コンピューターで宇宙線の動きを再現した",
+          "text": "当時の磁場を推定したデータを使い、宇宙線が地球に届く様子を100年刻みで計算しました。さらに、大気中で生じる放射線の量を計算し、ヘルシンキ発のニューヨーク行きとドバイ行きの2路線で、飛行中の被ばく量を見積もっています。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "近い将来の話ではないが、磁場と宇宙線の関係を知る手がかりになる",
+          "text": "今すぐ飛行機の安全に影響する話ではありません。ただ、磁場が私たちを宇宙線から守っていることや、磁場が弱まると大気や飛行環境に影響が及びうることを具体的に知る材料になります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "実測ではなくモデル計算で、調べた路線も限られる",
+          "text": "結果は過去の磁場の推定に基づく計算で、実際の観測による直接の裏付けは示されていません。調べた航空路線も2つだけなので、他の路線にそのまま当てはまるとは限りません。今後そのような磁場の弱まりが起きる可能性は低いとされています。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "地球の磁場が弱まると、低緯度の航空路で宇宙線による被ばく量が大きく増えうると試算した研究です。ただし対象は約4万1千年前の出来事のモデル計算で、近い将来に起きる可能性は低いため、生活への影響は限定的と判断しました。",
+      "sourceTitle": "Reduced Geomagnetic Shielding During the Laschamps Excursion and Its Impact on Cosmic-Ray-Induced Atmospheric Radiation",
+      "sourceName": "Journal of Geophysical Research: Space Physics(オウル大学)",
+      "sourceUrl": "https://oulurepo.oulu.fi/handle/10024/61123",
+      "doi": "10.1029/2025ja034820",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "materials-energy",
+      "genre": "materials-energy",
+      "heading": "光で変化する添加剤で、ペロブスカイト・有機タンデム太陽電池が認証効率28%超と625時間の安定動作を両立",
+      "sections": {
+        "finding": {
+          "heading": "効率の記録更新と、劣化しにくさの両立に近づいた",
+          "text": "薄く軽い次世代の太陽電池で、2種類の材料を重ねたタイプの変換効率が、第三者の認証で28.04%に達した。光に当たると性質が変わる添加剤を加えると、光を電気に変える層の劣化が抑えられた。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "作り方と使用中の両方で、劣化の原因に対処した",
+          "text": "上の層は材料を混ぜた状態が日光で崩れて傷みやすい。添加剤は膜を作る段階で均一に混ざるよう促し、光が当たると結晶の境目に強く付いて動きを止める。この二段構えで、625時間の連続照射後も初期性能の約9割を保った。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[製造時: 添加剤が結晶のでき方を整える] --> B[材料が均一に混ざった膜]\n B --> C[日光が当たる]\n C --> D[添加剤が変化して結晶の境目に結合]\n D --> E[材料の移動と欠陥を抑える]\n E --> F[性能を長く維持]"
+          }
+        },
+        "relevance": {
+          "heading": "将来の発電の選択肢が広がるかもしれない",
+          "text": "軽くて曲げやすく、インクのように印刷して作れる可能性があるため、窓や持ち運ぶ機器などへの応用が期待される。実用化が進めば、発電コストや再生可能エネルギーの普及に影響しうるが、今すぐ身近な製品が変わるわけではない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "まだ実験段階で、長期の実力は未確認",
+          "text": "査読済みの論文だが、試験は625時間の照射までで、屋外で何年も使えるかは示されていない。公式発表ではセルの面積や詳しい試験条件が分からず、実験室での結果が量産品でも再現できるかは今後の課題である。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "太陽光発電の高効率化と長寿命化に直結し、将来の電気代や再エネの普及に広く関わるが、実験室規模の小面積セルで、実用化にはまだ時間がかかる。",
+      "sourceTitle": "perovskite-organic tandem solar cell with photo-transformable additive TDB (certified 28.04% efficiency, 90% retained after 625 hours)",
+      "sourceName": "Nature(中国科学院化学研究所の発表)",
+      "sourceUrl": "https://lssf.cas.cn/en/news/rh/202607/t20260731_5117751.html",
+      "doi": "10.1038/s41586-026-10869-x",
+      "publishedYear": 2026,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": [
+    {
+      "genre": "environment-climate",
+      "reason": "generation-failed"
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "id": "2026-11-16-body-life",
+  "edition": "body-life",
+  "date": "2026-11-16",
+  "findings": [
+    {
+      "id": "medical-health",
+      "genre": "medical-health",
+      "heading": "HPVワクチンは1回の接種でも、2回接種に劣らず持続感染を防げると示された",
+      "sections": {
+        "finding": {
+          "heading": "1回接種は2回接種と同程度に持続感染を防いだ",
+          "text": "子宮頸がんの主な原因となるHPVワクチンについて、接種を1回で済ませても2回の場合に劣らず、ウイルスの持続感染を防げることが、大規模な無作為化試験で示された。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "2万人を超える人を比べた試験",
+          "text": "接種回数をくじ引きのように無作為に分け、2万人を超える参加者を追って、持続感染の起きやすさを直接比べた。偏りの少ない比べ方なので、回数による差を見やすい。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "接種の手間や費用が減る可能性がある",
+          "text": "接種が1回で足りるなら、通院の回数や費用の負担が減り、接種を受けやすくなる。子宮頸がん予防を広げる助けになりうる。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "感染を防ぐ指標での確認で、制度はこれから",
+          "text": "確認されたのは持続感染の予防であり、がんそのものの減少を直接示したものではない。対象者の範囲や効果の長さには限りがある。接種回数の扱いは国や制度で異なるので、公的な案内に従ってほしい。",
+          "diagram": null
+        }
+      },
+      "impact": "high",
+      "impactReason": "HPVワクチンを1回接種にしても2回接種に劣らず、持続感染を防げることが2万人超の無作為化試験で示され、接種の手間や費用を減らして子宮頸がん予防を広げうるため。",
+      "sourceTitle": "Noninferiority of One HPV Vaccine Dose to Two Doses",
+      "sourceName": "The New England Journal of Medicine(PubMed掲載ページ)",
+      "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/41337735/",
+      "doi": "10.1056/nejmoa2506765",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "nutrition-food",
+      "genre": "nutrition-food",
+      "heading": "ヨーグルトなど発酵乳をよく食べる人は、死亡リスクがわずかに低い傾向にあった",
+      "sections": {
+        "finding": {
+          "heading": "発酵乳やチーズを多く摂る人ほど、死亡リスクが少し低い傾向",
+          "text": "健康な成人を追跡した多数の研究をまとめると、ヨーグルトなどの発酵乳を多く食べる人は、少ない人より全体の死亡リスクがわずかに低めでした。チーズも同様の傾向でした。差は小さなものです。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "多くの追跡研究を一つに合わせて比べた",
+          "text": "食習慣を長く追いかけた50の研究、延べ300万人超のデータを集め、食べる量が最も多い群と最も少ない群を、年齢や生活習慣などの違いを調整したうえで比べています。多数の結果を合わせることで、個々の研究の偶然のばらつきを減らしています。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[追跡研究50件を収集] --> B[摂取量が多い群と少ない群に分ける]\n B --> C[生活習慣の違いを調整]\n C --> D[結果を統合して死亡リスクを比較]"
+          }
+        },
+        "relevance": {
+          "heading": "日々の食事選びを考える材料のひとつになる",
+          "text": "ヨーグルトやチーズを普段の食事に取り入れる人にとっては、食事の選択肢を考えるうえでの参考情報になります。ただし効果は小さいため、これだけで健康が左右されると考えず、食事全体のバランスの一部として捉えるのが現実的です。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "食べたから低くなったとまでは言えない",
+          "text": "観察研究なので、発酵乳が原因で死亡リスクが下がったとは言えません。食事内容は自己申告で、誤差もあります。味噌やチョコレートなどは研究数が少なく、著者らも全体の確実性を中程度としています。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "日常的に食べるヨーグルトやチーズなどの摂取と死亡リスクの関連を、50の前向きコホート・300万人超で統合した大規模な解析だが、観察研究のため因果関係までは言えない。",
+      "sourceTitle": "Fermented foods consumption, all-cause, and cause-specific mortality: a meta-analysis of prospective cohort studies",
+      "sourceName": "Frontiers in Nutrition",
+      "sourceUrl": "https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2026.1714437/full",
+      "doi": "10.3389/fnut.2026.1714437",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "psychology-brain",
+      "genre": "psychology-brain",
+      "heading": "よい思い出を鮮明に思い出す1か月の練習で、不安・抑うつ傾向のある人のストレスへの弱さが下がる可能性",
+      "sections": {
+        "finding": {
+          "heading": "思い出す練習で、疲れやすさと否定的な記憶のかたよりが下がった",
+          "text": "ポジティブな出来事を鮮明に思い出す課題を1か月続けた群では、不安や抑うつになりやすい人の疲れやすさや、嫌な記憶に偏る傾向が、課題のない練習の群より下がった。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "くじ引きで2群に分け、本人にも分からない形で比べた",
+          "text": "不安・抑うつ傾向のある約60人を、思い出す課題がある群とない群にくじ引きで分けた。どちらか本人も評価する側も分からない状態で、1か月後の疲れやすさの得点、唾液のストレスホルモン、脳画像の変化を比べた。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[不安・抑うつ傾向のある約60人] --> B{くじ引きで2群に分ける}\n B --> C[思い出す課題あり]\n B --> D[思い出す課題なし]\n C --> E[1か月後に比較]\n D --> E\n E --> F[疲れやすさ・ストレスホルモン・脳画像]"
+          }
+        },
+        "relevance": {
+          "heading": "ストレスに強くなる手がかりになりうるが、実用はまだ先",
+          "text": "嫌な記憶に引きずられやすい人にとって、よい出来事の記憶との付き合い方がストレスへの弱さに関わるかもしれない、という手がかりになる。ただ、日常で使える方法として確立した段階ではない。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "人数が少なく、両群とも改善しており確かさは限られる",
+          "text": "参加者が少なく、課題のない群も不安・抑うつ傾向が下がったため、期待の影響を完全には除けない。追跡調査がなく、効果が続くかは不明である。脳の変化も、主な指標の改善とは結びつかなかった。",
+          "diagram": null
+        }
+      },
+      "impact": "low",
+      "impactReason": "不安・抑うつ傾向のある人が1か月の記憶トレーニングでストレスへの弱さを減らせる可能性を二重盲検のランダム化比較試験で示したが、参加者は62名と少なく、両群とも不安・抑うつ傾向は下がっており、確からしさは限定的である。",
+      "sourceTitle": "The effectiveness and neurobiological actions of memory bias modification: a randomized controlled trial",
+      "sourceName": "Psychological Medicine(Cambridge University Press)",
+      "sourceUrl": "https://doi.org/10.1017/S0033291725102535",
+      "doi": "10.1017/s0033291725102535",
+      "publishedYear": 2025,
+      "isPreprint": false
+    },
+    {
+      "id": "sleep-exercise",
+      "genre": "sleep-exercise",
+      "heading": "体を動かし、睡眠が短すぎも長すぎもせず、座りすぎない人ほど、認知症になる割合が低い傾向",
+      "sections": {
+        "finding": {
+          "heading": "活動・睡眠・座位の習慣が認知症の起こりやすさと結びついていた",
+          "text": "よく体を動かす人、睡眠が7〜8時間前後の人、長時間座りっぱなしでない人は、そうでない人より認知症になる割合が低い傾向でした。睡眠は短すぎても長すぎても割合が高めでした。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "多数の追跡研究をまとめて比べた結果",
+          "text": "認知症のない人を何年も追った過去の研究を集め、まとめて分析しています。身体活動と睡眠は百万人を超える規模で、偶然の偏りに左右されにくい作りです。",
+          "diagram": null
+        },
+        "relevance": {
+          "heading": "身近な習慣が将来の脳の健康に関わる可能性",
+          "text": "歩く、座る時間、眠る時間といった毎日の過ごし方が、将来の脳の健康と関わっているかもしれません。自分の生活リズムを考える材料になります。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "原因と結果までは言えず、確かさは中程度",
+          "text": "示されたのは関連であり、因果ではありません。活動や睡眠は自己申告で、発症前の不調が習慣を変えた可能性も残ります。研究間のばらつきが大きく、座位は研究が3件と少なく、高所得国の研究が中心です。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "身体活動・睡眠時間・座位時間という誰にでも身近な習慣と認知症リスクを約430万人分の追跡研究で整理した大規模な統合解析で、影響を受ける人は多い。ただし観察研究で、研究間のばらつきも大きく、確からしさは中程度にとどまる。",
+      "sourceTitle": "The Relationships between physical activity, sedentary behaviour, sleep, and dementia: A systematic review and meta-analysis of cohort studies",
+      "sourceName": "PLOS ONE",
+      "sourceUrl": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0343621",
+      "doi": "10.1371/journal.pone.0343621",
+      "publishedYear": 2026,
+      "isPreprint": false
+    },
+    {
+      "id": "education-parenting",
+      "genre": "education-parenting",
+      "heading": "学校全体で行う「社会性と感情の学習」は、国語や算数の学力をわずかに押し上げていた",
+      "sections": {
+        "finding": {
+          "heading": "学力へのプラス効果は確認されたが、小さい",
+          "text": "学校全体で取り組む社会性と感情の学習(SEL)に参加した児童生徒は、参加しなかった児童生徒より学業成績がやや良い傾向でした。読解と算数・数学のどちらでも、小学校から高校までの幅広い学年で改善がみられましたが、差は小さいものでした。",
+          "diagram": null
+        },
+        "basis": {
+          "heading": "多くの研究をまとめて比べた",
+          "text": "決め手は、40件の研究、約3万4千人分の結果を一つにまとめて分析したことです。参加した子と参加しなかった子を比べ、学力テストの点数や成績平均の差を見ています。一つの研究だけに頼らないので、偶然の偏りに左右されにくくなります。",
+          "diagram": {
+            "type": "mermaid",
+            "code": "flowchart LR\n A[40件の研究を集める] --> B[参加した子と<br>参加しなかった子を比較]\n B --> C[テスト点・成績平均の差を<br>全体で統合]\n C --> D[わずかに良い結果]"
+          }
+        },
+        "relevance": {
+          "heading": "学力以外の学びが、学力にも少し役立つかもしれない",
+          "text": "感情の扱い方や人との関わり方を学ぶ取り組みは、学校生活のために行われるものです。この結果は、その取り組みが学力の面でも悪影響にならず、少しプラスになりうることを示します。ただし、学力を大きく伸ばす手段とまでは言えません。",
+          "diagram": null
+        },
+        "caveat": {
+          "heading": "効果は小さく、対象も限られる",
+          "text": "対象は学校全体で行うプログラムに限られ、分析した研究は2008〜2020年に実施されたものです。効果の大きさも小さいため、どの学校でも同じ結果になるとは限りません。プログラムの種類による違いなどの詳細は、元の論文で確認してください。この研究は査読済みの論文です。",
+          "diagram": null
+        }
+      },
+      "impact": "medium",
+      "impactReason": "40研究・約3.4万人の統合解析で、学校全体で行う社会性と感情の学習プログラムが国語・算数の学力にわずかに良い影響を与えると分かり、多くの児童生徒に関わるが、効果の大きさは小さい(g=0.10)ため。",
+      "sourceTitle": "Disentangling the Effects of Social and Emotional Learning Programs on Student Academic Achievement Across Grades 1–12: A Systematic Review and Meta-analysis",
+      "sourceName": "Review of Educational Research(AERA公式発表)",
+      "sourceUrl": "https://www.aera.net/Newsroom/Disentangling-the-Effects-of-Social-and-Emotional-Learning-Programs-on-Student-Academic-Achievement-Across-Grades-112-A-Systematic-Review-and-Meta-analysis",
+      "doi": "10.3102/00346543251367769",
+      "publishedYear": 2025,
+      "isPreprint": false
+    }
+  ],
+  "emptyGenres": []
+}
